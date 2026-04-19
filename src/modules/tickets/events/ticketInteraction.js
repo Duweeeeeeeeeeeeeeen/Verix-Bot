@@ -170,37 +170,72 @@ export default {
 
             // Standard buttons
             if (interaction.customId === 'tk_close') {
-                // Check permissions specifically for logging channel before closing
-                const logChannel = interaction.guild.channels.cache.get(config.logChannelId);
-                if (logChannel) {
-                    const logPermCheck = checkBotPermissions(logChannel, [PermissionFlagsBits.SendMessages, PermissionFlagsBits.EmbedLinks, PermissionFlagsBits.AttachFiles]);
-                    if (!logPermCheck.hasPermission) {
+                const logChannel = config.logChannelId ? interaction.guild.channels.cache.get(config.logChannelId) : null;
+                const closeMode = config.closeMode || 'DELETE';
+
+                if (closeMode === 'DELETE') {
+                    if (logChannel) {
+                        const logPermCheck = checkBotPermissions(logChannel, [PermissionFlagsBits.SendMessages, PermissionFlagsBits.EmbedLinks, PermissionFlagsBits.AttachFiles]);
+                        if (!logPermCheck.hasPermission) {
+                            return interaction.reply({ 
+                                content: `❌ **Errore Chiusura:** Il bot non ha i permessi necessari nel canale LOGS (${logChannel.name}).\nRichiesti: ${logPermCheck.missing.join(', ')}`, 
+                                flags: [MessageFlags.Ephemeral] 
+                            });
+                        }
+                    }
+                } else if (closeMode === 'MOVE') {
+                    if (!config.categoryClosedId) {
                         return interaction.reply({ 
-                            content: `❌ **Errore Chiusura:** Il bot non ha i permessi necessari nel canale LOGS (${logChannel.name}).\nRichiesti: ${logPermCheck.missing.join(', ')}`, 
+                            content: `❌ **Errore Chiusura:** La Categoria Chiusi non è configurata.`, 
                             flags: [MessageFlags.Ephemeral] 
                         });
                     }
                 }
 
                 await interaction.reply(config.messages?.successClose || '🛡️ **Chiusura professionale...**');
-                const transcript = await generateTranscription(interaction.channel, ticket);
                 
-                if (logChannel) {
-                    const cEmbed = config.embeds?.close || {};
-                    const logEmbed = new EmbedBuilder()
-                        .setTitle(cEmbed.title || '📁 Archivio Ticket')
-                        .setDescription(cEmbed.description || 'Il ticket è stato chiuso.')
-                        .addFields(
-                            { name: 'Utente', value: `<@${ticket.userId}>`, inline: true }, 
-                            { name: 'Tipo', value: `\`${ticket.type.toUpperCase()}\``, inline: true }, 
-                            { name: 'Staff', value: ticket.assignedStaffId ? `<@${ticket.assignedStaffId}>` : 'Nessuno', inline: true }
-                        )
-                        .setColor(cEmbed.color || '#ff4757')
-                        .setTimestamp();
-                    await logChannel.send({ embeds: [logEmbed], files: [transcript] });
-                }
                 ticket.status = 'CLOSED';
                 ticket.closedAt = new Date();
+
+                if (closeMode === 'DELETE') {
+                    const transcript = await generateTranscription(interaction.channel, ticket);
+                    
+                    if (logChannel) {
+                        const cEmbed = config.embeds?.close || {};
+                        const logEmbed = new EmbedBuilder()
+                            .setTitle(cEmbed.title || '📁 Archivio Ticket')
+                            .setDescription(cEmbed.description || 'Il ticket è stato chiuso.')
+                            .addFields(
+                                { name: 'Utente', value: `<@${ticket.userId}>`, inline: true }, 
+                                { name: 'Tipo', value: `\`${ticket.type.toUpperCase()}\``, inline: true }, 
+                                { name: 'Staff', value: ticket.assignedStaffId ? `<@${ticket.assignedStaffId}>` : 'Nessuno', inline: true }
+                            )
+                            .setColor(cEmbed.color || '#ff4757')
+                            .setTimestamp();
+                        await logChannel.send({ embeds: [logEmbed], files: [transcript] });
+                    }
+                    ticket.deletionScheduledAt = new Date(Date.now() + 5000);
+                } else if (closeMode === 'MOVE') {
+                    try {
+                        const newName = interaction.channel.name.startsWith('closed-') ? interaction.channel.name : `closed-${interaction.channel.name}`.substring(0, 100);
+                        await interaction.channel.setParent(config.categoryClosedId, { lockPermissions: false });
+                        await interaction.channel.setName(newName);
+                        
+                        // Remove user visibility, leave staff untouched
+                        await interaction.channel.permissionOverwrites.edit(ticket.userId, { ViewChannel: false });
+
+                        const cEmbed = config.embeds?.close || {};
+                        const closedEmbed = new EmbedBuilder()
+                            .setTitle(cEmbed.title || '📁 Ticket Archiviato')
+                            .setDescription(cEmbed.description || 'Questo ticket è stato archiviato.')
+                            .setColor(cEmbed.color || '#ff4757')
+                            .setTimestamp();
+                        await interaction.channel.send({ embeds: [closedEmbed] });
+                    } catch (e) {
+                        logger.error('[TICKET_CLOSE_MOVE] Error moving channel:', e);
+                    }
+                }
+                
                 await ticket.save();
 
                 // GlobalConfig notification & log for tickets.onClose
@@ -218,9 +253,6 @@ export default {
                     guild: interaction.guild,
                     content: `🔒 Ticket \`${ticket.type}\` di <@${ticket.userId}> **chiuso** da ${interaction.user}`
                 });
-
-                ticket.deletionScheduledAt = new Date(Date.now() + 5000);
-                await ticket.save();
             }
         }
     },

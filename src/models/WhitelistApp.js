@@ -23,6 +23,7 @@ const whitelistAppSchema = new mongoose.Schema({
     rejectionReason: { type: String, default: null },
     startTime: { type: Date, default: Date.now },
     reviewMessageId: { type: String, default: null },
+    lastVoiceRejectionAt: { type: Date, default: null },
     deletionScheduledAt: { type: Date, default: null }
 });
 

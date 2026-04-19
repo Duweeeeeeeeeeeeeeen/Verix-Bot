@@ -289,7 +289,7 @@ export default function FiveMMultiConfig() {
             .status-box { width: 40px; height: 40px; background: #1e293b; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--text-dim); border: 1px solid var(--border); transition: 0.3s; }
             .status-box.on { color: var(--primary); background: rgba(129, 140, 248, 0.1); border-color: rgba(129, 140, 248, 0.2); }
 
-            .server-card { padding: 0 !important; overflow: hidden; margin-bottom: 16px; }
+            .server-card { padding: 0 !important; margin-bottom: 16px; }
             .server-header { padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; }
             .server-header:hover { background: rgba(255,255,255,0.02); }
             .server-info-main { display: flex; align-items: center; gap: 16px; }

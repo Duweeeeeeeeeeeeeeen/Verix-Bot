@@ -54,6 +54,23 @@ class CleanupManager {
     }
 
     async cleanupVoice(now) {
+        // Ghost Active Sessions Cleanup
+        const activeSessions = await VoiceQueue.find({ status: 'ACTIVE' });
+        for (const session of activeSessions) {
+            try {
+                const guild = await this.client.guilds.fetch(session.guildId).catch(() => null);
+                if (guild) {
+                    const channel = await guild.channels.fetch(session.voiceChannelId).catch(() => null);
+                    if (!channel) {
+                        logger.warn(`[CleanupManager] Resolving ghost VoiceQueue session for user ${session.userId}`);
+                        session.status = 'CANCELLED';
+                        await session.save();
+                    }
+                }
+            } catch (err) {}
+        }
+
+        // Scheduled Deletion Cleanup
         const sessions = await VoiceQueue.find({ deletionScheduledAt: { $lte: now } });
         for (const session of sessions) {
             await this.deleteChannel(session.guildId, session.voiceChannelId, `Voice Session Finished Cleanup (${session.userId})`);

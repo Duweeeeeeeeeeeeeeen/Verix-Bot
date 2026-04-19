@@ -102,6 +102,23 @@ export default {
                     app.reviewedBy = interaction.user.id;
                     await app.save();
 
+                    // Role Management on Text Pass
+                    const member = await interaction.guild.members.fetch(app.userId).catch(() => null);
+                    if (member) {
+                        try {
+                            const rolesToAdd = config.rolesToAddOnTextPass || [];
+                            const rolesToRemove = config.rolesToRemoveOnTextPass || [];
+                            
+                            const validRolesToAdd = rolesToAdd.filter(id => interaction.guild.roles.cache.has(id));
+                            const validRolesToRemove = rolesToRemove.filter(id => interaction.guild.roles.cache.has(id) && member.roles.cache.has(id));
+
+                            if (validRolesToAdd.length > 0) await member.roles.add(validRolesToAdd);
+                            if (validRolesToRemove.length > 0) await member.roles.remove(validRolesToRemove);
+                        } catch (err) {
+                            logger.error(`Error managing roles on text pass for ${app.userId}:`, err);
+                        }
+                    }
+
                     // Audit Log in DB
                     await WhitelistAudit.create({
                         guildId: interaction.guild.id,

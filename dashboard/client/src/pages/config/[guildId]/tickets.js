@@ -55,6 +55,11 @@ export default function TicketConfig() {
             moduleConfig.staffRoleIds = [...globalConfigData.adminRoleIds];
         }
 
+        if (!moduleConfig.embeds) moduleConfig.embeds = {};
+        if (!moduleConfig.embeds.panel) moduleConfig.embeds.panel = { title: '🎫 Centro Assistenza', description: 'Seleziona una categoria dal menu a tendina per aprire un ticket.', color: '#3498db' };
+        if (!moduleConfig.embeds.ticket) moduleConfig.embeds.ticket = { title: '{emoji} Ticket: {type}', description: 'Bentornato <@{user_id}>, lo staff ti assisterà a breve.\n\n**Metadati Sessione:**\n• Priorità: `{priority}`\n• Stato: `{status}`', color: '#3498db' };
+        if (!moduleConfig.embeds.close) moduleConfig.embeds.close = { title: '📁 Archivio Ticket', description: 'Il ticket è stato chiuso.', color: '#ff4757' };
+
         setConfig(moduleConfig);
         setGlobalConfig(globalConfigData);
         setChannels(discordRes?.data?.channels || discordRes?.channels || []);
@@ -270,7 +275,19 @@ export default function TicketConfig() {
                             <div className="field-box"><label className="text-label">Canale Pannello</label><DiscordSelector type="channel" options={channels.filter(c => c.type === 0 || c.type === 5)} value={config.panelChannelId || ''} onChange={val => setConfig({...config, panelChannelId: val})} /></div>
                             <div className="field-box"><label className="text-label">Staff Predefinito</label><DiscordSelector type="role" multiple={true} options={roles} value={config.staffRoleIds || []} onChange={val => setConfig({...config, staffRoleIds: val})} /></div>
                             <div className="field-box"><label className="text-label">Categoria Aperti</label><DiscordSelector type="channel" options={channels.filter(c => c.type === 4)} value={config.categoryOpenId || ''} onChange={val => setConfig({...config, categoryOpenId: val})} /></div>
-                            <div className="field-box"><label className="text-label">Categoria Chiusi</label><DiscordSelector type="channel" options={channels.filter(c => c.type === 4)} value={config.categoryClosedId || ''} onChange={val => setConfig({...config, categoryClosedId: val})} /></div>
+                            <div className="field-box">
+                                <label className="text-label">Azione alla Chiusura</label>
+                                <select className="select" value={config.closeMode || 'DELETE'} onChange={e => setConfig({...config, closeMode: e.target.value})}>
+                                    <option value="DELETE">Elimina & Salva Transcript</option>
+                                    <option value="MOVE">Sposta nella Categoria Chiusi</option>
+                                </select>
+                            </div>
+                            {(!config.closeMode || config.closeMode === 'DELETE') && (
+                                <div className="field-box"><label className="text-label">Canale Transcript Logs</label><DiscordSelector type="channel" options={channels.filter(c => c.type === 0 || c.type === 5)} value={config.logChannelId || ''} onChange={val => setConfig({...config, logChannelId: val})} /></div>
+                            )}
+                            {config.closeMode === 'MOVE' && (
+                                <div className="field-box"><label className="text-label">Categoria Chiusi</label><DiscordSelector type="channel" options={channels.filter(c => c.type === 4)} value={config.categoryClosedId || ''} onChange={val => setConfig({...config, categoryClosedId: val})} /></div>
+                            )}
                         </div>
                     </section>
                     
@@ -410,7 +427,7 @@ export default function TicketConfig() {
             .type-info-p span { font-size: 0.65rem; color: var(--text-dim); }
             .type-actions-p { margin-left: auto; }
 
-            .editor-wrapper-t { padding: 0 !important; overflow: hidden; }
+            .editor-wrapper-t { padding: 0 !important; }
             .editor-nav-t { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
             .editor-main-t { padding: 24px; }
             

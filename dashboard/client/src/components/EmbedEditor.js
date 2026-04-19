@@ -81,13 +81,17 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
 
           {/* Style & Fields Section */}
           <section className="card glass" style={{ marginBottom: '24px' }}>
-             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '30px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '30px' }}>
                 <div className="input-group">
                   <label className="text-label">Colore Laterale</label>
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <input 
                         type="color" 
-                        value={embed?.color?.startsWith('#') ? embed.color : '#5865F2'} 
+                        value={
+                          embed?.color?.startsWith('#') 
+                            ? embed.color 
+                            : (embed?.color === 'primary' ? '#818cf8' : (embed?.color === 'success' ? '#10b981' : (embed?.color === 'error' ? '#f43f5e' : '#5865F2')))
+                        } 
                         onChange={(e) => updateEmbed('color', e.target.value)} 
                         style={{ width: '45px', height: '45px', padding: '4px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer' }} 
                     />

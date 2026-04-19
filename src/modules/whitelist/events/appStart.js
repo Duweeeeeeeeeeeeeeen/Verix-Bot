@@ -51,23 +51,38 @@ export default {
                 });
             }
 
-            // --- 3. CONCURRENCY CHECK ---
-            // Check if user already has a pending application
-            const existingApp = await WhitelistApp.findOne({ userId: interaction.user.id, guildId: interaction.guild.id, status: 'PENDING' });
-            if (existingApp) {
-                // VERIFICATION: Check if the channel still exists on Discord
-                const channelExists = interaction.guild.channels.cache.has(existingApp.channelId) || 
-                                     await interaction.guild.channels.fetch(existingApp.channelId).catch(() => null);
+            // --- 3. CONCURRENCY & STATE CHECK ---
+            // Check if user already has an active, submitted, or accepted application
+            const existingApp = await WhitelistApp.findOne({ 
+                userId: interaction.user.id, 
+                guildId: interaction.guild.id, 
+                status: { $in: ['PENDING', 'SUBMITTED', 'WAITING_VOICE', 'ACCEPTED'] } 
+            });
 
-                if (!channelExists) {
-                    // Channel was manually deleted, mark app as CANCELLED and proceed
-                    console.log(`[Whitelist] Cleaning up stale session for ${interaction.user.tag} (Channel ${existingApp.channelId} not found)`);
-                    existingApp.status = 'CANCELLED';
-                    await existingApp.save();
-                } else {
-                    const solution = `Cerca il tuo canale attuale (<#${existingApp.channelId}>) o attendi che venga eliminato automaticamente se lo hai abbandonato.`;
+            if (existingApp) {
+                if (existingApp.status === 'PENDING') {
+                    // VERIFICATION: Check if the channel still exists on Discord
+                    const channelExists = interaction.guild.channels.cache.has(existingApp.channelId) || 
+                                         await interaction.guild.channels.fetch(existingApp.channelId).catch(() => null);
+
+                    if (!channelExists) {
+                        // Channel was manually deleted, mark app as CANCELLED and proceed
+                        logger.info(`[Whitelist] Cleaning up stale session for ${interaction.user.tag} (Channel ${existingApp.channelId} not found)`);
+                        existingApp.status = 'CANCELLED';
+                        await existingApp.save();
+                    } else {
+                        const solution = `Cerca il tuo canale attuale (<#${existingApp.channelId}>) o attendi che venga eliminato automaticamente se lo hai abbandonato.`;
+                        return interaction.editReply({ 
+                            content: ErrorHelper.formatActionable('⚠️', 'Hai già una sessione whitelist in corso.', solution)
+                        });
+                    }
+                } else if (existingApp.status === 'SUBMITTED') {
                     return interaction.editReply({ 
-                        content: ErrorHelper.formatActionable('⚠️', 'Hai già una sessione whitelist in corso.', solution)
+                        content: ErrorHelper.formatActionable('⏳', 'Pratica in fase di valutazione.', 'Hai già inviato la tua candidatura testuale. Attendi che lo staff la valuti prima di tentare nuovamente.')
+                    });
+                } else if (existingApp.status === 'ACCEPTED' || existingApp.status === 'WAITING_VOICE') {
+                    return interaction.editReply({ 
+                        content: ErrorHelper.formatActionable('✅', 'Fase scritta completata!', 'Hai già superato la parte scritta della Whitelist. Dirigiti nell\'apposito canale vocale d\'attesa per il colloquio orale.')
                     });
                 }
             }

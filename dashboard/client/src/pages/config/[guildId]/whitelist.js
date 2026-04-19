@@ -131,6 +131,7 @@ export default function WhitelistConfig() {
     { key: 'review', label: 'Revisione Finale', group: 'Whitelist' },
     { key: 'dm_accepted', label: 'Accettato (DM)', group: 'Feedback' },
     { key: 'dm_rejected', label: 'Rifiutato (DM)', group: 'Feedback' },
+    { key: 'dm_voice_rejected', label: 'Rifiutato Orale (DM)', group: 'Moduli Orale' },
     { key: 'voice_guide', label: 'Guida Staff (Vocale)', group: 'Moduli Orale' },
     { key: 'voice_waiting', label: 'Attesa (DM)', group: 'Moduli Orale' }
   ];
@@ -235,6 +236,23 @@ export default function WhitelistConfig() {
                                 </div>
                             </div>
                         </section>
+
+                        <section className="card section-card" style={{ marginTop: '24px' }}>
+                            <div className="align-center" style={{ marginBottom: '20px' }}>
+                                <ShieldCheck size={18} color="var(--primary)" />
+                                <h3>Automazioni Fase Scritta</h3>
+                            </div>
+                            <div className="fields-grid-v">
+                                <div className="field-box">
+                                    <label className="text-label">Ruoli da Aggiungere (Prova Superata)</label>
+                                    <DiscordSelector type="role" multiple={true} options={roles} value={config.rolesToAddOnTextPass || []} onChange={val => setConfig({...config, rolesToAddOnTextPass: val})} />
+                                </div>
+                                <div className="field-box" style={{ marginTop: '16px' }}>
+                                    <label className="text-label">Ruoli da Rimuovere (Prova Superata)</label>
+                                    <DiscordSelector type="role" multiple={true} options={roles} value={config.rolesToRemoveOnTextPass || []} onChange={val => setConfig({...config, rolesToRemoveOnTextPass: val})} />
+                                </div>
+                            </div>
+                        </section>
                     </div>
 
                     <div className="grid-right">
@@ -306,7 +324,7 @@ export default function WhitelistConfig() {
                         <EmbedEditor 
                             embed={config.embeds?.[activeEmbedKey] || {}} 
                             onChange={(data) => setNested(`embeds.${activeEmbedKey}`, data)}
-                            variables={['user', 'guild', 'time_limit', 'total_questions', 'reason', 'app_id', 'checklist']}
+                            variables={['user', 'guild', 'time_limit', 'total_questions', 'reason', 'app_id', 'recap']}
                         />
                     </div>
                 </div>
@@ -334,28 +352,19 @@ export default function WhitelistConfig() {
                         </section>
 
                         <section className="card section-card" style={{ marginTop: '24px' }}>
-                            <div className="section-header">
-                                <div className="align-center">
-                                    <ListChecks size={18} color="var(--primary)" />
-                                    <h3>Intervista Checklist</h3>
-                                </div>
-                                <button onClick={() => setNested('voiceSettings.interviewChecklist', [...(config.voiceSettings.interviewChecklist || []), ''])} className="btn-outline">
-                                    <Plus size={14} /> Nuovo Punto
-                                </button>
+                            <div className="align-center" style={{ marginBottom: '24px' }}>
+                                <ShieldCheck size={18} color="var(--primary)" />
+                                <h3>Automazioni Esito</h3>
                             </div>
-                            <div className="checklist-grid" style={{ marginTop: '16px' }}>
-                                {config.voiceSettings?.interviewChecklist?.map((item, i) => (
-                                    <div key={i} className="checklist-row">
-                                        <input className="input" value={item} onChange={e => {
-                                            const list = [...config.voiceSettings.interviewChecklist];
-                                            list[i] = e.target.value;
-                                            setNested('voiceSettings.interviewChecklist', list);
-                                        }} />
-                                        <button onClick={() => setNested('voiceSettings.interviewChecklist', config.voiceSettings.interviewChecklist.filter((_, idx) => idx !== i))} className="btn-icon-danger">
-                                            <Trash2 size={14} />
-                                        </button>
-                                    </div>
-                                ))}
+                            <div className="fields-grid-v">
+                                <div className="field-box">
+                                    <label className="text-label">Ruoli da Aggiungere (Accettato)</label>
+                                    <DiscordSelector type="role" multiple={true} options={roles} value={config.voiceSettings?.rolesToAdd || []} onChange={val => setNested('voiceSettings.rolesToAdd', val)} />
+                                </div>
+                                <div className="field-box" style={{ marginTop: '16px' }}>
+                                    <label className="text-label">Ruoli da Rimuovere (Accettato)</label>
+                                    <DiscordSelector type="role" multiple={true} options={roles} value={config.voiceSettings?.rolesToRemove || []} onChange={val => setNested('voiceSettings.rolesToRemove', val)} />
+                                </div>
                             </div>
                         </section>
                     </div>
@@ -369,6 +378,15 @@ export default function WhitelistConfig() {
                                     <input type="checkbox" checked={config.voiceSettings?.pingStaffOnJoin} onChange={e => setNested('voiceSettings.pingStaffOnJoin', e.target.checked)} />
                                     <span className="slider"></span>
                                 </label>
+                            </div>
+                         </div>
+
+                         <div className="card section-card" style={{ marginTop: '24px' }}>
+                            <h3 className="section-title align-center" style={{ marginBottom: '16px' }}><Clock size={16} /> Penalità</h3>
+                            <div className="field-box">
+                                <label className="text-label">Cooldown Rifiuto (Ore)</label>
+                                <input type="number" className="input" value={config.voiceSettings?.rejectionCooldown || 0} onChange={e => setNested('voiceSettings.rejectionCooldown', parseInt(e.target.value) || 0)} />
+                                <p className="text-dim" style={{ fontSize: '0.75rem', marginTop: '4px' }}>Tempo di attesa prima di poter ripetere il colloquio orale.</p>
                             </div>
                          </div>
                     </div>
@@ -406,7 +424,7 @@ export default function WhitelistConfig() {
             .btn-icon-danger { background: rgba(244, 63, 94, 0.1); border: none; color: var(--error); padding: 8px; border-radius: 8px; cursor: pointer; transition: 0.2s; }
             .btn-icon-danger:hover { background: var(--error); color: white; }
 
-            .editor-layout-modern { display: grid; grid-template-columns: 240px 1fr; padding: 0 !important; overflow: hidden; border-radius: 16px; }
+            .editor-layout-modern { display: grid; grid-template-columns: 240px 1fr; padding: 0 !important; border-radius: 16px; }
             .editor-sidebar-minimal { background: rgba(0,0,0,0.1); padding: 20px; border-right: 1px solid var(--border); display: flex; flex-direction: column; gap: 6px; }
             .editor-tab { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; background: transparent; border: 1px solid transparent; color: var(--text-muted); border-radius: 10px; cursor: pointer; text-align: left; transition: 0.2s; font-size: 0.85rem; font-weight: 600; }
             .editor-tab:hover { color: white; background: rgba(255,255,255,0.03); }

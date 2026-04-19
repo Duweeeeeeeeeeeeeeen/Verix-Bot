@@ -22,6 +22,25 @@ export default function EmbedPreview({ data, isMobile = false }) {
     bot_tag_bg: '#5865f2'
   };
 
+  /**
+   * Resolves semantic color names to hex codes
+   */
+  const resolveColor = (color) => {
+    if (!color) return '#1e1f22'; // Discord fallback
+    if (color.startsWith('#')) return color;
+    
+    // Semantic naming mapping
+    const mapping = {
+      'primary': '#818cf8',
+      'success': '#10b981',
+      'error': '#f43f5e',
+      'warning': '#f59e0b',
+      'info': '#3b82f6'
+    };
+
+    return mapping[color.toLowerCase()] || color;
+  };
+
   return (
     <div className={`discord-preview ${isMobile ? 'mobile-view' : ''}`} style={{
       background: colors.bg_message,
@@ -73,11 +92,11 @@ export default function EmbedPreview({ data, isMobile = false }) {
                 }}>✓ APP</span>
                 <span style={{ color: colors.text_muted, fontSize: '0.75rem' }}>Oggi alle {new Date().getHours()}:{new Date().getMinutes().toString().padStart(2, '0')}</span>
             </div>
-
+ 
             {/* The Embed Skeleton */}
             <div className="embed-container" style={{
                 background: colors.bg_embed,
-                borderLeft: `4px solid ${data.color || '#1e1f22'}`,
+                borderLeft: `4px solid ${resolveColor(data.color)}`,
                 borderRadius: '4px',
                 padding: '12px 16px',
                 marginTop: '8px',

@@ -26,6 +26,8 @@ const whitelistConfigSchema = new mongoose.Schema({
     cooldown: { type: Number, default: 24 }, // Hours
     cooldownEnabled: { type: Boolean, default: true },
     mode: { type: String, enum: ['TEXT', 'VOICE', 'HYBRID'], default: 'TEXT' },
+    rolesToAddOnTextPass: { type: [String], default: [] },
+    rolesToRemoveOnTextPass: { type: [String], default: [] },
     voiceSettings: {
         joinChannelId: { type: String, default: null },
         categoryId: { type: String, default: null },
@@ -38,7 +40,9 @@ const whitelistConfigSchema = new mongoose.Schema({
         dashboardMsgId: { type: String, default: null },
         pingStaffOnJoin: { type: Boolean, default: false },
         recentActionsCount: { type: Number, default: 3 },
-        interviewChecklist: { type: [String], default: ['Verifica Età', 'Coerenza Background', 'Conoscenza Regolamento'] },
+        rejectionCooldown: { type: Number, default: 24 }, // Hours
+        rolesToAdd: { type: [String], default: [] },
+        rolesToRemove: { type: [String], default: [] },
         voiceMessages: {
             cooldown: { type: String, default: '⚠️ Hai provato a unirti troppo velocemente. Attendi qualche minuto prima di riprovare.' },
             queueFull: { type: String, default: '⏳ Tutti gli uffici sono occupati. Sei in coda. Verrai spostato automaticamente appena disponibile.' },
@@ -208,11 +212,23 @@ const whitelistConfigSchema = new mongoose.Schema({
         voice_guide: {
             enabled: { type: Boolean, default: true },
             title: { type: String, default: '📝 Guida Colloquio RP' },
-            description: { type: String, default: 'Assicurati di coprire i seguenti punti durante l\'intervista:\n\n**Checklist:**\n{checklist}\n\n*Utilizza i pulsanti qui sotto per gestire l\'esito della sessione.*' },
+            description: { type: String, default: 'Benvenuto all\'audizione. Usa i pulsanti sottostanti per gestire l\'esito della sessione.' },
             color: { type: String, default: 'primary' },
             image: { type: String, default: null },
             thumbnail: { type: String, default: null },
-            footer: { type: String, default: 'Sistema Voice Whitelist Professional' }
+            footer: { type: String, default: 'Sistema Voice Whitelist Professional' },
+            fields: { type: [Object], default: [
+                { name: '⏱️ Tempo Trascorso', value: '{start_time}', inline: true },
+                { name: '✅ Checklist', value: '{checklist}', inline: false }
+            ]}
+        },
+        dm_voice_rejected: {
+            enabled: { type: Boolean, default: true },
+            title: { type: String, default: '❌ Esito Audizione: NON IDONEO' },
+            description: { type: String, default: 'Ci dispiace {user}, la commissione di {guild} ha valutato il tuo colloquio orale come non idoneo.\n\n**Motivazione:**\n>>> {reason}\n\n**PROSSIMA DISPONIBILITÀ:**\nPotrai ripresentarti per un nuovo colloquio tra **{cooldown} ore**.' },
+            color: { type: String, default: 'error' },
+            image: { type: String, default: null },
+            thumbnail: { type: String, default: null }
         }
     }
 });

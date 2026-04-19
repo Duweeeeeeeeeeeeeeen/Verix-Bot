@@ -61,20 +61,30 @@ export default {
 
                 // Flow Validation
                 const reasons = [];
+                const textApp = await WhitelistApp.findOne({ 
+                    userId: member.id, 
+                    guildId: guild.id, 
+                    status: { $in: ['ACCEPTED', 'WAITING_VOICE'] } 
+                });
+
                 if (config.flowRequirements.requireTextWL) {
-                    // In Hybrid mode, we now expect 'WAITING_VOICE' after text approval.
-                    // We also allow 'ACCEPTED' for backwards compatibility.
-                    const textApp = await WhitelistApp.findOne({ 
-                        userId: member.id, 
-                        guildId: guild.id, 
-                        status: { $in: ['ACCEPTED', 'WAITING_VOICE'] } 
-                    });
-                    
                     if (!textApp) {
                         logger.warn(`[VOICE-DEBUG] User ${member.user.tag} rejected: No accepted/waiting text application found.`);
                         reasons.push('- Whitelist Testuale non completata o in attesa di approvazione.');
                     }
                 }
+
+                // 2. Voice Rejection Cooldown Check
+                if (textApp && textApp.lastVoiceRejectionAt && config.voiceSettings.rejectionCooldown > 0) {
+                    const cooldownMs = config.voiceSettings.rejectionCooldown * 60 * 60 * 1000;
+                    const timePassed = Date.now() - textApp.lastVoiceRejectionAt.getTime();
+                    
+                    if (timePassed < cooldownMs) {
+                        const remainingHours = Math.ceil((cooldownMs - timePassed) / (60 * 60 * 1000));
+                        reasons.push(`- Hai fallito l'ultimo colloquio vocale. Potrai riprovare tra circa **${remainingHours} ore**.`);
+                    }
+                }
+
                 if (config.flowRequirements.requireBackground) {
                     const bgApp = await Background.findOne({ userId: member.id, guildId: guild.id, status: 'ACCEPTED' });
                     if (!bgApp) {
@@ -135,22 +145,30 @@ export default {
         // 2. LEAVE LOGIC (Auto Delete & Next in Queue)
         if (oldState.channelId && oldState.channelId !== newState.channelId) {
             const oldChannel = oldState.channel;
-            if (oldChannel && oldChannel.name.startsWith('wl-') && oldChannel.members.size === 0) {
-                // Delete Session Record
-                const session = await VoiceQueue.findOne({ voiceChannelId: oldChannel.id, status: 'ACTIVE' });
+            // Check if the old channel was an interview channel when it becomes empty
+            if (oldChannel && oldChannel.members.size === 0) {
+                // Find session regardless of status
+                const session = await VoiceQueue.findOne({ voiceChannelId: oldChannel.id });
                 if (session) {
-                    session.status = 'COMPLETED';
-                    await session.save();
-                }
+                    let statusChanged = false;
+                    if (session.status === 'ACTIVE') {
+                        session.status = 'COMPLETED';
+                        statusChanged = true;
+                    }
 
-                if (config.voiceSettings.autoDelete) {
-                    session.deletionScheduledAt = new Date(Date.now() + 5000);
-                    await session.save();
+                    if (config.voiceSettings.autoDelete && !session.deletionScheduledAt) {
+                        session.deletionScheduledAt = new Date(Date.now() + 5000);
+                        statusChanged = true;
+                    }
+                    
+                    if (statusChanged) {
+                        await session.save();
+                    }
+                    
+                    // Process queue and update dashboard immediately
+                    await processQueue(guild, config, client);
+                    await updateDashboard(guild, client);
                 }
-                
-                // Process queue and update dashboard immediately
-                await processQueue(guild, config, client);
-                await updateDashboard(guild, client);
             }
         }
     },
@@ -213,12 +231,44 @@ async function startVoiceSession(member, guild, config, client) {
         { upsert: true }
     );
 
+    // 3. Written Test Recap
+    let recap = '*Nessuna prova scritta trovata.*';
+    try {
+        const lastApp = await WhitelistApp.findOne({
+            userId: member.id,
+            guildId: guild.id,
+            status: { $in: ['ACCEPTED', 'WAITING_VOICE', 'SUBMITTED'] }
+        }).sort({ submittedAt: -1 });
+
+        if (lastApp && lastApp.answers && lastApp.answers.length > 0) {
+            recap = lastApp.answers.map((a, i) => `**${i + 1}. ${a.question}**\n> ${a.answer}`).join('\n\n');
+            
+            // Limit length for Embed constraints
+            if (recap.length > 3800) {
+                recap = recap.substring(0, 3797) + '...';
+            }
+        }
+    } catch (err) {
+        logger.error('Error fetching written recap:', err);
+    }
+
     // Send Control Panel in the Temp VC (Text-in-Voice)
-    const checklist = (config.voiceSettings.interviewChecklist || []).map(i => `◽ ${i}`).join('\n');
     const controlEmbed = buildEmbed(config.embeds.voice_guide, {
         user: member.user,
-        checklist: checklist || '*Nessuna checklist configurata*'
+        start_time: `<t:${Math.floor(Date.now() / 1000)}:R>`
     }, config);
+
+    if (controlEmbed) {
+        // Enforce a completely clean guide embed overriding whatever old broken configurations are in the DB
+        controlEmbed.setDescription(null);
+        controlEmbed.setFields([]); // Remove all old broken fields
+        controlEmbed.addFields({ name: '⏱️ Inizio Colloquio', value: `<t:${Math.floor(Date.now() / 1000)}:R>` });
+    }
+
+    const recapEmbed = new EmbedBuilder()
+        .setTitle(`📝 Dossier Prova Scritta di ${member.user.username}`)
+        .setDescription(recap)
+        .setColor(config.colors?.primary || '#5865F2');
 
     const buttons = config.voiceSettings.voiceButtons || {};
     const controlRow = new ActionRowBuilder().addComponents(
@@ -240,7 +290,7 @@ async function startVoiceSession(member, guild, config, client) {
     );
 
     if (controlEmbed) {
-        await tempChannel.send({ embeds: [controlEmbed], components: [controlRow] });
+        await tempChannel.send({ embeds: [controlEmbed, recapEmbed], components: [controlRow] });
     }
 
 

@@ -1,4 +1,4 @@
-import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
+import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, AttachmentBuilder } from 'discord.js';
 import PhotoContestConfig from '../../../models/PhotoContestConfig.js';
 import PhotoContest from '../../../models/PhotoContest.js';
 import PhotoSubmission from '../../../models/PhotoSubmission.js';
@@ -45,35 +45,42 @@ export default {
                 return;
             }
 
-            // Create submission embed with Live Timer (relative Discord timestamp)
+            const imgName = attachment.name || 'photo.png';
+            const file = new AttachmentBuilder(attachment.url, { name: imgName });
+
             const submissionEmbed = new EmbedBuilder()
                 .setAuthor({ name: `Inviato da ${message.author.username}`, iconURL: message.author.displayAvatarURL() })
                 .setTitle(`Tema: ${activeContest.theme || 'Libero'}`)
-                .setImage(attachment.url)
+                .setImage(`attachment://${imgName}`)
                 .setDescription(`📊 **Punteggio:** \`0 pt\`\n\n🏁 **Scadenza:** <t:${Math.floor(activeContest.endTime.getTime() / 1000)}:R>`)
                 .setColor(config.embedSettings.color)
                 .setFooter({ text: 'Usa i bottoni qui sotto per votare!' })
                 .setTimestamp();
 
+            if (message.content && message.content.trim().length > 0) {
+                submissionEmbed.addFields({ name: '📝 Descrizione', value: message.content.trim().substring(0, 1024) });
+            }
+
             const row = new ActionRowBuilder()
                 .addComponents(
                     new ButtonBuilder()
                         .setCustomId(`photo_vote_up_${activeContest._id}`)
-                        .setLabel('👍 Upvote')
+                        .setEmoji('👍')
                         .setStyle(ButtonStyle.Success),
                     new ButtonBuilder()
                         .setCustomId(`photo_vote_down_${activeContest._id}`)
-                        .setLabel('👎 Downvote')
+                        .setEmoji('👎')
                         .setStyle(ButtonStyle.Danger)
                 );
 
-            const botMsg = await message.channel.send({ embeds: [submissionEmbed], components: [row] });
+            const botMsg = await message.channel.send({ embeds: [submissionEmbed], components: [row], files: [file] });
+            const botAttachment = botMsg.embeds[0]?.image?.url || botMsg.attachments.first()?.url || attachment.url;
 
             await PhotoSubmission.create({
                 contestId: activeContest._id,
                 guildId: message.guildId,
                 userId: message.author.id,
-                imageUrl: attachment.url,
+                imageUrl: botAttachment,
                 messageId: botMsg.id
             });
 

@@ -299,6 +299,8 @@ h1, h2, h3, h4 {
 
 /* Modern Card System */
 .card {
+  position: relative;
+  z-index: 1;
   background: var(--bg-card);
   backdrop-filter: blur(12px);
   border-radius: 20px;
@@ -306,6 +308,10 @@ h1, h2, h3, h4 {
   border: 1px solid var(--border);
   transition: all var(--transition-normal);
   box-shadow: var(--shadow-md);
+}
+
+.card:has(.is-open) {
+  z-index: 100;
 }
 
 .card:hover {

@@ -3,6 +3,7 @@ import { discordId, colorHex } from './common.js';
 
 export const ticketSchema = z.object({
     enabled: z.boolean().optional(),
+    closeMode: z.enum(['MOVE', 'DELETE']).optional(),
     panelChannelId: discordId.or(z.literal('')).optional().nullable(),
     categoryOpenId: discordId.or(z.literal('')).optional().nullable(),
     categoryClosedId: discordId.or(z.literal('')).optional().nullable(),

@@ -69,15 +69,23 @@ export default {
 
             // Rebuild the guide embed to refresh the timer/placeholder if needed
             const member = await interaction.guild.members.fetch(userId).catch(() => null);
-            const checklist = (config.voiceSettings.interviewChecklist || []).map(i => `◽ ${i}`).join('\n');
             const newEmbed = buildEmbed(config.embeds.voice_guide, {
                 user: member?.user || 'Utente',
-                checklist: checklist || '*Nessuna checklist*',
                 start_time: `<t:${Math.floor(now.getTime() / 1000)}:R>`
             }, config);
 
             if (newEmbed) {
-                await interaction.update({ embeds: [newEmbed] });
+                // Enforce a completely clean guide embed overriding whatever old broken configurations are in the DB
+                newEmbed.setDescription(null);
+                newEmbed.setFields([]); // Remove all old broken fields
+                newEmbed.addFields({ name: '⏱️ Inizio Colloquio', value: `<t:${Math.floor(now.getTime() / 1000)}:R>` });
+                
+                const oldEmbeds = interaction.message.embeds;
+                const updatedEmbeds = [newEmbed];
+                if (oldEmbeds.length > 1) {
+                    updatedEmbeds.push(oldEmbeds[1]); // Retain the recap embed
+                }
+                await interaction.update({ embeds: updatedEmbeds });
             } else {
                 await interaction.update({ content: `⏱️ Timer Riavviato: <t:${Math.floor(now.getTime() / 1000)}:R>` });
             }
@@ -116,6 +124,20 @@ export default {
                         guild: interaction.guild.name
                     }, config);
                     if (dmEmbed) await user.send({ embeds: [dmEmbed] }).catch(() => {});
+                }
+
+                // --- Role Management ---
+                const member = await interaction.guild.members.fetch(userId).catch(() => null);
+                if (member) {
+                    const toAdd = config.voiceSettings.rolesToAdd || [];
+                    const toRemove = config.voiceSettings.rolesToRemove || [];
+                    
+                    try {
+                        if (toAdd.length > 0) await member.roles.add(toAdd, 'Whitelist Vocale Superata');
+                        if (toRemove.length > 0) await member.roles.remove(toRemove, 'Whitelist Vocale Superata (Rimozione Ruoli Precedenti)');
+                    } catch (roleError) {
+                        logger.error(`Error managing roles for ${member.user.tag}:`, roleError);
+                    }
                 }
 
                 // Log Audit DB
@@ -161,13 +183,20 @@ export default {
             const config = await WhitelistConfig.findOne({ guildId: interaction.guild.id });
             const user = await client.users.fetch(userId).catch(() => null);
 
-            // Notifica Utente
-            if (user && config.embeds.dm_rejected) {
-                const dmEmbed = buildEmbed(config.embeds.dm_rejected, {
+            // Update App Cooldown
+            await WhitelistApp.findOneAndUpdate(
+                { userId: userId, guildId: interaction.guild.id, status: { $in: ['SUBMITTED', 'WAITING_VOICE', 'ACCEPTED'] } },
+                { lastVoiceRejectionAt: new Date() }
+            );
+
+            // Notifica Utente (Voice Specific)
+            if (user && config.embeds.dm_voice_rejected?.enabled) {
+                const dmEmbed = buildEmbed(config.embeds.dm_voice_rejected, {
                     user: user.username,
                     guild: interaction.guild.name,
-                    reason: reason
-                });
+                    reason: reason,
+                    cooldown: config.voiceSettings.rejectionCooldown || 24
+                }, config);
                 if (dmEmbed) await user.send({ embeds: [dmEmbed] }).catch(() => {});
             }
 

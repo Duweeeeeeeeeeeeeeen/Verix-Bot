@@ -78,7 +78,7 @@ export default function DiscordSelector({
   };
 
   return (
-    <div className="selector-container" ref={containerRef}>
+    <div className={`selector-container ${isOpen ? 'is-open' : ''}`} ref={containerRef}>
       <div 
         className={`selector-trigger ${isOpen ? 'active' : ''} ${error ? 'has-error' : ''}`}
         onClick={() => setIsOpen(!isOpen)}
@@ -174,6 +174,11 @@ export default function DiscordSelector({
           position: relative;
           width: 100%;
           user-select: none;
+          z-index: 10;
+        }
+
+        .selector-container.is-open {
+          z-index: 1010;
         }
 
         .selector-trigger {
@@ -293,10 +298,12 @@ export default function DiscordSelector({
           left: 0;
           right: 0;
           z-index: 1000;
+          background: #0b0e1a; /* Solid background base */
+          backdrop-filter: blur(20px);
           border-radius: 16px;
-          border: 1px solid var(--border-light);
+          border: 1px solid var(--border-strong);
           overflow: hidden;
-          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
         }
 
         .search-box {

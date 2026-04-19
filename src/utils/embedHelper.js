@@ -85,7 +85,10 @@ export function replacePlaceholders(text, placeholders) {
         voice_channel: placeholders.voice_channel || '',
         server: placeholders.server || '',
         players: placeholders.players || '',
-        maxPlayers: placeholders.maxPlayers || ''
+        maxPlayers: placeholders.maxPlayers || '',
+        recap: placeholders.recap || '',
+        cooldown: placeholders.cooldown || '',
+        checklist: placeholders.checklist || ''
     };
 
     return placeholderHelper.replace(text, vars);
