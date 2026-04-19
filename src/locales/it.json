@@ -1,0 +1,12 @@
+{
+  "verify.success_title": "Verifica Completata",
+  "verify.success_desc": "Benvenuto nel server, {user}! La tua verifica è stata completata con successo.",
+  "verify.error_title": "Errore",
+  "verify.error_desc": "Si è verificato un errore durante l'assegnamento dei ruoli.",
+  "verify.already_verified": "Sei già stato verificato in questo server.",
+  "verify.missing_roles": "Errore interno. Segnala allo staff che i ruoli di verifica non sono impostati.",
+  "general.error": "Qualcosa è andato storno. Riprova più tardi.",
+  "general.no_permission": "Non hai i permessi per questa azione.",
+  "fivem.online_title": "Server ONLINE",
+  "fivem.offline_title": "Server OFFLINE"
+}

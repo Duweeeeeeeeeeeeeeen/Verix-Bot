@@ -1,0 +1,69 @@
+import mongoose from 'mongoose';
+
+const photoContestConfigSchema = new mongoose.Schema({
+    guildId: {
+        type: String,
+        required: true,
+        unique: true
+    },
+    enabled: {
+        type: Boolean,
+        default: false
+    },
+    channelId: {
+        type: String,
+        default: ''
+    },
+    prizeRoleId: {
+        type: String,
+        default: ''
+    },
+    interval: {
+        type: Number,
+        default: 168 // Default 1 week (in hours)
+    },
+    duration: {
+        type: Number,
+        default: 24 // Default 24 hours (in hours)
+    },
+    embedSettings: {
+        title: {
+            type: String,
+            default: '📸 Photo Contest'
+        },
+        description: {
+            type: String,
+            default: 'Invia la tua foto migliore in questo canale per partecipare!'
+        },
+        color: {
+            type: String,
+            default: '#FF00EA'
+        }
+    },
+    lastWinnerId: {
+        type: String,
+        default: null
+    },
+    nextContestAt: {
+        type: Date,
+        default: null
+    },
+    hallOfFameChannelId: {
+        type: String,
+        default: ''
+    },
+    automaticThemes: {
+        type: Boolean,
+        default: false
+    },
+    themesList: {
+        type: [String],
+        default: ['Natura', 'Architettura', 'Tramonti', 'Cibo', 'Minimalismo', 'Cyberpunk', 'Ritratti', 'Animali']
+    },
+    enableNotifications: {
+        type: Boolean,
+        default: true
+    }
+});
+
+export default mongoose.model('PhotoContestConfig', photoContestConfigSchema);

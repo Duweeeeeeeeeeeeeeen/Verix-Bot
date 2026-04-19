@@ -1,0 +1,66 @@
+import { Events, EmbedBuilder } from 'discord.js';
+import Ticket from '../../../models/Ticket.js';
+import TicketConfig from '../../../models/TicketConfig.js';
+import { generateTranscription } from '../utils/ticketHelper.js';
+import logger from '../../../utils/logger.js';
+
+export default {
+    name: Events.ClientReady,
+    once: true,
+    async execute(client) {
+        logger.info('Inactivity Checker started for tickets...');
+
+        // Check every 30 minutes
+        setInterval(async () => {
+            const openTickets = await Ticket.find({ status: { $ne: 'CLOSED' } });
+
+            for (const ticket of openTickets) {
+                const config = await TicketConfig.findOne({ guildId: ticket.guildId });
+                if (!config) continue;
+
+                const timeoutMs = (config.inactivityTimeout || 24) * 60 * 60 * 1000;
+                const inactiveTime = Date.now() - new Date(ticket.lastActivityAt).getTime();
+
+                if (inactiveTime > timeoutMs) {
+                    const guild = client.guilds.cache.get(ticket.guildId);
+                    if (!guild) continue;
+
+                    const channel = guild.channels.cache.get(ticket.channelId);
+                    if (!channel) {
+                        // Channel deleted manually? Mark as closed.
+                        ticket.status = 'CLOSED';
+                        await ticket.save();
+                        continue;
+                    }
+
+                    logger.info(`Auto-closing inactive ticket: ${channel.name}`);
+
+                    try {
+                        const transcript = await generateTranscription(channel, ticket);
+                        const logChannel = guild.channels.cache.get(config.logChannelId);
+
+                        if (logChannel) {
+                            const logEmbed = new EmbedBuilder()
+                                .setTitle('🛡️ Auto-Chiusura Inattività')
+                                .setDescription(`Il ticket di <@${ticket.userId}> è stato chiuso per inattività (${config.inactivityTimeout}h).`)
+                                .setColor('#ffa502')
+                                .setTimestamp();
+                            await logChannel.send({ embeds: [logEmbed], files: [transcript] });
+                        }
+
+                        await channel.send('⚠️ **Questo ticket è stato chiuso automaticamente per inattività.**');
+                        
+                        ticket.status = 'CLOSED';
+                        ticket.closedAt = new Date();
+                        ticket.closedBy = 'SYSTEM_INACTIVITY';
+                        await ticket.save();
+
+                        setTimeout(() => channel.delete().catch(() => {}), 10000);
+                    } catch (error) {
+                        logger.error(`Error auto-closing ticket ${ticket.channelId}:`, error);
+                    }
+                }
+            }
+        }, 30 * 60 * 1000); 
+    },
+};

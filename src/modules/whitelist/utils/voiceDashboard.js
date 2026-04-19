@@ -1,0 +1,111 @@
+import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder } from 'discord.js';
+import WhitelistConfig from '../../../models/WhitelistConfig.js';
+import VoiceQueue from '../../../models/VoiceQueue.js';
+import WhitelistAudit from '../../../models/WhitelistAudit.js';
+import logger from '../../../utils/logger.js';
+
+/**
+ * Generates the Voice Whitelist Dashboard Embed and Components.
+ */
+export async function getDashboard(guildId) {
+    const config = await WhitelistConfig.findOne({ guildId });
+    if (!config) return null;
+
+    const activeSessions = await VoiceQueue.find({ guildId, status: 'ACTIVE' }).sort({ joinedAt: 1 });
+    const waitingQueue = await VoiceQueue.find({ guildId, status: 'WAITING' }).sort({ joinedAt: 1 });
+    const recentAudits = await WhitelistAudit.find({ guildId, type: 'VOICE' }).sort({ timestamp: -1 }).limit(config.voiceSettings.recentActionsCount || 3);
+
+    const status = config.voiceSettings.paused ? '⏸️ PAUSATO' : '🟢 ATTIVO';
+    const color = config.voiceSettings.paused ? '#ff4757' : '#2ecc71';
+
+    const embed = new EmbedBuilder()
+        .setTitle('🎙️ Elite Voice Whitelist Control Center')
+        .setDescription(`**Stato**: ${status}\n**Uffici**: \`${activeSessions.length} / ${config.voiceSettings.maxConcurrent}\` | **In Coda**: \`${waitingQueue.length}\``)
+        .setColor(color)
+        .setTimestamp();
+
+    // Active Sessions
+    if (activeSessions.length > 0) {
+        const sessionList = activeSessions.map((s, i) => {
+            const time = s.staffJoinedAt ? `<t:${Math.floor(s.staffJoinedAt.getTime() / 1000)}:R>` : '⏳ In attesa staff';
+            return `**${i + 1}.** <@${s.userId}> | Staff: ${s.staffId ? `<@${s.staffId}>` : '❌'} | *${time}*`;
+        }).join('\n');
+        embed.addFields({ name: `📋 Sessioni Attive`, value: sessionList || 'Nessuna', inline: false });
+    }
+
+    // Queue
+    if (waitingQueue.length > 0) {
+        const queueList = waitingQueue.slice(0, 5).map((s, i) => {
+            return `**#${i + 1}.** <@${s.userId}> ${s.isVip ? '💎' : ''}`;
+        }).join('\n');
+        embed.addFields({ name: `⏳ Prossimi in Coda`, value: queueList || 'Nessuno', inline: true });
+    }
+
+    // Recent Activity
+    if (recentAudits.length > 0) {
+        const history = recentAudits.map(a => {
+            const icon = a.action === 'ACCEPTED' ? '✅' : '❌';
+            return `${icon} <@${a.userId}> da <@${a.staffId}> (<t:${Math.floor(a.timestamp.getTime() / 1000)}:R>)`;
+        }).join('\n');
+        embed.addFields({ name: '📜 Ultime Azioni', value: history || 'Nessuna', inline: false });
+    }
+
+    const rows = [];
+
+    // Row 1: Dashboard Controls
+    const btnRow = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+            .setCustomId('dashboard_refresh')
+            .setEmoji('🔄')
+            .setLabel('Aggiorna')
+            .setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder()
+            .setCustomId(config.voiceSettings.paused ? 'dashboard_resume' : 'dashboard_pause')
+            .setLabel(config.voiceSettings.paused ? 'Riprendi' : 'Pausa')
+            .setEmoji(config.voiceSettings.paused ? '▶️' : '⏸️')
+            .setStyle(config.voiceSettings.paused ? ButtonStyle.Success : ButtonStyle.Danger),
+        new ButtonBuilder()
+            .setCustomId('dashboard_skip')
+            .setLabel('Salta Prossimo')
+            .setEmoji('⏭️')
+            .setStyle(ButtonStyle.Primary)
+    );
+    rows.push(btnRow);
+
+    // Row 2: Queue Selector (Move to Top)
+    if (waitingQueue.length > 0) {
+        const selector = new StringSelectMenuBuilder()
+            .setCustomId('promote_user_to_top')
+            .setPlaceholder('💎 Promuovi utente in testa alla coda...')
+            .addOptions(waitingQueue.slice(0, 25).map(s => ({
+                label: `Porta in testa: User ${s.userId}`, // We can't fetch username easily here, but we'll use ID
+                value: s.userId
+            })));
+        
+        rows.push(new ActionRowBuilder().addComponents(selector));
+    }
+
+    return { embeds: [embed], components: rows };
+}
+
+/**
+ * Updates the existing dashboard message or cleans up if deleted.
+ */
+export async function updateDashboard(guild, client) {
+    try {
+        const config = await WhitelistConfig.findOne({ guildId: guild.id });
+        if (!config || !config.voiceSettings.dashboardMsgId || !config.voiceSettings.dashboardChannelId) return;
+
+        const channel = guild.channels.cache.get(config.voiceSettings.dashboardChannelId);
+        if (!channel) return;
+
+        const { embeds, components } = await getDashboard(guild.id);
+        
+        const message = await channel.messages.fetch(config.voiceSettings.dashboardMsgId).catch(() => null);
+        if (message) {
+            await message.edit({ embeds, components });
+        }
+    } catch (error) {
+        logger.error('Error updating Voice Dashboard:', error);
+    }
+}

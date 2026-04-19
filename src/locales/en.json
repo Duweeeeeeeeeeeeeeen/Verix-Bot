@@ -1,0 +1,12 @@
+{
+  "verify.success_title": "Verification Complete",
+  "verify.success_desc": "Welcome to the server, {user}! Your verification was successfully completed.",
+  "verify.error_title": "Error",
+  "verify.error_desc": "An error occurred while granting roles.",
+  "verify.already_verified": "You have already been verified on this server.",
+  "verify.missing_roles": "Internal error. Please report to staff that verification roles are unconfigured.",
+  "general.error": "Something went wrong. Please try again later.",
+  "general.no_permission": "You do not have permission to perform this action.",
+  "fivem.online_title": "Server ONLINE",
+  "fivem.offline_title": "Server OFFLINE"
+}
