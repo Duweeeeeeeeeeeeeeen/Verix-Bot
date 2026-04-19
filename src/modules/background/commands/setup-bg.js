@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, PermissionFlagsBits, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 import BackgroundConfig from '../../../models/BackgroundConfig.js';
 import { buildEmbed } from '../../../utils/embedHelper.js';
 import Guild from '../../../models/Guild.js';
@@ -19,7 +19,7 @@ export default {
         // Module enablement check
         const guildData = await Guild.findOne({ guildId: interaction.guild.id });
         if (!guildData || !guildData.enabledModules.includes('background')) {
-            return interaction.reply({ content: '❌ Il modulo Background non è attivo su questo server. Attivalo con `/modules enable background`.', ephemeral: true });
+            return interaction.reply({ content: '❌ Il modulo Background non è attivo su questo server. Attivalo con `/modules enable background`.', flags: [MessageFlags.Ephemeral] });
         }
 
         const logChannel = interaction.options.getChannel('log_channel');
@@ -84,11 +84,11 @@ export default {
             config.panelMessageId = sentMessage.id;
             await config.save();
 
-            await interaction.reply({ content: `✅ Sistema Background configurato!\n- Logs: ${logChannel}\n- Pannello: ${panelChannel}`, ephemeral: true });
+            await interaction.reply({ content: `✅ Sistema Background configurato!\n- Logs: ${logChannel}\n- Pannello: ${panelChannel}`, flags: [MessageFlags.Ephemeral] });
 
         } catch (error) {
             console.error('Error in setup-bg:', error);
-            await interaction.reply({ content: 'Si è verificato un errore durante la configurazione.', ephemeral: true });
+            await interaction.reply({ content: 'Si è verificato un errore durante la configurazione.', flags: [MessageFlags.Ephemeral] });
         }
     },
 };

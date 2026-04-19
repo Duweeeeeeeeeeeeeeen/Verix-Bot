@@ -1,4 +1,4 @@
-import { Events, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, Events, MessageFlags } from 'discord.js';
 import WhitelistConfig from '../../../models/WhitelistConfig.js';
 import logger from '../../../utils/logger.js';
 
@@ -34,7 +34,7 @@ export default {
             if (!panelChannel) {
                 return interaction.reply({ 
                     content: '❌ Errore: Il canale del pannello non è più valido o il bot non ha accesso. Riesegui `/setup-wl`.', 
-                    ephemeral: true 
+                    flags: [MessageFlags.Ephemeral] 
                 });
             }
 
@@ -42,7 +42,7 @@ export default {
             if (!panelChannel.permissionsFor(interaction.guild.members.me).has('SendMessages')) {
                 return interaction.reply({ 
                     content: `❌ Il bot non ha i permessi per inviare messaggi nel canale <#${config.panelChannelId}>.`, 
-                    ephemeral: true 
+                    flags: [MessageFlags.Ephemeral] 
                 });
             }
 
@@ -60,33 +60,39 @@ export default {
                     .setStyle(ButtonStyle.Primary)
             );
 
-            // --- AUTO-CLEANUP OLD PANEL ---
-            if (config.panelMessageId && config.panelChannelId) {
-                try {
-                    const oldChannel = await interaction.guild.channels.fetch(config.panelChannelId).catch(() => null);
-                    if (oldChannel) {
-                        const oldMsg = await oldChannel.messages.fetch(config.panelMessageId).catch(() => null);
-                        if (oldMsg) await oldMsg.delete().catch(() => null);
-                    }
-                } catch (err) {
-                    logger.warn(`[Whitelist] Could not delete old panel for guild ${interaction.guildId}`);
+            // --- ROBUST BULK CLEANUP ---
+            try {
+                console.log(`[DEBUG_WL_BOT] Purging legacy panels in <#${config.panelChannelId}>...`);
+                const messages = await panelChannel.messages.fetch({ limit: 50 });
+                const legacy = messages.filter(m => 
+                    m.author.id === client.user.id && 
+                    m.components.some(row => row.components.some(c => 
+                        c.customId === 'start_wl' || m.content.toLowerCase().includes('whitelist')
+                    ))
+                );
+                for (const m of legacy.values()) {
+                    await m.delete().catch(() => null);
                 }
+            } catch (err) {
+                logger.warn(`[Whitelist] Bulk cleanup failed: ${err.message}`);
             }
 
             const sentMessage = await panelChannel.send({ embeds: [embed], components: [button] });
-
-            // Store new message ID
+            
+            // Store new message ID and current channel for next replacement
             config.panelMessageId = sentMessage.id;
+            config.lastPanelMessageId = sentMessage.id;
+            config.lastPanelChannelId = config.panelChannelId;
             await config.save();
 
-            await interaction.reply({ content: '✅ Pannello Whitelist configurato e inviato correttamente!', ephemeral: true });
+            await interaction.reply({ content: '✅ Pannello Whitelist configurato e inviato correttamente!', flags: [MessageFlags.Ephemeral] });
 
         } catch (error) {
             logger.error('Error in WL Modal Submit:', error);
             if (!interaction.replied && !interaction.deferred) {
                 await interaction.reply({ 
                     content: `❌ Errore durante il salvataggio: ${error.message || 'Errore interno'}`, 
-                    ephemeral: true 
+                    flags: [MessageFlags.Ephemeral] 
                 });
             }
         }

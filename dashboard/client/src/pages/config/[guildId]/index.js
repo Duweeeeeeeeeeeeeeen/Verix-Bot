@@ -21,7 +21,11 @@ import {
   Globe,
   ShieldAlert,
   Power,
-  UserPlus
+  UserPlus,
+  Layout as LayoutIcon,
+  ChevronRight,
+  TrendingUp,
+  Box
 } from 'lucide-react';
 
 export default function GuildHome() {
@@ -63,8 +67,7 @@ export default function GuildHome() {
   const toggleModule = async (moduleName, currentStatus) => {
     setUpdating(moduleName);
     try {
-      const endpoint = moduleName;
-      await api.request(`/config/${guildId}/${endpoint}`, {
+      await api.request(`/config/${guildId}/${moduleName}`, {
         method: 'POST',
         body: JSON.stringify({ enabled: !currentStatus })
       });
@@ -74,53 +77,20 @@ export default function GuildHome() {
           detail: { message: `Modulo ${moduleName.toUpperCase()} ${!currentStatus ? 'Attivato' : 'Disattivato'}`, type: 'success' } 
       }));
     } catch (error) {
-      // Global errorHandler takes care of failure toast if success: false
     } finally {
       setUpdating(null);
     }
   };
 
-  if (loading && !config) return (
-    <Layout guildId={guildId}>
-      <div className="animate">
-        <div style={{ marginBottom: '40px' }}>
-          <Skeleton width="300px" height="40px" style={{ marginBottom: '12px' }} />
-          <Skeleton width="500px" height="20px" />
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px', marginBottom: '48px' }}>
-          <Skeleton height="160px" style={{ borderRadius: '20px' }} />
-          <Skeleton height="160px" style={{ borderRadius: '20px' }} />
-          <Skeleton height="160px" style={{ borderRadius: '20px' }} />
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '32px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <Skeleton height="100px" style={{ borderRadius: '20px' }} />
-            <Skeleton height="100px" style={{ borderRadius: '20px' }} />
-          </div>
-          <Skeleton height="300px" style={{ borderRadius: '20px' }} />
-        </div>
-      </div>
-    </Layout>
-  );
+  if (loading && !config) return <Layout guildId={guildId}><Skeleton height="600px" /></Layout>;
 
   if (error) return (
     <Layout guildId={guildId}>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '60vh', gap: '24px', textAlign: 'center' }}>
-        <div style={{ padding: '20px', background: 'rgba(239, 68, 68, 0.1)', borderRadius: '50%', border: '2px solid var(--error)' }}>
-            <Zap size={48} color="var(--error)" />
-        </div>
-        <div>
-            <h2 style={{ fontSize: '1.8rem', fontWeight: '800', marginBottom: '8px' }}>Sistema Bloccato</h2>
-            <p style={{ color: 'var(--text-muted)', maxWidth: '400px' }}>Non siamo riusciti a caricare i dati: <br/><strong>{error}</strong></p>
-        </div>
-        <div style={{ display: 'flex', gap: '16px' }}>
-            <button onClick={fetchData} className="btn-primary" style={{ padding: '12px 24px' }}>
-                <RefreshCcw size={18} /> Riprova
-            </button>
-            <button onClick={() => router.push('/selector')} className="btn-outline" style={{ padding: '12px 24px' }}>
-                Torna al Selettore
-            </button>
-        </div>
+      <div className="error-container-p animate fade-in">
+        <Zap size={48} color="var(--error)" />
+        <h2>Connessione Fallita</h2>
+        <p>{error}</p>
+        <button onClick={fetchData} className="btn-primary">Riprova</button>
       </div>
     </Layout>
   );
@@ -128,361 +98,185 @@ export default function GuildHome() {
   return (
     <Layout guildId={guildId}>
       <div className="animate">
-        {/* Welcome Header */}
-        <header style={{ marginBottom: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-          <div>
-            <div className="align-center" style={{ color: 'var(--primary)', marginBottom: '8px' }}>
-                <Zap size={18} fill="currentColor" />
-                <span className="text-label" style={{ marginBottom: 0 }}>Centro operativo</span>
-            </div>
-            <h1 style={{ fontSize: '2.8rem', fontWeight: '900', marginBottom: '8px', letterSpacing: '-1.5px' }}>Dashboard Home</h1>
-            <p className="text-description" style={{ fontSize: '1.1rem' }}>Monitoraggio real-time e gestione moduli attivi.</p>
-          </div>
-          <button onClick={fetchData} className="btn-outline" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <RefreshCcw size={18} className={loading ? 'spin' : ''} /> Aggiorna Dati
-          </button>
+        
+        {/* Modern Header */}
+        <header className="module-header-v2">
+           <div className="header-info-p">
+              <div className="header-icon-p">
+                <Box size={24} />
+              </div>
+              <div className="header-text-p">
+                <h1>Dashboard Operativa</h1>
+                <p>Monitoraggio e gestione in tempo reale del bot per <b>{config.guildName || 'il tuo server'}</b>.</p>
+              </div>
+           </div>
+           <div className="header-actions-p">
+              <button onClick={fetchData} className="btn-outline-p">
+                <RefreshCcw size={16} className={loading ? 'spin' : ''} /> Aggiorna
+              </button>
+           </div>
         </header>
         
-        {/* Setup Wizard (Guided Onboarding) */}
+        {/* Guided Setup */}
         <OnboardingWizard config={config} guildId={guildId} />
  
-        {/* Dynamic Stats Grid */}
-        <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px', marginBottom: '48px' }}>
-           <div className="card stats-card" style={{ borderBottom: '4px solid var(--primary)' }}>
-              <div className="align-center" style={{ justifyContent: 'space-between' }}>
-                <div style={{ padding: '10px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '12px', display: 'flex' }}>
-                    <Ticket color="var(--primary)" size={22} />
-                </div>
-                <span className="badge badge-success">Live</span>
+        {/* Refined Stats Grid */}
+        <div className="stats-grid-p">
+           <div className="stat-card-v2">
+              <div className="stat-icon-v2 indigo">
+                <Ticket size={20} />
               </div>
-              <div className="stats-value">{stats.openTickets}</div>
-              <div className="text-label" style={{ textTransform: 'none', letterSpacing: 0 }}>Ticket di Supporto Aperti</div>
+              <div className="stat-data-v2">
+                <span className="stat-label-v2">Ticket Aperti</span>
+                <span className="stat-value-v2">{stats.openTickets}</span>
+              </div>
+              <TrendingUp size={16} className="stat-trend-v2" />
            </div>
 
-           <div className="card stats-card" style={{ borderBottom: '4px solid var(--accent)' }}>
-              <div className="align-center" style={{ justifyContent: 'space-between' }}>
-                <div style={{ padding: '10px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '12px', display: 'flex' }}>
-                    <Shield color="var(--accent)" size={22} />
-                </div>
-                <span className="badge badge-warning">Pending</span>
+           <div className="stat-card-v2">
+              <div className="stat-icon-v2 amber">
+                <Shield size={20} />
               </div>
-              <div className="stats-value">{stats.pendingWhitelist}</div>
-              <div className="text-label" style={{ textTransform: 'none', letterSpacing: 0 }}>Candidature Whitelist</div>
+              <div className="stat-data-v2">
+                <span className="stat-label-v2">Whitelist Pending</span>
+                <span className="stat-value-v2">{stats.pendingWhitelist}</span>
+              </div>
            </div>
 
-           <div className="card stats-card" style={{ borderBottom: '4px solid #f472b6' }}>
-              <div className="align-center" style={{ justifyContent: 'space-between' }}>
-                <div style={{ padding: '10px', background: 'rgba(244,114,182,0.1)', borderRadius: '12px', display: 'flex' }}>
-                    <Mic2 color="#f472b6" size={22} />
-                </div>
-                <span className="badge" style={{ background: 'rgba(244,114,182,0.1)', color: '#f472b6', border: '1px solid rgba(244,114,182,0.2)' }}>Active</span>
-              </div>
-              <div className="stats-value">{stats.activeVoiceSessions}</div>
-              <div className="text-label" style={{ textTransform: 'none', letterSpacing: 0 }}>Colloqui Vocali Simultanei</div>
-           </div>
         </div>
 
-        {/* Modules Control Section */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '32px' }}>
-            <section>
-                <div className="align-center" style={{ marginBottom: '24px' }}>
-                    <Activity size={24} color="var(--primary)" />
-                    <h2 style={{ fontSize: '1.4rem', fontWeight: '800' }}>Stato Moduli</h2>
-                    <HelpTooltip text="Attiva o disattiva i sistemi principali." />
+        {/* Dashboard Content Layout */}
+        <div className="dashboard-grid-p">
+            {/* Left: Module Management */}
+            <section className="modules-management-p">
+                <div className="section-title-p">
+                    <Activity size={20} />
+                    <h2>Stato Moduli</h2>
                 </div>
                 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    {/* Whitelist Module Toggle */}
-                    <div className="card glass-heavy" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px' }}>
-                        <div className="align-center" style={{ gap: '20px' }}>
-                            <div style={{ padding: '14px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '16px', border: '1px solid rgba(16,185,129,0.2)', display: 'flex' }}>
-                                <ShieldCheck size={28} color="var(--primary)" />
-                            </div>
-                            <div>
-                                <h3 style={{ fontSize: '1.15rem', fontWeight: '750', marginBottom: '4px' }}>Sistema Whitelist</h3>
-                                <p className="text-description" style={{ marginTop: 0 }}>
-                                    {config?.whitelist?.enabled ? 'Attivo - Candidature aperte' : 'Disattivato - Servizio non disponibile'}
-                                </p>
-                            </div>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                            {updating === 'whitelist' && <div className="spinner-small"></div>}
-                            <label className="toggle">
-                                <input 
-                                    type="checkbox" 
-                                    checked={config.whitelist?.enabled} 
-                                    onChange={() => toggleModule('whitelist', config.whitelist?.enabled)}
-                                    disabled={updating === 'whitelist'}
-                                />
-                                <span className="slider"></span>
-                            </label>
-                        </div>
-                    </div>
+                <div className="modules-list-p">
+                    {[
+                        { id: 'whitelist', label: 'Sistema Whitelist', desc: 'Gestione cittadini e orali.', icon: ShieldCheck, color: 'var(--primary)', config: config.whitelist },
+                        { id: 'tickets', label: 'Support Tickets', desc: 'Assistenza utenti via canali.', icon: Ticket, color: '#3b82f6', config: config.tickets },
+                        { id: 'verify', label: 'Sistema Verifica', desc: 'Protezione entry e ruoli.', icon: Shield, color: 'var(--primary)', config: config.verify },
 
-                    {/* Tickets Module Toggle */}
-                    <div className="card glass-heavy" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px' }}>
-                        <div className="align-center" style={{ gap: '20px' }}>
-                            <div style={{ padding: '14px', background: 'rgba(59, 130, 246, 0.1)', borderRadius: '16px', border: '1px solid rgba(59,130,246,0.2)', display: 'flex' }}>
-                                <Ticket size={28} color="var(--accent)" />
+                        { id: 'photocontest', label: 'Photo Contest', desc: 'Eventi e contest community.', icon: Camera, color: '#f59e0b', config: config.photocontest },
+                        { id: 'fivem', label: 'FiveM Status', desc: 'Tracking server di gioco.', icon: Globe, color: '#3b82f6', config: config.fivem },
+                        { id: 'welcome', label: 'Welcome & Leave', desc: 'Accoglienza nuovi membri.', icon: UserPlus, color: 'var(--primary)', config: config.welcome }
+                    ].map(module => (
+                        <div key={module.id} className="module-toggle-card">
+                            <div className="m-card-info">
+                                <div className="m-card-icon" style={{ backgroundColor: `${module.color}15`, color: module.color }}>
+                                    <module.icon size={24} />
+                                </div>
+                                <div className="m-card-text">
+                                    <h3>{module.label}</h3>
+                                    <p>{module.desc}</p>
+                                </div>
                             </div>
-                            <div>
-                                <h3 style={{ fontSize: '1.15rem', fontWeight: '750', marginBottom: '4px' }}>Supporto Ticket</h3>
-                                <p className="text-description" style={{ marginTop: 0 }}>
-                                    {config?.tickets?.enabled ? 'Attivo - Bot pronto al supporto' : 'Disattivato - Nessun ticket creabile'}
-                                </p>
-                            </div>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                            {updating === 'tickets' && <div className="spinner-small"></div>}
-                            <label className="toggle">
-                                <input 
-                                    type="checkbox" 
-                                    checked={config.tickets?.enabled} 
-                                    onChange={() => toggleModule('tickets', config.tickets?.enabled)}
-                                    disabled={updating === 'tickets'}
-                                />
-                                <span className="slider"></span>
-                            </label>
-                        </div>
-                    </div>
-
-                    {/* Verify Module Toggle */}
-                    <div className="card glass-heavy" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px' }}>
-                        <div className="align-center" style={{ gap: '20px' }}>
-                            <div style={{ padding: '14px', background: 'rgba(var(--primary-rgb), 0.1)', borderRadius: '16px', border: '1px solid rgba(var(--primary-rgb), 0.2)', display: 'flex' }}>
-                                <Shield size={28} color="var(--primary)" />
-                            </div>
-                            <div>
-                                <h3 style={{ fontSize: '1.15rem', fontWeight: '750', marginBottom: '4px' }}>Sistema Verifica</h3>
-                                <p className="text-description" style={{ marginTop: 0 }}>
-                                    {config?.verify?.enabled ? 'Attivo - Protezione entry attiva' : 'Disattivato - Accesso libero'}
-                                </p>
+                            <div className="m-card-action">
+                                {updating === module.id && <div className="spinner-s"></div>}
+                                <label className="toggle">
+                                    <input 
+                                        type="checkbox" 
+                                        checked={module.config?.enabled} 
+                                        onChange={() => toggleModule(module.id, module.config?.enabled)}
+                                        disabled={updating === module.id}
+                                    />
+                                    <span className="slider"></span>
+                                </label>
                             </div>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                            {updating === 'verify' && <div className="spinner-small"></div>}
-                            <label className="toggle">
-                                <input 
-                                    type="checkbox" 
-                                    checked={config.verify?.enabled} 
-                                    onChange={() => toggleModule('verify', config.verify?.enabled)}
-                                    disabled={updating === 'verify'}
-                                />
-                                <span className="slider"></span>
-                            </label>
-                        </div>
-                    </div>
-
-                    {/* Voice Module Toggle */}
-                    <div className="card glass-heavy" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px' }}>
-                        <div className="align-center" style={{ gap: '20px' }}>
-                            <div style={{ padding: '14px', background: 'rgba(244,114,182,0.1)', borderRadius: '16px', border: '1px solid rgba(244,114,182,0.2)', display: 'flex' }}>
-                                <Mic2 size={28} color="#f472b6" />
-                            </div>
-                            <div>
-                                <h3 style={{ fontSize: '1.15rem', fontWeight: '750', marginBottom: '4px' }}>Voice Interview</h3>
-                                <p className="text-description" style={{ marginTop: 0 }}>
-                                    {config?.voice?.enabled ? 'Attivo - Stanze colloqui pronte' : 'Disattivato - Canali chiusi'}
-                                </p>
-                            </div>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                            {updating === 'voice' && <div className="spinner-small"></div>}
-                            <label className="toggle">
-                                <input 
-                                    type="checkbox" 
-                                    checked={config.voice?.enabled} 
-                                    onChange={() => toggleModule('voice', config.voice?.enabled)}
-                                    disabled={updating === 'voice'}
-                                />
-                                <span className="slider"></span>
-                            </label>
-                        </div>
-                    </div>
-
-                    {/* Photo Contest Toggle */}
-                    <div className="card glass-heavy" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px' }}>
-                        <div className="align-center" style={{ gap: '20px' }}>
-                            <div style={{ padding: '14px', background: 'rgba(245,158,11,0.1)', borderRadius: '16px', border: '1px solid rgba(245,158,11,0.2)', display: 'flex' }}>
-                                <Camera size={28} color="#f59e0b" />
-                            </div>
-                            <div>
-                                <h3 style={{ fontSize: '1.15rem', fontWeight: '750', marginBottom: '4px' }}>Photo Contest</h3>
-                                <p className="text-description" style={{ marginTop: 0 }}>
-                                    {config?.photocontest?.enabled ? 'Attivo - Evento in corso' : 'Disattivato - Nessun contest'}
-                                </p>
-                            </div>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                            {updating === 'photocontest' && <div className="spinner-small"></div>}
-                            <label className="toggle">
-                                <input 
-                                    type="checkbox" 
-                                    checked={config.photocontest?.enabled} 
-                                    onChange={() => toggleModule('photocontest', config.photocontest?.enabled)}
-                                    disabled={updating === 'photocontest'}
-                                />
-                                <span className="slider"></span>
-                            </label>
-                        </div>
-                    </div>
-
-                    {/* FiveM Toggle */}
-                    <div className="card glass-heavy" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px' }}>
-                        <div className="align-center" style={{ gap: '20px' }}>
-                            <div style={{ padding: '14px', background: 'rgba(59,130,246,0.1)', borderRadius: '16px', border: '1px solid rgba(59,130,246,0.2)', display: 'flex' }}>
-                                <Globe size={28} color="#3b82f6" />
-                            </div>
-                            <div>
-                                <h3 style={{ fontSize: '1.15rem', fontWeight: '750', marginBottom: '4px' }}>FiveM Status</h3>
-                                <p className="text-description" style={{ marginTop: 0 }}>
-                                    {config?.fivem?.enabled ? 'Attivo - Tracking server in corso' : 'Disattivato - Pinger spento'}
-                                </p>
-                            </div>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                            {updating === 'fivem' && <div className="spinner-small"></div>}
-                            <label className="toggle">
-                                <input 
-                                    type="checkbox" 
-                                    checked={config.fivem?.enabled} 
-                                    onChange={() => toggleModule('fivem', config.fivem?.enabled)}
-                                    disabled={updating === 'fivem'}
-                                />
-                                <span className="slider"></span>
-                            </label>
-                        </div>
-                    </div>
-
-                    {/* Welcome Module Toggle */}
-                    <div className="card glass-heavy" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '24px' }}>
-                        <div className="align-center" style={{ gap: '20px' }}>
-                            <div style={{ padding: '14px', background: 'rgba(var(--primary-rgb), 0.1)', borderRadius: '16px', border: '1px solid rgba(var(--primary-rgb), 0.2)', display: 'flex' }}>
-                                <UserPlus size={28} color="var(--primary)" />
-                            </div>
-                            <div>
-                                <h3 style={{ fontSize: '1.15rem', fontWeight: '750', marginBottom: '4px' }}>Welcome & Leave</h3>
-                                <p className="text-description" style={{ marginTop: 0 }}>
-                                    {config?.welcome?.enabled ? 'Attivo - Messaggi d\'accoglienza attivi' : 'Disattivato - Nessun benvenuto inviato'}
-                                </p>
-                            </div>
-                        </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                            {updating === 'welcome' && <div className="spinner-small"></div>}
-                            <label className="toggle">
-                                <input 
-                                    type="checkbox" 
-                                    checked={config.welcome?.enabled} 
-                                    onChange={() => toggleModule('welcome', config.welcome?.enabled)}
-                                    disabled={updating === 'welcome'}
-                                />
-                                <span className="slider"></span>
-                            </label>
-                        </div>
-                    </div>
+                    ))}
                 </div>
             </section>
 
-            {/* Quick Actions & Links */}
-            <section>
-                <div className="align-center" style={{ marginBottom: '24px' }}>
-                    <Zap size={24} color="var(--warning)" />
-                    <h2 style={{ fontSize: '1.4rem', fontWeight: '800' }}>Azioni Rapide</h2>
+            {/* Right: Navigation & Global Actions */}
+            <aside className="dashboard-side-p">
+                <div className="section-title-p">
+                    <Zap size={20} />
+                    <h2>Navigazione</h2>
                 </div>
-                <div className="card" style={{ background: 'rgba(255,255,255,0.02)', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    <button onClick={() => router.push(`/config/${guildId}/whitelist`)} className="btn-action">
-                        <span>🛡️ Configura Whitelist</span>
-                        <ArrowRight size={18} />
-                    </button>
-                    <button onClick={() => router.push(`/config/${guildId}/verify`)} className="btn-action">
-                        <span>✅ Sistema Verifica</span>
-                        <ArrowRight size={18} />
-                    </button>
-                    <button onClick={() => router.push(`/config/${guildId}/tickets`)} className="btn-action">
-                        <span>🎫 Support Tickets</span>
-                        <ArrowRight size={18} />
-                    </button>
-                    <button onClick={() => router.push(`/config/${guildId}/photocontest`)} className="btn-action">
-                        <span>📸 Photo Contest</span>
-                        <ArrowRight size={18} />
-                    </button>
-                    <button onClick={() => router.push(`/config/${guildId}/fivem`)} className="btn-action">
-                        <span>🎮 FiveM Status</span>
-                        <ArrowRight size={18} />
-                    </button>
-                    <button onClick={() => router.push(`/config/${guildId}/embeds`)} className="btn-action">
-                        <span>📝 Embed Suite</span>
-                        <ArrowRight size={18} />
-                    </button>
-                    <button onClick={() => router.push(`/config/${guildId}/welcome`)} className="btn-action" style={{ background: 'rgba(var(--primary-rgb), 0.05)' }}>
-                        <span>👋 Welcome & Leave</span>
-                        <ArrowRight size={18} />
-                    </button>
-                    <button onClick={() => router.push(`/config/${guildId}/global`)} className="btn-action" style={{ borderColor: 'rgba(var(--primary-rgb), 0.3)', background: 'rgba(var(--primary-rgb), 0.05)' }}>
-                        <span>⚙️ Impostazioni Globali</span>
-                        <ArrowRight size={18} />
-                    </button>
-                    <button onClick={() => router.push(`/config/${guildId}/audit-logs`)} className="btn-action">
-                        <span>📜 Audit Logs</span>
-                        <ArrowRight size={18} />
-                    </button>
-                    <div style={{ height: '1px', background: 'var(--border)', margin: '8px 0' }}></div>
+                <div className="nav-stack-p">
+                    {[
+                        { label: 'Whitelist', path: 'whitelist', emoji: '🛡️' },
+                        { label: 'Verifica', path: 'verify', emoji: '✅' },
+                        { label: 'Supporto', path: 'tickets', emoji: '🎫' },
+                        { label: 'Contest', path: 'photocontest', emoji: '📸' },
+                        { label: 'Status Server', path: 'fivem', emoji: '🎮' },
+                        { label: 'Embed Suite', path: 'embeds', emoji: '📝' },
+                        { label: 'Accoglienza', path: 'welcome', emoji: '👋' },
+                        { label: 'Config Globali', path: 'global', emoji: '⚙️' }
+                    ].map(nav => (
+                        <button key={nav.path} onClick={() => router.push(`/config/${guildId}/${nav.path}`)} className="nav-item-v2">
+                            <span className="nav-label-v2">{nav.emoji} &nbsp; {nav.label}</span>
+                            <ChevronRight size={14} className="nav-arrow-v2" />
+                        </button>
+                    ))}
+                    
+                    <div className="side-separator-p"></div>
+                    
                     <button 
-                        onClick={() => { if(confirm('Attenzione: Questa azione resetterà tutte le impostazioni. Procedere?')) alert('Reset inviato!'); }}
-                        className="btn-danger"
-                        style={{ width: '100%', justifyContent: 'center' }}
+                        onClick={() => { if(confirm('Tutte le impostazioni verranno azzerate. Confermi?')) alert('Inviato!'); }}
+                        className="btn-danger-v2"
                     >
-                        <RefreshCcw size={18} /> Reset Configurazione Totale
+                        <RefreshCcw size={16} /> Reset Totale
                     </button>
                 </div>
-            </section>
+            </aside>
         </div>
+
+        <style jsx>{`
+            .module-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; padding: 0 4px; }
+            .header-info-p { display: flex; align-items: center; gap: 16px; }
+            .header-icon-p { width: 44px; height: 44px; background: rgba(129, 140, 248, 0.1); color: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+            .header-text-p h1 { font-size: 1.5rem; margin-bottom: 2px; }
+            .header-text-p p { font-size: 0.85rem; color: var(--text-muted); }
+            .btn-outline-p { background: rgba(255,255,255,0.02); border: 1px solid var(--border); color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.8rem; font-weight: 700; transition: 0.2s; }
+            .btn-outline-p:hover { background: rgba(255,255,255,0.05); }
+
+            .stats-grid-p { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 32px; }
+            .stat-card-v2 { background: var(--bg-card); border: 1px solid var(--border); padding: 20px; border-radius: 16px; display: flex; align-items: center; gap: 16px; position: relative; transition: 0.2s; }
+            .stat-card-v2:hover { border-color: var(--primary); transform: translateY(-2px); }
+            .stat-icon-v2 { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+            .stat-icon-v2.indigo { background: rgba(129,140,248,0.1); color: var(--primary); }
+            .stat-icon-v2.amber { background: rgba(245,158,11,0.1); color: #f59e0b; }
+            .stat-icon-v2.rose { background: rgba(244,114,182,0.1); color: #f472b6; }
+            .stat-data-v2 { display: flex; flex-direction: column; }
+            .stat-label-v2 { font-size: 0.75rem; color: var(--text-muted); font-weight: 700; }
+            .stat-value-v2 { font-size: 1.4rem; font-weight: 800; color: white; }
+            .stat-trend-v2 { position: absolute; top: 16px; right: 16px; color: #10b981; opacity: 0.5; }
+
+            .dashboard-grid-p { display: grid; grid-template-columns: 1fr 300px; gap: 32px; }
+            .section-title-p { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; color: var(--text-muted); }
+            .section-title-p h2 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 900; color: var(--text-dim); }
+
+            .modules-list-p { display: flex; flex-direction: column; gap: 12px; }
+            .module-toggle-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
+            .module-toggle-card:hover { border-color: var(--primary); background: rgba(255,255,255,0.01); }
+            .m-card-info { display: flex; align-items: center; gap: 16px; }
+            .m-card-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+            .m-card-text h3 { font-size: 0.95rem; margin-bottom: 2px; }
+            .m-card-text p { font-size: 0.75rem; color: var(--text-muted); }
+            .m-card-action { display: flex; align-items: center; gap: 12px; }
+            .spinner-s { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.1); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+
+            .nav-stack-p { display: flex; flex-direction: column; gap: 8px; }
+            .nav-item-v2 { display: flex; align-items: center; justify-content: space-between; background: var(--bg-card); border: 1px solid var(--border); color: var(--text-muted); padding: 12px 16px; border-radius: 12px; cursor: pointer; font-size: 0.85rem; font-weight: 700; transition: 0.2s; }
+            .nav-item-v2:hover { background: rgba(255,255,255,0.03); color: white; border-color: var(--primary); transform: translateX(4px); }
+            .nav-arrow-v2 { opacity: 0.3; transition: 0.2s; }
+            .nav-item-v2:hover .nav-arrow-v2 { color: var(--primary); opacity: 1; transform: translateX(2px); }
+
+            .side-separator-p { height: 1px; background: var(--border); margin: 12px 0; }
+            .btn-danger-v2 { width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 12px; background: rgba(244, 63, 94, 0.05); color: var(--error); border: 1px solid rgba(244, 63, 94, 0.1); border-radius: 12px; cursor: pointer; font-size: 0.85rem; font-weight: 900; transition: 0.2s; }
+            .btn-danger-v2:hover { background: var(--error); color: white; }
+
+            .error-container-p { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh; gap: 20px; text-align: center; }
+
+            @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+            @media (max-width: 1000px) { .dashboard-grid-p { grid-template-columns: 1fr; } .stats-grid-p { grid-template-columns: 1fr; } }
+        `}</style>
       </div>
-
-      <style jsx>{`
-        .stats-grid .card:hover {
-            transform: translateY(-8px) scale(1.02);
-            box-shadow: 0 15px 45px -10px rgba(0,0,0,0.5);
-        }
-
-        .btn-action {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid var(--border);
-            color: white;
-            padding: 16px 20px;
-            border-radius: 14px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: var(--transition-fast);
-        }
-
-        .btn-action:hover {
-            background: rgba(255,255,255,0.08);
-            border-color: var(--text-muted);
-            transform: translateX(4px);
-        }
-
-        .spinner-small {
-            width: 18px;
-            height: 18px;
-            border: 2px solid rgba(255,255,255,0.1);
-            border-top: 2px solid var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        .spin {
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-      `}</style>
     </Layout>
   );
 }

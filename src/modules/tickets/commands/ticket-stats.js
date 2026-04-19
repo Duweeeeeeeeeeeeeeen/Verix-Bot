@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, EmbedBuilder, PermissionFlagsBits } from 'discord.js';
+import { EmbedBuilder, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 import Ticket from '../../../models/Ticket.js';
 
 export default {
@@ -17,7 +17,7 @@ export default {
         const closedTickets = await Ticket.find(query);
 
         if (closedTickets.length === 0) {
-            return interaction.reply({ content: '❌ Nessun dato trovato per questo server/staffer.', ephemeral: true });
+            return interaction.reply({ content: '❌ Nessun dato trovato per questo server/staffer.', flags: [MessageFlags.Ephemeral] });
         }
 
         // Calculate Stats

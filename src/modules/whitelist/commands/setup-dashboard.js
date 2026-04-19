@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
+import { MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 import WhitelistConfig from '../../../models/WhitelistConfig.js';
 import { getDashboard } from '../utils/voiceDashboard.js';
 import Guild from '../../../models/Guild.js';
@@ -13,7 +13,7 @@ export default {
     async execute(interaction) {
         const guildData = await Guild.findOne({ guildId: interaction.guild.id });
         if (!guildData || !guildData.enabledModules.includes('whitelist')) {
-            return interaction.reply({ content: ErrorHelper.moduleDisabledError('Whitelist'), ephemeral: true });
+            return interaction.reply({ content: ErrorHelper.moduleDisabledError('Whitelist'), flags: [MessageFlags.Ephemeral] });
         }
 
         const channel = interaction.options.getChannel('channel');
@@ -21,7 +21,7 @@ export default {
         try {
             const config = await WhitelistConfig.findOne({ guildId: interaction.guild.id });
             if (!config) {
-                return interaction.reply({ content: '❌ Configura prima la whitelist con `/setup-wl`.', ephemeral: true });
+                return interaction.reply({ content: '❌ Configura prima la whitelist con `/setup-wl`.', flags: [MessageFlags.Ephemeral] });
             }
 
             const { embeds, components } = await getDashboard(interaction.guild.id);
@@ -45,10 +45,10 @@ export default {
             config.voiceSettings.dashboardMsgId = message.id;
             await config.save();
 
-            await interaction.reply({ content: `✅ Dashboard inizializzata correttamente in ${channel}.`, ephemeral: true });
+            await interaction.reply({ content: `✅ Dashboard inizializzata correttamente in ${channel}.`, flags: [MessageFlags.Ephemeral] });
         } catch (error) {
             console.error('Error in setup-dashboard:', error);
-            await interaction.reply({ content: '❌ Errore durante l\'inizializzazione della dashboard.', ephemeral: true });
+            await interaction.reply({ content: '❌ Errore durante l\'inizializzazione della dashboard.', flags: [MessageFlags.Ephemeral] });
         }
     },
 };

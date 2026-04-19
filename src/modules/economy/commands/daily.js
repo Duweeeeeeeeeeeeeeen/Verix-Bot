@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
+import { EmbedBuilder, MessageFlags, SlashCommandBuilder } from 'discord.js';
 import User from '../../../models/User.js';
 import logger from '../../../utils/logger.js';
 
@@ -20,7 +20,7 @@ export default {
 
                 return interaction.reply({ 
                     content: `Hai già riscattato il premio oggi! Riprova tra ${hours} ore e ${minutes} minuti.`, 
-                    ephemeral: true 
+                    flags: [MessageFlags.Ephemeral] 
                 });
             }
 
@@ -38,7 +38,7 @@ export default {
             await interaction.reply({ embeds: [embed] });
         } catch (error) {
             logger.error('Error in daily command:', error);
-            await interaction.reply({ content: 'Si è verificato un errore.', ephemeral: true });
+            await interaction.reply({ content: 'Si è verificato un errore.', flags: [MessageFlags.Ephemeral] });
         }
     },
 };

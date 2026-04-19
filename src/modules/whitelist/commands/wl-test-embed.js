@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
+import { MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 import WhitelistConfig from '../../../models/WhitelistConfig.js';
 import { buildEmbed } from '../../../utils/embedHelper.js';
 
@@ -30,7 +30,7 @@ export default {
         const config = await WhitelistConfig.findOne({ guildId: interaction.guild.id });
 
         if (!config || !config.embeds || !config.embeds[type]) {
-            return interaction.reply({ content: '❌ Configurazione non trovata per questo tipo di embed.', ephemeral: true });
+            return interaction.reply({ content: '❌ Configurazione non trovata per questo tipo di embed.', flags: [MessageFlags.Ephemeral] });
         }
 
         const placeholders = {
@@ -51,7 +51,7 @@ export default {
         const embed = buildEmbed(config.embeds[type], placeholders);
 
         if (!embed) {
-            return interaction.reply({ content: `⚠️ L'embed **${type}** è attualmente disabilitato o non configurato.`, ephemeral: true });
+            return interaction.reply({ content: `⚠️ L'embed **${type}** è attualmente disabilitato o non configurato.`, flags: [MessageFlags.Ephemeral] });
         }
 
         await interaction.reply({ 

@@ -1,4 +1,4 @@
-import { Events } from 'discord.js';
+import { Events, MessageFlags } from 'discord.js';
 import User from '../../models/User.js';
 import Guild from '../../models/Guild.js';
 import logger from '../../utils/logger.js';
@@ -25,7 +25,7 @@ export default {
                 
                 // Block any further execution
                 if (!interaction.replied && !interaction.deferred) {
-                    return interaction.reply({ content: message, ephemeral: true });
+                    return interaction.reply({ content: message, flags: [MessageFlags.Ephemeral] });
                 }
                 return; // Silent stop if already processed
             }
@@ -63,7 +63,7 @@ export default {
                 await command.execute(interaction);
             } catch (error) {
                 logger.error(`Error executing command ${interaction.commandName}`, error);
-                const errorMsg = { content: 'Si è verificato un errore durante l\'esecuzione di questo comando!', ephemeral: true };
+                const errorMsg = { content: 'Si è verificato un errore durante l\'esecuzione di questo comando!', flags: [MessageFlags.Ephemeral] };
                 
                 if (interaction.replied || interaction.deferred) {
                     await interaction.followUp(errorMsg);

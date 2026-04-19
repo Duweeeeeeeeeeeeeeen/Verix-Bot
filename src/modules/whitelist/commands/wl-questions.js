@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
+import { EmbedBuilder, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 import WhitelistConfig from '../../../models/WhitelistConfig.js';
 
 export default {
@@ -23,12 +23,12 @@ export default {
         const config = await WhitelistConfig.findOne({ guildId: interaction.guild.id });
 
         if (!config) {
-            return interaction.reply({ content: 'Esegui prima `/setup-wl` per configurare il sistema.', ephemeral: true });
+            return interaction.reply({ content: 'Esegui prima `/setup-wl` per configurare il sistema.', flags: [MessageFlags.Ephemeral] });
         }
 
         if (subcommand === 'list') {
             if (config.questions.length === 0) {
-                return interaction.reply({ content: 'Non ci sono domande configurate.', ephemeral: true });
+                return interaction.reply({ content: 'Non ci sono domande configurate.', flags: [MessageFlags.Ephemeral] });
             }
 
             const embed = new EmbedBuilder()
@@ -53,7 +53,7 @@ export default {
             const index = interaction.options.getInteger('index') - 1;
 
             if (index < 0 || index >= config.questions.length) {
-                return interaction.reply({ content: 'Indice non valido.', ephemeral: true });
+                return interaction.reply({ content: 'Indice non valido.', flags: [MessageFlags.Ephemeral] });
             }
 
             const removed = config.questions.splice(index, 1);

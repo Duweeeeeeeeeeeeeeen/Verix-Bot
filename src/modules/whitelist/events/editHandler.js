@@ -1,71 +1,166 @@
-import { Events, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } from 'discord.js';
+import { ActionRowBuilder, Events, MessageFlags, ModalBuilder, TextInputBuilder, TextInputStyle, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 import WhitelistConfig from '../../../models/WhitelistConfig.js';
 import WhitelistApp from '../../../models/WhitelistApp.js';
 import { buildEmbed } from '../../../utils/embedHelper.js';
+import logger from '../../../utils/logger.js';
 
 export default {
     name: Events.InteractionCreate,
     async execute(interaction, client) {
-        if (!interaction.isButton()) return;
+        // --- GUARD: Allow only Whitelist related interactions ---
+        const isChoice = interaction.isButton() && interaction.customId === 'choice_edit_wl';
+        const isSelect = interaction.isStringSelectMenu() && interaction.customId === 'select_edit_wl';
+        const isModal = interaction.isModalSubmit() && interaction.customId.startsWith('modal_edit_wl_');
+        const isClose = interaction.isButton() && interaction.customId === 'close_edit_menu';
+        const isCancel = interaction.isButton() && interaction.customId === 'cancel_wl';
 
-        if (interaction.customId === 'edit_wl') {
-            const app = await WhitelistApp.findOne({ channelId: interaction.channelId, userId: interaction.user.id, status: 'PENDING' });
-            if (!app || app.answers.length === 0) return interaction.reply({ content: 'Non hai risposte da modificare.', ephemeral: true });
+        if (!isChoice && !isSelect && !isModal && !isClose && !isCancel) return;
 
-            const lastAnswer = app.answers[app.answers.length - 1];
-            const modal = new ModalBuilder()
-                .setCustomId('modal_edit_wl')
-                .setTitle('Modifica Risposta');
+        try {
+            const app = await WhitelistApp.findOne({ 
+                channelId: interaction.channelId, 
+                userId: interaction.user.id, 
+                status: 'PENDING' 
+            });
 
-            const textInput = new TextInputBuilder()
-                .setCustomId('edited_answer')
-                .setLabel('La tua nuova risposta')
-                .setStyle(TextInputStyle.Paragraph)
-                .setRequired(true)
-                .setValue(lastAnswer.answer);
+            // 1. CLICK "EDIT" BUTTON -> SHOW SELECT MENU
+            if (isChoice) {
+                if (!app || app.answers.length === 0) {
+                    return interaction.reply({ content: 'Non hai risposte da modificare.', flags: [MessageFlags.Ephemeral] });
+                }
 
-            modal.addComponents(new ActionRowBuilder().addComponents(textInput));
-            await interaction.showModal(modal);
-        }
+                const selectMenu = new StringSelectMenuBuilder()
+                    .setCustomId('select_edit_wl')
+                    .setPlaceholder('Scegli la domanda da modificare...')
+                    .addOptions(app.answers.map((ans, i) => ({
+                        label: `Domanda ${i + 1}`,
+                        description: ans.question.substring(0, 100),
+                        value: i.toString()
+                    })));
 
-        if (interaction.isModalSubmit() && interaction.customId === 'modal_edit_wl') {
-            const app = await WhitelistApp.findOne({ channelId: interaction.channelId, userId: interaction.user.id, status: 'PENDING' });
-            const config = await WhitelistConfig.findOne({ guildId: interaction.guildId });
-            const newAnswer = interaction.fields.getTextInputValue('edited_answer');
+                const closeButton = new ButtonBuilder()
+                    .setCustomId('close_edit_menu')
+                    .setLabel('Chiudi Menu')
+                    .setStyle(ButtonStyle.Secondary);
 
-            // Use session questions logic
-            const sessionQuestions = app.sessionQuestions && app.sessionQuestions.length > 0 ? app.sessionQuestions : config.questions;
-            const currentIdx = app.answers.length - 1;
-            const questionData = sessionQuestions[currentIdx];
+                const row = new ActionRowBuilder().addComponents(selectMenu);
+                const row2 = new ActionRowBuilder().addComponents(closeButton);
 
-            if (newAnswer.length < questionData.minLength) {
-                return interaction.reply({ content: `❌ Risposta troppo breve. Deve essere almeno ${questionData.minLength} caratteri.`, ephemeral: true });
+                await interaction.reply({ 
+                    content: 'Seleziona la domanda che vuoi correggere:', 
+                    components: [row, row2], 
+                    flags: [MessageFlags.Ephemeral] 
+                });
             }
 
-            app.answers[currentIdx].answer = newAnswer;
-            await app.save();
-
-            // Refresh Review Embed
-            const summaryEmbed = buildEmbed(config.embeds.review, {
-                user: interaction.user.username,
-                guild: interaction.guild.name,
-                total_questions: sessionQuestions.length
-            }, config);
-
-            if (summaryEmbed) {
-                summaryEmbed.addFields(app.answers.map((ans, i) => ({
-                    name: `${i + 1}. ${ans.question}`,
-                    value: ans.answer || '*Nessuna risposta*'
-                })));
+            // 1.5 CLOSE MENU
+            if (isClose) {
+                return interaction.update({ content: '✅ Menu di modifica chiuso.', components: [] });
             }
-            
-            await interaction.update({ embeds: [summaryEmbed] });
-        }
 
-        if (interaction.customId === 'cancel_wl') {
-            await WhitelistApp.deleteOne({ channelId: interaction.channelId, userId: interaction.user.id });
-            await interaction.reply({ content: 'Pratica ritirata. Il canale verrà eliminato tra 5 secondi.' });
-            setTimeout(() => interaction.channel.delete().catch(() => {}), 5000);
+            // 2. SELECT QUESTION -> SHOW MODAL
+            if (isSelect) {
+                if (!app) return interaction.reply({ content: 'Pratica non trovata.', flags: [MessageFlags.Ephemeral] });
+                const questionIndex = parseInt(interaction.values[0]);
+                const answerData = app.answers[questionIndex];
+
+                const modal = new ModalBuilder()
+                    .setCustomId(`modal_edit_wl_${questionIndex}`)
+                    .setTitle(`Modifica Risposta ${questionIndex + 1}`);
+
+                const textInput = new TextInputBuilder()
+                    .setCustomId('edited_answer')
+                    .setLabel('La tua nuova risposta')
+                    .setStyle(TextInputStyle.Paragraph)
+                    .setRequired(true)
+                    .setValue(answerData.answer);
+
+                modal.addComponents(new ActionRowBuilder().addComponents(textInput));
+                await interaction.showModal(modal);
+            }
+
+            // 3. SUBMIT MODAL -> SAVE & REFRESH
+            if (isModal) {
+                await interaction.deferUpdate(); // Prevents "Interaction failed" if processing takes time
+
+                const questionIndex = parseInt(interaction.customId.split('_').pop());
+                const newAnswer = interaction.fields.getTextInputValue('edited_answer');
+                const config = await WhitelistConfig.findOne({ guildId: interaction.guildId });
+
+                // Validation
+                const sessionQuestions = app.sessionQuestions && app.sessionQuestions.length > 0 ? app.sessionQuestions : config.questions;
+                const questionData = sessionQuestions[questionIndex];
+
+                if (newAnswer.length < questionData.minLength) {
+                    return interaction.followUp({ 
+                        content: `❌ Risposta troppo breve. Deve essere almeno ${questionData.minLength} caratteri.`, 
+                        flags: [MessageFlags.Ephemeral] 
+                    });
+                }
+
+                // Update Database
+                app.answers[questionIndex].answer = newAnswer;
+                app.markModified('answers'); // Important for nested array updates in Mongoose
+                await app.save();
+
+                // 3.0 Refresh Review Embed
+                const summaryEmbed = buildEmbed(config.embeds.review, {
+                    user: interaction.user.username,
+                    guild: interaction.guild.name,
+                    total_questions: sessionQuestions.length
+                }, config);
+
+                if (summaryEmbed) {
+                    const fields = app.answers.slice(0, 25).map((ans, i) => ({
+                        name: `${i + 1}. ${ans.question}`,
+                        value: ans.answer?.substring(0, 1024) || '*Nessuna risposta*'
+                    }));
+                    summaryEmbed.addFields(fields);
+                }
+
+                // 3.1 Update the Main Review Message (the one in the channel)
+                if (app.reviewMessageId) {
+                    try {
+                        const mainMsg = await interaction.channel.messages.fetch(app.reviewMessageId);
+                        if (mainMsg) {
+                            await mainMsg.edit({ embeds: [summaryEmbed] });
+                        }
+                    } catch (err) {
+                        logger.warn(`[Whitelist_Edit] Could not find/edit review message ${app.reviewMessageId}`);
+                    }
+                }
+
+                // 3.2 Update the Ephemeral Message to show success and allow more edits
+                const selectMenu = new StringSelectMenuBuilder()
+                    .setCustomId('select_edit_wl')
+                    .setPlaceholder('Modifica un\'altra domanda...')
+                    .addOptions(app.answers.map((ans, i) => ({
+                        label: `Domanda ${i + 1}`,
+                        description: ans.question.substring(0, 100),
+                        value: i.toString()
+                    })));
+
+                const finishedButton = new ButtonBuilder()
+                    .setCustomId('close_edit_menu')
+                    .setLabel('Ho Finito')
+                    .setStyle(ButtonStyle.Secondary);
+
+                const row = new ActionRowBuilder().addComponents(selectMenu);
+                const row2 = new ActionRowBuilder().addComponents(finishedButton);
+
+                await interaction.editReply({ 
+                    content: `✅ **Risposta ${questionIndex + 1} aggiornata!** Il riepilogo nel canale è stato aggiornato.\nVuoi modificare altro?`,
+                    components: [row, row2]
+                });
+            }
+
+        } catch (error) {
+            logger.error('[Whitelist_Edit] Interaction Error:', error);
+            if (!interaction.replied && !interaction.deferred) {
+                await interaction.reply({ content: 'Si è verificato un errore durante la modifica.', flags: [MessageFlags.Ephemeral] }).catch(() => {});
+            } else {
+                await interaction.followUp({ content: 'Si è verificato un errore durante la modifica.', flags: [MessageFlags.Ephemeral] }).catch(() => {});
+            }
         }
     }
 };

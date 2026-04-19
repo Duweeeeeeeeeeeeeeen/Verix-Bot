@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
+import { EmbedBuilder, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 import TicketConfig from '../../../models/TicketConfig.js';
 import logger from '../../../utils/logger.js';
 
@@ -61,13 +61,13 @@ export default {
             if (subcommand === 'add') {
                 config.cannedResponses.push({ label, content });
                 await config.save();
-                return interaction.reply({ content: `✅ Risposta rapida \`${label}\` aggiunta correttamente.`, ephemeral: true });
+                return interaction.reply({ content: `✅ Risposta rapida \`${label}\` aggiunta correttamente.`, flags: [MessageFlags.Ephemeral] });
             }
 
             if (subcommand === 'remove') {
                 config.cannedResponses = config.cannedResponses.filter(r => r.label !== label);
                 await config.save();
-                return interaction.reply({ content: `✅ Risposta rapida \`${label}\` rimossa.`, ephemeral: true });
+                return interaction.reply({ content: `✅ Risposta rapida \`${label}\` rimossa.`, flags: [MessageFlags.Ephemeral] });
             }
         }
 
@@ -81,14 +81,14 @@ export default {
                 config.typesConfig.set(id, { emoji, color });
                 if (!config.enabledTypes.includes(id)) config.enabledTypes.push(id);
                 await config.save();
-                return interaction.reply({ content: `✅ Nuovo tipo di ticket \`${id}\` creato. Usa \`/setup-tickets\` per aggiornare il pannello.`, ephemeral: true });
+                return interaction.reply({ content: `✅ Nuovo tipo di ticket \`${id}\` creato. Usa \`/setup-tickets\` per aggiornare il pannello.`, flags: [MessageFlags.Ephemeral] });
             }
 
             if (subcommand === 'remove') {
                 config.typesConfig.delete(id);
                 config.enabledTypes = config.enabledTypes.filter(t => t !== id);
                 await config.save();
-                return interaction.reply({ content: `✅ Tipo di ticket \`${id}\` rimosso.`, ephemeral: true });
+                return interaction.reply({ content: `✅ Tipo di ticket \`${id}\` rimosso.`, flags: [MessageFlags.Ephemeral] });
             }
         }
 
@@ -97,7 +97,7 @@ export default {
             const url = interaction.options.getString('url');
             config.panelImage = url;
             await config.save();
-            return interaction.reply({ content: `🖼️ Banner del pannello aggiornato con successo.`, ephemeral: true });
+            return interaction.reply({ content: `🖼️ Banner del pannello aggiornato con successo.`, flags: [MessageFlags.Ephemeral] });
         }
     },
 };

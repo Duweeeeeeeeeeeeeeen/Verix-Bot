@@ -17,6 +17,7 @@ const client = new Client({
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent,
         GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.GuildVoiceStates,
     ]
 });
 
@@ -31,10 +32,17 @@ const init = async () => {
     // Connect to Database
     if (config.mongoUri) {
         try {
-            await mongoose.connect(config.mongoUri);
+            // Disable buffering to prevent operation timeouts if connection fails
+            mongoose.set('bufferCommands', false);
+            
+            await mongoose.connect(config.mongoUri, {
+                serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+            });
             logger.db('Successfully connected to MongoDB.');
         } catch (error) {
-            logger.error('Failed to connect to MongoDB:', error);
+            logger.error('Failed to connect to MongoDB. Check your Atlas IP Whitelist:', error.message);
+            // Optionally disable features that depend on DB
+            process.env.DB_CONNECTED = 'false';
         }
     } else {
         logger.warn('No MongoDB URI provided. Database features will be disabled.');

@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 
 export default {
     data: new SlashCommandBuilder()
@@ -24,6 +24,6 @@ export default {
         );
 
         await channel.send({ embeds: [embed], components: [button] });
-        await interaction.reply({ content: 'Messaggio di setup inviato correttamente!', ephemeral: true });
+        await interaction.reply({ content: 'Messaggio di setup inviato correttamente!', flags: [MessageFlags.Ephemeral] });
     },
 };

@@ -1,4 +1,4 @@
-import { Events, ActionRowBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle, ModalBuilder, TextInputBuilder, TextInputStyle } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, Events, MessageFlags, ModalBuilder, StringSelectMenuBuilder, TextInputBuilder, TextInputStyle } from 'discord.js';
 import WhitelistConfig from '../../../models/WhitelistConfig.js';
 import BackgroundConfig from '../../../models/BackgroundConfig.js';
 import { buildEmbed } from '../../../utils/embedHelper.js';
@@ -116,7 +116,7 @@ export default {
 
             if (property === 'clearfields') {
                 await config.updateOne({ $set: { [`embeds.${embedKey}.fields`]: [] } });
-                await interaction.reply({ content: '🗑️ Tutti i campi sono stati rimossi.', ephemeral: true });
+                await interaction.reply({ content: '🗑️ Tutti i campi sono stati rimossi.', flags: [MessageFlags.Ephemeral] });
                 return renderEditor(interaction, moduleName, embedKey);
             }
 
@@ -188,7 +188,7 @@ export default {
 
                 await config.updateOne({ $unset: resetData });
                 
-                await interaction.followUp({ content: '🔄 Embed ripristinato ai valori predefiniti.', ephemeral: true });
+                await interaction.followUp({ content: '🔄 Embed ripristinato ai valori predefiniti.', flags: [MessageFlags.Ephemeral] });
                 return renderEditor(interaction, moduleName, embedKey);
             }
         }

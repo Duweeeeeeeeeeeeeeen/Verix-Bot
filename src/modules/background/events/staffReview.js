@@ -1,4 +1,4 @@
-import { Events, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } from 'discord.js';
+import { ActionRowBuilder, Events, MessageFlags, ModalBuilder, TextInputBuilder, TextInputStyle } from 'discord.js';
 import Background from '../../../models/Background.js';
 import BackgroundConfig from '../../../models/BackgroundConfig.js';
 import { buildEmbed } from '../../../utils/embedHelper.js';
@@ -14,7 +14,7 @@ export default {
             const appId = parts[2];
 
             const app = await Background.findById(appId);
-            if (!app) return interaction.reply({ content: 'Richiesta non trovata.', ephemeral: true });
+            if (!app) return interaction.reply({ content: 'Richiesta non trovata.', flags: [MessageFlags.Ephemeral] });
 
             const config = await BackgroundConfig.findOne({ guildId: interaction.guild.id });
             if (!config) return;
@@ -22,7 +22,7 @@ export default {
             // Permission Check
             if (config.staffRoleIds && config.staffRoleIds.length > 0) {
                 if (!interaction.member.roles.cache.some(role => config.staffRoleIds.includes(role.id))) {
-                    return interaction.reply({ content: '❌ Non hai i permessi necessari per gestire i background.', ephemeral: true });
+                    return interaction.reply({ content: '❌ Non hai i permessi necessari per gestire i background.', flags: [MessageFlags.Ephemeral] });
                 }
             }
 
@@ -80,7 +80,7 @@ export default {
             const reason = interaction.fields.getTextInputValue('bg_rejection_reason');
 
             const app = await Background.findById(appId);
-            if (!app) return interaction.reply({ content: 'Richiesta non trovata.', ephemeral: true });
+            if (!app) return interaction.reply({ content: 'Richiesta non trovata.', flags: [MessageFlags.Ephemeral] });
 
             const config = await BackgroundConfig.findOne({ guildId: interaction.guild.id });
             const user = await client.users.fetch(app.userId).catch(() => null);

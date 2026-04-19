@@ -2,10 +2,15 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '../../../components/Layout';
 import Skeleton from '../../../components/Skeleton';
-import HelpTooltip from '../../../components/HelpTooltip';
-import api from '../../../utils/api';
-import { Save, Globe, RefreshCcw, Power, Terminal, Zap, ShieldAlert, CheckCircle2, Plus, Trash2, ChevronDown, ChevronUp, MessageSquare, Shield } from 'lucide-react';
 import DiscordSelector from '../../../components/DiscordSelector';
+import EmbedEditor from '../../../components/EmbedEditor';
+import api from '../../../utils/api';
+import { 
+    Save, Globe, RefreshCcw, Power, Terminal, Zap, ShieldAlert, 
+    Plus, Trash2, ChevronDown, ChevronUp, MessageSquare, 
+    Shield, Palette, Settings2, MousePointer2, ExternalLink, ChevronRight
+} from 'lucide-react';
+import GuideSidebar from '../../../components/GuideSidebar';
 import { v4 as uuidv4 } from 'uuid';
 
 export default function FiveMMultiConfig() {
@@ -16,32 +21,23 @@ export default function FiveMMultiConfig() {
   const [saving, setSaving] = useState(false);
   const [sendingPanel, setSendingPanel] = useState({});
   const [expandedCards, setExpandedCards] = useState({});
+  const [activeSubTabs, setActiveSubTabs] = useState({});
 
   const [roles, setRoles] = useState([]);
   const [channels, setChannels] = useState([]);
-  const [globalConfig, setGlobalConfig] = useState(null);
 
   useEffect(() => {
     if (guildId) {
       Promise.all([
         api.request(`/config/${guildId}/fivem`),
-        api.request(`/config/${guildId}/global`),
         api.request(`/config/${guildId}/discord-data`)
-      ]).then(([data, globalData, discordRes]) => {
+      ]).then(([data, discordRes]) => {
         let moduleConfig = data.data || data;
         if(!moduleConfig.servers) moduleConfig.servers = [];
 
-        const globalConfigData = globalData.data || globalData;
-
-        // Role Inheritance: If local roles are empty, pre-fill from global admin roles
-        if ((!moduleConfig.staffRoleIds || moduleConfig.staffRoleIds.length === 0) && globalConfigData.adminRoleIds?.length > 0) {
-            moduleConfig.staffRoleIds = [...globalConfigData.adminRoleIds];
-        }
-
         setConfig(moduleConfig);
-        setGlobalConfig(globalConfigData);
-        setRoles(discordRes?.roles || discordRes?.data?.roles || []);
-        setChannels(discordRes?.channels || discordRes?.data?.channels || []);
+        setRoles(discordRes?.roles || []);
+        setChannels(discordRes?.channels || []);
         setLoading(false);
       }).catch(err => {
         console.error("API Error in FiveM Config:", err);
@@ -60,59 +56,35 @@ export default function FiveMMultiConfig() {
     try {
       await api.request(`/config/${guildId}/fivem`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(config)
       });
-      showToast('Dashboard FiveM aggiornata e salvata nel Cloud!');
-    } catch (error) {
-       // handled globally
-    } finally {
-      setSaving(false);
-    }
+      showToast('Configurazione salvata!');
+    } catch (error) {}
+    finally { setSaving(false); }
   };
 
   const handleSendPanel = async (serverId) => {
-    const server = config.servers.find(s => s.id === serverId);
-    if (!server.statusChannelId) {
-        return showToast('Configura prima un ID Canale per questo server.', 'error');
-    }
-
     setSendingPanel(prev => ({ ...prev, [serverId]: true }));
     try {
         const res = await api.request(`/config/${guildId}/fivem/send-panel`, {
             method: 'POST',
             body: JSON.stringify({ serverId })
         });
-        
-        if (res.success) {
-            showToast(res.message);
-            // Non c'è bisogno di ricaricare tutto, il background manager farà il resto
-        } else {
-            showToast(res.error || 'Errore nell\'invio del pannello.', 'error');
-        }
-    } catch (error) {
-        // handled globally by api.request (connection error toast)
-    } finally {
-        setSendingPanel(prev => ({ ...prev, [serverId]: false }));
-    }
+        showToast(res.message || 'LiveBoard inviata!');
+    } catch (error) {}
+    finally { setSendingPanel(prev => ({ ...prev, [serverId]: false })); }
   };
 
   const handlePing = async (serverIp) => {
-      if(!serverIp) return showToast('Inserisci prima un IP Server.', 'warning');
+      if(!serverIp) return showToast('Inserisci un IP!', 'warning');
       try {
           const res = await api.request(`/config/${guildId}/fivem/ping`, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ serverIp })
           });
-          if(res.success) {
-              showToast(`Online: ${res.data.name} [${res.data.players}/${res.data.maxPlayers}]`, 'success');
-          } else {
-             showToast(res.error || 'Host irraggiungibile.', 'error');
-          }
-      } catch (err) {
-         showToast('Timeout network durante test.', 'error');
-      }
+          if(res.success) showToast(`Online: ${res.data.name} [${res.data.players}/${res.data.maxPlayers}]`);
+          else showToast(res.error || 'Host offline.', 'error');
+      } catch (err) { showToast('Errore ping.', 'error'); }
   };
 
   const addServer = () => {
@@ -122,18 +94,17 @@ export default function FiveMMultiConfig() {
           serverIp: '',
           statusChannelId: '',
           messageId: null,
-          uptimeStart: null,
-          onlineMessage: '',
-          offlineMessage: '',
-          onlineEmbed: { enabled: true, title: '', description: '', color: '#2ecc71', footer: '' },
-          offlineEmbed: { enabled: true, title: '', description: '', color: '#e74c3c', footer: '' }
+          buttons: [{ label: 'Connettiti', url: '', emoji: '🎮', style: 'LINK' }],
+          onlineEmbed: { enabled: true, title: '✅ Server Online', description: 'Il server è operativo.\n\n👤 Giocatori: {players}/{maxPlayers}', color: '#2ecc71' },
+          offlineEmbed: { enabled: true, title: '🚨 Server Offline', description: 'Il server non è raggiungibile.', color: '#e74c3c' }
       };
       setConfig({...config, servers: [...config.servers, newServer]});
       setExpandedCards({...expandedCards, [newServer.id]: true});
+      setActiveSubTabs({...activeSubTabs, [newServer.id]: 'settings'});
   };
 
   const removeServer = (serverId) => {
-      if(!confirm("Sicuro di voler terminare ed eliminare il tracciamento di questo server?")) return;
+      if(!confirm("Eliminare?")) return;
       setConfig({...config, servers: config.servers.filter(s => s.id !== serverId)});
   };
 
@@ -144,227 +115,217 @@ export default function FiveMMultiConfig() {
       });
   };
 
-  const toggleExpand = (id) => {
-      setExpandedCards(prev => ({...prev, [id]: !prev[id]}));
+  const addButton = (serverId) => {
+    const server = config.servers.find(s => s.id === serverId);
+    if (server.buttons?.length >= 5) return showToast('Massimo 5 bottoni!', 'warning');
+    const newButtons = [...(server.buttons || []), { label: 'Link', url: '', emoji: '🔗', style: 'LINK' }];
+    updateServer(serverId, { buttons: newButtons });
   };
 
-  if (loading || !config) return (
-    <Layout guildId={guildId}>
-      <div className="animate">
-        <header style={{ marginBottom: '40px' }}>
-             <Skeleton width="300px" height="40px" style={{ marginBottom: '12px' }} />
-             <Skeleton width="500px" height="20px" />
-        </header>
-        <div className="card glass" style={{ padding: '60px', textAlign: 'center' }}>
-            <div className="spinner-small" style={{ margin: '0 auto 20px', width: '40px', height: '40px' }}></div>
-            <p className="text-description">Inizializzazione modulo FiveM...</p>
-        </div>
-      </div>
-    </Layout>
-  );
+  const removeButton = (serverId, index) => {
+    const server = config.servers.find(s => s.id === serverId);
+    const newButtons = server.buttons.filter((_, i) => i !== index);
+    updateServer(serverId, { buttons: newButtons });
+  };
+
+  const updateBtnField = (serverId, index, field, value) => {
+    const server = config.servers.find(s => s.id === serverId);
+    const newButtons = server.buttons.map((b, i) => i === index ? { ...b, [field]: value } : b);
+    updateServer(serverId, { buttons: newButtons });
+  };
+
+  if (loading || !config) return <Layout guildId={guildId}><Skeleton height="500px" /></Layout>;
 
   return (
     <Layout guildId={guildId}>
       <div className="animate">
-        <div className="card glass-heavy status-card" style={{ marginBottom: '40px' }}>
-            <div className="align-center" style={{ gap: '15px' }}>
-                <div className={`status-icon ${config.enabled ? 'active' : ''}`} style={{ display: 'flex' }}>
-                    <Power size={22} />
+        
+        {/* Module Header */}
+        <header className="module-header">
+           <div className="header-info">
+              <div className="header-icon">
+                <Globe size={24} />
+              </div>
+              <div className="header-text">
+                <h1>FiveM LiveBoard</h1>
+                <p>Monitoraggio in tempo reale e status per i tuoi server di gioco.</p>
+              </div>
+           </div>
+           <div className="header-buttons">
+              <button onClick={addServer} className="btn-outline">
+                <Plus size={16} /> Aggiungi Server
+              </button>
+              <button onClick={handleSave} className="btn-primary" disabled={saving}>
+                <Save size={16} /> {saving ? 'Salvataggio...' : 'Salva Modifiche'}
+              </button>
+           </div>
+        </header>
+
+        {/* Global Module Status */}
+        <section className="card status-section" style={{ marginBottom: '24px' }}>
+            <div className="section-info">
+                <div className={`status-box ${config.enabled ? 'on' : ''}`}>
+                    <Power size={20} />
                 </div>
                 <div>
-                    <span style={{ fontWeight: '800', fontSize: '1rem', display: 'block' }}>Modulo Attivo</span>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Abilita o disabilita il sistema FiveM Status pinger.</span>
+                    <h3>Modulo FiveM</h3>
+                    <p className="text-muted">Abilita o disabilita il tracking globale dei server.</p>
                 </div>
             </div>
             <label className="toggle">
                 <input type="checkbox" checked={config.enabled} onChange={(e) => setConfig({...config, enabled: e.target.checked})} />
                 <span className="slider"></span>
             </label>
+        </section>
+
+        {/* Servers List */}
+        <div className="servers-list">
+            {config.servers.map((server, index) => (
+                <div key={server.id} className="card server-card">
+                    <div className="server-header" onClick={() => setExpandedCards({...expandedCards, [server.id]: !expandedCards[server.id]})}>
+                        <div className="server-info-main">
+                            <label className="toggle" onClick={e => e.stopPropagation()}>
+                                <input type="checkbox" checked={server.enabled} onChange={e => updateServer(server.id, {enabled: e.target.checked})} />
+                                <span className="slider"></span>
+                            </label>
+                            <div className="title-group">
+                                <h3>{server.serverIp || `Nuovo Server #${index+1}`}</h3>
+                                <span className="id-tag">ID: {server.id.substring(0,8)}</span>
+                            </div>
+                        </div>
+                        <div className="server-actions">
+                            <button onClick={e => { e.stopPropagation(); handleSendPanel(server.id); }} className="btn-pill" disabled={sendingPanel[server.id]}>
+                                <MessageSquare size={14} /> {sendingPanel[server.id] ? 'Inviando...' : 'LiveBoard'}
+                            </button>
+                            <button onClick={e => { e.stopPropagation(); handlePing(server.serverIp); }} className="btn-pill secondary"><Zap size={14} /></button>
+                            <button onClick={e => { e.stopPropagation(); removeServer(server.id); }} className="btn-del"><Trash2 size={16} /></button>
+                            {expandedCards[server.id] ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                        </div>
+                    </div>
+
+                    {expandedCards[server.id] && (
+                        <div className="server-body animate">
+                            <div className="sub-tab-nav">
+                                <button onClick={() => setActiveSubTabs({...activeSubTabs, [server.id]: 'settings'})} className={`sub-tab-link ${activeSubTabs[server.id] !== 'design' ? 'active' : ''}`}>Impostazioni</button>
+                                <button onClick={() => setActiveSubTabs({...activeSubTabs, [server.id]: 'design'})} className={`sub-tab-link ${activeSubTabs[server.id] === 'design' ? 'active' : ''}`}>Design Embed</button>
+                            </div>
+
+                            {activeSubTabs[server.id] !== 'design' ? (
+                                <div className="server-grid">
+                                    <div className="grid-main-p">
+                                        <div className="fields-grid-p">
+                                            <div className="field-box">
+                                                <label className="text-label">IP & Porta del Server</label>
+                                                <input className="input" placeholder="127.0.0.1:30120" value={server.serverIp} onChange={e => updateServer(server.id, {serverIp: e.target.value})} />
+                                            </div>
+                                            <div className="field-box">
+                                                <label className="text-label">Canale Discord LiveBoard</label>
+                                                <DiscordSelector type="channel" options={channels} value={server.statusChannelId} onChange={v => updateServer(server.id, {statusChannelId: v})} />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="grid-side-p">
+                                        <div className="buttons-config-card">
+                                            <h4 className="align-center"><MousePointer2 size={16} /> Bottoni ({server.buttons?.length || 0}/5)</h4>
+                                            <div className="buttons-list-p">
+                                                {(server.buttons || []).map((btn, bIdx) => (
+                                                    <div key={bIdx} className="btn-edit-row">
+                                                        <input className="input-s" placeholder="Etichetta" value={btn.label} onChange={e => updateBtnField(server.id, bIdx, 'label', e.target.value)} />
+                                                        <input className="input-s" placeholder="URL" value={btn.url} onChange={e => updateBtnField(server.id, bIdx, 'url', e.target.value)} />
+                                                        <button onClick={() => removeButton(server.id, bIdx)} className="btn-del-s"><Trash2 size={14} /></button>
+                                                    </div>
+                                                ))}
+                                                <button onClick={() => addButton(server.id)} className="btn-add-dashed"><Plus size={14} /> Aggiungi Bottone</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="design-editor-p">
+                                    <div className="editor-top-p">
+                                        <div className="pill-toggle">
+                                            <button onClick={() => updateServer(server.id, { _tmp_key: 'online' })} className={server._tmp_key !== 'offline' ? 'active' : ''}>ONLINE</button>
+                                            <button onClick={() => updateServer(server.id, { _tmp_key: 'offline' })} className={server._tmp_key === 'offline' ? 'active' : ''}>OFFLINE</button>
+                                        </div>
+                                    </div>
+                                    <EmbedEditor 
+                                        embed={server._tmp_key === 'offline' ? server.offlineEmbed : server.onlineEmbed}
+                                        onChange={d => updateServer(server.id, { [server._tmp_key === 'offline' ? 'offlineEmbed' : 'onlineEmbed']: d })}
+                                        variables={['server', 'players', 'maxPlayers', 'guild']}
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+            ))}
         </div>
 
-        <section className="card glass-heavy" style={{ padding: '30px', marginBottom: '32px' }}>
-            <div className="align-center" style={{ marginBottom: '24px' }}>
-                <Shield size={24} color="var(--primary)" />
-                <h3 style={{ fontSize: '1.4rem', fontWeight: '800' }}>Configurazione Staff & Permessi</h3>
-                <HelpTooltip text="Definisci chi può gestire i server FiveM dalla dashboard e dai comandi." />
+        {/* Global Permissions */}
+        <section className="card permissions-section" style={{ marginTop: '32px' }}>
+            <div className="align-center" style={{ marginBottom: '16px' }}>
+                <Shield size={18} color="var(--primary)" />
+                <h3 style={{ fontSize: '1.1rem' }}>Permessi Gestione Staff</h3>
             </div>
-            <div className="input-group">
-                <label className="text-label">Ruoli Staff FiveM</label>
-                <DiscordSelector 
-                    type="role" 
-                    multiple={true} 
-                    options={roles} 
-                    value={config?.staffRoleIds || []} 
-                    onChange={val => setConfig({...config, staffRoleIds: val})} 
-                    placeholder="Seleziona ruoli per la gestione FiveM..."
-                />
-                <p className="text-description" style={{ fontSize: '0.8rem', marginTop: '8px' }}>
-                    Se non specificato, verranno ereditati automaticamente i ruoli Amministratori dalle impostazioni globali.
-                </p>
+            <div className="field-box">
+                <label className="text-label">Ruoli con accesso a questa dashboard</label>
+                <DiscordSelector type="role" multiple={true} options={roles} value={config.staffRoleIds || []} onChange={v => setConfig({...config, staffRoleIds: v})} />
+            </div>
+
+            <div style={{ marginTop: '32px' }}>
+                <GuideSidebar type="fivem" context={config} />
             </div>
         </section>
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-          <div>
-            <div className="align-center" style={{ color: 'var(--primary)', marginBottom: '8px' }}>
-                <Globe size={18} fill="currentColor" />
-                <span className="text-label" style={{ marginBottom: 0 }}>Gestione Moduli Multi-Istanza</span>
-            </div>
-            <h1 style={{ fontSize: '2.8rem', fontWeight: '900', letterSpacing: '-1.5px', display: 'flex', alignItems: 'center', gap: '16px' }}>
-              Multi-Server <span style={{ fontSize: '0.8rem', background: '#eab308', color: 'white', padding: '4px 12px', borderRadius: '10px', verticalAlign: 'middle', fontWeight: '800', letterSpacing: '1px' }}>LIVEBOARD</span>
-            </h1>
-            <p className="text-description" style={{ fontSize: '1.1rem' }}>Genera pannelli tracker persistenti per infiniti server contemporaneamente.</p>
-          </div>
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <button onClick={addServer} className="btn-secondary" style={{ borderColor: 'rgba(255,255,255,0.2)' }}>
-                <Plus size={18} /> Aggiungi Server
-            </button>
-            <button onClick={handleSave} className="btn-primary" disabled={saving}>
-                <Save size={18} className={saving ? 'spin' : ''} /> {saving ? 'Salva Modifiche' : 'Salva Modifiche'}
-            </button>
-          </div>
-        </div>
-
-        {(config?.servers || []).length === 0 && (
-            <div className="card glass" style={{ textAlign: 'center', padding: '60px' }}>
-                 <Terminal size={64} color="var(--primary)" opacity={0.3} style={{ marginBottom: '20px' }} />
-                 <h2 style={{ fontSize: '1.5rem', fontWeight: '800' }}>Nessun Server Rilevato</h2>
-                 <p className="text-description">Inizia aggiungendo il tuo primo host FiveM.</p>
-                 <button onClick={addServer} className="btn-primary" style={{ marginTop: '20px' }}>Inizializza Primo Server</button>
-            </div>
-        )}
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '25px', marginBottom: '60px' }}>
-            {(config?.servers || []).map((server, index) => {
-                const isExpanded = expandedCards[server.id];
-                return (
-                    <div key={server.id} className="card glass" style={{ padding: '0', overflow: 'hidden' }}>
-                        {/* Server Header */}
-                        <div style={{ padding: '25px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.02)', cursor: 'pointer' }} onClick={() => toggleExpand(server.id)}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                                 <label className="toggle" onClick={(e) => e.stopPropagation()} style={{ padding: '5px' }}>
-                                    <input type="checkbox" checked={server.enabled} onChange={(e) => updateServer(server.id, {enabled: e.target.checked})} />
-                                    <span className="slider"></span>
-                                 </label>
-                                 <div>
-                                     <h3 style={{ fontSize: '1.3rem', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                         <Terminal size={20} color={server.enabled ? "var(--primary)" : "var(--text-dim)"} /> 
-                                         {server.serverIp || `Node Server #${index + 1}`}
-                                     </h3>
-                                     <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                                        UUID: {server.id.substring(0,8)} | LiveBoard Attiva: {server.messageId ? '🟩 SÌ' : '⚠️ NO (Richiede Invio)'}
-                                     </span>
-                                 </div>
-                            </div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                                 <button 
-                                     onClick={(e) => { e.stopPropagation(); handleSendPanel(server.id); }} 
-                                     className="btn-outline" 
-                                     disabled={sendingPanel[server.id]}
-                                     style={{ padding: '8px 15px', fontSize: '0.8rem', borderColor: 'var(--primary)', color: 'var(--primary)' }}
-                                 >
-                                     <MessageSquare size={14} className={sendingPanel[server.id] ? 'spin' : ''} /> 
-                                     {sendingPanel[server.id] ? 'Invio...' : 'Invia Pannello'}
-                                 </button>
-                                 <button onClick={(e) => { e.stopPropagation(); handlePing(server.ip || server.serverIp); }} className="btn-secondary" style={{ padding: '8px 15px', fontSize: '0.8rem' }}>
-                                     <Zap size={14} /> Test Ping
-                                 </button>
-                                 <button onClick={(e) => { e.stopPropagation(); removeServer(server.id); }} style={{ background: 'transparent', border: 'none', color: '#e74c3c', padding: '10px', cursor: 'pointer' }}>
-                                     <Trash2 size={20} />
-                                 </button>
-                                 {isExpanded ? <ChevronUp size={24} color="var(--text-dim)"/> : <ChevronDown size={24} color="var(--text-dim)"/>}
-                            </div>
-                        </div>
-
-                        {/* Extended Payload */}
-                        {isExpanded && (
-                            <div style={{ padding: '30px', borderTop: '1px solid var(--border)' }}>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '40px' }}>
-                                    <div className="input-group">
-                                        <label className="text-label">Indirizzo IP e Server Port (Indispensabile)</label>
-                                        <input type="text" className="input" value={server.serverIp} onChange={(e) => updateServer(server.id, {serverIp: e.target.value})} placeholder="Es: 88.0.0.1:30120" />
-                                    </div>
-                                    <div className="input-group">
-                                        <label className="text-label">Canale LiveBoard Discord</label>
-                                        <DiscordSelector 
-                                            type="channel" 
-                                            options={channels.filter(c => c.type === 0 || c.type === 5)} 
-                                            value={server.statusChannelId || ''} 
-                                            onChange={val => updateServer(server.id, {statusChannelId: val})} 
-                                            placeholder="Seleziona canale status..."
-                                        />
-                                    </div>
-                                </div>
-
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
-                                    {/* ONLINE CONFIG */}
-                                    <div style={{ background: 'rgba(0, 255, 127, 0.02)', padding: '20px', borderRadius: '16px', borderTop: '3px solid #2ecc71' }}>
-                                         <h4 style={{ color: '#2ecc71', fontWeight: 800, marginBottom: '20px' }}>Dettagli Status ONLINE</h4>
-                                         
-                                         <div className="input-group" style={{ marginBottom: '15px' }}>
-                                             <label className="text-label" style={{ fontSize: '0.8rem' }}>Messaggio Base (Accetta Placeholder)</label>
-                                             <textarea className="input" rows="2" value={server.onlineMessage} onChange={(e) => updateServer(server.id, {onlineMessage: e.target.value})} placeholder="Fantastico! Server {server} in gioco. (Sarà appendato con 🟢 L'Uptime automatico)" />
-                                         </div>
-                                         <div className="input-group">
-                                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                                                <label className="text-label" style={{ fontSize: '0.8rem' }}>Rendering Embed e Background Color</label>
-                                                <label className="toggle" style={{ transform: 'scale(0.8)', transformOrigin: 'right' }}><input type="checkbox" checked={server.onlineEmbed.enabled} onChange={e => updateServer(server.id, {onlineEmbed: {...server.onlineEmbed, enabled: e.target.checked}})}/><span className="slider"></span></label>
-                                             </div>
-                                             {server.onlineEmbed.enabled && (
-                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                                    <input type="text" className="input" style={{ fontSize: '0.85rem' }} value={server.onlineEmbed.title} onChange={(e) => updateServer(server.id, {onlineEmbed: {...server.onlineEmbed, title: e.target.value}})} placeholder="Es: ✅ Server Pinger Operativo" />
-                                                    <textarea className="input" rows="2" style={{ fontSize: '0.85rem' }} value={server.onlineEmbed.description} onChange={(e) => updateServer(server.id, {onlineEmbed: {...server.onlineEmbed, description: e.target.value}})} placeholder="Descrizione del tuo bellissimo server RP" />
-                                                </div>
-                                             )}
-                                         </div>
-                                    </div>
-
-                                    {/* OFFLINE CONFIG */}
-                                    <div style={{ background: 'rgba(231, 76, 60, 0.02)', padding: '20px', borderRadius: '16px', borderTop: '3px solid #e74c3c' }}>
-                                         <h4 style={{ color: '#e74c3c', fontWeight: 800, marginBottom: '20px' }}>Dettagli Status OFFLINE</h4>
-                                         
-                                         <div className="input-group" style={{ marginBottom: '15px' }}>
-                                             <label className="text-label" style={{ fontSize: '0.8rem' }}>Messaggio Emergenza (Accetta @Tag)</label>
-                                             <textarea className="input" rows="2" value={server.offlineMessage} onChange={(e) => updateServer(server.id, {offlineMessage: e.target.value})} placeholder="@here 🚨 Pinger bloccato, l'host sembra irraggiungibile!" />
-                                         </div>
-                                         <div className="input-group">
-                                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                                                <label className="text-label" style={{ fontSize: '0.8rem' }}>Rendering Embed d'Emergenza</label>
-                                                <label className="toggle" style={{ transform: 'scale(0.8)', transformOrigin: 'right' }}><input type="checkbox" checked={server.offlineEmbed.enabled} onChange={e => updateServer(server.id, {offlineEmbed: {...server.offlineEmbed, enabled: e.target.checked}})}/><span className="slider"></span></label>
-                                             </div>
-                                             {server.offlineEmbed.enabled && (
-                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                                    <input type="text" className="input" style={{ fontSize: '0.85rem' }} value={server.offlineEmbed.title} onChange={(e) => updateServer(server.id, {offlineEmbed: {...server.offlineEmbed, title: e.target.value}})} placeholder="Es: 🚨 Disconnessione Rete Cloud" />
-                                                    <textarea className="input" rows="2" style={{ fontSize: '0.85rem' }} value={server.offlineEmbed.description} onChange={(e) => updateServer(server.id, {offlineEmbed: {...server.offlineEmbed, description: e.target.value}})} placeholder="Avvisa l'utenza di mantenere la calma..." />
-                                                </div>
-                                             )}
-                                         </div>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                );
-            })}
-        </div>
-
-
-        <div className="card glass" style={{ marginTop: '0px', background: 'rgba(var(--primary-rgb), 0.05)', display: 'flex', gap: '15px', alignItems: 'flex-start', padding: '24px' }}>
-            <ShieldAlert size={28} color="var(--primary)" style={{ flexShrink: 0 }} />
-            <div>
-                <p style={{ fontWeight: '800', color: 'white' }}>Funzionamento Architettura Multi-Board</p>
-                <div style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <p>
-                        Il bot cercherà automaticamente di recuperare lo storico. A differenza del tracking base, <b>questo modulo stamperà un solo messaggio per ogni server (Gilda) che verrà aggiornato permanentemente nel tempo</b>. 
-                        Mostrerà sempre un pulsante "Join" auto-generato e, per le istanze online, abiliterà il tracking dell'uptime tramite timestamp nativo Discord (<code>&lt;t:TIMESTAMP:R&gt;</code>).
-                    </p>
-                </div>
-            </div>
-        </div>
-
         <style jsx>{`
-            .spin { animation: spin 1s linear infinite; }
-            @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+            .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: rgba(255,255,255,0.02); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
+            .header-info { display: flex; align-items: center; gap: 16px; }
+            .header-icon { width: 48px; height: 48px; background: rgba(129, 140, 248, 0.1); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+            .header-text h1 { font-size: 1.5rem; margin-bottom: 2px; }
+            .header-text p { font-size: 0.85rem; color: var(--text-muted); }
+
+            .status-section { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; }
+            .section-info { display: flex; align-items: center; gap: 16px; }
+            .status-box { width: 40px; height: 40px; background: #1e293b; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--text-dim); border: 1px solid var(--border); transition: 0.3s; }
+            .status-box.on { color: var(--primary); background: rgba(129, 140, 248, 0.1); border-color: rgba(129, 140, 248, 0.2); }
+
+            .server-card { padding: 0 !important; overflow: hidden; margin-bottom: 16px; }
+            .server-header { padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; }
+            .server-header:hover { background: rgba(255,255,255,0.02); }
+            .server-info-main { display: flex; align-items: center; gap: 16px; }
+            .title-group h3 { font-size: 1rem; margin-bottom: 0px; }
+            .id-tag { font-size: 0.65rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+
+            .server-actions { display: flex; align-items: center; gap: 12px; color: var(--text-muted); }
+            .btn-pill { background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: white; padding: 6px 14px; border-radius: 100px; font-size: 0.8rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; }
+            .btn-pill:hover { background: var(--border-strong); }
+            .btn-pill.secondary { color: var(--text-muted); }
+            .btn-del { background: transparent; border: none; color: var(--text-dim); cursor: pointer; transition: 0.2s; }
+            .btn-del:hover { color: var(--error); }
+
+            .server-body { padding: 0 24px 24px 24px; border-top: 1px solid var(--border); background: rgba(0,0,0,0.1); }
+            .sub-tab-nav { display: flex; gap: 8px; padding: 16px 0; border-bottom: 1px dotted var(--border); margin-bottom: 24px; }
+            .sub-tab-link { background: transparent; border: none; color: var(--text-dim); font-size: 0.85rem; font-weight: 700; padding: 8px 16px; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+            .sub-tab-link:hover { color: white; background: rgba(255,255,255,0.03); }
+            .sub-tab-link.active { color: var(--primary); background: rgba(129, 140, 248, 0.05); }
+
+            .server-grid { display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
+            .fields-grid-p { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+            .buttons-config-card { background: rgba(255,255,255,0.02); padding: 16px; border-radius: 12px; border: 1px solid var(--border); }
+            .buttons-list-p { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+            .btn-edit-row { display: flex; gap: 8px; align-items: center; }
+            .input-s { flex: 1; min-width: 0; background: #020617; border: 1px solid var(--border); color: white; padding: 6px 10px; border-radius: 6px; font-size: 0.8rem; }
+            .btn-del-s { background: transparent; border: none; color: var(--text-dim); cursor: pointer; }
+            .btn-del-s:hover { color: var(--error); }
+            .btn-add-dashed { width: 100%; padding: 8px; border: 1px dashed var(--border); border-radius: 8px; background: transparent; color: var(--text-dim); cursor: pointer; display: flex; align-items: center; confirm: center; gap: 8px; font-size: 0.8rem; transition: 0.2s; }
+            .btn-add-dashed:hover { border-color: var(--primary); color: var(--primary); }
+
+            .editor-top-p { display: flex; justify-content: flex-end; margin-bottom: 20px; }
+            .pill-toggle { display: flex; background: rgba(255,255,255,0.04); padding: 4px; border-radius: 10px; border: 1px solid var(--border); }
+            .pill-toggle button { border: none; background: transparent; color: var(--text-muted); padding: 6px 14px; border-radius: 7px; font-size: 0.75rem; font-weight: 800; cursor: pointer; }
+            .pill-toggle button.active { background: var(--primary); color: white; }
+
+            .align-center { display: flex; align-items: center; gap: 10px; }
         `}</style>
       </div>
     </Layout>

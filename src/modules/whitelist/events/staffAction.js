@@ -1,4 +1,4 @@
-import { Events, ActionRowBuilder, ButtonBuilder, ButtonStyle, ModalBuilder, TextInputBuilder, TextInputStyle, EmbedBuilder } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, Events, MessageFlags, ModalBuilder, TextInputBuilder, TextInputStyle } from 'discord.js';
 import WhitelistConfig from '../../../models/WhitelistConfig.js';
 import WhitelistApp from '../../../models/WhitelistApp.js';
 import WhitelistAudit from '../../../models/WhitelistAudit.js';
@@ -16,20 +16,21 @@ export default {
             // User Buttons
             if (buttonId === 'confirm_wl' || buttonId === 'cancel_wl') {
                 const app = await WhitelistApp.findOne({ channelId: interaction.channel.id, userId: interaction.user.id });
-                if (!app) return interaction.reply({ content: 'Sessione non trovata.', ephemeral: true });
+                if (!app) return interaction.reply({ content: 'Sessione non trovata.', flags: [MessageFlags.Ephemeral] });
 
                 if (buttonId === 'cancel_wl') {
                     app.deletionScheduledAt = new Date(Date.now() + 5000);
                     await app.save();
-                    return interaction.reply('Procedura annullata. Il canale verrà eliminato tra 5 secondi.');
+                    await interaction.reply('Procedura annullata. Il canale verrà eliminato tra 5 secondi.');
+                    return setTimeout(() => interaction.channel?.delete().catch(() => {}), 5000);
                 }
 
                 if (buttonId === 'confirm_wl') {
                     const config = await WhitelistConfig.findOne({ guildId: interaction.guild.id });
-                    if (!config) return interaction.reply({ content: 'Errore: Configurazione non trovata.', ephemeral: true });
+                    if (!config) return interaction.reply({ content: 'Errore: Configurazione non trovata.', flags: [MessageFlags.Ephemeral] });
                     
                     const logChannel = interaction.guild.channels.cache.get(config.logChannelId);
-                    if (!logChannel) return interaction.reply({ content: 'Errore: Canale log dello staff non trovato.', ephemeral: true });
+                    if (!logChannel) return interaction.reply({ content: 'Errore: Canale log dello staff non trovato.', flags: [MessageFlags.Ephemeral] });
 
                     const staffEmbed = buildEmbed(config.embeds.staff_received, {
                         user: interaction.user,
@@ -78,7 +79,8 @@ export default {
                     app.deletionScheduledAt = new Date(Date.now() + 10000);
                     await app.save();
                     
-                    return interaction.reply('✅ La tua candidatura è stata confermata e inviata allo staff! Sarai avvisato qui a breve.\n\n*Il canale si chiuderà tra 10 secondi.*');
+                    await interaction.reply('✅ La tua candidatura è stata confermata e inviata allo staff! Sarai avvisato qui a breve.\n\n*Il canale si chiuderà tra 10 secondi.*');
+                    return setTimeout(() => interaction.channel?.delete().catch(() => {}), 10000);
                 }
             }
 
@@ -89,13 +91,14 @@ export default {
                 const appId = parts[2];
 
                 const app = await WhitelistApp.findById(appId);
-                if (!app) return interaction.reply({ content: 'Candidatura non trovata.', ephemeral: true });
+                if (!app) return interaction.reply({ content: 'Candidatura non trovata.', flags: [MessageFlags.Ephemeral] });
 
                 const config = await WhitelistConfig.findOne({ guildId: interaction.guild.id });
                 const user = await client.users.fetch(app.userId).catch(() => null);
 
                 if (action === 'approve') {
-                    app.status = 'ACCEPTED';
+                    const isHybrid = config.mode === 'HYBRID';
+                    app.status = isHybrid ? 'WAITING_VOICE' : 'ACCEPTED';
                     app.reviewedBy = interaction.user.id;
                     await app.save();
 
@@ -104,14 +107,19 @@ export default {
                         guildId: interaction.guild.id,
                         staffId: interaction.user.id,
                         userId: app.userId,
-                        action: 'ACCEPTED',
+                        action: app.status,
                         applicationId: app._id,
                         timestamp: new Date()
                     });
 
                     // Delegate Notification and Log
+                    const event = isHybrid ? 'whitelist.onTextPass' : 'whitelist.onAccept';
+                    const content = isHybrid 
+                        ? `📝 Hai superato la prova scritta su **${interaction.guild.name}**!\nOra puoi recarti nel canale vocale d'attesa per il colloquio finale.`
+                        : `✅ La tua candidatura whitelist in **${interaction.guild.name}** è stata **accettata**! Benvenuto!`;
+
                     const notifyResult = await sendNotification({
-                        event: 'whitelist.onAccept',
+                        event,
                         guildId: interaction.guild.id,
                         guild: interaction.guild,
                         user,
@@ -119,10 +127,10 @@ export default {
                             guild: interaction.guild.name,
                             user: user?.username || 'Utente'
                         }, config) : null,
-                        content: `✅ La tua candidatura whitelist in **${interaction.guild.name}** è stata **accettata**! Benvenuto!`
+                        content
                     });
 
-                    // Update the staff embed to show acceptance and DM status
+                    // Update the staff embed to show status and DM status
                     const dmStatus = notifyResult?.dm?.attempted 
                         ? (notifyResult.dm.success ? '✅ Inviata' : '❌ Fallita (DM Chiusi)') 
                         : '灰色 (Disabilitata)';
@@ -130,24 +138,34 @@ export default {
                     const originalEmbed = interaction.message.embeds[0];
                     if (originalEmbed) {
                         const updatedEmbed = EmbedBuilder.from(originalEmbed)
-                            .setTitle('✅ Whitelist ACCETTATA')
-                            .setColor('#2ecc71') // Green
+                            .setTitle(isHybrid ? '📝 Scritto SUPERATO' : '✅ Whitelist ACCETTATA')
+                            .setColor(isHybrid ? '#f1c40f' : '#2ecc71') // Yellow for waiting, Green for done
                             .addFields(
-                                { name: 'Esito', value: `✅ Accettata da ${interaction.user.tag}` },
+                                { name: 'Esito', value: isHybrid ? `📝 Parte scritta approvata da ${interaction.user.tag}` : `✅ Accettata da ${interaction.user.tag}` },
                                 { name: 'Notifica DM', value: dmStatus, inline: true }
                             );
 
+                        if (isHybrid) {
+                            updatedEmbed.addFields({ name: 'Prossimo Step', value: '🎤 Attesa Colloquio Vocale', inline: true });
+                        }
+
                         await interaction.update({ embeds: [updatedEmbed], components: [] });
                     } else {
-                        await interaction.update({ content: `✅ Pratica approvata da ${interaction.user.tag} (${dmStatus})`, embeds: [], components: [] });
+                        const msg = isHybrid 
+                            ? `✅ Parte scritta approvata da ${interaction.user.tag}. In attesa di colloquio vocale.`
+                            : `✅ Pratica approvata definitivamente da ${interaction.user.tag}.`;
+                        await interaction.update({ content: `${msg} (${dmStatus})`, embeds: [], components: [] });
                     }
 
                     await sendLog({
-                        event: 'whitelist.onAccept',
+                        event,
                         guildId: interaction.guild.id,
                         guild: interaction.guild,
-                        content: `✅ Candidatura di <@${app.userId}> **accettata** da ${interaction.user} — Dossier: \`${app._id}\``
+                        content: isHybrid 
+                            ? `📝 <@${app.userId}> ha superato la prova scritta (Staff: ${interaction.user}). Ora in attesa di colloquio vocale.`
+                            : `✅ Candidatura di <@${app.userId}> **accettata** da ${interaction.user} — Dossier: \`${app._id}\``
                     });
+                    return;
                 }
 
                 if (action === 'deny') {
@@ -181,7 +199,7 @@ export default {
                 const reason = interaction.fields.getTextInputValue('denial_reason');
 
                 const app = await WhitelistApp.findById(appId);
-                if (!app) return interaction.followUp({ content: 'Candidatura non trovata.', ephemeral: true });
+                if (!app) return interaction.followUp({ content: 'Candidatura non trovata.', flags: [MessageFlags.Ephemeral] });
 
                 const config = await WhitelistConfig.findOne({ guildId: interaction.guild.id });
                 const user = await client.users.fetch(app.userId).catch(() => null);

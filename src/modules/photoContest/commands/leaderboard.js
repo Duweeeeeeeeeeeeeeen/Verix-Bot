@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
+import { EmbedBuilder, MessageFlags, SlashCommandBuilder } from 'discord.js';
 import User from '../../../models/User.js';
 
 export default {
@@ -32,7 +32,7 @@ export default {
             await interaction.reply({ embeds: [embed] });
         } catch (error) {
             console.error('Error fetching leaderboard:', error);
-            await interaction.reply({ content: '❌ Errore durante il recupero della leaderboard.', ephemeral: true });
+            await interaction.reply({ content: '❌ Errore durante il recupero della leaderboard.', flags: [MessageFlags.Ephemeral] });
         }
     }
 };

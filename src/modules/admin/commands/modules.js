@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
+import { EmbedBuilder, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 import Guild from '../../../models/Guild.js';
 import fs from 'fs-extra';
 import path from 'path';
@@ -49,13 +49,13 @@ export default {
 
         const moduleName = interaction.options.getString('name').toLowerCase();
         if (!allModules.includes(moduleName)) {
-            return interaction.reply({ content: `Modulo \`${moduleName}\` non trovato. Moduli disponibili: ${allModules.join(', ')}`, ephemeral: true });
+            return interaction.reply({ content: `Modulo \`${moduleName}\` non trovato. Moduli disponibili: ${allModules.join(', ')}`, flags: [MessageFlags.Ephemeral] });
         }
 
         if (subcommand === 'enable') {
             if (!guildData.enabledModules) guildData.enabledModules = [];
             if (guildData.enabledModules.includes(moduleName)) {
-                return interaction.reply({ content: 'Questo modulo è già attivo.', ephemeral: true });
+                return interaction.reply({ content: 'Questo modulo è già attivo.', flags: [MessageFlags.Ephemeral] });
             }
             guildData.enabledModules.push(moduleName);
             await guildData.save();
@@ -64,7 +64,7 @@ export default {
 
         if (subcommand === 'disable') {
             if (!guildData.enabledModules || !guildData.enabledModules.includes(moduleName)) {
-                return interaction.reply({ content: 'Questo modulo è già disattivato.', ephemeral: true });
+                return interaction.reply({ content: 'Questo modulo è già disattivato.', flags: [MessageFlags.Ephemeral] });
             }
             guildData.enabledModules = guildData.enabledModules.filter(m => m !== moduleName);
             await guildData.save();

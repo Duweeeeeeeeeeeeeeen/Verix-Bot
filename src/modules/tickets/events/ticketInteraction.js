@@ -1,4 +1,4 @@
-import { Events, ChannelType, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, StringSelectMenuBuilder, PermissionFlagsBits } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, EmbedBuilder, Events, MessageFlags, ModalBuilder, PermissionFlagsBits, StringSelectMenuBuilder, TextInputBuilder, TextInputStyle } from 'discord.js';
 import TicketConfig from '../../../models/TicketConfig.js';
 import Ticket from '../../../models/Ticket.js';
 import Guild from '../../../models/Guild.js';
@@ -30,14 +30,18 @@ export default {
             
             // Check permissions in the current channel before replying with menu
             const permCheck = checkBotPermissions(interaction.channel, [PermissionFlagsBits.SendMessages, PermissionFlagsBits.EmbedLinks]);
-            if (!permCheck.hasPermission) return interaction.reply({ content: formatMissingPermissions(permCheck.missing), ephemeral: true });
+            if (!permCheck.hasPermission) return interaction.reply({ content: formatMissingPermissions(permCheck.missing), flags: [MessageFlags.Ephemeral] });
 
             const existing = await Ticket.findOne({ userId: interaction.user.id, guildId: interaction.guild.id, type, status: { $ne: 'CLOSED' } });
             if (existing) {
-                const solution = `Hai già un ticket di tipo **${type}** attivo (<#${existing.channelId}>). Chiudilo prima di aprirne uno nuovo.`;
+                const alreadyMsg = config.messages?.alreadyExists || '❌ Hai già un ticket di tipo **{type}** attivo (<#{channel_id}>). Chiudilo prima di aprirne uno nuovo.';
+                const solution = alreadyMsg
+                    .replace('{type}', type)
+                    .replace('{channel_id}', existing.channelId);
+
                 return interaction.reply({ 
-                    content: ErrorHelper.formatActionable('⚠️', 'Ticket Duplicato', solution), 
-                    ephemeral: true 
+                    content: solution, 
+                    flags: [MessageFlags.Ephemeral] 
                 });
             }
 
@@ -52,7 +56,7 @@ export default {
                     ])
             );
 
-            return interaction.reply({ content: `### 🎫 Priorità richiesta\nTipo: \`${type.toUpperCase()}\``, components: [priorityMenu], ephemeral: true });
+            return interaction.reply({ content: `### 🎫 Priorità richiesta\nTipo: \`${type.toUpperCase()}\``, components: [priorityMenu], flags: [MessageFlags.Ephemeral] });
         }
 
         // --- 2. TICKET CREATION (Priority Selection) ---
@@ -82,7 +86,7 @@ export default {
                 if (!config.cannedResponses.length) {
                     return interaction.reply({ 
                         content: ErrorHelper.formatActionable('❌', 'Nessuna Risposta Rapida', 'Configura i template nella Dashboard sotto la sezione **Tickets -> Risposte Rapide**.'), 
-                        ephemeral: true 
+                        flags: [MessageFlags.Ephemeral] 
                     });
                 }
 
@@ -92,7 +96,7 @@ export default {
                         .setPlaceholder('Scegli un template...')
                         .addOptions(config.cannedResponses.map(r => ({ label: r.label, value: r.label })))
                 );
-                return interaction.reply({ content: '📝 **Seleziona la risposta da inviare:**', components: [menu], ephemeral: true });
+                return interaction.reply({ content: '📝 **Seleziona la risposta da inviare:**', components: [menu], flags: [MessageFlags.Ephemeral] });
             }
 
             if (interaction.isStringSelectMenu() && interaction.customId === 'tk_quick_reply_send') {
@@ -102,7 +106,7 @@ export default {
 
                 // Check permissions before sending quick reply
                 const permCheck = checkBotPermissions(interaction.channel, [PermissionFlagsBits.SendMessages]);
-                if (!permCheck.hasPermission) return interaction.reply({ content: formatMissingPermissions(permCheck.missing), ephemeral: true });
+                if (!permCheck.hasPermission) return interaction.reply({ content: formatMissingPermissions(permCheck.missing), flags: [MessageFlags.Ephemeral] });
 
                 const responseContent = placeholderHelper.replace(template.content, {
                     user: `<@${ticket.userId}>`,
@@ -122,7 +126,7 @@ export default {
                         .setPlaceholder('Seleziona un tag...')
                         .addOptions(tags.map(t => ({ label: t, value: t })))
                 );
-                return interaction.reply({ content: '🏷️ **Aggiungi un tag al ticket:**', components: [menu], ephemeral: true });
+                return interaction.reply({ content: '🏷️ **Aggiungi un tag al ticket:**', components: [menu], flags: [MessageFlags.Ephemeral] });
             }
 
             if (interaction.isStringSelectMenu() && interaction.customId === 'tk_tag_select') {
@@ -139,15 +143,15 @@ export default {
                 if (ticket.assignedStaffId) {
                     return interaction.reply({ 
                         content: ErrorHelper.formatActionable('⚠️', 'Ticket già preso in carico', `Questo ticket è già gestito da <@${ticket.assignedStaffId}>.`), 
-                        ephemeral: true 
+                        flags: [MessageFlags.Ephemeral] 
                     });
                 }
                 ticket.assignedStaffId = interaction.user.id;
                 ticket.status = 'PROCESSING';
                 await ticket.save();
                 
-                // Immediate response for claim
-                await interaction.reply({ content: `✅ <@${interaction.user.id}> ha preso in carico il ticket.` });
+                const claimMsg = config.messages?.staffClaimed || '✅ {staff} ha preso in carico il ticket.';
+                await interaction.reply({ content: claimMsg.replace('{staff}', `<@${interaction.user.id}>`) });
                 
                 // Background updates
                 channel.setName(`⚙️-${channel.name}`).catch(() => {});
@@ -173,23 +177,25 @@ export default {
                     if (!logPermCheck.hasPermission) {
                         return interaction.reply({ 
                             content: `❌ **Errore Chiusura:** Il bot non ha i permessi necessari nel canale LOGS (${logChannel.name}).\nRichiesti: ${logPermCheck.missing.join(', ')}`, 
-                            ephemeral: true 
+                            flags: [MessageFlags.Ephemeral] 
                         });
                     }
                 }
 
-                await interaction.reply('🛡️ **Chiusura professionale...**');
+                await interaction.reply(config.messages?.successClose || '🛡️ **Chiusura professionale...**');
                 const transcript = await generateTranscription(interaction.channel, ticket);
                 
                 if (logChannel) {
+                    const cEmbed = config.embeds?.close || {};
                     const logEmbed = new EmbedBuilder()
-                        .setTitle('📁 Archivio Ticket')
+                        .setTitle(cEmbed.title || '📁 Archivio Ticket')
+                        .setDescription(cEmbed.description || 'Il ticket è stato chiuso.')
                         .addFields(
                             { name: 'Utente', value: `<@${ticket.userId}>`, inline: true }, 
                             { name: 'Tipo', value: `\`${ticket.type.toUpperCase()}\``, inline: true }, 
                             { name: 'Staff', value: ticket.assignedStaffId ? `<@${ticket.assignedStaffId}>` : 'Nessuno', inline: true }
                         )
-                        .setColor('#ff4757')
+                        .setColor(cEmbed.color || '#ff4757')
                         .setTimestamp();
                     await logChannel.send({ embeds: [logEmbed], files: [transcript] });
                 }
@@ -240,7 +246,7 @@ async function createTicket(interaction, type, config, metadata = {}) {
         if (!permCheck.hasPermission) {
             const errorStr = ErrorHelper.permissionsError(permCheck.missing);
             if (interaction.deferred || interaction.replied) await interaction.editReply({ content: errorStr, components: [] });
-            else await interaction.reply({ content: errorStr, ephemeral: true });
+            else await interaction.reply({ content: errorStr, flags: [MessageFlags.Ephemeral] });
             return;
         }
 
@@ -261,9 +267,10 @@ async function createTicket(interaction, type, config, metadata = {}) {
         const intelEmbed = await generateIntelligenceEmbed(guild, user.id);
         if (intelEmbed) await channel.send({ embeds: [intelEmbed] });
 
-        const replyContent = `✅ Ticket creato: ${channel}`;
+        const successMsg = config.messages?.successOpen || '✅ Ticket creato: {channel}';
+        const replyContent = successMsg.replace('{channel}', `${channel}`);
         if (interaction.deferred || interaction.replied) await interaction.editReply({ content: replyContent, components: [] });
-        else await interaction.reply({ content: replyContent, ephemeral: true });
+        else await interaction.reply({ content: replyContent, flags: [MessageFlags.Ephemeral] });
 
         // GlobalConfig log for tickets.onOpen
         await sendLog({
@@ -280,10 +287,20 @@ async function renderTicketDashboard(channel, ticket, config, typeConfig, user, 
     const permCheck = checkBotPermissions(channel);
     if (!permCheck.hasPermission) return logger.error(`[TICKET] Missing permissions to render dashboard in ${channel.name}`);
 
+    const tEmbed = config.embeds?.ticket || {};
+    const embedTitle = (tEmbed.title || '{emoji} Ticket: {type}')
+        .replace('{emoji}', typeConfig?.emoji || '🎫')
+        .replace('{type}', ticket.type.toUpperCase());
+    
+    const embedDesc = (tEmbed.description || 'Bentornato <@{user_id}>, lo staff ti assisterà a breve.\n\n**Metadati Sessione:**\n• Priorità: `{priority}`\n• Stato: `{status}`')
+        .replace('{user_id}', ticket.userId)
+        .replace('{priority}', ticket.priority)
+        .replace('{status}', ticket.status);
+
     const embed = new EmbedBuilder()
-        .setTitle(`${typeConfig?.emoji || '🎫'} Ticket: ${ticket.type.toUpperCase()}`)
-        .setDescription(`Bentornato <@${ticket.userId}>, lo staff ti assisterà a breve.\n\n**Metadati Sessione:**\n• Priorità: \`${ticket.priority}\`\n• Stato: \`${ticket.status}\``)
-        .setColor(typeConfig?.color || '#3498db')
+        .setTitle(embedTitle)
+        .setDescription(embedDesc)
+        .setColor(tEmbed.color || typeConfig?.color || '#3498db')
         .addFields(
             { name: '👤 Assegnato a', value: ticket.assignedStaffId ? `<@${ticket.assignedStaffId}>` : '_In attesa..._', inline: true },
             { name: '🏷️ Tag', value: ticket.tags.length > 0 ? ticket.tags.map(t => `\`${t}\``).join(' ') : '_Nessun tag_', inline: true }
@@ -292,15 +309,37 @@ async function renderTicketDashboard(channel, ticket, config, typeConfig, user, 
 
     if (typeConfig?.image) embed.setImage(typeConfig.image);
 
+    const buttons = config.buttons || {};
     const btnRow1 = new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId('tk_claim').setLabel('Assumi').setStyle(ButtonStyle.Success).setEmoji('🙋‍♂️').setDisabled(!!ticket.assignedStaffId),
-        new ButtonBuilder().setCustomId('tk_close').setLabel('Chiudi').setStyle(ButtonStyle.Danger).setEmoji('🔒'),
-        new ButtonBuilder().setCustomId('tk_quick_reply').setLabel('Risposte Rapide').setStyle(ButtonStyle.Primary).setEmoji('📝')
+        new ButtonBuilder()
+            .setCustomId('tk_claim')
+            .setLabel(buttons.claim?.label || 'Assumi')
+            .setEmoji(buttons.claim?.emoji || '🙋‍♂️')
+            .setStyle(ButtonStyle[buttons.claim?.style] || ButtonStyle.Success)
+            .setDisabled(!!ticket.assignedStaffId),
+        new ButtonBuilder()
+            .setCustomId('tk_close')
+            .setLabel(buttons.close?.label || 'Chiudi')
+            .setEmoji(buttons.close?.emoji || '🔒')
+            .setStyle(ButtonStyle[buttons.close?.style] || ButtonStyle.Danger),
+        new ButtonBuilder()
+            .setCustomId('tk_quick_reply')
+            .setLabel(buttons.quickReply?.label || 'Risposte Rapide')
+            .setEmoji(buttons.quickReply?.emoji || '📝')
+            .setStyle(ButtonStyle[buttons.quickReply?.style] || ButtonStyle.Primary)
     );
 
     const btnRow2 = new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId('tk_tag').setLabel('Tagga').setStyle(ButtonStyle.Secondary).setEmoji('🏷️'),
-        new ButtonBuilder().setCustomId('tk_transcript').setLabel('Logs').setStyle(ButtonStyle.Secondary).setEmoji('📄')
+        new ButtonBuilder()
+            .setCustomId('tk_tag')
+            .setLabel(buttons.tag?.label || 'Tagga')
+            .setEmoji(buttons.tag?.emoji || '🏷️')
+            .setStyle(ButtonStyle[buttons.tag?.style] || ButtonStyle.Secondary),
+        new ButtonBuilder()
+            .setCustomId('tk_transcript')
+            .setLabel(buttons.transcript?.label || 'Logs')
+            .setEmoji(buttons.transcript?.emoji || '📄')
+            .setStyle(ButtonStyle[buttons.transcript?.style] || ButtonStyle.Secondary)
     );
 
     const statusMenu = new ActionRowBuilder().addComponents(

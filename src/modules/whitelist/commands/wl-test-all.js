@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
+import { MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 import WhitelistConfig from '../../../models/WhitelistConfig.js';
 import { buildEmbed } from '../../../utils/embedHelper.js';
 
@@ -11,7 +11,7 @@ export default {
         const config = await WhitelistConfig.findOne({ guildId: interaction.guild.id });
 
         if (!config || !config.embeds) {
-            return interaction.reply({ content: '❌ Configurazione embeds non trovata.', ephemeral: true });
+            return interaction.reply({ content: '❌ Configurazione embeds non trovata.', flags: [MessageFlags.Ephemeral] });
         }
 
         const placeholders = {

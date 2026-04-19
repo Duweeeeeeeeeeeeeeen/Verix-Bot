@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
+import { EmbedBuilder, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 import logger from '../../../utils/logger.js';
 
 export default {
@@ -13,8 +13,8 @@ export default {
         const reason = interaction.options.getString('reason') || 'Nessun motivo fornito';
         const member = await interaction.guild.members.fetch(user.id);
 
-        if (!member) return interaction.reply({ content: 'Membro non trovato.', ephemeral: true });
-        if (!member.kickable) return interaction.reply({ content: 'Non posso espellere questo membro.', ephemeral: true });
+        if (!member) return interaction.reply({ content: 'Membro non trovato.', flags: [MessageFlags.Ephemeral] });
+        if (!member.kickable) return interaction.reply({ content: 'Non posso espellere questo membro.', flags: [MessageFlags.Ephemeral] });
 
         await member.kick(reason);
 

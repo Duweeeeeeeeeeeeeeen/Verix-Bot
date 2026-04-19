@@ -27,7 +27,13 @@ const serverTrackerSchema = new mongoose.Schema({
     onlineMessage: { type: String, default: '' },
     offlineMessage: { type: String, default: '' },
     onlineEmbed: { type: embedSchema, default: () => ({}) },
-    offlineEmbed: { type: embedSchema, default: () => ({}) }
+    offlineEmbed: { type: embedSchema, default: () => ({}) },
+    buttons: [{
+        label: { type: String, default: 'Connettiti' },
+        url: { type: String, default: '' },
+        emoji: { type: String, default: '🎮' },
+        style: { type: String, default: 'LINK' }
+    }]
 }, { _id: false });
 
 const fiveMConfigSchema = new mongoose.Schema({

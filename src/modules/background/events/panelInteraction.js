@@ -1,4 +1,4 @@
-import { Events, ChannelType, PermissionFlagsBits, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, Events, MessageFlags, PermissionFlagsBits } from 'discord.js';
 import BackgroundConfig from '../../../models/BackgroundConfig.js';
 import Background from '../../../models/Background.js';
 import Guild from '../../../models/Guild.js';
@@ -15,19 +15,19 @@ export default {
         // Module enablement check
         const guildData = await Guild.findOne({ guildId: interaction.guild.id });
         if (!guildData || !guildData.enabledModules?.includes('background')) {
-            return interaction.reply({ content: '❌ Il modulo Background non è attivo su questo server.', ephemeral: true });
+            return interaction.reply({ content: '❌ Il modulo Background non è attivo su questo server.', flags: [MessageFlags.Ephemeral] });
         }
 
         try {
             const config = await BackgroundConfig.findOne({ guildId: interaction.guild.id });
             if (!config) {
-                return interaction.reply({ content: 'Configurazione del modulo non trovata.', ephemeral: true });
+                return interaction.reply({ content: 'Configurazione del modulo non trovata.', flags: [MessageFlags.Ephemeral] });
             }
 
             // Cooldown & Pending Check
             const existingPending = await Background.findOne({ userId: interaction.user.id, guildId: interaction.guild.id, status: { $in: ['PENDING', 'SUBMITTED'] } });
             if (existingPending) {
-                return interaction.reply({ content: 'Hai già una richiesta di background attiva o in revisione.', ephemeral: true });
+                return interaction.reply({ content: 'Hai già una richiesta di background attiva o in revisione.', flags: [MessageFlags.Ephemeral] });
             }
 
             const userData = await User.findOne({ discordId: interaction.user.id }) || await User.create({ discordId: interaction.user.id, username: interaction.user.username });
@@ -42,7 +42,7 @@ export default {
                     
                     return interaction.reply({ 
                         content: `⚠️ Devi attendere ancora **${hours} ore e ${minutes} minuti** prima di inviare un nuovo background.`, 
-                        ephemeral: true 
+                        flags: [MessageFlags.Ephemeral] 
                     });
                 }
             }
@@ -90,11 +90,11 @@ export default {
             );
 
             await channel.send({ content: `${interaction.user}`, embeds: [embed], components: [row] });
-            await interaction.reply({ content: `✅ Canale creato: ${channel}`, ephemeral: true });
+            await interaction.reply({ content: `✅ Canale creato: ${channel}`, flags: [MessageFlags.Ephemeral] });
 
         } catch (error) {
             logger.error('Error starting background submission:', error);
-            await interaction.reply({ content: 'Si è verificato un errore critico.', ephemeral: true });
+            await interaction.reply({ content: 'Si è verificato un errore critico.', flags: [MessageFlags.Ephemeral] });
         }
     },
 };

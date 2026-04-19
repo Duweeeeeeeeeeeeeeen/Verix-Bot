@@ -1,4 +1,4 @@
-import { EmbedBuilder } from 'discord.js';
+import { EmbedBuilder, MessageFlags } from 'discord.js';
 import PhotoSubmission from '../../../models/PhotoSubmission.js';
 import PhotoContestConfig from '../../../models/PhotoContestConfig.js';
 import ErrorHelper from '../../../utils/errorHelper.js';
@@ -28,14 +28,14 @@ export default {
             if (!submission) {
                 return interaction.reply({ 
                     content: ErrorHelper.formatActionable('❌', 'Partecipazione non trovata.', 'Questo file potrebbe essere stato rimosso o il contest è terminato.'), 
-                    ephemeral: true 
+                    flags: [MessageFlags.Ephemeral] 
                 });
             }
 
             if (submission.userId === voterId) {
                 return interaction.reply({ 
                     content: ErrorHelper.formatActionable('❌', 'Autovoto non consentito.', 'Non puoi votare le tue stesse foto per garantire l\'equità del contest.'), 
-                    ephemeral: true 
+                    flags: [MessageFlags.Ephemeral] 
                 });
             }
 
@@ -48,21 +48,21 @@ export default {
             if (type === 'up') {
                 if (upIndex > -1) {
                     submission.upvotes.splice(upIndex, 1);
-                    await interaction.reply({ content: '👍 Voto rimosso.', ephemeral: true });
+                    await interaction.reply({ content: '👍 Voto rimosso.', flags: [MessageFlags.Ephemeral] });
                 } else {
                     submission.upvotes.push(voterId);
                     if (downIndex > -1) submission.downvotes.splice(downIndex, 1);
-                    await interaction.reply({ content: '👍 Hai votato positivamente!', ephemeral: true });
+                    await interaction.reply({ content: '👍 Hai votato positivamente!', flags: [MessageFlags.Ephemeral] });
                     notifyContent = `🌟 Qualcuno ha appena messo un **Upvote** alla tua foto nel contest!`;
                 }
             } else if (type === 'down') {
                 if (downIndex > -1) {
                     submission.downvotes.splice(downIndex, 1);
-                    await interaction.reply({ content: '👎 Voto rimosso.', ephemeral: true });
+                    await interaction.reply({ content: '👎 Voto rimosso.', flags: [MessageFlags.Ephemeral] });
                 } else {
                     submission.downvotes.push(voterId);
                     if (upIndex > -1) submission.upvotes.splice(upIndex, 1);
-                    await interaction.reply({ content: '👎 Hai votato negativamente.', ephemeral: true });
+                    await interaction.reply({ content: '👎 Hai votato negativamente.', flags: [MessageFlags.Ephemeral] });
                 }
             }
 
@@ -95,7 +95,7 @@ export default {
 
         } catch (error) {
             logger.error('[PhotoContest] Vote handling error:', error);
-            if (!interaction.replied) await interaction.reply({ content: '❌ Errore durante il voto.', ephemeral: true });
+            if (!interaction.replied) await interaction.reply({ content: '❌ Errore durante il voto.', flags: [MessageFlags.Ephemeral] });
         }
     }
 };

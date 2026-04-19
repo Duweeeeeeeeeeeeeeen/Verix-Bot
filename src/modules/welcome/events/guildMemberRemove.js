@@ -13,7 +13,7 @@ export default {
             const channel = member.guild.channels.cache.get(config.leave.channelId);
             if (!channel) return;
 
-            const vars = {
+            const placeholders = {
                 user: member.user.username,
                 user_mention: member.user.toString(),
                 user_tag: member.user.tag,
@@ -21,34 +21,16 @@ export default {
                 member_count: member.guild.memberCount.toString()
             };
 
-            const description = placeholderHelper.replace(config.leave.message, vars);
+            const lEmbed = config.leave.embed || {};
             const embed = new EmbedBuilder()
-                .setColor(config.leave.color || '#ED4245')
-                .setDescription(description)
+                .setTitle(placeholderHelper.replace(lEmbed.title || '👋 Arrivederci', placeholders))
+                .setDescription(placeholderHelper.replace(lEmbed.description || 'Ha lasciato il server.', placeholders))
+                .setColor(lEmbed.color || '#ED4245')
                 .setTimestamp();
 
-            if (config.leave.style === 'ARTICULATED') {
-                embed.setTitle(`👋 Arrivederci!`)
-                     .addFields(
-                        { name: '👤 Utente', value: member.user.tag, inline: true },
-                        { name: '🆔 ID', value: member.id, inline: true }
-                     );
-                
-                if (config.leave.useImage) {
-                    embed.setImage(member.user.displayAvatarURL({ dynamic: true, size: 512 }));
-                } else {
-                    embed.setThumbnail(member.user.displayAvatarURL({ dynamic: true, size: 256 }));
-                }
-
-                embed.setFooter({ text: `Siamo rimasti in ${member.guild.memberCount}`, iconURL: member.guild.iconURL() });
-            } else {
-                // SIMPLE style
-                embed.setAuthor({ name: member.user.tag, iconURL: member.user.displayAvatarURL() });
-                if (config.leave.useImage) {
-                    embed.setThumbnail(member.user.displayAvatarURL({ dynamic: true, size: 256 }));
-                }
-                embed.setFooter({ text: `Membri rimanenti: ${member.guild.memberCount}` });
-            }
+            if (lEmbed.footer) embed.setFooter({ text: placeholderHelper.replace(lEmbed.footer, placeholders), iconURL: member.guild.iconURL() });
+            if (lEmbed.thumbnail) embed.setThumbnail(placeholderHelper.replace(lEmbed.thumbnail, placeholders));
+            if (lEmbed.image) embed.setImage(placeholderHelper.replace(lEmbed.image, placeholders));
 
             await channel.send({ embeds: [embed] });
 

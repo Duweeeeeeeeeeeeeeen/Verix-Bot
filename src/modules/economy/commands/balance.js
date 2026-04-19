@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
+import { EmbedBuilder, MessageFlags, SlashCommandBuilder } from 'discord.js';
 import User from '../../../models/User.js';
 import logger from '../../../utils/logger.js';
 
@@ -17,7 +17,7 @@ export default {
             const userData = await User.findOne({ discordId: target.id });
             
             if (!userData) {
-                return interaction.reply({ content: 'Utente non trovato nel database.', ephemeral: true });
+                return interaction.reply({ content: 'Utente non trovato nel database.', flags: [MessageFlags.Ephemeral] });
             }
 
             const embed = new EmbedBuilder()
@@ -36,7 +36,7 @@ export default {
             await interaction.reply({ embeds: [embed] });
         } catch (error) {
             logger.error('Error in balance command:', error);
-            await interaction.reply({ content: 'Si è verificato un errore nel recupero del bilancio.', ephemeral: true });
+            await interaction.reply({ content: 'Si è verificato un errore nel recupero del bilancio.', flags: [MessageFlags.Ephemeral] });
         }
     },
 };

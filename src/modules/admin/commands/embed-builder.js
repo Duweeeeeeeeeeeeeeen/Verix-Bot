@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, PermissionFlagsBits, ActionRowBuilder, StringSelectMenuBuilder } from 'discord.js';
+import { ActionRowBuilder, MessageFlags, PermissionFlagsBits, SlashCommandBuilder, StringSelectMenuBuilder } from 'discord.js';
 
 export default {
     data: new SlashCommandBuilder()
@@ -19,7 +19,7 @@ export default {
         await interaction.reply({
             content: '🏠 **Benvenuto nell\'Embed Builder Visuale!**\n\nSeleziona un modulo qui sotto per iniziare a personalizzare l\'aspetto estetico del tuo bot.',
             components: [row],
-            ephemeral: true
+            flags: [MessageFlags.Ephemeral]
         });
     },
 };

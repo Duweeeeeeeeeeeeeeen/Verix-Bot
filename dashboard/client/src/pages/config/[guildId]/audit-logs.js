@@ -20,7 +20,9 @@ import {
   Send,
   History,
   Zap,
-  Info
+  Info,
+  ChevronRight,
+  Filter
 } from 'lucide-react';
 
 export default function AuditLogs() {
@@ -50,28 +52,23 @@ export default function AuditLogs() {
   };
 
   const handleClearLogs = async () => {
-    if (!window.confirm('Sei sicuro di voler cancellare TUTTA la cronologia dei log? Questa azione non è reversibile.')) {
-      return;
-    }
-
+    if (!window.confirm('Cancellare tutta la cronologia?')) return;
     try {
       setLoading(true);
       await api.request(`/config/${guildId}/audit-logs`, { method: 'DELETE' });
-      await fetchLogs(); // Refresh (should be empty or contain only the reset action)
+      await fetchLogs();
     } catch (error) {
-       console.error('Clear logs error:', error);
-       alert('Errore durante la cancellazione dei log.');
     } finally {
       setLoading(false);
     }
   };
 
   const getActionInfo = (action) => {
-    if (action.startsWith('UPDATE')) return { icon: RefreshCw, color: 'var(--accent)', label: 'Aggiornamento' };
-    if (action.startsWith('CREATE')) return { icon: PlusCircle, color: 'var(--success)', label: 'Creazione' };
-    if (action.startsWith('DELETE')) return { icon: Trash2, color: 'var(--error)', label: 'Eliminazione' };
-    if (action.startsWith('RESET')) return { icon: XCircle, color: 'var(--warning)', label: 'Reset' };
-    if (action.startsWith('SEND')) return { icon: Send, color: '#9b59b6', label: 'Invio' };
+    if (action.startsWith('UPDATE')) return { icon: RefreshCw, color: '#6366f1', label: 'Aggiornamento' };
+    if (action.startsWith('CREATE')) return { icon: PlusCircle, color: '#22c55e', label: 'Creazione' };
+    if (action.startsWith('DELETE')) return { icon: Trash2, color: '#ef4444', label: 'Eliminazione' };
+    if (action.startsWith('RESET')) return { icon: XCircle, color: '#f59e0b', label: 'Reset' };
+    if (action.startsWith('SEND')) return { icon: Send, color: '#a855f7', label: 'Invio' };
     return { icon: FileText, color: 'var(--text-dim)', label: 'Azione' };
   };
 
@@ -84,215 +81,159 @@ export default function AuditLogs() {
     (log.action?.toLowerCase() || '').includes(searchTerm.toLowerCase())
   );
 
-  if (loading && logs.length === 0) return (
-    <Layout guildId={guildId}>
-      <div className="animate">
-        <header style={{ marginBottom: '40px' }}>
-            <Skeleton width="350px" height="40px" style={{ marginBottom: '12px' }} />
-            <Skeleton width="500px" height="20px" />
-        </header>
-        <section className="card glass" style={{ padding: '0' }}>
-            <div style={{ padding: '20px', borderBottom: '1px solid var(--border)', display: 'flex', gap: '15px' }}>
-                <Skeleton width="100%" height="45px" />
-                <Skeleton width="150px" height="45px" />
-            </div>
-            <div style={{ padding: '20px' }}>
-                <Skeleton height="50px" style={{ marginBottom: '10px' }} />
-                <Skeleton height="50px" style={{ marginBottom: '10px' }} />
-                <Skeleton height="50px" style={{ marginBottom: '10px' }} />
-                <Skeleton height="50px" style={{ marginBottom: '10px' }} />
-                <Skeleton height="50px" />
-            </div>
-        </section>
-      </div>
-    </Layout>
-  );
+  if (loading && logs.length === 0) return <Layout guildId={guildId}><Skeleton height="500px" /></Layout>;
 
   return (
     <Layout guildId={guildId}>
       <div className="animate">
-        <header style={{ marginBottom: '40px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-          <div>
-            <div className="align-center" style={{ color: 'var(--primary)', marginBottom: '8px' }}>
-                <History size={18} fill="currentColor" />
-                <span className="text-label" style={{ marginBottom: 0 }}>Tracciabilità</span>
-            </div>
-            <h1 style={{ fontSize: '2.8rem', fontWeight: '900', letterSpacing: '-1.5px' }}>Audit Logs</h1>
-            <p className="text-description" style={{ fontSize: '1.1rem' }}>
-              Cronologia completa delle azioni amministrative eseguite tramite il pannello web.
-              <HelpTooltip text="I log vengono conservati per un massimo di 90 giorni." />
-            </p>
-          </div>
-          <div style={{ display: 'flex', gap: '12px' }}>
-              <button 
-                onClick={handleClearLogs} 
-                className="btn-danger" 
-                style={{ display: 'flex', gap: '10px', alignItems: 'center' }}
-                disabled={loading || logs.length === 0}
-              >
-                <Trash2 size={18} /> Cancella Tutto
+        
+        {/* Module Header */}
+        <header className="module-header">
+           <div className="header-info">
+              <div className="header-icon">
+                <History size={24} />
+              </div>
+              <div className="header-text">
+                <h1>Audit Logs</h1>
+                <p>Tracking completo delle azioni amministrative sul pannello.</p>
+              </div>
+           </div>
+           <div className="header-buttons">
+              <button onClick={handleClearLogs} className="btn-danger-v2">
+                <Trash2 size={16} /> Pulisci
               </button>
-              <button 
-                onClick={fetchLogs} 
-                className="btn-outline" 
-                style={{ display: 'flex', gap: '10px', alignItems: 'center' }}
-                disabled={loading}
-              >
-                <RefreshCw size={18} className={loading ? 'spin' : ''} /> Aggiorna Logs
+              <button onClick={fetchLogs} className="btn-primary" disabled={loading}>
+                <RefreshCw size={16} className={loading ? 'spin' : ''} /> Aggiorna
               </button>
-          </div>
+           </div>
         </header>
 
-        <section className="card glass" style={{ padding: '0', overflow: 'hidden' }}>
-          <div style={{ padding: '24px', background: 'rgba(255,255,255,0.01)', borderBottom: '1px solid var(--border)', display: 'flex', gap: '15px' }}>
-            <div style={{ position: 'relative', flex: 1 }}>
-              <Search size={18} style={{ position: 'absolute', left: '14px', top: '14px', color: 'var(--text-dim)' }} />
-              <input 
-                className="input" 
-                style={{ paddingLeft: '44px' }} 
-                placeholder="Cerca per amministratore o tipo di azione..." 
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+        <section className="card log-container-v2">
+            <div className="log-filters-row">
+                <Search size={18} className="search-icon-p" />
+                <input 
+                    className="transparent-input" 
+                    placeholder="Filtra per amministratore o azione..." 
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <Filter size={18} color="var(--primary)" style={{ opacity: 0.5 }} />
             </div>
-          </div>
 
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-              <thead>
-                <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid var(--border)' }}>
-                  <th style={{ padding: '18px 24px' }} className="text-label">Data / Ora</th>
-                  <th style={{ padding: '18px 24px' }} className="text-label">Amministratore</th>
-                  <th style={{ padding: '18px 24px' }} className="text-label">Azione</th>
-                  <th style={{ padding: '18px 24px', textAlign: 'right' }} className="text-label">Vedi Modifiche</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredLogs.map((log) => {
-                  const actionInfo = getActionInfo(log.action);
-                  const Icon = actionInfo.icon;
-                  
-                  return (
-                    <React.Fragment key={log._id}>
-                      <tr className="log-row">
-                        <td style={{ padding: '15px 24px' }}>
-                          <div className="align-center" style={{ fontSize: '0.85rem', color: 'var(--text-main)', fontWeight: '600' }}>
-                            <Clock size={14} color="var(--text-dim)" />
-                            {new Date(log.timestamp).toLocaleString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                          </div>
-                        </td>
-                        <td style={{ padding: '15px 24px' }}>
-                          <div className="align-center" style={{ gap: '12px' }}>
-                            <div style={{ 
-                                width: '32px', 
-                                height: '32px', 
-                                borderRadius: '10px', 
-                                background: 'var(--border)', 
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                justifyContent: 'center',
-                                border: '1px solid rgba(255,255,255,0.05)'
-                            }}>
-                              <UserIcon size={16} color="var(--text-muted)" />
-                            </div>
-                            <span style={{ fontWeight: '700', fontSize: '0.95rem' }}>{log.username || 'Sistema'}</span>
-                          </div>
-                        </td>
-                        <td style={{ padding: '15px 24px' }}>
-                          <div className="align-center">
-                            <div style={{ padding: '6px', background: `${actionInfo.color}15`, borderRadius: '8px', display: 'flex' }}>
-                                <Icon size={16} color={actionInfo.color} />
-                            </div>
-                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                <span style={{ fontSize: '0.85rem', fontWeight: '800', color: actionInfo.color }}>{actionInfo.label.toUpperCase()}</span>
-                                <code style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>{log.action}</code>
-                            </div>
-                          </div>
-                        </td>
-                        <td style={{ padding: '15px 24px', textAlign: 'right' }}>
-                          <button 
-                            onClick={() => toggleExpand(log._id)} 
-                            className={`btn-icon-action ${expandedLog === log._id ? 'active' : ''}`}
-                          >
-                            {expandedLog === log._id ? <EyeOff size={18} /> : <Eye size={18} />}
-                          </button>
-                        </td>
-                      </tr>
-                      {expandedLog === log._id && (
-                        <tr style={{ background: 'rgba(0,0,0,0.15)' }}>
-                          <td colSpan="4" style={{ padding: '24px' }}>
-                            <div className="card glass-heavy" style={{ padding: '20px', borderRadius: '14px', border: '1px solid var(--border)' }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-                                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: actionInfo.color }}></div>
-                                  <span style={{ fontSize: '0.75rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>Payload Modificato (JSON)</span>
-                              </div>
-                              <pre style={{ 
-                                  margin: '0', 
-                                  padding: '16px',
-                                  background: 'rgba(0,0,0,0.3)',
-                                  borderRadius: '10px',
-                                  fontSize: '0.85rem', 
-                                  color: '#cbd5e1', 
-                                  overflowX: 'auto', 
-                                  whiteSpace: 'pre-wrap',
-                                  border: '1px solid rgba(255,255,255,0.05)',
-                                  fontFamily: 'JetBrains Mono, monospace'
-                              }}>
-                                {JSON.stringify(log.changes, null, 2)}
-                              </pre>
-                            </div>
-                          </td>
+            <div className="log-table-wrapper">
+                <table className="log-table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Admin</th>
+                            <th>Action Type</th>
+                            <th style={{ textAlign: 'right' }}>Details</th>
                         </tr>
-                      )}
-                    </React.Fragment>
-                  );
-                })}
+                    </thead>
+                    <tbody>
+                        {filteredLogs.map((log) => {
+                            const info = getActionInfo(log.action);
+                            return (
+                                <React.Fragment key={log._id}>
+                                    <tr className={`log-row-v2 ${expandedLog === log._id ? 'expanded' : ''}`}>
+                                        <td className="time-cell">
+                                            {new Date(log.timestamp).toLocaleString('it-IT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                                        </td>
+                                        <td className="admin-cell">
+                                            <div className="admin-badge">
+                                                <div className="avatar-placeholder"><UserIcon size={12} /></div>
+                                                <span>{log.username || 'Sistema'}</span>
+                                            </div>
+                                        </td>
+                                        <td className="action-cell">
+                                            <div className="action-badge-p" style={{ backgroundColor: `${info.color}15`, color: info.color }}>
+                                                <info.icon size={12} />
+                                                <span>{info.label.toUpperCase()}</span>
+                                            </div>
+                                            <code className="action-raw">{log.action}</code>
+                                        </td>
+                                        <td className="action-view">
+                                            <button onClick={() => toggleExpand(log._id)} className={`view-btn-p ${expandedLog === log._id ? 'active' : ''}`}>
+                                                {expandedLog === log._id ? <EyeOff size={16} /> : <Eye size={16} />}
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {expandedLog === log._id && (
+                                        <tr className="expansion-row">
+                                            <td colSpan="4">
+                                                <div className="json-diff-v2 animate fade-in">
+                                                    <div className="diff-header">
+                                                        <FileText size={14} />
+                                                        <span>Payload Modificato</span>
+                                                    </div>
+                                                    <pre>{JSON.stringify(log.changes, null, 2)}</pre>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    )}
+                                </React.Fragment>
+                            );
+                        })}
+                    </tbody>
+                </table>
                 {filteredLogs.length === 0 && (
-                  <tr>
-                    <td colSpan="4" style={{ textAlign: 'center', padding: '80px', color: 'var(--text-dim)' }}>
-                      <div style={{ marginBottom: '16px' }}><Search size={48} opacity={0.2} /></div>
-                      <p style={{ fontWeight: '600' }}>Nessun log trovato.</p>
-                      <p style={{ fontSize: '0.85rem' }}>Prova a cambiare i criteri di ricerca o aggiorna la lista.</p>
-                    </td>
-                  </tr>
+                    <div className="empty-logs">
+                        <History size={40} />
+                        <p>Nessun log trovato.</p>
+                    </div>
                 )}
-              </tbody>
-            </table>
-          </div>
+            </div>
         </section>
 
         <style jsx>{`
-          .log-row {
-            border-bottom: 1px solid var(--border);
-            transition: var(--transition-fast);
-          }
-          .log-row:hover {
-            background: rgba(var(--primary-rgb), 0.02);
-          }
-          .btn-icon-action {
-            background: none;
-            border: 1px solid transparent;
-            color: var(--text-dim);
-            padding: 10px;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: var(--transition-fast);
-          }
-          .btn-icon-action:hover {
-            color: var(--primary);
-            background: rgba(var(--primary-rgb), 0.1);
-            border-color: rgba(var(--primary-rgb), 0.2);
-          }
-          .btn-icon-action.active {
-            color: white;
-            background: var(--primary);
-          }
-          .spin {
-            animation: spin 1s linear infinite;
-          }
-          @keyframes spin {
-            to { transform: rotate(360deg); }
-          }
+            .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: rgba(255,255,255,0.02); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
+            .header-info { display: flex; align-items: center; gap: 16px; }
+            .header-icon { width: 48px; height: 48px; background: rgba(129, 140, 248, 0.1); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+            .header-text h1 { font-size: 1.5rem; margin-bottom: 2px; }
+            .header-text p { font-size: 0.85rem; color: var(--text-muted); }
+            .header-buttons { display: flex; gap: 12px; }
+
+            .log-container-v2 { padding: 0 !important; overflow: hidden; border-radius: 16px; }
+            .log-filters-row { display: flex; align-items: center; gap: 12px; padding: 16px 24px; border-bottom: 1px solid var(--border); background: #070912; }
+            .search-icon-p { color: var(--text-dim); }
+            .transparent-input { background: transparent; border: none; flex: 1; color: white; font-size: 0.9rem; outline: none; }
+            
+            .log-table-wrapper { overflow-x: auto; }
+            .log-table { width: 100%; border-collapse: collapse; }
+            .log-table th { text-align: left; padding: 16px 24px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); border-bottom: 1px solid var(--border); }
+            .log-table td { padding: 14px 24px; vertical-align: middle; }
+            
+            .log-row-v2 { border-bottom: 1px solid var(--border); transition: 0.2s; }
+            .log-row-v2:hover { background: rgba(255,255,255,0.02); }
+            .log-row-v2.expanded { background: rgba(129, 140, 248, 0.03); }
+            
+            .time-cell { font-size: 0.8rem; color: var(--text-muted); white-space: nowrap; }
+            .admin-badge { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 0.9rem; }
+            .avatar-placeholder { width: 24px; height: 24px; border-radius: 6px; background: var(--border); display: flex; align-items: center; justify-content: center; color: var(--text-dim); }
+            
+            .action-cell { display: flex; flex-direction: column; gap: 4px; }
+            .action-badge-p { display: flex; align-items: center; gap: 6px; width: fit-content; padding: 3px 8px; border-radius: 6px; font-size: 0.65rem; font-weight: 900; }
+            .action-raw { font-size: 0.7rem; color: var(--text-dim); font-family: monospace; }
+            
+            .action-view { text-align: right; }
+            .view-btn-p { border: 1px solid var(--border); background: transparent; color: var(--text-dim); padding: 8px; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+            .view-btn-p:hover { color: var(--primary); border-color: var(--primary); }
+            .view-btn-p.active { background: var(--primary); color: white; border-color: var(--primary); }
+            
+            .expansion-row td { padding: 0; }
+            .json-diff-v2 { padding: 24px; background: rgba(0,0,0,0.2); border-bottom: 1px solid var(--border); }
+            .diff-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; font-size: 0.7rem; text-transform: uppercase; color: var(--text-dim); font-weight: 800; }
+            .json-diff-v2 pre { margin: 0; padding: 16px; background: #020617; border-radius: 10px; border: 1px solid var(--border); font-size: 0.8rem; color: #a5b4fc; font-family: 'JetBrains Mono', monospace; overflow-x: auto; }
+
+            .btn-danger-v2 { background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.1); color: #ef4444; padding: 8px 16px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.8rem; font-weight: 700; transition: 0.2s; }
+            .btn-danger-v2:hover { background: #ef4444; color: white; }
+
+            .empty-logs { text-align: center; padding: 80px 24px; color: var(--text-dim); display: flex; flex-direction: column; align-items: center; gap: 16px; }
+            .empty-logs p { font-weight: 600; font-size: 0.9rem; }
+
+            @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+            .spin { animation: spin 1s linear infinite; }
+            @media (max-width: 800px) { .header-info { display: none; } }
         `}</style>
       </div>
     </Layout>

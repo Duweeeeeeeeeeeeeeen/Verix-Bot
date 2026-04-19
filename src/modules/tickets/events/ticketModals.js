@@ -1,4 +1,4 @@
-import { Events } from 'discord.js';
+import { Events, MessageFlags } from 'discord.js';
 import TicketConfig from '../../../models/TicketConfig.js';
 import { createTicket } from './ticketInteraction.js';
 import logger from '../../../utils/logger.js';
@@ -14,7 +14,7 @@ export default {
             const desc = interaction.fields.getTextInputValue('report_desc');
 
             const config = await TicketConfig.findOne({ guildId: interaction.guild.id });
-            if (!config) return interaction.reply({ content: '❌ Errore: Configurazione abbandonata.', ephemeral: true });
+            if (!config) return interaction.reply({ content: '❌ Errore: Configurazione abbandonata.', flags: [MessageFlags.Ephemeral] });
 
             try {
                 // Call the creation logic with gathered metadata
@@ -25,7 +25,7 @@ export default {
                 });
             } catch (error) {
                 logger.error('Error handling report modal:', error);
-                await interaction.reply({ content: '❌ Errore durante l\'apertura del ticket di segnalazione.', ephemeral: true });
+                await interaction.reply({ content: '❌ Errore durante l\'apertura del ticket di segnalazione.', flags: [MessageFlags.Ephemeral] });
             }
         }
 
@@ -35,7 +35,7 @@ export default {
 
             try {
                 const member = await interaction.guild.members.fetch(userId).catch(() => null);
-                if (!member) return interaction.reply({ content: '❌ Utente non trovato nel server.', ephemeral: true });
+                if (!member) return interaction.reply({ content: '❌ Utente non trovato nel server.', flags: [MessageFlags.Ephemeral] });
 
                 if (action === 'add') {
                     await interaction.channel.permissionOverwrites.edit(member, {
@@ -51,7 +51,7 @@ export default {
                 }
             } catch (error) {
                 logger.error('Error managing user in ticket:', error);
-                await interaction.reply({ content: '❌ Errore durante la gestione dell\'utente.', ephemeral: true });
+                await interaction.reply({ content: '❌ Errore durante la gestione dell\'utente.', flags: [MessageFlags.Ephemeral] });
             }
         }
     },

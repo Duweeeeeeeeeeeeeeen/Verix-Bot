@@ -33,7 +33,18 @@ export const whitelistSchema = z.object({
         dashboardChannelId: discordId.optional().nullable(),
         dashboardMsgId: discordId.optional().nullable(),
         recentActionsCount: z.number().optional().nullable(),
-        interviewChecklist: z.array(z.string()).optional().nullable()
+        interviewChecklist: z.array(z.string()).optional().nullable(),
+        voiceMessages: z.object({
+            cooldown: z.string().optional(),
+            queueFull: z.string().optional(),
+            staffApproved: z.string().optional(),
+            staffDenied: z.string().optional()
+        }).partial().optional().nullable(),
+        voiceButtons: z.object({
+            approve: z.object({ label: z.string(), emoji: z.string(), style: z.string() }).partial().optional(),
+            deny: z.object({ label: z.string(), emoji: z.string(), style: z.string() }).partial().optional(),
+            reset: z.object({ label: z.string(), emoji: z.string(), style: z.string() }).partial().optional()
+        }).partial().optional().nullable()
     }).partial().optional().nullable(),
     flowRequirements: z.object({
         requireTextWL: z.boolean().optional().nullable(),

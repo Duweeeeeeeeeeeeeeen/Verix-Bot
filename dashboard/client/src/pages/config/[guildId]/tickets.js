@@ -26,6 +26,7 @@ import {
   Palette,
   Layers
 } from 'lucide-react';
+import GuideSidebar from '../../../components/GuideSidebar';
 import DiscordSelector from '../../../components/DiscordSelector';
 
 export default function TicketConfig() {
@@ -50,7 +51,6 @@ export default function TicketConfig() {
         const moduleConfig = data.data || data;
         const globalConfigData = globalData.data || globalData;
         
-        // Role Inheritance: If local roles are empty, pre-fill from global admin roles
         if ((!moduleConfig.staffRoleIds || moduleConfig.staffRoleIds.length === 0) && globalConfigData.adminRoleIds?.length > 0) {
             moduleConfig.staffRoleIds = [...globalConfigData.adminRoleIds];
         }
@@ -78,10 +78,20 @@ export default function TicketConfig() {
     setGlobalConfig(newGlobal);
   };
 
-  const updateButton = (index, field, value) => {
-    const buttons = [...globalConfig.ui.ticketButtons];
-    buttons[index] = { ...buttons[index], [field]: value };
-    setGlobalNested('ui.ticketButtons', buttons);
+  const setNested = (path, value) => {
+    const newConfig = { ...config };
+    const parts = path.split('.');
+    let cur = newConfig;
+    for (let i = 0; i < parts.length - 1; i++) {
+        if (!cur[parts[i]]) cur[parts[i]] = {};
+        cur = cur[parts[i]];
+    }
+    cur[parts[parts.length - 1]] = value;
+    setConfig(newConfig);
+  };
+
+  const updateButton = (key, field, value) => {
+    setNested(`buttons.${key}.${field}`, value);
   };
 
   const showToast = (message, type = 'success') => {
@@ -101,7 +111,7 @@ export default function TicketConfig() {
           body: JSON.stringify(globalConfig)
         })
       ]);
-      showToast('Configurazione Ticket salvata con successo!');
+      showToast('Configurazione salvata!');
     } catch (error) {
        showToast('Errore durante il salvataggio.', 'error');
     } finally {
@@ -110,7 +120,7 @@ export default function TicketConfig() {
   };
 
   const handleReset = async () => {
-    if (!confirm('Vuoi davvero ripristinare i valori predefiniti per il sistema ticket?')) return;
+    if (!confirm('Vuoi davvero ripristinare?')) return;
     try {
         await api.request(`/config/${guildId}/reset/tickets`, { method: 'POST' });
         window.location.reload();
@@ -127,73 +137,63 @@ export default function TicketConfig() {
     });
   };
 
-  if (loading || !config) return (
-    <Layout guildId={guildId}>
-      <div className="animate">
-        <Skeleton width="400px" height="40px" style={{ marginBottom: '40px' }} />
-        <Skeleton height="600px" style={{ borderRadius: '24px' }} />
-      </div>
-    </Layout>
-  );
+  if (loading || !config) return <Layout guildId={guildId}><Skeleton height="500px" /></Layout>;
 
   const tabs = [
-    { id: 'settings', name: 'Impostazioni Generali', icon: Settings2 },
-    { id: 'categories', name: 'Categorie & Canali', icon: Layers },
-    { id: 'personalization', name: 'Embed & Bottoni', icon: Palette },
+    { id: 'settings', name: 'Core', icon: Settings2 },
+    { id: 'categories', name: 'Struttura', icon: Layers },
+    { id: 'personalization', name: 'Design', icon: Palette },
   ];
-
-  // Mapping for integrated buttons - Case insensitive search
-  const getButtonsForEmbed = (key) => {
-    if (!globalConfig?.ui?.ticketButtons) return [];
-    if (key === 'open') {
-        const keywords = ['claim', 'close', 'reply', 'tag', 'transcript'];
-        return keywords.map(kw => 
-            globalConfig.ui.ticketButtons.findIndex(b => b.customId.toLowerCase().includes(kw))
-        ).filter(idx => idx !== -1);
-    }
-    return [];
-  };
 
   return (
     <Layout guildId={guildId}>
       <div className="animate">
-        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
-          <div>
-            <div className="align-center" style={{ color: 'var(--primary)', marginBottom: '8px' }}>
-                <Ticket size={18} fill="currentColor" />
-                <span className="text-label" style={{ marginBottom: 0 }}>Modo Supporto</span>
-            </div>
-            <h1 style={{ fontSize: '2.8rem', fontWeight: '900', letterSpacing: '-1.5px' }}>Verix Tickets</h1>
-          </div>
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <button onClick={handleReset} className="btn-danger"><RefreshCcw size={18} /> Reset</button>
-            <button onClick={handleSave} className="btn-primary" disabled={saving}><Save size={20} /> {saving ? 'Salvataggio...' : 'Salva Modifiche'}</button>
-          </div>
+        
+        {/* Module Header */}
+        <header className="module-header">
+           <div className="header-info">
+              <div className="header-icon">
+                <Ticket size={24} />
+              </div>
+              <div className="header-text">
+                <h1>Verix Tickets</h1>
+                <p>Sistema di supporto avanzato con categorie e auto-assegnazione.</p>
+              </div>
+           </div>
+           <div className="header-buttons">
+              <button onClick={handleReset} className="btn-outline">
+                <RefreshCcw size={16} /> Reset
+              </button>
+              <button onClick={handleSave} className="btn-primary" disabled={saving}>
+                <Save size={16} /> {saving ? 'Salvataggio...' : 'Salva Modifiche'}
+              </button>
+           </div>
         </header>
 
-        {/* Tab Navigation */}
-        <div className="tabs-container glass shadow-glow" style={{ padding: '8px', display: 'flex', gap: '8px', marginBottom: '32px', borderRadius: '18px' }}>
+        {/* Minimal Tab System */}
+        <div className="tab-navigation">
             {tabs.map(tab => (
-                <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`tab-btn ${activeTab === tab.id ? 'active' : ''}`}>
-                    <tab.icon size={18} />
+                <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`tab-link ${activeTab === tab.id ? 'active' : ''}`}>
+                    <tab.icon size={16} strokeWidth={activeTab === tab.id ? 2.5 : 2} />
                     <span>{tab.name}</span>
                 </button>
             ))}
         </div>
 
-        <div className="tab-content">
+        <div className="tab-panel animate">
+            
+            {/* TAB: Settings */}
             {activeTab === 'settings' && (
-                <div className="settings-grid">
-                    <div className="main-settings">
-                        {/* Status Card */}
-                        <section className="card glass-heavy shadow-glow" style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: config.enabled ? '1px solid var(--primary-glow)' : '1px solid var(--border)' }}>
-                            <div className="align-center" style={{ gap: '20px' }}>
-                                <div style={{ padding: '12px', background: config.enabled ? 'rgba(var(--primary-rgb), 0.1)' : 'rgba(255,255,255,0.05)', borderRadius: '14px', color: config.enabled ? 'var(--primary)' : 'var(--text-dim)' }}>
-                                    <Power size={24} />
+                <div className="config-grid-t">
+                    <div className="grid-main-t">
+                        <section className="card status-section-t" style={{ marginBottom: '24px' }}>
+                            <div className="status-info-t">
+                                <div className={`status-box-t ${config.enabled ? 'on' : ''}`}>
+                                    <Power size={20} />
                                 </div>
                                 <div>
-                                    <h3 style={{ fontSize: '1.2rem', fontWeight: '800' }}>Stato del Modulo</h3>
-                                    <p className="text-description">{config.enabled ? 'Il sistema ticket è attivo.' : 'Il sistema è inattivo interamente.'}</p>
+                                    <h3>Stato Modulo</h3>
+                                    <p className="text-muted">Abilita o disabilita l'intero sistema ticket.</p>
                                 </div>
                             </div>
                             <label className="toggle">
@@ -202,87 +202,94 @@ export default function TicketConfig() {
                             </label>
                         </section>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
-                            <section className="card glass">
-                                <h3 className="align-center" style={{ marginBottom: '20px', fontSize: '1.1rem', fontWeight: '800' }}><Type size={20} color="var(--primary)" /> Struttura & Tipo</h3>
-                                <div className="input-group" style={{ marginBottom: '20px' }}>
-                                    <label className="text-label">Template Nome Ticket</label>
-                                    <input className="input" value={globalConfig.naming?.ticket || ''} onChange={e => setGlobalNested('naming.ticket', e.target.value)} placeholder="ticket-{user}" />
-                                </div>
-                                <div className="input-group">
-                                    <label className="text-label">Interazione Pannello</label>
-                                    <select className="input select" value={config.inputType || 'BUTTONS'} onChange={e => setConfig({...config, inputType: e.target.value})}>
-                                        <option value="BUTTONS">Bottoni</option>
-                                        <option value="SELECT">Menu a Discesa</option>
-                                    </select>
+                        <div className="two-cols-t">
+                            <section className="card section-card-t">
+                                <h3 className="align-center"><Type size={18} color="var(--primary)" /> Nome & Interfaccia</h3>
+                                <div className="fields-stack-t">
+                                    <div className="field-box">
+                                        <label className="text-label">Naming Template</label>
+                                        <input className="input" value={globalConfig.naming?.ticket || ''} onChange={e => setGlobalNested('naming.ticket', e.target.value)} placeholder="ticket-{user}" />
+                                    </div>
+                                    <div className="field-box">
+                                        <label className="text-label">Interazione Pannello</label>
+                                        <select className="select" value={config.inputType || 'BUTTONS'} onChange={e => setConfig({...config, inputType: e.target.value})}>
+                                            <option value="BUTTONS">Pulsanti</option>
+                                            <option value="SELECT">Menu a scelta</option>
+                                        </select>
+                                    </div>
                                 </div>
                             </section>
 
-                            <section className="card glass">
-                                <h3 className="align-center" style={{ marginBottom: '20px', fontSize: '1.1rem', fontWeight: '800' }}><Clock size={20} color="var(--primary)" /> Automazioni</h3>
-                                <div className="input-group" style={{ marginBottom: '20px' }}>
-                                    <label className="text-label">Auto-chiusura (Ore)</label>
-                                    <input type="number" className="input" value={config.inactivityTimeout || 24} onChange={e => setConfig({...config, inactivityTimeout: parseInt(e.target.value)})} />
-                                </div>
-                                <div className="input-group">
-                                    <label className="text-label">Trascrizioni HTML</label>
-                                    <label className="toggle"><input type="checkbox" checked={config.transcriptionEnabled} onChange={e => setConfig({...config, transcriptionEnabled: e.target.checked})} /><span className="slider"></span></label>
+                            <section className="card section-card-t">
+                                <h3 className="align-center"><Clock size={18} color="var(--primary)" /> Automazioni</h3>
+                                <div className="fields-stack-t">
+                                    <div className="field-box">
+                                        <label className="text-label">Inattività (Ore)</label>
+                                        <input type="number" className="input" value={config.inactivityTimeout || 24} onChange={e => setConfig({...config, inactivityTimeout: parseInt(e.target.value)})} />
+                                    </div>
+                                    <div className="toggle-list-t">
+                                        <div className="toggle-row-t">
+                                            <span>Trascrizioni HTML</span>
+                                            <label className="toggle"><input type="checkbox" checked={config.transcriptionEnabled} onChange={e => setConfig({...config, transcriptionEnabled: e.target.checked})} /><span className="slider"></span></label>
+                                        </div>
+                                    </div>
                                 </div>
                             </section>
                         </div>
                     </div>
 
-                    <aside className="sidebar-settings">
-                        <section className="card glass">
-                            <h3 className="align-center" style={{ marginBottom: '20px', fontSize: '1.1rem', fontWeight: '800' }}><Bell size={20} color="var(--primary)" /> Notifiche & Log</h3>
-                            {['onOpen', 'onClose'].map(ev => {
-                                const notify = globalConfig.notifications[`tickets_${ev}`];
-                                return (
-                                    <div key={ev} style={{ padding: '12px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid var(--border)', marginBottom: '10px' }}>
-                                        <p style={{ fontSize: '0.8rem', fontWeight: '700', marginBottom: '8px', color: 'white' }}>Evento: {ev === 'onOpen' ? 'Apertura' : 'Chiusura'}</p>
-                                        <div style={{ display: 'flex', gap: '10px' }}>
-                                            <label className="toggle" style={{ transform: 'scale(0.7)' }}>
-                                                <input type="checkbox" checked={notify?.dm} onChange={e => setGlobalNested(`notifications.tickets_${ev}.dm`, e.target.checked)} />
-                                                <span className="slider"></span>
-                                            </label>
-                                            <span style={{ fontSize: '0.75rem' }}>DM</span>
-                                            <label className="toggle" style={{ transform: 'scale(0.7)' }}>
-                                                <input type="checkbox" checked={globalConfig.logs[`log_${ev}`]} onChange={e => setGlobalNested(`logs.log_${ev}`, e.target.checked)} />
-                                                <span className="slider"></span>
-                                            </label>
-                                            <span style={{ fontSize: '0.75rem' }}>Log</span>
+                    <aside className="grid-side-t">
+                        <section className="card section-card-t">
+                            <h3 className="align-center"><Bell size={18} color="var(--primary)" /> Protocollo Notifiche</h3>
+                            <div className="events-stack-t">
+                                {['onOpen', 'onClose'].map(ev => (
+                                    <div key={ev} className="event-box-t">
+                                        <span className="event-label-t">{ev === 'onOpen' ? 'Apertura' : 'Chiusura'}</span>
+                                        <div className="event-options-t">
+                                            <label className="mini-toggle-t"><input type="checkbox" checked={globalConfig.notifications[`tickets_${ev}`]?.dm} onChange={e => setGlobalNested(`notifications.tickets_${ev}.dm`, e.target.checked)} /> <span>DM</span></label>
+                                            <label className="mini-toggle-t"><input type="checkbox" checked={globalConfig.logs[`log_${ev}`]} onChange={e => setGlobalNested(`logs.log_${ev}`, e.target.checked)} /> <span>LOG</span></label>
                                         </div>
                                     </div>
-                                )
-                            })}
+                                ))}
+                            </div>
                         </section>
+
+                        <div style={{ marginTop: '24px' }}>
+                            <GuideSidebar type="tickets" context={config} />
+                        </div>
                     </aside>
                 </div>
             )}
 
+            {/* TAB: Categories */}
             {activeTab === 'categories' && (
-                <div className="categories-container animate fade-in">
-                    <section className="card glass" style={{ marginBottom: '24px' }}>
-                        <h3 className="align-center" style={{ marginBottom: '24px', fontSize: '1.3rem', fontWeight: '800' }}><Hash size={22} color="var(--primary)" /> Canali Principali</h3>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-                            <div className="input-group"><label className="text-label">Canale Pannello</label><DiscordSelector type="channel" options={channels.filter(c => c.type === 0 || c.type === 5)} value={config.panelChannelId || ''} onChange={val => setConfig({...config, panelChannelId: val})} /></div>
-                            <div className="input-group"><label className="text-label">Ruolo Staff Predefinito</label><DiscordSelector type="role" multiple={true} options={roles} value={config.staffRoleIds || []} onChange={val => setConfig({...config, staffRoleIds: val})} /></div>
-                            <div className="input-group"><label className="text-label">Categoria Ticket Aperti</label><DiscordSelector type="channel" options={channels.filter(c => c.type === 4)} value={config.categoryOpenId || ''} onChange={val => setConfig({...config, categoryOpenId: val})} /></div>
-                            <div className="input-group"><label className="text-label">Categoria Archivio</label><DiscordSelector type="channel" options={channels.filter(c => c.type === 4)} value={config.categoryClosedId || ''} onChange={val => setConfig({...config, categoryClosedId: val})} /></div>
+                <div className="categories-layout-t animate fade-in">
+                    <section className="card section-card-t" style={{ marginBottom: '24px' }}>
+                        <h3 className="align-center"><Hash size={20} color="var(--primary)" /> Canali & Ruoli Core</h3>
+                        <div className="fields-grid-t">
+                            <div className="field-box"><label className="text-label">Canale Pannello</label><DiscordSelector type="channel" options={channels.filter(c => c.type === 0 || c.type === 5)} value={config.panelChannelId || ''} onChange={val => setConfig({...config, panelChannelId: val})} /></div>
+                            <div className="field-box"><label className="text-label">Staff Predefinito</label><DiscordSelector type="role" multiple={true} options={roles} value={config.staffRoleIds || []} onChange={val => setConfig({...config, staffRoleIds: val})} /></div>
+                            <div className="field-box"><label className="text-label">Categoria Aperti</label><DiscordSelector type="channel" options={channels.filter(c => c.type === 4)} value={config.categoryOpenId || ''} onChange={val => setConfig({...config, categoryOpenId: val})} /></div>
+                            <div className="field-box"><label className="text-label">Categoria Chiusi</label><DiscordSelector type="channel" options={channels.filter(c => c.type === 4)} value={config.categoryClosedId || ''} onChange={val => setConfig({...config, categoryClosedId: val})} /></div>
                         </div>
                     </section>
                     
-                    <section className="card glass">
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                            <h3 className="align-center" style={{ fontSize: '1.3rem', fontWeight: '800' }}><Layers size={22} color="var(--primary)" /> Categorie Ticket</h3>
-                            <button className="btn-primary" style={{ padding: '8px 16px' }}><Plus size={18} /> Nuova Categoria</button>
+                    <section className="card section-card-t">
+                        <div className="card-header-t">
+                            <h3 className="align-center"><Layers size={20} color="var(--primary)" /> Categorie Personalizzate</h3>
+                            <button className="btn-outline"><Plus size={14} /> Nuova</button>
                         </div>
-                        <div style={{ display: 'grid', gap: '12px' }}>
+                        <div className="types-grid-t">
                             {config.typesConfig && Object.entries(config.typesConfig).map(([id, data]) => (
-                                <div key={id} className="ticket-type-card glass shadow-glow">
-                                    <div className="type-emoji" style={{ background: `${data.color}15`, color: data.color }}>{data.emoji}</div>
-                                    <div style={{ flex: 1 }}><p style={{ fontWeight: '800', fontSize: '1.1rem' }}>{id.toUpperCase()}</p><p style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>Identità: {data.color}</p></div>
-                                    <button className="btn-outline" style={{ padding: '10px' }}><Trash2 size={18} color="var(--error)" /></button>
+                                <div key={id} className="type-card-minimal">
+                                    <div className="type-icon-p" style={{ backgroundColor: `${data.color}20`, color: data.color }}>{data.emoji}</div>
+                                    <div className="type-info-p">
+                                        <h4>{id.toUpperCase()}</h4>
+                                        <span>Color: {data.color}</span>
+                                    </div>
+                                    <div className="type-actions-p">
+                                        <button className="btn-icon-danger"><Trash2 size={14} /></button>
+                                    </div>
                                 </div>
                             ))}
                         </div>
@@ -290,89 +297,140 @@ export default function TicketConfig() {
                 </div>
             )}
 
+            {/* TAB: Personalization */}
             {activeTab === 'personalization' && (
-                <div className="personalization-container animate fade-in">
-                    <section className="card glass">
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-                            <div>
-                                <h3 className="align-center" style={{ fontSize: '1.4rem', fontWeight: '800' }}><Palette size={22} color="var(--primary)" /> Personalizzazione Embed</h3>
-                                <p className="text-description">Configura la grafica dei messaggi di supporto.</p>
+                <div className="personalization-flow-t animate fade-in">
+                    <div className="config-grid-t">
+                        <section className="card editor-wrapper-t">
+                            <div className="editor-nav-t">
+                                <h3>Design Embed</h3>
+                                <select className="select" style={{ width: '220px' }} value={activeEmbedKey} onChange={e => setActiveEmbedKey(e.target.value)}>
+                                    <option value="panel">Pannello Scelta</option>
+                                    <option value="ticket">Interno Ticket (Staff)</option>
+                                    <option value="close">Log Chiusura</option>
+                                </select>
                             </div>
-                            <select className="input select" style={{ width: '250px' }} value={activeEmbedKey} onChange={e => setActiveEmbedKey(e.target.value)}>
-                                <option value="panel">Pannello Iniziale</option>
-                                <option value="open">Messaggio Apertura (Ticket Creato)</option>
-                                <option value="close">Messaggio Chiusura</option>
-                            </select>
-                        </div>
-                        <EmbedEditor 
-                            embed={config.embeds?.[activeEmbedKey] || {}} 
-                            onChange={(data) => updateEmbed(activeEmbedKey, data)}
-                            variables={['user', 'guild', 'ticket_id', 'staff', 'time']}
-                        />
+                            <div className="editor-main-t">
+                                <EmbedEditor 
+                                    embed={config.embeds?.[activeEmbedKey] || {}} 
+                                    onChange={(data) => updateEmbed(activeEmbedKey, data)}
+                                    variables={['user', 'guild', 'ticket_id', 'staff', 'type', 'priority']}
+                                />
+                            </div>
+                        </section>
 
-                        {/* Integrated Buttons for Tickets */}
-                        {getButtonsForEmbed(activeEmbedKey).length > 0 && (
-                            <div style={{ marginTop: '30px', padding: '24px', background: 'rgba(0,229,255,0.03)', borderRadius: '20px', border: '1px solid var(--primary-glow)' }}>
-                                <h4 className="align-center" style={{ marginBottom: '20px', fontSize: '1.1rem', fontWeight: '800' }}><MousePointer2 size={18} /> Bottoni Operativi</h4>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
-                                    {getButtonsForEmbed(activeEmbedKey).map(idx => {
-                                        const btn = globalConfig.ui.ticketButtons[idx];
-                                        return (
-                                            <div key={btn.customId} className="btn-config-card glass shadow-glow">
-                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-                                                    <span className="badge" style={{ fontSize: '0.6rem' }}>{btn.customId}</span>
-                                                    {['close', 'claim', 'reply', 'tag', 'transcript'].some(k => btn.customId.toLowerCase().includes(k)) ? (
-                                                        <span className="badge" style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--text-dim)' }}>Obbligatorio</span>
-                                                    ) : (
-                                                        <label className="toggle" style={{ transform: 'scale(0.7)' }}><input type="checkbox" checked={btn.enabled} onChange={e => updateButton(idx, 'enabled', e.target.checked)} /><span className="slider"></span></label>
-                                                    )}
-                                                </div>
-                                                <div style={{ display: 'grid', gap: '10px' }}>
-                                                    <div style={{ display: 'flex', gap: '8px' }}>
-                                                        <input className="input" style={{ flex: 1 }} value={btn.label} onChange={e => updateButton(idx, 'label', e.target.value)} placeholder="Etichetta" />
-                                                        <input 
-                                                            className="input" 
-                                                            style={{ 
-                                                                width: '65px', 
-                                                                textAlign: 'center',
-                                                                background: 'rgba(255,255,255,0.08)',
-                                                                padding: '14px 5px',
-                                                                border: '1px solid var(--primary-glow)'
-                                                            }} 
-                                                            value={btn.emoji} 
-                                                            onChange={e => updateButton(idx, 'emoji', e.target.value)} 
-                                                            placeholder="🚀"
-                                                         />
-                                                    </div>
-                                                    <select className="input select" style={{ fontSize: '0.8rem', padding: '10px' }} value={btn.style} onChange={e => updateButton(idx, 'style', e.target.value)}>
-                                                        <option value="PRIMARY">Blu (Primario)</option>
-                                                        <option value="SUCCESS">Verde (Successo)</option>
-                                                        <option value="DANGER">Rosso (Pericolo)</option>
-                                                        <option value="SECONDARY">Grigio (Secondario)</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        )
-                                    })}
+                        <aside className="side-extras-t">
+                            <section className="card section-card-t">
+                                <h4 className="align-center"><Type size={16} /> Messaggi Effimeri</h4>
+                                <div className="fields-stack-t">
+                                    <div className="field-box">
+                                        <input className="input" value={config.messages?.alreadyExists || ''} onChange={e => setNested('messages.alreadyExists', e.target.value)} placeholder="Già aperto..." />
+                                    </div>
+                                    <div className="field-box">
+                                        <input className="input" value={config.messages?.successOpen || ''} onChange={e => setNested('messages.successOpen', e.target.value)} placeholder="Apertura!" />
+                                    </div>
                                 </div>
-                            </div>
-                        )}
+                            </section>
+                        </aside>
+                    </div>
+
+                    <section className="card buttons-overview-t">
+                        <div className="align-center" style={{ marginBottom: '24px' }}>
+                            <MousePointer2 size={20} color="var(--primary)" />
+                            <h3>Configurazione Pulsanti Interni</h3>
+                        </div>
+                        <div className="btn-cards-grid-t">
+                            {[
+                                { key: 'claim', label: 'Claim' },
+                                { key: 'close', label: 'Chiudi' },
+                                { key: 'quickReply', label: 'Reply' },
+                                { key: 'tag', label: 'Tag' },
+                                { key: 'transcript', label: 'Logs' }
+                            ].map(btn => (
+                                <div key={btn.key} className="btn-config-box-t">
+                                    <label className="label-tiny-t">{btn.label}</label>
+                                    <div className="btn-fields-t">
+                                        <input className="input-s" value={config.buttons?.[btn.key]?.label || ''} onChange={e => updateButton(btn.key, 'label', e.target.value)} />
+                                        <input className="input-emoji" value={config.buttons?.[btn.key]?.emoji || ''} onChange={e => updateButton(btn.key, 'emoji', e.target.value)} />
+                                    </div>
+                                    <div className="style-dots-t">
+                                        {['SUCCESS', 'DANGER', 'PRIMARY', 'SECONDARY'].map(style => (
+                                            <button 
+                                                key={style}
+                                                onClick={() => updateButton(btn.key, 'style', style)}
+                                                className={`dot-btn ${style} ${config.buttons?.[btn.key]?.style === style ? 'active' : ''}`}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </section>
                 </div>
             )}
         </div>
 
         <style jsx>{`
-            .tab-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 14px; border: none; background: transparent; color: var(--text-dim); font-weight: 700; cursor: pointer; border-radius: 14px; transition: 0.3s; }
-            .tab-btn:hover { color: white; background: rgba(255,255,255,0.03); }
-            .tab-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 15px var(--primary-glow); }
-            .settings-grid { display: grid; grid-template-columns: 1fr 300px; gap: 30px; }
-            .btn-config-card { background: rgba(0,0,0,0.3); border: 1px solid var(--border); padding: 16px; border-radius: 14px; }
-            .badge { background: rgba(var(--primary-rgb), 0.1); color: var(--primary); padding: 4px 8px; border-radius: 6px; }
-            .ticket-type-card { display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.02); padding: 15px; border-radius: 12px; border: 1px solid var(--border); }
-            .type-emoji { width: 45px; height: 45px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; }
-            .shadow-glow { box-shadow: 0 0 20px rgba(var(--primary-rgb), 0.1); }
-            @media (max-width: 1000px) { .settings-grid { grid-template-columns: 1fr; } }
+            .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: rgba(255,255,255,0.02); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
+            .header-info { display: flex; align-items: center; gap: 16px; }
+            .header-icon { width: 48px; height: 48px; background: rgba(129, 140, 248, 0.1); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+            .header-text h1 { font-size: 1.5rem; margin-bottom: 2px; }
+            .header-text p { font-size: 0.85rem; color: var(--text-muted); }
+            
+            .tab-navigation { display: flex; gap: 8px; margin-bottom: 32px; padding: 6px; background: #070912; border-radius: 14px; border: 1px solid var(--border); width: fit-content; }
+            .tab-link { display: flex; align-items: center; gap: 10px; padding: 10px 18px; border: none; background: transparent; color: var(--text-muted); font-size: 0.85rem; font-weight: 600; border-radius: 10px; cursor: pointer; transition: 0.2s; }
+            .tab-link:hover { color: white; background: rgba(255,255,255,0.03); }
+            .tab-link.active { color: white; background: var(--bg-card); box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
+
+            .config-grid-t { display: grid; grid-template-columns: 1fr 300px; gap: 24px; }
+            .grid-main-t { display: flex; flex-direction: column; gap: 24px; }
+            .status-section-t { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; }
+            .status-info-t { display: flex; align-items: center; gap: 16px; }
+            .status-box-t { width: 40px; height: 40px; background: #1e293b; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--text-dim); border: 1px solid var(--border); }
+            .status-box-t.on { color: var(--primary); background: rgba(129, 140, 248, 0.1); border-color: rgba(129, 140, 248, 0.2); }
+            
+            .two-cols-t { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+            .fields-stack-t { display: flex; flex-direction: column; gap: 16px; margin-top: 16px; }
+            .toggle-list-t { margin-top: 8px; }
+            .toggle-row-t { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid var(--border); font-size: 0.85rem; font-weight: 600; }
+
+            .event-box-t { padding: 12px; background: rgba(0,0,0,0.1); border-radius: 10px; border: 1px solid var(--border); margin-bottom: 12px; }
+            .event-label-t { display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); margin-bottom: 8px; font-weight: 800; }
+            .event-options-t { display: flex; gap: 15px; }
+            .mini-toggle-t { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 700; cursor: pointer; }
+            .mini-toggle-t input { accent-color: var(--primary); }
+
+            .fields-grid-t { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 16px; }
+            .card-header-t { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+            .types-grid-t { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+            .type-card-minimal { display: flex; align-items: center; gap: 12px; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid var(--border); transition: 0.2s; }
+            .type-card-minimal:hover { background: rgba(255,255,255,0.03); border-color: var(--primary); }
+            .type-icon-p { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+            .type-info-p h4 { font-size: 0.9rem; margin-bottom: 0; }
+            .type-info-p span { font-size: 0.65rem; color: var(--text-dim); }
+            .type-actions-p { margin-left: auto; }
+
+            .editor-wrapper-t { padding: 0 !important; overflow: hidden; }
+            .editor-nav-t { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+            .editor-main-t { padding: 24px; }
+            
+            .buttons-overview-t { margin-top: 32px; }
+            .btn-cards-grid-t { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+            .btn-config-box-t { background: rgba(0,0,0,0.1); padding: 16px; border-radius: 12px; border: 1px solid var(--border); }
+            .label-tiny-t { font-size: 0.65rem; text-transform: uppercase; color: var(--primary); font-weight: 900; margin-bottom: 10px; display: block; }
+            .btn-fields-t { display: grid; grid-template-columns: 1fr 40px; gap: 8px; margin-bottom: 10px; }
+            .input-s { background: #020617; border: 1px solid var(--border); padding: 6px 10px; border-radius: 6px; color: white; font-size: 0.8rem; flex: 1; }
+            .input-emoji { background: #020617; border: 1px solid var(--border); padding: 6px 4px; border-radius: 6px; color: white; text-align: center; }
+            .style-dots-t { display: flex; gap: 6px; }
+            .dot-btn { width: 100%; height: 6px; border: none; border-radius: 100px; cursor: pointer; opacity: 0.2; transition: 0.2s; }
+            .dot-btn.active { opacity: 1; height: 8px; }
+            .dot-btn.SUCCESS { background: #22c55e; }
+            .dot-btn.DANGER { background: #ef4444; }
+            .dot-btn.PRIMARY { background: #6366f1; }
+            .dot-btn.SECONDARY { background: #64748b; }
+
+            .align-center { display: flex; align-items: center; gap: 10px; }
+            @media (max-width: 1000px) { .config-grid-t { grid-template-columns: 1fr; } .two-cols-t { grid-template-columns: 1fr; } }
         `}</style>
       </div>
     </Layout>

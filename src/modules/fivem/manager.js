@@ -224,7 +224,23 @@ export class FiveMManager {
             payload.content = rawContent || null;
 
             // Generate Button ActionRow
-            if (isOnline) {
+            if (isOnline && serverConfig.buttons && serverConfig.buttons.length > 0) {
+                 const row = new ActionRowBuilder();
+                 for (const btn of serverConfig.buttons.slice(0, 5)) { // Discord limit
+                    const btnLabel = replacePlaceholders(btn.label || 'Connettiti', placeholders);
+                    const btnUrl = replacePlaceholders(btn.url || `fivem://connect/${serverConfig.serverIp}`, placeholders);
+                    
+                    const button = new ButtonBuilder()
+                        .setLabel(btnLabel)
+                        .setURL(btnUrl)
+                        .setStyle(ButtonStyle.Link);
+                    
+                    if (btn.emoji) button.setEmoji(btn.emoji);
+                    row.addComponents(button);
+                 }
+                 if (row.components.length > 0) payload.components.push(row);
+            } else if (isOnline) {
+                 // Fallback default button
                  const row = new ActionRowBuilder()
                     .addComponents(
                          new ButtonBuilder()

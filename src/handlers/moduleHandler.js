@@ -90,7 +90,7 @@ export default async (client) => {
                         if (matchesModule && interaction?.isInteraction && !interaction.replied && !interaction.deferred) {
                             await interaction.reply({ 
                                 content: `❌ Il modulo **${moduleName.toUpperCase()}** è attualmente disattivato dalla dashboard amministrativa.`, 
-                                ephemeral: true 
+                                flags: [64] 
                             }).catch(() => {});
                         }
                         continue; // Block execution for THIS module's files

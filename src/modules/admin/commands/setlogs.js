@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
+import { MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 import Guild from '../../../models/Guild.js';
 
 export default {
@@ -15,6 +15,6 @@ export default {
             { logChannelId: channel.id }
         );
 
-        return interaction.reply({ content: `✅ Canale log impostato su ${channel}!`, ephemeral: true });
+        return interaction.reply({ content: `✅ Canale log impostato su ${channel}!`, flags: [MessageFlags.Ephemeral] });
     },
 };

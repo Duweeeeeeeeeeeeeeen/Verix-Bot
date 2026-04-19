@@ -92,18 +92,22 @@ export default {
 
             const row = new ActionRowBuilder().addComponents(
                 new ButtonBuilder().setCustomId('confirm_wl').setLabel('Conferma Pratica').setStyle(ButtonStyle.Success),
-                new ButtonBuilder().setCustomId('edit_wl').setLabel('Modifica Ultima').setEmoji('📝').setStyle(ButtonStyle.Primary),
+                new ButtonBuilder().setCustomId('choice_edit_wl').setLabel('📝 Modifica Risposte').setStyle(ButtonStyle.Primary),
                 new ButtonBuilder().setCustomId('cancel_wl').setLabel('Ritira Domanda').setStyle(ButtonStyle.Danger)
             );
 
+            let sentMsg;
             if (summaryEmbed) {
-                return message.channel.send({ embeds: [summaryEmbed], components: [row] });
+                sentMsg = await message.channel.send({ embeds: [summaryEmbed], components: [row] });
             } else {
-                return message.channel.send({ 
+                sentMsg = await message.channel.send({ 
                     content: `✅ **Interrogatorio terminato!** Hai risposto a tutte le domande. Clicca il pulsante sotto per confermare l'invio ufficiale.`, 
                     components: [row] 
                 });
             }
+            app.reviewMessageId = sentMsg.id;
+            await app.save();
+            return;
         }
 
         logger.info(`[WHITELIST-DEBUG] [E] Saving progress and sending next question...`);

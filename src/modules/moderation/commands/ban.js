@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
+import { EmbedBuilder, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 import logger from '../../../utils/logger.js';
 
 export default {
@@ -28,7 +28,7 @@ export default {
             await interaction.reply({ embeds: [embed] });
         } catch (error) {
             logger.error('Error in ban command:', error);
-            await interaction.reply({ content: 'Impossibile bannare questo utente.', ephemeral: true });
+            await interaction.reply({ content: 'Impossibile bannare questo utente.', flags: [MessageFlags.Ephemeral] });
         }
     },
 };

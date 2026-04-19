@@ -8,6 +8,8 @@ const whitelistConfigSchema = new mongoose.Schema({
     color: { type: String, default: '#5865F2' },
     panelChannelId: { type: String, default: null },
     panelMessageId: { type: String, default: null },
+    lastPanelChannelId: { type: String, default: null },
+    lastPanelMessageId: { type: String, default: null },
     categoryOpenId: { type: String, default: null },
     staffRoleIds: { type: [String], default: [] },
     logChannelId: { type: String, default: null },
@@ -36,7 +38,30 @@ const whitelistConfigSchema = new mongoose.Schema({
         dashboardMsgId: { type: String, default: null },
         pingStaffOnJoin: { type: Boolean, default: false },
         recentActionsCount: { type: Number, default: 3 },
-        interviewChecklist: { type: [String], default: ['Verifica Età', 'Coerenza Background', 'Conoscenza Regolamento'] }
+        interviewChecklist: { type: [String], default: ['Verifica Età', 'Coerenza Background', 'Conoscenza Regolamento'] },
+        voiceMessages: {
+            cooldown: { type: String, default: '⚠️ Hai provato a unirti troppo velocemente. Attendi qualche minuto prima di riprovare.' },
+            queueFull: { type: String, default: '⏳ Tutti gli uffici sono occupati. Sei in coda. Verrai spostato automaticamente appena disponibile.' },
+            staffApproved: { type: String, default: '✅ Whitelist Vocale approvata da {staff}' },
+            staffDenied: { type: String, default: '❌ Whitelist Vocale rifiutata da {staff}' }
+        },
+        voiceButtons: {
+            approve: { 
+                label: { type: String, default: 'Accetta' }, 
+                emoji: { type: String, default: '✅' }, 
+                style: { type: String, default: 'SUCCESS' } 
+            },
+            deny: { 
+                label: { type: String, default: 'Rifiuta' }, 
+                emoji: { type: String, default: '❌' }, 
+                style: { type: String, default: 'DANGER' } 
+            },
+            reset: { 
+                label: { type: String, default: 'Riavvia Timer' }, 
+                emoji: { type: String, default: '⏱️' }, 
+                style: { type: String, default: 'SECONDARY' } 
+            }
+        }
     },
     flowRequirements: {
         requireTextWL: { type: Boolean, default: false },
@@ -179,6 +204,15 @@ const whitelistConfigSchema = new mongoose.Schema({
             color: { type: String, default: 'error' },
             image: { type: String, default: null },
             thumbnail: { type: String, default: null }
+        },
+        voice_guide: {
+            enabled: { type: Boolean, default: true },
+            title: { type: String, default: '📝 Guida Colloquio RP' },
+            description: { type: String, default: 'Assicurati di coprire i seguenti punti durante l\'intervista:\n\n**Checklist:**\n{checklist}\n\n*Utilizza i pulsanti qui sotto per gestire l\'esito della sessione.*' },
+            color: { type: String, default: 'primary' },
+            image: { type: String, default: null },
+            thumbnail: { type: String, default: null },
+            footer: { type: String, default: 'Sistema Voice Whitelist Professional' }
         }
     }
 });

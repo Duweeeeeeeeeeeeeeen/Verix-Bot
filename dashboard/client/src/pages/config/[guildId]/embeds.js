@@ -23,7 +23,9 @@ import {
   Monitor,
   Clock,
   Calendar,
-  ChevronDown
+  ChevronDown,
+  Box,
+  MessageSquare
 } from 'lucide-react';
 
 export default function EmbedBuilder() {
@@ -115,9 +117,8 @@ export default function EmbedBuilder() {
         setCustomTemplates(customTemplates.map(t => t._id === saved._id ? saved : t));
       }
 
-      showToast('Template salvato correttamente!');
+      showToast('Template salvato!');
     } catch (error) {
-      showToast('Errore durante il salvataggio', 'error');
     } finally {
       setSaving(false);
     }
@@ -144,204 +145,138 @@ export default function EmbedBuilder() {
         method: 'POST',
         body: JSON.stringify(payload)
       });
-      showToast(res.message || 'Operazione completata!');
+      showToast(res.message || 'Messaggio inviato!');
     } catch (error) {
-      // Toast handles error
     } finally {
       setSending(false);
     }
   };
 
-  if (loading) return (
-    <Layout guildId={guildId}>
-      <Skeleton height="100px" style={{ marginBottom: '40px' }} />
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 450px', gap: '40px' }}>
-         <Skeleton height="600px" borderRadius="24px" />
-         <Skeleton height="600px" borderRadius="24px" />
-      </div>
-    </Layout>
-  );
+  if (loading) return <Layout guildId={guildId}><Skeleton height="500px" /></Layout>;
 
   return (
     <Layout guildId={guildId}>
       <div className="animate">
-        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
-          <div>
-            <div className="align-center" style={{ color: 'var(--primary)', marginBottom: '8px' }}>
-              <Palette size={18} fill="currentColor" />
-              <span className="text-label" style={{ marginBottom: 0 }}>Laboratorio Creativo</span>
-            </div>
-            <h1 style={{ fontSize: '2.8rem', fontWeight: '900', letterSpacing: '-1.5px' }}>Embed Studio</h1>
-            <p className="text-description" style={{ fontSize: '1.1rem' }}>Crea messaggi professionali da inviare manualmente nei tuoi canali.</p>
-          </div>
-          <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-            <div style={{ width: '250px' }}>
-                <DiscordSelector
-                    type="channel"
-                    options={channels}
-                    value={selectedChannel}
-                    onChange={setSelectedChannel}
-                    placeholder="Canale di invio..."
-                />
-            </div>
-            <button 
-                onClick={handleSend} 
-                className="btn-primary" 
-                disabled={sending || !selectedChannel}
-                style={{ height: '45px', display: 'flex', alignItems: 'center', gap: '8px' }}
-            >
-              <Send size={18} className={sending ? 'spin' : ''} /> {sending ? 'Invio...' : 'Invia Messaggio'}
-            </button>
-            <div style={{ width: '1px', height: '30px', background: 'var(--border)', margin: '0 8px' }}></div>
-            <button onClick={handleSave} className="btn-outline" style={{ height: '45px' }} disabled={saving}>
-              <Save size={18} className={saving ? 'spin' : ''} /> {saving ? 'Salvataggio...' : 'Salva Template'}
-            </button>
-          </div>
+        
+        {/* Module Header */}
+        <header className="module-header">
+           <div className="header-info">
+              <div className="header-icon">
+                <Palette size={24} />
+              </div>
+              <div className="header-text">
+                <h1>Embed Studio</h1>
+                <p>Progetta e trasmetti messaggi avanzati nei canali del server.</p>
+              </div>
+           </div>
+           <div className="header-buttons">
+              <div style={{ width: '220px' }}>
+                <DiscordSelector type="channel" options={channels} value={selectedChannel} onChange={setSelectedChannel} placeholder="Seleziona Canale..." />
+              </div>
+              <button onClick={handleSend} className="btn-primary" disabled={sending || !selectedChannel}>
+                <Send size={16} className={sending ? 'spin' : ''} /> {sending ? 'Invio...' : 'Trasmetti'}
+              </button>
+           </div>
         </header>
 
-        <div className="studio-layout">
-          <div className="studio-main">
-            {/* Template Selector */}
-            <section className="card glass-heavy" style={{ marginBottom: '30px', borderLeft: '4px solid var(--primary)' }}>
-              <div className="align-center" style={{ marginBottom: '20px' }}>
-                <FolderOpen size={22} color="var(--primary)" />
-                <h3 style={{ fontSize: '1.25rem', fontWeight: '800' }}>Archivio Template</h3>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                <div className="input-group">
-                    <label className="text-label">Scegli o Crea</label>
-                    <select className="select" value={selectedTemplateId} onChange={handleTemplateChange}>
-                        <option value="new">+ Crea Nuovo Template</option>
-                        {customTemplates.map(t => (
-                            <option key={t._id} value={t._id}>{t.name}</option>
-                        ))}
-                    </select>
-                </div>
-                <div className="input-group">
-                    <label className="text-label">Nome Template</label>
-                    <input className="input" value={customName} onChange={e => setCustomName(e.target.value)} placeholder="Es. Annuncio Manutenzione" />
-                </div>
-              </div>
-            </section>
+        <div className="studio-grid-s">
+            <div className="studio-main-s">
+                {/* Archive Selector */}
+                <section className="card section-card-s" style={{ marginBottom: '24px' }}>
+                    <div className="align-center"><FolderOpen size={18} color="var(--primary)" /> <h3>Libreria Template</h3></div>
+                    <div className="fields-row-s">
+                        <div className="field-box" style={{ flex: 1.5 }}>
+                            <label className="text-label">Scegli Sorgente</label>
+                            <select className="select" value={selectedTemplateId} onChange={handleTemplateChange}>
+                                <option value="new">+ Nuovo Progetto</option>
+                                {customTemplates.map(t => <option key={t._id} value={t._id}>{t.name}</option>)}
+                            </select>
+                        </div>
+                        <div className="field-box" style={{ flex: 1 }}>
+                            <label className="text-label">Nome Salvataggio</label>
+                            <input className="input" value={customName} onChange={e => setCustomName(e.target.value)} />
+                        </div>
+                        <div className="field-box" style={{ width: '120px', justifyContent: 'flex-end', display: 'flex' }}>
+                             <button onClick={handleSave} className="btn-outline" style={{ height: '42px', marginTop: 'auto' }} disabled={saving}>
+                                <Save size={16} /> Salva
+                             </button>
+                        </div>
+                    </div>
+                </section>
 
-            {/* Reusable Embed Editor */}
-            <EmbedEditor 
-                embed={currentEmbed} 
-                onChange={setCurrentEmbed} 
-                variables={['user', 'guild', 'time', 'date']} 
-            />
-
-          </div>
-
-          <div className="studio-sidebar">
-            <section className="card glass-heavy" style={{ borderTop: '4px solid var(--warning)' }}>
-              <div className="align-center" style={{ marginBottom: '24px' }}>
-                <Clock size={22} color="var(--warning)" />
-                <h3 style={{ fontSize: '1.25rem', fontWeight: '800' }}>Programmazione</h3>
-              </div>
-
-              <div className="input-group" style={{ marginBottom: '20px' }}>
-                <label className="text-label">Tempistica Invio</label>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <button 
-                    className={`btn-schedule ${scheduleType === 'NOW' ? 'active' : ''}`}
-                    onClick={() => setScheduleType('NOW')}
-                  >
-                    <Zap size={14} /> Invia Ora
-                  </button>
-                  <button 
-                    className={`btn-schedule ${scheduleType === 'DELAY' ? 'active' : ''}`}
-                    onClick={() => setScheduleType('DELAY')}
-                  >
-                    <Clock size={14} /> Dopo un ritardo
-                  </button>
-                  <button 
-                    className={`btn-schedule ${scheduleType === 'TIME' ? 'active' : ''}`}
-                    onClick={() => setScheduleType('TIME')}
-                  >
-                    <Calendar size={14} /> Orario Specifico
-                  </button>
-                </div>
-              </div>
-
-              {scheduleType === 'DELAY' && (
-                <div className="input-group animate-in">
-                  <label className="text-label">Minuti di attesa</label>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <input 
-                      type="number" 
-                      className="input" 
-                      min="1" 
-                      max="1440" 
-                      value={delayMinutes} 
-                      onChange={e => setDelayMinutes(e.target.value)} 
+                {/* Main Editor */}
+                <div className="card editor-card-s">
+                    <EmbedEditor 
+                        embed={currentEmbed} 
+                        onChange={setCurrentEmbed} 
+                        variables={['user', 'guild', 'time', 'date']} 
                     />
-                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>minuti</span>
-                  </div>
                 </div>
-              )}
+            </div>
 
-              {scheduleType === 'TIME' && (
-                <div className="input-group animate-in">
-                  <label className="text-label">Data e Ora (UTC)</label>
-                  <input 
-                    type="datetime-local" 
-                    className="input" 
-                    value={specificTime} 
-                    onChange={e => setSpecificTime(e.target.value)} 
-                  />
-                  <p style={{ fontSize: '0.7rem', color: 'var(--text-dim)', marginTop: '8px' }}>
-                    Seleziona l'orario desiderato per l'invio del messaggio.
-                  </p>
+            <aside className="studio-side-s">
+                <section className="card section-card-s">
+                    <div className="align-center"><Clock size={18} color="var(--primary)" /> <h3>Scheduling</h3></div>
+                    <div className="schedule-stack-s">
+                        {[
+                            { id: 'NOW', label: 'Invia Ora', icon: Zap },
+                            { id: 'DELAY', label: 'Ritarda', icon: Clock },
+                            { id: 'TIME', label: 'Calendario', icon: Calendar }
+                        ].map(type => (
+                            <button key={type.id} onClick={() => setScheduleType(type.id)} className={`schedule-btn-s ${scheduleType === type.id ? 'active' : ''}`}>
+                                <type.icon size={14} />
+                                <span>{type.label}</span>
+                            </button>
+                        ))}
+                    </div>
+
+                    {scheduleType === 'DELAY' && (
+                        <div className="field-box animate fade-in" style={{ marginTop: '16px' }}>
+                            <label className="text-label">Minuti di attesa</label>
+                            <input type="number" className="input" value={delayMinutes} onChange={e => setDelayMinutes(e.target.value)} />
+                        </div>
+                    )}
+                    
+                    {scheduleType === 'TIME' && (
+                        <div className="field-box animate fade-in" style={{ marginTop: '16px' }}>
+                            <label className="text-label">Data/Ora UTC</label>
+                            <input type="datetime-local" className="input" value={specificTime} onChange={e => setSpecificTime(e.target.value)} />
+                        </div>
+                    )}
+                </section>
+
+                <div className="card info-box-s" style={{ marginTop: '20px' }}>
+                    <Info size={18} color="var(--primary)" />
+                    <p>Puoi usare variabili come <b>{'{user}'}</b> per personalizzare il messaggio.</p>
                 </div>
-              )}
-
-              <div style={{ marginTop: '24px', padding: '12px', background: 'rgba(245, 158, 11, 0.05)', borderRadius: '12px', border: '1px solid rgba(245, 158, 11, 0.1)' }}>
-                <p style={{ fontSize: '0.75rem', color: 'var(--warning)', fontWeight: '600', lineHeight: '1.4' }}>
-                  {scheduleType === 'NOW' ? 
-                    'Il messaggio verrà inviato immediatamente al canale selezionato.' : 
-                    'Il bot invierà questo embed automaticamente all\'orario stabilito.'}
-                </p>
-              </div>
-            </section>
-          </div>
+            </aside>
         </div>
-      </div>
 
-      <style jsx>{`
-        .studio-layout {
-            display: grid;
-            grid-template-columns: 1fr 320px;
-            gap: 30px;
-        }
-        .btn-schedule {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px 16px;
-            border-radius: 12px;
-            background: rgba(255,255,255,0.02);
-            border: 1px solid var(--border);
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition-fast);
-            text-align: left;
-        }
-        .btn-schedule:hover {
-            background: rgba(255,255,255,0.05);
-            color: white;
-        }
-        .btn-schedule.active {
-            background: rgba(245, 158, 11, 0.1);
-            border-color: var(--warning);
-            color: var(--warning);
-        }
-        .shadow-glow { box-shadow: 0 0 30px rgba(var(--primary-rgb), 0.15); }
-        .spin { animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-      `}</style>
+        <style jsx>{`
+            .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: rgba(255,255,255,0.02); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
+            .header-info { display: flex; align-items: center; gap: 16px; }
+            .header-icon { width: 48px; height: 48px; background: rgba(129, 140, 248, 0.1); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+            .header-text h1 { font-size: 1.5rem; margin-bottom: 2px; }
+            .header-text p { font-size: 0.85rem; color: var(--text-muted); }
+            .header-buttons { display: flex; align-items: center; gap: 12px; }
+
+            .studio-grid-s { display: grid; grid-template-columns: 1fr 300px; gap: 24px; }
+            .fields-row-s { display: flex; gap: 16px; margin-top: 16px; }
+            .editor-card-s { padding: 0 !important; overflow: hidden; }
+
+            .schedule-stack-s { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
+            .schedule-btn-s { display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: 10px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); color: var(--text-muted); font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: 0.2s; text-align: left; }
+            .schedule-btn-s:hover { background: rgba(255,255,255,0.04); color: white; }
+            .schedule-btn-s.active { background: rgba(129,140,248,0.1); border-color: var(--primary); color: white; }
+
+            .info-box-s { padding: 16px; display: flex; flex-direction: column; gap: 10px; font-size: 0.8rem; color: var(--text-muted); }
+
+            .align-center { display: flex; align-items: center; gap: 10px; }
+            @media (max-width: 1000px) { .studio-grid-s { grid-template-columns: 1fr; } .fields-row-s { flex-direction: column; } }
+            @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+            .spin { animation: spin 1s linear infinite; }
+        `}</style>
+      </div>
     </Layout>
   );
 }

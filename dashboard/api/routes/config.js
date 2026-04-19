@@ -31,6 +31,8 @@ import { verifySchema } from '../validations/verifySchema.js';
 import { guildSchema } from '../validations/guildSchema.js';
 import { globalConfigSchema } from '../validations/globalConfigSchema.js';
 import { welcomeSchema } from '../validations/welcomeSchema.js';
+import { fivemSchema } from '../validations/fivemSchema.js';
+
 
 const router = express.Router();
 
@@ -139,7 +141,7 @@ router.post('/:guildId/whitelist', adminCheck, validate(whitelistSchema), async 
         const config = await WhitelistConfig.findOneAndUpdate(
             { guildId },
             { $set: data },
-            { new: true, upsert: true, runValidators: true }
+            { returnDocument: 'after', upsert: true, runValidators: true }
         );
         
         if (!config) {
@@ -224,9 +226,47 @@ router.post('/:guildId/whitelist/send-panel', adminCheck, async (req, res) => {
                 .setEmoji(startBtnConfig.emoji || '⚖️')
         );
 
-        await channel.send({ embeds: [embed], components: [startButtonRow] });
+        // --- ROBUST BULK CLEANUP ---
+        try {
+            console.log(`[DEBUG_WL_CLEANUP] Scanning for existing panels in <#${targetChannelId}>...`);
+            const messages = await channel.messages.fetch({ limit: 50 });
+            const legacyPanels = messages.filter(m => 
+                m.author.id === client.user.id && 
+                m.components.some(row => row.components.some(c => 
+                    c.customId === 'start_wl' || 
+                    c.customId === 'apply_whitelist' ||
+                    c.customId === startBtnConfig.customId
+                ))
+            );
 
-        await logAudit(req, 'SEND_WHITELIST_PANEL', { channelId: targetChannelId });
+            if (legacyPanels.size > 0) {
+                console.log(`[DEBUG_WL_CLEANUP] Found ${legacyPanels.size} legacy panels. Purging...`);
+                for (const m of legacyPanels.values()) {
+                    await m.delete().catch(err => console.warn(`[DEBUG_WL_CLEANUP] Failed to delete message ${m.id}: ${err.message}`));
+                }
+            } else {
+                console.log(`[DEBUG_WL_CLEANUP] No legacy panels found via scan.`);
+            }
+        } catch (err) {
+            console.error(`[DEBUG_WL_CLEANUP] Bulk scan failed:`, err.message);
+        }
+
+        const sentMessage = await channel.send({ embeds: [embed], components: [startButtonRow] });
+
+        // Store new message ID and its location for next cleanup
+        await WhitelistConfig.updateOne(
+            { guildId },
+            { 
+                $set: { 
+                    panelMessageId: sentMessage.id,
+                    lastPanelMessageId: sentMessage.id,
+                    lastPanelChannelId: targetChannelId
+                } 
+            }
+        );
+
+        invalidateCache(guildId);
+        await logAudit(req, 'SEND_WHITELIST_PANEL', { channelId: targetChannelId, messageId: sentMessage.id });
         res.json({ success: true, message: 'Pannello inviato correttamente!' });
     } catch (error) {
         console.error('Error sending whitelist panel:', error);
@@ -241,7 +281,7 @@ router.post('/:guildId/tickets', adminCheck, validate(ticketSchema), async (req,
         const config = await TicketConfig.findOneAndUpdate(
             { guildId },
             { $set: req.validatedData },
-            { new: true, upsert: true }
+            { returnDocument: 'after', upsert: true }
         );
         
         invalidateCache(guildId);
@@ -260,7 +300,7 @@ router.post('/:guildId/photocontest', adminCheck, validate(photoContestSchema), 
         const config = await PhotoContestConfig.findOneAndUpdate(
             { guildId },
             { $set: req.validatedData },
-            { new: true, upsert: true }
+            { returnDocument: 'after', upsert: true }
         );
         
         invalidateCache(guildId);
@@ -279,7 +319,7 @@ router.post('/:guildId/verify', adminCheck, validate(verifySchema), async (req, 
         const config = await VerifyConfig.findOneAndUpdate(
             { guildId },
             { $set: req.validatedData },
-            { new: true, upsert: true }
+            { returnDocument: 'after', upsert: true }
         );
         
         invalidateCache(guildId);
@@ -325,9 +365,38 @@ router.post('/:guildId/verify/send-panel', adminCheck, async (req, res) => {
                 .setStyle(ButtonStyle.Success)
         );
 
-        await channel.send({ embeds: [embed], components: [row] });
+        // --- ROBUST BULK CLEANUP (Verify) ---
+        try {
+            console.log(`[DEBUG_VERIFY_CLEANUP] Scanning for existing panels in <#${config.channelId}>...`);
+            const messages = await channel.messages.fetch({ limit: 50 });
+            const legacyPanels = messages.filter(m => 
+                m.author.id === client.user.id && 
+                m.components.some(row => row.components.some(c => 
+                    c.customId === 'verify_user' || 
+                    c.customId === 'setup-verify'
+                ))
+            );
 
-        await logAudit(req, 'SEND_VERIFY_PANEL', { channelId: config.channelId });
+            if (legacyPanels.size > 0) {
+                console.log(`[DEBUG_VERIFY_CLEANUP] Found ${legacyPanels.size} legacy panels. Purging...`);
+                for (const m of legacyPanels.values()) {
+                    await m.delete().catch(err => console.warn(`[DEBUG_VERIFY_CLEANUP] Failed message deletion: ${err.message}`));
+                }
+            }
+        } catch (err) {
+            console.error(`[DEBUG_VERIFY_CLEANUP] Bulk scan failed:`, err.message);
+        }
+
+        const sentMessage = await channel.send({ embeds: [embed], components: [row] });
+
+        // Update the config with current panel info
+        config.panelMessageId = sentMessage.id;
+        config.lastPanelMessageId = sentMessage.id;
+        config.lastPanelChannelId = config.channelId;
+        await config.save();
+
+        invalidateCache(guildId);
+        await logAudit(req, 'SEND_VERIFY_PANEL', { channelId: config.channelId, messageId: sentMessage.id });
         res.json({ success: true, message: 'Pannello di verifica inviato correttamente!' });
     } catch (error) {
         console.error('Error sending verify panel:', error);
@@ -342,7 +411,7 @@ router.post('/:guildId/guild', adminCheck, validate(guildSchema), async (req, re
         const guild = await Guild.findOneAndUpdate(
             { guildId },
             { $set: req.validatedData },
-            { new: true, upsert: true }
+            { returnDocument: 'after', upsert: true }
         );
         
         invalidateCache(guildId);
@@ -374,7 +443,7 @@ router.post('/:guildId/global', adminCheck, validate(globalConfigSchema), async 
         const config = await GlobalConfig.findOneAndUpdate(
             { guildId },
             { $set: req.validatedData },
-            { new: true, upsert: true }
+            { returnDocument: 'after', upsert: true }
         );
 
         invalidateCache(guildId);
@@ -408,7 +477,7 @@ router.post('/:guildId/welcome', adminCheck, validate(welcomeSchema), async (req
         const config = await WelcomeConfig.findOneAndUpdate(
             { guildId },
             { $set: req.validatedData },
-            { new: true, upsert: true }
+            { returnDocument: 'after', upsert: true }
         );
 
         invalidateCache(guildId);
@@ -643,7 +712,7 @@ router.get('/:guildId/fivem', adminCheck, async (req, res) => {
 });
 
 // POST fivem config
-router.post('/:guildId/fivem', adminCheck, async (req, res) => {
+router.post('/:guildId/fivem', adminCheck, validate(fivemSchema), async (req, res) => {
     try {
         const { guildId } = req.params;
         const updateData = req.body;

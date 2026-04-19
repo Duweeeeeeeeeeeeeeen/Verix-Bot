@@ -1,4 +1,4 @@
-import { Events, EmbedBuilder } from 'discord.js';
+import { EmbedBuilder, Events, MessageFlags } from 'discord.js';
 import VerifyConfig from '../../../models/VerifyConfig.js';
 import GlobalConfig from '../../../models/GlobalConfig.js';
 import ErrorHelper from '../../../utils/errorHelper.js';
@@ -26,15 +26,15 @@ export default {
             if (!role) {
                 return interaction.reply({ 
                     content: '❌ ' + t(lang, 'verify.missing_roles'), 
-                    ephemeral: true 
+                    flags: [MessageFlags.Ephemeral] 
                 });
             }
 
             // Check if user already has the role
             if (member.roles.cache.has(role.id)) {
                 return interaction.reply({ 
-                    content: 'ℹ️ ' + t(lang, 'verify.already_verified'), 
-                    ephemeral: true 
+                    content: config.messages?.alreadyVerified || ('ℹ️ ' + t(lang, 'verify.already_verified')), 
+                    flags: [MessageFlags.Ephemeral] 
                 });
             }
 
@@ -59,14 +59,21 @@ export default {
             if (config.dmEnabled) {
                 const placeholders = {
                     user: user.username,
-                    guild: guild.name
+                    user_mention: user.toString(),
+                    guild: guild.name,
+                    member_count: guild.memberCount.toString()
                 };
 
+                const dmConfig = config.embeds?.dm || {};
                 const dmEmbed = new EmbedBuilder()
-                    .setTitle(replacePlaceholders(config.dmEmbed?.title || '✅ Verifica Completata', placeholders))
-                    .setDescription(replacePlaceholders(config.dmEmbed?.description || config.dmMessage || 'Ti sei verificato correttamente!', placeholders))
-                    .setColor(config.dmEmbed?.color || '#2ecc71')
+                    .setTitle(replacePlaceholders(dmConfig.title || '✅ Verifica Completata', placeholders))
+                    .setDescription(replacePlaceholders(dmConfig.description || 'Ti sei verificato correttamente!', placeholders))
+                    .setColor(dmConfig.color || '#2ecc71')
                     .setTimestamp();
+                
+                if (dmConfig.footer) dmEmbed.setFooter({ text: replacePlaceholders(dmConfig.footer, placeholders) });
+                if (dmConfig.thumbnail) dmEmbed.setThumbnail(replacePlaceholders(dmConfig.thumbnail, placeholders));
+                if (dmConfig.image) dmEmbed.setImage(replacePlaceholders(dmConfig.image, placeholders));
 
                 await user.send({ embeds: [dmEmbed] }).catch(() => {
                     logger.warn(`[Verify] Could not send DM to ${user.tag} (DMs closed)`);
@@ -82,8 +89,10 @@ export default {
                         .setColor('#2ecc71')
                         .setThumbnail(user.displayAvatarURL())
                         .addFields(
-                            { name: 'Utente', value: `${user.tag} (${user.id})`, inline: true },
-                            { name: 'Ruolo Assegnato', value: `${role.name}`, inline: true }
+                            { name: '👤 Utente', value: `${user.tag} (${user.toString()})`, inline: true },
+                            { name: '🆔 ID', value: `\`${user.id}\``, inline: true },
+                            { name: '📅 Account Creato', value: `<t:${Math.floor(user.createdTimestamp / 1000)}:R>`, inline: true },
+                            { name: '✅ Ruolo Assegnato', value: `${role.toString()}`, inline: true }
                         )
                         .setTimestamp();
                     
@@ -91,20 +100,21 @@ export default {
                 }
             }
 
+            const successMsg = config.messages?.successResponse || t(lang, 'verify.success_desc', { user: user.toString() });
             await interaction.reply({ 
-                content: '✅ ' + t(lang, 'verify.success_desc', { user: user.toString() }), 
-                ephemeral: true 
+                content: successMsg.includes('{user}') ? replacePlaceholders(successMsg, { user: user.toString() }) : (successMsg.startsWith('✅') ? successMsg : `✅ ${successMsg}`), 
+                flags: [MessageFlags.Ephemeral] 
             });
 
             logger.info(`[Verify] User ${user.tag} verified successfully in ${guild.name}`);
 
         } catch (error) {
             logger.error('[Verify] Interaction Error:', error);
-            // Default to 'it' if lang isn't available yet due to error
             const errLang = typeof lang !== 'undefined' ? lang : 'it';
+            const errMsg = config?.messages?.errorResponse || t(errLang, 'general.error');
             await interaction.reply({ 
-                content: `❌ ${t(errLang, 'general.error')} (${error.message})`, 
-                ephemeral: true 
+                content: errMsg.startsWith('❌') ? errMsg : `❌ ${errMsg} (${error.message})`, 
+                flags: [MessageFlags.Ephemeral] 
             }).catch(() => {});
         }
     }

@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
+import { MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 import WhitelistConfig from '../../../models/WhitelistConfig.js';
 import Guild from '../../../models/Guild.js';
 
@@ -30,7 +30,7 @@ export default {
         // Module enablement check
         const guildData = await Guild.findOne({ guildId: interaction.guild.id });
         if (!guildData || !guildData.enabledModules.includes('whitelist')) {
-            return interaction.reply({ content: '❌ Il modulo Whitelist non è attivo su questo server.', ephemeral: true });
+            return interaction.reply({ content: '❌ Il modulo Whitelist non è attivo su questo server.', flags: [MessageFlags.Ephemeral] });
         }
 
         const mode = interaction.options.getString('mode');
@@ -71,11 +71,11 @@ export default {
                 statusMsg += `\n- Canale Join: ${joinChannel || 'Non modificato'}\n- Categoria: ${category || 'Non modificata'}`;
             }
 
-            await interaction.reply({ content: statusMsg, ephemeral: true });
+            await interaction.reply({ content: statusMsg, flags: [MessageFlags.Ephemeral] });
 
         } catch (error) {
             console.error('Error in setup-voice:', error);
-            await interaction.reply({ content: 'Si è verificato un errore durante il salvataggio.', ephemeral: true });
+            await interaction.reply({ content: 'Si è verificato un errore durante il salvataggio.', flags: [MessageFlags.Ephemeral] });
         }
     },
 };

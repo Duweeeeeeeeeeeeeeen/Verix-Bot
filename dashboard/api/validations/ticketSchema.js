@@ -20,5 +20,39 @@ export const ticketSchema = z.object({
         label: z.string().min(1).max(50),
         content: z.string().min(1).max(2000)
     })).optional(),
-    panelImage: z.string().url().or(z.string().length(0)).optional().nullable()
+    panelImage: z.string().url().or(z.string().length(0)).optional().nullable(),
+    embeds: z.object({
+        panel: z.object({
+            title: z.string().optional(),
+            description: z.string().optional(),
+            color: colorHex.optional(),
+            image: z.string().url().or(z.string().length(0)).optional().nullable(),
+            thumbnail: z.string().url().or(z.string().length(0)).optional().nullable(),
+            footer: z.string().optional().nullable()
+        }).partial().optional().nullable(),
+        ticket: z.object({
+            title: z.string().optional(),
+            description: z.string().optional(),
+            color: colorHex.optional()
+        }).partial().optional().nullable(),
+        close: z.object({
+            title: z.string().optional(),
+            description: z.string().optional(),
+            color: colorHex.optional()
+        }).partial().optional().nullable()
+    }).partial().optional().nullable(),
+    messages: z.object({
+        cooldown: z.string().optional(),
+        alreadyExists: z.string().optional(),
+        successOpen: z.string().optional(),
+        successClose: z.string().optional(),
+        staffClaimed: z.string().optional()
+    }).partial().optional().nullable(),
+    buttons: z.object({
+        claim: z.object({ label: z.string(), emoji: z.string(), style: z.string() }).partial().optional(),
+        close: z.object({ label: z.string(), emoji: z.string(), style: z.string() }).partial().optional(),
+        quickReply: z.object({ label: z.string(), emoji: z.string(), style: z.string() }).partial().optional(),
+        tag: z.object({ label: z.string(), emoji: z.string(), style: z.string() }).partial().optional(),
+        transcript: z.object({ label: z.string(), emoji: z.string(), style: z.string() }).partial().optional()
+    }).partial().optional().nullable()
 });

@@ -1,4 +1,4 @@
-import { Events, ChannelType, PermissionFlagsBits } from 'discord.js';
+import { ChannelType, Events, MessageFlags, PermissionFlagsBits } from 'discord.js';
 import WhitelistConfig from '../../../models/WhitelistConfig.js';
 import WhitelistApp from '../../../models/WhitelistApp.js';
 import User from '../../../models/User.js';
@@ -23,7 +23,7 @@ export default {
         // --- 0. IMMEDIATE ACKNOWLEDGEMENT ---
         // Claim the interaction as early as possible to prevent timeouts
         try {
-            await interaction.deferReply({ ephemeral: true });
+            await interaction.deferReply({ flags: [MessageFlags.Ephemeral] });
         } catch (error) {
             logger.error('[DEFER ERROR] Failed to defer whitelist interaction:', error);
             return;
@@ -173,7 +173,7 @@ export default {
             if (interaction.deferred || interaction.replied) {
                 await interaction.editReply({ content: errorMessage });
             } else {
-                await interaction.reply({ content: errorMessage, ephemeral: true });
+                await interaction.reply({ content: errorMessage, flags: [MessageFlags.Ephemeral] });
             }
         }
     },

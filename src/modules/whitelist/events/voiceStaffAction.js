@@ -1,5 +1,6 @@
-import { Events, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } from 'discord.js';
+import { ActionRowBuilder, Events, MessageFlags, ModalBuilder, TextInputBuilder, TextInputStyle, EmbedBuilder } from 'discord.js';
 import WhitelistConfig from '../../../models/WhitelistConfig.js';
+import WhitelistApp from '../../../models/WhitelistApp.js';
 import WhitelistAudit from '../../../models/WhitelistAudit.js';
 import VoiceQueue from '../../../models/VoiceQueue.js';
 import { buildEmbed } from '../../../utils/embedHelper.js';
@@ -19,7 +20,7 @@ export default {
             );
 
             await updateDashboard(interaction.guild, client);
-            return interaction.reply({ content: `💎 Utente <@${userId}> promosso in testa alla coda.`, ephemeral: true });
+            return interaction.reply({ content: `💎 Utente <@${userId}> promosso in testa alla coda.`, flags: [MessageFlags.Ephemeral] });
         }
 
         // --- 2. Dashboard Buttons ---
@@ -37,12 +38,12 @@ export default {
                 config.voiceSettings.paused = (action === 'pause');
                 await config.save();
                 await updateDashboard(interaction.guild, client);
-                return interaction.reply({ content: `✅ Sistema **${action === 'pause' ? 'messo in pausa' : 'riattivato'}**.`, ephemeral: true });
+                return interaction.reply({ content: `✅ Sistema **${action === 'pause' ? 'messo in pausa' : 'riattivato'}**.`, flags: [MessageFlags.Ephemeral] });
             }
 
             if (action === 'skip') {
                 const activeSession = await VoiceQueue.findOne({ guildId: interaction.guild.id, status: 'ACTIVE' }).sort({ joinedAt: 1 });
-                if (!activeSession) return interaction.reply({ content: '❌ Nessuna sessione attiva da saltare.', ephemeral: true });
+                if (!activeSession) return interaction.reply({ content: '❌ Nessuna sessione attiva da saltare.', flags: [MessageFlags.Ephemeral] });
 
                 activeSession.status = 'CANCELLED';
                 await activeSession.save();
@@ -51,13 +52,14 @@ export default {
                 if (channel) await channel.delete().catch(() => {});
 
                 await updateDashboard(interaction.guild, client);
-                return interaction.reply({ content: '✅ Sessione saltata. Il prossimo in coda verrà invitato.', ephemeral: true });
+                return interaction.reply({ content: '✅ Sessione saltata. Il prossimo in coda verrà invitato.', flags: [MessageFlags.Ephemeral] });
             }
         }
 
         // --- 3. Interview Control Buttons (Local VC) ---
         if (interaction.isButton() && interaction.customId.startsWith('reset_timer_voice_')) {
             const userId = interaction.customId.split('_')[3];
+            const config = await WhitelistConfig.findOne({ guildId: interaction.guild.id });
             const now = new Date();
 
             await VoiceQueue.findOneAndUpdate(
@@ -65,17 +67,26 @@ export default {
                 { staffJoinedAt: now }
             );
 
-            const oldEmbed = interaction.message.embeds[0];
-            const newEmbed = EmbedBuilder.from(oldEmbed)
-                .setDescription(`Utente: <@${userId}>\nTimer Riavviato: <t:${Math.floor(now.getTime() / 1000)}:R>`);
+            // Rebuild the guide embed to refresh the timer/placeholder if needed
+            const member = await interaction.guild.members.fetch(userId).catch(() => null);
+            const checklist = (config.voiceSettings.interviewChecklist || []).map(i => `◽ ${i}`).join('\n');
+            const newEmbed = buildEmbed(config.embeds.voice_guide, {
+                user: member?.user || 'Utente',
+                checklist: checklist || '*Nessuna checklist*',
+                start_time: `<t:${Math.floor(now.getTime() / 1000)}:R>`
+            }, config);
 
-            await interaction.update({ embeds: [newEmbed] });
+            if (newEmbed) {
+                await interaction.update({ embeds: [newEmbed] });
+            } else {
+                await interaction.update({ content: `⏱️ Timer Riavviato: <t:${Math.floor(now.getTime() / 1000)}:R>` });
+            }
             await updateDashboard(interaction.guild, client);
+            return;
         }
 
-        // --- 4. Existing Voice Staff Buttons (Log Channel) ---
+        // --- 4. Existing Voice Staff Buttons (Log Channel & Local VC) ---
         if (interaction.isButton() && (interaction.customId.startsWith('approve_voice_') || interaction.customId.startsWith('deny_voice_'))) {
-            // ... (rest of the code for approval/rejection)
             const parts = interaction.customId.split('_');
             const action = parts[0];
             const userId = parts[2];
@@ -84,36 +95,13 @@ export default {
             const user = await client.users.fetch(userId).catch(() => null);
 
             if (action === 'approve') {
-                // Notifica Utente
-                if (user && config.embeds.dm_accepted) {
-                    const dmEmbed = buildEmbed(config.embeds.dm_accepted, {
-                        user: user.username,
-                        guild: interaction.guild.name
-                    });
-                    if (dmEmbed) await user.send({ embeds: [dmEmbed] }).catch(() => {});
-                }
+                if (interaction.deferred || interaction.replied) return;
 
-                // Log Audit
-                await WhitelistAudit.create({
-                    userId: userId,
-                    guildId: interaction.guild.id,
-                    staffId: interaction.user.id,
-                    action: 'ACCEPTED',
-                    type: 'VOICE'
-                });
-
-                // Audit Log in Channel
-                if (config.logChannelId) {
-                    const logChannel = interaction.guild.channels.cache.get(config.logChannelId);
-                    if (logChannel) {
-                        const auditEmbed = buildEmbed(config.embeds.staff_accepted, {
-                            user: `<@${userId}>`,
-                            staff: interaction.user,
-                            app_id: 'VOICE_INTERVIEW'
-                        });
-                        await logChannel.send({ embeds: [auditEmbed] });
-                    }
-                }
+                // Mark Whitelist Application as ACCEPTED
+                await WhitelistApp.findOneAndUpdate(
+                    { userId: userId, guildId: interaction.guild.id, status: { $in: ['SUBMITTED', 'WAITING_VOICE', 'ACCEPTED'] } },
+                    { status: 'ACCEPTED', reviewedBy: interaction.user.id }
+                );
 
                 // Update Queue Status
                 await VoiceQueue.findOneAndUpdate(
@@ -121,8 +109,31 @@ export default {
                     { status: 'COMPLETED' }
                 );
 
+                // Notifica Utente
+                if (user && config.embeds.dm_accepted?.enabled) {
+                    const dmEmbed = buildEmbed(config.embeds.dm_accepted, {
+                        user: user.username,
+                        guild: interaction.guild.name
+                    }, config);
+                    if (dmEmbed) await user.send({ embeds: [dmEmbed] }).catch(() => {});
+                }
+
+                // Log Audit DB
+                await WhitelistAudit.create({
+                    userId: userId,
+                    guildId: interaction.guild.id,
+                    staffId: interaction.user.id,
+                    action: 'ACCEPTED',
+                    type: 'VOICE',
+                    timestamp: new Date()
+                });
+
                 await updateDashboard(interaction.guild, client);
-                await interaction.update({ content: `✅ Whitelist Vocale approvata da ${interaction.user.tag}`, embeds: [], components: [] });
+                
+                const successMsg = config.voiceSettings.voiceMessages?.staffApproved || '✅ Whitelist Vocale approvata da {staff}';
+                const finalSuccess = successMsg.replace('{staff}', interaction.user.tag);
+                
+                return interaction.update({ content: finalSuccess, embeds: [], components: [] });
             }
 
             if (action === 'deny') {
@@ -191,7 +202,12 @@ export default {
             );
 
             await updateDashboard(interaction.guild, client);
-            await interaction.update({ content: `❌ Whitelist Vocale rifiutata da ${interaction.user.tag} per: ${reason}`, embeds: [], components: [] });
+            const rejectMsg = config.voiceSettings.voiceMessages?.staffDenied || '❌ Whitelist Vocale rifiutata da {staff} per: {reason}';
+            const finalReject = rejectMsg
+                .replace('{staff}', interaction.user.tag)
+                .replace('{reason}', reason);
+            
+            await interaction.update({ content: finalReject, embeds: [], components: [] });
         }
     },
 };

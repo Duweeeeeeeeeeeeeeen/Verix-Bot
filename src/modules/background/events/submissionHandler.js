@@ -1,4 +1,4 @@
-import { Events, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } from 'discord.js';
+import { ActionRowBuilder, Events, MessageFlags, ModalBuilder, TextInputBuilder, TextInputStyle } from 'discord.js';
 import Background from '../../../models/Background.js';
 import BackgroundConfig from '../../../models/BackgroundConfig.js';
 import User from '../../../models/User.js';
@@ -58,13 +58,13 @@ export default {
 
             try {
                 const app = await Background.findOne({ channelId: interaction.channelId });
-                if (!app) return interaction.reply({ content: 'Sessione non trovata.', ephemeral: true });
+                if (!app) return interaction.reply({ content: 'Sessione non trovata.', flags: [MessageFlags.Ephemeral] });
 
                 const config = await BackgroundConfig.findOne({ guildId: interaction.guild.id });
-                if (!config) return interaction.reply({ content: 'Configurazione non trovata.', ephemeral: true });
+                if (!config) return interaction.reply({ content: 'Configurazione non trovata.', flags: [MessageFlags.Ephemeral] });
 
                 const logChannel = interaction.guild.channels.cache.get(config.logChannelId);
-                if (!logChannel) return interaction.reply({ content: 'Canale log non trovato.', ephemeral: true });
+                if (!logChannel) return interaction.reply({ content: 'Canale log non trovato.', flags: [MessageFlags.Ephemeral] });
 
                 // Update Progress
                 app.link = link;
@@ -118,7 +118,7 @@ export default {
 
             } catch (error) {
                 logger.error('Error in BG Modal Submit:', error);
-                await interaction.reply({ content: 'Si è verificato un errore durante l\'invio.', ephemeral: true });
+                await interaction.reply({ content: 'Si è verificato un errore durante l\'invio.', flags: [MessageFlags.Ephemeral] });
             }
         }
     },

@@ -16,22 +16,38 @@ export default {
     name: Events.VoiceStateUpdate,
     async execute(oldState, newState, client) {
         const { member, guild, channelId } = newState;
-        if (member?.user.bot) return;
+        if (!member || member.user.bot) return;
 
         // Fetch Guild Config
         const guildData = await Guild.findOne({ guildId: guild.id });
-        if (!guildData || !guildData.enabledModules?.includes('whitelist')) return;
+        if (!guildData) {
+            logger.warn(`[VOICE-DEBUG] Guild data not found for ${guild.id}`);
+            return;
+        }
+
+        if (!guildData.enabledModules?.includes('whitelist')) {
+            logger.info(`[VOICE-DEBUG] Whitelist module disabled for ${guild.name}`);
+            return;
+        }
 
         const config = await WhitelistConfig.findOne({ guildId: guild.id });
-        if (!config || config.mode === 'TEXT') return;
+        if (!config) {
+            logger.warn(`[VOICE-DEBUG] Whitelist configuration not found for ${guild.name}`);
+            return;
+        }
+
+        if (config.mode === 'TEXT') return;
+
+        logger.info(`[VOICE-DEBUG] VoiceStateUpdate for ${member.user.tag} in ${guild.name}. Channel: ${channelId || 'NULL'}`);
 
         // 1. JOIN LOGIC
-        if (channelId === config.voiceSettings.joinChannelId) {
+        if (channelId && channelId === config.voiceSettings.joinChannelId) {
+            logger.info(`[VOICE-DEBUG] User ${member.user.tag} joined the Join Channel in ${guild.name}`);
             try {
                 // Check if paused
                 if (config.voiceSettings.paused) {
                     await member.voice.disconnect('Whitelist Vocale temporaneamente chiusa.');
-                    return member.send('⏸️ Il sistema di Whitelist Vocale è attualmente in pausa dallo staff. Riprova più tardi.').catch(() => {});
+                    return member.send(config.voiceSettings.voiceMessages?.paused || '⏸️ Il sistema di Whitelist Vocale è attualmente in pausa dallo staff. Riprova più tardi.').catch(() => {});
                 }
 
                 // Anti-Spam Check
@@ -39,19 +55,32 @@ export default {
                 const lastJoin = antiSpam.get(member.id);
                 if (lastJoin && (now - lastJoin < (config.voiceSettings.queueCooldown || 5) * 60 * 1000)) {
                     await member.voice.disconnect('Anti-Spam Cooldown active.');
-                    return member.send('⚠️ Hai provato a unirti troppo velocemente. Attendi qualche minuto prima di riprovare.').catch(() => {});
+                    return member.send(config.voiceSettings.voiceMessages?.cooldown || '⚠️ Hai provato a unirti troppo velocemente. Attendi qualche minuto prima di riprovare.').catch(() => {});
                 }
                 antiSpam.set(member.id, now);
 
                 // Flow Validation
                 const reasons = [];
                 if (config.flowRequirements.requireTextWL) {
-                    const textApp = await WhitelistApp.findOne({ userId: member.id, guildId: guild.id, status: 'ACCEPTED' });
-                    if (!textApp) reasons.push('- Whitelist Testuale non completata o accettata.');
+                    // In Hybrid mode, we now expect 'WAITING_VOICE' after text approval.
+                    // We also allow 'ACCEPTED' for backwards compatibility.
+                    const textApp = await WhitelistApp.findOne({ 
+                        userId: member.id, 
+                        guildId: guild.id, 
+                        status: { $in: ['ACCEPTED', 'WAITING_VOICE'] } 
+                    });
+                    
+                    if (!textApp) {
+                        logger.warn(`[VOICE-DEBUG] User ${member.user.tag} rejected: No accepted/waiting text application found.`);
+                        reasons.push('- Whitelist Testuale non completata o in attesa di approvazione.');
+                    }
                 }
                 if (config.flowRequirements.requireBackground) {
                     const bgApp = await Background.findOne({ userId: member.id, guildId: guild.id, status: 'ACCEPTED' });
-                    if (!bgApp) reasons.push('- Background non inviato o accettato.');
+                    if (!bgApp) {
+                        logger.warn(`[VOICE-DEBUG] User ${member.user.tag} rejected: No accepted background found.`);
+                        reasons.push('- Background non inviato o accettato.');
+                    }
                 }
 
                 if (reasons.length > 0) {
@@ -89,7 +118,9 @@ export default {
                         }
                     }
                     
-                    return member.send(`⏳ Tutti gli uffici sono occupati. Sei in coda. ${isVip ? '💎 **Priorità VIP Attiva!**' : ''} Verrai spostato automaticamente appena disponibile.`).catch(() => {});
+                    const queueMsg = config.voiceSettings.voiceMessages?.queueFull || '⏳ Tutti gli uffici sono occupati. Sei in coda. {vip_priority} Verrai spostato automaticamente appena disponibile.';
+                    const finalMsg = queueMsg.replace('{vip_priority}', isVip ? '💎 **Priorità VIP Attiva!**' : '');
+                    return member.send(finalMsg).catch(() => {});
                 }
 
                 // Start Session
@@ -183,48 +214,53 @@ async function startVoiceSession(member, guild, config, client) {
     );
 
     // Send Control Panel in the Temp VC (Text-in-Voice)
-    const controlEmbed = new EmbedBuilder()
-        .setTitle('🎮 Pannello Controllo Sessione')
-        .setDescription(`Utente: ${member.user}\nInizio: <t:${Math.floor(Date.now() / 1000)}:R>`)
-        .setColor('#5865F2');
+    const checklist = (config.voiceSettings.interviewChecklist || []).map(i => `◽ ${i}`).join('\n');
+    const controlEmbed = buildEmbed(config.embeds.voice_guide, {
+        user: member.user,
+        checklist: checklist || '*Nessuna checklist configurata*'
+    }, config);
 
+    const buttons = config.voiceSettings.voiceButtons || {};
     const controlRow = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
             .setCustomId(`approve_voice_${member.id}`)
-            .setLabel('Accetta')
-            .setStyle(ButtonStyle.Success),
+            .setLabel(buttons.approve?.label || 'Accetta')
+            .setEmoji(buttons.approve?.emoji || '✅')
+            .setStyle(ButtonStyle[buttons.approve?.style] || ButtonStyle.Success),
         new ButtonBuilder()
             .setCustomId(`deny_voice_${member.id}`)
-            .setLabel('Rifiuta')
-            .setStyle(ButtonStyle.Danger),
+            .setLabel(buttons.deny?.label || 'Rifiuta')
+            .setEmoji(buttons.deny?.emoji || '❌')
+            .setStyle(ButtonStyle[buttons.deny?.style] || ButtonStyle.Danger),
         new ButtonBuilder()
             .setCustomId(`reset_timer_voice_${member.id}`)
-            .setLabel('Riavvia Timer')
-            .setStyle(ButtonStyle.Secondary)
+            .setLabel(buttons.reset?.label || 'Riavvia Timer')
+            .setEmoji(buttons.reset?.emoji || '⏱️')
+            .setStyle(ButtonStyle[buttons.reset?.style] || ButtonStyle.Secondary)
     );
 
-    await tempChannel.send({ embeds: [controlEmbed], components: [controlRow] });
-
-    // Send Interview Checklist (Guide)
-    if (config.voiceSettings.interviewChecklist && config.voiceSettings.interviewChecklist.length > 0) {
-        const guideEmbed = new EmbedBuilder()
-            .setTitle('📝 Guida Colloquio RP')
-            .setDescription('Assicurati di coprire i seguenti punti durante l\'intervista:')
-            .addFields({ name: 'Checklist', value: config.voiceSettings.interviewChecklist.map(item => `◽ ${item}`).join('\n') })
-            .setColor('#f1c40f')
-            .setFooter({ text: 'Sistema Voice Whitelist Elite' });
-        
-        await tempChannel.send({ embeds: [guideEmbed] });
+    if (controlEmbed) {
+        await tempChannel.send({ embeds: [controlEmbed], components: [controlRow] });
     }
+
 
     // Notify Staff in Log Channel
     if (config.logChannelId) {
         const logChannel = guild.channels.cache.get(config.logChannelId);
         if (logChannel) {
             const logEmbed = buildEmbed(config.embeds.voice_staff_log, { user: member.user, voice_channel: tempChannel.name });
+            const buttons = config.voiceSettings.voiceButtons || {};
             const row = new ActionRowBuilder().addComponents(
-                new ButtonBuilder().setCustomId(`approve_voice_${member.id}`).setLabel('Accetta').setStyle(ButtonStyle.Success),
-                new ButtonBuilder().setCustomId(`deny_voice_${member.id}`).setLabel('Rifiuta').setStyle(ButtonStyle.Danger)
+                new ButtonBuilder()
+                    .setCustomId(`approve_voice_${member.id}`)
+                    .setLabel(buttons.approve?.label || 'Accetta')
+                    .setEmoji(buttons.approve?.emoji || '✅')
+                    .setStyle(ButtonStyle[buttons.approve?.style] || ButtonStyle.Success),
+                new ButtonBuilder()
+                    .setCustomId(`deny_voice_${member.id}`)
+                    .setLabel(buttons.deny?.label || 'Rifiuta')
+                    .setEmoji(buttons.deny?.emoji || '❌')
+                    .setStyle(ButtonStyle[buttons.deny?.style] || ButtonStyle.Danger)
             );
             await logChannel.send({ embeds: [logEmbed], components: [row] });
         }

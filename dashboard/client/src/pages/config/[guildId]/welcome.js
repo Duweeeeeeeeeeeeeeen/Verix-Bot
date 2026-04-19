@@ -3,16 +3,23 @@ import { useRouter } from 'next/router';
 import Layout from '../../../components/Layout';
 import Skeleton from '../../../components/Skeleton';
 import DiscordSelector from '../../../components/DiscordSelector';
+import EmbedEditor from '../../../components/EmbedEditor';
 import api from '../../../utils/api';
-import { Save, UserPlus, UserMinus, Settings2, RefreshCcw, Power, Palette, MessageSquare, Info } from 'lucide-react';
+import { 
+    Save, UserPlus, UserMinus, Settings2, RefreshCcw, 
+    Power, Palette, Info, Bell, Layout as LayoutIcon, ChevronRight
+} from 'lucide-react';
+import GuideSidebar from '../../../components/GuideSidebar';
 
 export default function WelcomeConfig() {
   const router = useRouter();
   const { guildId } = router.query;
   const [config, setConfig] = useState(null);
-  const [discordData, setDiscordData] = useState({ roles: [], channels: [], botHighestPosition: 0 });
+  const [discordData, setDiscordData] = useState({ roles: [], channels: [] });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState('settings');
+  const [activeEmbedKey, setActiveEmbedKey] = useState('welcome');
 
   useEffect(() => {
     if (guildId) {
@@ -50,23 +57,9 @@ export default function WelcomeConfig() {
         method: 'POST',
         body: JSON.stringify(config)
       });
-      showToast('Configurazione Welcome salvata con successo!');
-    } catch (error) {
-       // Global toast handles errors
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleReset = async () => {
-    if (!confirm('Vuoi davvero ripristinare i valori predefiniti per il modulo Welcome?')) return;
-    try {
-        await api.request(`/config/${guildId}/reset/welcome`, { 
-            method: 'POST'
-        });
-        window.location.reload();
-    } catch (error) {
-    }
+      showToast('Configurazione salvata!');
+    } catch (error) {}
+    finally { setSaving(false); }
   };
 
   const updateMessageConfig = (type, field, value) => {
@@ -79,274 +72,176 @@ export default function WelcomeConfig() {
     });
   };
 
-  if (loading && !config) return (
-    <Layout guildId={guildId}>
-      <div className="animate">
-        <Skeleton width="400px" height="40px" style={{ marginBottom: '40px' }} />
-        <Skeleton height="600px" style={{ borderRadius: '20px' }} />
-      </div>
-    </Layout>
-  );
+  const updateEmbed = (key, data) => {
+    const newConfig = { ...config };
+    if (!newConfig[key]) newConfig[key] = { embed: {} };
+    newConfig[key].embed = { ...newConfig[key].embed, ...data };
+    setConfig(newConfig);
+  };
 
-  if (!config) return (
-    <Layout guildId={guildId}>
-      <div className="card glass" style={{ padding: '60px', textAlign: 'center' }}>
-        <UserPlus size={64} className="text-error" opacity={0.5} />
-        <h2 style={{ fontSize: '1.8rem', fontWeight: '800', marginTop: '20px' }}>Errore di Caricamento</h2>
-        <p className="text-description" style={{ marginTop: '10px' }}>Non è stato possibile caricare il modulo.</p>
-        <button onClick={() => window.location.reload()} className="btn-primary" style={{ marginTop: '30px' }}>Riprova</button>
-      </div>
-    </Layout>
-  );
+  if (loading || !config) return <Layout guildId={guildId}><Skeleton height="500px" /></Layout>;
 
   return (
     <Layout guildId={guildId}>
       <div className="animate">
-        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '48px' }}>
-          <div>
-            <div className="align-center" style={{ color: 'var(--primary)', marginBottom: '8px' }}>
-                <UserPlus size={18} fill="currentColor" />
-                <span className="text-label" style={{ marginBottom: 0 }}>Gestione Utenti</span>
-            </div>
-            <h1 style={{ fontSize: '2.8rem', fontWeight: '900', letterSpacing: '-1.5px' }}>
-              Welcome & Leave
-            </h1>
-            <p className="text-description" style={{ fontSize: '1.1rem' }}>Accogli i nuovi utenti e tieni traccia di chi lascia il server.</p>
-          </div>
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <button onClick={handleReset} className="btn-danger">
-                <RefreshCcw size={18} /> Reset
-            </button>
-            <button onClick={handleSave} className="btn-primary" disabled={saving}>
-                <Save size={18} className={saving ? 'spin' : ''} /> {saving ? 'Salvataggio...' : 'Salva Modifiche'}
-            </button>
-          </div>
+        
+        {/* Module Header */}
+        <header className="module-header">
+           <div className="header-info">
+              <div className="header-icon">
+                <Bell size={24} />
+              </div>
+              <div className="header-text">
+                <h1>Welcome & Leave</h1>
+                <p>Personalizza l'accoglienza automatica dei nuovi membri.</p>
+              </div>
+           </div>
+           <div className="header-buttons">
+              <button onClick={handleSave} className="btn-primary" disabled={saving}>
+                <Save size={16} /> {saving ? 'Salvataggio...' : 'Salva Modifiche'}
+              </button>
+           </div>
         </header>
 
-        <div className="card glass-heavy status-card" style={{ marginBottom: '40px' }}>
-            <div className="align-center" style={{ gap: '15px' }}>
-                <div className={`status-icon ${config.enabled ? 'active' : ''}`} style={{ display: 'flex' }}>
-                    <Power size={22} />
-                </div>
-                <div>
-                    <span style={{ fontWeight: '800', fontSize: '1rem', display: 'block' }}>Modulo Attivo</span>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)' }}>Abilita o disabilita l'intero sistema di messaggi join/leave.</span>
-                </div>
-            </div>
-            <label className="toggle">
-                <input type="checkbox" checked={config.enabled} onChange={(e) => setConfig({...config, enabled: e.target.checked})} />
-                <span className="slider"></span>
-            </label>
+        {/* Minimal Tabs */}
+        <div className="tab-navigation">
+            <button onClick={() => setActiveTab('settings')} className={`tab-link ${activeTab === 'settings' ? 'active' : ''}`}>
+                <Settings2 size={16} />
+                <span>Configurazione</span>
+            </button>
+            <button onClick={() => setActiveTab('personalization')} className={`tab-link ${activeTab === 'personalization' ? 'active' : ''}`}>
+                <Palette size={16} />
+                <span>Personalizzazione</span>
+            </button>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px' }}>
-          {/* Welcome Section */}
-          <section className={`card glass transition-all ${!config.welcome.enabled ? 'opacity-50' : ''}`} style={{ padding: '30px', borderTop: '4px solid var(--primary)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
-              <div className="align-center">
-                <UserPlus size={24} color="var(--primary)" />
-                <h3 style={{ fontSize: '1.5rem', fontWeight: '800' }}>Benvenuto</h3>
-              </div>
-              <label className="toggle">
-                <input type="checkbox" checked={config.welcome.enabled} onChange={(e) => updateMessageConfig('welcome', 'enabled', e.target.checked)} />
-                <span className="slider"></span>
-              </label>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-              <div className="input-group">
-                <label className="text-label">Canale Invia Messaggio</label>
-                <DiscordSelector
-                  type="channel"
-                  options={discordData.channels}
-                  value={config.welcome.channelId}
-                  onChange={val => updateMessageConfig('welcome', 'channelId', val)}
-                  placeholder="Seleziona canale..."
-                />
-              </div>
-
-              <div className="input-group">
-                <label className="text-label">Stile Embed</label>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                  <button 
-                    className={`btn-outline ${config.welcome.style === 'SIMPLE' ? 'active' : ''}`}
-                    onClick={() => updateMessageConfig('welcome', 'style', 'SIMPLE')}
-                  >
-                    Simple
-                  </button>
-                  <button 
-                    className={`btn-outline ${config.welcome.style === 'ARTICULATED' ? 'active' : ''}`}
-                    onClick={() => updateMessageConfig('welcome', 'style', 'ARTICULATED')}
-                  >
-                    Articulated
-                  </button>
-                </div>
-              </div>
-
-              <div className="input-group">
-                <label className="text-label" style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Messaggio / Descrizione</span>
-                  <span style={{ fontSize: '0.7rem', color: 'var(--primary)' }}>{"{user}, {user_mention}, {guild}, {member_count}"}</span>
-                </label>
-                <textarea 
-                  className="input" 
-                  rows="4" 
-                  value={config.welcome.message} 
-                  onChange={(e) => updateMessageConfig('welcome', 'message', e.target.value)}
-                  placeholder="Scrivi il messaggio..."
-                />
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                <div className="input-group">
-                  <label className="text-label">Colore</label>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <input type="color" className="input" style={{ width: '50px', padding: '4px' }} value={config.welcome.color} onChange={(e) => updateMessageConfig('welcome', 'color', e.target.value)} />
-                    <input type="text" className="input" value={config.welcome.color} onChange={(e) => updateMessageConfig('welcome', 'color', e.target.value)} />
-                  </div>
-                </div>
-                <div className="input-group">
-                  <label className="text-label">Immagine Profilo</label>
-                  <div className="align-center" style={{ height: '52px' }}>
+        {activeTab === 'settings' && (
+            <div className="animate fade-in contents-grid">
+                <div className="card status-section">
+                    <div className="section-info">
+                        <div className={`status-box ${config.enabled ? 'on' : ''}`}>
+                            <Power size={20} />
+                        </div>
+                        <div>
+                            <h3>Stato Modulo</h3>
+                            <p className="text-muted">Abilita o disabilita il sistema Join/Leave globale.</p>
+                        </div>
+                    </div>
                     <label className="toggle">
-                      <input type="checkbox" checked={config.welcome.useImage} onChange={(e) => updateMessageConfig('welcome', 'useImage', e.target.checked)} />
-                      <span className="slider"></span>
+                        <input type="checkbox" checked={config.enabled} onChange={(e) => setConfig({...config, enabled: e.target.checked})} />
+                        <span className="slider"></span>
                     </label>
-                    <span style={{ fontSize: '0.9rem', color: 'var(--text-dim)' }}>Mostra Avatar</span>
-                  </div>
                 </div>
-              </div>
-            </div>
-          </section>
 
-          {/* Leave Section */}
-          <section className={`card glass transition-all ${!config.leave.enabled ? 'opacity-50' : ''}`} style={{ padding: '30px', borderTop: '4px solid var(--error)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
-              <div className="align-center">
-                <UserMinus size={24} color="var(--error)" />
-                <h3 style={{ fontSize: '1.5rem', fontWeight: '800' }}>Addio</h3>
-              </div>
-              <label className="toggle">
-                <input type="checkbox" checked={config.leave.enabled} onChange={(e) => updateMessageConfig('leave', 'enabled', e.target.checked)} />
-                <span className="slider"></span>
-              </label>
-            </div>
+                <div className="config-columns">
+                    <section className="card content-card">
+                        <div className="card-header-p">
+                            <div className="align-center">
+                                <UserPlus size={18} color="var(--primary)" />
+                                <h3>Canali Welcome</h3>
+                            </div>
+                            <label className="toggle">
+                                <input type="checkbox" checked={config.welcome.enabled} onChange={e => updateMessageConfig('welcome', 'enabled', e.target.checked)} />
+                                <span className="slider"></span>
+                            </label>
+                        </div>
+                        <div className="field-box" style={{ marginTop: '20px' }}>
+                            <label className="text-label">Target Channel</label>
+                            <DiscordSelector type="channel" options={discordData.channels} value={config.welcome.channelId} onChange={v => updateMessageConfig('welcome', 'channelId', v)} />
+                        </div>
+                    </section>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-              <div className="input-group">
-                <label className="text-label">Canale Invia Messaggio</label>
-                <DiscordSelector
-                  type="channel"
-                  options={discordData.channels}
-                  value={config.leave.channelId}
-                  onChange={val => updateMessageConfig('leave', 'channelId', val)}
-                  placeholder="Seleziona canale..."
-                />
-              </div>
-
-              <div className="input-group">
-                <label className="text-label">Stile Embed</label>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                  <button 
-                    className={`btn-outline ${config.leave.style === 'SIMPLE' ? 'active' : ''}`}
-                    onClick={() => updateMessageConfig('leave', 'style', 'SIMPLE')}
-                  >
-                    Simple
-                  </button>
-                  <button 
-                    className={`btn-outline ${config.leave.style === 'ARTICULATED' ? 'active' : ''}`}
-                    onClick={() => updateMessageConfig('leave', 'style', 'ARTICULATED')}
-                  >
-                    Articulated
-                  </button>
+                    <section className="card content-card">
+                        <div className="card-header-p">
+                            <div className="align-center">
+                                <UserMinus size={18} color="var(--error)" />
+                                <h3>Canali Leave</h3>
+                            </div>
+                            <label className="toggle">
+                                <input type="checkbox" checked={config.leave.enabled} onChange={e => updateMessageConfig('leave', 'enabled', e.target.checked)} />
+                                <span className="slider"></span>
+                            </label>
+                        </div>
+                        <div className="field-box" style={{ marginTop: '20px' }}>
+                            <label className="text-label">Target Channel</label>
+                            <DiscordSelector type="channel" options={discordData.channels} value={config.leave.channelId} onChange={v => updateMessageConfig('leave', 'channelId', v)} />
+                        </div>
+                    </section>
                 </div>
-              </div>
 
-              <div className="input-group">
-                <label className="text-label" style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>Messaggio / Descrizione</span>
-                  <span style={{ fontSize: '0.7rem', color: 'var(--error)' }}>{"{user}, {user_tag}, {guild}, {member_count}"}</span>
-                </label>
-                <textarea 
-                  className="input" 
-                  rows="4" 
-                  value={config.leave.message} 
-                  onChange={(e) => updateMessageConfig('leave', 'message', e.target.value)}
-                  placeholder="Scrivi il messaggio..."
-                />
-              </div>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                <div className="input-group">
-                  <label className="text-label">Colore</label>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <input type="color" className="input" style={{ width: '50px', padding: '4px' }} value={config.leave.color} onChange={(e) => updateMessageConfig('leave', 'color', e.target.value)} />
-                    <input type="text" className="input" value={config.leave.color} onChange={(e) => updateMessageConfig('leave', 'color', e.target.value)} />
-                  </div>
+                <div className="card info-card-p">
+                    <Info size={20} color="var(--primary)" />
+                    <p>Puoi usare variabili come <code>{'{user}'}</code>, <code>{'{guild}'}</code>, e <code>{'{member_count}'}</code> nei tuoi embed.</p>
                 </div>
-                <div className="input-group">
-                  <label className="text-label">Immagine Profilo</label>
-                  <div className="align-center" style={{ height: '52px' }}>
-                    <label className="toggle">
-                      <input type="checkbox" checked={config.leave.useImage} onChange={(e) => updateMessageConfig('leave', 'useImage', e.target.checked)} />
-                      <span className="slider"></span>
-                    </label>
-                    <span style={{ fontSize: '0.9rem', color: 'var(--text-dim)' }}>Mostra Avatar</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-        </div>
 
-        <div className="card" style={{ marginTop: '40px', background: 'rgba(var(--primary-rgb), 0.05)', border: '1px solid var(--primary-glow)', display: 'flex', gap: '15px', alignItems: 'center', padding: '24px' }}>
-            <Info size={24} color="var(--primary)" />
-            <div>
-                <p style={{ fontWeight: '800', color: 'white' }}>Variabili Disponibili</p>
-                <div style={{ display: 'flex', gap: '10px', marginTop: '8px', flexWrap: 'wrap' }}>
-                    <code className="code-tag">{"{user}"}</code>
-                    <code className="code-tag">{"{user_mention}"}</code>
-                    <code className="code-tag">{"{user_tag}"}</code>
-                    <code className="code-tag">{"{guild}"}</code>
-                    <code className="code-tag">{"{member_count}"}</code>
+                <div style={{ marginTop: '24px' }}>
+                    <GuideSidebar type="welcome" context={config} />
                 </div>
             </div>
-        </div>
+        )}
+
+        {activeTab === 'personalization' && (
+            <div className="animate fade-in card editor-container-p">
+                <div className="editor-nav-p">
+                    <button 
+                        onClick={() => setActiveEmbedKey('welcome')} 
+                        className={`editor-nav-link ${activeEmbedKey === 'welcome' ? 'active' : ''}`}
+                    >
+                        <UserPlus size={14} /> Benvenuto
+                        <ChevronRight size={14} className="nav-arrow" />
+                    </button>
+                    <button 
+                        onClick={() => setActiveEmbedKey('leave')} 
+                        className={`editor-nav-link ${activeEmbedKey === 'leave' ? 'active' : ''}`}
+                    >
+                        <UserMinus size={14} /> Addio
+                        <ChevronRight size={14} className="nav-arrow" />
+                    </button>
+                </div>
+                <div className="editor-main-p">
+                    <EmbedEditor 
+                        embed={config[activeEmbedKey]?.embed || {}} 
+                        onChange={d => updateEmbed(activeEmbedKey, d)}
+                        variables={['user', 'user_mention', 'user_tag', 'guild', 'member_count']}
+                    />
+                </div>
+            </div>
+        )}
 
         <style jsx>{`
-            .status-card {
-                display: flex; 
-                justify-content: space-between; 
-                align-items: center; 
-                padding: 24px;
-                border: 1px solid var(--border);
-            }
-            .status-icon {
-                padding: 12px;
-                background: rgba(255,255,255,0.05);
-                border-radius: 14px;
-                color: var(--text-dim);
-            }
-            .status-icon.active {
-                background: rgba(var(--primary-rgb), 0.1);
-                color: var(--primary);
-                box-shadow: 0 0 15px rgba(var(--primary-rgb), 0.2);
-            }
-            .btn-outline.active {
-                background: var(--primary);
-                color: white;
-                border-color: var(--primary);
-            }
-            .code-tag {
-                background: rgba(255,255,255,0.1);
-                padding: 4px 8px;
-                border-radius: 6px;
-                font-size: 0.8rem;
-                font-family: monospace;
-            }
-            .align-center { display: flex; align-items: center; gap: 12px; }
-            .spin { animation: spin 1s linear infinite; }
-            @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+            .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: rgba(255,255,255,0.02); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
+            .header-info { display: flex; align-items: center; gap: 16px; }
+            .header-icon { width: 48px; height: 48px; background: rgba(129, 140, 248, 0.1); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+            .header-text h1 { font-size: 1.5rem; margin-bottom: 2px; }
+            .header-text p { font-size: 0.85rem; color: var(--text-muted); }
+            
+            .tab-navigation { display: flex; gap: 8px; margin-bottom: 32px; padding: 6px; background: #070912; border-radius: 14px; border: 1px solid var(--border); width: fit-content; }
+            .tab-link { display: flex; align-items: center; gap: 10px; padding: 10px 18px; border: none; background: transparent; color: var(--text-muted); font-size: 0.85rem; font-weight: 600; border-radius: 10px; cursor: pointer; transition: 0.2s; }
+            .tab-link:hover { color: white; background: rgba(255,255,255,0.03); }
+            .tab-link.active { color: white; background: var(--bg-card); box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
+
+            .status-section { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; margin-bottom: 24px; }
+            .section-info { display: flex; align-items: center; gap: 16px; }
+            .status-box { width: 40px; height: 40px; background: #1e293b; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--text-dim); border: 1px solid var(--border); transition: 0.3s; }
+            .status-box.on { color: var(--primary); background: rgba(129, 140, 248, 0.1); border-color: rgba(129, 140, 248, 0.2); }
+            .section-info h3 { font-size: 1rem; margin-bottom: 2px; }
+
+            .config-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+            .card-header-p { display: flex; justify-content: space-between; align-items: center; }
+            .card-header-p h3 { font-size: 1.05rem; }
+
+            .info-card-p { margin-top: 24px; background: rgba(129, 140, 248, 0.05); border: 1px solid rgba(129, 140, 248, 0.1); display: flex; align-items: center; gap: 16px; padding: 16px 24px; font-size: 0.9rem; color: var(--text-muted); }
+            .info-card-p code { background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 4px; color: var(--primary); font-family: monospace; }
+
+            .editor-container-p { display: grid; grid-template-columns: 240px 1fr; padding: 0 !important; overflow: hidden; }
+            .editor-nav-p { background: rgba(0,0,0,0.1); padding: 20px; border-right: 1px solid var(--border); display: flex; flex-direction: column; gap: 6px; }
+            .editor-nav-link { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: transparent; border: 1px solid transparent; color: var(--text-muted); border-radius: 10px; cursor: pointer; text-align: left; transition: 0.2s; font-size: 0.85rem; font-weight: 600; }
+            .editor-nav-link:hover { color: white; background: rgba(255,255,255,0.03); }
+            .editor-nav-link.active { color: var(--primary); background: rgba(129, 140, 248, 0.05); border-color: rgba(129, 140, 248, 0.1); }
+            .nav-arrow { margin-left: auto; opacity: 0.4; }
+            .editor-main-p { padding: 32px; }
+
+            @media (max-width: 900px) { .config-columns { grid-template-columns: 1fr; } .editor-container-p { grid-template-columns: 1fr; } .editor-nav-p { border-right: none; border-bottom: 1px solid var(--border); } }
         `}</style>
       </div>
     </Layout>

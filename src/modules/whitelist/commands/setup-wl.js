@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder, ActionRowBuilder, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder as ActionRow, ButtonBuilder, ButtonStyle } from 'discord.js';
+import { ActionRowBuilder, ActionRowBuilder as ActionRow, ButtonBuilder, ButtonStyle, EmbedBuilder, MessageFlags, ModalBuilder, PermissionFlagsBits, SlashCommandBuilder, TextInputBuilder, TextInputStyle } from 'discord.js';
 import WhitelistConfig from '../../../models/WhitelistConfig.js';
 
 export default {
@@ -29,14 +29,14 @@ export default {
         if (!panelChannel.permissionsFor(me).has(['ViewChannel', 'SendMessages', 'EmbedLinks'])) {
             return interaction.reply({ 
                 content: `❌ Il bot non ha i permessi necessari (Visualizza, Invia Messaggi, Link incorporati) nel canale ${panelChannel}.`, 
-                ephemeral: true 
+                flags: [MessageFlags.Ephemeral] 
             });
         }
 
         if (!logChannel.permissionsFor(me).has(['ViewChannel', 'SendMessages', 'EmbedLinks'])) {
             return interaction.reply({ 
                 content: `❌ Il bot non ha i permessi necessari nel canale di log ${logChannel}.`, 
-                ephemeral: true 
+                flags: [MessageFlags.Ephemeral] 
             });
         }
 

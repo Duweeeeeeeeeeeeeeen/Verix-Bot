@@ -77,7 +77,12 @@ export function startDashboard(client) {
         secret: process.env.SESSION_SECRET || 'verix-secret-key-development',
         resave: false,
         saveUninitialized: false,
-        store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
+        store: MongoStore.create({ 
+            mongoUrl: process.env.MONGODB_URI,
+            mongoOptions: {
+                serverSelectionTimeoutMS: 5000
+            }
+        }),
         cookie: { 
             maxAge: 1000 * 60 * 60 * 24, // 24 hours
             secure: false, // Set to true if using HTTPS

@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder } from 'discord.js';
+import { ActionRowBuilder, EmbedBuilder, MessageFlags, PermissionFlagsBits, SlashCommandBuilder, StringSelectMenuBuilder } from 'discord.js';
 import TicketConfig from '../../../models/TicketConfig.js';
 import logger from '../../../utils/logger.js';
 
@@ -17,7 +17,7 @@ export default {
         const staffRole = interaction.options.getRole('staff_role');
         const logChannel = interaction.options.getChannel('log_channel');
 
-        if (categoryOpen.type !== 4) return interaction.reply({ content: '❌ Seleziona una **categoria**.', ephemeral: true });
+        if (categoryOpen.type !== 4) return interaction.reply({ content: '❌ Seleziona una **categoria**.', flags: [MessageFlags.Ephemeral] });
 
         try {
             const config = await TicketConfig.findOneAndUpdate(
@@ -44,18 +44,21 @@ export default {
                 options.push({ label: 'Supporto', value: 'supporto', emoji: '🆘', description: 'Assistenza generica' });
             }
 
+            const pEmbed = config.embeds?.panel || {};
             const embed = new EmbedBuilder()
-                .setTitle('🎫 Centro Assistenza & Segnalazioni')
+                .setTitle(pEmbed.title || '🎫 Centro Assistenza & Segnalazioni')
                 .setDescription(
+                    pEmbed.description || 
                     'Benvenuto nell\'hub di supporto professionale.\n\n' +
                     'Seleziona la categoria di assistenza richiesta dal menu qui sotto.\n' +
                     'Il nostro team prenderà in carico la tua richiesta nel minor tempo possibile.'
                 )
-                .setColor('#5865F2')
-                .setFooter({ text: 'Sistema Ticket Avanzato • Productivity Suite' })
+                .setColor(pEmbed.color || '#5865F2')
+                .setFooter({ text: pEmbed.footer || 'Sistema Ticket Avanzato • Productivity Suite' })
                 .setTimestamp();
 
-            if (config.panelImage) embed.setImage(config.panelImage);
+            if (pEmbed.thumbnail) embed.setThumbnail(pEmbed.thumbnail);
+            if (pEmbed.image || config.panelImage) embed.setImage(pEmbed.image || config.panelImage);
 
             const menu = new ActionRowBuilder().addComponents(
                 new StringSelectMenuBuilder()
@@ -85,12 +88,12 @@ export default {
 
             await interaction.reply({ 
                 content: `✅ **Pannello inviato con successo!**\n- Tipi attivi: \`${options.map(o => o.label).join(', ')}\``, 
-                ephemeral: true 
+                flags: [MessageFlags.Ephemeral] 
             });
 
         } catch (error) {
             logger.error('Error during ticket setup:', error);
-            await interaction.reply({ content: '❌ Errore durante la configurazione.', ephemeral: true });
+            await interaction.reply({ content: '❌ Errore durante la configurazione.', flags: [MessageFlags.Ephemeral] });
         }
     },
 };
