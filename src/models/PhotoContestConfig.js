@@ -29,15 +29,15 @@ const photoContestConfigSchema = new mongoose.Schema({
     embedSettings: {
         title: {
             type: String,
-            default: '📸 Photo Contest'
+            default: '🖼️ Galleria d\'Arte: Esposizione Fotografica'
         },
         description: {
             type: String,
-            default: 'Invia la tua foto migliore in questo canale per partecipare!'
+            default: 'La città è alla ricerca di scorci unici. Cattura un momento memorabile e depositalo in questa galleria per partecipare al concorso cittadino.'
         },
         color: {
             type: String,
-            default: '#FF00EA'
+            default: '#F39C12'
         }
     },
     lastWinnerId: {

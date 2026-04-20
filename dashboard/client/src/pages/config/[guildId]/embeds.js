@@ -30,7 +30,12 @@ import {
 
 export default function EmbedBuilder() {
   const router = useRouter();
-  const { guildId } = router.query;
+   const { guildId } = router.query;
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Data State
   const [customTemplates, setCustomTemplates] = useState([]);
@@ -52,11 +57,11 @@ export default function EmbedBuilder() {
   const [delayMinutes, setDelayMinutes] = useState(10);
   const [specificTime, setSpecificTime] = useState('');
 
-  useEffect(() => {
-    if (guildId) {
+   useEffect(() => {
+    if (guildId && mounted) {
       loadAllData();
     }
-  }, [guildId]);
+  }, [guildId, mounted]);
 
   const loadAllData = async () => {
     setLoading(true);
@@ -152,7 +157,7 @@ export default function EmbedBuilder() {
     }
   };
 
-  if (loading) return <Layout guildId={guildId}><Skeleton height="500px" /></Layout>;
+   if (!mounted || loading) return <Layout guildId={guildId}><Skeleton height="500px" /></Layout>;
 
   return (
     <Layout guildId={guildId}>
@@ -262,7 +267,7 @@ export default function EmbedBuilder() {
 
             .studio-grid-s { display: grid; grid-template-columns: 1fr 300px; gap: 24px; }
             .fields-row-s { display: flex; gap: 16px; margin-top: 16px; }
-            .editor-card-s { padding: 0 !important; overflow: hidden; }
+            .editor-card-s { padding: 0 !important; }
 
             .schedule-stack-s { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
             .schedule-btn-s { display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: 10px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); color: var(--text-muted); font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: 0.2s; text-align: left; }

@@ -11,6 +11,7 @@ import logger from '../utils/logger.js';
 import authRoutes from '../../dashboard/api/routes/auth.js';
 import configRoutes from '../../dashboard/api/routes/config.js';
 import embedsRoutes from '../../dashboard/api/routes/embeds.js';
+import messageRoutes from '../../dashboard/api/routes/messages.js';
 
 /**
  * Initializes and starts the Web Dashboard API hosted by the Bot process.
@@ -24,10 +25,17 @@ export function startDashboard(client) {
     passport.serializeUser((user, done) => done(null, user));
     passport.deserializeUser((obj, done) => done(null, obj));
 
+    const discClientId = process.env.DISCORD_CLIENT_ID || process.env.CLIENT_ID;
+    const discClientSecret = process.env.DISCORD_CLIENT_SECRET;
+
+    if (!discClientId || !discClientSecret) {
+        logger.warn('[Dashboard] Missing DISCORD_CLIENT_ID (or CLIENT_ID) or DISCORD_CLIENT_SECRET in .env. Login features will be unstable.');
+    }
+
     passport.use(new DiscordStrategy({
-        clientID: process.env.DISCORD_CLIENT_ID,
-        clientSecret: process.env.DISCORD_CLIENT_SECRET,
-        callbackURL: process.env.DASHBOARD_CALLBACK_URL,
+        clientID: discClientId || 'missing',
+        clientSecret: discClientSecret || 'missing',
+        callbackURL: process.env.DASHBOARD_CALLBACK_URL || `${process.env.API_URL}/api/auth/callback`,
         scope: ['identify', 'guilds']
     }, (accessToken, refreshToken, profile, done) => {
         process.nextTick(() => done(null, profile));
@@ -52,17 +60,17 @@ export function startDashboard(client) {
 
     // 3. Security & CORS
     const allowedOrigins = [
-        process.env.DASHBOARD_FRONTEND_URL || 'http://127.0.0.1:3000',
+        process.env.DASHBOARD_FRONTEND_URL || 'http://localhost:3000',
         'http://localhost:3000',
         'http://localhost:3001',
-        'http://127.0.0.1:3000',
-        'http://127.0.0.1:3001'
+        'http://localhost:3000',
+        'http://localhost:3001'
     ];
 
     app.use(cors({ 
         origin: function (origin, callback) {
             if (!origin) return callback(null, true);
-            if (allowedOrigins.indexOf(origin) !== -1 || origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) {
+            if (allowedOrigins.indexOf(origin) !== -1 || origin.startsWith('http://localhost:')) {
                 callback(null, true);
             } else {
                 callback(new Error('Not allowed by CORS'));
@@ -78,7 +86,7 @@ export function startDashboard(client) {
         resave: false,
         saveUninitialized: false,
         store: MongoStore.create({ 
-            mongoUrl: process.env.MONGODB_URI,
+            mongoUrl: process.env.MONGODB_URI || process.env.MONGO_URI,
             mongoOptions: {
                 serverSelectionTimeoutMS: 5000
             }
@@ -98,6 +106,7 @@ export function startDashboard(client) {
     app.use('/api/auth', authRoutes);
     app.use('/api/config', configRoutes);
     app.use('/api/embeds', embedsRoutes);
+    app.use('/api/messages', messageRoutes);
 
     app.get('/api/health', (req, res) => {
         res.json({
@@ -129,8 +138,8 @@ export function startDashboard(client) {
     });
 
     // 5. Start Listening
-    app.listen(PORT, '127.0.0.1', () => {
-        logger.info(`[Dashboard] API linked with Bot and listening on 127.0.0.1:${PORT}`);
+    app.listen(PORT, () => {
+        logger.info(`[Dashboard] API linked with Bot and listening on localhost:${PORT}`);
     });
 
     return app;

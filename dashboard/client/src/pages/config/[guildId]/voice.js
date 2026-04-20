@@ -6,10 +6,11 @@ import HelpTooltip from '../../../components/HelpTooltip';
 import api from '../../../utils/api';
 import { Save, RefreshCcw, Mic2, Users, Search, Play, Plus, Trash2, Shield, User, Clock, Power, Type, MousePointer2, ListFilter, Info } from 'lucide-react';
 import DiscordSelector from '../../../components/DiscordSelector';
+import EmbedMessageManager from '../../../components/EmbedMessageManager';
 
 export default function VoiceConfig() {
   const router = useRouter();
-  const { guildId } = router.query;
+   const { guildId } = router.query;
   const [config, setConfig] = useState(null);
   const [globalConfig, setGlobalConfig] = useState(null);
   const [channels, setChannels] = useState([]);
@@ -17,9 +18,14 @@ export default function VoiceConfig() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('settings');
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (guildId) {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (guildId && mounted) {
       Promise.all([
         api.request(`/config/${guildId}`),
         api.request(`/config/${guildId}/global`),
@@ -48,7 +54,7 @@ export default function VoiceConfig() {
         setLoading(false);
       });
     }
-  }, [guildId]);
+  }, [guildId, mounted]);
 
   const setGlobalNested = (path, value) => {
     const newGlobal = { ...globalConfig };
@@ -99,7 +105,7 @@ export default function VoiceConfig() {
     } catch (error) {}
   };
 
-  if (loading || !config) return <Layout guildId={guildId}><Skeleton height="500px" /></Layout>;
+   if (!mounted || loading || !config) return <Layout guildId={guildId}><Skeleton height="500px" /></Layout>;
   
   return (
     <Layout guildId={guildId}>
@@ -139,6 +145,10 @@ export default function VoiceConfig() {
             <button onClick={() => setActiveTab('ui')} className={`tab-link ${activeTab === 'ui' ? 'active' : ''}`}>
                 <MousePointer2 size={16} />
                 <span>Interface</span>
+            </button>
+            <button onClick={() => setActiveTab('messages')} className={`tab-link ${activeTab === 'messages' ? 'active' : ''}`}>
+                <RefreshCcw size={16} />
+                <span>Messaggi</span>
             </button>
         </div>
 
@@ -250,6 +260,20 @@ export default function VoiceConfig() {
                 </section>
             )}
 
+            {activeTab === 'messages' && (
+                <div className="animate fade-in">
+                    <EmbedMessageManager 
+                        guildId={guildId}
+                        module="voice"
+                        messages={[
+                            { key: 'dm_accepted', label: 'DM Successo (Orale)', description: 'Inviato all\'utente quando supera il colloquio orale.', variables: ['user', 'guild'] },
+                            { key: 'dm_rejected', label: 'DM Rifiuto (Orale)', description: 'Inviato all\'utente quando viene respinto al colloquio orale.', variables: ['user', 'guild', 'reason', 'cooldown'] },
+                            { key: 'staff_approved', label: 'Log Approvazione', description: 'Log della sessione conclusa con successo.', variables: ['userId', 'staff'] },
+                            { key: 'staff_denied', label: 'Log Rifiuto', description: 'Log della sessione conclusa con un rifiuto.', variables: ['userId', 'staff', 'reason'] }
+                        ]}
+                    />
+                </div>
+            )}
         </div>
 
         <style jsx>{`

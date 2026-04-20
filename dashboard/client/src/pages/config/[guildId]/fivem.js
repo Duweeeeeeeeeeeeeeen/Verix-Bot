@@ -23,11 +23,16 @@ export default function FiveMMultiConfig() {
   const [expandedCards, setExpandedCards] = useState({});
   const [activeSubTabs, setActiveSubTabs] = useState({});
 
-  const [roles, setRoles] = useState([]);
+   const [roles, setRoles] = useState([]);
   const [channels, setChannels] = useState([]);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (guildId) {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (guildId && mounted) {
       Promise.all([
         api.request(`/config/${guildId}/fivem`),
         api.request(`/config/${guildId}/discord-data`)
@@ -36,8 +41,9 @@ export default function FiveMMultiConfig() {
         if(!moduleConfig.servers) moduleConfig.servers = [];
 
         setConfig(moduleConfig);
-        setRoles(discordRes?.roles || []);
-        setChannels(discordRes?.channels || []);
+        const discordData = discordRes?.data || discordRes;
+        setRoles(discordData?.roles || []);
+        setChannels(discordData?.channels || []);
         setLoading(false);
       }).catch(err => {
         console.error("API Error in FiveM Config:", err);
@@ -45,7 +51,7 @@ export default function FiveMMultiConfig() {
         setLoading(false);
       });
     }
-  }, [guildId]);
+  }, [guildId, mounted]);
 
   const showToast = (message, type = 'success') => {
     window.dispatchEvent(new CustomEvent('show-toast', { detail: { message, type } }));
@@ -134,7 +140,7 @@ export default function FiveMMultiConfig() {
     updateServer(serverId, { buttons: newButtons });
   };
 
-  if (loading || !config) return <Layout guildId={guildId}><Skeleton height="500px" /></Layout>;
+  if (!mounted || loading || !config) return <Layout guildId={guildId}><Skeleton height="500px" /></Layout>;
 
   return (
     <Layout guildId={guildId}>
@@ -216,7 +222,7 @@ export default function FiveMMultiConfig() {
                                         <div className="fields-grid-p">
                                             <div className="field-box">
                                                 <label className="text-label">IP & Porta del Server</label>
-                                                <input className="input" placeholder="127.0.0.1:30120" value={server.serverIp} onChange={e => updateServer(server.id, {serverIp: e.target.value})} />
+                                                <input className="input" placeholder="localhost:30120" value={server.serverIp} onChange={e => updateServer(server.id, {serverIp: e.target.value})} />
                                             </div>
                                             <div className="field-box">
                                                 <label className="text-label">Canale Discord LiveBoard</label>

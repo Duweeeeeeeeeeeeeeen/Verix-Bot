@@ -4,6 +4,7 @@ import Layout from '../../../components/Layout';
 import Skeleton from '../../../components/Skeleton';
 import HelpTooltip from '../../../components/HelpTooltip';
 import EmbedEditor from '../../../components/EmbedEditor';
+import EmbedMessageManager from '../../../components/EmbedMessageManager';
 import api from '../../../utils/api';
 import { 
   Save, 
@@ -40,9 +41,14 @@ export default function TicketConfig() {
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (guildId) {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (guildId && mounted) {
       Promise.all([
         api.request(`/config/${guildId}/tickets`),
         api.request(`/config/${guildId}/global`),
@@ -70,7 +76,7 @@ export default function TicketConfig() {
         setLoading(false);
       });
     }
-  }, [guildId]);
+  }, [guildId, mounted]);
 
   const setGlobalNested = (path, value) => {
     const newGlobal = { ...globalConfig };
@@ -142,11 +148,12 @@ export default function TicketConfig() {
     });
   };
 
-  if (loading || !config) return <Layout guildId={guildId}><Skeleton height="500px" /></Layout>;
+  if (!mounted || loading || !config) return <Layout guildId={guildId}><Skeleton height="500px" /></Layout>;
 
   const tabs = [
     { id: 'settings', name: 'Core', icon: Settings2 },
     { id: 'categories', name: 'Struttura', icon: Layers },
+    { id: 'messages', name: 'Messaggi', icon: MessageSquare },
     { id: 'personalization', name: 'Design', icon: Palette },
   ];
 
@@ -383,6 +390,27 @@ export default function TicketConfig() {
                             ))}
                         </div>
                     </section>
+                </div>
+            )}
+            {/* TAB: Personalization */}
+            {activeTab === 'personalization' && (
+                <div className="animate">
+                    <p style={{ color: 'var(--text-muted)' }}>Configurazioni estetiche disponibili a breve...</p>
+                </div>
+            )}
+
+            {/* TAB: Messages */}
+            {activeTab === 'messages' && (
+                <div className="animate">
+                    <EmbedMessageManager 
+                        guildId={guildId}
+                        module="tickets"
+                        slugs={[
+                            { key: 'already_claimed', label: 'Ufficio Già Preso', description: 'Mostrato quando un altro Staff tenta di prendere un ticket già assegnato.', variables: ['assignedStaffId'] },
+                            { key: 'status_updated', label: 'Protocollo Aggiornato', description: 'Conferma del cambio stato del ticket.', variables: ['status'] },
+                            { key: 'cannot_close', label: 'Chiusura Negata', description: 'Errore quando le condizioni di chiusura non sono rispettate.' },
+                        ]}
+                    />
                 </div>
             )}
         </div>

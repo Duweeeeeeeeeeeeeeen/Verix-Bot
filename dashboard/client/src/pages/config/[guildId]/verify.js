@@ -4,6 +4,7 @@ import Layout from '../../../components/Layout';
 import Skeleton from '../../../components/Skeleton';
 import DiscordSelector from '../../../components/DiscordSelector';
 import EmbedEditor from '../../../components/EmbedEditor';
+import EmbedMessageManager from '../../../components/EmbedMessageManager';
 import api from '../../../utils/api';
 import { 
     Save, ShieldCheck, Settings2, RefreshCcw, Power, 
@@ -20,11 +21,16 @@ export default function VerifyConfig() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [sendingPanel, setSendingPanel] = useState(false);
-  const [activeTab, setActiveTab] = useState('settings');
+   const [activeTab, setActiveTab] = useState('settings');
   const [activeEmbedKey, setActiveEmbedKey] = useState('panel');
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (guildId) {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (guildId && mounted) {
       const fetchData = async () => {
         try {
           const [configRes, discordRes] = await Promise.all([
@@ -32,10 +38,14 @@ export default function VerifyConfig() {
             api.request(`/config/${guildId}/discord-data`)
           ]);
 
-          if (configRes && configRes.verify) {
+          if (configRes && configRes.data) {
+            setConfig(configRes.data.verify || configRes.data);
+          } else if (configRes && configRes.verify) {
             setConfig(configRes.verify);
           }
-          if (discordRes) {
+          if (discordRes && discordRes.data) {
+            setDiscordData(discordRes.data);
+          } else if (discordRes) {
             setDiscordData(discordRes);
           }
           setLoading(false);
@@ -46,7 +56,7 @@ export default function VerifyConfig() {
       };
       fetchData();
     }
-  }, [guildId]);
+  }, [guildId, mounted]);
 
   const showToast = (message, type = 'success') => {
     window.dispatchEvent(new CustomEvent('show-toast', { detail: { message, type } }));
@@ -142,9 +152,13 @@ export default function VerifyConfig() {
                 <Settings2 size={16} />
                 <span>Configurazione</span>
             </button>
+            <button onClick={() => setActiveTab('messages')} className={`tab-link ${activeTab === 'messages' ? 'active' : ''}`}>
+                <MessageSquare size={16} />
+                <span>Messaggi</span>
+            </button>
             <button onClick={() => setActiveTab('personalization')} className={`tab-link ${activeTab === 'personalization' ? 'active' : ''}`}>
                 <Palette size={16} />
-                <span>Personalizzazione</span>
+                <span>Design</span>
             </button>
         </div>
 
@@ -288,6 +302,17 @@ export default function VerifyConfig() {
             </div>
         )}
 
+            {activeTab === 'messages' && (
+                <div className="animate">
+                    <EmbedMessageManager 
+                        guildId={guildId}
+                        module="verify"
+                        slugs={[
+                            { key: 'success', label: 'Conferma Identità', description: 'Inviato in DM all\'utente dopo la verifica riuscita.', variables: ['guild'] },
+                        ]}
+                    />
+                </div>
+            )}
         <style jsx>{`
             .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: rgba(255,255,255,0.02); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
             .header-info { display: flex; align-items: center; gap: 16px; }
@@ -312,7 +337,7 @@ export default function VerifyConfig() {
 
             .info-warn-v { margin-top: 24px; background: rgba(244, 63, 94, 0.05); border: 1px solid rgba(244, 63, 94, 0.1); display: flex; align-items: center; gap: 16px; padding: 16px 20px; color: var(--error); font-size: 0.85rem; line-height: 1.4; }
 
-            .editor-container-v { padding: 0 !important; overflow: hidden; }
+            .editor-container-v { padding: 0 !important; }
             .editor-header-v { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
             .editor-p-v { padding: 24px; }
 

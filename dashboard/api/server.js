@@ -8,6 +8,7 @@ import { Strategy as DiscordStrategy } from 'passport-discord';
 import cors from 'cors';
 import authRoutes from './routes/auth.js';
 import configRoutes from './routes/config.js';
+import messageRoutes from './routes/messages.js';
 
 const app = express();
 const PORT = process.env.DASHBOARD_API_PORT || 5000;
@@ -49,6 +50,7 @@ app.use(passport.session());
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/config', configRoutes);
+app.use('/api/messages', messageRoutes);
 
 app.get('/', (req, res) => res.json({ success: true, message: 'Dashboard API is running...' }));
 

@@ -4,7 +4,7 @@ const whitelistAppSchema = new mongoose.Schema({
     userId: { type: String, required: true },
     guildId: { type: String, required: true },
     channelId: { type: String, required: true },
-    status: { type: String, enum: ['PENDING', 'SUBMITTED', 'ACCEPTED', 'REJECTED', 'EXPIRED', 'CANCELLED', 'WAITING_VOICE'], default: 'PENDING' },
+    status: { type: String, enum: ['PENDING', 'SUBMITTED', 'ACCEPTED', 'REJECTED', 'EXPIRED', 'CANCELLED', 'WAITING_VOICE', 'WAITING_BACKGROUND', 'SUBMITTED_BACKGROUND'], default: 'PENDING' },
     currentQuestionIndex: { type: Number, default: 0 },
     sessionQuestions: [
         {

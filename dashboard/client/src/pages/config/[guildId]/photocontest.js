@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import GuideSidebar from '../../../components/GuideSidebar';
 import DiscordSelector from '../../../components/DiscordSelector';
+import EmbedMessageManager from '../../../components/EmbedMessageManager';
 
 export default function PhotoContestConfig() {
   const router = useRouter();
@@ -20,27 +21,33 @@ export default function PhotoContestConfig() {
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('settings');
 
-  const [roles, setRoles] = useState([]);
+   const [roles, setRoles] = useState([]);
   const [channels, setChannels] = useState([]);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (guildId) {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (guildId && mounted) {
       Promise.all([
         api.request(`/config/${guildId}`),
         api.request(`/config/${guildId}/discord-data`)
       ]).then(([configRes, discordRes]) => {
-        let moduleConfig = configRes?.photoContest || {};
+        let moduleConfig = configRes?.data?.photoContest || configRes?.photoContest || {};
         
         setConfig(moduleConfig);
-        setRoles(discordRes?.roles || discordRes?.data?.roles || []);
-        setChannels(discordRes?.channels || discordRes?.data?.channels || []);
+        const dData = discordRes?.data || discordRes || {};
+        setRoles(dData.roles || []);
+        setChannels(dData.channels || []);
         setLoading(false);
       }).catch(err => {
         console.error("Error loading photocontest data:", err);
         setLoading(false);
       });
     }
-  }, [guildId]);
+  }, [guildId, mounted]);
 
   const showToast = (message, type = 'success') => {
     window.dispatchEvent(new CustomEvent('show-toast', { detail: { message, type } }));
@@ -68,7 +75,7 @@ export default function PhotoContestConfig() {
     } catch (error) {}
   };
 
-  if (loading || !config) return <Layout guildId={guildId}><Skeleton height="500px" /></Layout>;
+  if (!mounted || loading || !config) return <Layout guildId={guildId}><Skeleton height="500px" /></Layout>;
 
   return (
     <Layout guildId={guildId}>
@@ -108,6 +115,10 @@ export default function PhotoContestConfig() {
             <button onClick={() => setActiveTab('design')} className={`tab-link ${activeTab === 'design' ? 'active' : ''}`}>
                 <Palette size={16} />
                 <span>Style Embed</span>
+            </button>
+            <button onClick={() => setActiveTab('messages')} className={`tab-link ${activeTab === 'messages' ? 'active' : ''}`}>
+                <RefreshCcw size={16} />
+                <span>Messaggi</span>
             </button>
         </div>
 
@@ -239,6 +250,18 @@ export default function PhotoContestConfig() {
                 </section>
             )}
 
+            {activeTab === 'messages' && (
+                <div className="animate fade-in">
+                    <EmbedMessageManager 
+                        guildId={guildId}
+                        module="photoContest"
+                        messages={[
+                            { key: 'entry_not_found', label: 'Voce non trovata', description: 'Inviato quando una foto non è più presente nel database durante il voto.', variables: [] },
+                            { key: 'self_vote_error', label: 'Errore Autovoto', description: 'Inviato quando un utente tenta di votare la propria foto.', variables: [] }
+                        ]}
+                    />
+                </div>
+            )}
         </div>
 
         <style jsx>{`

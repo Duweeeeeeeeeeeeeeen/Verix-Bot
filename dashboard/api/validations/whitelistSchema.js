@@ -21,7 +21,7 @@ export const whitelistSchema = z.object({
     timeLimitEnabled: z.boolean().optional().nullable(),
     cooldown: z.number().min(0).max(720).optional().nullable(),
     cooldownEnabled: z.boolean().optional().nullable(),
-    mode: z.enum(['TEXT', 'VOICE', 'HYBRID']).optional(),
+    mode: z.enum(['BG_ONLY', 'TEXT', 'VOICE', 'BG_TEXT', 'BG_VOICE', 'HYBRID', 'FULL']).optional(),
     rolesToAddOnTextPass: z.array(z.string()).optional().nullable(),
     rolesToRemoveOnTextPass: z.array(z.string()).optional().nullable(),
     voiceSettings: z.object({

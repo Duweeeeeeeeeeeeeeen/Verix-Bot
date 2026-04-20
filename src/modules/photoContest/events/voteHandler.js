@@ -3,6 +3,7 @@ import PhotoSubmission from '../../../models/PhotoSubmission.js';
 import PhotoContestConfig from '../../../models/PhotoContestConfig.js';
 import ErrorHelper from '../../../utils/errorHelper.js';
 import logger from '../../../utils/logger.js';
+import messageService from '../../../utils/messageService.js';
 
 export default {
     name: 'interactionCreate',
@@ -26,15 +27,17 @@ export default {
             });
 
             if (!submission) {
+                const embed = await messageService.get(interaction.guildId, 'photoContest', 'entry_not_found');
                 return interaction.reply({ 
-                    content: ErrorHelper.formatActionable('❌', 'Partecipazione non trovata.', 'Questo file potrebbe essere stato rimosso o il contest è terminato.'), 
+                    embeds: [embed], 
                     flags: [MessageFlags.Ephemeral] 
                 });
             }
 
             if (submission.userId === voterId) {
+                const embed = await messageService.get(interaction.guildId, 'photoContest', 'self_vote_error');
                 return interaction.reply({ 
-                    content: ErrorHelper.formatActionable('❌', 'Autovoto non consentito.', 'Non puoi votare le tue stesse foto per garantire l\'equità del contest.'), 
+                    embeds: [embed], 
                     flags: [MessageFlags.Ephemeral] 
                 });
             }

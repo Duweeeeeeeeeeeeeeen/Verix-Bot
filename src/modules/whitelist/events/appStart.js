@@ -1,11 +1,15 @@
-import { ChannelType, Events, MessageFlags, PermissionFlagsBits } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, Events, MessageFlags, PermissionFlagsBits } from 'discord.js';
 import WhitelistConfig from '../../../models/WhitelistConfig.js';
 import WhitelistApp from '../../../models/WhitelistApp.js';
+import Background from '../../../models/Background.js';
+import BackgroundConfig from '../../../models/BackgroundConfig.js';
 import User from '../../../models/User.js';
 import ErrorHelper from '../../../utils/errorHelper.js';
 import logger from '../../../utils/logger.js';
 import { buildEmbed } from '../../../utils/embedHelper.js';
 import { checkBotPermissions, formatMissingPermissions } from '../../../utils/permissionHelper.js';
+import { startWrittenSession } from '../utils/sessionHandler.js';
+import messageService from '../../../utils/messageService.js';
 
 export default {
     name: Events.InteractionCreate,
@@ -29,15 +33,8 @@ export default {
             return;
         }
         
-        // --- 1. CONFIG & PERMISSIONS ---
-
         try {
-            const config = await WhitelistConfig.findOne({ guildId: interaction.guild.id });
-            if (!config || config.questions.length === 0) {
-                return interaction.editReply({ content: 'La whitelist non è ancora configurata correttamente o non ci sono domande.' });
-            }
-
-            // --- 2. PERMISSION CHECK ---
+            // --- 0.5 CORE PERMISSION CHECK (Fail early) ---
             const permCheck = checkBotPermissions(interaction.channel, [
                 PermissionFlagsBits.ViewChannel,
                 PermissionFlagsBits.ManageChannels,
@@ -46,9 +43,113 @@ export default {
             ]);
 
             if (!permCheck.hasPermission) {
-                return interaction.editReply({ 
-                    content: formatMissingPermissions(permCheck.missing)
+                const embed = await messageService.get(interaction.guild.id, 'system', 'generic_error', { 
+                    error: formatMissingPermissions(permCheck.missing) 
                 });
+                return interaction.editReply({ embeds: [embed] });
+            }
+
+            const config = await WhitelistConfig.findOne({ guildId: interaction.guild.id });
+            if (!config || config.questions.length === 0) {
+                const embed = await messageService.get(interaction.guild.id, 'whitelist', 'not_configured', {
+                    guild: interaction.guild.name
+                });
+                return interaction.editReply({ embeds: [embed] });
+            }
+
+            // --- 1.5 FLOW PREREQUISITES (New Master Mode logic) ---
+            const m = config.mode;
+            
+            // Block access if Written WL is not part of this mode
+            const hasWritten = ['TEXT', 'HYBRID', 'BG_TEXT', 'FULL'].includes(m);
+            if (!hasWritten) {
+                const embed = await messageService.get(interaction.guild.id, 'system', 'module_disabled', {
+                    module: 'Whitelist Scritta'
+                });
+                return interaction.editReply({ embeds: [embed] });
+            }
+
+            // Check Background requirement
+            const requiresBG = ['BG_TEXT', 'FULL'].includes(m) || config.flowRequirements?.requireBackground;
+            if (requiresBG) {
+                const bgApproved = await Background.findOne({ 
+                    userId: interaction.user.id, 
+                    guildId: interaction.guild.id, 
+                    status: 'ACCEPTED' 
+                });
+
+                if (!bgApproved) {
+                    const bgConfig = await BackgroundConfig.findOne({ guildId: interaction.guild.id });
+                    
+                    // IF INTEGRATED FLOW: Start BG phase inside WL channel
+                    if (bgConfig?.entryPoint === 'INTEGRATED') {
+                        // Check if they ALREADY have an active integrated BG session
+                        const existingBG = await Background.findOne({ 
+                            userId: interaction.user.id, 
+                            guildId: interaction.guild.id, 
+                            status: { $in: ['PENDING', 'SUBMITTED'] } 
+                        });
+                        
+                        if (existingBG) {
+                            const embed = await messageService.get(interaction.guild.id, 'whitelist', 'active_session', {
+                                channelId: existingBG.channelId
+                            });
+                            return interaction.editReply({ embeds: [embed] });
+                        }
+
+                        // Create the Whitelist channel early for BG submission
+                        const channel = await interaction.guild.channels.create({
+                            name: `wl-${interaction.user.username}`,
+                            type: ChannelType.GuildText,
+                            parent: config.categoryOpenId || null,
+                            permissionOverwrites: [
+                                { id: interaction.guild.id, deny: [PermissionFlagsBits.ViewChannel] },
+                                { id: interaction.user.id, allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages, PermissionFlagsBits.ReadMessageHistory, PermissionFlagsBits.EmbedLinks] },
+                            ],
+                        });
+
+                        // Create Whitelist App in WAITING_BACKGROUND state
+                        await WhitelistApp.create({
+                            userId: interaction.user.id,
+                            guildId: interaction.guild.id,
+                            channelId: channel.id,
+                            status: 'WAITING_BACKGROUND',
+                            startTime: new Date()
+                        });
+
+                        // Create Background submission record linked to this channel
+                        await Background.create({
+                            userId: interaction.user.id,
+                            guildId: interaction.guild.id,
+                            channelId: channel.id,
+                            status: 'PENDING'
+                        });
+
+                        // Send Background Instructions Embed
+                        const bgInstructions = buildEmbed(bgConfig.embeds.instructions, {
+                            user: interaction.user,
+                            guild: interaction.guild.name
+                        }, bgConfig);
+
+                        const submitButton = new ActionRowBuilder().addComponents(
+                            new ButtonBuilder()
+                                .setCustomId('submit_background')
+                                .setLabel('Conferma Invio Dossier')
+                                .setStyle(ButtonStyle.Success)
+                                .setEmoji('✅')
+                        );
+
+                        await channel.send({ content: `${interaction.user} (Fase 1: Background)`, embeds: [bgInstructions], components: [submitButton] });
+                        
+                        return interaction.editReply({ content: `✅ Pratica avviata! Dirigiti qui per inviare la tua storia: ${channel}` });
+                    }
+
+                    // ELSE (PANEL FLOW): Standard blocking behavior
+                    const embed = await messageService.get(interaction.guild.id, 'system', 'module_disabled', {
+                        module: 'Dossier Personale'
+                    });
+                    return interaction.editReply({ embeds: [embed] });
+                }
             }
 
             // --- 3. CONCURRENCY & STATE CHECK ---
@@ -56,11 +157,11 @@ export default {
             const existingApp = await WhitelistApp.findOne({ 
                 userId: interaction.user.id, 
                 guildId: interaction.guild.id, 
-                status: { $in: ['PENDING', 'SUBMITTED', 'WAITING_VOICE', 'ACCEPTED'] } 
+                status: { $in: ['PENDING', 'SUBMITTED', 'WAITING_VOICE', 'ACCEPTED', 'WAITING_BACKGROUND', 'SUBMITTED_BACKGROUND'] } 
             });
 
             if (existingApp) {
-                if (existingApp.status === 'PENDING') {
+                if (existingApp.status === 'PENDING' || existingApp.status === 'WAITING_BACKGROUND' || existingApp.status === 'SUBMITTED_BACKGROUND') {
                     // VERIFICATION: Check if the channel still exists on Discord
                     const channelExists = interaction.guild.channels.cache.has(existingApp.channelId) || 
                                          await interaction.guild.channels.fetch(existingApp.channelId).catch(() => null);
@@ -71,19 +172,21 @@ export default {
                         existingApp.status = 'CANCELLED';
                         await existingApp.save();
                     } else {
-                        const solution = `Cerca il tuo canale attuale (<#${existingApp.channelId}>) o attendi che venga eliminato automaticamente se lo hai abbandonato.`;
-                        return interaction.editReply({ 
-                            content: ErrorHelper.formatActionable('⚠️', 'Hai già una sessione whitelist in corso.', solution)
+                        const embed = await messageService.get(interaction.guild.id, 'whitelist', 'active_session', {
+                            channelId: existingApp.channelId
                         });
+                        return interaction.editReply({ embeds: [embed] });
                     }
                 } else if (existingApp.status === 'SUBMITTED') {
-                    return interaction.editReply({ 
-                        content: ErrorHelper.formatActionable('⏳', 'Pratica in fase di valutazione.', 'Hai già inviato la tua candidatura testuale. Attendi che lo staff la valuti prima di tentare nuovamente.')
+                    const embed = await messageService.get(interaction.guild.id, 'whitelist', 'already_submitted', {
+                        guild: interaction.guild.name
                     });
+                    return interaction.editReply({ embeds: [embed] });
                 } else if (existingApp.status === 'ACCEPTED' || existingApp.status === 'WAITING_VOICE') {
-                    return interaction.editReply({ 
-                        content: ErrorHelper.formatActionable('✅', 'Fase scritta completata!', 'Hai già superato la parte scritta della Whitelist. Dirigiti nell\'apposito canale vocale d\'attesa per il colloquio orale.')
+                    const embed = await messageService.get(interaction.guild.id, 'whitelist', 'already_passed', {
+                        guild: interaction.guild.name
                     });
+                    return interaction.editReply({ embeds: [embed] });
                 }
             }
 
@@ -102,16 +205,12 @@ export default {
                     const hours = Math.floor(timeLeft / (1000 * 60 * 60));
                     const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
                     
-                    return interaction.editReply({ 
-                        content: `⚠️ **Sessione in Cooldown!**\nNon puoi inviare una nuova domanda così presto. Devi attendere ancora **${hours}h e ${minutes}m**.`
+                    const embed = await messageService.get(interaction.guild.id, 'whitelist', 'cooldown', {
+                        time: `${hours}h ${minutes}m`
                     });
+                    return interaction.editReply({ embeds: [embed] });
                 }
             }
-
-            // Randomization Logic: Shuffle and Slice Question Bank
-            const shuffled = [...config.questions].sort(() => 0.5 - Math.random());
-            const selectedQuestions = shuffled.slice(0, Math.min(config.questionsPerSession, shuffled.length));
-            const sessionQuestions = selectedQuestions.map(q => ({ text: q.text, minLength: q.minLength }));
 
             // Update last attempt
             userData.lastWhitelistAttempt = new Date();
@@ -128,45 +227,14 @@ export default {
                 ],
             });
 
-            // Create App Record with Session Questions
-            await WhitelistApp.create({
-                userId: interaction.user.id,
-                guildId: interaction.guild.id,
-                channelId: channel.id,
-                status: 'PENDING',
-                currentQuestionIndex: 0,
-                sessionQuestions: sessionQuestions,
-                answers: [],
-                startTime: new Date()
-            });
-
-            // --- 5. INITIAL MESSAGES ---
-            // A. Welcome Embed
-            const startEmbed = buildEmbed(config.embeds.start, {
-                user: interaction.user,
-                guild: interaction.guild.name,
-                time_limit: config.timeLimit,
-                total_questions: sessionQuestions.length,
-                question: sessionQuestions[0].text,
-                min_length: sessionQuestions[0].minLength
-            }, config);
-
-            await channel.send({ content: `${interaction.user}`, embeds: [startEmbed] });
-
-            // B. First Question Embed (Mandatory to avoid user confusion)
-            const firstQuestion = sessionQuestions[0];
-            const qEmbed = buildEmbed(config.embeds.question, {
-                current_index: 1,
-                total_questions: sessionQuestions.length,
-                question: firstQuestion.text,
-                min_length: firstQuestion.minLength,
-                time_left: config.timeLimit
-            }, config);
-
-            await channel.send({ embeds: [qEmbed] });
+            // Start using shared utility
+            await startWrittenSession(interaction, channel, config);
 
             // Done!
-            await interaction.editReply({ content: `✅ Pratica avviata! Dirigiti qui: ${channel}` });
+            const embed = await messageService.get(interaction.guild.id, 'whitelist', 'start_success', {
+                channelId: channel.id
+            });
+            await interaction.editReply({ embeds: [embed] });
 
             // Timer for timeout (Persistent)
             if (config.timeLimitEnabled) {

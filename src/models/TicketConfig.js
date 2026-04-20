@@ -38,30 +38,30 @@ const ticketConfigSchema = new mongoose.Schema({
     panelImage: { type: String, default: null },
     embeds: {
         panel: {
-            title: { type: String, default: '🎫 Centro Assistenza' },
-            description: { type: String, default: 'Seleziona una categoria dal menu a tendina per aprire un ticket.' },
-            color: { type: String, default: '#3498db' },
+            title: { type: String, default: '🎫 Segretariato: Sportello al Cittadino' },
+            description: { type: String, default: 'Hai bisogno di supporto o desideri segnalare qualcosa allo staff? Apri un ufficio assistenza selezionando il dipartimento corretto.' },
+            color: { type: String, default: '#2ECC71' },
             image: { type: String, default: null },
             thumbnail: { type: String, default: null },
-            footer: { type: String, default: null }
+            footer: { type: String, default: 'Dipartimento Pubbliche Relazioni | Verix RP' }
         },
         ticket: {
-            title: { type: String, default: '{emoji} Ticket: {type}' },
-            description: { type: String, default: 'Bentornato <@{user_id}>, lo staff ti assisterà a breve.\n\n**Metadati Sessione:**\n• Priorità: `{priority}`\n• Stato: `{status}`' },
-            color: { type: String, default: '#3498db' }
+            title: { type: String, default: '{emoji} Pratica {type} - In Carico' },
+            description: { type: String, default: 'Benvenuto allo sportello assistenziale, <@{user_id}>. Un operatore prenderà in carico la tua richiesta a breve.\n\n**DETTAGLI PROTOCOLLO:**\n• Priorità Operativa: `{priority}`\n• Stato Corrente: `{status}`' },
+            color: { type: String, default: '#2ECC71' }
         },
         close: {
-            title: { type: String, default: '📁 Archivio Ticket' },
-            description: { type: String, default: 'Il ticket è stato chiuso.' },
-            color: { type: String, default: '#ff4757' }
+            title: { type: String, default: '📂 Archivio: Pratica Conclusa' },
+            description: { type: String, default: 'La documentazione di questo ufficio è stata depositata correttamente negli archivi.' },
+            color: { type: String, default: '#E74C3C' }
         }
     },
     messages: {
-        cooldown: { type: String, default: '⚠️ Attendi qualche minuto prima di aprire un altro ticket.' },
-        alreadyExists: { type: String, default: '❌ Hai già un ticket di tipo **{type}** attivo.' },
-        successOpen: { type: String, default: '✅ Ticket creato: {channel}' },
-        successClose: { type: String, default: '🛡️ **Chiusura professionale...**' },
-        staffClaimed: { type: String, default: '✅ {staff} ha preso in carico il ticket.' }
+        cooldown: { type: String, default: '⚠️ **TRAFFICO ELEVATO:** Attendi qualche minuto prima di presentare una nuova istanza allo sportello.' },
+        alreadyExists: { type: String, default: '❌ **PRATICA PENDENTE:** Hai già un faldone di tipo **{type}** aperto.' },
+        successOpen: { type: String, default: '✅ **RICHIESTA PROTOCOLLATA:** Recati allo sportello {channel}.' },
+        successClose: { type: String, default: '🛡️ **ARCHIVIAZIONE IN CORSO...**' },
+        staffClaimed: { type: String, default: '✅ **{staff}** ha preso in carico la gestione della pratica.' }
     },
     buttons: {
         claim: { 

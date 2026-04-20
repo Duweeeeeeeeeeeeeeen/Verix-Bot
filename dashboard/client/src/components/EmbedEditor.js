@@ -127,8 +127,8 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {embed?.fields?.map((f, i) => (
                     <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 40px', gap: '10px', alignItems: 'center' }}>
-                      <input className="input-small" value={f.name} onChange={(e) => updateFieldEntry(i, 'name', e.target.value)} placeholder="Titolo" />
-                      <input className="input-small" value={f.value} onChange={(e) => updateFieldEntry(i, 'value', e.target.value)} placeholder="Valore" />
+                      <input className="input-small" value={f.name || ''} onChange={(e) => updateFieldEntry(i, 'name', e.target.value)} placeholder="Titolo" />
+                      <input className="input-small" value={f.value || ''} onChange={(e) => updateFieldEntry(i, 'value', e.target.value)} placeholder="Valore" />
                       <button onClick={() => removeField(i)} className="btn-icon-delete-small"><Trash2 size={16} /></button>
                     </div>
                   ))}

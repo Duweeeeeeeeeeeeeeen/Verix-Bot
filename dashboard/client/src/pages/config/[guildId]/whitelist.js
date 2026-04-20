@@ -4,6 +4,7 @@ import Layout from '../../../components/Layout';
 import Skeleton from '../../../components/Skeleton';
 import HelpTooltip from '../../../components/HelpTooltip';
 import EmbedEditor from '../../../components/EmbedEditor';
+import EmbedMessageManager from '../../../components/EmbedMessageManager';
 import DiscordSelector from '../../../components/DiscordSelector';
 import api from '../../../utils/api';
 import { 
@@ -31,7 +32,8 @@ import {
   Volume2,
   AlertCircle,
   ExternalLink,
-  Command
+  Command,
+  MessageSquare
 } from 'lucide-react';
 import GuideSidebar from '../../../components/GuideSidebar';
 
@@ -41,28 +43,37 @@ export default function WhitelistConfig() {
   const [activeTab, setActiveTab] = useState('settings');
   const [activeEmbedKey, setActiveEmbedKey] = useState('panel');
   const [config, setConfig] = useState(null);
+  const [bgConfig, setBgConfig] = useState(null);
   const [channels, setChannels] = useState([]);
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [sendingPanel, setSendingPanel] = useState(false);
+  const [sendingBgPanel, setSendingBgPanel] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (guildId) {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (guildId && mounted) {
       Promise.all([
         api.request(`/config/${guildId}/whitelist`),
+        api.request(`/config/${guildId}/background`),
         api.request(`/config/${guildId}/discord-data`)
-      ]).then(([data, discordRes]) => {
-        setConfig(data.data || data);
+      ]).then(([wlData, bgData, discordRes]) => {
+        setConfig(wlData.data || wlData);
+        setBgConfig(bgData.data || bgData);
         setChannels(discordRes?.data?.channels || discordRes?.channels || []);
         setRoles(discordRes?.data?.roles || discordRes?.roles || []);
         setLoading(false);
       }).catch(err => {
-        console.error("Error loading whitelist data:", err);
+        console.error("Error loading admission data:", err);
         setLoading(false);
       });
     }
-  }, [guildId]);
+  }, [guildId, mounted]);
 
   const setNested = (path, value) => {
     const newConfig = { ...config };
@@ -83,20 +94,26 @@ export default function WhitelistConfig() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await api.request(`/config/${guildId}/whitelist`, {
-        method: 'POST',
-        body: JSON.stringify(config)
-      });
-      showToast('Configurazione salvata!');
+      await Promise.all([
+        api.request(`/config/${guildId}/whitelist`, {
+          method: 'POST',
+          body: JSON.stringify(config)
+        }),
+        api.request(`/config/${guildId}/background`, {
+          method: 'POST',
+          body: JSON.stringify(bgConfig)
+        })
+      ]);
+      showToast('Tutte le configurazioni salvate!');
     } catch (error) {
-       showToast('Errore durante il salvataggio.', 'error');
+       showToast('Errore durante il salvataggio unificato.', 'error');
     } finally {
       setSaving(false);
     }
   };
 
   const handleSendPanel = async () => {
-    if (!config.panelChannelId) return showToast('Seleziona un canale!', 'error');
+    if (!config.panelChannelId) return showToast('Seleziona un canale per la Whitelist!', 'error');
     setSendingPanel(true);
     try {
       await handleSave();
@@ -104,7 +121,7 @@ export default function WhitelistConfig() {
         method: 'POST',
         body: JSON.stringify({ channelId: config.panelChannelId })
       });
-      showToast('Pannello inviato correttamente!');
+      showToast('Pannello Whitelist inviato!');
     } catch (error) {
        console.error(error);
     } finally {
@@ -112,7 +129,24 @@ export default function WhitelistConfig() {
     }
   };
 
-  if (loading || !config) return (
+  const handleSendBgPanel = async () => {
+    if (!bgConfig.panelChannelId) return showToast('Seleziona un canale per il Background!', 'error');
+    setSendingBgPanel(true);
+    try {
+      await handleSave();
+      await api.request(`/config/${guildId}/background/send-panel`, {
+        method: 'POST',
+        body: JSON.stringify({ channelId: bgConfig.panelChannelId })
+      });
+      showToast('Pannello Background inviato!');
+    } catch (error) {
+       console.error(error);
+    } finally {
+      setSendingBgPanel(false);
+    }
+  };
+
+  if (!mounted || loading || !config) return (
     <Layout guildId={guildId}>
       <div className="animate">
         <Skeleton width="300px" height="40px" style={{ marginBottom: '40px' }} />
@@ -125,23 +159,32 @@ export default function WhitelistConfig() {
   );
 
   const embedOptions = [
-    { key: 'panel', label: 'Pannello Iniziale', group: 'Whitelist' },
-    { key: 'start', label: 'Apertura Ticket', group: 'Whitelist' },
+    { key: 'panel', label: 'Panel Whitelist', group: 'Whitelist' },
+    { key: 'start', label: 'Avvio Candidatura', group: 'Whitelist' },
     { key: 'question', label: 'Domanda Standard', group: 'Whitelist' },
-    { key: 'review', label: 'Revisione Finale', group: 'Whitelist' },
-    { key: 'dm_accepted', label: 'Accettato (DM)', group: 'Feedback' },
-    { key: 'dm_rejected', label: 'Rifiutato (DM)', group: 'Feedback' },
+    { key: 'review', label: 'Revisione Staff', group: 'Whitelist' },
+    { key: 'dm_accepted', label: 'Accettato (DM)', group: 'Feedback WL' },
+    { key: 'dm_rejected', label: 'Rifiutato (DM)', group: 'Feedback WL' },
+    { key: 'bg.panel', label: 'Panel Background', group: 'Background' },
+    { key: 'bg.instructions', label: 'Istruzioni Iniziali', group: 'Background' },
+    { key: 'bg.dm_accepted', label: 'BG Approvato (DM)', group: 'Feedback BG' },
+    { key: 'bg.dm_rejected', label: 'BG Respinto (DM)', group: 'Feedback BG' },
+    { key: 'bg.staff_received', label: 'Task Staff (BG)', group: 'Staff Log' },
     { key: 'dm_voice_rejected', label: 'Rifiutato Orale (DM)', group: 'Moduli Orale' },
     { key: 'voice_guide', label: 'Guida Staff (Vocale)', group: 'Moduli Orale' },
-    { key: 'voice_waiting', label: 'Attesa (DM)', group: 'Moduli Orale' }
+    { key: 'voice_waiting', label: 'Attesa (DM)', group: 'Moduli Orale' },
+    { key: 'bg.integrated_accepted', label: 'Dossier Approvato (Int)', group: 'Background' },
+    { key: 'bg.integrated_rejected', label: 'Dossier Respinto (Int)', group: 'Background' }
   ];
 
   const tabs = [
     { id: 'settings', name: 'Settaggi', icon: Settings2 },
-    { id: 'questions', name: 'Domande', icon: ListChecks },
+    { id: 'background', name: 'Background', icon: Command, modes: ['BG_ONLY', 'BG_TEXT', 'BG_VOICE', 'FULL'] },
+    { id: 'questions', name: 'Domande', icon: ListChecks, modes: ['TEXT', 'HYBRID', 'BG_TEXT', 'FULL'] },
+    { id: 'voice', name: 'Vocale', icon: Mic2, modes: ['VOICE', 'HYBRID', 'BG_VOICE', 'FULL'] },
+    { id: 'messages', name: 'Messaggi', icon: MessageSquare },
     { id: 'personalization', name: 'Design', icon: Palette },
-    { id: 'voice', name: 'Vocale', icon: Mic2 },
-  ];
+  ].filter(tab => !tab.modes || tab.modes.includes(config.mode));
 
   return (
     <Layout guildId={guildId}>
@@ -159,9 +202,15 @@ export default function WhitelistConfig() {
               </div>
            </div>
            <div className="header-buttons">
-              <button onClick={handleSendPanel} className="btn-outline" disabled={sendingPanel}>
-                <Send size={16} /> Invia Panel
-              </button>
+              {activeTab === 'background' ? (
+                <button onClick={handleSendBgPanel} className="btn-outline" disabled={sendingBgPanel}>
+                   <Send size={16} /> Invia Panel BG
+                </button>
+              ) : (
+                <button onClick={handleSendPanel} className="btn-outline" disabled={sendingPanel}>
+                   <Send size={16} /> Invia Panel WL
+                </button>
+              )}
               <button onClick={handleSave} className="btn-primary" disabled={saving}>
                 <Save size={16} /> {saving ? 'Salvataggio...' : 'Salva'}
               </button>
@@ -210,12 +259,22 @@ export default function WhitelistConfig() {
                                     <DiscordSelector type="channel" options={channels.filter(c => c.type === 0 || c.type === 5)} value={config.logChannelId || ''} onChange={val => setConfig({...config, logChannelId: val})} />
                                 </div>
                                 <div className="field-box">
-                                    <label className="text-label">Modalità</label>
-                                    <select className="select" value={config.mode || 'TEXT'} onChange={e => setConfig({...config, mode: e.target.value})}>
-                                        <option value="TEXT">📝 Solo Testuale</option>
-                                        <option value="VOICE">🎤 Solo Vocale</option>
-                                        <option value="HYBRID">⚖️ Ibrida (Orale + Scritto)</option>
-                                    </select>
+                                    <label className="text-label">Modalità Percorso</label>
+                                    <div className="stylized-select-wrapper">
+                                        <select className="select" value={config.mode || 'TEXT'} onChange={e => setConfig({...config, mode: e.target.value})}>
+                                            <optgroup label="Solo Whitelist">
+                                                <option value="TEXT">📝 Solo Scritta</option>
+                                                <option value="VOICE">🎤 Solo Vocale</option>
+                                                <option value="HYBRID">⚖️ Ibrida (Scritto + Orale)</option>
+                                            </optgroup>
+                                            <optgroup label="Con Background">
+                                                <option value="BG_ONLY">📖 Solo Background</option>
+                                                <option value="BG_TEXT">📚 Background + Scritta</option>
+                                                <option value="BG_VOICE">🗣️ Background + Orale</option>
+                                                <option value="FULL">🏆 Full Suite (BG + Scritto + Orale)</option>
+                                            </optgroup>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
                         </section>
@@ -253,6 +312,35 @@ export default function WhitelistConfig() {
                                 </div>
                             </div>
                         </section>
+
+                        <section className="card section-card" style={{ marginTop: '24px' }}>
+                            <div className="align-center" style={{ marginBottom: '20px' }}>
+                                <RefreshCcw size={18} color="var(--primary)" />
+                                <h3>Requisiti di Accesso (Flow)</h3>
+                            </div>
+                            <div className="fields-grid-v">
+                                <div className="toggle-box">
+                                    <div className="flex-col">
+                                        <span style={{ fontWeight: 600 }}>Obbligo Background</span>
+                                        <p className="text-dim" style={{ fontSize: '0.75rem' }}>Il cittadino deve avere un Background approvato per iniziare la WL.</p>
+                                    </div>
+                                    <label className="toggle">
+                                        <input type="checkbox" checked={config.flowRequirements?.requireBackground} onChange={e => setNested('flowRequirements.requireBackground', e.target.checked)} />
+                                        <span className="slider"></span>
+                                    </label>
+                                </div>
+                                <div className="toggle-box" style={{ marginTop: '12px' }}>
+                                    <div className="flex-col">
+                                        <span style={{ fontWeight: 600 }}>Obbligo WL Scritta</span>
+                                        <p className="text-dim" style={{ fontSize: '0.75rem' }}>Richiede il superamento del test scritto prima del colloquio orale.</p>
+                                    </div>
+                                    <label className="toggle">
+                                        <input type="checkbox" checked={config.flowRequirements?.requireTextWL} onChange={e => setNested('flowRequirements.requireTextWL', e.target.checked)} />
+                                        <span className="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </section>
                     </div>
 
                     <div className="grid-right">
@@ -264,6 +352,69 @@ export default function WhitelistConfig() {
 
                         <div style={{ marginTop: '24px' }}>
                             <GuideSidebar type="whitelist" context={config} />
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* TAB: Background */}
+            {activeTab === 'background' && (
+                <div className="config-grid">
+                    <div className="grid-left">
+                        <section className="card section-card">
+                            <div className="section-header">
+                                <div className="align-center">
+                                    <Command size={18} color="var(--primary)" />
+                                    <h3>Configurazione Background</h3>
+                                </div>
+                                <label className="toggle">
+                                    <input type="checkbox" checked={bgConfig.enabled} onChange={e => setBgConfig({...bgConfig, enabled: e.target.checked})} />
+                                    <span className="slider"></span>
+                                </label>
+                            </div>
+                            
+                            <div className="fields-grid" style={{ marginTop: '24px' }}>
+                                <div className="field-box">
+                                    <label className="text-label">Canale Pannello</label>
+                                    <DiscordSelector type="channel" options={channels.filter(c => c.type === 0 || c.type === 5)} value={bgConfig.panelChannelId || ''} onChange={val => setBgConfig({...bgConfig, panelChannelId: val})} />
+                                </div>
+                                <div className="field-box">
+                                    <label className="text-label">Canale Log Staff</label>
+                                    <DiscordSelector type="channel" options={channels.filter(c => c.type === 0 || c.type === 5)} value={bgConfig.logChannelId || ''} onChange={val => setBgConfig({...bgConfig, logChannelId: val})} />
+                                </div>
+                                <div className="field-box">
+                                    <label className="text-label">Ruoli Commissione</label>
+                                    <DiscordSelector type="role" multiple={true} options={roles} value={bgConfig.staffRoleIds || []} onChange={val => setBgConfig({...bgConfig, staffRoleIds: val})} />
+                                </div>
+                                <div className="field-box">
+                                    <label className="text-label">Punto di Ingresso Background</label>
+                                    <div className="stylized-select-wrapper">
+                                        <select className="select" value={bgConfig.entryPoint || 'PANEL'} onChange={e => setBgConfig({...bgConfig, entryPoint: e.target.value})}>
+                                            <option value="PANEL">📂 Pannello Dedicato (Canale BG)</option>
+                                            <option value="INTEGRATED">🔀 Integrato nel Tasto Whitelist</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div className="field-box">
+                                    <label className="text-label">Cooldown Rifiuto - Pannello (Ore)</label>
+                                    <input type="number" className="input" value={bgConfig.cooldown || 24} onChange={e => setBgConfig({...bgConfig, cooldown: parseInt(e.target.value)})} />
+                                </div>
+                                <div className="field-box">
+                                    <label className="text-label">Cooldown Correzione - Ticket (Ore)</label>
+                                    <input type="number" className="input" value={bgConfig.correctionCooldown || 0} onChange={e => setBgConfig({...bgConfig, correctionCooldown: parseInt(e.target.value)})} />
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div className="grid-right">
+                        <div className="card section-card">
+                            <h3 className="sidebar-title align-center" style={{ marginBottom: '12px' }}><Info size={16} /> Info Modulo</h3>
+                            <p className="text-muted" style={{ fontSize: '0.85rem', lineHeight: '1.5' }}>
+                                <strong>Pannello Dedicato:</strong> Richiede l'invio fisico della storia in un canale separato.
+                                <br/><br/>
+                                <strong>Integrato:</strong> Se un utente clicca "Inizia Whitelist" e non ha ancora una storia approvata, il bot gli chiederà di caricarla nello stesso ticket prima di passare al test scritto.
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -287,16 +438,16 @@ export default function WhitelistConfig() {
                             <div key={idx} className="question-row">
                                 <div className="q-badge">{idx + 1}</div>
                                 <div className="q-input-p">
-                                    <textarea className="input" style={{ minHeight: '80px' }} value={q.text} onChange={e => {
+                                    <textarea className="input" style={{ minHeight: '80px' }} value={q.text || ''} onChange={e => {
                                         const qs = [...config.questions];
                                         qs[idx].text = e.target.value;
                                         setConfig({...config, questions: qs});
                                     }} placeholder="Inserisci la domanda..." />
                                 </div>
                                 <div className="q-options">
-                                    <input type="number" className="input" style={{ width: '80px' }} value={q.minLength} onChange={e => {
+                                    <input type="number" className="input" style={{ width: '80px' }} value={q.minLength || 0} onChange={e => {
                                         const qs = [...config.questions];
-                                        qs[idx].minLength = parseInt(e.target.value);
+                                        qs[idx].minLength = parseInt(e.target.value) || 0;
                                         setConfig({...config, questions: qs});
                                     }} />
                                     <button onClick={() => setConfig({...config, questions: config.questions.filter((_, i) => i !== idx)})} className="btn-icon-danger">
@@ -322,9 +473,23 @@ export default function WhitelistConfig() {
                     </div>
                     <div className="editor-content-p">
                         <EmbedEditor 
-                            embed={config.embeds?.[activeEmbedKey] || {}} 
-                            onChange={(data) => setNested(`embeds.${activeEmbedKey}`, data)}
-                            variables={['user', 'guild', 'time_limit', 'total_questions', 'reason', 'app_id', 'recap']}
+                            embed={activeEmbedKey.startsWith('bg.') 
+                                ? (bgConfig.embeds?.[activeEmbedKey.split('.')[1]] || {}) 
+                                : (config.embeds?.[activeEmbedKey] || {})} 
+                            onChange={(data) => {
+                                if (activeEmbedKey.startsWith('bg.')) {
+                                    const key = activeEmbedKey.split('.')[1];
+                                    const newBg = { ...bgConfig };
+                                    if (!newBg.embeds) newBg.embeds = {};
+                                    newBg.embeds[key] = data;
+                                    setBgConfig(newBg);
+                                } else {
+                                    setNested(`embeds.${activeEmbedKey}`, data);
+                                }
+                            }}
+                            variables={activeEmbedKey.startsWith('bg.') 
+                                ? ['user', 'guild', 'bg_link', 'bg_desc', 'bg_attachment', 'reason', 'staff', 'next_attempt']
+                                : ['user', 'guild', 'time_limit', 'total_questions', 'reason', 'app_id', 'recap']}
                         />
                     </div>
                 </div>
@@ -390,6 +555,27 @@ export default function WhitelistConfig() {
                             </div>
                          </div>
                     </div>
+                </div>
+            )}
+
+            {/* TAB: Messages */}
+            {activeTab === 'messages' && (
+                <div className="animate">
+                    <EmbedMessageManager 
+                        guildId={guildId}
+                        module="whitelist"
+                        slugs={[
+                            { key: 'not_configured', label: 'Whitelist disattivata', description: 'Messaggio mostrato quando un utente tenta di iniziare ma il modulo è spento.', variables: ['guild'] },
+                            { key: 'active_session', label: 'Sessione in corso', description: 'Mostrato se l\'utente ha già un ticket aperto.', variables: ['channelId'] },
+                            { key: 'already_submitted', label: 'Dossier in sospeso', description: 'Mostrato se una candidatura è già stata inviata.', variables: ['guild'] },
+                            { key: 'already_passed', label: 'Già Cittadino', description: 'Mostrato se l\'utente ha già il ruolo whitelist.', variables: ['guild'] },
+                            { key: 'cooldown', label: 'Blocco Cooldown', description: 'Messaggio di attesa dopo un rifiuto.', variables: ['time'] },
+                            { key: 'start_success', label: 'Accesso Consentito', description: 'Inviato quando il ticket viene creato con successo.', variables: ['channelId'] },
+                            { key: 'session_completed', label: 'Riepilogo Finale', description: 'Embed inviato alla fine del modulo per confermare l\'invio.', variables: ['recap'] },
+                            { key: 'min_length_error', label: 'Errore Caratteri', description: 'Mostrato quando una risposta è troppo breve.', variables: ['minLength'] },
+                            { key: 'question', label: 'Inviata Domanda', description: 'Embed standard per le domande interattive.', variables: ['currentIndex', 'totalQuestions', 'question', 'timeLeft'] },
+                        ]}
+                    />
                 </div>
             )}
         </div>

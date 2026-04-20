@@ -40,20 +40,20 @@ const verifyConfigSchema = new mongoose.Schema({
     },
     embeds: {
         panel: {
-            title: { type: String, default: '✅ Verifica Account' },
-            description: { type: String, default: 'Clicca il bottone qui sotto per verificarti e accedere al server!' },
-            color: { type: String, default: '#2ecc71' },
+            title: { type: String, default: '🛡️ Checkpoint di Sicurezza - Dogana' },
+            description: { type: String, default: 'Per garantire l\'incolumità dei cittadini, è necessario confermare la tua identità prima di attraversare la dogana e accedere alla città.' },
+            color: { type: String, default: '#9146FF' },
             image: { type: String, default: '' },
             thumbnail: { type: String, default: '' },
-            footer: { type: String, default: '' }
+            footer: { type: String, default: 'Dipartimento di Sicurezza Nazionale | Verix RP' }
         },
         dm: {
-            title: { type: String, default: '✅ Verifica Completata' },
-            description: { type: String, default: 'Benvenuto! Il tuo accesso al server **{guild}** è stato confermato con successo.' },
+            title: { type: String, default: '✅ Identità Confermata' },
+            description: { type: String, default: 'Ottime notizie cittadino! La tua registrazione presso **{guild}** è stata confermata correttamente. Ora puoi attraversare i cancelli della città.' },
             color: { type: String, default: '#2ecc71' },
             image: { type: String, default: '' },
             thumbnail: { type: String, default: '' },
-            footer: { type: String, default: '' }
+            footer: { type: String, default: 'Dipartimento Doganale | Verix RP' }
         }
     },
     buttons: {
@@ -64,9 +64,9 @@ const verifyConfigSchema = new mongoose.Schema({
         }
     },
     messages: {
-        alreadyVerified: { type: String, default: 'ℹ️ Sei già verificato nel server!' },
-        successResponse: { type: String, default: '✅ Ti sei verificato con successo!' },
-        errorResponse: { type: String, default: '❌ Si è verificato un errore durante la verifica.' }
+        alreadyVerified: { type: String, default: 'ℹ️ **PROTOCOLLO ATTIVO:** Risulti già registrato nel database cittadino.' },
+        successResponse: { type: String, default: '✅ **IDENTITÀ VALIDATA:** Benvenuto oltre il perimetro.' },
+        errorResponse: { type: String, default: '❌ **ERRORE DI SISTEMA:** Impossibile validare i documenti al momento.' }
     },
     dmEnabled: {
         type: Boolean,

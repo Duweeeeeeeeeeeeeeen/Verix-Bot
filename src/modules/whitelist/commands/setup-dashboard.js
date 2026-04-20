@@ -13,7 +13,8 @@ export default {
     async execute(interaction) {
         const guildData = await Guild.findOne({ guildId: interaction.guild.id });
         if (!guildData || !guildData.enabledModules.includes('whitelist')) {
-            return interaction.reply({ content: ErrorHelper.moduleDisabledError('Whitelist'), flags: [MessageFlags.Ephemeral] });
+            const errorEmbed = await ErrorHelper.moduleDisabledError(interaction.guild.id, 'Whitelist');
+            return interaction.reply({ embeds: [errorEmbed], flags: [MessageFlags.Ephemeral] });
         }
 
         const channel = interaction.options.getChannel('channel');

@@ -24,9 +24,14 @@ export default function GlobalConfigPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (!guildId) return;
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (guildId && mounted) {
     Promise.all([
       api.request(`/config/${guildId}/global`),
       api.request(`/config/${guildId}/discord-data`)
@@ -34,8 +39,9 @@ export default function GlobalConfigPage() {
       setConfig(cfgRes?.data || cfgRes);
       setChannels(discordRes?.channels || []);
       setRoles(discordRes?.roles || []);
-    }).catch(console.error).finally(() => setLoading(false));
-  }, [guildId]);
+      }).catch(console.error).finally(() => setLoading(false));
+    }
+  }, [guildId, mounted]);
 
   const showToast = useCallback((message, type = 'success') => {
     window.dispatchEvent(new CustomEvent('show-toast', { detail: { message, type } }));
@@ -69,7 +75,7 @@ export default function GlobalConfigPage() {
     });
   };
 
-  if (loading || !config) return <Layout guildId={guildId}><Skeleton height="500px" /></Layout>;
+   if (!mounted || loading || !config) return <Layout guildId={guildId}><Skeleton height="500px" /></Layout>;
 
   return (
     <Layout guildId={guildId}>

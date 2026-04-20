@@ -9,6 +9,8 @@ import { PhotoContestManager } from './src/modules/photoContest/manager.js';
 import { FiveMManager } from './src/modules/fivem/manager.js';
 import CleanupManager from './src/core/cleanupManager.js';
 import EmbedSchedulerManager from './src/core/EmbedSchedulerManager.js';
+import { TwitchManager } from './src/modules/twitch/manager.js';
+
 
 // Initialize Discord Client
 const client = new Client({
@@ -69,6 +71,9 @@ const init = async () => {
 
         const embedScheduler = new EmbedSchedulerManager(client);
         embedScheduler.start(60000); // Check every minute
+
+        const twitchManager = new TwitchManager(client);
+        twitchManager.init();
 
         startDashboard(client);
     });

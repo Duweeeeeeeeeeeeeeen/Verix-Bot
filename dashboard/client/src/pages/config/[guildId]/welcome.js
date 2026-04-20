@@ -18,11 +18,16 @@ export default function WelcomeConfig() {
   const [discordData, setDiscordData] = useState({ roles: [], channels: [] });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState('settings');
+   const [activeTab, setActiveTab] = useState('settings');
   const [activeEmbedKey, setActiveEmbedKey] = useState('welcome');
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (guildId) {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (guildId && mounted) {
       const fetchData = async () => {
         try {
           const [configRes, discordRes] = await Promise.all([
@@ -30,10 +35,14 @@ export default function WelcomeConfig() {
             api.request(`/config/${guildId}/discord-data`)
           ]);
 
-          if (configRes && configRes.welcome) {
+          if (configRes && configRes.data) {
+            setConfig(configRes.data.welcome || configRes.data);
+          } else if (configRes && configRes.welcome) {
             setConfig(configRes.welcome);
           }
-          if (discordRes) {
+          if (discordRes && discordRes.data) {
+            setDiscordData(discordRes.data);
+          } else if (discordRes) {
             setDiscordData(discordRes);
           }
           setLoading(false);
@@ -44,7 +53,7 @@ export default function WelcomeConfig() {
       };
       fetchData();
     }
-  }, [guildId]);
+  }, [guildId, mounted]);
 
   const showToast = (message, type = 'success') => {
     window.dispatchEvent(new CustomEvent('show-toast', { detail: { message, type } }));
@@ -233,7 +242,7 @@ export default function WelcomeConfig() {
             .info-card-p { margin-top: 24px; background: rgba(129, 140, 248, 0.05); border: 1px solid rgba(129, 140, 248, 0.1); display: flex; align-items: center; gap: 16px; padding: 16px 24px; font-size: 0.9rem; color: var(--text-muted); }
             .info-card-p code { background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 4px; color: var(--primary); font-family: monospace; }
 
-            .editor-container-p { display: grid; grid-template-columns: 240px 1fr; padding: 0 !important; overflow: hidden; }
+            .editor-container-p { display: grid; grid-template-columns: 240px 1fr; padding: 0 !important; }
             .editor-nav-p { background: rgba(0,0,0,0.1); padding: 20px; border-right: 1px solid var(--border); display: flex; flex-direction: column; gap: 6px; }
             .editor-nav-link { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: transparent; border: 1px solid transparent; color: var(--text-muted); border-radius: 10px; cursor: pointer; text-align: left; transition: 0.2s; font-size: 0.85rem; font-weight: 600; }
             .editor-nav-link:hover { color: white; background: rgba(255,255,255,0.03); }

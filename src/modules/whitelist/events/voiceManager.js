@@ -46,8 +46,8 @@ export default {
             try {
                 // Check if paused
                 if (config.voiceSettings.paused) {
-                    await member.voice.disconnect('Whitelist Vocale temporaneamente chiusa.');
-                    return member.send(config.voiceSettings.voiceMessages?.paused || '⏸️ Il sistema di Whitelist Vocale è attualmente in pausa dallo staff. Riprova più tardi.').catch(() => {});
+                    await member.voice.disconnect('Ufficio Vocale temporaneamente chiuso.');
+                    return member.send(config.voiceSettings.voiceMessages?.paused || '⏸️ **PROTOCOLLO SOSPESO:** Gli uffici vocali sono temporaneamente chiusi dallo staff. Riprova più tardi.').catch(() => {});
                 }
 
                 // Anti-Spam Check
@@ -59,37 +59,47 @@ export default {
                 }
                 antiSpam.set(member.id, now);
 
-                // Flow Validation
-                const reasons = [];
-                const textApp = await WhitelistApp.findOne({ 
-                    userId: member.id, 
-                    guildId: guild.id, 
-                    status: { $in: ['ACCEPTED', 'WAITING_VOICE'] } 
-                });
+                // --- Master Mode Flow Validation ---
+                const m = config.mode;
+                
+                // 1. Block access if Voice WL is not part of this mode
+                const hasVoice = ['VOICE', 'HYBRID', 'BG_VOICE', 'FULL'].includes(m);
+                if (!hasVoice) {
+                    await member.voice.disconnect('Procedura non prevista.');
+                    return member.send('❌ **ERRORE PROCEDURALE:** Lo Stato non prevede colloqui orali per questo tipo di visto.').catch(() => {});
+                }
 
-                if (config.flowRequirements.requireTextWL) {
-                    if (!textApp) {
-                        logger.warn(`[VOICE-DEBUG] User ${member.user.tag} rejected: No accepted/waiting text application found.`);
-                        reasons.push('- Whitelist Testuale non completata o in attesa di approvazione.');
+                // 2. Background Prerequisite
+                const requiresBG = ['BG_VOICE', 'FULL'].includes(m) || config.flowRequirements.requireBackground;
+                if (requiresBG) {
+                    const bgApp = await Background.findOne({ userId: member.id, guildId: guild.id, status: 'ACCEPTED' });
+                    if (!bgApp) {
+                        reasons.push('- Background non inviato o non ancora accettato.');
                     }
                 }
 
-                // 2. Voice Rejection Cooldown Check
-                if (textApp && textApp.lastVoiceRejectionAt && config.voiceSettings.rejectionCooldown > 0) {
+                // 3. Written WL Prerequisite
+                const requiresWritten = ['HYBRID', 'FULL'].includes(m) || config.flowRequirements.requireTextWL;
+                if (requiresWritten) {
+                    const textApp = await WhitelistApp.findOne({ 
+                        userId: member.id, 
+                        guildId: guild.id, 
+                        status: { $in: ['ACCEPTED', 'WAITING_VOICE'] } 
+                    });
+                    if (!textApp) {
+                        reasons.push('- Prova scritta non completata o in attesa di approvazione.');
+                    }
+                }
+
+                // 4. Voice Rejection Cooldown Check
+                const textAppForCooldown = await WhitelistApp.findOne({ userId: member.id, guildId: guild.id }).sort({ lastVoiceRejectionAt: -1 });
+                if (textAppForCooldown && textAppForCooldown.lastVoiceRejectionAt && config.voiceSettings.rejectionCooldown > 0) {
                     const cooldownMs = config.voiceSettings.rejectionCooldown * 60 * 60 * 1000;
-                    const timePassed = Date.now() - textApp.lastVoiceRejectionAt.getTime();
+                    const timePassed = Date.now() - textAppForCooldown.lastVoiceRejectionAt.getTime();
                     
                     if (timePassed < cooldownMs) {
                         const remainingHours = Math.ceil((cooldownMs - timePassed) / (60 * 60 * 1000));
-                        reasons.push(`- Hai fallito l'ultimo colloquio vocale. Potrai riprovare tra circa **${remainingHours} ore**.`);
-                    }
-                }
-
-                if (config.flowRequirements.requireBackground) {
-                    const bgApp = await Background.findOne({ userId: member.id, guildId: guild.id, status: 'ACCEPTED' });
-                    if (!bgApp) {
-                        logger.warn(`[VOICE-DEBUG] User ${member.user.tag} rejected: No accepted background found.`);
-                        reasons.push('- Background non inviato o accettato.');
+                        reasons.push(`- Hai fallito l'ultimo colloquio. Potrai riprovare tra circa **${remainingHours} ore**.`);
                     }
                 }
 
@@ -124,7 +134,7 @@ export default {
                             const pings = config.voiceSettings.pingStaffOnJoin 
                                 ? (config.staffRoleIds || []).map(id => `<@&${id}>`).join(' ') 
                                 : '';
-                            await logChannel.send(`${pings} 📢 **Nuovo utente in coda!**\nUtente: ${member} (${member.id})\nCoda attuale: \`${waitingCount}\``);
+                            await logChannel.send(`${pings} 📢 **PROTOCOLLO CODA:** Nuovo cittadino in attesa!\nSoggetto: ${member} (${member.id})\nCoda attuale: \`${waitingCount}\``);
                         }
                     }
                     
@@ -221,7 +231,7 @@ async function startVoiceSession(member, guild, config, client) {
         event: 'voice.onVoiceStart',
         guildId: guild.id,
         guild,
-        content: `🎤 Nuovo colloquio vocale avviato — ${member} nel canale **${channelName}**`
+        content: `🎤 **UDIENZA AVVIATA:** Il cittadino ${member} è stato ammesso nel dipartimento **${channelName}**`
     });
 
     // Create session record
@@ -266,9 +276,9 @@ async function startVoiceSession(member, guild, config, client) {
     }
 
     const recapEmbed = new EmbedBuilder()
-        .setTitle(`📝 Dossier Prova Scritta di ${member.user.username}`)
+        .setTitle(`📑 Archivio Dichiarazioni: ${member.user.username}`)
         .setDescription(recap)
-        .setColor(config.colors?.primary || '#5865F2');
+        .setColor(config.colors?.primary || '#3BA4FF');
 
     const buttons = config.voiceSettings.voiceButtons || {};
     const controlRow = new ActionRowBuilder().addComponents(

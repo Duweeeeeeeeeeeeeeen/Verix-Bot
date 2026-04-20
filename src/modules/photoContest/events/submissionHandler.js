@@ -3,6 +3,7 @@ import PhotoContestConfig from '../../../models/PhotoContestConfig.js';
 import PhotoContest from '../../../models/PhotoContest.js';
 import PhotoSubmission from '../../../models/PhotoSubmission.js';
 import logger from '../../../utils/logger.js';
+import messageService from '../../../utils/messageService.js';
 
 export default {
     name: 'messageCreate',
@@ -37,7 +38,8 @@ export default {
             });
 
             if (existing) {
-                const warn = await message.reply('❌ Hai già inviato una foto per questo tema!');
+                const embed = await messageService.get(message.guild.id, 'photoContest', 'already_submitted');
+                const warn = await message.reply({ embeds: [embed] });
                 setTimeout(() => {
                     warn.delete().catch(() => null);
                     message.delete().catch(() => null);
@@ -48,14 +50,14 @@ export default {
             const imgName = attachment.name || 'photo.png';
             const file = new AttachmentBuilder(attachment.url, { name: imgName });
 
-            const submissionEmbed = new EmbedBuilder()
-                .setAuthor({ name: `Inviato da ${message.author.username}`, iconURL: message.author.displayAvatarURL() })
-                .setTitle(`Tema: ${activeContest.theme || 'Libero'}`)
-                .setImage(`attachment://${imgName}`)
-                .setDescription(`📊 **Punteggio:** \`0 pt\`\n\n🏁 **Scadenza:** <t:${Math.floor(activeContest.endTime.getTime() / 1000)}:R>`)
-                .setColor(config.embedSettings.color)
-                .setFooter({ text: 'Usa i bottoni qui sotto per votare!' })
-                .setTimestamp();
+            const submissionEmbed = await messageService.get(message.guild.id, 'photoContest', 'submission', {
+                username: message.author.username,
+                theme: activeContest.theme || 'Libero',
+                endTime: `<t:${Math.floor(activeContest.endTime.getTime() / 1000)}:R>`
+            });
+
+            submissionEmbed.setImage(`attachment://${imgName}`);
+            submissionEmbed.setAuthor({ name: `Inviato da ${message.author.username}`, iconURL: message.author.displayAvatarURL() });
 
             if (message.content && message.content.trim().length > 0) {
                 submissionEmbed.addFields({ name: '📝 Descrizione', value: message.content.trim().substring(0, 1024) });

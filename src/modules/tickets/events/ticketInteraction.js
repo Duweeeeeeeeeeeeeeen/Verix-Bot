@@ -10,6 +10,7 @@ import ErrorHelper from '../../../utils/errorHelper.js';
 import logger from '../../../utils/logger.js';
 import { checkBotPermissions, formatMissingPermissions } from '../../../utils/permissionHelper.js';
 import placeholderHelper from '../../../utils/placeholderHelper.js';
+import messageService from '../../../utils/messageService.js';
 
 export default {
     name: Events.InteractionCreate,
@@ -34,15 +35,10 @@ export default {
 
             const existing = await Ticket.findOne({ userId: interaction.user.id, guildId: interaction.guild.id, type, status: { $ne: 'CLOSED' } });
             if (existing) {
-                const alreadyMsg = config.messages?.alreadyExists || '❌ Hai già un ticket di tipo **{type}** attivo (<#{channel_id}>). Chiudilo prima di aprirne uno nuovo.';
-                const solution = alreadyMsg
-                    .replace('{type}', type)
-                    .replace('{channel_id}', existing.channelId);
-
-                return interaction.reply({ 
-                    content: solution, 
-                    flags: [MessageFlags.Ephemeral] 
+                const embed = await messageService.get(interaction.guild.id, 'tickets', 'already_exists', {
+                    channelId: existing.channelId
                 });
+                return interaction.reply({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
             }
 
             const priorityMenu = new ActionRowBuilder().addComponents(
@@ -84,10 +80,10 @@ export default {
             // QUICK REPLIES (Canned Responses)
             if (interaction.customId === 'tk_quick_reply') {
                 if (!config.cannedResponses.length) {
-                    return interaction.reply({ 
-                        content: ErrorHelper.formatActionable('❌', 'Nessuna Risposta Rapida', 'Configura i template nella Dashboard sotto la sezione **Tickets -> Risposte Rapide**.'), 
-                        flags: [MessageFlags.Ephemeral] 
+                    const embed = await messageService.get(interaction.guild.id, 'system', 'generic_error', {
+                        error: 'Nessuna risposta rapida configurata nella dashboard.'
                     });
+                    return interaction.reply({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
                 }
 
                 const menu = new ActionRowBuilder().addComponents(
@@ -141,17 +137,19 @@ export default {
             // CLAIM & STATUS
             if (interaction.customId === 'tk_claim') {
                 if (ticket.assignedStaffId) {
-                    return interaction.reply({ 
-                        content: ErrorHelper.formatActionable('⚠️', 'Ticket già preso in carico', `Questo ticket è già gestito da <@${ticket.assignedStaffId}>.`), 
-                        flags: [MessageFlags.Ephemeral] 
+                    const embed = await messageService.get(interaction.guild.id, 'tickets', 'already_claimed', {
+                        assignedStaffId: ticket.assignedStaffId
                     });
+                    return interaction.reply({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
                 }
                 ticket.assignedStaffId = interaction.user.id;
                 ticket.status = 'PROCESSING';
                 await ticket.save();
                 
-                const claimMsg = config.messages?.staffClaimed || '✅ {staff} ha preso in carico il ticket.';
-                await interaction.reply({ content: claimMsg.replace('{staff}', `<@${interaction.user.id}>`) });
+                const embed = await messageService.get(interaction.guild.id, 'tickets', 'staff_claimed', {
+                    staff: `<@${interaction.user.id}>`
+                });
+                await interaction.reply({ embeds: [embed] });
                 
                 // Background updates
                 channel.setName(`⚙️-${channel.name}`).catch(() => {});
@@ -163,7 +161,10 @@ export default {
             if (interaction.isStringSelectMenu() && interaction.customId === 'tk_status_select') {
                 ticket.status = interaction.values[0];
                 await ticket.save();
-                await interaction.reply({ content: `🔄 Stato aggiornato a: **${ticket.status}**` });
+                const embed = await messageService.get(interaction.guild.id, 'tickets', 'status_updated', {
+                    status: ticket.status
+                });
+                await interaction.reply({ embeds: [embed] });
                 const staffRoles = (config.staffRoleIds || []).map(id => interaction.guild.roles.cache.get(id)).filter(r => r);
                 return renderTicketDashboard(interaction.channel, ticket, config, config.typesConfig.get(ticket.type), interaction.user, staffRoles, true);
             }
@@ -276,9 +277,9 @@ async function createTicket(interaction, type, config, metadata = {}) {
         ]);
 
         if (!permCheck.hasPermission) {
-            const errorStr = ErrorHelper.permissionsError(permCheck.missing);
-            if (interaction.deferred || interaction.replied) await interaction.editReply({ content: errorStr, components: [] });
-            else await interaction.reply({ content: errorStr, flags: [MessageFlags.Ephemeral] });
+            const errorEmbed = await ErrorHelper.permissionsError(guild.id, permCheck.missing);
+            if (interaction.deferred || interaction.replied) await interaction.editReply({ embeds: [errorEmbed], components: [] });
+            else await interaction.reply({ embeds: [errorEmbed], flags: [MessageFlags.Ephemeral] });
             return;
         }
 
@@ -334,8 +335,8 @@ async function renderTicketDashboard(channel, ticket, config, typeConfig, user, 
         .setDescription(embedDesc)
         .setColor(tEmbed.color || typeConfig?.color || '#3498db')
         .addFields(
-            { name: '👤 Assegnato a', value: ticket.assignedStaffId ? `<@${ticket.assignedStaffId}>` : '_In attesa..._', inline: true },
-            { name: '🏷️ Tag', value: ticket.tags.length > 0 ? ticket.tags.map(t => `\`${t}\``).join(' ') : '_Nessun tag_', inline: true }
+            { name: '👤 Operatore Assegnato', value: ticket.assignedStaffId ? `<@${ticket.assignedStaffId}>` : '_In attesa di presa in carico..._', inline: true },
+            { name: '🏷️ Protocolli / Tag', value: ticket.tags.length > 0 ? ticket.tags.map(t => `\`${t}\``).join(' ') : '_Nessuna annotazione_', inline: true }
         )
         .setTimestamp();
 

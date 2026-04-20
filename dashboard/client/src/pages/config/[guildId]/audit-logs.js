@@ -33,17 +33,24 @@ export default function AuditLogs() {
   const [expandedLog, setExpandedLog] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 
+   const [mounted, setMounted] = useState(false);
+
   useEffect(() => {
-    if (guildId) {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (guildId && mounted) {
       fetchLogs();
     }
-  }, [guildId]);
+  }, [guildId, mounted]);
 
   const fetchLogs = async () => {
     setLoading(true);
     try {
-      const data = await api.request(`/config/${guildId}/audit-logs`);
-      setLogs(Array.isArray(data) ? data : []);
+      const res = await api.request(`/config/${guildId}/audit-logs`);
+      const logsData = res.data || (Array.isArray(res) ? res : []);
+      setLogs(logsData);
     } catch (error) {
       console.error('Fetch logs error:', error);
     } finally {
@@ -81,7 +88,7 @@ export default function AuditLogs() {
     (log.action?.toLowerCase() || '').includes(searchTerm.toLowerCase())
   );
 
-  if (loading && logs.length === 0) return <Layout guildId={guildId}><Skeleton height="500px" /></Layout>;
+  if (!mounted || (loading && logs.length === 0)) return <Layout guildId={guildId}><Skeleton height="500px" /></Layout>;
 
   return (
     <Layout guildId={guildId}>

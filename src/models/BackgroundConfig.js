@@ -6,8 +6,10 @@ const backgroundConfigSchema = new mongoose.Schema({
     staffRoleIds: { type: [String], default: [] },
     panelChannelId: { type: String },
     panelMessageId: { type: String, default: null },
-    cooldown: { type: Number, default: 24 }, // Hours
+    cooldown: { type: Number, default: 24 }, // Hours for Panel
+    correctionCooldown: { type: Number, default: 2 }, // Hours for Integrated Correction
     enabled: { type: Boolean, default: true },
+    entryPoint: { type: String, enum: ['PANEL', 'INTEGRATED'], default: 'PANEL' },
     colors: {
         primary: { type: String, default: '#5865F2' },
         success: { type: String, default: '#2ecc71' },
@@ -90,6 +92,20 @@ const backgroundConfigSchema = new mongoose.Schema({
                     { name: '📝 Nota Commissione', value: '>>> {reason}', inline: false }
                 ]
             }
+        },
+        integrated_accepted: {
+            title: { type: String, default: '🎊 Storia Approvata!' },
+            description: { type: String, default: 'Ottime notizie {user}! La tua storia è stata validata ufficialmente dalla commissione.\n\nQuando sei pronto, clicca il pulsante qui sotto per iniziare il **Test Scritto**.' },
+            color: { type: String, default: 'success' },
+            image: { type: String, default: null },
+            thumbnail: { type: String, default: null }
+        },
+        integrated_rejected: {
+            title: { type: String, default: '⚠️ Revisione Storia: Feedback Staff' },
+            description: { type: String, default: 'Salve {user},\n\nIl tuo background ha bisogno di alcune correzioni prima di poter procedere.\n\n**Motivo del Rifiuto:**\n>>> {reason}\n\n**Cosa fare ora?**\nPotrai inviare nuovamente il tuo dossier corretto tra circa **{next_attempt}**. Prendi questo tempo per migliorare la tua storia seguendo le indicazioni dello staff.' },
+            color: { type: String, default: 'error' },
+            image: { type: String, default: null },
+            thumbnail: { type: String, default: null }
         }
     }
 });

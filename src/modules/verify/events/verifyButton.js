@@ -5,6 +5,7 @@ import ErrorHelper from '../../../utils/errorHelper.js';
 import logger from '../../../utils/logger.js';
 import { t } from '../../../utils/translator.js';
 import { replacePlaceholders } from '../../../utils/placeholderHelper.js';
+import messageService from '../../../utils/messageService.js';
 
 export default {
     name: Events.InteractionCreate,
@@ -25,24 +26,28 @@ export default {
             const role = guild.roles.cache.get(config.roleId);
             if (!role) {
                 return interaction.reply({ 
-                    content: '❌ ' + t(lang, 'verify.missing_roles'), 
+                    content: '❌ ' + t(lang, 'verify.role_not_found'), 
                     flags: [MessageFlags.Ephemeral] 
                 });
             }
 
             // Check if user already has the role
             if (member.roles.cache.has(role.id)) {
+                const embed = await messageService.get(guild.id, 'verify', 'already_verified', {
+                    guild: guild.name
+                });
                 return interaction.reply({ 
-                    content: config.messages?.alreadyVerified || ('ℹ️ ' + t(lang, 'verify.already_verified')), 
+                    embeds: [embed], 
                     flags: [MessageFlags.Ephemeral] 
                 });
             }
 
             // Assign the new role
-            await member.roles.add(role).catch(err => {
+            await member.roles.add(role).catch(async err => {
                 logger.error(`[Verify] Failed to add role to ${user.tag}:`, err);
-                const errorStr = ErrorHelper.roleHierarchyError(role.name);
-                throw new Error(errorStr);
+                const errorEmbed = await ErrorHelper.roleHierarchyError(guild.id, role.name);
+                await interaction.reply({ embeds: [errorEmbed], flags: [MessageFlags.Ephemeral] });
+                throw new Error('STOP_EXECUTION'); // Prevent further logic
             });
 
             // Remove old role if configured
@@ -57,23 +62,12 @@ export default {
 
             // Send DM Notification
             if (config.dmEnabled) {
-                const placeholders = {
+                const dmEmbed = await messageService.get(guild.id, 'verify', 'success', {
                     user: user.username,
                     user_mention: user.toString(),
                     guild: guild.name,
                     member_count: guild.memberCount.toString()
-                };
-
-                const dmConfig = config.embeds?.dm || {};
-                const dmEmbed = new EmbedBuilder()
-                    .setTitle(replacePlaceholders(dmConfig.title || '✅ Verifica Completata', placeholders))
-                    .setDescription(replacePlaceholders(dmConfig.description || 'Ti sei verificato correttamente!', placeholders))
-                    .setColor(dmConfig.color || '#2ecc71')
-                    .setTimestamp();
-                
-                if (dmConfig.footer) dmEmbed.setFooter({ text: replacePlaceholders(dmConfig.footer, placeholders) });
-                if (dmConfig.thumbnail) dmEmbed.setThumbnail(replacePlaceholders(dmConfig.thumbnail, placeholders));
-                if (dmConfig.image) dmEmbed.setImage(replacePlaceholders(dmConfig.image, placeholders));
+                });
 
                 await user.send({ embeds: [dmEmbed] }).catch(() => {
                     logger.warn(`[Verify] Could not send DM to ${user.tag} (DMs closed)`);
@@ -85,14 +79,14 @@ export default {
                 const logChannel = guild.channels.cache.get(config.logChannelId);
                 if (logChannel) {
                     const logEmbed = new EmbedBuilder()
-                        .setTitle('👤 Utente Verificato')
+                        .setTitle('🛂 Registro Entrate: Nuovo Cittadino')
                         .setColor('#2ecc71')
                         .setThumbnail(user.displayAvatarURL())
                         .addFields(
-                            { name: '👤 Utente', value: `${user.tag} (${user.toString()})`, inline: true },
-                            { name: '🆔 ID', value: `\`${user.id}\``, inline: true },
-                            { name: '📅 Account Creato', value: `<t:${Math.floor(user.createdTimestamp / 1000)}:R>`, inline: true },
-                            { name: '✅ Ruolo Assegnato', value: `${role.toString()}`, inline: true }
+                            { name: '👤 Identità', value: `${user.tag} (${user.toString()})`, inline: true },
+                            { name: '🆔 Codice Univoco', value: `\`${user.id}\``, inline: true },
+                            { name: '📅 Registrazione Account', value: `<t:${Math.floor(user.createdTimestamp / 1000)}:R>`, inline: true },
+                            { name: '✅ Status Assegnato', value: `${role.toString()}`, inline: true }
                         )
                         .setTimestamp();
                     
@@ -100,9 +94,13 @@ export default {
                 }
             }
 
-            const successMsg = config.messages?.successResponse || t(lang, 'verify.success_desc', { user: user.toString() });
+            const successEmbed = await messageService.get(guild.id, 'verify', 'success_reply', {
+                user: user.toString(),
+                guild: guild.name
+            });
+
             await interaction.reply({ 
-                content: successMsg.includes('{user}') ? replacePlaceholders(successMsg, { user: user.toString() }) : (successMsg.startsWith('✅') ? successMsg : `✅ ${successMsg}`), 
+                embeds: [successEmbed], 
                 flags: [MessageFlags.Ephemeral] 
             });
 

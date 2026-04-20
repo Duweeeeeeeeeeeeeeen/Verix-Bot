@@ -36,12 +36,17 @@ export default function GuildHome() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [updating, setUpdating] = useState(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (guildId) {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (guildId && mounted) {
       fetchData();
     }
-  }, [guildId]);
+  }, [guildId, mounted]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -82,7 +87,7 @@ export default function GuildHome() {
     }
   };
 
-  if (loading && !config) return <Layout guildId={guildId}><Skeleton height="600px" /></Layout>;
+   if (!mounted || (loading && !config)) return <Layout guildId={guildId}><Skeleton height="600px" /></Layout>;
 
   if (error) return (
     <Layout guildId={guildId}>
@@ -110,7 +115,7 @@ export default function GuildHome() {
                 <p>Monitoraggio e gestione in tempo reale del bot per <b>{config.guildName || 'il tuo server'}</b>.</p>
               </div>
            </div>
-           <div className="header-actions-p">
+           <div className="header-actions-p" style={{ display: 'flex', alignItems: 'center' }}>
               <button onClick={fetchData} className="btn-outline-p">
                 <RefreshCcw size={16} className={loading ? 'spin' : ''} /> Aggiorna
               </button>

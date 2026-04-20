@@ -28,7 +28,8 @@ import {
   Server,
   BellOff,
   ExternalLink,
-  ChevronRight
+  ChevronRight,
+  Tv
 } from 'lucide-react';
 
 export default function Layout({ children, guildId }) {
@@ -57,13 +58,14 @@ export default function Layout({ children, guildId }) {
   const menuItems = [
     { name: 'Home', icon: Home, path: `/config/${guildId}` },
     { name: 'Whitelist', icon: ShieldCheck, path: `/config/${guildId}/whitelist` },
+    { name: 'Twitch', icon: Tv, path: `/config/${guildId}/twitch` },
     { name: 'Verifica', icon: CheckCircle, path: `/config/${guildId}/verify` },
     { name: 'Welcome', icon: UserPlus, path: `/config/${guildId}/welcome` },
     { name: 'Tickets', icon: Ticket, path: `/config/${guildId}/tickets` },
     { name: 'Photo Contest', icon: Camera, path: `/config/${guildId}/photocontest` },
     { name: 'FiveM', icon: Globe, path: `/config/${guildId}/fivem` },
     { name: 'Embed Suite', icon: LayoutIcon, path: `/config/${guildId}/embeds` },
-    { name: 'Config. Globale', icon: Settings2, path: `/config/${guildId}/global` },
+    { name: 'Utility', icon: Cpu, path: `/config/${guildId}/utility` },
   ];
 
   const getToastIcon = (type) => {
@@ -108,6 +110,28 @@ export default function Layout({ children, guildId }) {
         </nav>
 
         <div className="sidebar-footer">
+          <Link 
+            href={`/config/${guildId}/global`} 
+            className={`nav-link ${router.asPath === `/config/${guildId}/global` ? 'active' : ''}`}
+            style={{ marginBottom: '8px' }}
+          >
+            <div className="nav-link-icon">
+              <Settings2 size={18} strokeWidth={2.5} />
+            </div>
+            <span className="nav-link-text">Config. Globale</span>
+            {router.asPath === `/config/${guildId}/global` && <ChevronRight size={14} className="active-arrow" />}
+          </Link>
+          <Link 
+            href={`/config/${guildId}/system`} 
+            className={`nav-link ${router.asPath === `/config/${guildId}/system` ? 'active' : ''}`}
+            style={{ marginBottom: '12px' }}
+          >
+            <div className="nav-link-icon">
+              <Settings size={18} strokeWidth={2.5} />
+            </div>
+            <span className="nav-link-text">Sistema</span>
+            {router.asPath === `/config/${guildId}/system` && <ChevronRight size={14} className="active-arrow" />}
+          </Link>
           <div className="user-mini-card">
             <img 
               src={user?.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : 'https://cdn.discordapp.com/embed/avatars/0.png'} 

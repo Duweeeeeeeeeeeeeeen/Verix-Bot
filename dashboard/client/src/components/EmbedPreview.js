@@ -109,7 +109,7 @@ export default function EmbedPreview({ data, isMobile = false }) {
                 {/* Author Field */}
                 {data.author && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                        {data.author_icon && <img src={data.author_icon} style={{ width: '24px', height: '24px', borderRadius: '50%' }} alt="" />}
+                        {typeof data.author_icon === 'string' && data.author_icon && <img src={data.author_icon} style={{ width: '24px', height: '24px', borderRadius: '50%' }} alt="" />}
                         <span style={{ fontWeight: '600', fontSize: '0.875rem', color: 'white', cursor: 'pointer' }}>
                             {processPlaceholders(data.author)}
                         </span>
@@ -157,13 +157,13 @@ export default function EmbedPreview({ data, isMobile = false }) {
                     </div>
                     
                     {/* Thumbnail */}
-                    {data.thumbnail && !isMobile && (
+                    {typeof data.thumbnail === 'string' && data.thumbnail && !isMobile && (
                         <img src={data.thumbnail} alt="" style={{ width: '80px', height: '80px', borderRadius: '4px', flexShrink: 0, objectFit: 'cover' }} />
                     )}
                 </div>
 
                 {/* Main Image */}
-                {data.image && (
+                {typeof data.image === 'string' && data.image && (
                     <div style={{ marginTop: '8px', borderRadius: '4px', overflow: 'hidden' }}>
                         <img src={data.image} alt="" style={{ width: '100%', maxHeight: '400px', objectFit: 'contain', background: 'rgba(0,0,0,0.2)' }} />
                     </div>
@@ -172,7 +172,7 @@ export default function EmbedPreview({ data, isMobile = false }) {
                 {/* Footer */}
                 {(data.footer || data.timestamp) && (
                     <div style={{ marginTop: '8px', fontSize: '0.75rem', color: colors.text_muted, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        {data.footer_icon && <img src={data.footer_icon} style={{ width: '20px', height: '20px', borderRadius: '50%' }} alt="" />}
+                        {typeof data.footer_icon === 'string' && data.footer_icon && <img src={data.footer_icon} style={{ width: '20px', height: '20px', borderRadius: '50%' }} alt="" />}
                         <div style={{ display: 'flex', alignItems: 'center' }}>
                             {data.footer && <span>{processPlaceholders(data.footer)}</span>}
                             {data.footer && data.timestamp && <span style={{ margin: '0 4px' }}>•</span>}

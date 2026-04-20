@@ -5,6 +5,7 @@ import Guild from '../../../models/Guild.js';
 import logger from '../../../utils/logger.js';
 import { buildEmbed } from '../../../utils/embedHelper.js';
 import { checkBotPermissions, formatMissingPermissions } from '../../../utils/permissionHelper.js';
+import messageService from '../../../utils/messageService.js';
 
 export default {
     name: Events.MessageCreate,
@@ -44,16 +45,11 @@ export default {
 
         logger.info(`[WHITELIST-DEBUG] [A] Validating minLength for question index ${app.currentQuestionIndex}`);
         if (message.content.length < currentQuestion.minLength) {
-            const errorEmbed = buildEmbed(config.embeds.error_min_length, {
-                min_length: currentQuestion.minLength,
+            const embed = await messageService.get(message.guild.id, 'whitelist', 'min_length_error', {
+                minLength: currentQuestion.minLength,
                 user: message.author.username
-            }, config);
-            
-            if (errorEmbed) {
-                return message.reply({ embeds: [errorEmbed] });
-            } else {
-                return message.reply(`⚠️ **Dettaglio Insufficiente:** La tua risposta deve contenere almeno **${currentQuestion.minLength}** caratteri.`);
-            }
+            });
+            return message.reply({ embeds: [embed] });
         }
 
         logger.info(`[WHITELIST-DEBUG] [B] Pushing answer to database object...`);
@@ -75,20 +71,18 @@ export default {
             logger.info(`[WHITELIST-DEBUG] [D] Session completed. Total Answers: ${app.answers.length}. Saving...`);
             await app.save();
 
-            const summaryEmbed = buildEmbed(config.embeds.review, {
+            const summaryEmbed = await messageService.get(message.guild.id, 'whitelist', 'session_completed', {
                 user: message.author.username,
                 guild: message.guild.name,
                 total_questions: sessionQuestions.length
-            }, config);
+            });
 
-            if (summaryEmbed) {
-                // Discord limit: 25 fields max
-                const fields = app.answers.slice(0, 25).map((ans, i) => ({
-                    name: `${i + 1}. ${ans.question}`,
-                    value: ans.answer?.substring(0, 1024) || '*Nessuna risposta*'
-                }));
-                summaryEmbed.addFields(fields);
-            }
+            // Discord limit: 25 fields max
+            const fields = app.answers.slice(0, 25).map((ans, i) => ({
+                name: `${i + 1}. ${ans.question}`,
+                value: ans.answer?.substring(0, 1024) || '*Nessuna risposta*'
+            }));
+            summaryEmbed.addFields(fields);
 
             const row = new ActionRowBuilder().addComponents(
                 new ButtonBuilder().setCustomId('confirm_wl').setLabel('Conferma Pratica').setStyle(ButtonStyle.Success),
@@ -96,15 +90,7 @@ export default {
                 new ButtonBuilder().setCustomId('cancel_wl').setLabel('Ritira Domanda').setStyle(ButtonStyle.Danger)
             );
 
-            let sentMsg;
-            if (summaryEmbed) {
-                sentMsg = await message.channel.send({ embeds: [summaryEmbed], components: [row] });
-            } else {
-                sentMsg = await message.channel.send({ 
-                    content: `✅ **Interrogatorio terminato!** Hai risposto a tutte le domande. Clicca il pulsante sotto per confermare l'invio ufficiale.`, 
-                    components: [row] 
-                });
-            }
+            const sentMsg = await message.channel.send({ embeds: [summaryEmbed], components: [row] });
             app.reviewMessageId = sentMsg.id;
             await app.save();
             return;
@@ -115,19 +101,15 @@ export default {
         const nextQuestion = sessionQuestions[app.currentQuestionIndex];
         logger.info(`[WHITELIST] Sending next question (${app.currentQuestionIndex + 1}/${sessionQuestions.length}) to ${message.author.tag}`);
 
-        const nextEmbed = buildEmbed(config.embeds.question, {
-            current_index: app.currentQuestionIndex + 1,
-            total_questions: sessionQuestions.length,
+        const nextEmbed = await messageService.get(message.guild.id, 'whitelist', 'question', {
+            currentIndex: app.currentQuestionIndex + 1,
+            totalQuestions: sessionQuestions.length,
             question: nextQuestion.text,
-            min_length: nextQuestion.minLength,
-            time_left: timeRemaining
-        }, config);
+            minLength: nextQuestion.minLength,
+            timeLeft: timeRemaining
+        });
 
-        if (nextEmbed) {
-            await message.channel.send({ embeds: [nextEmbed] });
-        } else {
-            await message.channel.send(`❓ **Domanda ${app.currentQuestionIndex + 1}:**\n>>> ${nextQuestion.text}`);
-        }
+        await message.channel.send({ embeds: [nextEmbed] });
     } catch (error) {
         logger.error(`[WHITELIST] Critical error in answerHandler:`, error);
         await message.channel.send('❌ Si è verificato un errore nel processare la tua risposta. Per favore, prova a reinviare il messaggio o contatta lo staff.').catch(() => {});

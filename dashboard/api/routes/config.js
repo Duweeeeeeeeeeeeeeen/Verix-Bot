@@ -12,6 +12,12 @@ import GlobalConfig from '../../../src/models/GlobalConfig.js';
 import FiveMConfig from '../../../src/models/FiveMConfig.js';
 import DashboardAuditLog from '../../../src/models/DashboardAuditLog.js';
 import WelcomeConfig from '../../../src/models/WelcomeConfig.js';
+import UtilityConfig from '../../../src/models/UtilityConfig.js';
+import BackgroundConfig from '../../../src/models/BackgroundConfig.js';
+import TwitchConfig from '../../../src/models/TwitchConfig.js';
+import { mergeModuleDefaults } from '../utils/mergeDefaults.js';
+
+
 import { adminCheck } from '../middleware/adminCheck.js';
 import { checkBotPermissions } from '../../../src/utils/permissionHelper.js';
 import { PermissionFlagsBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
@@ -32,6 +38,10 @@ import { guildSchema } from '../validations/guildSchema.js';
 import { globalConfigSchema } from '../validations/globalConfigSchema.js';
 import { welcomeSchema } from '../validations/welcomeSchema.js';
 import { fivemSchema } from '../validations/fivemSchema.js';
+import { utilitySchema } from '../validations/utilitySchema.js';
+import { backgroundSchema } from '../validations/backgroundSchema.js';
+import { twitchSchema } from '../validations/twitchSchema.js';
+
 
 
 const router = express.Router();
@@ -42,14 +52,17 @@ router.get('/:guildId', adminCheck, async (req, res) => {
         const { guildId } = req.params;
         
         // Fetch all configurations in parallel to reduce latency
-        const [whitelist, tickets, contest, verify, guild, globalCfg, welcome] = await Promise.all([
+        const [whitelist, tickets, contest, verify, guild, globalCfg, welcome, utility, fivem, twitch] = await Promise.all([
             WhitelistConfig.findOne({ guildId }),
             TicketConfig.findOne({ guildId }),
             PhotoContestConfig.findOne({ guildId }),
             VerifyConfig.findOne({ guildId }),
             Guild.findOne({ guildId }),
             GlobalConfig.findOne({ guildId }),
-            WelcomeConfig.findOne({ guildId })
+            WelcomeConfig.findOne({ guildId }),
+            UtilityConfig.findOne({ guildId }),
+            FiveMConfig.findOne({ guildId }),
+            TwitchConfig.findOne({ guildId })
         ]);
 
         let wlConfig = whitelist;
@@ -59,6 +72,9 @@ router.get('/:guildId', adminCheck, async (req, res) => {
         let guildData = guild;
         let globalConfig = globalCfg;
         let wlcmConfig = welcome;
+        let utilConfig = utility;
+        let fmConfig = fivem;
+        let twConfig = twitch;
 
         // Create missing configurations in parallel if they don't exist
         const creations = [];
@@ -69,6 +85,9 @@ router.get('/:guildId', adminCheck, async (req, res) => {
         if (!guildData) creations.push(Guild.create({ guildId }).then(res => guildData = res));
         if (!globalConfig) creations.push(GlobalConfig.create({ guildId }).then(res => globalConfig = res));
         if (!wlcmConfig) creations.push(WelcomeConfig.create({ guildId }).then(res => wlcmConfig = res));
+        if (!utilConfig) creations.push(UtilityConfig.create({ guildId }).then(res => utilConfig = res));
+        if (!fmConfig) creations.push(FiveMConfig.create({ guildId }).then(res => fmConfig = res));
+        if (!twConfig) creations.push(TwitchConfig.create({ guildId }).then(res => twConfig = res));
 
         if (creations.length > 0) {
             await Promise.all(creations);
@@ -77,15 +96,19 @@ router.get('/:guildId', adminCheck, async (req, res) => {
         res.json({
             success: true,
             data: {
-                whitelist: wlConfig,
-                tickets: tkConfig,
-                photoContest: photoConfig,
-                verify: verifyConfig,
+                whitelist: mergeModuleDefaults('whitelist', wlConfig),
+                tickets: mergeModuleDefaults('tickets', tkConfig),
+                photocontest: mergeModuleDefaults('photocontest', photoConfig), // Consistent lowercase key
+                verify: mergeModuleDefaults('verify', verifyConfig),
                 guild: guildData,
                 globalConfig,
-                welcome: wlcmConfig
+                welcome: mergeModuleDefaults('welcome', wlcmConfig),
+                utility: mergeModuleDefaults('utility', utilConfig),
+                fivem: mergeModuleDefaults('fivem', fmConfig),
+                twitch: twConfig
             }
         });
+
     } catch (error) {
         console.error('Error fetching configurations:', error);
         res.status(500).json({ success: false, error: 'Impossibile caricare le impostazioni. Verifica la connessione al database o ricarica la pagina.' });
@@ -102,10 +125,121 @@ router.get('/:guildId/whitelist', adminCheck, async (req, res) => {
             config = await WhitelistConfig.create({ guildId });
         }
         
-        res.json({ success: true, data: config });
+        res.json({ success: true, data: mergeModuleDefaults('whitelist', config) });
     } catch (error) {
         console.error('Error fetching whitelist configuration:', error);
         res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione whitelist' });
+    }
+});
+
+// GET background config
+router.get('/:guildId/background', adminCheck, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        let config = await BackgroundConfig.findOne({ guildId });
+        
+        if (!config) {
+            config = await BackgroundConfig.create({ guildId });
+        }
+        
+        res.json({ success: true, data: mergeModuleDefaults('whitelist', config) }); // Background uses whitelist defaults or its own if we added them
+    } catch (error) {
+        console.error('Error fetching background configuration:', error);
+        res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione background' });
+    }
+});
+
+// POST update background config
+router.post('/:guildId/background', adminCheck, validate(backgroundSchema), async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const data = req.validatedData || req.body;
+
+        if (data._id) delete data._id;
+        if (data.__v !== undefined) delete data.__v;
+
+        const config = await BackgroundConfig.findOneAndUpdate(
+            { guildId },
+            { $set: data },
+            { returnDocument: 'after', upsert: true, runValidators: true }
+        );
+
+        invalidateCache(guildId);
+        await logAudit(req, 'UPDATE_BACKGROUND', data);
+        
+        res.json({ success: true, data: config });
+    } catch (error) {
+        console.error('Error updating background configuration:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// POST send background panel
+router.post('/:guildId/background/send-panel', adminCheck, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const { channelId } = req.body;
+        const config = await BackgroundConfig.findOne({ guildId });
+        
+        const targetChannelId = channelId || config?.panelChannelId;
+        
+        if (!targetChannelId) {
+            return res.status(400).json({ success: false, error: 'Canale non specificato.' });
+        }
+
+        const panelData = config?.embeds?.panel || {
+            title: '📖 Archivio Storico - Deposito Background',
+            description: 'Carica qui la storia del tuo personaggio.',
+            color: '#5865F2'
+        };
+
+        const client = req.discordClient;
+        const guild = await client.guilds.fetch(guildId);
+        const channel = await guild.channels.fetch(targetChannelId);
+
+        if (!channel) {
+            return res.status(404).json({ success: false, error: 'Canale non trovato su Discord.' });
+        }
+
+        const embed = new EmbedBuilder()
+            .setTitle(panelData.title)
+            .setDescription(panelData.description)
+            .setColor(panelData.color === 'primary' ? '#5865F2' : (panelData.color?.startsWith('#') ? panelData.color : '#5865F2'));
+
+        if (panelData.thumbnail) embed.setThumbnail(panelData.thumbnail);
+        if (panelData.image) embed.setImage(panelData.image);
+
+        // Background Submission Button
+        const submitButton = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+                .setCustomId('start_background')
+                .setLabel('Invia Background')
+                .setStyle(ButtonStyle.Primary)
+                .setEmoji('📖')
+        );
+
+        // Purge old panels
+        try {
+            const messages = await channel.messages.fetch({ limit: 20 });
+            const legacy = messages.filter(m => 
+                m.author.id === client.user.id && 
+                m.components.some(row => row.components.some(c => c.customId === 'start_background'))
+            );
+            for (const m of legacy.values()) await m.delete().catch(() => {});
+        } catch (err) {
+            console.error('Purge error:', err);
+        }
+
+        const sentMessage = await channel.send({ embeds: [embed], components: [submitButton] });
+
+        await BackgroundConfig.updateOne({ guildId }, { $set: { panelMessageId: sentMessage.id } });
+
+        invalidateCache(guildId);
+        await logAudit(req, 'SEND_BACKGROUND_PANEL', { channelId: targetChannelId });
+        res.json({ success: true, message: 'Pannello inviato correttamente!' });
+    } catch (error) {
+        console.error('Error sending background panel:', error);
+        res.status(500).json({ success: false, error: 'Errore durante l\'invio del pannello.' });
     }
 });
 
@@ -274,6 +408,18 @@ router.post('/:guildId/whitelist/send-panel', adminCheck, async (req, res) => {
     }
 });
 
+// GET tickets config
+router.get('/:guildId/tickets', adminCheck, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        let config = await TicketConfig.findOne({ guildId });
+        if (!config) config = await TicketConfig.create({ guildId });
+        res.json({ success: true, data: mergeModuleDefaults('tickets', config) });
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione tickets' });
+    }
+});
+
 // POST update tickets config
 router.post('/:guildId/tickets', adminCheck, validate(ticketSchema), async (req, res) => {
     try {
@@ -287,9 +433,21 @@ router.post('/:guildId/tickets', adminCheck, validate(ticketSchema), async (req,
         invalidateCache(guildId);
         await logAudit(req, 'UPDATE_TICKETS', req.validatedData);
         
-        res.json(config);
+        res.json({ success: true, data: config });
     } catch (error) {
-        res.status(500).json({ error: 'Failed to update ticket config' });
+        res.status(500).json({ success: false, error: 'Failed to update ticket config' });
+    }
+});
+
+// GET photo contest config
+router.get('/:guildId/photocontest', adminCheck, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        let config = await PhotoContestConfig.findOne({ guildId });
+        if (!config) config = await PhotoContestConfig.create({ guildId });
+        res.json({ success: true, data: mergeModuleDefaults('photocontest', config) });
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione photocontest' });
     }
 });
 
@@ -306,9 +464,21 @@ router.post('/:guildId/photocontest', adminCheck, validate(photoContestSchema), 
         invalidateCache(guildId);
         await logAudit(req, 'UPDATE_PHOTO_CONTEST', req.validatedData);
         
-        res.json(config);
+        res.json({ success: true, data: config });
     } catch (error) {
-        res.status(500).json({ error: 'Failed to update photo contest config' });
+        res.status(500).json({ success: false, error: 'Failed to update photo contest config' });
+    }
+});
+
+// GET verify config
+router.get('/:guildId/verify', adminCheck, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        let config = await VerifyConfig.findOne({ guildId });
+        if (!config) config = await VerifyConfig.create({ guildId });
+        res.json({ success: true, data: mergeModuleDefaults('verify', config) });
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione verifica' });
     }
 });
 
@@ -463,7 +633,7 @@ router.get('/:guildId/welcome', adminCheck, async (req, res) => {
         const { guildId } = req.params;
         let config = await WelcomeConfig.findOne({ guildId });
         if (!config) config = await WelcomeConfig.create({ guildId });
-        res.json({ success: true, data: config });
+        res.json({ success: true, data: mergeModuleDefaults('welcome', config) });
     } catch (error) {
         console.error('Error fetching welcome config:', error);
         res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione welcome' });
@@ -490,8 +660,121 @@ router.post('/:guildId/welcome', adminCheck, validate(welcomeSchema), async (req
     }
 });
 
+// GET utility config
+router.get('/:guildId/utility', adminCheck, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        let config = await UtilityConfig.findOne({ guildId });
+        if (!config) config = await UtilityConfig.create({ guildId });
+        res.json({ success: true, data: config });
+    } catch (error) {
+        console.error('Error fetching utility config:', error);
+        res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione utility' });
+    }
+});
+
+// POST update utility config
+router.post('/:guildId/utility', adminCheck, validate(utilitySchema), async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const config = await UtilityConfig.findOneAndUpdate(
+            { guildId },
+            { $set: req.validatedData },
+            { returnDocument: 'after', upsert: true }
+        );
+
+        invalidateCache(guildId);
+        await logAudit(req, 'UPDATE_UTILITY', req.validatedData);
+
+        res.json({ success: true, data: config });
+    } catch (error) {
+        console.error('Error updating utility config:', error);
+        res.status(500).json({ success: false, error: 'Errore durante il salvataggio della configurazione utility' });
+    }
+});
+
+// POST quick clear messages
+router.post('/:guildId/utility/clear', adminCheck, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const { channelId, amount } = req.body;
+
+        if (!channelId || !amount) {
+            return res.status(400).json({ success: false, error: 'Canale e quantità sono richiesti.' });
+        }
+
+        const clearAmount = parseInt(amount);
+        if (isNaN(clearAmount) || clearAmount < 1 || clearAmount > 100) {
+            return res.status(400).json({ success: false, error: 'Il numero di messaggi deve essere compreso tra 1 e 100.' });
+        }
+
+        const client = req.discordClient;
+        const guild = await client.guilds.fetch(guildId);
+        const channel = await guild.channels.fetch(channelId);
+
+        if (!channel || ![0, 5].includes(channel.type)) { // Text or Announcement
+            return res.status(404).json({ success: false, error: 'Canale testuale non trovato.' });
+        }
+
+        const deleted = await channel.bulkDelete(clearAmount, true);
+
+        await logAudit(req, 'DASHBOARD_CLEAR', { 
+            channelId, 
+            channelName: channel.name,
+            amount: deleted.size 
+        });
+
+        res.json({ success: true, message: `Eliminati con successo ${deleted.size} messaggi.` });
+    } catch (error) {
+        console.error('Error in dashboard clear:', error);
+        res.status(500).json({ success: false, error: 'Impossibile eliminare i messaggi. Potrebbero essere più vecchi di 14 giorni.' });
+    }
+});
+
+// GET twitch config
+router.get('/:guildId/twitch', adminCheck, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        let config = await TwitchConfig.findOne({ guildId });
+        
+        if (!config) {
+            config = await TwitchConfig.create({ guildId });
+        }
+        
+        res.json({ success: true, data: config });
+    } catch (error) {
+        console.error('Error fetching twitch configuration:', error);
+        res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione twitch' });
+    }
+});
+
+// POST update twitch config
+router.post('/:guildId/twitch', adminCheck, validate(twitchSchema), async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const data = req.validatedData || req.body;
+
+        if (data._id) delete data._id;
+        if (data.__v !== undefined) delete data.__v;
+
+        const config = await TwitchConfig.findOneAndUpdate(
+            { guildId },
+            { $set: data },
+            { returnDocument: 'after', upsert: true, runValidators: true }
+        );
+
+        invalidateCache(guildId);
+        await logAudit(req, 'UPDATE_TWITCH', data);
+        
+        res.json({ success: true, data: config });
+    } catch (error) {
+        console.error('Error updating twitch configuration:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // POST reset module config
-const resetModuleSchema = z.enum(['whitelist', 'tickets', 'photocontest', 'voice', 'verify', 'global', 'welcome']);
+const resetModuleSchema = z.enum(['whitelist', 'tickets', 'photocontest', 'voice', 'verify', 'global', 'welcome', 'utility']);
 
 router.post('/:guildId/reset/:module', adminCheck, async (req, res) => {
     try {
@@ -515,6 +798,8 @@ router.post('/:guildId/reset/:module', adminCheck, async (req, res) => {
             invalidateGlobalCache(guildId);
         } else if (module === 'welcome') {
             await WelcomeConfig.findOneAndDelete({ guildId });
+        } else if (module === 'utility') {
+            await UtilityConfig.findOneAndDelete({ guildId });
         } else if (module === 'voice') {
             const config = await WhitelistConfig.findOne({ guildId });
             if (config) {
@@ -704,7 +989,7 @@ router.get('/:guildId/fivem', adminCheck, async (req, res) => {
         if (!config) {
             config = await FiveMConfig.create({ guildId });
         }
-        res.json({ success: true, data: config });
+        res.json({ success: true, data: mergeModuleDefaults('fivem', config) });
     } catch (error) {
         console.error('Error fetching fivem configuration:', error);
         res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione FiveM' });
@@ -723,7 +1008,7 @@ router.post('/:guildId/fivem', adminCheck, validate(fivemSchema), async (req, re
             { new: true, upsert: true }
         );
 
-        await logAudit(req.user.id, guildId, 'UPDATE_CONFIG_FIVEM', 'FiveM settings updated');
+        await logAudit(req, 'UPDATE_FIVEM', updateData);
         invalidateCache(guildId, 'fivem');
 
         res.json({ success: true, data: config });

@@ -6,6 +6,7 @@ import VoiceQueue from '../../../models/VoiceQueue.js';
 import { buildEmbed } from '../../../utils/embedHelper.js';
 import { updateDashboard, getDashboard } from '../utils/voiceDashboard.js';
 import logger from '../../../utils/logger.js';
+import messageService from '../../../utils/messageService.js';
 
 export default {
     name: Events.InteractionCreate,
@@ -118,12 +119,12 @@ export default {
                 );
 
                 // Notifica Utente
-                if (user && config.embeds.dm_accepted?.enabled) {
-                    const dmEmbed = buildEmbed(config.embeds.dm_accepted, {
+                if (user) {
+                    const embed = await messageService.get(interaction.guild.id, 'voice', 'dm_accepted', {
                         user: user.username,
                         guild: interaction.guild.name
-                    }, config);
-                    if (dmEmbed) await user.send({ embeds: [dmEmbed] }).catch(() => {});
+                    });
+                    await user.send({ embeds: [embed] }).catch(() => {});
                 }
 
                 // --- Role Management ---
@@ -152,10 +153,12 @@ export default {
 
                 await updateDashboard(interaction.guild, client);
                 
-                const successMsg = config.voiceSettings.voiceMessages?.staffApproved || '✅ Whitelist Vocale approvata da {staff}';
-                const finalSuccess = successMsg.replace('{staff}', interaction.user.tag);
+                const replyEmbed = await messageService.get(interaction.guild.id, 'voice', 'staff_approved', {
+                    userId: userId,
+                    staff: interaction.user.tag
+                });
                 
-                return interaction.update({ content: finalSuccess, embeds: [], components: [] });
+                return interaction.update({ embeds: [replyEmbed], components: [], content: null });
             }
 
             if (action === 'deny') {
@@ -190,14 +193,14 @@ export default {
             );
 
             // Notifica Utente (Voice Specific)
-            if (user && config.embeds.dm_voice_rejected?.enabled) {
-                const dmEmbed = buildEmbed(config.embeds.dm_voice_rejected, {
+            if (user) {
+                const embed = await messageService.get(interaction.guild.id, 'voice', 'dm_rejected', {
                     user: user.username,
                     guild: interaction.guild.name,
                     reason: reason,
                     cooldown: config.voiceSettings.rejectionCooldown || 24
-                }, config);
-                if (dmEmbed) await user.send({ embeds: [dmEmbed] }).catch(() => {});
+                });
+                await user.send({ embeds: [embed] }).catch(() => {});
             }
 
             // Log Audit DB
@@ -231,12 +234,13 @@ export default {
             );
 
             await updateDashboard(interaction.guild, client);
-            const rejectMsg = config.voiceSettings.voiceMessages?.staffDenied || '❌ Whitelist Vocale rifiutata da {staff} per: {reason}';
-            const finalReject = rejectMsg
-                .replace('{staff}', interaction.user.tag)
-                .replace('{reason}', reason);
+            const replyEmbed = await messageService.get(interaction.guild.id, 'voice', 'staff_denied', {
+                userId: userId,
+                staff: interaction.user.tag,
+                reason: reason
+            });
             
-            await interaction.update({ content: finalReject, embeds: [], components: [] });
+            await interaction.update({ embeds: [replyEmbed], components: [], content: null });
         }
     },
 };

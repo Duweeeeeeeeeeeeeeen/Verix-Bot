@@ -19,10 +19,25 @@ export default {
                     app.deletionScheduledAt = new Date(Date.now() + 5000);
                     await app.save();
                 }
-                return interaction.reply('Annullamento in corso... Il canale sparirà tra 5 secondi.');
+                const isWL = channel.name.startsWith('wl-');
+                return interaction.reply(`Annullamento in corso... Il ${isWL ? 'ticket' : 'canale'} sparirà tra 5 secondi.`);
             }
 
-            if (customId === 'finalize_bg') {
+            if (customId === 'start_whitelist_from_bg') {
+                // Fetch configs
+                const wlConfig = await (await import('../../../models/WhitelistConfig.js')).default.findOne({ guildId: guild.id });
+                if (!wlConfig) return interaction.reply({ content: 'Configurazione Whitelist non trovata.', flags: [MessageFlags.Ephemeral] });
+
+                const { startWrittenSession } = await import('../../whitelist/utils/sessionHandler.js');
+                
+                await interaction.reply({ content: '🚀 Inizializzazione test scritto in corso...', flags: [MessageFlags.Ephemeral] });
+                await startWrittenSession(interaction, channel, wlConfig);
+                
+                // Remove the start button message to keep the channel clean
+                return interaction.message.delete().catch(() => {});
+            }
+            
+            if (customId === 'finalize_bg' || customId === 'submit_background') {
                 const modal = new ModalBuilder()
                     .setCustomId('submit_bg_modal')
                     .setTitle('Dettagli Background');
@@ -111,10 +126,24 @@ export default {
                     if (dmEmbed) await interaction.user.send({ embeds: [dmEmbed] }).catch(() => {});
                 }
 
-                app.deletionScheduledAt = new Date(Date.now() + 10000);
-                await app.save();
-                
-                await interaction.reply('✅ Background inviato con successo! Il canale si chiuderà tra 10 secondi.');
+                // Conditional deletion if NOT integrated
+                const isIntegrated = interaction.channel.name.startsWith('wl-');
+                if (!isIntegrated) {
+                    app.deletionScheduledAt = new Date(Date.now() + 10000);
+                    await app.save();
+                    await interaction.reply('✅ Background inviato con successo! Il canale si chiuderà tra 10 secondi.');
+                } else {
+                    // Update WhitelistApp status for integrated flow
+                    const wlApp = await (await import('../../../models/WhitelistApp.js')).default.findOne({ 
+                        channelId: interaction.channel.id, 
+                        status: 'WAITING_BACKGROUND' 
+                    });
+                    if (wlApp) {
+                        wlApp.status = 'SUBMITTED_BACKGROUND';
+                        await wlApp.save();
+                    }
+                    await interaction.reply('✅ **Dossier sottomesso!** La commissione revisionerà la tua storia. Attendi l\'esito qui per procedere con il test.');
+                }
 
             } catch (error) {
                 logger.error('Error in BG Modal Submit:', error);
