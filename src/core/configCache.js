@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { registry } from './moduleRegistry.js';
 import logger from '../utils/logger.js';
 
@@ -13,6 +14,7 @@ const TTL = 300000; // Increase TTL to 5 minutes now that we have invalidation
  */
 export async function getModuleConfig(guildId, moduleName) {
     if (moduleName === 'admin') return { enabled: true };
+    if (mongoose.connection.readyState !== 1) return { enabled: true }; // Default to true if DB is down to avoid blocking core events
 
     const cacheKey = `${guildId}:${moduleName}`;
     const now = Date.now();

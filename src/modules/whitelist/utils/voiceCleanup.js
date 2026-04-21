@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { ChannelType } from 'discord.js';
 import WhitelistConfig from '../../../models/WhitelistConfig.js';
 import VoiceQueue from '../../../models/VoiceQueue.js';
@@ -9,6 +10,7 @@ import logger from '../../../utils/logger.js';
  * @param {import('discord.js').Client} client 
  */
 export async function initVoiceCleanup(client) {
+    if (mongoose.connection.readyState !== 1) return;
     logger.info('[VoiceCleanup] Starting startup cleanup scan...');
 
     try {

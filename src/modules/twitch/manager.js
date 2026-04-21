@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import TwitchConfig from '../../models/TwitchConfig.js';
 import { getStreams, getThumbnailUrl } from '../../utils/twitchHelper.js';
 import { EmbedBuilder } from 'discord.js';
@@ -23,6 +24,10 @@ export class TwitchManager {
     }
 
     async checkStreamers() {
+        if (mongoose.connection.readyState !== 1) {
+            logger.warn('[Twitch] Skipping checkStreamers: Database not connected.');
+            return;
+        }
         try {
             const configs = await TwitchConfig.find({ enabled: true });
             if (!configs.length) return;

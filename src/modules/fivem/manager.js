@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 import fetch from 'node-fetch';
 import FiveMConfig from '../../models/FiveMConfig.js';
@@ -23,6 +24,7 @@ export class FiveMManager {
     }
 
     async checkServers() {
+        if (mongoose.connection.readyState !== 1) return;
         try {
             // Find configurazioni che hanno ALMENO un server impostato
             const configs = await FiveMConfig.find({ enabled: true, "servers.0": { "$exists": true } });

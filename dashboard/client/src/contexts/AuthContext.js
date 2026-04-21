@@ -8,7 +8,7 @@ export function AuthProvider({ children }) {
 
   const fetchUser = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/auth/user', {
+      const res = await fetch('http://localhost:5001/api/auth/user', {
         headers: { 'Accept': 'application/json' },
         credentials: 'include'
       });
@@ -30,11 +30,11 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = () => {
-    window.location.href = 'http://localhost:5000/api/auth/login';
+    window.location.href = 'http://localhost:5001/api/auth/login';
   };
 
   const logout = async () => {
-    await fetch('http://localhost:5000/api/auth/logout', { credentials: 'include' });
+    await fetch('http://localhost:5001/api/auth/logout', { credentials: 'include' });
     setUser(null);
     window.location.href = '/';
   };

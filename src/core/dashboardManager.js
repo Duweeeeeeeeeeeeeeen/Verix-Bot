@@ -20,7 +20,7 @@ import managementRoutes from '../../dashboard/api/routes/management.js';
  */
 export function startDashboard(client) {
     const app = express();
-    const PORT = process.env.DASHBOARD_API_PORT || 5000;
+    const PORT = process.env.DASHBOARD_API_PORT || process.env.PORT || 5001;
 
     // 1. Passport Setup with client context
     passport.serializeUser((user, done) => done(null, user));
@@ -59,8 +59,7 @@ export function startDashboard(client) {
         process.env.DASHBOARD_FRONTEND_URL || 'http://localhost:3000',
         'http://localhost:3000',
         'http://localhost:3001',
-        'http://localhost:3000',
-        'http://localhost:3001'
+        'http://localhost:5173'
     ];
 
     app.use(cors({ 

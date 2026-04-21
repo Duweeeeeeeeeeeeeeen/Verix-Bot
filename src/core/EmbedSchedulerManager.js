@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import ScheduledEmbed from '../models/ScheduledEmbed.js';
 import { EmbedBuilder } from 'discord.js';
 import logger from '../utils/logger.js';
@@ -20,6 +21,7 @@ class EmbedSchedulerManager {
     }
 
     async check() {
+        if (mongoose.connection.readyState !== 1) return;
         try {
             const now = new Date();
             const pending = await ScheduledEmbed.find({

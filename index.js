@@ -42,8 +42,10 @@ const init = async () => {
             });
             logger.db('Successfully connected to MongoDB.');
         } catch (error) {
-            logger.error('Failed to connect to MongoDB. Check your Atlas IP Whitelist:', error.message);
-            // Optionally disable features that depend on DB
+            logger.error('Failed to connect to MongoDB. This is likely an IP Whitelist issue or incorrect credentials.');
+            logger.error('Error details:', error.message);
+            // We set this to true specifically to avoid the MongooseError throw on first connection failure
+            // but we'll manually check connection in managers.
             process.env.DB_CONNECTED = 'false';
         }
     } else {

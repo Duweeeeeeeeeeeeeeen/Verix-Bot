@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import WhitelistApp from '../models/WhitelistApp.js';
 import Ticket from '../models/Ticket.js';
 import VoiceQueue from '../models/VoiceQueue.js';
@@ -22,6 +23,7 @@ class CleanupManager {
     }
 
     async run() {
+        if (mongoose.connection.readyState !== 1) return;
         const now = new Date();
         try {
             await Promise.all([

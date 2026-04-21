@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, PermissionFlagsBits } from 'discord.js';
 import PhotoContestConfig from '../../models/PhotoContestConfig.js';
 import PhotoContest from '../../models/PhotoContest.js';
@@ -24,6 +25,7 @@ export class PhotoContestManager {
      * Main periodic check logic.
      */
     async checkContests() {
+        if (mongoose.connection.readyState !== 1) return;
         try {
             const configs = await PhotoContestConfig.find({ enabled: true });
 
