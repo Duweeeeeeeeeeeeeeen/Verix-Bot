@@ -64,6 +64,7 @@ export default function Layout({ children, guildId }) {
     { name: 'Tickets', icon: Ticket, path: `/config/${guildId}/tickets` },
     { name: 'Photo Contest', icon: Camera, path: `/config/${guildId}/photocontest` },
     { name: 'FiveM', icon: Globe, path: `/config/${guildId}/fivem` },
+    { name: 'Log & Gestione', icon: History, path: `/config/${guildId}/management` },
     { name: 'Embed Suite', icon: LayoutIcon, path: `/config/${guildId}/embeds` },
     { name: 'Utility', icon: Cpu, path: `/config/${guildId}/utility` },
   ];

@@ -175,7 +175,7 @@ export default function VerifyConfig() {
                         </div>
                     </div>
                     <label className="toggle">
-                        <input type="checkbox" checked={config.enabled} onChange={(e) => setConfig({...config, enabled: e.target.checked})} />
+                        <input type="checkbox" checked={!!config.enabled} onChange={(e) => setConfig({...config, enabled: e.target.checked})} />
                         <span className="slider"></span>
                     </label>
                 </div>
@@ -215,11 +215,11 @@ export default function VerifyConfig() {
                              <div className="toggle-list-v">
                                 <div className="toggle-row-v">
                                     <span>Notifica DM Utente</span>
-                                    <label className="toggle"><input type="checkbox" checked={config.dmEnabled} onChange={e => setNested('dmEnabled', e.target.checked)} /><span className="slider"></span></label>
+                                    <label className="toggle"><input type="checkbox" checked={!!config.dmEnabled} onChange={e => setNested('dmEnabled', e.target.checked)} /><span className="slider"></span></label>
                                 </div>
                                 <div className="toggle-row-v">
                                     <span>Log Amministrazione</span>
-                                    <label className="toggle"><input type="checkbox" checked={config.logEnabled} onChange={e => setNested('logEnabled', e.target.checked)} /><span className="slider"></span></label>
+                                    <label className="toggle"><input type="checkbox" checked={!!config.logEnabled} onChange={e => setNested('logEnabled', e.target.checked)} /><span className="slider"></span></label>
                                 </div>
                              </div>
                         </div>

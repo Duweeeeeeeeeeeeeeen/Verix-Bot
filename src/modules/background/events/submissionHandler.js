@@ -1,17 +1,18 @@
-import { ActionRowBuilder, Events, MessageFlags, ModalBuilder, TextInputBuilder, TextInputStyle } from 'discord.js';
+import { ActionRowBuilder, Events, MessageFlags, ModalBuilder, TextInputBuilder, TextInputStyle, ButtonBuilder, ButtonStyle } from 'discord.js';
 import Background from '../../../models/Background.js';
 import BackgroundConfig from '../../../models/BackgroundConfig.js';
+import WhitelistApp from '../../../models/WhitelistApp.js';
+import WhitelistConfig from '../../../models/WhitelistConfig.js';
 import User from '../../../models/User.js';
 import { buildEmbed } from '../../../utils/embedHelper.js';
 import logger from '../../../utils/logger.js';
-import { ButtonBuilder, ButtonStyle } from 'discord.js';
 
 export default {
     name: Events.InteractionCreate,
     async execute(interaction, client) {
-        // Handle Buttonfinalize_bg & cancel_bg
+        // Handle Buttons
         if (interaction.isButton()) {
-            const { customId, channel, user, guild } = interaction;
+            const { customId, channel } = interaction;
 
             if (customId === 'cancel_bg') {
                 const app = await Background.findOne({ channelId: channel.id });
@@ -24,8 +25,7 @@ export default {
             }
 
             if (customId === 'start_whitelist_from_bg') {
-                // Fetch configs
-                const wlConfig = await (await import('../../../models/WhitelistConfig.js')).default.findOne({ guildId: guild.id });
+                const wlConfig = await WhitelistConfig.findOne({ guildId: interaction.guild.id });
                 if (!wlConfig) return interaction.reply({ content: 'Configurazione Whitelist non trovata.', flags: [MessageFlags.Ephemeral] });
 
                 const { startWrittenSession } = await import('../../whitelist/utils/sessionHandler.js');
@@ -33,7 +33,6 @@ export default {
                 await interaction.reply({ content: '🚀 Inizializzazione test scritto in corso...', flags: [MessageFlags.Ephemeral] });
                 await startWrittenSession(interaction, channel, wlConfig);
                 
-                // Remove the start button message to keep the channel clean
                 return interaction.message.delete().catch(() => {});
             }
             
@@ -72,10 +71,13 @@ export default {
             const desc = interaction.fields.getTextInputValue('bg_desc');
 
             try {
-                const app = await Background.findOne({ channelId: interaction.channelId });
-                if (!app) return interaction.reply({ content: 'Sessione non trovata.', flags: [MessageFlags.Ephemeral] });
+                // Immediate fetch of essential data
+                const [app, config] = await Promise.all([
+                    Background.findOne({ channelId: interaction.channelId }),
+                    BackgroundConfig.findOne({ guildId: interaction.guild.id })
+                ]);
 
-                const config = await BackgroundConfig.findOne({ guildId: interaction.guild.id });
+                if (!app) return interaction.reply({ content: 'Sessione non trovata.', flags: [MessageFlags.Ephemeral] });
                 if (!config) return interaction.reply({ content: 'Configurazione non trovata.', flags: [MessageFlags.Ephemeral] });
 
                 const logChannel = interaction.guild.channels.cache.get(config.logChannelId);
@@ -88,12 +90,8 @@ export default {
                 app.submittedAt = new Date();
                 await app.save();
 
-                // Update User Cooldown
-                const userData = await User.findOne({ discordId: interaction.user.id });
-                if (userData) {
-                    userData.lastBackgroundAttempt = new Date();
-                    await userData.save();
-                }
+                // Update User Cooldown (Non-blocking)
+                User.updateOne({ discordId: interaction.user.id }, { lastBackgroundAttempt: new Date() }).catch(err => logger.warn(`[BG] Failed to update user cooldown: ${err.message}`));
 
                 // Send to Staff
                 const staffEmbed = buildEmbed(config.embeds.staff_received, {
@@ -115,39 +113,41 @@ export default {
                 );
 
                 const pings = (config.staffRoleIds || []).map(id => `<@&${id}>`).join(' ');
-                await logChannel.send({ content: pings, embeds: [staffEmbed], components: [row] });
+                
+                // Finalize based on integration
+                const isIntegrated = interaction.channel.name.startsWith('wl-');
+                
+                if (isIntegrated) {
+                    // Update WhitelistApp status for integrated flow
+                    await WhitelistApp.updateOne(
+                        { channelId: interaction.channel.id, status: 'WAITING_BACKGROUND' },
+                        { status: 'SUBMITTED_BACKGROUND' }
+                    );
+                    
+                    // Reply first to ensure modal closes and user sees success
+                    await interaction.reply('✅ **Dossier sottomesso!** Lo staff revisionerà la tua storia. Attendi l\'esito qui per procedere.');
+                } else {
+                    app.deletionScheduledAt = new Date(Date.now() + 10000);
+                    await app.save();
+                    await interaction.reply('✅ Background inviato con successo! Il canale si chiuderà tra 10 secondi.');
+                }
 
-                // Send DM to User
+                // Send long-running tasks after the interaction is acknowledged
+                await logChannel.send({ content: pings, embeds: [staffEmbed], components: [row] }).catch(err => logger.error('[BG] Failed to send log to staff:', err));
+
                 if (config.embeds.dm_received) {
                     const dmEmbed = buildEmbed(config.embeds.dm_received, {
                         user: interaction.user.username,
                         guild: interaction.guild.name
                     }, config);
-                    if (dmEmbed) await interaction.user.send({ embeds: [dmEmbed] }).catch(() => {});
-                }
-
-                // Conditional deletion if NOT integrated
-                const isIntegrated = interaction.channel.name.startsWith('wl-');
-                if (!isIntegrated) {
-                    app.deletionScheduledAt = new Date(Date.now() + 10000);
-                    await app.save();
-                    await interaction.reply('✅ Background inviato con successo! Il canale si chiuderà tra 10 secondi.');
-                } else {
-                    // Update WhitelistApp status for integrated flow
-                    const wlApp = await (await import('../../../models/WhitelistApp.js')).default.findOne({ 
-                        channelId: interaction.channel.id, 
-                        status: 'WAITING_BACKGROUND' 
-                    });
-                    if (wlApp) {
-                        wlApp.status = 'SUBMITTED_BACKGROUND';
-                        await wlApp.save();
-                    }
-                    await interaction.reply('✅ **Dossier sottomesso!** La commissione revisionerà la tua storia. Attendi l\'esito qui per procedere con il test.');
+                    if (dmEmbed) interaction.user.send({ embeds: [dmEmbed] }).catch(() => {});
                 }
 
             } catch (error) {
                 logger.error('Error in BG Modal Submit:', error);
-                await interaction.reply({ content: 'Si è verificato un errore durante l\'invio.', flags: [MessageFlags.Ephemeral] });
+                if (!interaction.replied && !interaction.deferred) {
+                    await interaction.reply({ content: 'Si è verificato un errore durante l\'invio.', flags: [MessageFlags.Ephemeral] });
+                }
             }
         }
     },

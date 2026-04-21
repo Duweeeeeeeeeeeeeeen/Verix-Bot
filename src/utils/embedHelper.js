@@ -56,7 +56,7 @@ export function buildEmbed(embedConfig, placeholders = {}, fullConfig = {}) {
 }
 
 /**
- * Sostituisce i placeholder in una stringa.
+ * Sostituisce i placeholder in una stringa in modo robusto.
  * @param {string} text 
  * @param {Object} placeholders 
  * @returns {string}
@@ -64,32 +64,60 @@ export function buildEmbed(embedConfig, placeholders = {}, fullConfig = {}) {
 export function replacePlaceholders(text, placeholders) {
     if (!text) return '';
     
-    // Mapping of available variables
+    // 1. Prepare raw variables map with standard shortcuts
     const vars = {
-        guild: placeholders.guild || '',
-        user: placeholders.user || '',
-        user_id: placeholders.user_id || '',
+        guild: placeholders.guild?.name || placeholders.guild || '',
+        user: placeholders.user?.toString() || placeholders.user || '',
+        user_tag: placeholders.user?.tag || placeholders.user?.user?.tag || placeholders.user || '',
+        user_name: placeholders.user?.username || placeholders.user?.user?.username || placeholders.user || '',
+        user_id: placeholders.user?.id || placeholders.user_id || '',
+        
+        staff: placeholders.staff?.toString() || placeholders.staff || '',
+        staff_tag: placeholders.staff?.tag || placeholders.staff?.user?.tag || placeholders.staff || '',
+        staff_name: placeholders.staff?.username || placeholders.staff?.user?.username || placeholders.staff || '',
+        
+        // Dynamic Resolution: map any snake_case <-> camelCase variant provided
         question: placeholders.question || '',
         answer: placeholders.answer || '',
         reason: placeholders.reason || '',
-        time_left: placeholders.time_left || '',
-        time_limit: placeholders.time_limit || '',
-        total_questions: placeholders.total_questions || '',
-        current_index: placeholders.current_index || '',
-        min_length: placeholders.min_length || '',
-        app_id: placeholders.app_id || '',
-        staff: placeholders.staff || '',
-        bg_link: placeholders.bg_link || '',
-        bg_desc: placeholders.bg_desc || '',
-        bg_attachment: placeholders.bg_attachment || '',
-        voice_channel: placeholders.voice_channel || '',
-        server: placeholders.server || '',
-        players: placeholders.players || '',
-        maxPlayers: placeholders.maxPlayers || '',
-        recap: placeholders.recap || '',
-        cooldown: placeholders.cooldown || '',
-        checklist: placeholders.checklist || ''
+        app_id: placeholders.app_id || placeholders.appId || '',
+        
+        // Time & Counts (Handles 0 correctly)
+        time_left: placeholders.time_left ?? placeholders.timeLeft ?? '',
+        time_limit: placeholders.time_limit ?? placeholders.timeLimit ?? '',
+        total_questions: placeholders.total_questions ?? placeholders.totalQuestions ?? '',
+        current_index: placeholders.current_index ?? placeholders.currentIndex ?? '',
+        min_length: placeholders.min_length ?? placeholders.minLength ?? '',
+        next_attempt: placeholders.next_attempt ?? placeholders.nextAttempt ?? '',
+        cooldown: placeholders.cooldown ?? '',
+        
+        // Others
+        bg_link: placeholders.bg_link ?? placeholders.bgLink ?? '',
+        bg_desc: placeholders.bg_desc ?? placeholders.bgDesc ?? '',
+        bg_attachment: placeholders.bg_attachment ?? '',
+        voice_channel: placeholders.voice_channel ?? placeholders.voiceChannel ?? '',
+        server: placeholders.server ?? '',
+        players: placeholders.players ?? '',
+        maxPlayers: placeholders.maxPlayers ?? '',
+        recap: placeholders.recap ?? '',
+        checklist: placeholders.checklist ?? ''
     };
 
-    return placeholderHelper.replace(text, vars);
+    // 2. Dual-mapping: For every key in vars, also add its alternative case version
+    // This ensures {minLength} works even if we internally defined it as min_length
+    const expandedVars = { ...vars };
+    for (const [key, value] of Object.entries(vars)) {
+        // Convert snake_to_camel
+        if (key.includes('_')) {
+            const camelKey = key.replace(/([-_][a-z])/g, group => group.toUpperCase().replace('-', '').replace('_', ''));
+            if (!(camelKey in expandedVars)) expandedVars[camelKey] = value;
+        } 
+        // Convert camelToSnake
+        else {
+            const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+            if (!(snakeKey in expandedVars)) expandedVars[snakeKey] = value;
+        }
+    }
+
+    return placeholderHelper.replace(text, expandedVars);
 }

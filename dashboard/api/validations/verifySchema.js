@@ -27,4 +27,4 @@ export const verifySchema = z.object({
     }).optional(),
     dmEnabled: z.boolean().optional(),
     logEnabled: z.boolean().optional()
-});
+}).passthrough();

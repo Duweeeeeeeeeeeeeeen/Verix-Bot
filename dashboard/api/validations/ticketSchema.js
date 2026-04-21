@@ -52,8 +52,8 @@ export const ticketSchema = z.object({
     buttons: z.object({
         claim: z.object({ label: z.string(), emoji: z.string(), style: z.string() }).partial().optional(),
         close: z.object({ label: z.string(), emoji: z.string(), style: z.string() }).partial().optional(),
-        quickReply: z.object({ label: z.string(), emoji: z.string(), style: z.string() }).partial().optional(),
-        tag: z.object({ label: z.string(), emoji: z.string(), style: z.string() }).partial().optional(),
-        transcript: z.object({ label: z.string(), emoji: z.string(), style: z.string() }).partial().optional()
-    }).partial().optional().nullable()
-});
+        quickReply: z.object({ label: z.string(), emoji: z.string(), style: z.string() }).partial().passthrough().optional(),
+        tag: z.object({ label: z.string(), emoji: z.string(), style: z.string() }).partial().passthrough().optional(),
+        transcript: z.object({ label: z.string(), emoji: z.string(), style: z.string() }).partial().passthrough().optional()
+    }).partial().passthrough().optional().nullable()
+}).passthrough();

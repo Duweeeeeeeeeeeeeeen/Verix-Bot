@@ -80,13 +80,76 @@ export default {
         },
         session_completed: {
             title: '📝 Colloquio Trascritto',
-            description: 'Hai risposto a tutte le domande del colloquio. Lo staff analizzerà la tua candidatura a breve.\n\nControlla le tue risposte qui sopra e usa i pulsanti per confermare o annullare\'invio.',
+            description: 'Hai risposto a tutte le domande del colloquio. Lo staff analizzerà la tua candidatura a breve.\n\nControlla le tue risposte qui sopra e usa i pulsanti per confermare o annullare l\'invio.',
             color: '#3498db'
         },
         min_length_error: {
-            title: '⚠️ Dettaglio Insufficiente',
+            title: '⚠️ Dettagli Insufficienti',
             description: 'La tua risposta deve contenere almeno **{minLength}** caratteri per essere considerata valida. Prova a spiegarti un po\' meglio.',
             color: '#f1c40f'
+        },
+        dm_accepted: {
+            title: '✅ Idoneità Confermata',
+            description: 'Congratulazioni cittadino! La tua candidatura presso **{guild}** è stata approvata dalla Commissione.\n\nOra puoi accedere ai canali ufficiali e iniziare la tua esperienza.',
+            color: '#2ecc71'
+        },
+        dm_rejected: {
+            title: '❌ Esito Negativo',
+            description: 'Spiacente, ma la valutazione del tuo dossier presso **{guild}** non ha dato esito positivo.\n\n**MOTIVAZIONE:**\n{reason}\n\nPotrai riprovare a presentare una nuova istanza dopo il periodo di cooldown.',
+            color: '#e74c3c'
+        },
+        dm_voice_rejected: {
+            title: '⚠️ Protocollo Orale Respinto',
+            description: 'Non hai superato la valutazione orale presso **{guild}**. Ti invitiamo a ripassare i protocolli cittadini prima di ripresentarti.',
+            color: '#e74c3c'
+        },
+        voice_guide: {
+            title: '🎙️ Guida Colloquio Orale',
+            description: 'Stai per esaminare l\'utente **<@{userId}>**.\n\n**PROCEDURA:**\n1. Sposta l\'utente in un canale vocale.\n2. Verifica la qualità del microfono.\n3. Procedi con le domande di rito.\n4. Usa i pulsanti qui sotto per registrare l\'esito finale.',
+            color: '#3498db'
+        },
+        voice_waiting: {
+            title: '⏳ Sala d\'Attesa: Colloquio Orale',
+            description: 'Il tuo dossier scritto è stato approvato! Ti trovi ora nella lista d\'attesa per il colloquio orale.\n\nUn esaminatore ti contatterà non appena sarà disponibile. Resta sintonizzato.',
+            color: '#f1c40f'
+        }
+    },
+    background: {
+        panel: {
+            title: '📜 Archivio Storico - Deposito Background',
+            description: 'Inizia la stesura della storia del tuo personaggio per ottenere l\'approvazione definitiva del background.\n\nClicca il pulsante qui sotto per avviare il protocollo di deposito.',
+            color: '#5865f2',
+            footer: 'Ufficio Anagrafe | Verix RP'
+        },
+        instructions: {
+            title: '✍️ Redazione Background',
+            description: 'Stai iniziando la stesura del tuo background. Assicurati di descrivere accuratamente le origini e le ambizioni del tuo personaggio.\n\n**REQUISITI:**\n• Coerenza con il setting della città.\n• Rispetto delle linee guida narrative.',
+            color: '#3498db'
+        },
+        dm_accepted: {
+            title: '📜 Background Approvato',
+            description: 'Il tuo background è stato ufficialmente depositato negli archivi di **{guild}**. La tua storia è ora parte integrante della città.',
+            color: '#2ecc71'
+        },
+        dm_rejected: {
+            title: '⚠️ Revisione Testuale Richiesta',
+            description: 'La tua proposta di background per **{guild}** è stata respinta o richiede revisioni.\n\n**NOTE DELLO STAFF:**\n{reason}',
+            color: '#e74c3c'
+        },
+        staff_received: {
+            title: '📑 Nuovo Background Ricevuto',
+            description: 'L\'utente **<@{userId}>** ha inviato il proprio background per la revisione.\n\nUtilizza i comandi staff per visualizzare ed approvare la bozza.',
+            color: '#3498db'
+        },
+        integrated_accepted: {
+            title: '✅ Dossier Integrato Approvato',
+            description: 'Sia il tuo dossier che il tuo background sono stati approvati. Benvenuto ufficialmente tra noi!',
+            color: '#2ecc71'
+        },
+        integrated_rejected: {
+            title: '❌ Dossier Integrato Respinto',
+            description: 'Purtroppo la combinazione dei tuoi documenti non ha soddisfatto i requisiti minimi di **{guild}**.',
+            color: '#e74c3c'
         }
     },
     tickets: {
@@ -107,14 +170,19 @@ export default {
             color: '#E74C3C'
         },
         already_claimed: {
-            title: '🙋‍♂️ Ufficio Già Preso in Carico',
-            description: 'Questa pratica è già gestita dall\'ufficiale <@${assignedStaffId}>.',
+            title: '🙋‍♂️ Segnalazione Presa in Carico',
+            description: 'Questa pratica è già sotto la supervisione dell\'operatore **<@{assignedStaffId}>**.',
             color: '#f1c40f'
         },
         status_updated: {
             title: '🔄 Protocollo Aggiornato',
-            description: 'La pratica è stata impostata ufficialmente sullo stato: **{status}**.',
+            description: 'Lo stato della pratica è stato impostato ufficialmente su: **{status}**.',
             color: '#3498db'
+        },
+        cannot_close: {
+            title: '⚠️ Chiusura Negata',
+            description: 'Non è stato possibile archiviare la pratica. Assicurati che tutti i protocolli operativi siano stati conclusi.',
+            color: '#e74c3c'
         },
         default_welcome: {
             title: '🎫 Richiesta di Supporto',
@@ -131,6 +199,11 @@ export default {
         success: {
             title: '✅ Identità Confermata',
             description: 'Ottime notizie cittadino! La tua registrazione presso **{guild}** è andata a buon fine.',
+            color: '#2ecc71'
+        },
+        dm: {
+            title: '🎊 Benvenuto nel Server',
+            description: 'Ti sei verificato correttamente su **{guild}**. Ora hai accesso completo alle funzionalità del server!',
             color: '#2ecc71'
         }
     },
@@ -171,11 +244,51 @@ export default {
         }
     },
     photocontest: {
-        panel: {
+        embedSettings: {
             title: '🖼️ Galleria d\'Arte: Esposizione Fotografica',
             description: 'La città è alla ricerca di scorci unici. Cattura un momento memorabile e depositalo in questa galleria per partecipare al concorso cittadino.',
             color: '#F39C12',
             footer: 'Dipartimento Cultura | Verix RP'
+        },
+        entry_not_found: {
+            title: '❌ Opera Non Trovata',
+            description: 'Spiacente, ma questa fotografia sembra essere stata rimossa dall\'esposizione durante il processo di votazione.',
+            color: '#e74c3c'
+        },
+        self_vote_error: {
+            title: '⚖️ Conflitto d\'Interesse',
+            description: 'I regolamenti cittadini impediscono di votare la propria opera d\'arte. Lascia che siano gli altri a giudicare il tuo talento!',
+            color: '#f1c40f'
+        },
+        themesList: ['Natura', 'Architettura', 'Tramonti', 'Cibo', 'Minimalismo', 'Cyberpunk', 'Ritratti', 'Animali']
+    },
+    twitch: {
+        stream_online: {
+            title: '🎥 Canale in Live: {streamer}',
+            description: 'Sintonizzati ora! **{streamer}** ha appena iniziato una trasmissione.\n\n📺 **Titolo:** {title}\n🎮 **Categoria:** {game}',
+            color: '#a970ff'
+        }
+    },
+    voice: {
+        dm_accepted: {
+            title: '✅ Idoneità Confermata',
+            description: 'Congratulazioni cittadino! Hai superato con successo il colloquio orale presso **{guild}**.',
+            color: '#2ecc71'
+        },
+        dm_rejected: {
+            title: '❌ Esito Negativo',
+            description: 'Spiacente, ma la valutazione del tuo colloquio presso **{guild}** non è stata favorevole.\n\n**MOTIVAZIONE:**\n{reason}\n\nPotrai riprovare tra **{cooldown}**.',
+            color: '#e74c3c'
+        },
+        staff_approved: {
+            title: '📝 Log Valutazione: APPROVATO',
+            description: 'L\'utente **<@{userId}>** è stato dichiarato idoneo da **{staff}**.',
+            color: '#2ecc71'
+        },
+        staff_denied: {
+            title: '📝 Log Valutazione: RESPINTO',
+            description: 'L\'utente **<@{userId}>** è stato respinto da **{staff}**.\n\n**Motivo:** {reason}',
+            color: '#e74c3c'
         }
     }
 };

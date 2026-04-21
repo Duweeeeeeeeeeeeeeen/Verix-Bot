@@ -137,7 +137,7 @@ export default function WelcomeConfig() {
                         </div>
                     </div>
                     <label className="toggle">
-                        <input type="checkbox" checked={config.enabled} onChange={(e) => setConfig({...config, enabled: e.target.checked})} />
+                        <input type="checkbox" checked={!!config.enabled} onChange={(e) => setConfig({...config, enabled: e.target.checked})} />
                         <span className="slider"></span>
                     </label>
                 </div>
@@ -150,13 +150,13 @@ export default function WelcomeConfig() {
                                 <h3>Canali Welcome</h3>
                             </div>
                             <label className="toggle">
-                                <input type="checkbox" checked={config.welcome.enabled} onChange={e => updateMessageConfig('welcome', 'enabled', e.target.checked)} />
+                                <input type="checkbox" checked={!!config.welcome?.enabled} onChange={e => updateMessageConfig('welcome', 'enabled', e.target.checked)} />
                                 <span className="slider"></span>
                             </label>
                         </div>
                         <div className="field-box" style={{ marginTop: '20px' }}>
                             <label className="text-label">Target Channel</label>
-                            <DiscordSelector type="channel" options={discordData.channels} value={config.welcome.channelId} onChange={v => updateMessageConfig('welcome', 'channelId', v)} />
+                            <DiscordSelector type="channel" options={discordData.channels} value={config.welcome?.channelId || ''} onChange={v => updateMessageConfig('welcome', 'channelId', v)} />
                         </div>
                     </section>
 
@@ -167,13 +167,13 @@ export default function WelcomeConfig() {
                                 <h3>Canali Leave</h3>
                             </div>
                             <label className="toggle">
-                                <input type="checkbox" checked={config.leave.enabled} onChange={e => updateMessageConfig('leave', 'enabled', e.target.checked)} />
+                                <input type="checkbox" checked={!!config.leave?.enabled} onChange={e => updateMessageConfig('leave', 'enabled', e.target.checked)} />
                                 <span className="slider"></span>
                             </label>
                         </div>
                         <div className="field-box" style={{ marginTop: '20px' }}>
                             <label className="text-label">Target Channel</label>
-                            <DiscordSelector type="channel" options={discordData.channels} value={config.leave.channelId} onChange={v => updateMessageConfig('leave', 'channelId', v)} />
+                            <DiscordSelector type="channel" options={discordData.channels} value={config.leave?.channelId || ''} onChange={v => updateMessageConfig('leave', 'channelId', v)} />
                         </div>
                     </section>
                 </div>

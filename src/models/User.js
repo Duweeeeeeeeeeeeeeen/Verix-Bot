@@ -36,6 +36,10 @@ const userSchema = new mongoose.Schema({
         type: Date,
         default: null
     },
+    lastBackgroundAttempt: {
+        type: Date,
+        default: null
+    },
     photoWins: {
         type: Number,
         default: 0

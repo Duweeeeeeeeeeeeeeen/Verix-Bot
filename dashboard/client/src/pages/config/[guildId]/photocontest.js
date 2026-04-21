@@ -35,15 +35,39 @@ export default function PhotoContestConfig() {
         api.request(`/config/${guildId}`),
         api.request(`/config/${guildId}/discord-data`)
       ]).then(([configRes, discordRes]) => {
-        let moduleConfig = configRes?.data?.photoContest || configRes?.photoContest || {};
+        let moduleConfig = configRes?.photoContest || configRes || {};
         
+        // --- SUPER AGGRESSIVE FALLBACK ---
+        if (!moduleConfig.embedSettings) moduleConfig.embedSettings = {};
+        
+        const defaultTitle = '🖼️ Galleria d\'Arte: Esposizione Fotografica';
+        const defaultDesc = 'La città è alla ricerca di scorci unici. Cattura un momento memorabile e depositalo in questa galleria per partecipare al concorso cittadino.';
+        
+        if (!moduleConfig.embedSettings.title || moduleConfig.embedSettings.title.trim() === '') {
+            moduleConfig.embedSettings.title = defaultTitle;
+        }
+        if (!moduleConfig.embedSettings.description || moduleConfig.embedSettings.description.trim() === '') {
+            moduleConfig.embedSettings.description = defaultDesc;
+        }
+        if (!moduleConfig.embedSettings.color) {
+            moduleConfig.embedSettings.color = '#F39C12';
+        }
+        
+        if (!moduleConfig.themesList || moduleConfig.themesList.length === 0) {
+            moduleConfig.themesList = ['Natura', 'Architettura', 'Tramonti', 'Cibo', 'Minimalismo', 'Cyberpunk', 'Ritratti', 'Animali'];
+        }
+        // ---------------------------------
+
         setConfig(moduleConfig);
-        const dData = discordRes?.data || discordRes || {};
+        const dData = discordRes || {};
         setRoles(dData.roles || []);
         setChannels(dData.channels || []);
         setLoading(false);
+        
+        console.log("[DEBUG] PhotoContest Config Loaded:", moduleConfig);
       }).catch(err => {
         console.error("Error loading photocontest data:", err);
+        showToast("Errore di caricamento dati. Verifica la console.", "error");
         setLoading(false);
       });
     }
@@ -56,12 +80,23 @@ export default function PhotoContestConfig() {
   const handleSave = async () => {
     setSaving(true);
     try {
+      // Ensure interval is at least 1 to satisfy backend validation
+      const updatedConfig = {
+        ...config,
+        interval: Math.max(1, config.interval || 1)
+      };
+
       await api.request(`/config/${guildId}/photocontest`, {
         method: 'POST',
-        body: JSON.stringify(config)
+        body: JSON.stringify(updatedConfig)
       });
+      
+      setConfig(updatedConfig);
       showToast('Configurazione salvata!');
     } catch (error) {
+      console.error("Save error:", error);
+      const errorMsg = error.response?.data?.error || error.message || 'Errore durante il salvataggio';
+      showToast(errorMsg, 'error');
     } finally {
       setSaving(false);
     }
@@ -138,7 +173,7 @@ export default function PhotoContestConfig() {
                                 </div>
                             </div>
                             <label className="toggle">
-                                <input type="checkbox" checked={config.enabled} onChange={e => setConfig({...config, enabled: e.target.checked})} />
+                                <input type="checkbox" checked={!!config.enabled} onChange={e => setConfig({...config, enabled: e.target.checked})} />
                                 <span className="slider"></span>
                             </label>
                         </section>
@@ -160,7 +195,7 @@ export default function PhotoContestConfig() {
                                 </div>
                                 <div className="field-box">
                                     <label className="text-label">Intervallo (Ore)</label>
-                                    <input type="number" className="input" value={config.interval} onChange={(e) => setConfig({...config, interval: parseInt(e.target.value)})} />
+                                    <input type="number" className="input" value={config.interval || 1} onChange={(e) => setConfig({...config, interval: parseInt(e.target.value) || 1})} />
                                 </div>
                             </div>
                         </section>
@@ -179,7 +214,7 @@ export default function PhotoContestConfig() {
                             <div className="toggle-row-p">
                                 <span>Log Eventi Staff</span>
                                 <label className="toggle">
-                                    <input type="checkbox" checked={config.enableNotifications} onChange={(e) => setConfig({...config, enableNotifications: e.target.checked})} />
+                                    <input type="checkbox" checked={!!config.enableNotifications} onChange={(e) => setConfig({...config, enableNotifications: e.target.checked})} />
                                     <span className="slider"></span>
                                 </label>
                             </div>
@@ -205,7 +240,7 @@ export default function PhotoContestConfig() {
                             </div>
                         </div>
                         <label className="toggle">
-                            <input type="checkbox" checked={config.automaticThemes} onChange={e => setConfig({...config, automaticThemes: e.target.checked})} />
+                            <input type="checkbox" checked={!!config.automaticThemes} onChange={e => setConfig({...config, automaticThemes: e.target.checked})} />
                             <span className="slider"></span>
                         </label>
                     </section>
@@ -216,7 +251,7 @@ export default function PhotoContestConfig() {
                         <textarea 
                             className="input" 
                             rows="10" 
-                            value={config.themesList.join('\n')}
+                            value={config.themesList?.join('\n') || ''}
                             onChange={(e) => setConfig({...config, themesList: e.target.value.split('\n').filter(t => t.trim())})}
                             placeholder="Es: Tramonti\nAuto Sportive\nStreet Photography..."
                             style={{ fontFamily: 'monospace', fontSize: '0.9rem' }}
@@ -232,19 +267,19 @@ export default function PhotoContestConfig() {
                         <div className="fields-stack-p">
                             <div className="field-box">
                                 <label className="text-label">Titolo Annuncio</label>
-                                <input type="text" className="input" value={config.embedSettings.title} onChange={(e) => setConfig({...config, embedSettings: {...config.embedSettings, title: e.target.value}})} />
+                                <input type="text" className="input" value={config.embedSettings?.title || ''} onChange={(e) => setConfig({...config, embedSettings: {...config.embedSettings, title: e.target.value}})} />
                             </div>
                             <div className="field-box">
                                 <label className="text-label">Colore Tematico</label>
                                 <div style={{ display: 'flex', gap: '8px' }}>
-                                    <input type="color" className="input" style={{ width: '50px', height: '40px', padding: '4px' }} value={config.embedSettings.color} onChange={(e) => setConfig({...config, embedSettings: {...config.embedSettings, color: e.target.value}})} />
-                                    <input type="text" className="input" value={config.embedSettings.color} onChange={(e) => setConfig({...config, embedSettings: {...config.embedSettings, color: e.target.value}})} />
+                                    <input type="color" className="input" style={{ width: '50px', height: '40px', padding: '4px' }} value={config.embedSettings?.color || '#000000'} onChange={(e) => setConfig({...config, embedSettings: {...config.embedSettings, color: e.target.value}})} />
+                                    <input type="text" className="input" value={config.embedSettings?.color || ''} onChange={(e) => setConfig({...config, embedSettings: {...config.embedSettings, color: e.target.value}})} />
                                 </div>
                             </div>
                         </div>
                         <div className="field-box">
                             <label className="text-label">Corpo del Messaggio (Regolamento)</label>
-                            <textarea className="input" rows="8" value={config.embedSettings.description} onChange={(e) => setConfig({...config, embedSettings: {...config.embedSettings, description: e.target.value}})} style={{ resize: 'none' }} />
+                            <textarea className="input" rows="8" value={config.embedSettings?.description || ''} onChange={(e) => setConfig({...config, embedSettings: {...config.embedSettings, description: e.target.value}})} style={{ resize: 'none' }} />
                         </div>
                     </div>
                 </section>
@@ -254,8 +289,8 @@ export default function PhotoContestConfig() {
                 <div className="animate fade-in">
                     <EmbedMessageManager 
                         guildId={guildId}
-                        module="photoContest"
-                        messages={[
+                        module="photocontest"
+                        slugs={[
                             { key: 'entry_not_found', label: 'Voce non trovata', description: 'Inviato quando una foto non è più presente nel database durante il voto.', variables: [] },
                             { key: 'self_vote_error', label: 'Errore Autovoto', description: 'Inviato quando un utente tenta di votare la propria foto.', variables: [] }
                         ]}

@@ -265,7 +265,7 @@ export default function VoiceConfig() {
                     <EmbedMessageManager 
                         guildId={guildId}
                         module="voice"
-                        messages={[
+                        slugs={[
                             { key: 'dm_accepted', label: 'DM Successo (Orale)', description: 'Inviato all\'utente quando supera il colloquio orale.', variables: ['user', 'guild'] },
                             { key: 'dm_rejected', label: 'DM Rifiuto (Orale)', description: 'Inviato all\'utente quando viene respinto al colloquio orale.', variables: ['user', 'guild', 'reason', 'cooldown'] },
                             { key: 'staff_approved', label: 'Log Approvazione', description: 'Log della sessione conclusa con successo.', variables: ['userId', 'staff'] },

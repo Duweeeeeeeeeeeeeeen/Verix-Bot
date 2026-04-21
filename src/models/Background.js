@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const backgroundSchema = new mongoose.Schema({
     userId: { type: String, required: true },
     guildId: { type: String, required: true },
-    link: { type: String, required: true },
+    link: { type: String },
     description: { type: String },
     attachmentURL: { type: String },
     status: { 

@@ -11,9 +11,9 @@ export const photoContestSchema = z.object({
         title: z.string().max(256).optional(),
         description: z.string().max(2048).optional(),
         color: colorHex.optional()
-    }).optional(),
+    }).passthrough().optional(),
     hallOfFameChannelId: discordId.or(z.literal('')).optional().nullable(),
     automaticThemes: z.boolean().optional(),
     themesList: z.array(z.string()).optional(),
     enableNotifications: z.boolean().optional()
-});
+}).passthrough();

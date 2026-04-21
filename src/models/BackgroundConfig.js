@@ -4,6 +4,8 @@ const backgroundConfigSchema = new mongoose.Schema({
     guildId: { type: String, required: true, unique: true },
     logChannelId: { type: String },
     staffRoleIds: { type: [String], default: [] },
+    rolesToAdd: { type: [String], default: [] },
+    rolesToRemove: { type: [String], default: [] },
     panelChannelId: { type: String },
     panelMessageId: { type: String, default: null },
     cooldown: { type: Number, default: 24 }, // Hours for Panel

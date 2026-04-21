@@ -243,6 +243,7 @@ async function startVoiceSession(member, guild, config, client) {
 
     // 3. Written Test Recap
     let recap = '*Nessuna prova scritta trovata.*';
+    let textAppId = null;
     try {
         const lastApp = await WhitelistApp.findOne({
             userId: member.id,
@@ -251,15 +252,41 @@ async function startVoiceSession(member, guild, config, client) {
         }).sort({ submittedAt: -1 });
 
         if (lastApp && lastApp.answers && lastApp.answers.length > 0) {
+            textAppId = lastApp._id;
             recap = lastApp.answers.map((a, i) => `**${i + 1}. ${a.question}**\n> ${a.answer}`).join('\n\n');
             
-            // Limit length for Embed constraints
             if (recap.length > 3800) {
                 recap = recap.substring(0, 3797) + '...';
             }
         }
     } catch (err) {
         logger.error('Error fetching written recap:', err);
+    }
+
+    // 4. Background Story Recap
+    let bgEmbed = null;
+    try {
+        const bgApp = await Background.findOne({
+            userId: member.id,
+            guildId: guild.id,
+            status: 'ACCEPTED'
+        }).sort({ submittedAt: -1 });
+
+        if (bgApp) {
+            bgEmbed = new EmbedBuilder()
+                .setTitle(`📖 Background Story: ${member.user.username}`)
+                .setDescription(bgApp.description || '*Nessuna descrizione fornita*')
+                .setColor('#f39c12') // Orange/Gold for BG
+                .addFields(
+                    { name: '🔗 Link Documentazione', value: bgApp.link ? `[Consultabile Qui](${bgApp.link})` : '*Link mancante*' }
+                );
+            
+            if (bgApp.attachmentURL) {
+                bgEmbed.setThumbnail(bgApp.attachmentURL);
+            }
+        }
+    } catch (err) {
+        logger.error('Error fetching BG recap:', err);
     }
 
     // Send Control Panel in the Temp VC (Text-in-Voice)
@@ -300,7 +327,9 @@ async function startVoiceSession(member, guild, config, client) {
     );
 
     if (controlEmbed) {
-        await tempChannel.send({ embeds: [controlEmbed, recapEmbed], components: [controlRow] });
+        const finalEmbeds = [controlEmbed, recapEmbed];
+        if (bgEmbed) finalEmbeds.push(bgEmbed);
+        await tempChannel.send({ embeds: finalEmbeds, components: [controlRow] });
     }
 
 

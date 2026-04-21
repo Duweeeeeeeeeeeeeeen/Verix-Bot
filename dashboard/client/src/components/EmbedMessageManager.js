@@ -26,7 +26,7 @@ export default function EmbedMessageManager({ guildId, module, slugs = [] }) {
     setLoading(true);
     try {
       const res = await api.request(`/messages/${guildId}/${module}`);
-      setMessages(res.data || {});
+      setMessages(res || {});
       setError(null);
     } catch (err) {
       console.error('Error fetching messages:', err);

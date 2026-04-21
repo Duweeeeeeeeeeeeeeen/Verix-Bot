@@ -203,10 +203,12 @@ export default function WhitelistConfig() {
            </div>
            <div className="header-buttons">
               {activeTab === 'background' ? (
-                <button onClick={handleSendBgPanel} className="btn-outline" disabled={sendingBgPanel}>
-                   <Send size={16} /> Invia Panel BG
-                </button>
-              ) : (
+                bgConfig.entryPoint !== 'INTEGRATED' && (
+                  <button onClick={handleSendBgPanel} className="btn-outline" disabled={sendingBgPanel}>
+                     <Send size={16} /> Invia Panel BG
+                  </button>
+                )
+              ) : config.mode !== 'BG_ONLY' && (
                 <button onClick={handleSendPanel} className="btn-outline" disabled={sendingPanel}>
                    <Send size={16} /> Invia Panel WL
                 </button>
@@ -240,24 +242,28 @@ export default function WhitelistConfig() {
                                     <h3>Core Configuration</h3>
                                 </div>
                                 <label className="toggle">
-                                    <input type="checkbox" checked={config.enabled} onChange={e => setConfig({...config, enabled: e.target.checked})} />
+                                    <input type="checkbox" checked={!!config.enabled} onChange={e => setConfig({...config, enabled: e.target.checked})} />
                                     <span className="slider"></span>
                                 </label>
                             </div>
                             
-                            <div className="fields-grid" style={{ marginTop: '24px' }}>
-                                <div className="field-box">
-                                    <label className="text-label">Canale Pannello</label>
-                                    <DiscordSelector type="channel" options={channels.filter(c => c.type === 0 || c.type === 5)} value={config.panelChannelId || ''} onChange={val => setConfig({...config, panelChannelId: val})} />
-                                </div>
-                                <div className="field-box">
-                                    <label className="text-label">Categoria Ticket</label>
-                                    <DiscordSelector type="channel" options={channels.filter(c => c.type === 4)} value={config.categoryOpenId || ''} onChange={val => setConfig({...config, categoryOpenId: val})} />
-                                </div>
-                                <div className="field-box">
-                                    <label className="text-label">Log Channel</label>
-                                    <DiscordSelector type="channel" options={channels.filter(c => c.type === 0 || c.type === 5)} value={config.logChannelId || ''} onChange={val => setConfig({...config, logChannelId: val})} />
-                                </div>
+                             <div className="fields-grid" style={{ marginTop: '24px' }}>
+                                {config.mode !== 'BG_ONLY' && (
+                                    <>
+                                        <div className="field-box">
+                                            <label className="text-label">Canale Pannello</label>
+                                            <DiscordSelector type="channel" options={channels.filter(c => c.type === 0 || c.type === 5)} value={config.panelChannelId || ''} onChange={val => setConfig({...config, panelChannelId: val})} />
+                                        </div>
+                                        <div className="field-box">
+                                            <label className="text-label">Categoria Ticket</label>
+                                            <DiscordSelector type="channel" options={channels.filter(c => c.type === 4)} value={config.categoryOpenId || ''} onChange={val => setConfig({...config, categoryOpenId: val})} />
+                                        </div>
+                                        <div className="field-box">
+                                            <label className="text-label">Log Channel</label>
+                                            <DiscordSelector type="channel" options={channels.filter(c => c.type === 0 || c.type === 5)} value={config.logChannelId || ''} onChange={val => setConfig({...config, logChannelId: val})} />
+                                        </div>
+                                    </>
+                                )}
                                 <div className="field-box">
                                     <label className="text-label">Modalità Percorso</label>
                                     <div className="stylized-select-wrapper">
@@ -279,68 +285,72 @@ export default function WhitelistConfig() {
                             </div>
                         </section>
 
-                        <section className="card section-card" style={{ marginTop: '24px' }}>
-                            <div className="align-center" style={{ marginBottom: '20px' }}>
-                                <Clock size={18} color="var(--primary)" />
-                                <h3>Limiti & Tempi</h3>
-                            </div>
-                            <div className="fields-grid">
-                                <div className="field-box">
-                                    <label className="text-label">Durata Test (Min)</label>
-                                    <input type="number" className="input" value={config.timeLimit || 30} onChange={e => setConfig({...config, timeLimit: parseInt(e.target.value)})} />
-                                </div>
-                                <div className="field-box">
-                                    <label className="text-label">Cooldown Fallimento (Ore)</label>
-                                    <input type="number" className="input" value={config.cooldown || 24} onChange={e => setConfig({...config, cooldown: parseInt(e.target.value)})} />
-                                </div>
-                            </div>
-                        </section>
-
-                        <section className="card section-card" style={{ marginTop: '24px' }}>
-                            <div className="align-center" style={{ marginBottom: '20px' }}>
-                                <ShieldCheck size={18} color="var(--primary)" />
-                                <h3>Automazioni Fase Scritta</h3>
-                            </div>
-                            <div className="fields-grid-v">
-                                <div className="field-box">
-                                    <label className="text-label">Ruoli da Aggiungere (Prova Superata)</label>
-                                    <DiscordSelector type="role" multiple={true} options={roles} value={config.rolesToAddOnTextPass || []} onChange={val => setConfig({...config, rolesToAddOnTextPass: val})} />
-                                </div>
-                                <div className="field-box" style={{ marginTop: '16px' }}>
-                                    <label className="text-label">Ruoli da Rimuovere (Prova Superata)</label>
-                                    <DiscordSelector type="role" multiple={true} options={roles} value={config.rolesToRemoveOnTextPass || []} onChange={val => setConfig({...config, rolesToRemoveOnTextPass: val})} />
-                                </div>
-                            </div>
-                        </section>
-
-                        <section className="card section-card" style={{ marginTop: '24px' }}>
-                            <div className="align-center" style={{ marginBottom: '20px' }}>
-                                <RefreshCcw size={18} color="var(--primary)" />
-                                <h3>Requisiti di Accesso (Flow)</h3>
-                            </div>
-                            <div className="fields-grid-v">
-                                <div className="toggle-box">
-                                    <div className="flex-col">
-                                        <span style={{ fontWeight: 600 }}>Obbligo Background</span>
-                                        <p className="text-dim" style={{ fontSize: '0.75rem' }}>Il cittadino deve avere un Background approvato per iniziare la WL.</p>
+                        {config.mode !== 'BG_ONLY' && (
+                            <>
+                                <section className="card section-card" style={{ marginTop: '24px' }}>
+                                    <div className="align-center" style={{ marginBottom: '20px' }}>
+                                        <Clock size={18} color="var(--primary)" />
+                                        <h3>Limiti & Tempi</h3>
                                     </div>
-                                    <label className="toggle">
-                                        <input type="checkbox" checked={config.flowRequirements?.requireBackground} onChange={e => setNested('flowRequirements.requireBackground', e.target.checked)} />
-                                        <span className="slider"></span>
-                                    </label>
-                                </div>
-                                <div className="toggle-box" style={{ marginTop: '12px' }}>
-                                    <div className="flex-col">
-                                        <span style={{ fontWeight: 600 }}>Obbligo WL Scritta</span>
-                                        <p className="text-dim" style={{ fontSize: '0.75rem' }}>Richiede il superamento del test scritto prima del colloquio orale.</p>
+                                    <div className="fields-grid">
+                                        <div className="field-box">
+                                            <label className="text-label">Durata Test (Min)</label>
+                                            <input type="number" className="input" value={config.timeLimit || 30} onChange={e => setConfig({...config, timeLimit: parseInt(e.target.value)})} />
+                                        </div>
+                                        <div className="field-box">
+                                            <label className="text-label">Cooldown Fallimento (Ore)</label>
+                                            <input type="number" className="input" value={config.cooldown || 24} onChange={e => setConfig({...config, cooldown: parseInt(e.target.value)})} />
+                                        </div>
                                     </div>
-                                    <label className="toggle">
-                                        <input type="checkbox" checked={config.flowRequirements?.requireTextWL} onChange={e => setNested('flowRequirements.requireTextWL', e.target.checked)} />
-                                        <span className="slider"></span>
-                                    </label>
-                                </div>
-                            </div>
-                        </section>
+                                </section>
+
+                                <section className="card section-card" style={{ marginTop: '24px' }}>
+                                    <div className="align-center" style={{ marginBottom: '20px' }}>
+                                        <ShieldCheck size={18} color="var(--primary)" />
+                                        <h3>Automazioni Fase Scritta</h3>
+                                    </div>
+                                    <div className="fields-grid-v">
+                                        <div className="field-box">
+                                            <label className="text-label">Ruoli da Aggiungere (Prova Superata)</label>
+                                            <DiscordSelector type="role" multiple={true} options={roles} value={config.rolesToAddOnTextPass || []} onChange={val => setConfig({...config, rolesToAddOnTextPass: val})} />
+                                        </div>
+                                        <div className="field-box" style={{ marginTop: '16px' }}>
+                                            <label className="text-label">Ruoli da Rimuovere (Prova Superata)</label>
+                                            <DiscordSelector type="role" multiple={true} options={roles} value={config.rolesToRemoveOnTextPass || []} onChange={val => setConfig({...config, rolesToRemoveOnTextPass: val})} />
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <section className="card section-card" style={{ marginTop: '24px' }}>
+                                    <div className="align-center" style={{ marginBottom: '20px' }}>
+                                        <RefreshCcw size={18} color="var(--primary)" />
+                                        <h3>Requisiti di Accesso (Flow)</h3>
+                                    </div>
+                                    <div className="fields-grid-v">
+                                        <div className="toggle-box">
+                                            <div className="flex-col">
+                                                <span style={{ fontWeight: 600 }}>Obbligo Background</span>
+                                                <p className="text-dim" style={{ fontSize: '0.75rem' }}>Il cittadino deve avere un Background approvato per iniziare la WL.</p>
+                                            </div>
+                                            <label className="toggle">
+                                                <input type="checkbox" checked={!!config.flowRequirements?.requireBackground} onChange={e => setNested('flowRequirements.requireBackground', e.target.checked)} />
+                                                <span className="slider"></span>
+                                            </label>
+                                        </div>
+                                        <div className="toggle-box" style={{ marginTop: '12px' }}>
+                                            <div className="flex-col">
+                                                <span style={{ fontWeight: 600 }}>Obbligo WL Scritta</span>
+                                                <p className="text-dim" style={{ fontSize: '0.75rem' }}>Richiede il superamento del test scritto prima del colloquio orale.</p>
+                                            </div>
+                                            <label className="toggle">
+                                                <input type="checkbox" checked={!!config.flowRequirements?.requireTextWL} onChange={e => setNested('flowRequirements.requireTextWL', e.target.checked)} />
+                                                <span className="slider"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </section>
+                            </>
+                        )}
                     </div>
 
                     <div className="grid-right">
@@ -368,23 +378,28 @@ export default function WhitelistConfig() {
                                     <h3>Configurazione Background</h3>
                                 </div>
                                 <label className="toggle">
-                                    <input type="checkbox" checked={bgConfig.enabled} onChange={e => setBgConfig({...bgConfig, enabled: e.target.checked})} />
+                                    <input type="checkbox" checked={!!bgConfig.enabled} onChange={e => setBgConfig({...bgConfig, enabled: e.target.checked})} />
                                     <span className="slider"></span>
                                 </label>
                             </div>
                             
                             <div className="fields-grid" style={{ marginTop: '24px' }}>
+                                {bgConfig.entryPoint !== 'INTEGRATED' && (
+                                    <div className="field-box">
+                                        <label className="text-label">Canale Pubblicazione Pannello</label>
+                                        <DiscordSelector type="channel" options={channels.filter(c => c.type === 0 || c.type === 5)} value={bgConfig.panelChannelId || ''} onChange={val => setBgConfig({...bgConfig, panelChannelId: val})} />
+                                        <p className="text-dim" style={{ fontSize: '0.72rem', marginTop: '4px' }}>Canale dove verrà inviato il messaggio per depositare i Background (se non integrato).</p>
+                                    </div>
+                                )}
                                 <div className="field-box">
-                                    <label className="text-label">Canale Pannello</label>
-                                    <DiscordSelector type="channel" options={channels.filter(c => c.type === 0 || c.type === 5)} value={bgConfig.panelChannelId || ''} onChange={val => setBgConfig({...bgConfig, panelChannelId: val})} />
-                                </div>
-                                <div className="field-box">
-                                    <label className="text-label">Canale Log Staff</label>
+                                    <label className="text-label">Canale Valutazione Staffer</label>
                                     <DiscordSelector type="channel" options={channels.filter(c => c.type === 0 || c.type === 5)} value={bgConfig.logChannelId || ''} onChange={val => setBgConfig({...bgConfig, logChannelId: val})} />
+                                    <p className="text-dim" style={{ fontSize: '0.72rem', marginTop: '4px' }}>Canale log dove lo staff riceve e valuta le storie inviate.</p>
                                 </div>
                                 <div className="field-box">
-                                    <label className="text-label">Ruoli Commissione</label>
+                                    <label className="text-label">Staffer autorizzati (Background)</label>
                                     <DiscordSelector type="role" multiple={true} options={roles} value={bgConfig.staffRoleIds || []} onChange={val => setBgConfig({...bgConfig, staffRoleIds: val})} />
+                                    <p className="text-dim" style={{ fontSize: '0.72rem', marginTop: '4px' }}>I ruoli autorizzati a revisionare e gestire i dossier storie.</p>
                                 </div>
                                 <div className="field-box">
                                     <label className="text-label">Punto di Ingresso Background</label>
@@ -395,13 +410,36 @@ export default function WhitelistConfig() {
                                         </select>
                                     </div>
                                 </div>
+                                 {bgConfig.entryPoint !== 'INTEGRATED' && (
+                                    <div className="field-box">
+                                        <label className="text-label">Cooldown Rifiuto - Pannello (Ore)</label>
+                                        <input type="number" className="input" value={bgConfig.cooldown || 24} onChange={e => setBgConfig({...bgConfig, cooldown: parseInt(e.target.value)})} />
+                                        <p className="text-dim" style={{ fontSize: '0.72rem', marginTop: '4px' }}>Ore di attesa dopo un rifiuto per inviare un nuovo dossier dal canale BG.</p>
+                                    </div>
+                                )}
                                 <div className="field-box">
-                                    <label className="text-label">Cooldown Rifiuto - Pannello (Ore)</label>
-                                    <input type="number" className="input" value={bgConfig.cooldown || 24} onChange={e => setBgConfig({...bgConfig, cooldown: parseInt(e.target.value)})} />
-                                </div>
-                                <div className="field-box">
-                                    <label className="text-label">Cooldown Correzione - Ticket (Ore)</label>
+                                    <label className="text-label">Cooldown post-Correzione Ticket (Ore)</label>
                                     <input type="number" className="input" value={bgConfig.correctionCooldown || 0} onChange={e => setBgConfig({...bgConfig, correctionCooldown: parseInt(e.target.value)})} />
+                                    <p className="text-dim" style={{ fontSize: '0.72rem', marginTop: '4px' }}>Ore di attesa richieste se la storia viene respinta dentro un ticket Whitelist.</p>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section className="card section-card" style={{ marginTop: '24px' }}>
+                            <div className="align-center" style={{ marginBottom: '20px' }}>
+                                <ShieldCheck size={18} color="var(--primary)" />
+                                <h3>Automazioni Esito (Background)</h3>
+                            </div>
+                            <div className="fields-grid-v">
+                                <div className="field-box">
+                                    <label className="text-label">Ruoli da Aggiungere (Approvazione)</label>
+                                    <DiscordSelector type="role" multiple={true} options={roles} value={bgConfig.rolesToAdd || []} onChange={val => setBgConfig({...bgConfig, rolesToAdd: val})} />
+                                    <p className="text-dim" style={{ fontSize: '0.72rem', marginTop: '4px' }}>Assegnati automaticamente quando la storia viene approvata.</p>
+                                </div>
+                                <div className="field-box" style={{ marginTop: '16px' }}>
+                                    <label className="text-label">Ruoli da Rimuovere (Approvazione)</label>
+                                    <DiscordSelector type="role" multiple={true} options={roles} value={bgConfig.rolesToRemove || []} onChange={val => setBgConfig({...bgConfig, rolesToRemove: val})} />
+                                    <p className="text-dim" style={{ fontSize: '0.72rem', marginTop: '4px' }}>Rimossi automaticamente quando la storia viene approvata.</p>
                                 </div>
                             </div>
                         </section>
@@ -540,7 +578,7 @@ export default function WhitelistConfig() {
                             <div className="toggle-box">
                                 <span>Ping Staff al Join</span>
                                 <label className="toggle">
-                                    <input type="checkbox" checked={config.voiceSettings?.pingStaffOnJoin} onChange={e => setNested('voiceSettings.pingStaffOnJoin', e.target.checked)} />
+                                    <input type="checkbox" checked={!!config.voiceSettings?.pingStaffOnJoin} onChange={e => setNested('voiceSettings.pingStaffOnJoin', e.target.checked)} />
                                     <span className="slider"></span>
                                 </label>
                             </div>

@@ -162,6 +162,27 @@ h1, h2, h3, h4 {
   gap: 6px;
   flex: 1;
   margin-top: 10px;
+  overflow-y: auto;
+  padding-right: 4px;
+  margin-right: -4px; /* Offset for scrollbar visibility without shifting content */
+}
+
+/* Custom scrollbar for sidebar nav */
+.nav-group::-webkit-scrollbar {
+  width: 4px;
+}
+
+.nav-group::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.nav-group::-webkit-scrollbar-thumb {
+  background: rgba(129, 140, 248, 0.1);
+  border-radius: 10px;
+}
+
+.nav-group:hover::-webkit-scrollbar-thumb {
+  background: rgba(129, 140, 248, 0.3);
 }
 
 .nav-link {

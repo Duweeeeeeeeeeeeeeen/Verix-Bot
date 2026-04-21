@@ -121,6 +121,11 @@ export default function TwitchConfig() {
     setConfig({ ...config, streamers: updated });
   };
 
+  const updateStreamer = (index, field, value) => {
+    const updated = (config.streamers || []).map((s, i) => i === index ? { ...s, [field]: value } : s);
+    setConfig({ ...config, streamers: updated });
+  };
+
   const updateEmbed = (data) => {
     setConfig({
       ...config,
@@ -181,7 +186,7 @@ export default function TwitchConfig() {
                         </div>
                     </div>
                     <label className="toggle">
-                        <input type="checkbox" checked={config.enabled} onChange={(e) => setConfig({...config, enabled: e.target.checked})} />
+                        <input type="checkbox" checked={!!config.enabled} onChange={e => setConfig({...config, enabled: e.target.checked})} />
                         <span className="slider"></span>
                     </label>
                 </div>
@@ -221,7 +226,7 @@ export default function TwitchConfig() {
                                 <div className="flex-between">
                                     <span>Menziona @everyone</span>
                                     <label className="toggle-sm">
-                                        <input type="checkbox" checked={config.mentionEveryone} onChange={e => setConfig({...config, mentionEveryone: e.target.checked})} />
+                                        <input type="checkbox" checked={!!config.mentionEveryone} onChange={e => setConfig({...config, mentionEveryone: e.target.checked})} />
                                         <span className="slider-sm"></span>
                                     </label>
                                 </div>
@@ -321,7 +326,7 @@ export default function TwitchConfig() {
                 <EmbedMessageManager 
                     guildId={guildId}
                     module="twitch"
-                    messages={[
+                    slugs={[
                         { key: 'stream_online', label: 'Notifica Stream Online', description: 'Inviato quando uno streamer registrato va in live.', variables: ['streamer', 'title', 'game', 'url'] }
                     ]}
                 />

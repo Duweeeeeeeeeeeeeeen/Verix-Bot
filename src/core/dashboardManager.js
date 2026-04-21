@@ -12,6 +12,7 @@ import authRoutes from '../../dashboard/api/routes/auth.js';
 import configRoutes from '../../dashboard/api/routes/config.js';
 import embedsRoutes from '../../dashboard/api/routes/embeds.js';
 import messageRoutes from '../../dashboard/api/routes/messages.js';
+import managementRoutes from '../../dashboard/api/routes/management.js';
 
 /**
  * Initializes and starts the Web Dashboard API hosted by the Bot process.
@@ -41,12 +42,7 @@ export function startDashboard(client) {
         process.nextTick(() => done(null, profile));
     }));
 
-    // 1. Diagnostics (MOVED TO TOP)
-    app.use((req, res, next) => {
-        console.log(`[DEBUG_API] ${req.method} ${req.url} | SessionID: ${req.sessionID?.substring(0, 8)}... | Auth: ${req.isAuthenticated ? req.isAuthenticated() : 'N/A'}`);
-        req.discordClient = client;
-        next();
-    });
+
 
     // 2. Body Parsers & JSON Error Handling
     app.use(express.json());
@@ -85,6 +81,7 @@ export function startDashboard(client) {
         secret: process.env.SESSION_SECRET || 'verix-secret-key-development',
         resave: false,
         saveUninitialized: false,
+        proxy: true, // Required for some environments
         store: MongoStore.create({ 
             mongoUrl: process.env.MONGODB_URI || process.env.MONGO_URI,
             mongoOptions: {
@@ -93,20 +90,29 @@ export function startDashboard(client) {
         }),
         cookie: { 
             maxAge: 1000 * 60 * 60 * 24, // 24 hours
-            secure: false, // Set to true if using HTTPS
+            secure: false, // Set to true only if using HTTPS
             httpOnly: true,
-            sameSite: 'lax' // Essential for local dev cross-port
+            sameSite: 'lax', 
+            path: '/'
         }
     }));
 
     app.use(passport.initialize());
     app.use(passport.session());
 
+    // 5. Diagnostics (Correct position after Passport)
+    app.use((req, res, next) => {
+        console.log(`[DEBUG_API] ${req.method} ${req.url} | SessionID: ${req.sessionID?.substring(0, 8)}... | Auth: ${req.isAuthenticated && req.isAuthenticated() ? 'true' : 'false'}`);
+        req.discordClient = client;
+        next();
+    });
+
     // 5. Routes
     app.use('/api/auth', authRoutes);
     app.use('/api/config', configRoutes);
     app.use('/api/embeds', embedsRoutes);
     app.use('/api/messages', messageRoutes);
+    app.use('/api/management', managementRoutes);
 
     app.get('/api/health', (req, res) => {
         res.json({

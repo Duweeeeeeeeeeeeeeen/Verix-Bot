@@ -179,7 +179,7 @@ export default function FiveMMultiConfig() {
                 </div>
             </div>
             <label className="toggle">
-                <input type="checkbox" checked={config.enabled} onChange={(e) => setConfig({...config, enabled: e.target.checked})} />
+                <input type="checkbox" checked={!!config.enabled} onChange={e => setConfig({...config, enabled: e.target.checked})} />
                 <span className="slider"></span>
             </label>
         </section>
@@ -191,7 +191,7 @@ export default function FiveMMultiConfig() {
                     <div className="server-header" onClick={() => setExpandedCards({...expandedCards, [server.id]: !expandedCards[server.id]})}>
                         <div className="server-info-main">
                             <label className="toggle" onClick={e => e.stopPropagation()}>
-                                <input type="checkbox" checked={server.enabled} onChange={e => updateServer(server.id, {enabled: e.target.checked})} />
+                                <input type="checkbox" checked={!!server.enabled} onChange={e => updateServer(server.id, {enabled: e.target.checked})} />
                                 <span className="slider"></span>
                             </label>
                             <div className="title-group">
@@ -222,11 +222,11 @@ export default function FiveMMultiConfig() {
                                         <div className="fields-grid-p">
                                             <div className="field-box">
                                                 <label className="text-label">IP & Porta del Server</label>
-                                                <input className="input" placeholder="localhost:30120" value={server.serverIp} onChange={e => updateServer(server.id, {serverIp: e.target.value})} />
+                                                <input className="input" placeholder="localhost:30120" value={server.serverIp || ''} onChange={e => updateServer(server.id, {serverIp: e.target.value})} />
                                             </div>
                                             <div className="field-box">
                                                 <label className="text-label">Canale Discord LiveBoard</label>
-                                                <DiscordSelector type="channel" options={channels} value={server.statusChannelId} onChange={v => updateServer(server.id, {statusChannelId: v})} />
+                                                <DiscordSelector type="channel" options={channels} value={server.statusChannelId || ''} onChange={v => updateServer(server.id, {statusChannelId: v})} />
                                             </div>
                                         </div>
                                     </div>
@@ -236,8 +236,8 @@ export default function FiveMMultiConfig() {
                                             <div className="buttons-list-p">
                                                 {(server.buttons || []).map((btn, bIdx) => (
                                                     <div key={bIdx} className="btn-edit-row">
-                                                        <input className="input-s" placeholder="Etichetta" value={btn.label} onChange={e => updateBtnField(server.id, bIdx, 'label', e.target.value)} />
-                                                        <input className="input-s" placeholder="URL" value={btn.url} onChange={e => updateBtnField(server.id, bIdx, 'url', e.target.value)} />
+                                                        <input className="input-s" placeholder="Etichetta" value={btn.label || ''} onChange={e => updateBtnField(server.id, bIdx, 'label', e.target.value)} />
+                                                        <input className="input-s" placeholder="URL" value={btn.url || ''} onChange={e => updateBtnField(server.id, bIdx, 'url', e.target.value)} />
                                                         <button onClick={() => removeButton(server.id, bIdx)} className="btn-del-s"><Trash2 size={14} /></button>
                                                     </div>
                                                 ))}

@@ -41,11 +41,29 @@ export default function TicketConfig() {
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [sendingPanel, setSendingPanel] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const handleSendPanel = async () => {
+    if (!config.panelChannelId) {
+      showToast('Configura prima un Canale Pannello!', 'error');
+      return;
+    }
+    setSendingPanel(true);
+    try {
+      const res = await api.request(`/config/${guildId}/tickets/send-panel`, { method: 'POST' });
+      showToast(res.message || 'Pannello inviato con successo!');
+    } catch (error) {
+       console.error("Error sending ticket panel:", error);
+       showToast('Errore durante l\'invio del pannello.', 'error');
+    } finally {
+      setSendingPanel(false);
+    }
+  };
 
   useEffect(() => {
     if (guildId && mounted) {
@@ -173,6 +191,9 @@ export default function TicketConfig() {
               </div>
            </div>
            <div className="header-buttons">
+              <button onClick={handleSendPanel} className="btn-outline" disabled={sendingPanel || !config.panelChannelId}>
+                <MessageSquare size={16} /> {sendingPanel ? 'Invio...' : 'Invia Pannello'}
+              </button>
               <button onClick={handleReset} className="btn-outline">
                 <RefreshCcw size={16} /> Reset
               </button>
@@ -209,7 +230,7 @@ export default function TicketConfig() {
                                 </div>
                             </div>
                             <label className="toggle">
-                                <input type="checkbox" checked={config.enabled} onChange={e => setConfig({...config, enabled: e.target.checked})} />
+                                <input type="checkbox" checked={!!config.enabled} onChange={e => setConfig({...config, enabled: e.target.checked})} />
                                 <span className="slider"></span>
                             </label>
                         </section>
@@ -242,7 +263,7 @@ export default function TicketConfig() {
                                     <div className="toggle-list-t">
                                         <div className="toggle-row-t">
                                             <span>Trascrizioni HTML</span>
-                                            <label className="toggle"><input type="checkbox" checked={config.transcriptionEnabled} onChange={e => setConfig({...config, transcriptionEnabled: e.target.checked})} /><span className="slider"></span></label>
+                                            <label className="toggle"><input type="checkbox" checked={!!config.transcriptionEnabled} onChange={e => setConfig({...config, transcriptionEnabled: e.target.checked})} /><span className="slider"></span></label>
                                         </div>
                                     </div>
                                 </div>
@@ -258,8 +279,8 @@ export default function TicketConfig() {
                                     <div key={ev} className="event-box-t">
                                         <span className="event-label-t">{ev === 'onOpen' ? 'Apertura' : 'Chiusura'}</span>
                                         <div className="event-options-t">
-                                            <label className="mini-toggle-t"><input type="checkbox" checked={globalConfig.notifications[`tickets_${ev}`]?.dm} onChange={e => setGlobalNested(`notifications.tickets_${ev}.dm`, e.target.checked)} /> <span>DM</span></label>
-                                            <label className="mini-toggle-t"><input type="checkbox" checked={globalConfig.logs[`log_${ev}`]} onChange={e => setGlobalNested(`logs.log_${ev}`, e.target.checked)} /> <span>LOG</span></label>
+                                            <label className="mini-toggle-t"><input type="checkbox" checked={!!globalConfig.notifications[`tickets_${ev}`]?.dm} onChange={e => setGlobalNested(`notifications.tickets_${ev}.dm`, e.target.checked)} /> <span>DM</span></label>
+                                            <label className="mini-toggle-t"><input type="checkbox" checked={!!globalConfig.logs[`log_${ev}`]} onChange={e => setGlobalNested(`logs.log_${ev}`, e.target.checked)} /> <span>LOG</span></label>
                                         </div>
                                     </div>
                                 ))}

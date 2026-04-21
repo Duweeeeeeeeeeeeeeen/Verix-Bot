@@ -25,6 +25,6 @@ export const embedDataSchema = z.object({
         name: z.string().max(256).optional(),
         iconURL: urlOrEmpty,
         url: urlOrEmpty
-    }).optional().nullable(),
-    fields: z.array(embedFieldSchema).max(25).optional().nullable()
-});
+    }).passthrough().optional().nullable(),
+    fields: z.array(embedFieldSchema.passthrough()).max(25).optional().nullable()
+}).passthrough();

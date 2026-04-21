@@ -127,7 +127,7 @@ export default function UtilityConfig() {
                     </div>
                 </div>
                 <label className="toggle">
-                    <input type="checkbox" checked={config.enabled} onChange={(e) => setConfig({...config, enabled: e.target.checked})} />
+                    <input type="checkbox" checked={!!config.enabled} onChange={(e) => setConfig({...config, enabled: e.target.checked})} />
                     <span className="slider"></span>
                 </label>
             </div>

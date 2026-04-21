@@ -13,10 +13,13 @@ const router = express.Router();
 router.get('/:guildId/:module', adminCheck, async (req, res) => {
     try {
         const { guildId, module } = req.params;
-        const config = await MessageConfig.findOne({ guildId, module });
+        const config = await MessageConfig.findOne({ guildId, module }).lean();
         
-        const dbMessages = config ? (config.messages instanceof Map ? Object.fromEntries(config.messages) : config.messages) : {};
+        // Convert Map to plain object properly
+        const dbMessages = (config && config.messages) ? config.messages : {};
         const defaults = defaultMessages[module] || {};
+
+        console.log(`[DEBUG_MESSAGES] Merging for ${module} in ${guildId}. Found ${Object.keys(dbMessages).length} overrides in DB.`);
 
         // Merge defaults and DB overrides into a single flat object
         const mergedMessages = {};
@@ -29,11 +32,11 @@ router.get('/:guildId/:module', adminCheck, async (req, res) => {
             mergedMessages[key] = {
                 ...def,
                 ...db,
-                // Ensure critical fields always have at least the professional default
-                title: db.title || def.title || '',
-                description: db.description || def.description || '',
+                // Force professional defaults if DB fields are TRULY empty (null, undefined, or empty string)
+                title: (db.title && db.title.trim() !== '') ? db.title : (def.title || 'Senza Titolo'),
+                description: (db.description && db.description.trim() !== '') ? db.description : (def.description || 'Nessun contenuto impostato.'),
                 color: db.color || def.color || '#5865F2',
-                footer: db.footer || def.footer || '',
+                footer: (db.footer && db.footer.trim() !== '') ? db.footer : (def.footer || ''),
                 enabled: db.enabled !== undefined ? db.enabled : (def.enabled !== undefined ? def.enabled : true)
             };
         });
