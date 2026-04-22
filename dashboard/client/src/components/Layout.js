@@ -186,7 +186,7 @@ export default function Layout({ children, guildId }) {
       </header>
 
       <main className="main-content">
-        <div className="content-container">
+        <div className="content-container main-container-p">
           {children}
         </div>
       </main>

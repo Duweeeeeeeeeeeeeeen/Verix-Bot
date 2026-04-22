@@ -319,7 +319,19 @@ h1, h2, h3, h4 {
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
 .animate { animation: slideUp 0.5s ease-out forwards; }
+.fade-in { animation: fadeIn 0.4s ease-out forwards; }
+.slide-in { animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 
 /* Modern Card System */
 .card {
@@ -442,8 +454,22 @@ h1, h2, h3, h4 {
 
 /* Global Utilities */
 .text-muted { color: var(--text-muted); font-size: 0.9rem; }
-.text-label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+.text-label { display: block; font-size: 0.75rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; }
 .contents-grid { display: flex; flex-direction: column; gap: 24px; }
+
+/* Centered Layout Fixes */
+.main-container-p {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.centered-content-p {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
 
 /* Toggle Switch - Premium */
 .toggle {

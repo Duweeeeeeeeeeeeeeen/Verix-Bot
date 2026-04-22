@@ -42,6 +42,7 @@ import { fivemSchema } from '../validations/fivemSchema.js';
 import { utilitySchema } from '../validations/utilitySchema.js';
 import { backgroundSchema } from '../validations/backgroundSchema.js';
 import { twitchSchema } from '../validations/twitchSchema.js';
+import { onboardingSchema } from '../validations/onboardingSchema.js';
 
 
 
@@ -94,19 +95,34 @@ router.get('/:guildId', adminCheck, async (req, res) => {
             await Promise.all(creations);
         }
 
+        // Fetch roles and channels from Discord Client
+        const client = req.discordClient;
+        let roles = [];
+        let channels = [];
+        
+        try {
+            const guild = await client.guilds.fetch(guildId);
+            roles = (await guild.roles.fetch()).map(r => ({ id: r.id, name: r.name, color: r.hexColor }));
+            channels = (await guild.channels.fetch()).map(c => ({ id: c.id, name: c.name, type: c.type }));
+        } catch (discordError) {
+            console.error('Error fetching Discord data for guild:', discordError);
+        }
+
         res.json({
             success: true,
             data: {
                 whitelist: mergeModuleDefaults('whitelist', wlConfig),
                 tickets: mergeModuleDefaults('tickets', tkConfig),
-                photocontest: mergeModuleDefaults('photocontest', photoConfig), // Consistent lowercase key
+                photocontest: mergeModuleDefaults('photocontest', photoConfig),
                 verify: mergeModuleDefaults('verify', verifyConfig),
                 guild: guildData,
                 globalConfig,
                 welcome: mergeModuleDefaults('welcome', wlcmConfig),
                 utility: mergeModuleDefaults('utility', utilConfig),
                 fivem: mergeModuleDefaults('fivem', fmConfig),
-                twitch: twConfig
+                twitch: twConfig,
+                roles,
+                channels
             }
         });
 
@@ -1304,6 +1320,71 @@ router.post('/:guildId/welcome/test', adminCheck, async (req, res) => {
     } catch (error) {
         console.error('Error testing welcome:', error);
         res.status(500).json({ success: false, error: 'Errore durante l\'invio del test.' });
+    }
+});
+
+// POST Onboarding (Bulk save)
+router.post('/:guildId/onboarding', adminCheck, validate(onboardingSchema), async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const data = req.body;
+
+        // 1. Update Global Config
+        await GlobalConfig.findOneAndUpdate(
+            { guildId },
+            { 
+                language: data.language,
+                adminRoleIds: data.adminRoleIds,
+                'logs.channelId': data.logChannelId,
+                'logs.enabled': !!data.logChannelId
+            },
+            { upsert: true }
+        );
+        invalidateGlobalCache(guildId);
+
+        // 2. Update Whitelist Module
+        if (data.modules.whitelist) {
+            const wlUpdate = { enabled: true };
+            if (data.config.whitelist?.categoryOpenId) wlUpdate.categoryOpenId = data.config.whitelist.categoryOpenId;
+            if (data.config.whitelist?.whitelistRole) {
+                wlUpdate.rolesToAddOnTextPass = [data.config.whitelist.whitelistRole];
+                wlUpdate.voiceSettings = { rolesToAdd: [data.config.whitelist.whitelistRole] };
+            }
+            await WhitelistConfig.findOneAndUpdate({ guildId }, wlUpdate, { upsert: true });
+        } else {
+            await WhitelistConfig.findOneAndUpdate({ guildId }, { enabled: false }, { upsert: true });
+        }
+
+        // 3. Update Ticket Module
+        if (data.modules.tickets) {
+            const tkUpdate = { enabled: true };
+            if (data.config.tickets?.categoryOpenId) tkUpdate.categoryOpenId = data.config.tickets.categoryOpenId;
+            if (data.config.tickets?.staffRoleIds) tkUpdate.staffRoleIds = data.config.tickets.staffRoleIds;
+            await TicketConfig.findOneAndUpdate({ guildId }, tkUpdate, { upsert: true });
+        } else {
+            await TicketConfig.findOneAndUpdate({ guildId }, { enabled: false }, { upsert: true });
+        }
+
+        // 4. Update Verify Module
+        if (data.modules.verify) {
+            const vrUpdate = { enabled: true };
+            if (data.config.verify?.channelId) vrUpdate.channelId = data.config.verify.channelId;
+            if (data.config.verify?.roleId) vrUpdate.roleId = data.config.verify.roleId;
+            await VerifyConfig.findOneAndUpdate({ guildId }, vrUpdate, { upsert: true });
+        } else {
+            await VerifyConfig.findOneAndUpdate({ guildId }, { enabled: false }, { upsert: true });
+        }
+
+        // Invalidate all caches
+        invalidateCache(guildId, 'whitelist');
+        invalidateCache(guildId, 'tickets');
+        invalidateCache(guildId, 'verify');
+
+        await logAudit(req, 'ONBOARDING_COMPLETED', { guildId });
+        res.json({ success: true, message: 'Onboarding completato con successo!' });
+    } catch (error) {
+        console.error('Error during onboarding save:', error);
+        res.status(500).json({ success: false, error: 'Errore durante il salvataggio dell\'onboarding.' });
     }
 });
 
