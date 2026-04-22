@@ -33,7 +33,7 @@ passport.use(new DiscordStrategy({
 
 // Middleware
 app.use(cors({
-    origin: process.env.DASHBOARD_FRONTEND_URL || 'http://localhost:3000',
+    origin: process.env.DASHBOARD_FRONTEND_URL,
     credentials: true
 }));
 app.use(express.json());

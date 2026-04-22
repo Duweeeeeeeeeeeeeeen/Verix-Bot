@@ -2,7 +2,7 @@ import express from 'express';
 import passport from 'passport';
 
 const router = express.Router();
-const FRONTEND_URL = process.env.DASHBOARD_FRONTEND_URL || 'http://localhost:3000';
+const FRONTEND_URL = process.env.DASHBOARD_FRONTEND_URL;
 
 // Discord Login
 router.get('/login', passport.authenticate('discord'));

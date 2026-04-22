@@ -56,11 +56,10 @@ export function startDashboard(client) {
 
     // 3. Security & CORS
     const allowedOrigins = [
-        process.env.DASHBOARD_FRONTEND_URL || 'http://localhost:3000',
+        process.env.DASHBOARD_FRONTEND_URL,
         'http://localhost:3000',
-        'http://localhost:3001',
-        'http://localhost:5173'
-    ];
+        'http://localhost:3001'
+    ].filter(Boolean);
 
     app.use(cors({ 
         origin: function (origin, callback) {

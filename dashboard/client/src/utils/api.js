@@ -1,4 +1,6 @@
-const API_BASE_URL = 'http://localhost:5001/api';
+const API_BASE_URL = typeof window !== 'undefined' 
+  ? `${window.location.protocol}//${window.location.hostname}:5001/api` 
+  : 'http://localhost:5001/api';
 
 /**
  * Standardized request helper for fetch calls.
