@@ -3,6 +3,7 @@ import passport from 'passport';
 
 const router = express.Router();
 const FRONTEND_URL = process.env.DASHBOARD_FRONTEND_URL;
+console.log(`[AUTH] Frontend URL initialized as: ${FRONTEND_URL}`);
 
 // Discord Login
 router.get('/login', passport.authenticate('discord'));
