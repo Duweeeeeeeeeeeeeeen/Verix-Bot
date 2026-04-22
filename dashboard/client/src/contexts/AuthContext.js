@@ -2,13 +2,17 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const AuthContext = createContext();
 
+const BASE_API_URL = typeof window !== 'undefined' 
+  ? `${window.location.protocol}//${window.location.hostname}:5001` 
+  : 'http://localhost:5001';
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const fetchUser = async () => {
     try {
-      const res = await fetch('http://localhost:5001/api/auth/user', {
+      const res = await fetch(`${BASE_API_URL}/api/auth/user`, {
         headers: { 'Accept': 'application/json' },
         credentials: 'include'
       });
@@ -30,11 +34,11 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = () => {
-    window.location.href = 'http://localhost:5001/api/auth/login';
+    window.location.href = `${BASE_API_URL}/api/auth/login`;
   };
 
   const logout = async () => {
-    await fetch('http://localhost:5001/api/auth/logout', { credentials: 'include' });
+    await fetch(`${BASE_API_URL}/api/auth/logout`, { credentials: 'include' });
     setUser(null);
     window.location.href = '/';
   };
