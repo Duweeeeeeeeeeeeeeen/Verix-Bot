@@ -1,4 +1,4 @@
-import { Client, Collection, GatewayIntentBits } from 'discord.js';
+import { Client, Collection, GatewayIntentBits, Events } from 'discord.js';
 import mongoose from 'mongoose';
 import config from './config/config.js';
 import logger from './src/utils/logger.js';
@@ -57,25 +57,25 @@ const init = async () => {
     await moduleHandler(client);
 
     // Dashboard & Ready Logic
-    client.once('clientReady', () => {
+    client.once(Events.ClientReady, () => {
         logger.info(`[Bot] Logged in as ${client.user.tag}!`);
         
         // Modules Manager
-        const photoContestManager = new PhotoContestManager(client);
-        photoContestManager.init();
+        client.photocontestManager = new PhotoContestManager(client);
+        client.photocontestManager.init();
 
-        const fivemManager = new FiveMManager(client);
-        fivemManager.init();
+        client.fivemManager = new FiveMManager(client);
+        client.fivemManager.init();
 
         // Persistence Manager
-        const cleanupManager = new CleanupManager(client);
-        cleanupManager.start(60000); // Check every minute
+        client.cleanupManager = new CleanupManager(client);
+        client.cleanupManager.start(60000); // Check every minute
 
-        const embedScheduler = new EmbedSchedulerManager(client);
-        embedScheduler.start(60000); // Check every minute
+        client.embedScheduler = new EmbedSchedulerManager(client);
+        client.embedScheduler.start(60000); // Check every minute
 
-        const twitchManager = new TwitchManager(client);
-        twitchManager.init();
+        client.twitchManager = new TwitchManager(client);
+        client.twitchManager.init();
 
         startDashboard(client);
     });

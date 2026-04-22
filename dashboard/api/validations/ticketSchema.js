@@ -11,6 +11,7 @@ export const ticketSchema = z.object({
     logChannelId: discordId.or(z.literal('')).optional().nullable(),
     enabledTypes: z.array(z.string()).optional(),
     typesConfig: z.record(z.string(), z.object({
+        label: z.string().max(32).optional(),
         color: colorHex.optional(),
         emoji: z.string().max(32).optional(),
         image: z.string().url().or(z.string().length(0)).optional().nullable()

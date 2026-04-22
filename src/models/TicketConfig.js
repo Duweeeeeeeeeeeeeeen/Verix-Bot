@@ -17,16 +17,17 @@ const ticketConfigSchema = new mongoose.Schema({
     typesConfig: {
         type: Map,
         of: {
+            label: { type: String }, // Optional custom label
             color: { type: String, default: '#3498db' },
             emoji: { type: String, default: '🎫' },
             image: { type: String, default: null }
         },
         default: {
-            'supporto': { color: '#3498db', emoji: '🆘' },
-            'segnalazione': { color: '#e74c3c', emoji: '🚨' },
-            'whitelist': { color: '#2ecc71', emoji: '🛂' },
-            'staff': { color: '#9b59b6', emoji: '💎' },
-            'altro': { color: '#95a5a6', emoji: '📁' }
+            'supporto': { label: 'Supporto Generale', color: '#3498db', emoji: '🆘' },
+            'segnalazione': { label: 'Segnalazione Staff', color: '#e74c3c', emoji: '🚨' },
+            'whitelist': { label: 'Whitelist RP', color: '#2ecc71', emoji: '🛂' },
+            'staff': { label: 'Contatto Staff', color: '#9b59b6', emoji: '💎' },
+            'altro': { label: 'Altro / Varie', color: '#95a5a6', emoji: '📁' }
         }
     },
     transcriptionEnabled: { type: Boolean, default: true },

@@ -1,4 +1,5 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
+import { getButtonStyle } from '../../../utils/uiBuilder.js';
 import BackgroundConfig from '../../../models/BackgroundConfig.js';
 import { buildEmbed } from '../../../utils/embedHelper.js';
 import Guild from '../../../models/Guild.js';
@@ -14,6 +15,15 @@ export default {
         .addStringOption(opt => opt.setName('error_color').setDescription('Colore errore (HEX es: #ff4757)').setRequired(false))
         .addStringOption(opt => opt.setName('banner_url').setDescription('URL Immagine Banner principale').setRequired(false))
         .addStringOption(opt => opt.setName('thumb_url').setDescription('URL Thumbnail principale').setRequired(false))
+        .addStringOption(opt => opt.setName('button_label').setDescription('Testo del bottone').setRequired(false))
+        .addStringOption(opt => opt.setName('button_emoji').setDescription('Emoji del bottone').setRequired(false))
+        .addStringOption(opt => opt.setName('button_style').setDescription('Stile del bottone').setRequired(false)
+            .addChoices(
+                { name: 'Blu (Primary)', value: 'PRIMARY' },
+                { name: 'Verde (Success)', value: 'SUCCESS' },
+                { name: 'Rosso (Danger)', value: 'DANGER' },
+                { name: 'Grigio (Secondary)', value: 'SECONDARY' }
+            ))
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
     async execute(interaction) {
         // Module enablement check
@@ -29,6 +39,9 @@ export default {
         const error = interaction.options.getString('error_color');
         const banner = interaction.options.getString('banner_url');
         const thumb = interaction.options.getString('thumb_url');
+        const btnLabel = interaction.options.getString('button_label');
+        const btnEmoji = interaction.options.getString('button_emoji');
+        const btnStyle = interaction.options.getString('button_style');
 
         try {
             let config = await BackgroundConfig.findOne({ guildId: interaction.guild.id });
@@ -51,18 +64,23 @@ export default {
                 config.embeds.panel.thumbnail = thumb;
             }
 
+            if (btnLabel) config.embeds.panel.button.label = btnLabel;
+            if (btnEmoji) config.embeds.panel.button.emoji = btnEmoji;
+            if (btnStyle) config.embeds.panel.button.style = btnStyle;
+
             await config.save();
 
             const embed = buildEmbed(config.embeds.panel, {
                 guild: interaction.guild.name
             }, config);
 
+            const btnSettings = config.embeds.panel.button || { label: 'Invia Background', emoji: '📖', style: 'PRIMARY' };
             const button = new ActionRowBuilder().addComponents(
                 new ButtonBuilder()
                     .setCustomId('start_bg')
-                    .setLabel('Invia Background')
-                    .setEmoji('📖')
-                    .setStyle(ButtonStyle.Primary)
+                    .setLabel(btnSettings.label)
+                    .setEmoji(btnSettings.emoji)
+                    .setStyle(getButtonStyle(btnSettings.style))
             );
 
             // --- AUTO-CLEANUP OLD PANEL ---

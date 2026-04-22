@@ -10,7 +10,8 @@ import {
   Monitor,
   Smartphone,
   Eye,
-  Settings2
+  Settings2,
+  MousePointer2
 } from 'lucide-react';
 import EmbedPreview from './EmbedPreview';
 import HelpTooltip from './HelpTooltip';
@@ -20,8 +21,9 @@ import HelpTooltip from './HelpTooltip';
  * @param {Object} embed - The embed object to edit
  * @param {Function} onChange - Callback function when embed data changes
  * @param {Array} variables - List of available variables for this context
+ * @param {boolean} showButtonEditor - Whether to show the button customization section
  */
-export default function EmbedEditor({ embed, onChange, variables = ['user', 'guild'] }) {
+export default function EmbedEditor({ embed, onChange, variables = ['user', 'guild'], showButtonEditor = false }) {
   const [isPreviewMobile, setIsPreviewMobile] = useState(false);
 
   const updateEmbed = (key, value) => {
@@ -156,6 +158,51 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
                </div>
             </div>
           </section>
+
+          {/* Button Customization Section */}
+          {showButtonEditor && (
+            <section className="card glass" style={{ marginTop: '24px' }}>
+              <div className="align-center" style={{ marginBottom: '20px' }}>
+                <MousePointer2 size={20} color="var(--primary)" />
+                <h4 style={{ fontSize: '1rem', fontWeight: '800' }}>Personalizzazione Bottone</h4>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                <div className="input-group">
+                  <label className="text-label">Testo Bottone</label>
+                  <input 
+                    className="input" 
+                    value={embed?.button?.label || ''} 
+                    onChange={(e) => onChange({ ...embed, button: { ...(embed.button || {}), label: e.target.value } })} 
+                    placeholder="es: Inizia Whitelist" 
+                  />
+                </div>
+                <div className="input-group">
+                  <label className="text-label">Emoji Bottone</label>
+                  <input 
+                    className="input" 
+                    value={embed?.button?.emoji || ''} 
+                    onChange={(e) => onChange({ ...embed, button: { ...(embed.button || {}), emoji: e.target.value } })} 
+                    placeholder="es: 📝" 
+                  />
+                </div>
+              </div>
+              <div className="input-group" style={{ marginTop: '20px' }}>
+                <label className="text-label">Stile (Colore)</label>
+                <div className="stylized-select-wrapper">
+                  <select 
+                    className="select" 
+                    value={embed?.button?.style || 'PRIMARY'} 
+                    onChange={(e) => onChange({ ...embed, button: { ...(embed.button || {}), style: e.target.value } })}
+                  >
+                    <option value="PRIMARY">Blu (Primary)</option>
+                    <option value="SUCCESS">Verde (Success)</option>
+                    <option value="DANGER">Rosso (Danger)</option>
+                    <option value="SECONDARY">Grigio (Secondary)</option>
+                  </select>
+                </div>
+              </div>
+            </section>
+          )}
         </div>
 
         {/* Live Preview Sidebar */}

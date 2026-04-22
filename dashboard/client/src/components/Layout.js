@@ -67,6 +67,7 @@ export default function Layout({ children, guildId }) {
     { name: 'Log & Gestione', icon: History, path: `/config/${guildId}/management` },
     { name: 'Embed Suite', icon: LayoutIcon, path: `/config/${guildId}/embeds` },
     { name: 'Utility', icon: Cpu, path: `/config/${guildId}/utility` },
+    { name: 'Voice Selection', icon: Mic2, path: `/config/${guildId}/voice` },
   ];
 
   const getToastIcon = (type) => {

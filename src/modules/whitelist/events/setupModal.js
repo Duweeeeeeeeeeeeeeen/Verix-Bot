@@ -1,4 +1,5 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, Events, MessageFlags } from 'discord.js';
+import { getButtonStyle } from '../../../utils/uiBuilder.js';
 import WhitelistConfig from '../../../models/WhitelistConfig.js';
 import logger from '../../../utils/logger.js';
 
@@ -11,6 +12,8 @@ export default {
         const title = interaction.fields.getTextInputValue('wl_title');
         const description = interaction.fields.getTextInputValue('wl_desc');
         let colorInput = interaction.fields.getTextInputValue('wl_color');
+        const btnLabel = interaction.fields.getTextInputValue('wl_btn_label');
+        const btnEmoji = interaction.fields.getTextInputValue('wl_btn_emoji');
         
         // Validate HEX color
         const hexRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
@@ -28,6 +31,10 @@ export default {
             config.title = title;
             config.description = description;
             config.color = color;
+
+            if (btnLabel) config.embeds.panel.button.label = btnLabel;
+            if (btnEmoji) config.embeds.panel.button.emoji = btnEmoji;
+
             await config.save();
 
             const panelChannel = interaction.guild.channels.cache.get(config.panelChannelId);
@@ -52,12 +59,14 @@ export default {
                 .setColor(color)
                 .setTimestamp();
 
+            const buttonSettings = config.embeds?.panel?.button || { label: 'Inizia Whitelist', emoji: '📝', style: 'PRIMARY' };
+            
             const button = new ActionRowBuilder().addComponents(
                 new ButtonBuilder()
                     .setCustomId('start_wl')
-                    .setLabel('Inizia Whitelist')
-                    .setEmoji('📝')
-                    .setStyle(ButtonStyle.Primary)
+                    .setLabel(buttonSettings.label)
+                    .setEmoji(buttonSettings.emoji)
+                    .setStyle(getButtonStyle(buttonSettings.style))
             );
 
             // --- ROBUST BULK CLEANUP ---

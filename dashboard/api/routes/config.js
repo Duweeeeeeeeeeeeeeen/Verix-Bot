@@ -1,5 +1,7 @@
 import express from 'express';
 import { z } from 'zod';
+import { PermissionFlagsBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder } from 'discord.js';
+
 import WhitelistConfig from '../../../src/models/WhitelistConfig.js';
 import TicketConfig from '../../../src/models/TicketConfig.js';
 import Guild from '../../../src/models/Guild.js';
@@ -15,12 +17,11 @@ import WelcomeConfig from '../../../src/models/WelcomeConfig.js';
 import UtilityConfig from '../../../src/models/UtilityConfig.js';
 import BackgroundConfig from '../../../src/models/BackgroundConfig.js';
 import TwitchConfig from '../../../src/models/TwitchConfig.js';
+
+import { getButtonStyle } from '../../../src/utils/uiBuilder.js';
 import { mergeModuleDefaults } from '../utils/mergeDefaults.js';
-
-
 import { adminCheck } from '../middleware/adminCheck.js';
 import { checkBotPermissions } from '../../../src/utils/permissionHelper.js';
-import { PermissionFlagsBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder } from 'discord.js';
 import { invalidateCache } from '../../../src/core/configCache.js';
 import { invalidateGlobalCache } from '../../../src/core/globalConfigManager.js';
 import { buildButtonRows } from '../../../src/utils/uiBuilder.js';
@@ -210,12 +211,13 @@ router.post('/:guildId/background/send-panel', adminCheck, async (req, res) => {
         if (panelData.image) embed.setImage(panelData.image);
 
         // Background Submission Button
+        const btnData = config?.embeds?.panel?.button || { label: 'Invia Background', emoji: '📖', style: 'PRIMARY' };
         const submitButton = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
-                .setCustomId('start_background')
-                .setLabel('Invia Background')
-                .setStyle(ButtonStyle.Primary)
-                .setEmoji('📖')
+                .setCustomId('start_bg')
+                .setLabel(btnData.label || 'Invia Background')
+                .setStyle(getButtonStyle(btnData.style))
+                .setEmoji(btnData.emoji || '📖')
         );
 
         // Purge old panels
@@ -343,21 +345,14 @@ router.post('/:guildId/whitelist/send-panel', adminCheck, async (req, res) => {
         }
         if (panelData.footer) embed.setFooter({ text: panelData.footer });
 
-        // IMPORTANT: Only send the START button for the panel (e.g. APPLY_WHITELIST or start_wl)
-        const globalRef = await GlobalConfig.findOne({ guildId });
-        const allButtons = globalRef?.ui?.whitelistButtons || [];
-        
-        const startBtnConfig = allButtons.find(b => 
-            b.customId.toLowerCase().includes('apply') || 
-            b.customId.toLowerCase().includes('start')
-        ) || { customId: 'start_wl', label: 'Inizia Candidatura', style: 'PRIMARY', emoji: '⚖️' };
-
+        // Whitelist Start Button
+        const btnData = config?.embeds?.panel?.button || { label: 'Inizia Whitelist', emoji: '📝', style: 'PRIMARY' };
         const startButtonRow = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
-                .setCustomId(startBtnConfig.customId)
-                .setLabel(startBtnConfig.label)
-                .setStyle(ButtonStyle[startBtnConfig.style] || ButtonStyle.Primary) // Resolve string to enum
-                .setEmoji(startBtnConfig.emoji || '⚖️')
+                .setCustomId('start_wl')
+                .setLabel(btnData.label || 'Inizia Whitelist')
+                .setStyle(getButtonStyle(btnData.style))
+                .setEmoji(btnData.emoji || '📝')
         );
 
         // --- ROBUST BULK CLEANUP ---
@@ -486,7 +481,7 @@ router.post('/:guildId/tickets/send-panel', adminCheck, async (req, res) => {
             if (typesSource.length > 0) {
                 for (const [id, data] of typesSource) {
                     options.push({
-                        label: id.charAt(0).toUpperCase() + id.slice(1),
+                        label: data.label || (id.charAt(0).toUpperCase() + id.slice(1)),
                         value: `ticket_type_${id}`,
                         emoji: data.emoji || '🎫'
                     });
@@ -515,7 +510,7 @@ router.post('/:guildId/tickets/send-panel', adminCheck, async (req, res) => {
                     row.addComponents(
                         new ButtonBuilder()
                             .setCustomId(`ticket_type_${id}`)
-                            .setLabel(id.charAt(0).toUpperCase() + id.slice(1))
+                            .setLabel(data.label || (id.charAt(0).toUpperCase() + id.slice(1)))
                             .setStyle(ButtonStyle.Primary)
                             .setEmoji(data.emoji || '🎫')
                     );
@@ -647,12 +642,13 @@ router.post('/:guildId/verify/send-panel', adminCheck, async (req, res) => {
             .setTimestamp()
             .setFooter({ text: guild.name, iconURL: guild.iconURL() });
 
+        const btnData = config.buttons?.verify || { label: 'Verificati Ora', emoji: '✅', style: 'SUCCESS' };
         const row = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
                 .setCustomId('verify_user')
-                .setLabel('Verificati Ora')
-                .setEmoji('✅')
-                .setStyle(ButtonStyle.Success)
+                .setLabel(btnData.label || 'Verificati Ora')
+                .setEmoji(btnData.emoji || '✅')
+                .setStyle(getButtonStyle(btnData.style))
         );
 
         // --- ROBUST BULK CLEANUP (Verify) ---
@@ -1213,6 +1209,101 @@ router.post('/:guildId/fivem/send-panel', adminCheck, async (req, res) => {
     } catch (error) {
         console.error('Error sending fivem panel:', error);
         res.status(500).json({ success: false, error: 'Errore durante l\'invio della LiveBoard.' });
+    }
+});
+
+// POST photocontest force start
+router.post('/:guildId/photocontest/force-start', adminCheck, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const config = await PhotoContestConfig.findOne({ guildId });
+        
+        if (!config || !config.enabled) {
+            return res.status(400).json({ success: false, error: 'Modulo Photo Contest disabilitato o non configurato.' });
+        }
+
+        // We can't call manager directly, but we can set nextContestAt to now and wait for the interval
+        // OR we can use the bot instance if we have it.
+        // Since we have req.discordClient, we can actually trigger the manager if it's attached to the client.
+        if (req.discordClient.photocontestManager) {
+            await req.discordClient.photocontestManager.startContest(config);
+            res.json({ success: true, message: 'Contest avviato manualmente!' });
+        } else {
+            // Fallback: set timer to now
+            config.nextContestAt = new Date();
+            await config.save();
+            res.json({ success: true, message: 'Contest pianificato per l\'avvio immediato (entro 1 minuto).' });
+        }
+        
+        await logAudit(req, 'FORCE_START_PHOTOCONTEST', { guildId });
+    } catch (error) {
+        console.error('Error force starting photocontest:', error);
+        res.status(500).json({ success: false, error: 'Errore durante l\'avvio del contest.' });
+    }
+});
+
+// POST photocontest force end
+router.post('/:guildId/photocontest/force-end', adminCheck, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const activeContest = await PhotoContest.findOne({ guildId, status: 'ACTIVE' });
+        
+        if (!activeContest) {
+            return res.status(400).json({ success: false, error: 'Nessun contest attivo da terminare.' });
+        }
+
+        if (req.discordClient.photocontestManager) {
+            await req.discordClient.photocontestManager.endContest(activeContest);
+            res.json({ success: true, message: 'Contest terminato manualmente!' });
+        } else {
+            // Fallback: set endTime to now
+            activeContest.endTime = new Date();
+            await activeContest.save();
+            res.json({ success: true, message: 'Contest pianificato per il termine immediato (entro 1 minuto).' });
+        }
+        
+        await logAudit(req, 'FORCE_END_PHOTOCONTEST', { guildId });
+    } catch (error) {
+        console.error('Error force ending photocontest:', error);
+        res.status(500).json({ success: false, error: 'Errore durante il termine del contest.' });
+    }
+});
+
+// POST welcome test
+router.post('/:guildId/welcome/test', adminCheck, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const config = await WelcomeConfig.findOne({ guildId });
+        
+        if (!config || !config.enabled || !config.channelId) {
+            return res.status(400).json({ success: false, error: 'Modulo Welcome disabilitato o canale non impostato.' });
+        }
+
+        const client = req.discordClient;
+        const guild = await client.guilds.fetch(guildId);
+        const member = await guild.members.fetchMe(); // Send test to bot itself or just mock it
+
+        // We can use the welcome handler logic here
+        // Since I don't want to duplicate logic, I'll just send a mock embed to the channel
+        const channel = await guild.channels.fetch(config.channelId);
+        if (!channel) return res.status(404).json({ success: false, error: 'Canale non trovato.' });
+
+        const embedData = config.embed || {};
+        const embed = new EmbedBuilder()
+            .setTitle(embedData.title?.replace(/{user}/g, member.user.username) || 'Benvenuto!')
+            .setDescription(embedData.description?.replace(/{user}/g, `<@${member.id}>`) || 'Grazie per essere entrato.')
+            .setColor(embedData.color || '#5865F2');
+        
+        if (embedData.thumbnail) embed.setThumbnail(member.user.displayAvatarURL());
+        if (embedData.image) embed.setImage(embedData.image);
+
+        await channel.send({ content: config.message?.replace(/{user}/g, `<@${member.id}>`) || `Benvenuto <@${member.id}>!`, embeds: [embed] });
+
+        res.json({ success: true, message: 'Messaggio di prova inviato!' });
+        await logAudit(req, 'TEST_WELCOME', { channelId: config.channelId });
+    } catch (error) {
+        console.error('Error testing welcome:', error);
+        res.status(500).json({ success: false, error: 'Errore durante l\'invio del test.' });
     }
 });
 

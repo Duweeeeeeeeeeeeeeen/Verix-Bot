@@ -18,7 +18,8 @@ export default function WelcomeConfig() {
   const [discordData, setDiscordData] = useState({ roles: [], channels: [] });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-   const [activeTab, setActiveTab] = useState('settings');
+  const [testing, setTesting] = useState(false);
+  const [activeTab, setActiveTab] = useState('settings');
   const [activeEmbedKey, setActiveEmbedKey] = useState('welcome');
   const [mounted, setMounted] = useState(false);
 
@@ -71,6 +72,16 @@ export default function WelcomeConfig() {
     finally { setSaving(false); }
   };
 
+  const handleTest = async () => {
+    setTesting(true);
+    try {
+        const res = await api.request(`/config/${guildId}/welcome/test`, { method: 'POST' });
+        showToast(res.message || 'Messaggio inviato!');
+    } catch (error) {
+        showToast(error.message || 'Errore durante il test', 'error');
+    } finally { setTesting(false); }
+  };
+
   const updateMessageConfig = (type, field, value) => {
     setConfig({
       ...config,
@@ -106,6 +117,9 @@ export default function WelcomeConfig() {
               </div>
            </div>
            <div className="header-buttons">
+              <button onClick={handleTest} className="btn-outline" disabled={testing || !config.channelId}>
+                <Zap size={16} /> {testing ? 'Invio...' : 'Invia Test'}
+              </button>
               <button onClick={handleSave} className="btn-primary" disabled={saving}>
                 <Save size={16} /> {saving ? 'Salvataggio...' : 'Salva Modifiche'}
               </button>

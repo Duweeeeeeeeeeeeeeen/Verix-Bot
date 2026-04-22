@@ -2,6 +2,7 @@ import WhitelistApp from '../../../models/WhitelistApp.js';
 import WhitelistConfig from '../../../models/WhitelistConfig.js';
 import logger from '../../../utils/logger.js';
 import { EmbedBuilder } from 'discord.js';
+import mongoose from 'mongoose';
 
 /**
  * Recupera e gestisce le sessioni di whitelist attive dopo un riavvio del bot.
@@ -9,6 +10,11 @@ import { EmbedBuilder } from 'discord.js';
  */
 export async function recoverWhitelistSessions(client) {
     logger.info('Inizio recupero sessioni whitelist attive...');
+    
+    if (mongoose.connection.readyState !== 1) {
+        logger.warn('Salto recupero sessioni whitelist: Database non connesso.');
+        return;
+    }
 
     try {
         const pendingApps = await WhitelistApp.find({ status: 'PENDING' });

@@ -443,6 +443,69 @@ export default function WhitelistConfig() {
                                 </div>
                             </div>
                         </section>
+
+                        <section className="card section-card" style={{ marginTop: '24px' }}>
+                             <div className="align-center" style={{ marginBottom: '16px' }}>
+                                <MousePointer2 size={16} color="var(--primary)" />
+                                <h3>Pulsante Pannello (BG)</h3>
+                             </div>
+                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                                 <div className="field-box">
+                                     <label className="text-label">Testo Bottone</label>
+                                     <input 
+                                         className="input" 
+                                         value={bgConfig.embeds?.panel?.button?.label || ''} 
+                                         onChange={e => {
+                                             const newBg = { ...bgConfig };
+                                             if (!newBg.embeds) newBg.embeds = {};
+                                             if (!newBg.embeds.panel) newBg.embeds.panel = {};
+                                             if (!newBg.embeds.panel.button) newBg.embeds.panel.button = {};
+                                             newBg.embeds.panel.button.label = e.target.value;
+                                             setBgConfig(newBg);
+                                         }} 
+                                         placeholder="es: Invia Background" 
+                                     />
+                                 </div>
+                                 <div className="field-box">
+                                     <label className="text-label">Emoji Bottone</label>
+                                     <input 
+                                         className="input" 
+                                         value={bgConfig.embeds?.panel?.button?.emoji || ''} 
+                                         onChange={e => {
+                                             const newBg = { ...bgConfig };
+                                             if (!newBg.embeds) newBg.embeds = {};
+                                             if (!newBg.embeds.panel) newBg.embeds.panel = {};
+                                             if (!newBg.embeds.panel.button) newBg.embeds.panel.button = {};
+                                             newBg.embeds.panel.button.emoji = e.target.value;
+                                             setBgConfig(newBg);
+                                         }} 
+                                         placeholder="es: 📖" 
+                                     />
+                                 </div>
+                             </div>
+                             <div className="field-box" style={{ marginTop: '16px' }}>
+                                 <label className="text-label">Stile (Colore)</label>
+                                 <div className="stylized-select-wrapper">
+                                    <select 
+                                        className="select" 
+                                        value={bgConfig.embeds?.panel?.button?.style || 'PRIMARY'} 
+                                        onChange={e => {
+                                            const newBg = { ...bgConfig };
+                                            if (!newBg.embeds) newBg.embeds = {};
+                                            if (!newBg.embeds.panel) newBg.embeds.panel = {};
+                                            if (!newBg.embeds.panel.button) newBg.embeds.panel.button = {};
+                                            newBg.embeds.panel.button.style = e.target.value;
+                                            setBgConfig(newBg);
+                                        }}
+                                    >
+                                        <option value="PRIMARY">Blu (Primary)</option>
+                                        <option value="SUCCESS">Verde (Success)</option>
+                                        <option value="DANGER">Rosso (Danger)</option>
+                                        <option value="SECONDARY">Grigio (Secondary)</option>
+                                    </select>
+                                 </div>
+                             </div>
+                        </section>
                     </div>
 
                     <div className="grid-right">
@@ -514,6 +577,7 @@ export default function WhitelistConfig() {
                             embed={activeEmbedKey.startsWith('bg.') 
                                 ? (bgConfig.embeds?.[activeEmbedKey.split('.')[1]] || {}) 
                                 : (config.embeds?.[activeEmbedKey] || {})} 
+                            showButtonEditor={activeEmbedKey === 'panel' || activeEmbedKey === 'bg.panel'}
                             onChange={(data) => {
                                 if (activeEmbedKey.startsWith('bg.')) {
                                     const key = activeEmbedKey.split('.')[1];
@@ -592,6 +656,44 @@ export default function WhitelistConfig() {
                                 <p className="text-dim" style={{ fontSize: '0.75rem', marginTop: '4px' }}>Tempo di attesa prima di poter ripetere il colloquio orale.</p>
                             </div>
                          </div>
+
+                         <section className="card section-card" style={{ marginTop: '24px' }}>
+                             <div className="align-center" style={{ marginBottom: '16px' }}>
+                                <MousePointer2 size={16} color="var(--primary)" />
+                                <h3>Pulsanti Orale</h3>
+                             </div>
+                             <div className="btn-cards-grid-t" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                {['approve', 'deny', 'reset'].map(key => (
+                                    <div key={key} style={{ background: 'rgba(0,0,0,0.1)', padding: '12px', borderRadius: '10px', border: '1px solid var(--border)' }}>
+                                        <label style={{ fontSize: '0.6rem', textTransform: 'uppercase', color: 'var(--primary)', fontWeight: '900', display: 'block', marginBottom: '8px' }}>
+                                            {key === 'approve' ? 'Approva' : key === 'deny' ? 'Rifiuta' : 'Timer'}
+                                        </label>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 40px', gap: '8px', marginBottom: '8px' }}>
+                                            <input className="input-small" value={config.voiceSettings?.voiceButtons?.[key]?.label || ''} onChange={e => setNested(`voiceSettings.voiceButtons.${key}.label`, e.target.value)} placeholder="Etichetta" />
+                                            <input className="input-small" style={{ textAlign: 'center' }} value={config.voiceSettings?.voiceButtons?.[key]?.emoji || ''} onChange={e => setNested(`voiceSettings.voiceButtons.${key}.emoji`, e.target.value)} placeholder="Emoji" />
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '4px' }}>
+                                            {['SUCCESS', 'DANGER', 'PRIMARY', 'SECONDARY'].map(style => (
+                                                <button 
+                                                    key={style}
+                                                    onClick={() => setNested(`voiceSettings.voiceButtons.${key}.style`, style)}
+                                                    style={{ 
+                                                        width: '100%', 
+                                                        height: '6px', 
+                                                        border: 'none', 
+                                                        borderRadius: '100px', 
+                                                        cursor: 'pointer', 
+                                                        background: style === 'SUCCESS' ? '#22c55e' : style === 'DANGER' ? '#ef4444' : style === 'PRIMARY' ? '#6366f1' : '#64748b',
+                                                        opacity: config.voiceSettings?.voiceButtons?.[key]?.style === style ? 1 : 0.2,
+                                                        transition: '0.2s'
+                                                    }}
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                             </div>
+                         </section>
                     </div>
                 </div>
             )}

@@ -181,6 +181,28 @@ export default function EmbedPreview({ data, isMobile = false }) {
                     </div>
                 )}
             </div>
+
+            {/* Simulated Discord Button */}
+            {data.button && (data.button.label || data.button.emoji) && (
+                <div style={{ marginTop: '8px', display: 'flex', gap: '8px' }}>
+                    <button style={{
+                        background: data.button.style === 'SUCCESS' ? '#248046' : (data.button.style === 'DANGER' ? '#da373c' : (data.button.style === 'SECONDARY' ? '#4e5058' : '#5865f2')),
+                        color: 'white',
+                        border: 'none',
+                        padding: '6px 16px',
+                        borderRadius: '3px',
+                        fontSize: '0.875rem',
+                        fontWeight: '500',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        cursor: 'default'
+                    }}>
+                        {data.button.emoji && <span>{data.button.emoji}</span>}
+                        {data.button.label && <span>{processPlaceholders(data.button.label)}</span>}
+                    </button>
+                </div>
+            )}
          </div>
       </div>
 

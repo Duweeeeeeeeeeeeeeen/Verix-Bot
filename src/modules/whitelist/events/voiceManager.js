@@ -1,4 +1,5 @@
 import { Events, ChannelType, PermissionFlagsBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
+import { getButtonStyle } from '../../../utils/uiBuilder.js';
 import WhitelistConfig from '../../../models/WhitelistConfig.js';
 import WhitelistApp from '../../../models/WhitelistApp.js';
 import Background from '../../../models/Background.js';
@@ -313,17 +314,17 @@ async function startVoiceSession(member, guild, config, client) {
             .setCustomId(`approve_voice_${member.id}`)
             .setLabel(buttons.approve?.label || 'Accetta')
             .setEmoji(buttons.approve?.emoji || '✅')
-            .setStyle(ButtonStyle[buttons.approve?.style] || ButtonStyle.Success),
+            .setStyle(getButtonStyle(buttons.approve?.style)),
         new ButtonBuilder()
             .setCustomId(`deny_voice_${member.id}`)
             .setLabel(buttons.deny?.label || 'Rifiuta')
             .setEmoji(buttons.deny?.emoji || '❌')
-            .setStyle(ButtonStyle[buttons.deny?.style] || ButtonStyle.Danger),
+            .setStyle(getButtonStyle(buttons.deny?.style)),
         new ButtonBuilder()
             .setCustomId(`reset_timer_voice_${member.id}`)
             .setLabel(buttons.reset?.label || 'Riavvia Timer')
             .setEmoji(buttons.reset?.emoji || '⏱️')
-            .setStyle(ButtonStyle[buttons.reset?.style] || ButtonStyle.Secondary)
+            .setStyle(getButtonStyle(buttons.reset?.style))
     );
 
     if (controlEmbed) {
@@ -344,12 +345,12 @@ async function startVoiceSession(member, guild, config, client) {
                     .setCustomId(`approve_voice_${member.id}`)
                     .setLabel(buttons.approve?.label || 'Accetta')
                     .setEmoji(buttons.approve?.emoji || '✅')
-                    .setStyle(ButtonStyle[buttons.approve?.style] || ButtonStyle.Success),
+                    .setStyle(getButtonStyle(buttons.approve?.style)),
                 new ButtonBuilder()
                     .setCustomId(`deny_voice_${member.id}`)
                     .setLabel(buttons.deny?.label || 'Rifiuta')
                     .setEmoji(buttons.deny?.emoji || '❌')
-                    .setStyle(ButtonStyle[buttons.deny?.style] || ButtonStyle.Danger)
+                    .setStyle(getButtonStyle(buttons.deny?.style))
             );
             await logChannel.send({ embeds: [logEmbed], components: [row] });
         }

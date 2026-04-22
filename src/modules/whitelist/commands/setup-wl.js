@@ -13,6 +13,15 @@ export default {
         .addStringOption(opt => opt.setName('error_color').setDescription('Colore errore (HEX es: #ff4757)').setRequired(false))
         .addStringOption(opt => opt.setName('banner_url').setDescription('URL Immagine Banner principale').setRequired(false))
         .addStringOption(opt => opt.setName('thumb_url').setDescription('URL Thumbnail principale').setRequired(false))
+        .addStringOption(opt => opt.setName('button_label').setDescription('Testo del bottone').setRequired(false))
+        .addStringOption(opt => opt.setName('button_emoji').setDescription('Emoji del bottone').setRequired(false))
+        .addStringOption(opt => opt.setName('button_style').setDescription('Stile del bottone').setRequired(false)
+            .addChoices(
+                { name: 'Blu (Primary)', value: 'PRIMARY' },
+                { name: 'Verde (Success)', value: 'SUCCESS' },
+                { name: 'Rosso (Danger)', value: 'DANGER' },
+                { name: 'Grigio (Secondary)', value: 'SECONDARY' }
+            ))
         .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
     async execute(interaction) {
         const panelChannel = interaction.options.getChannel('panel_channel');
@@ -23,6 +32,9 @@ export default {
         const error = interaction.options.getString('error_color');
         const banner = interaction.options.getString('banner_url');
         const thumb = interaction.options.getString('thumb_url');
+        const btnLabel = interaction.options.getString('button_label');
+        const btnEmoji = interaction.options.getString('button_emoji');
+        const btnStyle = interaction.options.getString('button_style');
 
         // Permissions check
         const me = interaction.guild.members.me;
@@ -60,6 +72,10 @@ export default {
             updateData['embeds.start.thumbnail'] = thumb;
         }
 
+        if (btnLabel) updateData['embeds.panel.button.label'] = btnLabel;
+        if (btnEmoji) updateData['embeds.panel.button.emoji'] = btnEmoji;
+        if (btnStyle) updateData['embeds.panel.button.style'] = btnStyle;
+
         await WhitelistConfig.findOneAndUpdate(
             { guildId: interaction.guild.id },
             { $set: updateData },
@@ -92,10 +108,26 @@ export default {
             .setPlaceholder('#5865F2')
             .setRequired(false);
 
+        const btnLabelInput = new TextInputBuilder()
+            .setCustomId('wl_btn_label')
+            .setLabel('Testo Bottone')
+            .setStyle(TextInputStyle.Short)
+            .setPlaceholder('es: Inizia Whitelist')
+            .setRequired(false);
+
+        const btnEmojiInput = new TextInputBuilder()
+            .setCustomId('wl_btn_emoji')
+            .setLabel('Emoji Bottone')
+            .setStyle(TextInputStyle.Short)
+            .setPlaceholder('es: 📝')
+            .setRequired(false);
+
         modal.addComponents(
             new ActionRow().addComponents(titleInput),
             new ActionRow().addComponents(descInput),
-            new ActionRow().addComponents(colorInput)
+            new ActionRow().addComponents(colorInput),
+            new ActionRow().addComponents(btnLabelInput),
+            new ActionRow().addComponents(btnEmojiInput)
         );
 
         await interaction.showModal(modal);

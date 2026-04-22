@@ -5,7 +5,7 @@ import { recoverWhitelistSessions } from '../../modules/whitelist/utils/recovery
 import { initVoiceCleanup } from '../../modules/whitelist/utils/voiceCleanup.js';
 
 export default {
-    name: 'clientReady',
+    name: Events.ClientReady,
     once: true,
     async execute(client) {
         logger.success(`Logged in as ${client.user.tag}!`);

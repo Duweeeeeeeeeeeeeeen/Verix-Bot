@@ -84,7 +84,12 @@ const whitelistConfigSchema = new mongoose.Schema({
             image: { type: String, default: null },
             thumbnail: { type: String, default: null },
             footer: { type: String, default: null },
-            fields: { type: [Object], default: [] }
+            fields: { type: [Object], default: [] },
+            button: {
+                label: { type: String, default: 'Inizia Whitelist' },
+                emoji: { type: String, default: '📝' },
+                style: { type: String, default: 'PRIMARY' }
+            }
         },
         start: {
             title: { type: String, default: '🛂 Pratica d\'Ingresso: {user}' },

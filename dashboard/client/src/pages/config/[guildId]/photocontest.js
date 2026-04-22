@@ -19,6 +19,8 @@ export default function PhotoContestConfig() {
   const [config, setConfig] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [starting, setStarting] = useState(false);
+  const [ending, setEnding] = useState(false);
   const [activeTab, setActiveTab] = useState('settings');
 
    const [roles, setRoles] = useState([]);
@@ -110,6 +112,27 @@ export default function PhotoContestConfig() {
     } catch (error) {}
   };
 
+  const handleForceStart = async () => {
+    setStarting(true);
+    try {
+        const res = await api.request(`/config/${guildId}/photocontest/force-start`, { method: 'POST' });
+        showToast(res.message || 'Contest avviato!');
+    } catch (error) {
+        showToast(error.message || 'Errore durante l\'avvio', 'error');
+    } finally { setStarting(false); }
+  };
+
+  const handleForceEnd = async () => {
+    if(!confirm("Vuoi terminare il contest attivo?")) return;
+    setEnding(true);
+    try {
+        const res = await api.request(`/config/${guildId}/photocontest/force-end`, { method: 'POST' });
+        showToast(res.message || 'Contest terminato!');
+    } catch (error) {
+        showToast(error.message || 'Errore durante il termine', 'error');
+    } finally { setEnding(false); }
+  };
+
   if (!mounted || loading || !config) return <Layout guildId={guildId}><Skeleton height="500px" /></Layout>;
 
   return (
@@ -128,6 +151,12 @@ export default function PhotoContestConfig() {
               </div>
            </div>
            <div className="header-buttons">
+              <button onClick={handleForceEnd} className="btn-outline" style={{ color: 'var(--error)' }} disabled={ending}>
+                <Clock size={16} /> {ending ? 'Terminando...' : 'Termina Contest'}
+              </button>
+              <button onClick={handleForceStart} className="btn-outline" style={{ color: 'var(--success)' }} disabled={starting}>
+                <Zap size={16} /> {starting ? 'Avviando...' : 'Avvia Ora'}
+              </button>
               <button onClick={handleReset} className="btn-outline">
                 <RefreshCcw size={16} /> Reset
               </button>

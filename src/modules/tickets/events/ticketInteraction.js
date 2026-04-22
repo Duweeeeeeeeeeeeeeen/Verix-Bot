@@ -1,4 +1,5 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, EmbedBuilder, Events, MessageFlags, ModalBuilder, PermissionFlagsBits, StringSelectMenuBuilder, TextInputBuilder, TextInputStyle } from 'discord.js';
+import { getButtonStyle } from '../../../utils/uiBuilder.js';
 import TicketConfig from '../../../models/TicketConfig.js';
 import Ticket from '../../../models/Ticket.js';
 import Guild from '../../../models/Guild.js';
@@ -348,18 +349,18 @@ async function renderTicketDashboard(channel, ticket, config, typeConfig, user, 
             .setCustomId('tk_claim')
             .setLabel(buttons.claim?.label || 'Assumi')
             .setEmoji(buttons.claim?.emoji || '🙋‍♂️')
-            .setStyle(ButtonStyle[buttons.claim?.style] || ButtonStyle.Success)
+            .setStyle(getButtonStyle(buttons.claim?.style))
             .setDisabled(!!ticket.assignedStaffId),
         new ButtonBuilder()
             .setCustomId('tk_close')
             .setLabel(buttons.close?.label || 'Chiudi')
             .setEmoji(buttons.close?.emoji || '🔒')
-            .setStyle(ButtonStyle[buttons.close?.style] || ButtonStyle.Danger),
+            .setStyle(getButtonStyle(buttons.close?.style)),
         new ButtonBuilder()
             .setCustomId('tk_quick_reply')
             .setLabel(buttons.quickReply?.label || 'Risposte Rapide')
             .setEmoji(buttons.quickReply?.emoji || '📝')
-            .setStyle(ButtonStyle[buttons.quickReply?.style] || ButtonStyle.Primary)
+            .setStyle(getButtonStyle(buttons.quickReply?.style))
     );
 
     const btnRow2 = new ActionRowBuilder().addComponents(
@@ -367,12 +368,12 @@ async function renderTicketDashboard(channel, ticket, config, typeConfig, user, 
             .setCustomId('tk_tag')
             .setLabel(buttons.tag?.label || 'Tagga')
             .setEmoji(buttons.tag?.emoji || '🏷️')
-            .setStyle(ButtonStyle[buttons.tag?.style] || ButtonStyle.Secondary),
+            .setStyle(getButtonStyle(buttons.tag?.style)),
         new ButtonBuilder()
             .setCustomId('tk_transcript')
             .setLabel(buttons.transcript?.label || 'Logs')
             .setEmoji(buttons.transcript?.emoji || '📄')
-            .setStyle(ButtonStyle[buttons.transcript?.style] || ButtonStyle.Secondary)
+            .setStyle(getButtonStyle(buttons.transcript?.style))
     );
 
     const statusMenu = new ActionRowBuilder().addComponents(

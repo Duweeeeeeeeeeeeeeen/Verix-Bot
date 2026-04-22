@@ -3,12 +3,18 @@ import { getGlobalConfig } from '../core/globalConfigManager.js';
 import logger from './logger.js';
 
 // Map string → ButtonStyle enum
-const STYLE_MAP = {
+export const STYLE_MAP = {
     PRIMARY:   ButtonStyle.Primary,
     SUCCESS:   ButtonStyle.Success,
     DANGER:    ButtonStyle.Danger,
-    SECONDARY: ButtonStyle.Secondary
+    SECONDARY: ButtonStyle.Secondary,
+    LINK:      ButtonStyle.Link
 };
+
+export function getButtonStyle(style) {
+    if (!style) return ButtonStyle.Primary;
+    return STYLE_MAP[style.toUpperCase()] || ButtonStyle.Primary;
+}
 
 /**
  * Build an ActionRowBuilder from a panel's button config in GlobalConfig.

@@ -326,14 +326,57 @@ export default function TicketConfig() {
                         </div>
                         <div className="types-grid-t">
                             {config.typesConfig && Object.entries(config.typesConfig).map(([id, data]) => (
-                                <div key={id} className="type-card-minimal">
-                                    <div className="type-icon-p" style={{ backgroundColor: `${data.color}20`, color: data.color }}>{data.emoji}</div>
-                                    <div className="type-info-p">
-                                        <h4>{id.toUpperCase()}</h4>
-                                        <span>Color: {data.color}</span>
+                                <div key={id} className="type-card-minimal" style={{ display: 'grid', gridTemplateColumns: 'auto 1fr auto auto', alignItems: 'center', gap: '12px', padding: '12px', background: 'rgba(0,0,0,0.2)', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                        <label style={{ fontSize: '0.6rem', color: 'var(--text-dim)', textTransform: 'uppercase' }}>Emoji</label>
+                                        <input 
+                                            className="input-small" 
+                                            style={{ width: '40px', textAlign: 'center' }} 
+                                            value={data.emoji || ''} 
+                                            onChange={e => {
+                                                const newTypes = { ...config.typesConfig };
+                                                newTypes[id] = { ...data, emoji: e.target.value };
+                                                setConfig({ ...config, typesConfig: newTypes });
+                                            }} 
+                                        />
                                     </div>
-                                    <div className="type-actions-p">
-                                        <button className="btn-icon-danger"><Trash2 size={14} /></button>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                        <label style={{ fontSize: '0.6rem', color: 'var(--text-dim)', textTransform: 'uppercase' }}>Etichetta (ID: {id})</label>
+                                        <input 
+                                            className="input-small" 
+                                            value={data.label || ''} 
+                                            placeholder={id.charAt(0).toUpperCase() + id.slice(1)}
+                                            onChange={e => {
+                                                const newTypes = { ...config.typesConfig };
+                                                newTypes[id] = { ...data, label: e.target.value };
+                                                setConfig({ ...config, typesConfig: newTypes });
+                                            }} 
+                                        />
+                                    </div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                        <label style={{ fontSize: '0.6rem', color: 'var(--text-dim)', textTransform: 'uppercase' }}>Colore</label>
+                                        <input 
+                                            type="color"
+                                            style={{ width: '40px', height: '30px', padding: '2px', background: 'transparent', border: 'none', cursor: 'pointer' }}
+                                            value={data.color || '#3498db'} 
+                                            onChange={e => {
+                                                const newTypes = { ...config.typesConfig };
+                                                newTypes[id] = { ...data, color: e.target.value };
+                                                setConfig({ ...config, typesConfig: newTypes });
+                                            }} 
+                                        />
+                                    </div>
+                                    <div className="type-actions-p" style={{ marginTop: '12px' }}>
+                                        <button 
+                                            className="btn-icon-danger"
+                                            onClick={() => {
+                                                const newTypes = { ...config.typesConfig };
+                                                delete newTypes[id];
+                                                setConfig({ ...config, typesConfig: newTypes });
+                                            }}
+                                        >
+                                            <Trash2 size={14} />
+                                        </button>
                                     </div>
                                 </div>
                             ))}
@@ -358,6 +401,7 @@ export default function TicketConfig() {
                             <div className="editor-main-t">
                                 <EmbedEditor 
                                     embed={config.embeds?.[activeEmbedKey] || {}} 
+                                    showButtonEditor={activeEmbedKey === 'panel'}
                                     onChange={(data) => updateEmbed(activeEmbedKey, data)}
                                     variables={['user', 'guild', 'ticket_id', 'staff', 'type', 'priority']}
                                 />
@@ -413,12 +457,7 @@ export default function TicketConfig() {
                     </section>
                 </div>
             )}
-            {/* TAB: Personalization */}
-            {activeTab === 'personalization' && (
-                <div className="animate">
-                    <p style={{ color: 'var(--text-muted)' }}>Configurazioni estetiche disponibili a breve...</p>
-                </div>
-            )}
+
 
             {/* TAB: Messages */}
             {activeTab === 'messages' && (

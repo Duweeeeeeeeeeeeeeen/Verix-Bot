@@ -23,7 +23,12 @@ const backgroundConfigSchema = new mongoose.Schema({
             description: { type: String, default: 'Benvenuto cittadino. In questa sezione puoi depositare il dossier relativo alla storia del tuo personaggio.\n\nAssicurati che il collegamento fornito (es. Google Doc) sia accessibile agli ufficiali.' },
             color: { type: String, default: 'primary' },
             image: { type: String, default: null },
-            thumbnail: { type: String, default: null }
+            thumbnail: { type: String, default: null },
+            button: {
+                label: { type: String, default: 'Invia Background' },
+                emoji: { type: String, default: '📖' },
+                style: { type: String, default: 'PRIMARY' }
+            }
         },
         instructions: {
             title: { type: String, default: '📝 Direttive di Compilazione' },

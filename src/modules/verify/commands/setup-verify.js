@@ -1,4 +1,5 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
+import { getButtonStyle } from '../../../utils/uiBuilder.js';
 import VerifyConfig from '../../../models/VerifyConfig.js';
 import logger from '../../../utils/logger.js';
 
@@ -22,13 +23,34 @@ export default {
         .addChannelOption(option => 
             option.setName('log_channel')
                 .setDescription('Canale per i log di verifica (opzionale)')
-                .setRequired(false)),
+                .setRequired(false))
+        .addStringOption(option => 
+            option.setName('button_label')
+                .setDescription('Testo del bottone di verifica')
+                .setRequired(false))
+        .addStringOption(option => 
+            option.setName('button_emoji')
+                .setDescription('Emoji del bottone di verifica')
+                .setRequired(false))
+        .addStringOption(option => 
+            option.setName('button_style')
+                .setDescription('Colore del bottone')
+                .setRequired(false)
+                .addChoices(
+                    { name: 'Verde (Success)', value: 'SUCCESS' },
+                    { name: 'Blu (Primary)', value: 'PRIMARY' },
+                    { name: 'Rosso (Danger)', value: 'DANGER' },
+                    { name: 'Grigio (Secondary)', value: 'SECONDARY' }
+                )),
 
     async execute(interaction) {
         const channel = interaction.options.getChannel('channel');
         const role = interaction.options.getRole('role');
         const removeRole = interaction.options.getRole('remove_role');
         const logChannel = interaction.options.getChannel('log_channel');
+        const btnLabel = interaction.options.getString('button_label');
+        const btnEmoji = interaction.options.getString('button_emoji');
+        const btnStyle = interaction.options.getString('button_style');
 
         await interaction.deferReply({ flags: [MessageFlags.Ephemeral] });
         const botHighestRole = interaction.guild.members.me.roles.highest;
@@ -62,6 +84,12 @@ export default {
                 { upsert: true, new: true }
             );
 
+            // Apply button customizations if provided
+            if (btnLabel) config.buttons.verify.label = btnLabel;
+            if (btnEmoji) config.buttons.verify.emoji = btnEmoji;
+            if (btnStyle) config.buttons.verify.style = btnStyle;
+            await config.save();
+
             // Create the Embed
             const pEmbed = config.embeds?.panel || {};
             const embed = new EmbedBuilder()
@@ -82,7 +110,7 @@ export default {
                         .setCustomId('verify_user')
                         .setLabel(bConfig.label || 'Verificati Ora')
                         .setEmoji(bConfig.emoji || '✅')
-                        .setStyle(ButtonStyle[bConfig.style] || ButtonStyle.Success),
+                        .setStyle(getButtonStyle(bConfig.style)),
                 );
 
             // --- ROBUST BULK CLEANUP (Verify) ---
