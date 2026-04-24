@@ -1,15 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import Layout from '../../../components/Layout';
 import Skeleton from '../../../components/Skeleton';
 import DiscordSelector from '../../../components/DiscordSelector';
 import EmbedEditor from '../../../components/EmbedEditor';
 import api from '../../../utils/api';
 import { 
     Save, UserPlus, UserMinus, Settings2, RefreshCcw, 
-    Power, Palette, Info, Bell, Layout as LayoutIcon, ChevronRight
+    Power, Palette, Info, Bell, Layout as LayoutIcon, ChevronRight, Zap
 } from 'lucide-react';
-import GuideSidebar from '../../../components/GuideSidebar';
+import { mergeConfig } from '../../../utils/defaults';
 
 export default function WelcomeConfig() {
   const router = useRouter();
@@ -36,15 +35,12 @@ export default function WelcomeConfig() {
             api.request(`/config/${guildId}/discord-data`)
           ]);
 
-          if (configRes && configRes.data) {
-            setConfig(configRes.data.welcome || configRes.data);
-          } else if (configRes && configRes.welcome) {
-            setConfig(configRes.welcome);
+          if (configRes && (configRes.data || configRes)) {
+            const data = configRes.data || configRes;
+            setConfig(mergeConfig(data.welcome || data, 'welcome'));
           }
-          if (discordRes && discordRes.data) {
-            setDiscordData(discordRes.data);
-          } else if (discordRes) {
-            setDiscordData(discordRes);
+          if (discordRes && (discordRes.data || discordRes)) {
+            setDiscordData(discordRes.data || discordRes);
           }
           setLoading(false);
         } catch (error) {
@@ -55,6 +51,12 @@ export default function WelcomeConfig() {
       fetchData();
     }
   }, [guildId, mounted]);
+
+  useEffect(() => {
+    if (config) {
+      window.dispatchEvent(new CustomEvent('update-guide-context', { detail: config }));
+    }
+  }, [config]);
 
   const showToast = (message, type = 'success') => {
     window.dispatchEvent(new CustomEvent('show-toast', { detail: { message, type } }));
@@ -68,8 +70,9 @@ export default function WelcomeConfig() {
         body: JSON.stringify(config)
       });
       showToast('Configurazione salvata!');
-    } catch (error) {}
-    finally { setSaving(false); }
+    } catch (error) {
+        showToast('Errore durante il salvataggio.', 'error');
+    } finally { setSaving(false); }
   };
 
   const handleTest = async () => {
@@ -99,11 +102,12 @@ export default function WelcomeConfig() {
     setConfig(newConfig);
   };
 
-  if (loading || !config) return <Layout guildId={guildId}><Skeleton height="500px" /></Layout>;
+  if (loading || !config) return <><Skeleton height="500px" /></>;
 
   return (
-    <Layout guildId={guildId}>
-      <div className="animate">
+    <div className="config-page-layout">
+      <div className="config-main-col">
+        <div className="animate">
         
         {/* Module Header */}
         <header className="module-header">
@@ -112,12 +116,18 @@ export default function WelcomeConfig() {
                 <Bell size={24} />
               </div>
               <div className="header-text">
-                <h1>Welcome & Leave</h1>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <h1>Welcome & Leave</h1>
+                  <label className="toggle-mini" title={config.enabled ? 'Modulo Attivo' : 'Modulo Disattivato'}>
+                    <input type="checkbox" checked={!!config.enabled} onChange={e => setConfig({...config, enabled: e.target.checked})} />
+                    <span className="slider-mini"></span>
+                  </label>
+                </div>
                 <p>Personalizza l'accoglienza automatica dei nuovi membri.</p>
               </div>
            </div>
            <div className="header-buttons">
-              <button onClick={handleTest} className="btn-outline" disabled={testing || !config.channelId}>
+              <button onClick={handleTest} className="btn-outline" disabled={testing || !config.welcome?.channelId}>
                 <Zap size={16} /> {testing ? 'Invio...' : 'Invia Test'}
               </button>
               <button onClick={handleSave} className="btn-primary" disabled={saving}>
@@ -140,21 +150,7 @@ export default function WelcomeConfig() {
 
         {activeTab === 'settings' && (
             <div className="animate fade-in contents-grid">
-                <div className="card status-section">
-                    <div className="section-info">
-                        <div className={`status-box ${config.enabled ? 'on' : ''}`}>
-                            <Power size={20} />
-                        </div>
-                        <div>
-                            <h3>Stato Modulo</h3>
-                            <p className="text-muted">Abilita o disabilita il sistema Join/Leave globale.</p>
-                        </div>
-                    </div>
-                    <label className="toggle">
-                        <input type="checkbox" checked={!!config.enabled} onChange={(e) => setConfig({...config, enabled: e.target.checked})} />
-                        <span className="slider"></span>
-                    </label>
-                </div>
+
 
                 <div className="config-columns">
                     <section className="card content-card">
@@ -196,10 +192,6 @@ export default function WelcomeConfig() {
                     <Info size={20} color="var(--primary)" />
                     <p>Puoi usare variabili come <code>{'{user}'}</code>, <code>{'{guild}'}</code>, e <code>{'{member_count}'}</code> nei tuoi embed.</p>
                 </div>
-
-                <div style={{ marginTop: '24px' }}>
-                    <GuideSidebar type="welcome" context={config} />
-                </div>
             </div>
         )}
 
@@ -230,8 +222,10 @@ export default function WelcomeConfig() {
                 </div>
             </div>
         )}
+        </div>
+      </div>
 
-        <style jsx>{`
+      <style jsx>{`
             .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: rgba(255,255,255,0.02); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
             .header-info { display: flex; align-items: center; gap: 16px; }
             .header-icon { width: 48px; height: 48px; background: rgba(129, 140, 248, 0.1); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
@@ -266,7 +260,6 @@ export default function WelcomeConfig() {
 
             @media (max-width: 900px) { .config-columns { grid-template-columns: 1fr; } .editor-container-p { grid-template-columns: 1fr; } .editor-nav-p { border-right: none; border-bottom: 1px solid var(--border); } }
         `}</style>
-      </div>
-    </Layout>
+    </div>
   );
 }

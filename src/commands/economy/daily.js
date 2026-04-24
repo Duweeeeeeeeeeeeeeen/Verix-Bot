@@ -1,6 +1,7 @@
-import { EmbedBuilder, MessageFlags, SlashCommandBuilder } from 'discord.js';
+import { SlashCommandBuilder } from 'discord.js';
 import User from '../../models/User.js';
 import logger from '../../utils/logger.js';
+import messageService from '../../utils/messageService.js';
 
 export default {
     data: new SlashCommandBuilder()
@@ -8,7 +9,7 @@ export default {
         .setDescription('Riscatta il tuo premio giornaliero!'),
     async execute(interaction) {
         const dailyAmount = 500;
-        const cooldown = 24 * 60 * 60 * 1000; // 24 hours in ms
+        const cooldown = 24 * 60 * 60 * 1000;
 
         try {
             const userData = await User.findOne({ discordId: interaction.user.id });
@@ -18,28 +19,24 @@ export default {
                 const hours = Math.floor(timeLeft / (1000 * 60 * 60));
                 const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
 
-                return interaction.reply({ 
-                    content: `Hai già riscattato il premio oggi! Riprova tra ${hours} ore e ${minutes} minuti.`, 
-                    flags: [MessageFlags.Ephemeral] 
-                });
+                return messageService.reply(interaction, 'economy', 'cooldown', { 
+                    hours, 
+                    minutes,
+                    time: `${hours}h ${minutes}m`
+                }, { ephemeral: true });
             }
 
             userData.balance += dailyAmount;
             userData.lastDaily = Date.now();
             await userData.save();
 
-            const embed = new EmbedBuilder()
-                .setColor('#00FF00')
-                .setTitle('🎁 Premio Giornaliero Riscattato!')
-                .setDescription(`Hai ricevuto **${dailyAmount} Coins**!`)
-                .addFields({ name: 'Nuovo Saldo', value: `\`${userData.balance.toLocaleString()} Coins\`` })
-                .setTimestamp()
-                .setFooter({ text: 'Torna domani per un altro premio!' });
-
-            await interaction.reply({ embeds: [embed] });
+            await messageService.reply(interaction, 'economy', 'daily', { 
+                amount: dailyAmount,
+                balance: userData.balance.toLocaleString()
+            });
         } catch (error) {
             logger.error('Error in daily command:', error);
-            await interaction.reply({ content: 'Si è verificato un errore nel riscattare il premio.', flags: [MessageFlags.Ephemeral] });
+            await messageService.reply(interaction, 'economy', 'generic_error', {}, { ephemeral: true });
         }
     },
 };

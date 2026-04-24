@@ -1,5 +1,6 @@
-import { EmbedBuilder, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
+import { MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 import logger from '../../../utils/logger.js';
+import messageService from '../../../utils/messageService.js';
 
 export default {
     data: new SlashCommandBuilder()
@@ -15,17 +16,17 @@ export default {
         try {
             await interaction.guild.members.ban(user, { reason });
 
-            const embed = new EmbedBuilder()
-                .setColor('#FF0000')
-                .setTitle('🔨 Membro Bannato')
-                .addFields(
-                    { name: 'Utente', value: `${user.tag} (${user.id})` },
-                    { name: 'Moderatore', value: interaction.user.tag },
-                    { name: 'Motivo', value: reason }
-                )
-                .setTimestamp();
+            const embed = await messageService.get(interaction.guildId, 'moderation', 'command_ban', {
+                user: `${user.tag} (${user.id})`,
+                mod: interaction.user.tag,
+                reason: reason
+            });
 
-            await interaction.reply({ embeds: [embed] });
+            await messageService.reply(interaction, 'moderation', 'command_ban', {
+                user: `${user.tag} (${user.id})`,
+                mod: interaction.user.tag,
+                reason: reason
+            }, { embeds: embed ? [embed] : [] });
         } catch (error) {
             logger.error('Error in ban command:', error);
             await interaction.reply({ content: 'Impossibile bannare questo utente.', flags: [MessageFlags.Ephemeral] });

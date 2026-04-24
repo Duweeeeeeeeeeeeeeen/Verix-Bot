@@ -1,5 +1,5 @@
 const API_BASE_URL = typeof window !== 'undefined' 
-  ? `${window.location.protocol}//${window.location.hostname}:5001/api` 
+  ? '/api' 
   : 'http://localhost:5001/api';
 
 /**
@@ -19,6 +19,10 @@ export async function apiRequest(endpoint, options = {}) {
     },
     ...options,
   };
+
+  if (options.data && !defaultOptions.body) {
+    defaultOptions.body = JSON.stringify(options.data);
+  }
 
   try {
     const response = await fetch(url, defaultOptions);

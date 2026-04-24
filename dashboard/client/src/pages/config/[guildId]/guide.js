@@ -1,5 +1,4 @@
 import { useRouter } from 'next/router';
-import Layout from '../../../components/Layout';
 import EmbedPreview from '../../../components/EmbedPreview';
 import { 
   Book, 
@@ -42,7 +41,7 @@ export default function GuidePage() {
   ];
 
   return (
-    <Layout guildId={guildId}>
+    <>
       <div className="animate">
         
         {/* Module Header */}
@@ -177,6 +176,6 @@ export default function GuidePage() {
             @media (max-width: 1000px) { .guide-grid-p { grid-template-columns: 1fr; } .preview-demo-grid { grid-template-columns: 1fr; } }
         `}</style>
       </div>
-    </Layout>
+    </>
   );
 }

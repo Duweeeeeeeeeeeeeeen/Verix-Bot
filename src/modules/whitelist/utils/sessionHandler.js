@@ -1,8 +1,8 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 import WhitelistApp from '../../../models/WhitelistApp.js';
 import User from '../../../models/User.js';
-import { buildEmbed } from '../../../utils/embedHelper.js';
 import logger from '../../../utils/logger.js';
+import messageService from '../../../utils/messageService.js';
 
 /**
  * Common logic to start a written whitelist session in an existing channel.
@@ -51,26 +51,26 @@ export async function startWrittenSession(interaction, channel, config, user) {
 
         // 4. INITIAL MESSAGES
         // A. Welcome Embed
-        const startEmbed = buildEmbed(config.embeds.start, {
+        const startEmbed = await messageService.get(channel.guild.id, 'whitelist', 'start', {
             user: targetUser,
             guild: channel.guild.name,
             time_limit: config.timeLimit,
             total_questions: sessionQuestions.length,
             question: sessionQuestions[0].text,
             min_length: sessionQuestions[0].minLength
-        }, config);
+        });
 
         await channel.send({ content: `${targetUser}`, embeds: [startEmbed] });
 
         // B. First Question Embed
         const firstQuestion = sessionQuestions[0];
-        const qEmbed = buildEmbed(config.embeds.question, {
+        const qEmbed = await messageService.get(channel.guild.id, 'whitelist', 'question', {
             current_index: 1,
             total_questions: sessionQuestions.length,
             question: firstQuestion.text,
             min_length: firstQuestion.minLength,
             time_left: config.timeLimit
-        }, config);
+        });
 
         await channel.send({ embeds: [qEmbed] });
 

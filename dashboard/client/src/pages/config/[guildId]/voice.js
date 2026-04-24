@@ -1,24 +1,30 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import Layout from '../../../components/Layout';
 import Skeleton from '../../../components/Skeleton';
 import HelpTooltip from '../../../components/HelpTooltip';
 import api from '../../../utils/api';
-import { Save, RefreshCcw, Mic2, Users, Search, Play, Plus, Trash2, Shield, User, Clock, Power, Type, MousePointer2, ListFilter, Info } from 'lucide-react';
+import { 
+    Save, Mic2, Users, MousePointer2, Shield, 
+    ListFilter, Info, CheckCircle, XCircle, MessageSquare,
+    Settings2, Palette, Zap, Power
+} from 'lucide-react';
 import DiscordSelector from '../../../components/DiscordSelector';
 import EmbedMessageManager from '../../../components/EmbedMessageManager';
+import EmbedEditor from '../../../components/EmbedEditor';
+import { mergeConfig } from '../../../utils/defaults';
+import CustomSelect from '../../../components/CustomSelect';
 
 export default function VoiceConfig() {
   const router = useRouter();
-   const { guildId } = router.query;
-  const [config, setConfig] = useState(null);
-  const [globalConfig, setGlobalConfig] = useState(null);
+  const { guildId } = router.query;
+  const [config, setConfig] = useState(null); // This will be voiceSettings
   const [channels, setChannels] = useState([]);
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('settings');
   const [mounted, setMounted] = useState(false);
+  const [activeEmbedKey, setActiveEmbedKey] = useState('voice_waiting');
 
   useEffect(() => {
     setMounted(true);
@@ -26,51 +32,53 @@ export default function VoiceConfig() {
 
   useEffect(() => {
     if (guildId && mounted) {
+      setLoading(true);
       Promise.all([
-        api.request(`/config/${guildId}`),
-        api.request(`/config/${guildId}/global`),
-        api.request(`/config/${guildId}/discord-data`)
-      ]).then(([data, globalData, discordRes]) => {
-        let moduleConfig = {};
-        if (data?.whitelist?.voiceSettings) {
-             moduleConfig = data.whitelist.voiceSettings;
-        } else if (data?.voice) {
-             moduleConfig = data.voice;
-        }
-
-        const globalConfigData = globalData?.data || globalData;
+        api.request(`/config/${guildId}/whitelist`).catch(() => ({ data: {} })),
+        api.request(`/config/${guildId}/discord-data`).catch(() => ({ roles: [], channels: [] }))
+      ]).then(([wlRes, discordRes]) => {
+        const wlData = wlRes?.data || wlRes || {};
         
-        if ((!moduleConfig.staffRoleIds || moduleConfig.staffRoleIds.length === 0) && globalConfigData.adminRoleIds?.length > 0) {
-            moduleConfig.staffRoleIds = [...globalConfigData.adminRoleIds];
-        }
+        // Voice embeds are at the root of WhitelistConfig in the database
+        const voiceEmbeds = {};
+        const voiceKeys = ['voice_waiting', 'voice_guide', 'voice_staff_log', 'voice_error_flow'];
+        voiceKeys.forEach(k => {
+            if (wlData.embeds?.[k]) voiceEmbeds[k] = wlData.embeds[k];
+        });
 
-        setConfig(moduleConfig);
-        setGlobalConfig(globalConfigData);
+        const voiceConfig = {
+            ...(wlData.voiceSettings || {}),
+            embeds: voiceEmbeds
+        };
+        
+        setConfig(mergeConfig(voiceConfig, 'voice'));
         setChannels(discordRes?.data?.channels || discordRes?.channels || []);
         setRoles(discordRes?.data?.roles || discordRes?.roles || []);
         setLoading(false);
       }).catch(err => {
         console.error("Error loading voice data:", err);
+        setConfig(mergeConfig({}, 'voice'));
         setLoading(false);
       });
     }
   }, [guildId, mounted]);
 
-  const setGlobalNested = (path, value) => {
-    const newGlobal = { ...globalConfig };
+  useEffect(() => {
+    if (config) {
+      window.dispatchEvent(new CustomEvent('update-guide-context', { detail: config }));
+    }
+  }, [config]);
+
+  const setNested = (path, value) => {
+    const newConfig = { ...config };
     const parts = path.split('.');
-    let cur = newGlobal;
+    let cur = newConfig;
     for (let i = 0; i < parts.length - 1; i++) {
-      cur = cur[parts[i]];
+        if (!cur[parts[i]]) cur[parts[i]] = {};
+        cur = cur[parts[i]];
     }
     cur[parts[parts.length - 1]] = value;
-    setGlobalConfig(newGlobal);
-  };
-
-  const updateButton = (index, field, value) => {
-    const buttons = [...globalConfig.ui.voiceButtons];
-    buttons[index] = { ...buttons[index], [field]: value };
-    setGlobalNested('ui.voiceButtons', buttons);
+    setConfig(newConfig);
   };
 
   const showToast = (message, type = 'success') => {
@@ -80,37 +88,29 @@ export default function VoiceConfig() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await Promise.all([
-        api.request(`/config/${guildId}/whitelist`, {
-          method: 'POST',
-          body: JSON.stringify({ voiceSettings: config })
-        }),
-        api.request(`/config/${guildId}/global`, {
-          method: 'POST',
-          body: JSON.stringify(globalConfig)
+      await api.request(`/config/${guildId}/whitelist`, {
+        method: 'POST',
+        body: JSON.stringify({ 
+            voiceSettings: { ...config, embeds: undefined },
+            embeds: { 
+                ...(config.embeds || {}) 
+            }
         })
-      ]);
+      });
       showToast('Configurazione salvata!');
     } catch (error) {
+      console.error('Error saving voice config:', error);
+      showToast('Errore durante il salvataggio', 'error');
     } finally {
       setSaving(false);
     }
   };
 
-  const handleReset = async () => {
-    if (!confirm('Vuoi davvero ripristinare?')) return;
-    try {
-        await api.request(`/config/${guildId}/reset/voice`, { method: 'POST' });
-        window.location.reload();
-    } catch (error) {}
-  };
+  if (!mounted || loading || !config) return <Skeleton type="config" />;
 
-   if (!mounted || loading || !config) return <Layout guildId={guildId}><Skeleton height="500px" /></Layout>;
-  
   return (
-    <Layout guildId={guildId}>
-      <div className="animate">
-        
+    <div className="config-page-layout animate">
+      <div className="config-main-col">
         {/* Module Header */}
         <header className="module-header">
            <div className="header-info">
@@ -118,165 +118,186 @@ export default function VoiceConfig() {
                 <Mic2 size={24} />
               </div>
               <div className="header-text">
-                <h1>Voice Selection</h1>
-                <p>Gestione code audio e stanze private per colloqui orali.</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <h1>Canali Vocali</h1>
+                  <label className="toggle-mini" title={config.enabled ? 'Modulo Attivo' : 'Modulo Disattivato'}>
+                    <input type="checkbox" checked={!!config.enabled} onChange={e => setConfig({...config, enabled: e.target.checked})} />
+                    <span className="slider-mini"></span>
+                  </label>
+                </div>
+                <p>Gestisci la creazione automatica di canali vocali temporanei.</p>
               </div>
            </div>
            <div className="header-buttons">
-              <button onClick={handleReset} className="btn-outline">
-                <RefreshCcw size={16} /> Reset
-              </button>
               <button onClick={handleSave} className="btn-primary" disabled={saving}>
                 <Save size={16} /> {saving ? 'Salvataggio...' : 'Salva Modifiche'}
               </button>
            </div>
         </header>
 
-        {/* Minimal Tab System */}
+        {/* Tab Navigation */}
         <div className="tab-navigation">
             <button onClick={() => setActiveTab('settings')} className={`tab-link ${activeTab === 'settings' ? 'active' : ''}`}>
-                <Power size={16} />
-                <span>Base</span>
-            </button>
-            <button onClick={() => setActiveTab('checklist')} className={`tab-link ${activeTab === 'checklist' ? 'active' : ''}`}>
-                <ListFilter size={16} />
-                <span>Checklist Staff</span>
+                <Settings2 size={16} /> <span>Settaggi</span>
             </button>
             <button onClick={() => setActiveTab('ui')} className={`tab-link ${activeTab === 'ui' ? 'active' : ''}`}>
-                <MousePointer2 size={16} />
-                <span>Interface</span>
+                <MousePointer2 size={16} /> <span>Pulsanti</span>
             </button>
-            <button onClick={() => setActiveTab('messages')} className={`tab-link ${activeTab === 'messages' ? 'active' : ''}`}>
-                <RefreshCcw size={16} />
-                <span>Messaggi</span>
+            <button onClick={() => setActiveTab('design')} className={`tab-link ${activeTab === 'design' ? 'active' : ''}`}>
+                <Palette size={16} /> <span>Design & Messaggi</span>
             </button>
         </div>
 
-        <div className="tab-panel animate">
-            
+        <div className="tab-content">
             {activeTab === 'settings' && (
-                <div className="config-grid-v">
+                <div className="config-grid-v animate fade-in">
                     <div className="grid-main-v">
-                        <section className="card status-section-v" style={{ marginBottom: '24px' }}>
-                            <div className="status-info-v">
-                                <div className={`status-box-v ${config.enabled ? 'on' : ''}`}>
-                                    <Mic2 size={20} />
-                                </div>
-                                <div>
-                                    <h3>Sistema Vocale</h3>
-                                    <p className="text-muted">Abilita la gestione automatica dei colloqui.</p>
-                                </div>
-                            </div>
-                            <label className="toggle">
-                                <input type="checkbox" checked={config.enabled} onChange={e => setConfig({...config, enabled: e.target.checked})} />
-                                <span className="slider"></span>
-                            </label>
+                        <section className="card section-card-v" style={{ marginBottom: '24px' }}>
+    
                         </section>
 
                         <section className="card section-card-v">
-                            <h3 className="align-center"><Users size={18} color="var(--primary)" /> Parametri Sessione</h3>
+                            <div className="align-center" style={{ marginBottom: '20px' }}>
+                                <ListFilter size={18} color="var(--primary)" />
+                                <h3>Canali di Sistema</h3>
+                            </div>
                             <div className="fields-grid-v">
                                 <div className="field-box">
-                                    <label className="text-label">Canale Join</label>
-                                    <DiscordSelector type="channel" options={channels.filter(c => c.type === 2)} value={config.joinChannelId || ''} onChange={val => setConfig({...config, joinChannelId: val})} />
+                                    <label className="text-label">Canale Sala d'Attesa</label>
+                                    <DiscordSelector type="channel" options={channels.filter(c => c.type === 2)} value={config.joinChannelId || ''} onChange={val => setNested('joinChannelId', val)} />
+                                    <p className="field-help">Dove gli utenti devono entrare per mettersi in coda.</p>
                                 </div>
                                 <div className="field-box">
-                                    <label className="text-label">Categoria Temp</label>
-                                    <DiscordSelector type="channel" options={channels.filter(c => c.type === 4)} value={config.categoryId || ''} onChange={val => setConfig({...config, categoryId: val})} />
+                                    <label className="text-label">Categoria Stanze Private</label>
+                                    <DiscordSelector type="channel" options={channels.filter(c => c.type === 4)} value={config.categoryId || ''} onChange={val => setNested('categoryId', val)} />
+                                    <p className="field-help">Dove verranno create le stanze per gli esami.</p>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section className="card section-card-v" style={{ marginTop: '24px' }}>
+                            <div className="align-center" style={{ marginBottom: '20px' }}>
+                                <Zap size={18} color="var(--primary)" />
+                                <h3>Automazioni Esito</h3>
+                            </div>
+                            <div className="fields-grid-v">
+                                <div className="field-box">
+                                    <label className="text-label">Ruoli da Aggiungere (Promosso)</label>
+                                    <DiscordSelector type="role" multiple={true} options={roles} value={config.rolesToAdd || []} onChange={val => setNested('rolesToAdd', val)} />
                                 </div>
                                 <div className="field-box">
-                                    <label className="text-label">Naming Template</label>
-                                    <input className="input" value={globalConfig.naming?.voiceChannel || ''} onChange={e => setGlobalNested('naming.voiceChannel', e.target.value)} placeholder="wl-{user}" />
-                                </div>
-                                <div className="field-box">
-                                    <label className="text-label">Max Sessioni</label>
-                                    <input type="number" className="input" value={config.maxConcurrent || 5} onChange={e => setConfig({...config, maxConcurrent: parseInt(e.target.value)})} />
+                                    <label className="text-label">Ruoli da Rimuovere (Promosso)</label>
+                                    <DiscordSelector type="role" multiple={true} options={roles} value={config.rolesToRemove || []} onChange={val => setNested('rolesToRemove', val)} />
                                 </div>
                             </div>
                         </section>
                     </div>
 
-                    <aside className="grid-side-v">
-                        <section className="card section-card-v">
-                            <h3 className="align-center"><Shield size={18} color="var(--primary)" /> Staff Permission</h3>
-                            <div className="field-box" style={{ marginTop: '16px' }}>
-                                <label className="text-label">Ruoli Abilitati</label>
-                                <DiscordSelector type="role" multiple={true} options={roles} value={config.staffRoleIds || []} onChange={val => setConfig({...config, staffRoleIds: val})} />
+                    <div className="grid-side-v">
+                         <section className="card section-card-v">
+                            <div className="align-center" style={{ marginBottom: '16px' }}>
+                                <Shield size={16} color="var(--primary)" />
+                                <h3>Staffers Abilitati</h3>
+                            </div>
+                            <DiscordSelector type="role" multiple={true} options={roles} value={config.staffRoleIds || []} onChange={val => setNested('staffRoleIds', val)} />
+                            <p className="field-help" style={{ marginTop: '12px' }}>Ruoli autorizzati a gestire la coda e gli esiti.</p>
+                        </section>
+
+                        <section className="card section-card-v" style={{ marginTop: '24px' }}>
+                            <div className="align-center" style={{ marginBottom: '16px' }}>
+                                <Info size={16} color="var(--primary)" />
+                                <h3>Altre Opzioni</h3>
+                            </div>
+                            <div className="field-box">
+                                <label className="text-label">Cooldown Rifiuto (Ore)</label>
+                                <input type="number" className="input" value={config.rejectionCooldown || 24} onChange={e => setNested('rejectionCooldown', parseInt(e.target.value))} />
+                            </div>
+                            <div className="toggle-item-v" style={{ marginTop: '16px' }}>
+                                <span>Cancellazione Auto Stanza</span>
+                                <label className="toggle">
+                                    <input type="checkbox" checked={!!config.autoDelete} onChange={e => setNested('autoDelete', e.target.checked)} />
+                                    <span className="slider"></span>
+                                </label>
                             </div>
                         </section>
-                        <div className="card info-box-v" style={{ marginTop: '20px' }}>
-                            <Info size={18} color="var(--primary)" />
-                            <p>Assicurati che il bot possa <b>Spostare Membri</b> e <b>Gestire Canali</b>.</p>
-                        </div>
-                    </aside>
+                    </div>
                 </div>
             )}
 
-            {activeTab === 'checklist' && (
-                <section className="card section-card-v animate fade-in">
-                    <div className="card-header-v">
-                        <h3 className="align-center"><ListFilter size={20} color="var(--primary)" /> Checklist per lo Staff</h3>
-                        <button className="btn-outline" onClick={() => setConfig({...config, interviewChecklist: [...(config.interviewChecklist || []), 'Nuovo Punto']})}>
-                            <Plus size={14} /> Aggiungi
-                        </button>
-                    </div>
-                    <div className="checklist-stack">
-                        {config.interviewChecklist?.map((item, i) => (
-                            <div key={i} className="checklist-row-p">
-                                <input className="input-v" value={item} onChange={e => {
-                                    const newList = [...config.interviewChecklist];
-                                    newList[i] = e.target.value;
-                                    setConfig({...config, interviewChecklist: newList});
-                                }} />
-                                <button className="btn-icon-danger" onClick={() => setConfig({...config, interviewChecklist: config.interviewChecklist.filter((_, idx) => idx !== i)})}>
-                                    <Trash2 size={16} />
-                                </button>
-                            </div>
-                        ))}
-                    </div>
-                </section>
-            )}
-
             {activeTab === 'ui' && (
-                <section className="card section-card-v animate fade-in">
-                    <h3 className="align-center" style={{ marginBottom: '24px' }}><MousePointer2 size={20} color="var(--primary)" /> Bottoni di Controllo</h3>
-                    <div className="buttons-grid-v">
-                        {globalConfig.ui?.voiceButtons?.map((btn, idx) => (
-                            <div key={btn.customId} className="btn-config-card-v">
-                                <div className="btn-v-header">
-                                    <span className="btn-v-id">{btn.customId}</span>
-                                    <label className="toggle">
-                                        <input type="checkbox" checked={btn.enabled} onChange={e => updateButton(idx, 'enabled', e.target.checked)} />
-                                        <span className="slider"></span>
-                                    </label>
+                <div className="animate fade-in">
+                    <section className="card section-card-v">
+                        <div className="align-center" style={{ marginBottom: '24px' }}>
+                            <MousePointer2 size={18} color="var(--primary)" />
+                            <h3>Configurazione Pulsanti Staff</h3>
+                        </div>
+                        <div className="buttons-editor-grid">
+                            {['approve', 'deny', 'reset'].map(key => (
+                                <div key={key} className="btn-edit-box">
+                                    <div className="btn-label-tag">{key.toUpperCase()}</div>
+                                    <div className="field-box">
+                                        <label className="text-label">Etichetta</label>
+                                        <input className="input" value={config.voiceButtons?.[key]?.label || ''} onChange={e => setNested(`voiceButtons.${key}.label`, e.target.value)} />
+                                    </div>
+                                    <div className="field-box" style={{ marginTop: '12px' }}>
+                                        <label className="text-label">Colore</label>
+                                        <CustomSelect 
+                                            options={[
+                                                { value: 'SUCCESS', label: 'Verde (Success)' },
+                                                { value: 'DANGER', label: 'Rosso (Danger)' },
+                                                { value: 'PRIMARY', label: 'Blu (Primary)' },
+                                                { value: 'SECONDARY', label: 'Grigio (Secondary)' }
+                                            ]} 
+                                            value={config.voiceButtons?.[key]?.style || 'PRIMARY'} 
+                                            onChange={val => setNested(`voiceButtons.${key}.style`, val)} 
+                                        />
+                                    </div>
                                 </div>
-                                <div className="btn-v-fields">
-                                    <input className="input-v" value={btn.label} onChange={e => updateButton(idx, 'label', e.target.value)} />
-                                    <input className="input-v emoji" value={btn.emoji} onChange={e => updateButton(idx, 'emoji', e.target.value)} />
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </section>
+                            ))}
+                        </div>
+                    </section>
+                </div>
             )}
 
-            {activeTab === 'messages' && (
+            {activeTab === 'design' && (
                 <div className="animate fade-in">
+                    <section className="card section-card-v" style={{ marginBottom: '24px' }}>
+                        <div className="align-center" style={{ marginBottom: '20px' }}>
+                            <Palette size={18} color="var(--primary)" />
+                            <h3>Design Pannelli Voce</h3>
+                        </div>
+                        <div className="embed-selector-v">
+                            {['voice_waiting', 'voice_guide', 'voice_staff_log', 'voice_error_flow'].map(k => (
+                                <button key={k} onClick={() => setActiveEmbedKey(k)} className={`selector-btn ${activeEmbedKey === k ? 'active' : ''}`}>
+                                    {k.replace('voice_', '').replace('_', ' ')}
+                                </button>
+                            ))}
+                        </div>
+                        <div style={{ marginTop: '24px' }}>
+                            <EmbedEditor 
+                                embed={config.embeds?.[activeEmbedKey] || {}} 
+                                onChange={val => setNested(`embeds.${activeEmbedKey}`, val)}
+                                variables={['user', 'staff', 'voice_channel', 'reason', 'cooldown']}
+                            />
+                        </div>
+                    </section>
+
                     <EmbedMessageManager 
                         guildId={guildId}
                         module="voice"
                         slugs={[
-                            { key: 'dm_accepted', label: 'DM Successo (Orale)', description: 'Inviato all\'utente quando supera il colloquio orale.', variables: ['user', 'guild'] },
-                            { key: 'dm_rejected', label: 'DM Rifiuto (Orale)', description: 'Inviato all\'utente quando viene respinto al colloquio orale.', variables: ['user', 'guild', 'reason', 'cooldown'] },
-                            { key: 'staff_approved', label: 'Log Approvazione', description: 'Log della sessione conclusa con successo.', variables: ['userId', 'staff'] },
-                            { key: 'staff_denied', label: 'Log Rifiuto', description: 'Log della sessione conclusa con un rifiuto.', variables: ['userId', 'staff', 'reason'] }
+                            { key: 'dm_accepted', label: 'Esito Positivo (DM)', description: 'Inviato in DM al promosso.', variables: ['user'], group: '✅ Esiti', groupIcon: CheckCircle },
+                            { key: 'dm_rejected', label: 'Esito Negativo (DM)', description: 'Inviato in DM al bocciato.', variables: ['user', 'reason', 'cooldown'], group: '❌ Esiti', groupIcon: XCircle },
+                            { key: 'staff_approved', label: 'Log Approvazione', description: 'Log mandato nel canale staff.', variables: ['user', 'staff'], group: '🛡️ Staff', groupIcon: Shield },
+                            { key: 'staff_denied', label: 'Log Rifiuto', description: 'Log mandato nel canale staff.', variables: ['user', 'staff', 'reason'], group: '🛡️ Staff', groupIcon: Shield }
                         ]}
                     />
                 </div>
             )}
         </div>
+      </div>
 
-        <style jsx>{`
+      <style jsx>{`
             .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: rgba(255,255,255,0.02); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
             .header-info { display: flex; align-items: center; gap: 16px; }
             .header-icon { width: 48px; height: 48px; background: rgba(129, 140, 248, 0.1); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
@@ -288,34 +309,26 @@ export default function VoiceConfig() {
             .tab-link:hover { color: white; background: rgba(255,255,255,0.03); }
             .tab-link.active { color: white; background: var(--bg-card); box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
 
-            .config-grid-v { display: grid; grid-template-columns: 1fr 300px; gap: 24px; }
-            .grid-main-v { display: flex; flex-direction: column; gap: 24px; }
-            .status-section-v { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; }
-            .status-info-v { display: flex; align-items: center; gap: 16px; }
-            .status-box-v { width: 40px; height: 40px; background: #1e293b; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--text-dim); border: 1px solid var(--border); }
-            .status-box-v.on { color: var(--primary); background: rgba(129, 140, 248, 0.1); border-color: rgba(129, 140, 248, 0.2); }
-            
-            .fields-grid-v { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 16px; }
-            .info-box-v { padding: 16px; display: flex; flex-direction: column; gap: 10px; font-size: 0.75rem; color: var(--text-muted); }
-            
-            .card-header-v { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-            .checklist-stack { display: flex; flex-direction: column; gap: 10px; }
-            .checklist-row-p { display: flex; gap: 12px; align-items: center; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border); }
-            .input-v { background: #020617; border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px; color: white; flex: 1; font-size: 0.9rem; }
-            .input-v.emoji { width: 50px; text-align: center; }
+            .config-grid-v { display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
+            .status-row-v { display: flex; justify-content: space-between; align-items: center; }
+            .status-icon-v { width: 40px; height: 40px; background: #1e293b; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--text-dim); border: 1px solid var(--border); }
+            .status-icon-v.on { color: var(--primary); background: rgba(129, 140, 248, 0.1); border-color: rgba(129, 140, 248, 0.2); }
 
-            .buttons-grid-v { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; }
-            .btn-config-card-v { background: rgba(255,255,255,0.02); padding: 16px; border-radius: 14px; border: 1px solid var(--border); }
-            .btn-v-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-            .btn-v-id { font-size: 0.65rem; font-weight: 900; color: var(--primary); text-transform: uppercase; }
-            .btn-v-fields { display: flex; gap: 8px; }
+            .fields-grid-v { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+            .toggle-item-v { display: flex; justify-content: space-between; align-items: center; }
+
+            .buttons-editor-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+            .btn-edit-box { padding: 16px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; }
+            .btn-label-tag { font-size: 0.65rem; font-weight: 800; color: var(--text-dim); margin-bottom: 12px; }
+
+            .embed-selector-v { display: flex; gap: 8px; flex-wrap: wrap; }
+            .selector-btn { padding: 8px 14px; background: transparent; border: 1px solid var(--border); border-radius: 8px; color: var(--text-muted); font-size: 0.8rem; cursor: pointer; transition: 0.2s; text-transform: capitalize; }
+            .selector-btn:hover { color: white; border-color: var(--text-dim); }
+            .selector-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
             .align-center { display: flex; align-items: center; gap: 10px; }
-            @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-            .spin { animation: spin 1s linear infinite; }
             @media (max-width: 1000px) { .config-grid-v { grid-template-columns: 1fr; } }
         `}</style>
-      </div>
-    </Layout>
+    </div>
   );
 }

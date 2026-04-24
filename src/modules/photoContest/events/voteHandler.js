@@ -51,21 +51,21 @@ export default {
             if (type === 'up') {
                 if (upIndex > -1) {
                     submission.upvotes.splice(upIndex, 1);
-                    await interaction.reply({ content: '👍 Voto rimosso.', flags: [MessageFlags.Ephemeral] });
+                    await messageService.reply(interaction, 'photoContest', 'vote_removed', {});
                 } else {
                     submission.upvotes.push(voterId);
                     if (downIndex > -1) submission.downvotes.splice(downIndex, 1);
-                    await interaction.reply({ content: '👍 Hai votato positivamente!', flags: [MessageFlags.Ephemeral] });
-                    notifyContent = `🌟 Qualcuno ha appena messo un **Upvote** alla tua foto nel contest!`;
+                    await messageService.reply(interaction, 'photoContest', 'vote_up', {});
+                    notifyContent = true;
                 }
             } else if (type === 'down') {
                 if (downIndex > -1) {
                     submission.downvotes.splice(downIndex, 1);
-                    await interaction.reply({ content: '👎 Voto rimosso.', flags: [MessageFlags.Ephemeral] });
+                    await messageService.reply(interaction, 'photoContest', 'vote_removed', {});
                 } else {
                     submission.downvotes.push(voterId);
                     if (upIndex > -1) submission.upvotes.splice(upIndex, 1);
-                    await interaction.reply({ content: '👎 Hai votato negativamente.', flags: [MessageFlags.Ephemeral] });
+                    await messageService.reply(interaction, 'photoContest', 'vote_down', {});
                 }
             }
 
@@ -83,16 +83,11 @@ export default {
             if (notifyContent && config?.enableNotifications) {
                 const author = await interaction.guild.members.fetch(submission.userId).catch(() => null);
                 if (author) {
-                    const notifyEmbed = new EmbedBuilder()
-                        .setTitle('📸 Nuova Interazione!')
-                        .setDescription(notifyContent)
-                        .addFields({ name: 'Contest', value: `[Link al Messaggio](${interaction.message.url})` })
-                        .setColor('#00FF7F')
-                        .setTimestamp();
-                    
-                    await author.send({ embeds: [notifyEmbed] }).catch(() => {
-                        logger.warn(`Could not send DM to ${submission.userId}`);
-                    });
+                    const notifyEmbed = await messageService.get(interaction.guildId, 'photoContest', 'interaction_notify');
+                    if (notifyEmbed) {
+                        notifyEmbed.addFields({ name: 'Contest', value: `[Link al Messaggio](${interaction.message.url})` });
+                        await author.send({ embeds: [notifyEmbed] }).catch(() => {});
+                    }
                 }
             }
 

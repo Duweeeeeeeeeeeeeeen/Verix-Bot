@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import Layout from '../../../components/Layout';
 import Skeleton from '../../../components/Skeleton';
 import api from '../../../utils/api';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -17,7 +16,10 @@ import {
   XCircle,
   Clock,
   ExternalLink,
-  Lock
+  Lock,
+  HelpCircle,
+  ChevronRight,
+  FileText
 } from 'lucide-react';
 
 export default function ManagementPage() {
@@ -26,31 +28,90 @@ export default function ManagementPage() {
   const { guildId } = router.query;
   const [userId, setUserId] = useState('');
   const [userData, setUserData] = useState(null);
+  const [userList, setUserList] = useState([]);
+  const [filteredList, setFilteredList] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [listLoading, setListLoading] = useState(true);
   const [searching, setSearching] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const handleSearch = async (e) => {
+  useEffect(() => {
+    if (guildId && mounted) {
+      fetchUserList();
+    }
+  }, [guildId, mounted]);
+
+  useEffect(() => {
+    if (searchTerm.trim() === '') {
+      setFilteredList(userList);
+    } else {
+      const lowSearch = searchTerm.toLowerCase();
+      setFilteredList(userList.filter(u => 
+        u.username?.toLowerCase().includes(lowSearch) || 
+        u.discordId.includes(lowSearch)
+      ));
+    }
+  }, [searchTerm, userList]);
+
+  const fetchUserList = async () => {
+    setListLoading(true);
+    try {
+      const res = await api.request(`/management/${guildId}/users`);
+      if (res) {
+        // api.request returns res.data directly
+        const list = Array.isArray(res) ? res : [];
+        setUserList(list);
+        setFilteredList(list);
+      }
+    } catch (err) {
+      console.error('Fetch user list error:', err);
+    } finally {
+      setListLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (userData) {
+      window.dispatchEvent(new CustomEvent('update-guide-context', { detail: userData }));
+    }
+  }, [userData]);
+
+  const showToast = (message, type = 'success') => {
+    window.dispatchEvent(new CustomEvent('show-toast', { detail: { message, type } }));
+  };
+
+  const handleSearch = async (e, manualId = null) => {
     if (e) e.preventDefault();
-    if (!userId || userId.length < 15) return showToast('Inserisci un ID Utente valido', 'error');
+    const idToSearch = (manualId || userId || '').trim();
+    
+    if (!idToSearch || idToSearch.length < 15) {
+      if (!manualId) showToast('Inserisci un ID Utente valido (17-19 cifre)', 'error');
+      return;
+    }
 
     setSearching(true);
     setLoading(true);
     try {
-      const res = await api.request(`/management/${guildId}/search/${userId}`);
-      // api.request unwraps success:true and returns the .data object directly
+      console.log(`[Management] Searching for user: ${idToSearch}`);
+      const res = await api.request(`/management/${guildId}/search/${idToSearch}`);
+      
+      // The api.request utility already unwraps 'data' if success is true
       if (res) {
         setUserData(res);
+        setUserId(idToSearch); // Always update state to keep it in sync
       } else {
-        showToast('Nessun dato restituito dal server', 'error');
+        showToast('Nessun record trovato per questo ID', 'info');
+        setUserData(null);
       }
     } catch (err) {
       console.error('Search error:', err);
-      showToast('Errore durante la ricerca', 'error');
+      showToast(err.message || 'Errore durante la ricerca', 'error');
+      setUserData(null);
     } finally {
       setSearching(false);
       setLoading(false);
@@ -64,9 +125,8 @@ export default function ManagementPage() {
       await api.request(`/management/${guildId}/records/${type}/${id}`, {
         method: 'DELETE'
       });
-      // If we reach here, api.request didn't throw, so it was successful
       showToast('Record eliminato con successo');
-      handleSearch();
+      handleSearch(null, userData?.user?.discordId || userId);
     } catch (err) {
       console.error('Delete error:', err);
       showToast(err.message || 'Errore durante l\'eliminazione', 'error');
@@ -74,63 +134,111 @@ export default function ManagementPage() {
   };
 
   const handleResetAll = async () => {
+    const targetId = userData?.user?.discordId || userId;
+    if (!targetId) return showToast('Nessun utente selezionato', 'error');
+    
     if (!confirm(`ATTENZIONE: Stai per resettare TUTTA la cronologia dell'utente (Whitelist, Background e Cooldown). Vuoi procedere?`)) return;
 
     try {
-      await api.request(`/management/${guildId}/reset-user/${userId}`, {
+      await api.request(`/management/${guildId}/reset-user/${targetId}`, {
         method: 'POST'
       });
       showToast('Stato utente resettato con successo');
-      handleSearch();
+      handleSearch(null, targetId);
     } catch (err) {
       console.error('Reset error:', err);
       showToast(err.message || 'Errore durante il reset', 'error');
     }
   };
 
-  const showToast = (message, type = 'success') => {
-    window.dispatchEvent(new CustomEvent('show-toast', { detail: { message, type } }));
-  };
-
   if (!mounted) return null;
 
   if (!authUser) {
     return (
-      <Layout guildId={guildId}>
-        <div className="management-page animate">
-          <div className="empty-state card">
-            <Lock size={48} className="text-warning" style={{ marginBottom: '16px' }} />
-            <h3>Accesso Richiesto</h3>
-            <p className="text-muted">La tua sessione è scaduta o non sei autorizzato. Effettua nuovamente il login per gestire i record.</p>
-            <button onClick={login} className="btn-primary" style={{ marginTop: '20px' }}>
-              Effettua il Login
-            </button>
-          </div>
+      <div className="management-page animate">
+        <div className="empty-state card">
+          <Lock size={48} className="text-warning" style={{ marginBottom: '16px' }} />
+          <h3>Accesso Richiesto</h3>
+          <p className="text-muted">La tua sessione è scaduta o non sei autorizzato. Effettua nuovamente il login per gestire i record.</p>
+          <button onClick={login} className="btn-primary" style={{ marginTop: '20px' }}>
+            Effettua il Login
+          </button>
         </div>
-      </Layout>
+      </div>
     );
   }
 
   return (
-    <Layout guildId={guildId}>
-      <div className="management-page animate">
+    <div className="management-container animate">
+      {/* Left Sidebar: User List */}
+      <aside className="user-list-sidebar card">
+        <div className="sidebar-header">
+          <div className="header-top">
+            <User size={20} className="text-primary" />
+            <h3>Lista Cittadini</h3>
+            <span className="count-badge">{userList.length}</span>
+          </div>
+          <div className="sidebar-search">
+            <Search size={16} />
+            <input 
+              type="text" 
+              placeholder="Filtra per nome o ID..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <div className="users-scroll">
+          {listLoading ? (
+            <div className="list-skeletons">
+              {[1,2,3,4,5].map(i => <Skeleton key={i} height="50px" borderRadius="10px" />)}
+            </div>
+          ) : filteredList.length === 0 ? (
+            <div className="no-users">
+              <Search size={32} />
+              <p>Nessun utente trovato</p>
+            </div>
+          ) : (
+            filteredList.map(u => (
+              <button 
+                key={u.discordId} 
+                className={`user-list-item ${userData?.user?.discordId === u.discordId ? 'active' : ''}`}
+                onClick={() => handleSearch(null, u.discordId)}
+              >
+                <div className="user-avatar">
+                  <User size={14} />
+                </div>
+                <div className="user-name-group">
+                  <span className="name">{u.username}</span>
+                  <span className="id">{u.discordId}</span>
+                </div>
+                <ChevronRight size={14} className="arrow" />
+              </button>
+            ))
+          )}
+        </div>
+      </aside>
+
+      {/* Main Content Area */}
+      <main className="management-main">
         {/* Header Section */}
-        <div className="page-header">
-           <div className="title-group">
+        <div className="page-header card">
+          <div className="title-group">
             <div className="icon-badge primary">
               <History size={24} />
             </div>
             <div>
               <h1>Log & Gestione Utenti</h1>
-              <p className="text-muted">Ricerca e gestisci la cronologia whitelist di un cittadino.</p>
+              <p className="text-muted">Ricerca diretta tramite ID o gestione della cronologia cittadina.</p>
             </div>
           </div>
           
-          <form className="search-box" onSubmit={handleSearch}>
+          <form className="search-box-v2" onSubmit={handleSearch}>
             <Search className="search-icon" size={20} />
             <input 
               type="text" 
-              placeholder="Inserisci ID Discord..." 
+              placeholder="Inserisci ID Discord per ricerca rapida..." 
               value={userId}
               onChange={(e) => setUserId(e.target.value)}
               className="search-input"
@@ -138,332 +246,466 @@ export default function ManagementPage() {
             <button 
               type="submit" 
               disabled={searching}
-              className="btn-primary"
+              className="btn-search"
             >
-              {searching ? 'Ricerca...' : 'Cerca'}
+              {searching ? '...' : <Search size={18} />}
             </button>
           </form>
         </div>
 
-        {!userData && !loading && (
-          <div className="empty-state card">
-            <User size={48} className="text-muted" style={{ marginBottom: '16px' }} />
-            <h3>Nessun utente selezionato</h3>
-            <p className="text-muted">Inserisci un ID Discord sopra per visualizzare la sua cronologia e gestire i suoi record.</p>
-          </div>
-        )}
+        <div className="content-area">
+          {!userData && !loading && (
+            <div className="empty-state-v2 card">
+              <div className="pulse-icon">
+                <User size={48} />
+              </div>
+              <h3>Seleziona un Cittadino</h3>
+              <p className="text-muted">
+                Usa la lista a sinistra per navigare tra i cittadini registrati,<br />
+                oppure inserisci un ID Discord sopra per una ricerca istantanea.
+              </p>
+            </div>
+          )}
 
-        {loading && (
-          <div className="loading-grid">
-            <Skeleton height="150px" borderRadius="16px" />
-            <Skeleton height="300px" borderRadius="16px" />
-          </div>
-        )}
+          {loading && (
+            <div className="loading-grid">
+              <Skeleton height="120px" borderRadius="16px" />
+              <Skeleton height="400px" borderRadius="16px" />
+            </div>
+          )}
 
-        {userData && !loading && (
-          <div className="results-container">
-            {/* User Overview Card */}
-            <div className="user-profile card">
-              <div className="profile-main">
-                <div className="avatar-placeholder">
-                  <User size={32} />
+          {userData && !loading && (
+            <div className="results-container animate fade-in">
+              {/* User Overview Card */}
+              <div className="user-profile card">
+                <div className="profile-main">
+                  <div className="avatar-placeholder">
+                    <User size={32} />
+                  </div>
+                  <div className="profile-info">
+                    <div className="name-badge-row">
+                      <h3>{userData.user.username || 'Sconosciuto'}</h3>
+                      <span className="id-badge">{userData.user.discordId || userId}</span>
+                    </div>
+                    <p className="text-dim">Dati archiviati nel database globale Verix</p>
+                  </div>
+                  <div className="profile-actions">
+                    <button onClick={handleResetAll} className="btn-reset">
+                      <RefreshCcw size={16} />
+                      Resetta Tutto
+                    </button>
+                  </div>
                 </div>
-                <div className="profile-info">
-                  <h3>Utente: {userData.user.username || userId}</h3>
-                  <code className="text-muted">{userId}</code>
-                </div>
-                <div className="profile-actions">
-                  <button onClick={handleResetAll} className="btn-danger">
-                    <RefreshCcw size={16} />
-                    Resetta Stato Cittadino
-                  </button>
+                
+                <div className="cooldowns-row">
+                  <div className="cooldown-item">
+                    <ShieldCheck size={16} />
+                    <span>Ultima Whitelist: {userData.user.lastWhitelistAttempt ? new Date(userData.user.lastWhitelistAttempt).toLocaleString() : 'Mai effettuata'}</span>
+                  </div>
+                  <div className="cooldown-item">
+                    <BookOpen size={16} />
+                    <span>Ultimo Background: {userData.user.lastBackgroundAttempt ? new Date(userData.user.lastBackgroundAttempt).toLocaleString() : 'Mai effettuato'}</span>
+                  </div>
                 </div>
               </div>
-              
-              <div className="cooldowns-row">
-                <div className="cooldown-item">
-                  <Clock size={16} />
-                  <span>Whitelist Scritta: {userData.user.lastWhitelistAttempt ? new Date(userData.user.lastWhitelistAttempt).toLocaleString() : 'Nessun cooldown'}</span>
+
+              <div className="records-grid">
+                {/* Whitelist Records */}
+                <div className="record-section card">
+                  <div className="section-header">
+                    <ShieldCheck size={20} className="text-primary" />
+                    <h3>Iter Whitelist</h3>
+                    <span className="count">{userData.whitelist.length}</span>
+                  </div>
+                  
+                  {userData.whitelist.length === 0 ? (
+                    <div className="no-records">
+                      <XCircle size={24} />
+                      <p>Nessuna prova scritta</p>
+                    </div>
+                  ) : (
+                    <div className="records-list">
+                      {userData.whitelist.map(app => (
+                        <div key={app._id} className="record-item">
+                          <div className="item-info">
+                            <span className={`status-pill ${app.status.toLowerCase()}`}>{app.status}</span>
+                            <span className="date-text">{new Date(app.submittedAt || app.startTime).toLocaleDateString()}</span>
+                          </div>
+                          <button onClick={() => handleDelete('whitelist', app._id)} className="btn-delete-mini" title="Elimina">
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <div className="cooldown-item">
-                  <BookOpen size={16} />
-                  <span>Background: {userData.user.lastBackgroundAttempt ? new Date(userData.user.lastBackgroundAttempt).toLocaleString() : 'Nessun cooldown'}</span>
+
+                {/* Background Records */}
+                <div className="record-section card">
+                  <div className="section-header">
+                    <BookOpen size={20} className="text-warning" />
+                    <h3>Dossier Background</h3>
+                    <span className="count">{userData.backgrounds.length}</span>
+                  </div>
+                  
+                  {userData.backgrounds.length === 0 ? (
+                    <div className="no-records">
+                      <FileText size={24} />
+                      <p>Nessuna storia inviata</p>
+                    </div>
+                  ) : (
+                    <div className="records-list">
+                      {userData.backgrounds.map(bg => (
+                        <div key={bg._id} className="record-item">
+                          <div className="item-info">
+                            <span className={`status-pill ${bg.status.toLowerCase()}`}>{bg.status}</span>
+                            <span className="date-text">{new Date(bg.submittedAt).toLocaleDateString()}</span>
+                            {bg.link && <a href={bg.link} target="_blank" rel="noreferrer" className="external-link-icon"><ExternalLink size={14} /></a>}
+                          </div>
+                          <button onClick={() => handleDelete('background', bg._id)} className="btn-delete-mini" title="Elimina">
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Voice Queue Records */}
+                <div className="record-section card">
+                  <div className="section-header">
+                    <Mic2 size={20} className="text-info" />
+                    <h3>Coda Colloqui</h3>
+                    <span className="count">{userData.voice.length}</span>
+                  </div>
+                  
+                  {userData.voice.length === 0 ? (
+                    <div className="no-records">
+                      <Mic2 size={24} />
+                      <p>Mai entrato in coda</p>
+                    </div>
+                  ) : (
+                    <div className="records-list">
+                      {userData.voice.map(v => (
+                        <div key={v._id} className="record-item">
+                          <div className="item-info">
+                            <span className="status-pill blue">CODA VOCALE</span>
+                            <span className="date-text">{new Date(v.joinedAt).toLocaleString()}</span>
+                          </div>
+                          <button onClick={() => handleDelete('voice', v._id)} className="btn-delete-mini" title="Elimina">
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
-
-            <div className="records-grid">
-              {/* Whitelist Records */}
-              <div className="record-section card">
-                <div className="section-header">
-                  <ShieldCheck size={20} className="text-primary" />
-                  <h3>Whitelist Scritta</h3>
-                  <span className="badge">{userData.whitelist.length}</span>
-                </div>
-                
-                {userData.whitelist.length === 0 ? (
-                  <p className="text-muted no-data">Nessuna domanda trovata.</p>
-                ) : (
-                  <div className="records-list">
-                    {userData.whitelist.map(app => (
-                      <div key={app._id} className="record-item">
-                        <div className="item-info">
-                          <span className={`status-tag ${app.status.toLowerCase()}`}>{app.status}</span>
-                          <span className="date">{new Date(app.submittedAt).toLocaleDateString()}</span>
-                        </div>
-                        <button onClick={() => handleDelete('whitelist', app._id)} className="icon-btn delete" title="Elimina">
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Background Records */}
-              <div className="record-section card">
-                <div className="section-header">
-                  <BookOpen size={20} className="text-warning" />
-                  <h3>Background Story</h3>
-                  <span className="badge">{userData.backgrounds.length}</span>
-                </div>
-                
-                {userData.backgrounds.length === 0 ? (
-                  <p className="text-muted no-data">Nessuna storia trovata.</p>
-                ) : (
-                  <div className="records-list">
-                    {userData.backgrounds.map(bg => (
-                      <div key={bg._id} className="record-item">
-                        <div className="item-info">
-                          <span className={`status-tag ${bg.status.toLowerCase()}`}>{bg.status}</span>
-                          <span className="date">{new Date(bg.submittedAt).toLocaleDateString()}</span>
-                          {bg.link && <a href={bg.link} target="_blank" rel="noreferrer" className="link-icon"><ExternalLink size={14} /></a>}
-                        </div>
-                        <button onClick={() => handleDelete('background', bg._id)} className="icon-btn delete" title="Elimina">
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Voice Queue Records */}
-              <div className="record-section card">
-                <div className="section-header">
-                  <Mic2 size={20} className="text-info" />
-                  <h3>Coda Vocale</h3>
-                  <span className="badge">{userData.voice.length}</span>
-                </div>
-                
-                {userData.voice.length === 0 ? (
-                  <p className="text-muted no-data">Nessuna entry in coda.</p>
-                ) : (
-                  <div className="records-list">
-                    {userData.voice.map(v => (
-                      <div key={v._id} className="record-item">
-                        <div className="item-info">
-                          <span className="badge-outline">Coda</span>
-                          <span className="date">{new Date(v.joinedAt).toLocaleString()}</span>
-                        </div>
-                        <button onClick={() => handleDelete('voice', v._id)} className="icon-btn delete" title="Elimina">
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      </main>
 
       <style jsx>{`
-        .management-page { display: flex; flex-direction: column; gap: 32px; }
+        .management-container {
+          display: grid;
+          grid-template-columns: 320px 1fr;
+          gap: 32px;
+          height: calc(100vh - 140px);
+          overflow: hidden;
+        }
+
+        /* Sidebar Styles */
+        .user-list-sidebar {
+          display: flex;
+          flex-direction: column;
+          background: #070912;
+          border-radius: 20px;
+          border: 1px solid var(--border);
+          overflow: hidden;
+        }
+
+        .sidebar-header {
+          padding: 24px;
+          border-bottom: 1px solid var(--border);
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+        }
+
+        .header-top {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+        }
+        .header-top h3 { font-size: 1.1rem; flex: 1; }
+        .count-badge {
+          background: var(--primary-glow);
+          color: var(--primary);
+          padding: 2px 10px;
+          border-radius: 20px;
+          font-size: 0.75rem;
+          font-weight: 800;
+        }
+
+        .sidebar-search {
+          position: relative;
+          display: flex;
+          align-items: center;
+          background: rgba(255,255,255,0.03);
+          border: 1px solid var(--border);
+          border-radius: 12px;
+          padding: 0 14px;
+        }
+        .sidebar-search input {
+          background: transparent;
+          border: none;
+          color: white;
+          padding: 12px 10px;
+          font-size: 0.85rem;
+          outline: none;
+          width: 100%;
+        }
+        .sidebar-search :global(svg) { color: var(--text-dim); }
+
+        .users-scroll {
+          flex: 1;
+          overflow-y: auto;
+          padding: 12px;
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+        .users-scroll::-webkit-scrollbar { width: 4px; }
+        .users-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+        .user-list-item {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 12px 16px;
+          background: transparent;
+          border: 1px solid transparent;
+          border-radius: 12px;
+          cursor: pointer;
+          transition: all 0.2s;
+          text-align: left;
+          width: 100%;
+          color: var(--text-muted);
+        }
+        .user-list-item:hover { background: rgba(255,255,255,0.03); color: white; }
+        .user-list-item.active { 
+          background: var(--primary-glow); 
+          border-color: var(--primary-light); 
+          color: white; 
+        }
+        .user-list-item.active .user-avatar { background: var(--primary); color: white; }
+        .user-list-item.active .arrow { opacity: 1; transform: translateX(0); }
+
+        .user-avatar {
+          width: 32px;
+          height: 32px;
+          border-radius: 10px;
+          background: var(--border);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: 0.2s;
+        }
+
+        .user-name-group { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+        .user-name-group .name { font-size: 0.9rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .user-name-group .id { font-size: 0.7rem; opacity: 0.5; font-family: monospace; }
         
-        .page-header { 
-          display: flex; 
-          justify-content: space-between; 
-          align-items: flex-end; 
+        .arrow { opacity: 0; transition: 0.2s; transform: translateX(-5px); }
+
+        /* Main Content Styles */
+        .management-main {
+          display: flex;
+          flex-direction: column;
           gap: 24px;
-          flex-wrap: wrap;
+          overflow-y: auto;
+          padding-right: 8px;
+        }
+        .management-main::-webkit-scrollbar { width: 4px; }
+        .management-main::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+        .page-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 24px 32px;
+          background: #070912;
+          border-radius: 20px;
+          border: 1px solid var(--border);
+          gap: 32px;
         }
 
         .title-group { display: flex; gap: 20px; align-items: center; }
-        .icon-badge { 
-          width: 52px; 
-          height: 52px; 
-          border-radius: 14px; 
-          display: flex; 
-          align-items: center; 
-          justify-content: center; 
-          font-weight: bold;
-        }
-        .icon-badge.primary { background: rgba(129, 140, 248, 0.1); color: var(--primary); }
-        .page-header h1 { font-size: 2rem; margin-bottom: 4px; }
-        
-        .search-box { 
-          background: var(--bg-card); 
-          border: 1px solid var(--border); 
-          border-radius: 14px; 
-          padding: 6px 6px 6px 18px; 
-          display: flex; 
-          align-items: center; 
-          gap: 12px;
-          min-width: 450px;
-          box-shadow: var(--shadow-sm);
-        }
-        .search-icon { color: var(--text-muted); }
-        .search-input { 
-          background: transparent; 
-          border: none; 
-          color: white; 
-          flex: 1; 
-          font-size: 0.95rem; 
-          outline: none; 
-          font-family: inherit;
-        }
-        
-        .empty-state { 
-          display: flex; 
-          flex-direction: column; 
-          align-items: center; 
-          justify-content: center; 
-          min-height: 300px;
-          text-align: center;
-          padding: 60px;
-        }
+        .icon-badge { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+        .icon-badge.primary { background: var(--primary-glow); color: var(--primary); }
+        .page-header h1 { font-size: 1.5rem; margin-bottom: 2px; }
 
-        .results-container { display: flex; flex-direction: column; gap: 32px; }
-        
-        .user-profile { 
-          display: flex; 
-          flex-direction: column; 
-          gap: 20px; 
+        .search-box-v2 {
+          display: flex;
+          align-items: center;
+          background: rgba(0,0,0,0.3);
+          border: 1px solid var(--border);
+          border-radius: 14px;
+          padding: 4px;
+          flex: 1;
+          max-width: 400px;
         }
-
-        .profile-main { display: flex; align-items: center; gap: 20px; }
-        .avatar-placeholder { 
-          width: 56px; 
-          height: 56px; 
-          border-radius: 50%; 
-          background: var(--border-strong); 
-          display: flex; 
-          align-items: center; 
+        .search-box-v2 .search-icon { margin-left: 14px; color: var(--text-dim); }
+        .search-box-v2 .search-input {
+          background: transparent;
+          border: none;
+          color: white;
+          flex: 1;
+          padding: 10px 12px;
+          font-size: 0.9rem;
+          outline: none;
+        }
+        .btn-search {
+          background: var(--primary);
+          color: white;
+          border: none;
+          width: 38px;
+          height: 38px;
+          border-radius: 10px;
+          display: flex;
+          align-items: center;
           justify-content: center;
-          color: var(--text-muted);
+          cursor: pointer;
+          transition: 0.2s;
+        }
+        .btn-search:hover { filter: brightness(1.2); transform: scale(1.05); }
+
+        .content-area { flex: 1; }
+
+        .empty-state-v2 {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 100px 40px;
+          text-align: center;
+          background: rgba(255,255,255,0.01);
+          border-style: dashed;
+        }
+        .pulse-icon {
+          width: 80px;
+          height: 80px;
+          background: var(--primary-glow);
+          color: var(--primary);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 24px;
+          animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+          0% { box-shadow: 0 0 0 0 rgba(129, 140, 248, 0.4); }
+          70% { box-shadow: 0 0 0 20px rgba(129, 140, 248, 0); }
+          100% { box-shadow: 0 0 0 0 rgba(129, 140, 248, 0); }
+        }
+
+        .user-profile { padding: 32px; margin-bottom: 24px; }
+        .profile-main { display: flex; align-items: center; gap: 24px; margin-bottom: 24px; }
+        .avatar-placeholder {
+          width: 64px;
+          height: 64px;
+          background: var(--border-strong);
+          border-radius: 20px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: var(--text-dim);
         }
         .profile-info { flex: 1; }
-        .profile-info h3 { font-size: 1.3rem; margin-bottom: 2px; }
-        
-        .cooldowns-row { 
-          display: flex; 
-          gap: 24px; 
-          padding-top: 20px; 
+        .name-badge-row { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
+        .id-badge { background: var(--border); padding: 2px 8px; border-radius: 6px; font-family: monospace; font-size: 0.75rem; color: var(--text-dim); }
+        .text-dim { font-size: 0.85rem; color: var(--text-dim); }
+
+        .btn-reset {
+          background: rgba(239, 68, 68, 0.1);
+          color: #ef4444;
+          border: 1px solid rgba(239, 68, 68, 0.2);
+          padding: 10px 20px;
+          border-radius: 12px;
+          font-weight: 700;
+          font-size: 0.85rem;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          transition: 0.2s;
+        }
+        .btn-reset:hover { background: #ef4444; color: white; }
+
+        .cooldowns-row {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 16px;
+          padding-top: 24px;
           border-top: 1px solid var(--border);
-          flex-wrap: wrap;
         }
-        .cooldown-item { 
-          display: flex; 
-          align-items: center; 
-          gap: 10px; 
-          font-size: 0.85rem; 
-          color: var(--text-dim);
-          background: rgba(255,255,255,0.03);
-          padding: 8px 16px;
-          border-radius: 8px;
+        .cooldown-item {
+          background: rgba(255,255,255,0.02);
+          padding: 14px 20px;
+          border-radius: 14px;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          font-size: 0.85rem;
+          color: var(--text-muted);
+        }
+        .cooldown-item :global(svg) { color: var(--primary); opacity: 0.6; }
+
+        .records-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+          gap: 24px;
         }
 
-        .records-grid { 
-          display: grid; 
-          grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); 
-          gap: 24px; 
-        }
+        .record-section { padding: 24px; }
+        .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+        .section-header .count { margin-left: auto; background: var(--border-strong); padding: 2px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 800; }
 
-        .section-header { 
-          display: flex; 
-          align-items: center; 
-          gap: 12px; 
-          margin-bottom: 24px;
-          position: relative;
-        }
-        .section-header h3 { font-size: 1.1rem; }
-        .badge { 
-          background: var(--border-strong); 
-          color: white; 
-          padding: 2px 8px; 
-          border-radius: 6px; 
-          font-size: 0.75rem; 
-          font-weight: bold;
-        }
-
-        .records-list { display: flex; flex-direction: column; gap: 12px; }
-        .record-item { 
-          display: flex; 
-          justify-content: space-between; 
-          align-items: center; 
-          padding: 14px 18px; 
-          background: rgba(255,255,255,0.03); 
-          border-radius: 12px; 
+        .records-list { display: flex; flex-direction: column; gap: 8px; }
+        .record-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 12px 16px;
+          background: rgba(255,255,255,0.02);
+          border-radius: 10px;
           border: 1px solid var(--border-light);
-          transition: 0.2s;
         }
-        .record-item:hover { background: rgba(255,255,255,0.06); border-color: var(--border-strong); }
-        
         .item-info { display: flex; align-items: center; gap: 12px; }
-        .status-tag { 
-          font-size: 0.7rem; 
-          font-weight: 800; 
-          padding: 2px 8px; 
-          border-radius: 6px; 
-          text-transform: uppercase;
-        }
-        .status-tag.accepted { background: rgba(16, 185, 129, 0.1); color: var(--success); }
-        .status-tag.rejected { background: rgba(239, 68, 68, 0.1); color: var(--error); }
-        .status-tag.pending, .status-tag.submitted { background: rgba(129, 140, 248, 0.1); color: var(--primary); }
-        
-        .date { font-size: 0.8rem; color: var(--text-muted); font-family: monospace; }
-        .link-icon { color: var(--primary); opacity: 0.7; transition: 0.2s; }
-        .link-icon:hover { opacity: 1; transform: scale(1.1); }
+        .status-pill { font-size: 0.65rem; font-weight: 900; padding: 2px 8px; border-radius: 5px; text-transform: uppercase; }
+        .status-pill.accepted { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
+        .status-pill.rejected { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+        .status-pill.blue { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+        .status-pill.pending { background: rgba(129, 140, 248, 0.1); color: var(--primary); }
 
-        .btn-danger { 
-          background: rgba(239, 68, 68, 0.1); 
-          color: #f87171; 
-          border: 1px solid rgba(239, 68, 68, 0.2); 
-          padding: 10px 18px; 
-          border-radius: 12px; 
-          font-weight: 700; 
-          font-size: 0.85rem; 
-          display: flex; 
-          align-items: center; 
-          gap: 10px; 
-          transition: all 0.2s;
-        }
-        .btn-danger:hover { background: var(--error); color: white; transform: translateY(-1px); }
+        .date-text { font-size: 0.8rem; color: var(--text-dim); font-family: monospace; }
+        .btn-delete-mini { background: transparent; border: none; padding: 6px; border-radius: 6px; color: var(--text-dim); transition: 0.2s; }
+        .btn-delete-mini:hover { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
 
-        .icon-btn { 
-          background: transparent; 
-          border: none; 
-          padding: 8px; 
-          border-radius: 8px; 
-          color: var(--text-muted); 
-          transition: 0.2s;
-        }
-        .icon-btn.delete:hover { background: rgba(239, 68, 68, 0.1); color: var(--error); }
+        .no-records { padding: 30px; text-align: center; color: var(--text-dim); opacity: 0.5; }
+        .no-records p { font-size: 0.85rem; margin-top: 8px; }
 
-        .no-data { padding: 20px 0; text-align: center; font-style: italic; }
-        .badge-outline { 
-          font-size: 0.7rem; 
-          font-weight: 700; 
-          border: 1px solid var(--border-strong); 
-          padding: 2px 8px; 
-          border-radius: 6px; 
-          color: var(--text-dim);
+        .list-skeletons { display: flex; flex-direction: column; gap: 10px; }
+        .no-users { text-align: center; padding: 40px 20px; color: var(--text-dim); opacity: 0.5; }
+        .no-users p { margin-top: 10px; font-size: 0.85rem; }
+
+        @media (max-width: 1100px) {
+          .management-container { grid-template-columns: 1fr; }
+          .user-list-sidebar { display: none; }
         }
-        
-        .loading-grid { display: flex; flex-direction: column; gap: 24px; }
       `}</style>
-    </Layout>
+    </div>
   );
 }

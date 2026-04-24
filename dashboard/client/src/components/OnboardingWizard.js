@@ -17,6 +17,7 @@ import {
   Rocket
 } from 'lucide-react';
 import api from '../utils/api';
+import CustomSelect from './CustomSelect';
 
 export default function OnboardingWizard({ config, guildId }) {
   const router = useRouter();
@@ -84,6 +85,10 @@ export default function OnboardingWizard({ config, guildId }) {
 
   if (!config) return null;
 
+  // If already configured (Staff roles + Log channel set), don't show the wizard unless success state is active
+  const isConfigured = config.globalConfig?.adminRoleIds?.length > 0 && config.globalConfig?.logs?.channelId;
+  if (isConfigured && !success) return null;
+
   const roles = config.roles || [];
   const channels = config.channels || [];
   const categories = channels.filter(c => c.type === 4); // 4 is Category
@@ -122,7 +127,7 @@ export default function OnboardingWizard({ config, guildId }) {
     <div className="wizard-step animate slide-in">
       <div className="step-header">
         <div className="step-badge">Passo 1 di 4</div>
-        <h2>Configurazione Base</h2>
+        <h2>Setup Iniziale Verix</h2>
         <p>Imposta le fondamenta del tuo server.</p>
       </div>
 
@@ -130,14 +135,14 @@ export default function OnboardingWizard({ config, guildId }) {
         <div className="form-group">
           <label className="text-label">Lingua Principale</label>
           <div className="stylized-select-wrapper">
-            <select 
-              className="select" 
-              value={formData.language}
-              onChange={e => setFormData({...formData, language: e.target.value})}
-            >
-              <option value="it">Italiano 🇮🇹</option>
-              <option value="en">English 🇺🇸</option>
-            </select>
+            <CustomSelect 
+              options={[
+                { value: 'it', label: 'Italiano 🇮🇹' },
+                { value: 'en', label: 'English 🇺🇸' }
+              ]} 
+              value={formData.language} 
+              onChange={val => setFormData({...formData, language: val})} 
+            />
           </div>
         </div>
 
@@ -167,16 +172,14 @@ export default function OnboardingWizard({ config, guildId }) {
           <label className="text-label">Canale Log Centrale</label>
           <p className="field-desc">Dove il bot invierà tutte le notifiche amministrative.</p>
           <div className="stylized-select-wrapper">
-            <select 
-              className="select" 
-              value={formData.logChannelId}
-              onChange={e => setFormData({...formData, logChannelId: e.target.value})}
-            >
-              <option value="">Seleziona un canale...</option>
-              {textChannels.map(c => (
-                <option key={c.id} value={c.id}># {c.name}</option>
-              ))}
-            </select>
+            <CustomSelect 
+              options={[
+                { value: '', label: 'Seleziona un canale...' },
+                ...textChannels.map(c => ({ value: c.id, label: `# ${c.name}` }))
+              ]} 
+              value={formData.logChannelId} 
+              onChange={val => setFormData({...formData, logChannelId: val})} 
+            />
           </div>
         </div>
       </div>
@@ -244,33 +247,33 @@ export default function OnboardingWizard({ config, guildId }) {
               <div className="form-group">
                 <label className="text-label">Categoria Whitelist</label>
                 <div className="stylized-select-wrapper">
-                  <select 
-                    className="select" 
-                    value={formData.config.whitelist.categoryOpenId}
-                    onChange={e => setFormData({
+                  <CustomSelect 
+                    options={[
+                      { value: '', label: 'Seleziona categoria...' },
+                      ...categories.map(c => ({ value: c.id, label: c.name }))
+                    ]} 
+                    value={formData.config.whitelist.categoryOpenId} 
+                    onChange={val => setFormData({
                       ...formData, 
-                      config: { ...formData.config, whitelist: { ...formData.config.whitelist, categoryOpenId: e.target.value } }
-                    })}
-                  >
-                    <option value="">Seleziona categoria...</option>
-                    {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                  </select>
+                      config: { ...formData.config, whitelist: { ...formData.config.whitelist, categoryOpenId: val } }
+                    })} 
+                  />
                 </div>
               </div>
               <div className="form-group">
                 <label className="text-label">Ruolo Cittadino (Pass)</label>
                 <div className="stylized-select-wrapper">
-                  <select 
-                    className="select" 
-                    value={formData.config.whitelist.whitelistRole}
-                    onChange={e => setFormData({
+                  <CustomSelect 
+                    options={[
+                      { value: '', label: 'Seleziona ruolo...' },
+                      ...roles.map(r => ({ value: r.id, label: r.name }))
+                    ]} 
+                    value={formData.config.whitelist.whitelistRole} 
+                    onChange={val => setFormData({
                       ...formData, 
-                      config: { ...formData.config, whitelist: { ...formData.config.whitelist, whitelistRole: e.target.value } }
-                    })}
-                  >
-                    <option value="">Seleziona ruolo...</option>
-                    {roles.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
-                  </select>
+                      config: { ...formData.config, whitelist: { ...formData.config.whitelist, whitelistRole: val } }
+                    })} 
+                  />
                 </div>
               </div>
             </div>
@@ -287,17 +290,17 @@ export default function OnboardingWizard({ config, guildId }) {
               <div className="form-group">
                 <label className="text-label">Categoria Ticket</label>
                 <div className="stylized-select-wrapper">
-                  <select 
-                    className="select" 
-                    value={formData.config.tickets.categoryOpenId}
-                    onChange={e => setFormData({
+                  <CustomSelect 
+                    options={[
+                      { value: '', label: 'Seleziona categoria...' },
+                      ...categories.map(c => ({ value: c.id, label: c.name }))
+                    ]} 
+                    value={formData.config.tickets.categoryOpenId} 
+                    onChange={val => setFormData({
                       ...formData, 
-                      config: { ...formData.config, tickets: { ...formData.config.tickets, categoryOpenId: e.target.value } }
-                    })}
-                  >
-                    <option value="">Seleziona categoria...</option>
-                    {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                  </select>
+                      config: { ...formData.config, tickets: { ...formData.config.tickets, categoryOpenId: val } }
+                    })} 
+                  />
                 </div>
               </div>
               <div className="form-group">
@@ -336,33 +339,33 @@ export default function OnboardingWizard({ config, guildId }) {
               <div className="form-group">
                 <label className="text-label">Canale Verifica</label>
                 <div className="stylized-select-wrapper">
-                  <select 
-                    className="select" 
-                    value={formData.config.verify.channelId}
-                    onChange={e => setFormData({
+                  <CustomSelect 
+                    options={[
+                      { value: '', label: 'Seleziona canale...' },
+                      ...textChannels.map(c => ({ value: c.id, label: `# ${c.name}` }))
+                    ]} 
+                    value={formData.config.verify.channelId} 
+                    onChange={val => setFormData({
                       ...formData, 
-                      config: { ...formData.config, verify: { ...formData.config.verify, channelId: e.target.value } }
-                    })}
-                  >
-                    <option value="">Seleziona canale...</option>
-                    {textChannels.map(c => <option key={c.id} value={c.id}># {c.name}</option>)}
-                  </select>
+                      config: { ...formData.config, verify: { ...formData.config.verify, channelId: val } }
+                    })} 
+                  />
                 </div>
               </div>
               <div className="form-group">
                 <label className="text-label">Ruolo da Assegnare</label>
                 <div className="stylized-select-wrapper">
-                  <select 
-                    className="select" 
-                    value={formData.config.verify.roleId}
-                    onChange={e => setFormData({
+                  <CustomSelect 
+                    options={[
+                      { value: '', label: 'Seleziona ruolo...' },
+                      ...roles.map(r => ({ value: r.id, label: r.name }))
+                    ]} 
+                    value={formData.config.verify.roleId} 
+                    onChange={val => setFormData({
                       ...formData, 
-                      config: { ...formData.config, verify: { ...formData.config.verify, roleId: e.target.value } }
-                    })}
-                  >
-                    <option value="">Seleziona ruolo...</option>
-                    {roles.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
-                  </select>
+                      config: { ...formData.config, verify: { ...formData.config.verify, roleId: val } }
+                    })} 
+                  />
                 </div>
               </div>
             </div>
@@ -481,17 +484,17 @@ export default function OnboardingWizard({ config, guildId }) {
         }
 
         .wizard-progress-p {
-          padding: 32px 48px;
-          background: rgba(255,255,255,0.01);
+          padding: 40px 64px;
+          background: linear-gradient(to bottom, rgba(255,255,255,0.02), transparent);
           border-bottom: 1px solid var(--border);
           position: relative;
         }
 
         .progress-track-p {
-          height: 4px;
+          height: 6px;
           background: rgba(255,255,255,0.05);
-          border-radius: 2px;
-          margin-bottom: 24px;
+          border-radius: 10px;
+          margin-bottom: 32px;
           overflow: hidden;
         }
 
@@ -510,25 +513,26 @@ export default function OnboardingWizard({ config, guildId }) {
         }
 
         .indicator-p {
-          width: 32px;
-          height: 32px;
-          border-radius: 50%;
+          width: 42px;
+          height: 42px;
+          border-radius: 14px;
           background: var(--bg-dark);
-          border: 2px solid var(--border);
+          border: 1px solid var(--border);
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 0.85rem;
+          font-size: 0.95rem;
           font-weight: 800;
           color: var(--text-muted);
-          transition: 0.3s;
+          transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         .indicator-p.active {
           border-color: var(--primary);
           color: white;
-          box-shadow: 0 0 15px rgba(var(--primary-rgb), 0.3);
-          transform: scale(1.1);
+          background: rgba(var(--primary-rgb), 0.1);
+          box-shadow: 0 0 20px rgba(var(--primary-rgb), 0.3);
+          transform: scale(1.15) translateY(-2px);
         }
 
         .indicator-p.completed {
@@ -579,44 +583,72 @@ export default function OnboardingWizard({ config, guildId }) {
           display: flex;
           flex-wrap: wrap;
           gap: 10px;
-          max-height: 150px;
-          overflow-y: auto;
-          padding: 12px;
-          background: rgba(2, 6, 23, 0.4);
-          border-radius: 12px;
-          border: 1px solid var(--border);
-        }
-
         .role-tag-p {
-          background: rgba(255,255,255,0.03);
-          border: 1px solid var(--border);
-          color: var(--text-muted);
-          padding: 6px 12px;
-          border-radius: 8px;
+          background: rgba(255, 255, 255, 0.03);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          color: var(--text-dim);
+          padding: 8px 14px;
+          border-radius: 12px;
           font-size: 0.8rem;
           font-weight: 600;
           cursor: pointer;
           display: flex;
           align-items: center;
-          gap: 8px;
-          transition: 0.2s;
+          gap: 10px;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          user-select: none;
         }
 
         .role-tag-p:hover {
-          background: rgba(255,255,255,0.06);
-          border-color: var(--text-dim);
+          background: rgba(255, 255, 255, 0.08);
+          border-color: rgba(255, 255, 255, 0.2);
+          transform: translateY(-1px);
         }
 
         .role-tag-p.active {
-          background: rgba(var(--primary-rgb), 0.1);
+          background: rgba(var(--primary-rgb), 0.15);
           border-color: var(--primary);
           color: white;
+          box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.2);
         }
 
         .role-color-dot {
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
+          width: 10px;
+          height: 10px;
+          border-radius: 3px;
+          box-shadow: 0 0 5px rgba(0,0,0,0.5);
+        }
+
+        .roles-selector-p {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 12px;
+          max-height: 200px;
+          overflow-y: auto;
+          padding: 20px;
+          background: rgba(0, 0, 0, 0.2);
+          border-radius: 16px;
+          border: 1px solid var(--border);
+        }
+
+        /* Custom Scrollbar for Roles */
+        .roles-selector-p::-webkit-scrollbar { width: 4px; }
+        .roles-selector-p::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+
+        .select {
+          appearance: none;
+          background: rgba(15, 23, 42, 0.8) !important;
+          border: 1px solid var(--border) !important;
+          padding: 16px 20px !important;
+          border-radius: 14px !important;
+          font-weight: 500;
+          color: white !important;
+          cursor: pointer;
+        }
+
+        .form-group label {
+          margin-bottom: 12px;
+          display: block;
         }
 
         .modules-toggle-grid {

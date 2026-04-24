@@ -3,7 +3,6 @@ import WhitelistConfig from '../../../models/WhitelistConfig.js';
 import WhitelistApp from '../../../models/WhitelistApp.js';
 import WhitelistAudit from '../../../models/WhitelistAudit.js';
 import VoiceQueue from '../../../models/VoiceQueue.js';
-import { buildEmbed } from '../../../utils/embedHelper.js';
 import { updateDashboard, getDashboard } from '../utils/voiceDashboard.js';
 import logger from '../../../utils/logger.js';
 import messageService from '../../../utils/messageService.js';
@@ -60,7 +59,6 @@ export default {
         // --- 3. Interview Control Buttons (Local VC) ---
         if (interaction.isButton() && interaction.customId.startsWith('reset_timer_voice_')) {
             const userId = interaction.customId.split('_')[3];
-            const config = await WhitelistConfig.findOne({ guildId: interaction.guild.id });
             const now = new Date();
 
             await VoiceQueue.findOneAndUpdate(
@@ -70,15 +68,12 @@ export default {
 
             // Rebuild the guide embed to refresh the timer/placeholder if needed
             const member = await interaction.guild.members.fetch(userId).catch(() => null);
-            const newEmbed = buildEmbed(config.embeds.voice_guide, {
-                user: member?.user || 'Utente',
+            const newEmbed = await messageService.get(interaction.guild.id, 'whitelist', 'voice_guide', {
+                userId: userId,
                 start_time: `<t:${Math.floor(now.getTime() / 1000)}:R>`
-            }, config);
+            });
 
             if (newEmbed) {
-                // Enforce a completely clean guide embed overriding whatever old broken configurations are in the DB
-                newEmbed.setDescription(null);
-                newEmbed.setFields([]); // Remove all old broken fields
                 newEmbed.addFields({ name: '⏱️ Inizio Colloquio', value: `<t:${Math.floor(now.getTime() / 1000)}:R>` });
                 
                 const oldEmbeds = interaction.message.embeds;
@@ -217,13 +212,12 @@ export default {
             if (config.logChannelId) {
                 const logChannel = interaction.guild.channels.cache.get(config.logChannelId);
                 if (logChannel) {
-                    const auditEmbed = buildEmbed(config.embeds.staff_rejected, {
-                        user: `<@${userId}>`,
-                        staff: interaction.user,
-                        reason: reason,
-                        app_id: 'VOICE_INTERVIEW'
+                    const auditEmbed = await messageService.get(interaction.guild.id, 'voice', 'staff_denied', {
+                        userId: userId,
+                        staff: interaction.user.tag,
+                        reason: reason
                     });
-                    await logChannel.send({ embeds: [auditEmbed] });
+                    if (auditEmbed) await logChannel.send({ embeds: [auditEmbed] });
                 }
             }
 

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import Layout from '../../../components/Layout';
 import EmbedPreview from '../../../components/EmbedPreview';
 import EmbedEditor from '../../../components/EmbedEditor';
 import Skeleton from '../../../components/Skeleton';
@@ -27,10 +26,11 @@ import {
   Box,
   MessageSquare
 } from 'lucide-react';
+import CustomSelect from '../../../components/CustomSelect';
 
 export default function EmbedBuilder() {
   const router = useRouter();
-   const { guildId } = router.query;
+  const { guildId } = router.query;
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -57,12 +57,6 @@ export default function EmbedBuilder() {
   const [delayMinutes, setDelayMinutes] = useState(10);
   const [specificTime, setSpecificTime] = useState('');
 
-   useEffect(() => {
-    if (guildId && mounted) {
-      loadAllData();
-    }
-  }, [guildId, mounted]);
-
   const loadAllData = async () => {
     setLoading(true);
     try {
@@ -81,6 +75,18 @@ export default function EmbedBuilder() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (guildId && mounted) {
+      loadAllData();
+    }
+  }, [guildId, mounted]);
+
+  useEffect(() => {
+    if (currentEmbed) {
+      window.dispatchEvent(new CustomEvent('update-guide-context', { detail: currentEmbed }));
+    }
+  }, [currentEmbed]);
 
   const showToast = (message, type = 'success') => {
     window.dispatchEvent(new CustomEvent('show-toast', { detail: { message, type } }));
@@ -157,12 +163,11 @@ export default function EmbedBuilder() {
     }
   };
 
-   if (!mounted || loading) return <Layout guildId={guildId}><Skeleton height="500px" /></Layout>;
+  if (!mounted || loading) return <><Skeleton height="500px" /></>;
 
   return (
-    <Layout guildId={guildId}>
-      <div className="animate">
-        
+    <div className="config-page-layout animate">
+      <div className="config-main-col">
         {/* Module Header */}
         <header className="module-header">
            <div className="header-info">
@@ -185,26 +190,30 @@ export default function EmbedBuilder() {
         </header>
 
         <div className="studio-grid-s">
-            <div className="studio-main-s">
+            <div className="studio-left-s">
                 {/* Archive Selector */}
                 <section className="card section-card-s" style={{ marginBottom: '24px' }}>
                     <div className="align-center"><FolderOpen size={18} color="var(--primary)" /> <h3>Libreria Template</h3></div>
                     <div className="fields-row-s">
                         <div className="field-box" style={{ flex: 1.5 }}>
                             <label className="text-label">Scegli Sorgente</label>
-                            <select className="select" value={selectedTemplateId} onChange={handleTemplateChange}>
-                                <option value="new">+ Nuovo Progetto</option>
-                                {customTemplates.map(t => <option key={t._id} value={t._id}>{t.name}</option>)}
-                            </select>
+                            <CustomSelect 
+                                options={[
+                                    { value: 'new', label: '+ Nuovo Progetto' },
+                                    ...customTemplates.map(t => ({ value: t._id, label: t.name }))
+                                ]} 
+                                value={selectedTemplateId} 
+                                onChange={val => handleTemplateChange({ target: { value: val } })} 
+                            />
                         </div>
                         <div className="field-box" style={{ flex: 1 }}>
                             <label className="text-label">Nome Salvataggio</label>
                             <input className="input" value={customName} onChange={e => setCustomName(e.target.value)} />
                         </div>
                         <div className="field-box" style={{ width: '120px', justifyContent: 'flex-end', display: 'flex' }}>
-                             <button onClick={handleSave} className="btn-outline" style={{ height: '42px', marginTop: 'auto' }} disabled={saving}>
+                                <button onClick={handleSave} className="btn-outline" style={{ height: '42px', marginTop: 'auto' }} disabled={saving}>
                                 <Save size={16} /> Salva
-                             </button>
+                                </button>
                         </div>
                     </div>
                 </section>
@@ -219,7 +228,7 @@ export default function EmbedBuilder() {
                 </div>
             </div>
 
-            <aside className="studio-side-s">
+            <div className="studio-right-s">
                 <section className="card section-card-s">
                     <div className="align-center"><Clock size={18} color="var(--primary)" /> <h3>Scheduling</h3></div>
                     <div className="schedule-stack-s">
@@ -250,14 +259,15 @@ export default function EmbedBuilder() {
                     )}
                 </section>
 
-                <div className="card info-box-s" style={{ marginTop: '20px' }}>
+                <div className="card info-box-s">
                     <Info size={18} color="var(--primary)" />
                     <p>Puoi usare variabili come <b>{'{user}'}</b> per personalizzare il messaggio.</p>
                 </div>
-            </aside>
+            </div>
         </div>
+      </div>
 
-        <style jsx>{`
+      <style jsx>{`
             .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: rgba(255,255,255,0.02); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
             .header-info { display: flex; align-items: center; gap: 16px; }
             .header-icon { width: 48px; height: 48px; background: rgba(129, 140, 248, 0.1); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
@@ -265,7 +275,10 @@ export default function EmbedBuilder() {
             .header-text p { font-size: 0.85rem; color: var(--text-muted); }
             .header-buttons { display: flex; align-items: center; gap: 12px; }
 
-            .studio-grid-s { display: grid; grid-template-columns: 1fr 300px; gap: 24px; }
+            .studio-grid-s { display: grid; grid-template-columns: 1fr 300px; gap: 24px; align-items: start; }
+            .studio-left-s { display: flex; flex-direction: column; }
+            .studio-right-s { display: flex; flex-direction: column; gap: 24px; }
+            
             .fields-row-s { display: flex; gap: 16px; margin-top: 16px; }
             .editor-card-s { padding: 0 !important; }
 
@@ -274,14 +287,14 @@ export default function EmbedBuilder() {
             .schedule-btn-s:hover { background: rgba(255,255,255,0.04); color: white; }
             .schedule-btn-s.active { background: rgba(129,140,248,0.1); border-color: var(--primary); color: white; }
 
-            .info-box-s { padding: 16px; display: flex; flex-direction: column; gap: 10px; font-size: 0.8rem; color: var(--text-muted); }
+            .info-box-s { padding: 16px; display: flex; flex-direction: row; align-items: center; gap: 10px; font-size: 0.8rem; color: var(--text-muted); }
 
             .align-center { display: flex; align-items: center; gap: 10px; }
-            @media (max-width: 1000px) { .studio-grid-s { grid-template-columns: 1fr; } .fields-row-s { flex-direction: column; } }
+            @media (max-width: 1400px) { .studio-grid-s { grid-template-columns: 1fr; } }
+            @media (max-width: 1000px) { .fields-row-s { flex-direction: column; } .header-buttons { flex-direction: column; align-items: stretch; } }
             @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
             .spin { animation: spin 1s linear infinite; }
         `}</style>
-      </div>
-    </Layout>
+    </div>
   );
 }

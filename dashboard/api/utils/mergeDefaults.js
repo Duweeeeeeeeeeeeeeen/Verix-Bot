@@ -35,11 +35,19 @@ export function mergeModuleDefaults(moduleName, dbConfig) {
     };
 
     // Specialized Module Merging
-    if (result.embeds && typeof result.embeds === 'object') {
-        for (const [key, defValue] of Object.entries(defaults)) {
-            const isEmbed = defValue && typeof defValue === 'object' && (defValue.title || defValue.description);
-            if (isEmbed) {
+    // Ensure result.embeds exists if defaults have them
+    if (!result.embeds) result.embeds = {};
+
+    for (const [key, defValue] of Object.entries(defaults)) {
+        const isEmbed = defValue && typeof defValue === 'object' && (defValue.title || defValue.description);
+        if (isEmbed) {
+            // Check if it's a top-level embed or nested in .embeds
+            if (result.embeds && result.embeds[key]) {
                 result.embeds[key] = mergeEmbed(result.embeds[key], defValue);
+            } else if (result[key] && typeof result[key] === 'object' && result[key].title) {
+                 result[key] = mergeEmbed(result[key], defValue);
+            } else if (result.embeds && result.embeds[key] === undefined) {
+                 result.embeds[key] = defValue;
             }
         }
     }
@@ -72,32 +80,29 @@ export function mergeModuleDefaults(moduleName, dbConfig) {
 
     // --- Generic Merging fallback ---
     for (const [key, value] of Object.entries(defaults)) {
-        // Skip if already handled by specialized logic
-        if (result.embeds && result.embeds[key]) continue;
-        if (key === 'embedSettings' && moduleName === 'photocontest') {
-             result.embedSettings = mergeEmbed(result.embedSettings, value);
-             continue;
-        }
-
-        // Handle empty arrays for themes or other lists
-        if (Array.isArray(value) && (!result[key] || (Array.isArray(result[key]) && result[key].length === 0))) {
-            result[key] = value;
+        // Handle arrays (themes, etc.)
+        if (Array.isArray(value)) {
+            if (!result[key] || (Array.isArray(result[key]) && result[key].length === 0)) {
+                result[key] = value;
+            }
             continue;
         }
 
-        // If it's an embed-like object in defaults
+        // Handle nested objects (voiceSettings, embedSettings, etc.)
+        if (value && typeof value === 'object' && !value.title && !value.description) {
+            result[key] = { ...value, ...(result[key] || {}) };
+            continue;
+        }
+
+        // Handle embeds not in .embeds object
         const isEmbed = value && typeof value === 'object' && (value.title || value.description);
-        
         if (isEmbed) {
-            // If the key exists in result and looks like it should be an embed
             if (result[key] && typeof result[key] === 'object') {
                 result[key] = mergeEmbed(result[key], value);
-            } else if (result[key] === undefined) {
-                // If it's missing in result, add it from defaults
+            } else if (result[key] === undefined && (!result.embeds || result.embeds[key] === undefined)) {
                 result[key] = value;
             }
         } else if (result[key] === undefined) {
-            // Generic non-embed defaults
             result[key] = value;
         }
     }

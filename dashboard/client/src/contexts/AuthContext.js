@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 const AuthContext = createContext();
 
 const BASE_API_URL = typeof window !== 'undefined' 
-  ? `${window.location.protocol}//${window.location.hostname}:5001` 
+  ? '' 
   : 'http://localhost:5001';
 
 export function AuthProvider({ children }) {

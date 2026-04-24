@@ -1,7 +1,7 @@
 import { EmbedBuilder } from 'discord.js';
 import MessageConfig from '../models/MessageConfig.js';
 import defaultMessages from '../locales/defaultMessages.js';
-import { replacePlaceholders } from './embedHelper.js';
+import { buildEmbed } from './embedHelper.js';
 import logger from './logger.js';
 
 class MessageService {
@@ -20,61 +20,109 @@ class MessageService {
      * @returns {EmbedBuilder}
      */
     async get(guildId, module, slug, placeholders = {}) {
-        const cacheKey = `${guildId}_${module}`;
-        let moduleMessages = this.cache.get(cacheKey);
-
-        // Check if cache is expired
-        if (moduleMessages && (Date.now() - (this.cacheTimestamps.get(cacheKey) || 0)) > this.cacheTTL) {
-            moduleMessages = null;
-        }
-
-        // Fetch from DB if not in cache
-        if (!moduleMessages) {
-            const config = await MessageConfig.findOne({ guildId, module });
-            moduleMessages = config ? config.messages : new Map();
-            this.cache.set(cacheKey, moduleMessages);
-            this.cacheTimestamps.set(cacheKey, Date.now());
-        }
-
-        // Get from DB override or fallback to default
-        const dbEmbed = moduleMessages instanceof Map ? moduleMessages.get(slug) : moduleMessages[slug];
-        const defaultEmbed = defaultMessages[module]?.[slug];
-
-        const embedData = dbEmbed || defaultEmbed;
+        const embedData = await this.getRaw(guildId, module, slug);
 
         if (!embedData) {
             logger.warn(`[MessageService] Message not found: ${module}.${slug}`);
-            return new EmbedBuilder().setDescription(`Missing message: ${module}.${slug}`);
+            return new EmbedBuilder()
+                .setTitle('❌ Errore Configurazione')
+                .setDescription(`Messaggio mancante: \`${module}.${slug}\`.\nPer favore contatta lo staff o ripristina i default.`)
+                .setColor('#e74c3c');
         }
 
-        // Build Embed
-        const embed = new EmbedBuilder();
+        // Build Embed using robust helper
+        const embed = buildEmbed(embedData, placeholders);
         
-        const title = replacePlaceholders(embedData.title, placeholders);
-        if (title) embed.setTitle(title);
-
-        const desc = replacePlaceholders(embedData.description, placeholders);
-        if (desc) embed.setDescription(desc);
-
-        embed.setColor(embedData.color || '#5865F2');
-
-        const footer = replacePlaceholders(embedData.footer, placeholders);
-        if (footer) embed.setFooter({ text: footer });
-
-        const image = replacePlaceholders(embedData.image, placeholders);
-        if (image) embed.setImage(image);
-
-        const thumbnail = replacePlaceholders(embedData.thumbnail, placeholders);
-        if (thumbnail) embed.setThumbnail(thumbnail);
-
-        if (embedData.timestamp !== false) embed.setTimestamp();
+        // Ensure description is never empty as Discord API requires it
+        if (!embed.data.description && !embed.data.title) {
+            embed.setDescription(`[Messaggio ${module}.${slug} vuoto]`);
+        }
 
         return embed;
     }
 
     /**
+     * Internal: Get the raw message object (DB or Default)
+     */
+    async getRaw(guildId, module, slug) {
+        const cacheKey = `${guildId}_${module}`;
+        let moduleMessages = this.cache.get(cacheKey);
+
+        if (moduleMessages && (Date.now() - (this.cacheTimestamps.get(cacheKey) || 0)) > this.cacheTTL) {
+            moduleMessages = null;
+        }
+
+        if (!moduleMessages) {
+            try {
+                const config = await MessageConfig.findOne({ guildId, module });
+                moduleMessages = config ? config.messages : new Map();
+                this.cache.set(cacheKey, moduleMessages);
+                this.cacheTimestamps.set(cacheKey, Date.now());
+            } catch (err) {
+                logger.error(`[MessageService] DB Error fetching ${module}:`, err);
+                moduleMessages = new Map();
+            }
+        }
+
+        const dbEmbed = moduleMessages instanceof Map ? moduleMessages.get(slug) : moduleMessages[slug];
+        const defaultEmbed = defaultMessages[module]?.[slug];
+
+        return dbEmbed || defaultEmbed;
+    }
+
+    /**
+     * Reply to an interaction with a standardized embed.
+     */
+    async reply(interaction, module, slug, placeholders = {}, options = {}) {
+        const { ephemeral = false, components = [], files = [], content = null } = options;
+        const embed = await this.get(interaction.guildId, module, slug, { 
+            user: interaction.user, 
+            guild: interaction.guild,
+            ...placeholders 
+        });
+
+        const payload = { embeds: [embed], components, files, ephemeral };
+        if (content) payload.content = content;
+
+        if (interaction.deferred || interaction.replied) {
+            return await interaction.editReply(payload);
+        } else {
+            return await interaction.reply(payload);
+        }
+    }
+
+    /**
+     * Send a standardized embed to a channel.
+     */
+    async send(channel, module, slug, placeholders = {}, options = {}) {
+        if (!channel) return null;
+        const { components = [], files = [], content = null } = options;
+        const embed = await this.get(channel.guildId, module, slug, placeholders);
+
+        const payload = { embeds: [embed], components, files };
+        if (content) payload.content = content;
+
+        return await channel.send(payload).catch(err => {
+            logger.error(`[MessageService] Failed to send ${module}.${slug} to ${channel.id}:`, err);
+            return null;
+        });
+    }
+
+    /**
+     * Send a standardized DM to a user.
+     */
+    async sendDM(user, guild, module, slug, placeholders = {}) {
+        if (!user) return null;
+        const embed = await this.get(guild?.id, module, slug, { user, guild, ...placeholders });
+        
+        return await user.send({ embeds: [embed] }).catch(() => {
+            logger.warn(`[MessageService] Could not send DM to ${user.tag} for ${module}.${slug}`);
+            return null;
+        });
+    }
+
+    /**
      * Clear cache for a specific guild and module.
-     * Useful when updating config from dashboard.
      */
     clearCache(guildId, module) {
         const cacheKey = `${guildId}_${module}`;
@@ -84,3 +132,4 @@ class MessageService {
 }
 
 export default new MessageService();
+

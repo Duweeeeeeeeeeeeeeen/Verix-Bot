@@ -46,9 +46,12 @@ const userSchema = new mongoose.Schema({
     }
 });
 
-// Performance Indexes for Leaderboards
-userSchema.index({ xp: -1 });
-userSchema.index({ photoWins: -1 });
-userSchema.index({ level: -1 });
+// Performance Indexes
+userSchema.index({ discordId: 1 });          // explicit (also created by unique:true)
+userSchema.index({ xp: -1 });                // leaderboard by XP
+userSchema.index({ photoWins: -1 });         // leaderboard by wins
+userSchema.index({ level: -1 });             // leaderboard by level
+userSchema.index({ lastWhitelistAttempt: 1 });   // cooldown lookup
+userSchema.index({ lastBackgroundAttempt: 1 }); // cooldown lookup
 
 export default mongoose.model('User', userSchema);

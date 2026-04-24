@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import EmbedPreview from './EmbedPreview';
 import HelpTooltip from './HelpTooltip';
+import CustomSelect from './CustomSelect';
 
 /**
  * Reusable Embed Editor Component
@@ -23,7 +24,7 @@ import HelpTooltip from './HelpTooltip';
  * @param {Array} variables - List of available variables for this context
  * @param {boolean} showButtonEditor - Whether to show the button customization section
  */
-export default function EmbedEditor({ embed, onChange, variables = ['user', 'guild'], showButtonEditor = false }) {
+export default function EmbedEditor({ embed, onChange, variables = ['user', 'guild'], showButtonEditor = false, renderPreviewFooter }) {
   const [isPreviewMobile, setIsPreviewMobile] = useState(false);
 
   const updateEmbed = (key, value) => {
@@ -131,7 +132,7 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
                     <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 40px', gap: '10px', alignItems: 'center' }}>
                       <input className="input-small" value={f.name || ''} onChange={(e) => updateFieldEntry(i, 'name', e.target.value)} placeholder="Titolo" />
                       <input className="input-small" value={f.value || ''} onChange={(e) => updateFieldEntry(i, 'value', e.target.value)} placeholder="Valore" />
-                      <button onClick={() => removeField(i)} className="btn-icon-delete-small"><Trash2 size={16} /></button>
+                      <button onClick={() => removeField(i)} className="btn-remove-premium"><Trash2 size={16} /></button>
                     </div>
                   ))}
                   {(!embed?.fields || embed.fields.length === 0) && (
@@ -189,16 +190,16 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
               <div className="input-group" style={{ marginTop: '20px' }}>
                 <label className="text-label">Stile (Colore)</label>
                 <div className="stylized-select-wrapper">
-                  <select 
-                    className="select" 
+                  <CustomSelect 
+                    options={[
+                      { value: 'PRIMARY', label: 'Blu (Primary)' },
+                      { value: 'SUCCESS', label: 'Verde (Success)' },
+                      { value: 'DANGER', label: 'Rosso (Danger)' },
+                      { value: 'SECONDARY', label: 'Grigio (Secondary)' }
+                    ]} 
                     value={embed?.button?.style || 'PRIMARY'} 
-                    onChange={(e) => onChange({ ...embed, button: { ...(embed.button || {}), style: e.target.value } })}
-                  >
-                    <option value="PRIMARY">Blu (Primary)</option>
-                    <option value="SUCCESS">Verde (Success)</option>
-                    <option value="DANGER">Rosso (Danger)</option>
-                    <option value="SECONDARY">Grigio (Secondary)</option>
-                  </select>
+                    onChange={val => onChange({ ...embed, button: { ...(embed.button || {}), style: val } })} 
+                  />
                 </div>
               </div>
             </section>
@@ -217,6 +218,12 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
           
           <div className="preview-sticky">
             <EmbedPreview data={embed} isMobile={isPreviewMobile} />
+            
+            {renderPreviewFooter && (
+                <div style={{ marginTop: '16px', width: '100%' }}>
+                    {renderPreviewFooter}
+                </div>
+            )}
             
             <div className="card" style={{ marginTop: '24px', background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border)' }}>
                <div style={{ display: 'flex', gap: '12px' }}>

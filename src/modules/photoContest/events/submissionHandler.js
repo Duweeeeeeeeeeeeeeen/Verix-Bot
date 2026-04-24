@@ -1,4 +1,4 @@
-import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, AttachmentBuilder } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, AttachmentBuilder } from 'discord.js';
 import PhotoContestConfig from '../../../models/PhotoContestConfig.js';
 import PhotoContest from '../../../models/PhotoContest.js';
 import PhotoSubmission from '../../../models/PhotoSubmission.js';

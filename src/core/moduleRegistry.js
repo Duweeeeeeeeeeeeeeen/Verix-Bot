@@ -4,6 +4,7 @@ import BackgroundConfig from '../models/BackgroundConfig.js';
 import VerifyConfig from '../models/VerifyConfig.js';
 import WelcomeConfig from '../models/WelcomeConfig.js';
 import PhotoContestConfig from '../models/PhotoContestConfig.js';
+import ModerationConfig from '../models/ModerationConfig.js';
 
 /**
  * Registry of all bot modules with their identifying prefixes and associated models.
@@ -44,6 +45,11 @@ export const registry = {
         name: 'PhotoContest',
         prefixes: ['photo_'], // Used for photo_vote_up, photo_vote_down
         model: PhotoContestConfig
+    },
+    moderation: {
+        name: 'Moderazione',
+        prefixes: [],
+        model: ModerationConfig
     }
 };
 

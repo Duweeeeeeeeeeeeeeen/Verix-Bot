@@ -1,6 +1,7 @@
-import { EmbedBuilder, MessageFlags, SlashCommandBuilder } from 'discord.js';
+import { MessageFlags, SlashCommandBuilder } from 'discord.js';
 import User from '../../../models/User.js';
 import logger from '../../../utils/logger.js';
+import messageService from '../../../utils/messageService.js';
 
 export default {
     data: new SlashCommandBuilder()
@@ -18,24 +19,18 @@ export default {
                 const hours = Math.floor(timeLeft / (1000 * 60 * 60));
                 const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
 
-                return interaction.reply({ 
-                    content: `Hai già riscattato il premio oggi! Riprova tra ${hours} ore e ${minutes} minuti.`, 
-                    flags: [MessageFlags.Ephemeral] 
-                });
+                return messageService.reply(interaction, 'economy', 'cooldown', {
+                    time: `${hours}h ${minutes}m`
+                }, { ephemeral: true });
             }
 
             userData.balance += dailyAmount;
             userData.lastDaily = Date.now();
             await userData.save();
 
-            const embed = new EmbedBuilder()
-                .setColor('#00FF00')
-                .setTitle('🎁 Premio Giornaliero Riscattato!')
-                .setDescription(`Hai ricevuto **${dailyAmount} Coins**!`)
-                .setTimestamp()
-                .setFooter({ text: 'Sistema di Economia RP' });
-
-            await interaction.reply({ embeds: [embed] });
+            await messageService.reply(interaction, 'economy', 'daily', {
+                amount: dailyAmount.toString()
+            });
         } catch (error) {
             logger.error('Error in daily command:', error);
             await interaction.reply({ content: 'Si è verificato un errore.', flags: [MessageFlags.Ephemeral] });

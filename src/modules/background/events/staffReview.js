@@ -67,7 +67,10 @@ export default {
                 if (userChannel) {
                     const acceptEmbed = buildEmbed(config.embeds.integrated_accepted, {
                         user: citizen || app.userId,
-                        guild: interaction.guild.name
+                        guild: interaction.guild.name,
+                        user_id: citizen?.id || app.userId,
+                        staff: interaction.user.toString(),
+                        staff_id: interaction.user.id
                     }, config);
 
                     const startButton = new ActionRowBuilder().addComponents(
@@ -87,22 +90,15 @@ export default {
                     const updatedEmbed = EmbedBuilder.from(originalEmbed)
                         .setTitle('✅ Dossier APPROVATO')
                         .setColor('#2ecc71')
-                        .addFields({ name: 'Esito Staff', value: `✅ Approvato da ${interaction.user.tag}` });
+                        .addFields(
+                            { name: '👤 Soggetto', value: citizen?.toString() || `<@${app.userId}>`, inline: true },
+                            { name: '👮 Ufficiale', value: interaction.user.toString(), inline: true },
+                            { name: 'Esito Staff', value: `✅ Approvato da ${interaction.user.tag}` }
+                        );
                     
                     await interaction.update({ embeds: [updatedEmbed], components: [] });
                 } else {
                     await interaction.update({ content: `✅ Background approvato da ${interaction.user.tag}`, embeds: [], components: [] });
-                }
-                // Internal Log
-                if (config.logChannelId) {
-                    const logChannel = interaction.guild.channels.cache.get(config.logChannelId);
-                    if (logChannel) {
-                        const auditEmbed = buildEmbed(config.embeds.staff_accepted, {
-                            user: citizen || user || app.userId,
-                            staff: interaction.user
-                        }, config);
-                        await logChannel.send({ embeds: [auditEmbed] });
-                    }
                 }
 
                 // DM to User
@@ -184,6 +180,8 @@ export default {
                     .setTitle('❌ Dossier RESPINTO')
                     .setColor('#e74c3c')
                     .addFields(
+                        { name: '👤 Soggetto', value: citizen?.toString() || `<@${app.userId}>`, inline: true },
+                        { name: '👮 Ufficiale', value: interaction.user.toString(), inline: true },
                         { name: 'Esito Staff', value: `❌ Respinto da ${interaction.user.tag}` },
                         { name: 'Motivo', value: reason || 'Nessuna motivazione' }
                     );

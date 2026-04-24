@@ -1,5 +1,18 @@
 import { useAuth } from '../contexts/AuthContext';
-import { LogIn, Rocket, Shield, Zap } from 'lucide-react';
+import { 
+  ShieldCheck, 
+  Ticket, 
+  Mic2, 
+  Layout, 
+  Camera, 
+  Tv,
+  LogIn,
+  ExternalLink,
+  ChevronRight,
+  Shield,
+  Zap,
+  Rocket
+} from 'lucide-react';
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 
@@ -11,67 +24,143 @@ export default function Home() {
     if (user) router.push('/selector');
   }, [user]);
 
-  if (loading) return null;
+  const features = [
+    { 
+      icon: ShieldCheck, 
+      title: 'Whitelist Intelligente', 
+      desc: 'Gestisci gli accessi al tuo server con criteri personalizzati e automazione completa.' 
+    },
+    { 
+      icon: Ticket, 
+      title: 'Ticket System Avanzato', 
+      desc: 'Supporto professionale per i tuoi utenti con categorie, log e trascrizioni automatiche.' 
+    },
+    { 
+      icon: Mic2, 
+      title: 'Voice Queue Automatica', 
+      desc: 'Crea e gestisci canali vocali temporanei per mantenere il server pulito e organizzato.' 
+    },
+    { 
+      icon: Layout, 
+      title: 'Dashboard Web Premium', 
+      desc: 'Controlla ogni aspetto del bot da un\'interfaccia web moderna, veloce e intuitiva.' 
+    },
+    { 
+      icon: Camera, 
+      title: 'Contest System', 
+      desc: 'Organizza concorsi fotografici e contest con votazioni integrate direttamente su Discord.' 
+    },
+    { 
+      icon: Tv, 
+      title: 'Twitch Live Alerts', 
+      desc: 'Notifiche istantanee quando i tuoi streamer preferiti vanno in diretta, con embed eleganti.' 
+    }
+  ];
+
+  if (loading) return (
+    <div className="landing-page-p centered-content-p">
+      <div className="spinner-s" style={{ width: '40px', height: '40px' }}></div>
+    </div>
+  );
 
   return (
-    <div style={{ 
-      minHeight: '100vh', 
-      display: 'flex', 
-      flexDirection: 'column', 
-      alignItems: 'center', 
-      justifyContent: 'center',
-      background: 'radial-gradient(circle at top, #1a1a1e 0%, #0c0c0e 100%)',
-      padding: '20px'
-    }}>
-      <div style={{ textAlign: 'center', maxWidth: '800px' }}>
-        <div style={{ 
-          background: 'rgba(88,101,242,0.1)', 
-          padding: '12px 24px', 
-          borderRadius: '100px', 
-          color: 'var(--primary)',
-          fontSize: '0.9rem',
-          fontWeight: '600',
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: '8px',
-          marginBottom: '24px',
-          border: '1px solid rgba(88,101,242,0.2)'
-        }}>
-          <Rocket size={16} /> Nuova Dashboard MVP v1.0
+    <div className="landing-page-p">
+      {/* Hero Section */}
+      <section className="landing-container-p">
+        <div className="hero-grid-p">
+          <div className="hero-content-p animate slide-in">
+            <div className="step-badge" style={{ marginBottom: '24px' }}>
+              <Rocket size={14} style={{ marginRight: '8px' }} /> Verix Bot v2.0
+            </div>
+            <h1>Gestisci il tuo server Discord come un professionista</h1>
+            <p>
+              Whitelist, Ticket, Voice, Verify, Contest e molto altro — tutto racchiuso in una dashboard moderna e ultra-veloce.
+            </p>
+            
+            <div className="cta-group-p" style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+              <button onClick={login} className="btn-discord-p">
+                <LogIn size={20} /> Accedi con Discord
+              </button>
+              <a 
+                href={`https://discord.com/oauth2/authorize?client_id=1493270512195862538&permissions=8&scope=bot%20applications.commands`} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="btn-invite-p"
+              >
+                <ExternalLink size={20} /> Invita il Bot
+              </a>
+            </div>
+
+            <div style={{ marginTop: '48px', display: 'flex', gap: '32px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Shield size={20} style={{ color: 'var(--primary)' }} />
+                <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem', fontWeight: '600' }}>Sicurezza Admin</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Zap size={20} style={{ color: 'var(--primary)' }} />
+                <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem', fontWeight: '600' }}>Setup Istantaneo</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="hero-visual-p animate fadeIn">
+            <div className="mockup-card-p">
+              {/* Mockup Content */}
+              <div style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ff5f56' }}></div>
+                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ffbd2e' }}></div>
+                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#27c93f' }}></div>
+                </div>
+                <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: '700' }}>VERIX DASHBOARD PREVIEW</div>
+              </div>
+              <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
+                <div style={{ width: '30%', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px' }}></div>
+                <div style={{ width: '60%', height: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px' }}></div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div style={{ height: '60px', background: 'rgba(129, 140, 248, 0.1)', borderRadius: '12px', border: '1px solid rgba(129, 140, 248, 0.2)' }}></div>
+                <div style={{ height: '60px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}></div>
+                <div style={{ height: '60px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}></div>
+                <div style={{ height: '60px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '12px', border: '1px solid rgba(16, 185, 129, 0.2)' }}></div>
+              </div>
+            </div>
+          </div>
         </div>
-        
-        <h1 style={{ fontSize: '4rem', fontWeight: '800', lineHeight: '1.1', marginBottom: '24px' }}>
-          Gestisci il tuo <span style={{ color: 'var(--primary)' }}>Bot Discord</span> con Eleganza.
-        </h1>
-        
-        <p style={{ fontSize: '1.25rem', color: 'var(--text-muted)', marginBottom: '48px', maxWidth: '600px', margin: '0 auto 48px' }}>
-          Configura whitelist, canali vocali e ticket tramite un'interfaccia moderna, veloce e sicura.
-        </p>
+      </section>
 
-        <button onClick={login} className="btn-primary" style={{ fontSize: '1.1rem', padding: '16px 32px', margin: '0 auto' }}>
-          <LogIn size={20} /> Accedi con Discord
-        </button>
+      {/* Features Grid */}
+      <section className="landing-container-p features-section-p">
+        <div style={{ textAlign: 'center', marginBottom: '80px' }}>
+          <h2 style={{ fontSize: '2.5rem', marginBottom: '16px', color: 'white' }}>Tutto quello che ti serve in un unico posto</h2>
+          <p style={{ color: 'var(--text-dim)', maxWidth: '600px', margin: '0 auto' }}>
+            Dimentica i bot frammentati. Verix consolida le funzionalità più richieste in un'unica piattaforma potente e facile da usare.
+          </p>
+        </div>
 
-        <div style={{ 
-          marginTop: '80px', 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(3, 1fr)', 
-          gap: '24px',
-          textAlign: 'left'
-        }}>
-          {[
-            { icon: Shield, title: 'Sicuro', desc: 'Controllo accessi granulare basato sui permessi admin.' },
-            { icon: Zap, title: 'Veloce', desc: 'Sincronizzazione istantanea tra web e Discord.' },
-            { icon: Rocket, title: 'Modulare', desc: 'Ogni modulo bot può essere configurato separatamente.' }
-          ].map((item, i) => (
-            <div key={i} className="card">
-              <div style={{ color: 'var(--primary)', marginBottom: '16px' }}><item.icon size={28} /></div>
-              <h3 style={{ marginBottom: '8px' }}>{item.title}</h3>
-              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{item.desc}</p>
+        <div className="features-grid-p">
+          {features.map((f, i) => (
+            <div key={i} className="feature-card-p animate slide-in" style={{ animationDelay: `${i * 0.1}s` }}>
+              <div className="feature-icon-p">
+                <f.icon size={24} />
+              </div>
+              <h3>{f.title}</h3>
+              <p>{f.desc}</p>
             </div>
           ))}
         </div>
-      </div>
+      </section>
+
+      {/* Footer / Final CTA */}
+      <footer className="landing-container-p" style={{ padding: '80px 0', borderTop: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '24px' }}>
+          <img src="/logo.png" alt="Verix" style={{ width: '40px' }} />
+          <span style={{ fontWeight: '800', fontSize: '1.2rem', color: 'white' }}>Verix Bot</span>
+        </div>
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+          &copy; {new Date().getFullYear()} Verix Team. Gestisci il tuo server con stile.
+        </p>
+      </footer>
     </div>
   );
 }

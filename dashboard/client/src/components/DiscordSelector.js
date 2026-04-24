@@ -90,7 +90,9 @@ export default function DiscordSelector({
                 <div key={opt.id} className="selector-tag">
                   {type === 'role' && <div className="tag-dot" style={{ background: opt.color || '#99aab5' }} />}
                   <span>{opt.name}</span>
-                  <X size={12} className="tag-remove" onClick={(e) => removeValue(opt.id, e)} />
+                  <button className="btn-remove-premium" style={{ width: '20px', height: '20px', padding: '0', borderRadius: '50%' }} onClick={(e) => removeValue(opt.id, e)}>
+                    <X size={10} />
+                  </button>
                 </div>
               ))}
             </div>

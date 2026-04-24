@@ -23,9 +23,61 @@ export default {
             title: '❌ Anomalia di Sistema',
             description: 'Si è verificato un errore imprevisto durante l\'elaborazione dei dati. I tecnici sono stati informati.',
             color: '#e74c3c'
+        },
+        setup_success: {
+            title: '✅ Sistema Inizializzato',
+            description: 'Il modulo è stato configurato correttamente e i protocolli sono ora operativi.',
+            color: '#2ecc71'
+        },
+        module_list: {
+            title: '⚙️ Organigramma Moduli',
+            description: 'Elenco dei protocolli operativi caricati nel sistema.\n\n{list}',
+            color: '#5865f2'
+        },
+        module_enabled: {
+            title: '✅ Protocollo Attivato',
+            description: 'Il modulo **{module}** è stato caricato con successo e i suoi protocolli sono ora operativi.',
+            color: '#2ecc71'
+        },
+        module_disabled_success: {
+            title: '❌ Protocollo Disattivato',
+            description: 'Il modulo **{module}** è stato scaricato dal sistema. Tutte le funzioni correlate sono sospese.',
+            color: '#e74c3c'
+        },
+        module_already_in_state: {
+            title: 'ℹ️ Stato Invariato',
+            description: 'Il modulo **{module}** si trova già nello stato richiesto dai protocolli.',
+            color: '#3498db'
+        },
+        module_not_found: {
+            title: '❌ Soggetto Ignoto',
+            description: 'Il modulo **{module}** non risulta censito nei nostri database ministeriali.',
+            color: '#e74c3c'
         }
     },
-    whitelist: {
+    utility: {
+        clear_success: {
+            title: '🧹 Pulizia Completata',
+            description: 'Ho eliminato **{amount}** messaggi come richiesto dai protocolli.',
+            color: '#2ecc71'
+        },
+        clear_no_messages: {
+            title: '⚠️ Nessun Reperto Trovato',
+            description: 'Non ho trovato messaggi che corrispondano ai criteri di eliminazione specificati.',
+            color: '#f1c40f'
+        },
+        clear_error: {
+            title: '❌ Errore di Bonifica',
+            description: 'Si è verificato un errore durante l\'eliminazione dei messaggi. Nota: non posso eliminare messaggi più vecchi di 14 giorni.',
+            color: '#e74c3c'
+        },
+        ping: {
+            title: '🏓 Protocollo di Latenza',
+            description: '>>> **Stato della Rete:**\n• Latenza Bot: `{latency}ms`\n• Latenza API: `{api_latency}ms`',
+            color: '#3498db'
+        }
+    },
+        whitelist: {
         panel: {
             title: '🛂 Ufficio Immigrazione - Ingresso in Città',
             description: 'Benvenuto nel portale di accesso. Per risiedere stabilmente in città, devi sottoporti a una valutazione d\'idoneità civile.\n\nAssicurati di rispondere onestamente ai protocolli che ti verranno sottoposti.',
@@ -33,7 +85,7 @@ export default {
             footer: 'Dipartimento Civile | Verix RP'
         },
         start: {
-            title: '📄 Pratica d\'Ingresso: {user}',
+            title: '📄 Pratica d\'Ingresso: {user_name}',
             description: 'Benvenuto cittadino. Per essere ammesso ufficialmente, dobbiamo compilare il tuo dossier informativo.\n\n**DIRETTIVE MINISTERIALI:**\n• Rispondi onestamente e con dovizia di particolari.\n• Rispetta i protocolli di tempo per evitare l\'annullamento dell\'istanza.',
             color: '#3BA4FF',
             footer: 'Ufficio Accoglienza | Verix RP'
@@ -103,20 +155,30 @@ export default {
             description: 'Non hai superato la valutazione orale presso **{guild}**. Ti invitiamo a ripassare i protocolli cittadini prima di ripresentarti.',
             color: '#e74c3c'
         },
-        voice_guide: {
-            title: '🎙️ Guida Colloquio Orale',
-            description: 'Stai per esaminare l\'utente **<@{userId}>**.\n\n**PROCEDURA:**\n1. Sposta l\'utente in un canale vocale.\n2. Verifica la qualità del microfono.\n3. Procedi con le domande di rito.\n4. Usa i pulsanti qui sotto per registrare l\'esito finale.',
+        dm_text_pass: {
+            title: '📝 Scritto Superato',
+            description: 'Hai superato la prova scritta su **{guild}**! Ora puoi recarti nel canale vocale d\'attesa per il colloquio finale.',
+            color: '#f1c40f'
+        },
+        staff_received: {
+            title: '📩 Nuova Pratica Whitelist',
+            description: 'L\'utente **{user_name}** ha sottomesso il proprio dossier per la valutazione.\n\n**INFO:**\n• Discord: <@{user_id}>\n• Nome: {user_name}\n• Canale: {channel}\n• ID Pratica: `{app_id}`',
             color: '#3498db'
         },
-        voice_waiting: {
-            title: '⏳ Sala d\'Attesa: Colloquio Orale',
-            description: 'Il tuo dossier scritto è stato approvato! Ti trovi ora nella lista d\'attesa per il colloquio orale.\n\nUn esaminatore ti contatterà non appena sarà disponibile. Resta sintonizzato.',
-            color: '#f1c40f'
+        dm_submitted: {
+            title: '📋 Dossier Ricevuto',
+            description: 'La tua candidatura per entrare in **{guild}** è stata acquisita dai nostri sistemi.\n\nUn membro della Commissione la revisionerà il prima possibile. Verrai avvisato qui non appena ci sarà un esito.',
+            color: '#3498db'
+        },
+        submission_confirmed: {
+            title: '✅ Dossier Sottomesso',
+            description: 'La tua documentazione è stata inviata correttamente agli uffici competenti. Verrai avvisato a breve dell\'esito.',
+            color: '#2ecc71'
         }
     },
     background: {
         panel: {
-            title: '📜 Archivio Storico - Deposito Background',
+            title: '📜 Archivio Storico: Deposito Background',
             description: 'Inizia la stesura della storia del tuo personaggio per ottenere l\'approvazione definitiva del background.\n\nClicca il pulsante qui sotto per avviare il protocollo di deposito.',
             color: '#5865f2',
             footer: 'Ufficio Anagrafe | Verix RP'
@@ -138,18 +200,23 @@ export default {
         },
         staff_received: {
             title: '📑 Nuovo Background Ricevuto',
-            description: 'L\'utente **<@{userId}>** ha inviato il proprio background per la revisione.\n\nUtilizza i comandi staff per visualizzare ed approvare la bozza.',
+            description: 'L\'utente **<@{userId}>** ha inviato il proprio background per la revisione.\n\n**INFO:**\n• Link: {bg_link}\n• Desc: {bg_desc}\n• Allegato: {bg_attachment}',
             color: '#3498db'
         },
-        integrated_accepted: {
-            title: '✅ Dossier Integrato Approvato',
-            description: 'Sia il tuo dossier che il tuo background sono stati approvati. Benvenuto ufficialmente tra noi!',
+        submission_confirmed: {
+            title: '✅ Dossier Sottomesso',
+            description: 'La tua documentazione è stata inviata correttamente agli uffici competenti. Verrai avvisato a breve dell\'esito.',
             color: '#2ecc71'
         },
-        integrated_rejected: {
-            title: '❌ Dossier Integrato Respinto',
-            description: 'Purtroppo la combinazione dei tuoi documenti non ha soddisfatto i requisiti minimi di **{guild}**.',
+        session_cancelled: {
+            title: '⚠️ Procedura Interrotta',
+            description: 'Il deposito del background è stato annullato. Il canale verrà rimosso tra **{time}**.',
             color: '#e74c3c'
+        },
+        dm_received: {
+            title: '✅ Dossier Background Ricevuto',
+            description: 'Il tuo dossier per **{guild}** è stato correttamente archiviato nei nostri sistemi. Un ufficiale della commissione lo revisionerà a breve.',
+            color: '#2ecc71'
         }
     },
     tickets: {
@@ -160,24 +227,49 @@ export default {
             footer: 'Dipartimento Pubbliche Relazioni | Verix RP'
         },
         ticket: {
-            title: '📂 Pratica Assistenziale - In Carico',
-            description: 'Benvenuto allo sportello, <@{user_id}>. Un operatore prenderà in carico la tua richiesta a breve.\n\n**DETTAGLI:**\n• Stato: `Aperto`\n• Canale: <#{channel_id}>',
+            title: '📂 Pratica Assistenziale: {type}',
+            description: 'Benvenuto allo sportello, <@{user_id}>. Un operatore prenderà in carico la tua richiesta a breve.\n\n**DETTAGLI:**\n• Priorità: `{priority}`\n• Stato: `{status}`',
             color: '#2ECC71'
+        },
+        success_open: {
+            title: '✅ Ticket Creato',
+            description: 'Il tuo ufficio assistenza è stato aperto correttamente.\n\n**CANALE:** {channel}',
+            color: '#2ecc71'
         },
         close: {
             title: '🔒 Archivio: Pratica Conclusa',
             description: 'La documentazione di questo ufficio è stata depositata correttamente negli archivi.',
             color: '#E74C3C'
         },
+        already_exists: {
+            title: '⚠️ Protocollo Pendente',
+            description: 'Risulta già una pratica di tipo **{type}** aperta a tuo nome nel canale <#{channelId}>.',
+            color: '#f1c40f'
+        },
         already_claimed: {
             title: '🙋‍♂️ Segnalazione Presa in Carico',
             description: 'Questa pratica è già sotto la supervisione dell\'operatore **<@{assignedStaffId}>**.',
             color: '#f1c40f'
         },
+        staff_claimed: {
+            title: '⚙️ Presa in Carico',
+            description: 'L\'operatore **{staff}** ha preso in gestione questa pratica e ti assisterà a breve.',
+            color: '#3498db'
+        },
         status_updated: {
             title: '🔄 Protocollo Aggiornato',
             description: 'Lo stato della pratica è stato impostato ufficialmente su: **{status}**.',
             color: '#3498db'
+        },
+        staff_ticket_log: {
+            title: '📁 Archivio Ticket',
+            description: 'Un ticket è stato chiuso e archiviato.\n\n**INFO:**\n• Utente: {user}\n• Tipo: `{type}`\n• Staff: {staff}',
+            color: '#ff4757'
+        },
+        close_status: {
+            title: '🛡️ Chiusura in Corso',
+            description: 'I protocolli di archiviazione sono stati avviati. Il canale verrà rimosso o spostato a breve.',
+            color: '#f1c40f'
         },
         cannot_close: {
             title: '⚠️ Chiusura Negata',
@@ -201,9 +293,24 @@ export default {
             description: 'Ottime notizie cittadino! La tua registrazione presso **{guild}** è andata a buon fine.',
             color: '#2ecc71'
         },
+        success_reply: {
+            title: '✅ Registrazione Completata',
+            description: 'Benvenuto ufficialmente tra noi, {user}! Tutti i permessi sono stati attivati.',
+            color: '#2ecc71'
+        },
+        already_verified: {
+            title: '⚠️ Protocollo Già Eseguito',
+            description: 'La tua identità risulta già confermata nei nostri database di **{guild}**.',
+            color: '#f1c40f'
+        },
         dm: {
             title: '🎊 Benvenuto nel Server',
             description: 'Ti sei verificato correttamente su **{guild}**. Ora hai accesso completo alle funzionalità del server!',
+            color: '#2ecc71'
+        },
+        staff_log: {
+            title: '🛂 Registro Entrate: Nuovo Cittadino',
+            description: 'Un nuovo utente ha completato la verifica.\n\n**IDENTITÀ:** {user}\n**ID:** `{userId}`\n**STATUS:** {role}',
             color: '#2ecc71'
         }
     },
@@ -234,21 +341,66 @@ export default {
     economy: {
         balance: {
             title: '💰 Estratto Conto Bancario',
-            description: 'Gentile **{user}**, ecco il riepilogo delle tue finanze:\n\n💵 **Contanti:** ${cash}\n🏦 **Banca:** ${bank}',
+            description: 'Gentile **{user}**, ecco il riepilogo delle tue finanze:\n\n💵 **Contanti:** `${cash}`\n🏦 **Banca:** `${bank}`',
             color: '#2ecc71'
         },
         daily: {
             title: '🎁 Bonus Fedeltà',
             description: 'Hai ritirato il tuo bonus giornaliero di **${amount}**. Torna domani per il prossimo accredito!',
             color: '#f1c40f'
+        },
+        cooldown: {
+            title: '⏳ Protocollo d\'Attesa',
+            description: 'Hai già riscattato il tuo premio per oggi. I protocolli bancari richiedono un attesa di **{time}** prima del prossimo accredito.',
+            color: '#f1c40f'
+        },
+        user_not_found: {
+            title: '❌ Soggetto Non Censito',
+            description: 'L\'utente specificato non risulta registrato nei nostri database economici.',
+            color: '#e74c3c'
+        },
+        generic_error: {
+            title: '❌ Errore Transazione',
+            description: 'Si è verificato un errore durante l\'operazione bancaria. Riprova più tardi.',
+            color: '#e74c3c'
         }
     },
     photocontest: {
-        embedSettings: {
+        panel: {
             title: '🖼️ Galleria d\'Arte: Esposizione Fotografica',
             description: 'La città è alla ricerca di scorci unici. Cattura un momento memorabile e depositalo in questa galleria per partecipare al concorso cittadino.',
             color: '#F39C12',
             footer: 'Dipartimento Cultura | Verix RP'
+        },
+        submission: {
+            title: '🎨 Nuova Opera Esposta',
+            description: '>>> **Dettagli Esposizione:**\n• Autore: {username}\n• Tema: `{theme}`\n• Scadenza: {endTime}',
+            color: '#3498db'
+        },
+        already_submitted: {
+            title: '⚠️ Protocollo Partecipazione',
+            description: 'Hai già depositato un\'opera per questo concorso. I regolamenti prevedono una sola partecipazione per cittadino.',
+            color: '#f1c40f'
+        },
+        vote_up: {
+            title: '👍 Voto Registrato',
+            description: 'Hai espresso il tuo apprezzamento per quest\'opera. Il tuo voto è stato aggiunto al conteggio ufficiale.',
+            color: '#2ecc71'
+        },
+        vote_down: {
+            title: '👎 Voto Registrato',
+            description: 'Hai registrato il tuo dissenso per quest\'opera. Il punteggio è stato aggiornato secondo i protocolli.',
+            color: '#e74c3c'
+        },
+        vote_removed: {
+            title: '🔄 Voto Ritirato',
+            description: 'Hai rimosso la tua preferenza da quest\'opera. Il conteggio è stato aggiornato.',
+            color: '#f1c40f'
+        },
+        interaction_notify: {
+            title: '📸 Nuova Interazione!',
+            description: 'Qualcuno ha appena apprezzato la tua opera nel contest! La tua popolarità in città sta crescendo.',
+            color: '#00FF7F'
         },
         entry_not_found: {
             title: '❌ Opera Non Trovata',
@@ -270,6 +422,26 @@ export default {
         }
     },
     voice: {
+        voice_waiting: {
+            title: '⏳ Sala d\'Attesa: Colloquio Orale',
+            description: 'Il tuo dossier scritto è stato approvato! Ti trovi ora nella lista d\'attesa per il colloquio orale.\n\nUn esaminatore ti contatterà non appena sarà disponibile. Resta sintonizzato.',
+            color: '#f1c40f'
+        },
+        voice_guide: {
+            title: '🎙️ Guida Colloquio Orale',
+            description: 'Stai per esaminare l\'utente **<@{userId}>**.\n\n**PROCEDURA:**\n1. Sposta l\'utente in un canale vocale.\n2. Verifica la qualità del microfono.\n3. Procedi con le domande di rito.\n4. Usa i pulsanti qui sotto per registrare l\'esito finale.',
+            color: '#3498db'
+        },
+        voice_staff_log: {
+            title: '🎙️ Log Attività Vocale',
+            description: 'L\'utente **{user}** ha iniziato o terminato una sessione vocale con lo staff.',
+            color: '#5865F2'
+        },
+        voice_error_flow: {
+            title: '⚠️ Errore Protocollo Vocale',
+            description: 'Si è verificato un errore durante la gestione della coda vocale. Riprova tra qualche istante.',
+            color: '#e74c3c'
+        },
         dm_accepted: {
             title: '✅ Idoneità Confermata',
             description: 'Congratulazioni cittadino! Hai superato con successo il colloquio orale presso **{guild}**.',
@@ -288,6 +460,48 @@ export default {
         staff_denied: {
             title: '📝 Log Valutazione: RESPINTO',
             description: 'L\'utente **<@{userId}>** è stato respinto da **{staff}**.\n\n**Motivo:** {reason}',
+            color: '#e74c3c'
+        }
+    },
+    antispam: {
+        enabled: false,
+        maxMessages: 5,
+        timeWindow: 5000,
+        deleteSpam: true,
+        warnUser: true,
+        warnMessage: '⚠️ {user}, per favore non spammare! Hai inviato troppi messaggi in poco tempo.',
+        ignoredRoles: [],
+        ignoredChannels: []
+    },
+    moderation: {
+        warn: {
+            title: '⚠️ Richiamo Ufficiale',
+            description: '{user}, i tuoi comportamenti hanno violato i protocolli cittadini.\n\n**MOTIVO:** {reason}',
+            color: '#f1c40f'
+        },
+        timeout: {
+            title: '🔇 Restrizione Comunicazioni',
+            description: '{user}, sei stato messo in isolamento per **{duration} minuti**.\n\n**MOTIVO:** {reason}',
+            color: '#e67e22'
+        },
+        kick: {
+            title: '👢 Espulsione Coatta',
+            description: '{user} è stato rimosso dalla città per gravi violazioni dei protocolli.\n\n**MOTIVO:** {reason}',
+            color: '#e74c3c'
+        },
+        ban: {
+            title: '🚫 Esilio Definitivo',
+            description: '{user} è stato bandito permanentemente dalla città.\n\n**MOTIVO:** {reason}',
+            color: '#000000'
+        },
+        command_ban: {
+            title: '🔨 Membro Bannato',
+            description: '**Utente:** {user}\n**Moderatore:** {mod}\n**Motivo:** {reason}',
+            color: '#FF0000'
+        },
+        command_kick: {
+            title: '👢 Membro Espulso',
+            description: '**Utente:** {user}\n**Moderatore:** {mod}\n**Motivo:** {reason}',
             color: '#e74c3c'
         }
     }

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import Layout from '../../../components/Layout';
 import Skeleton from '../../../components/Skeleton';
 import HelpTooltip from '../../../components/HelpTooltip';
 import EmbedEditor from '../../../components/EmbedEditor';
@@ -33,15 +32,21 @@ import {
   AlertCircle,
   ExternalLink,
   Command,
-  MessageSquare
+  MessageSquare,
+  Play,
+  HelpCircle,
+  CheckCircle2,
+  XCircle,
+  FileText
 } from 'lucide-react';
-import GuideSidebar from '../../../components/GuideSidebar';
+import EmojiInput from '../../../components/EmojiInput';
+import CustomSelect from '../../../components/CustomSelect';
+import { mergeConfig } from '../../../utils/defaults';
 
 export default function WhitelistConfig() {
   const router = useRouter();
   const { guildId } = router.query;
   const [activeTab, setActiveTab] = useState('settings');
-  const [activeEmbedKey, setActiveEmbedKey] = useState('panel');
   const [config, setConfig] = useState(null);
   const [bgConfig, setBgConfig] = useState(null);
   const [channels, setChannels] = useState([]);
@@ -50,21 +55,38 @@ export default function WhitelistConfig() {
   const [saving, setSaving] = useState(false);
   const [sendingPanel, setSendingPanel] = useState(false);
   const [sendingBgPanel, setSendingBgPanel] = useState(false);
+  const [messages, setMessages] = useState({});
+  const [loadingMessages, setLoadingMessages] = useState(true);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  const fetchMessages = async () => {
+    try {
+      const res = await api.request(`/messages/${guildId}/whitelist`);
+      setMessages(res.data || res || {});
+    } catch (err) {
+      console.error('Error fetching messages:', err);
+    } finally {
+      setLoadingMessages(false);
+    }
+  };
+
   useEffect(() => {
     if (guildId && mounted) {
+      fetchMessages();
       Promise.all([
         api.request(`/config/${guildId}/whitelist`),
         api.request(`/config/${guildId}/background`),
         api.request(`/config/${guildId}/discord-data`)
       ]).then(([wlData, bgData, discordRes]) => {
-        setConfig(wlData.data || wlData);
-        setBgConfig(bgData.data || bgData);
+        const finalConfig = mergeConfig(wlData.data || wlData, 'whitelist');
+        const finalBgConfig = mergeConfig(bgData.data || bgData, 'background');
+        
+        setConfig(finalConfig);
+        setBgConfig(finalBgConfig);
         setChannels(discordRes?.data?.channels || discordRes?.channels || []);
         setRoles(discordRes?.data?.roles || discordRes?.roles || []);
         setLoading(false);
@@ -74,6 +96,12 @@ export default function WhitelistConfig() {
       });
     }
   }, [guildId, mounted]);
+
+  useEffect(() => {
+    if (config) {
+      window.dispatchEvent(new CustomEvent('update-guide-context', { detail: config }));
+    }
+  }, [config]);
 
   const setNested = (path, value) => {
     const newConfig = { ...config };
@@ -102,11 +130,15 @@ export default function WhitelistConfig() {
         api.request(`/config/${guildId}/background`, {
           method: 'POST',
           body: JSON.stringify(bgConfig)
+        }),
+        api.request(`/messages/${guildId}/whitelist`, {
+          method: 'POST',
+          body: JSON.stringify(messages)
         })
       ]);
-      showToast('Tutte le configurazioni salvate!');
+      showToast('Configurazioni salvate con successo!');
     } catch (error) {
-       showToast('Errore durante il salvataggio unificato.', 'error');
+       showToast('Errore durante il salvataggio.', 'error');
     } finally {
       setSaving(false);
     }
@@ -146,58 +178,35 @@ export default function WhitelistConfig() {
     }
   };
 
-  if (!mounted || loading || !config) return (
-    <Layout guildId={guildId}>
-      <div className="animate">
-        <Skeleton width="300px" height="40px" style={{ marginBottom: '40px' }} />
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-             <Skeleton height="400px" />
-             <Skeleton height="400px" />
-        </div>
-      </div>
-    </Layout>
-  );
-
-  const embedOptions = [
-    { key: 'panel', label: 'Panel Whitelist', group: 'Whitelist' },
-    { key: 'start', label: 'Avvio Candidatura', group: 'Whitelist' },
-    { key: 'question', label: 'Domanda Standard', group: 'Whitelist' },
-    { key: 'review', label: 'Revisione Staff', group: 'Whitelist' },
-    { key: 'dm_accepted', label: 'Accettato (DM)', group: 'Feedback WL' },
-    { key: 'dm_rejected', label: 'Rifiutato (DM)', group: 'Feedback WL' },
-    { key: 'bg.panel', label: 'Panel Background', group: 'Background' },
-    { key: 'bg.instructions', label: 'Istruzioni Iniziali', group: 'Background' },
-    { key: 'bg.dm_accepted', label: 'BG Approvato (DM)', group: 'Feedback BG' },
-    { key: 'bg.dm_rejected', label: 'BG Respinto (DM)', group: 'Feedback BG' },
-    { key: 'bg.staff_received', label: 'Task Staff (BG)', group: 'Staff Log' },
-    { key: 'dm_voice_rejected', label: 'Rifiutato Orale (DM)', group: 'Moduli Orale' },
-    { key: 'voice_guide', label: 'Guida Staff (Vocale)', group: 'Moduli Orale' },
-    { key: 'voice_waiting', label: 'Attesa (DM)', group: 'Moduli Orale' },
-    { key: 'bg.integrated_accepted', label: 'Dossier Approvato (Int)', group: 'Background' },
-    { key: 'bg.integrated_rejected', label: 'Dossier Respinto (Int)', group: 'Background' }
-  ];
+  if (!mounted || loading || !config) return <Skeleton type="config" />;
 
   const tabs = [
     { id: 'settings', name: 'Settaggi', icon: Settings2 },
     { id: 'background', name: 'Background', icon: Command, modes: ['BG_ONLY', 'BG_TEXT', 'BG_VOICE', 'FULL'] },
     { id: 'questions', name: 'Domande', icon: ListChecks, modes: ['TEXT', 'HYBRID', 'BG_TEXT', 'FULL'] },
     { id: 'voice', name: 'Vocale', icon: Mic2, modes: ['VOICE', 'HYBRID', 'BG_VOICE', 'FULL'] },
-    { id: 'messages', name: 'Messaggi', icon: MessageSquare },
-    { id: 'personalization', name: 'Design', icon: Palette },
+    { id: 'personalization', name: 'Design & Messaggi', icon: Palette },
   ].filter(tab => !tab.modes || tab.modes.includes(config.mode));
 
   return (
-    <Layout guildId={guildId}>
-      <div className="animate">
+    <div className="config-page-layout">
+      <div className="config-main-col">
+        <div className="animate">
         
-        {/* Modern Compact Header */}
+        {/* Header */}
         <header className="module-header">
            <div className="header-info">
               <div className="header-icon">
                 <ShieldCheck size={24} />
               </div>
               <div className="header-text">
-                <h1>Sistema Whitelist</h1>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <h1>Sistema Whitelist</h1>
+                  <label className="toggle-mini" title={config.enabled ? 'Modulo Attivo' : 'Modulo Disattivato'}>
+                    <input type="checkbox" checked={!!config.enabled} onChange={e => setConfig({...config, enabled: e.target.checked})} />
+                    <span className="slider-mini"></span>
+                  </label>
+                </div>
                 <p>Gestisci l'accesso dei cittadini al tuo universo RP.</p>
               </div>
            </div>
@@ -219,14 +228,17 @@ export default function WhitelistConfig() {
            </div>
         </header>
 
-        {/* Minimal Tab System */}
+        {/* Tab Navigation */}
         <div className="tab-navigation">
-            {tabs.map(tab => (
-                <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`tab-link ${activeTab === tab.id ? 'active' : ''}`}>
-                    <tab.icon size={16} strokeWidth={activeTab === tab.id ? 2.5 : 2} />
-                    <span>{tab.name}</span>
-                </button>
-            ))}
+            {tabs.map(tab => {
+                const Icon = tab.icon;
+                return (
+                    <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`tab-link ${activeTab === tab.id ? 'active' : ''}`}>
+                        <Icon size={16} />
+                        <span>{tab.name}</span>
+                    </button>
+                );
+            })}
         </div>
 
         <div className="tab-panel animate">
@@ -241,10 +253,6 @@ export default function WhitelistConfig() {
                                     <Power size={18} color="var(--primary)" />
                                     <h3>Core Configuration</h3>
                                 </div>
-                                <label className="toggle">
-                                    <input type="checkbox" checked={!!config.enabled} onChange={e => setConfig({...config, enabled: e.target.checked})} />
-                                    <span className="slider"></span>
-                                </label>
                             </div>
                             
                              <div className="fields-grid" style={{ marginTop: '24px' }}>
@@ -266,21 +274,19 @@ export default function WhitelistConfig() {
                                 )}
                                 <div className="field-box">
                                     <label className="text-label">Modalità Percorso</label>
-                                    <div className="stylized-select-wrapper">
-                                        <select className="select" value={config.mode || 'TEXT'} onChange={e => setConfig({...config, mode: e.target.value})}>
-                                            <optgroup label="Solo Whitelist">
-                                                <option value="TEXT">📝 Solo Scritta</option>
-                                                <option value="VOICE">🎤 Solo Vocale</option>
-                                                <option value="HYBRID">⚖️ Ibrida (Scritto + Orale)</option>
-                                            </optgroup>
-                                            <optgroup label="Con Background">
-                                                <option value="BG_ONLY">📖 Solo Background</option>
-                                                <option value="BG_TEXT">📚 Background + Scritta</option>
-                                                <option value="BG_VOICE">🗣️ Background + Orale</option>
-                                                <option value="FULL">🏆 Full Suite (BG + Scritto + Orale)</option>
-                                            </optgroup>
-                                        </select>
-                                    </div>
+                                    <CustomSelect 
+                                        options={[
+                                            { value: 'TEXT', label: '📝 Solo Scritta' },
+                                            { value: 'VOICE', label: '🎤 Solo Vocale' },
+                                            { value: 'HYBRID', label: '⚖️ Ibrida (Scritto + Orale)' },
+                                            { value: 'BG_ONLY', label: '📖 Solo Background' },
+                                            { value: 'BG_TEXT', label: '📚 Background + Scritta' },
+                                            { value: 'BG_VOICE', label: '🗣️ Background + Orale' },
+                                            { value: 'FULL', label: '🏆 Full Suite (BG + Scritto + Orale)' }
+                                        ]} 
+                                        value={config.mode || 'TEXT'} 
+                                        onChange={val => setConfig({...config, mode: val})} 
+                                    />
                                 </div>
                             </div>
                         </section>
@@ -308,44 +314,16 @@ export default function WhitelistConfig() {
                                     <div className="align-center" style={{ marginBottom: '20px' }}>
                                         <ShieldCheck size={18} color="var(--primary)" />
                                         <h3>Automazioni Fase Scritta</h3>
+                                        <HelpTooltip text="Ruoli assegnati o rimossi al termine della fase testuale." />
                                     </div>
-                                    <div className="fields-grid-v">
+                                    <div className="fields-grid">
                                         <div className="field-box">
-                                            <label className="text-label">Ruoli da Aggiungere (Prova Superata)</label>
+                                            <label className="text-label">Ruoli da Aggiungere</label>
                                             <DiscordSelector type="role" multiple={true} options={roles} value={config.rolesToAddOnTextPass || []} onChange={val => setConfig({...config, rolesToAddOnTextPass: val})} />
                                         </div>
-                                        <div className="field-box" style={{ marginTop: '16px' }}>
-                                            <label className="text-label">Ruoli da Rimuovere (Prova Superata)</label>
+                                        <div className="field-box">
+                                            <label className="text-label">Ruoli da Rimuovere</label>
                                             <DiscordSelector type="role" multiple={true} options={roles} value={config.rolesToRemoveOnTextPass || []} onChange={val => setConfig({...config, rolesToRemoveOnTextPass: val})} />
-                                        </div>
-                                    </div>
-                                </section>
-
-                                <section className="card section-card" style={{ marginTop: '24px' }}>
-                                    <div className="align-center" style={{ marginBottom: '20px' }}>
-                                        <RefreshCcw size={18} color="var(--primary)" />
-                                        <h3>Requisiti di Accesso (Flow)</h3>
-                                    </div>
-                                    <div className="fields-grid-v">
-                                        <div className="toggle-box">
-                                            <div className="flex-col">
-                                                <span style={{ fontWeight: 600 }}>Obbligo Background</span>
-                                                <p className="text-dim" style={{ fontSize: '0.75rem' }}>Il cittadino deve avere un Background approvato per iniziare la WL.</p>
-                                            </div>
-                                            <label className="toggle">
-                                                <input type="checkbox" checked={!!config.flowRequirements?.requireBackground} onChange={e => setNested('flowRequirements.requireBackground', e.target.checked)} />
-                                                <span className="slider"></span>
-                                            </label>
-                                        </div>
-                                        <div className="toggle-box" style={{ marginTop: '12px' }}>
-                                            <div className="flex-col">
-                                                <span style={{ fontWeight: 600 }}>Obbligo WL Scritta</span>
-                                                <p className="text-dim" style={{ fontSize: '0.75rem' }}>Richiede il superamento del test scritto prima del colloquio orale.</p>
-                                            </div>
-                                            <label className="toggle">
-                                                <input type="checkbox" checked={!!config.flowRequirements?.requireTextWL} onChange={e => setNested('flowRequirements.requireTextWL', e.target.checked)} />
-                                                <span className="slider"></span>
-                                            </label>
                                         </div>
                                     </div>
                                 </section>
@@ -357,12 +335,8 @@ export default function WhitelistConfig() {
                         <section className="card section-card">
                             <h3 className="sidebar-title align-center" style={{ marginBottom: '16px' }}><Users size={18} /> Staff Roles</h3>
                             <DiscordSelector type="role" multiple={true} options={roles} value={config.staffRoleIds || []} onChange={val => setConfig({...config, staffRoleIds: val})} />
-                            <p className="text-description" style={{ marginTop: '12px' }}>I membri con questi ruoli potranno gestire le pratiche.</p>
+                            <p className="text-description" style={{ marginTop: '12px' }}>Ruoli che possono vedere i ticket e valutare le pratiche.</p>
                         </section>
-
-                        <div style={{ marginTop: '24px' }}>
-                            <GuideSidebar type="whitelist" context={config} />
-                        </div>
                     </div>
                 </div>
             )}
@@ -386,41 +360,86 @@ export default function WhitelistConfig() {
                             <div className="fields-grid" style={{ marginTop: '24px' }}>
                                 {bgConfig.entryPoint !== 'INTEGRATED' && (
                                     <div className="field-box">
-                                        <label className="text-label">Canale Pubblicazione Pannello</label>
+                                        <label className="text-label">Canale Pannello BG</label>
                                         <DiscordSelector type="channel" options={channels.filter(c => c.type === 0 || c.type === 5)} value={bgConfig.panelChannelId || ''} onChange={val => setBgConfig({...bgConfig, panelChannelId: val})} />
-                                        <p className="text-dim" style={{ fontSize: '0.72rem', marginTop: '4px' }}>Canale dove verrà inviato il messaggio per depositare i Background (se non integrato).</p>
                                     </div>
                                 )}
                                 <div className="field-box">
-                                    <label className="text-label">Canale Valutazione Staffer</label>
+                                    <label className="text-label">Canale Log Background</label>
                                     <DiscordSelector type="channel" options={channels.filter(c => c.type === 0 || c.type === 5)} value={bgConfig.logChannelId || ''} onChange={val => setBgConfig({...bgConfig, logChannelId: val})} />
-                                    <p className="text-dim" style={{ fontSize: '0.72rem', marginTop: '4px' }}>Canale log dove lo staff riceve e valuta le storie inviate.</p>
                                 </div>
                                 <div className="field-box">
-                                    <label className="text-label">Staffer autorizzati (Background)</label>
+                                    <label className="text-label">Punto di Ingresso</label>
+                                    <CustomSelect 
+                                        options={[
+                                            { value: 'PANEL', label: '📂 Pannello Dedicato' },
+                                            { value: 'INTEGRATED', label: '🔀 Integrato Whitelist' }
+                                        ]} 
+                                        value={bgConfig.entryPoint || 'PANEL'} 
+                                        onChange={val => setBgConfig({...bgConfig, entryPoint: val})} 
+                                    />
+                                </div>
+                                <div className="field-box">
+                                    <label className="text-label">Staffer Background</label>
                                     <DiscordSelector type="role" multiple={true} options={roles} value={bgConfig.staffRoleIds || []} onChange={val => setBgConfig({...bgConfig, staffRoleIds: val})} />
-                                    <p className="text-dim" style={{ fontSize: '0.72rem', marginTop: '4px' }}>I ruoli autorizzati a revisionare e gestire i dossier storie.</p>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            )}
+
+            {/* TAB: Voice (Vocale) */}
+            {activeTab === 'voice' && (
+                <div className="config-grid">
+                    <div className="grid-left">
+                        <section className="card section-card">
+                            <div className="section-header">
+                                <div className="align-center">
+                                    <Mic2 size={18} color="var(--primary)" />
+                                    <h3>Configurazione Colloquio Orale</h3>
+                                </div>
+                                <label className="toggle">
+                                    <input type="checkbox" checked={!config.voiceSettings?.paused} onChange={e => setNested('voiceSettings.paused', !e.target.checked)} />
+                                    <span className="slider"></span>
+                                </label>
+                            </div>
+                            
+                            <div className="fields-grid" style={{ marginTop: '24px' }}>
+                                <div className="field-box">
+                                    <label className="text-label">Canale Sala d'Attesa</label>
+                                    <DiscordSelector type="channel" options={channels.filter(c => c.type === 2)} value={config.voiceSettings?.joinChannelId || ''} onChange={val => setNested('voiceSettings.joinChannelId', val)} />
                                 </div>
                                 <div className="field-box">
-                                    <label className="text-label">Punto di Ingresso Background</label>
-                                    <div className="stylized-select-wrapper">
-                                        <select className="select" value={bgConfig.entryPoint || 'PANEL'} onChange={e => setBgConfig({...bgConfig, entryPoint: e.target.value})}>
-                                            <option value="PANEL">📂 Pannello Dedicato (Canale BG)</option>
-                                            <option value="INTEGRATED">🔀 Integrato nel Tasto Whitelist</option>
-                                        </select>
-                                    </div>
+                                    <label className="text-label">Categoria Stanze Private</label>
+                                    <DiscordSelector type="channel" options={channels.filter(c => c.type === 4)} value={config.voiceSettings?.categoryId || ''} onChange={val => setNested('voiceSettings.categoryId', val)} />
                                 </div>
-                                 {bgConfig.entryPoint !== 'INTEGRATED' && (
-                                    <div className="field-box">
-                                        <label className="text-label">Cooldown Rifiuto - Pannello (Ore)</label>
-                                        <input type="number" className="input" value={bgConfig.cooldown || 24} onChange={e => setBgConfig({...bgConfig, cooldown: parseInt(e.target.value)})} />
-                                        <p className="text-dim" style={{ fontSize: '0.72rem', marginTop: '4px' }}>Ore di attesa dopo un rifiuto per inviare un nuovo dossier dal canale BG.</p>
-                                    </div>
-                                )}
                                 <div className="field-box">
-                                    <label className="text-label">Cooldown post-Correzione Ticket (Ore)</label>
-                                    <input type="number" className="input" value={bgConfig.correctionCooldown || 0} onChange={e => setBgConfig({...bgConfig, correctionCooldown: parseInt(e.target.value)})} />
-                                    <p className="text-dim" style={{ fontSize: '0.72rem', marginTop: '4px' }}>Ore di attesa richieste se la storia viene respinta dentro un ticket Whitelist.</p>
+                                    <label className="text-label">Cooldown Rifiuto (Ore)</label>
+                                    <input type="number" className="input" value={config.voiceSettings?.rejectionCooldown || 24} onChange={e => setNested('voiceSettings.rejectionCooldown', parseInt(e.target.value))} />
+                                </div>
+                            </div>
+
+                            <div className="toggle-list" style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                <div className="toggle-box">
+                                    <div className="flex-col">
+                                        <span style={{ fontWeight: 600 }}>Cancellazione Automatica</span>
+                                        <p className="text-dim" style={{ fontSize: '0.75rem' }}>Elimina la stanza al termine.</p>
+                                    </div>
+                                    <label className="toggle">
+                                        <input type="checkbox" checked={!!config.voiceSettings?.autoDelete} onChange={e => setNested('voiceSettings.autoDelete', e.target.checked)} />
+                                        <span className="slider"></span>
+                                    </label>
+                                </div>
+                                <div className="toggle-box">
+                                    <div className="flex-col">
+                                        <span style={{ fontWeight: 600 }}>Notifica Staff all'Ingresso</span>
+                                        <p className="text-dim" style={{ fontSize: '0.75rem' }}>Invia un alert nel log staff.</p>
+                                    </div>
+                                    <label className="toggle">
+                                        <input type="checkbox" checked={!!config.voiceSettings?.pingStaffOnJoin} onChange={e => setNested('voiceSettings.pingStaffOnJoin', e.target.checked)} />
+                                        <span className="slider"></span>
+                                    </label>
                                 </div>
                             </div>
                         </section>
@@ -428,95 +447,26 @@ export default function WhitelistConfig() {
                         <section className="card section-card" style={{ marginTop: '24px' }}>
                             <div className="align-center" style={{ marginBottom: '20px' }}>
                                 <ShieldCheck size={18} color="var(--primary)" />
-                                <h3>Automazioni Esito (Background)</h3>
+                                <h3>Premi & Automazioni (Promosso Orale)</h3>
                             </div>
-                            <div className="fields-grid-v">
+                            <div className="fields-grid">
                                 <div className="field-box">
-                                    <label className="text-label">Ruoli da Aggiungere (Approvazione)</label>
-                                    <DiscordSelector type="role" multiple={true} options={roles} value={bgConfig.rolesToAdd || []} onChange={val => setBgConfig({...bgConfig, rolesToAdd: val})} />
-                                    <p className="text-dim" style={{ fontSize: '0.72rem', marginTop: '4px' }}>Assegnati automaticamente quando la storia viene approvata.</p>
+                                    <label className="text-label">Ruoli da Aggiungere</label>
+                                    <DiscordSelector type="role" multiple={true} options={roles} value={config.voiceSettings?.rolesToAdd || []} onChange={val => setNested('voiceSettings.rolesToAdd', val)} />
                                 </div>
-                                <div className="field-box" style={{ marginTop: '16px' }}>
-                                    <label className="text-label">Ruoli da Rimuovere (Approvazione)</label>
-                                    <DiscordSelector type="role" multiple={true} options={roles} value={bgConfig.rolesToRemove || []} onChange={val => setBgConfig({...bgConfig, rolesToRemove: val})} />
-                                    <p className="text-dim" style={{ fontSize: '0.72rem', marginTop: '4px' }}>Rimossi automaticamente quando la storia viene approvata.</p>
+                                <div className="field-box">
+                                    <label className="text-label">Ruoli da Rimuovere</label>
+                                    <DiscordSelector type="role" multiple={true} options={roles} value={config.voiceSettings?.rolesToRemove || []} onChange={val => setNested('voiceSettings.rolesToRemove', val)} />
                                 </div>
                             </div>
-                        </section>
-
-                        <section className="card section-card" style={{ marginTop: '24px' }}>
-                             <div className="align-center" style={{ marginBottom: '16px' }}>
-                                <MousePointer2 size={16} color="var(--primary)" />
-                                <h3>Pulsante Pannello (BG)</h3>
-                             </div>
-                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-                                 <div className="field-box">
-                                     <label className="text-label">Testo Bottone</label>
-                                     <input 
-                                         className="input" 
-                                         value={bgConfig.embeds?.panel?.button?.label || ''} 
-                                         onChange={e => {
-                                             const newBg = { ...bgConfig };
-                                             if (!newBg.embeds) newBg.embeds = {};
-                                             if (!newBg.embeds.panel) newBg.embeds.panel = {};
-                                             if (!newBg.embeds.panel.button) newBg.embeds.panel.button = {};
-                                             newBg.embeds.panel.button.label = e.target.value;
-                                             setBgConfig(newBg);
-                                         }} 
-                                         placeholder="es: Invia Background" 
-                                     />
-                                 </div>
-                                 <div className="field-box">
-                                     <label className="text-label">Emoji Bottone</label>
-                                     <input 
-                                         className="input" 
-                                         value={bgConfig.embeds?.panel?.button?.emoji || ''} 
-                                         onChange={e => {
-                                             const newBg = { ...bgConfig };
-                                             if (!newBg.embeds) newBg.embeds = {};
-                                             if (!newBg.embeds.panel) newBg.embeds.panel = {};
-                                             if (!newBg.embeds.panel.button) newBg.embeds.panel.button = {};
-                                             newBg.embeds.panel.button.emoji = e.target.value;
-                                             setBgConfig(newBg);
-                                         }} 
-                                         placeholder="es: 📖" 
-                                     />
-                                 </div>
-                             </div>
-                             <div className="field-box" style={{ marginTop: '16px' }}>
-                                 <label className="text-label">Stile (Colore)</label>
-                                 <div className="stylized-select-wrapper">
-                                    <select 
-                                        className="select" 
-                                        value={bgConfig.embeds?.panel?.button?.style || 'PRIMARY'} 
-                                        onChange={e => {
-                                            const newBg = { ...bgConfig };
-                                            if (!newBg.embeds) newBg.embeds = {};
-                                            if (!newBg.embeds.panel) newBg.embeds.panel = {};
-                                            if (!newBg.embeds.panel.button) newBg.embeds.panel.button = {};
-                                            newBg.embeds.panel.button.style = e.target.value;
-                                            setBgConfig(newBg);
-                                        }}
-                                    >
-                                        <option value="PRIMARY">Blu (Primary)</option>
-                                        <option value="SUCCESS">Verde (Success)</option>
-                                        <option value="DANGER">Rosso (Danger)</option>
-                                        <option value="SECONDARY">Grigio (Secondary)</option>
-                                    </select>
-                                 </div>
-                             </div>
                         </section>
                     </div>
 
                     <div className="grid-right">
-                        <div className="card section-card">
-                            <h3 className="sidebar-title align-center" style={{ marginBottom: '12px' }}><Info size={16} /> Info Modulo</h3>
-                            <p className="text-muted" style={{ fontSize: '0.85rem', lineHeight: '1.5' }}>
-                                <strong>Pannello Dedicato:</strong> Richiede l'invio fisico della storia in un canale separato.
-                                <br/><br/>
-                                <strong>Integrato:</strong> Se un utente clicca "Inizia Whitelist" e non ha ancora una storia approvata, il bot gli chiederà di caricarla nello stesso ticket prima di passare al test scritto.
-                            </p>
-                        </div>
+                        <section className="card section-card">
+                            <h3 className="sidebar-title align-center" style={{ marginBottom: '16px' }}><Users size={18} /> Staffers Orale</h3>
+                            <DiscordSelector type="role" multiple={true} options={roles} value={config.voiceSettings?.staffRoleIds || []} onChange={val => setNested('voiceSettings.staffRoleIds', val)} />
+                        </section>
                     </div>
                 </div>
             )}
@@ -536,16 +486,16 @@ export default function WhitelistConfig() {
 
                     <div className="questions-container" style={{ marginTop: '24px' }}>
                         {config.questions?.map((q, idx) => (
-                            <div key={idx} className="question-row">
+                            <div key={idx} className="question-row" style={{ display: 'flex', gap: '16px', marginBottom: '16px', alignItems: 'flex-start' }}>
                                 <div className="q-badge">{idx + 1}</div>
-                                <div className="q-input-p">
-                                    <textarea className="input" style={{ minHeight: '80px' }} value={q.text || ''} onChange={e => {
+                                <div style={{ flex: 1 }}>
+                                    <textarea className="input" rows="3" value={q.text || ''} onChange={e => {
                                         const qs = [...config.questions];
                                         qs[idx].text = e.target.value;
                                         setConfig({...config, questions: qs});
                                     }} placeholder="Inserisci la domanda..." />
                                 </div>
-                                <div className="q-options">
+                                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                                     <input type="number" className="input" style={{ width: '80px' }} value={q.minLength || 0} onChange={e => {
                                         const qs = [...config.questions];
                                         qs[idx].minLength = parseInt(e.target.value) || 0;
@@ -561,209 +511,84 @@ export default function WhitelistConfig() {
                 </div>
             )}
 
-            {/* TAB: Personalization */}
+            {/* TAB: Design */}
             {activeTab === 'personalization' && (
-                <div className="editor-layout-modern card">
-                    <div className="editor-sidebar-minimal">
-                        {embedOptions.map(opt => (
-                            <button key={opt.key} onClick={() => setActiveEmbedKey(opt.key)} className={`editor-tab ${activeEmbedKey === opt.key ? 'active' : ''}`}>
-                                <span>{opt.label}</span>
-                                <ChevronRight size={14} />
-                            </button>
-                        ))}
-                    </div>
-                    <div className="editor-content-p">
-                        <EmbedEditor 
-                            embed={activeEmbedKey.startsWith('bg.') 
-                                ? (bgConfig.embeds?.[activeEmbedKey.split('.')[1]] || {}) 
-                                : (config.embeds?.[activeEmbedKey] || {})} 
-                            showButtonEditor={activeEmbedKey === 'panel' || activeEmbedKey === 'bg.panel'}
-                            onChange={(data) => {
-                                if (activeEmbedKey.startsWith('bg.')) {
-                                    const key = activeEmbedKey.split('.')[1];
-                                    const newBg = { ...bgConfig };
-                                    if (!newBg.embeds) newBg.embeds = {};
-                                    newBg.embeds[key] = data;
-                                    setBgConfig(newBg);
-                                } else {
-                                    setNested(`embeds.${activeEmbedKey}`, data);
-                                }
-                            }}
-                            variables={activeEmbedKey.startsWith('bg.') 
-                                ? ['user', 'guild', 'bg_link', 'bg_desc', 'bg_attachment', 'reason', 'staff', 'next_attempt']
-                                : ['user', 'guild', 'time_limit', 'total_questions', 'reason', 'app_id', 'recap']}
-                        />
-                    </div>
-                </div>
-            )}
-
-            {/* TAB: Voice */}
-            {activeTab === 'voice' && (
-                <div className="config-grid">
-                    <div className="grid-left">
-                        <section className="card section-card">
-                            <div className="align-center" style={{ marginBottom: '24px' }}>
-                                <Mic2 size={18} color="var(--primary)" />
-                                <h3>Configurazione Vocale</h3>
+                <div className="animate fade-in">
+                    <section className="card section-card" style={{ marginBottom: '24px' }}>
+                        <div className="section-header">
+                            <div className="align-center">
+                                <Palette size={18} color="var(--primary)" />
+                                <h3>Branding & Colori</h3>
                             </div>
-                            <div className="fields-grid">
-                                <div className="field-box">
-                                    <label className="text-label">Canale di Attesa</label>
-                                    <DiscordSelector type="channel" options={channels.filter(c => c.type === 2)} value={config.voiceSettings?.joinChannelId || ''} onChange={val => setNested('voiceSettings.joinChannelId', val)} />
-                                </div>
-                                <div className="field-box">
-                                    <label className="text-label">Categoria Canali</label>
-                                    <DiscordSelector type="channel" options={channels.filter(c => c.type === 4)} value={config.voiceSettings?.categoryId || ''} onChange={val => setNested('voiceSettings.categoryId', val)} />
-                                </div>
-                            </div>
-                        </section>
-
-                        <section className="card section-card" style={{ marginTop: '24px' }}>
-                            <div className="align-center" style={{ marginBottom: '24px' }}>
-                                <ShieldCheck size={18} color="var(--primary)" />
-                                <h3>Automazioni Esito</h3>
-                            </div>
-                            <div className="fields-grid-v">
-                                <div className="field-box">
-                                    <label className="text-label">Ruoli da Aggiungere (Accettato)</label>
-                                    <DiscordSelector type="role" multiple={true} options={roles} value={config.voiceSettings?.rolesToAdd || []} onChange={val => setNested('voiceSettings.rolesToAdd', val)} />
-                                </div>
-                                <div className="field-box" style={{ marginTop: '16px' }}>
-                                    <label className="text-label">Ruoli da Rimuovere (Accettato)</label>
-                                    <DiscordSelector type="role" multiple={true} options={roles} value={config.voiceSettings?.rolesToRemove || []} onChange={val => setNested('voiceSettings.rolesToRemove', val)} />
-                                </div>
-                            </div>
-                        </section>
-                    </div>
-
-                    <div className="grid-right">
-                         <div className="card section-card">
-                            <h3 className="section-title align-center" style={{ marginBottom: '16px' }}><BellRing size={16} /> Notifiche</h3>
-                            <div className="toggle-box">
-                                <span>Ping Staff al Join</span>
-                                <label className="toggle">
-                                    <input type="checkbox" checked={!!config.voiceSettings?.pingStaffOnJoin} onChange={e => setNested('voiceSettings.pingStaffOnJoin', e.target.checked)} />
-                                    <span className="slider"></span>
-                                </label>
-                            </div>
-                         </div>
-
-                         <div className="card section-card" style={{ marginTop: '24px' }}>
-                            <h3 className="section-title align-center" style={{ marginBottom: '16px' }}><Clock size={16} /> Penalità</h3>
+                        </div>
+                        <div className="fields-grid" style={{ marginTop: '16px' }}>
                             <div className="field-box">
-                                <label className="text-label">Cooldown Rifiuto (Ore)</label>
-                                <input type="number" className="input" value={config.voiceSettings?.rejectionCooldown || 0} onChange={e => setNested('voiceSettings.rejectionCooldown', parseInt(e.target.value) || 0)} />
-                                <p className="text-dim" style={{ fontSize: '0.75rem', marginTop: '4px' }}>Tempo di attesa prima di poter ripetere il colloquio orale.</p>
+                                <label className="text-label">Colore Primario (Embed)</label>
+                                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                                    <input type="color" value={messages.panel?.color || '#6366f1'} onChange={e => setMessages({...messages, panel: { ...messages.panel, color: e.target.value }})} style={{ width: '40px', height: '40px', border: '1px solid var(--border)', borderRadius: '6px' }} />
+                                    <input type="text" className="input" value={messages.panel?.color || ''} onChange={e => setMessages({...messages, panel: { ...messages.panel, color: e.target.value }})} placeholder="#HEX" />
+                                </div>
                             </div>
-                         </div>
+                            <div className="field-box">
+                                <label className="text-label">Colore Successo</label>
+                                <input type="color" value={config.colors?.success || '#2ecc71'} onChange={e => setNested('colors.success', e.target.value)} />
+                            </div>
+                        </div>
+                    </section>
 
-                         <section className="card section-card" style={{ marginTop: '24px' }}>
-                             <div className="align-center" style={{ marginBottom: '16px' }}>
-                                <MousePointer2 size={16} color="var(--primary)" />
-                                <h3>Pulsanti Orale</h3>
-                             </div>
-                             <div className="btn-cards-grid-t" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                {['approve', 'deny', 'reset'].map(key => (
-                                    <div key={key} style={{ background: 'rgba(0,0,0,0.1)', padding: '12px', borderRadius: '10px', border: '1px solid var(--border)' }}>
-                                        <label style={{ fontSize: '0.6rem', textTransform: 'uppercase', color: 'var(--primary)', fontWeight: '900', display: 'block', marginBottom: '8px' }}>
-                                            {key === 'approve' ? 'Approva' : key === 'deny' ? 'Rifiuta' : 'Timer'}
-                                        </label>
-                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 40px', gap: '8px', marginBottom: '8px' }}>
-                                            <input className="input-small" value={config.voiceSettings?.voiceButtons?.[key]?.label || ''} onChange={e => setNested(`voiceSettings.voiceButtons.${key}.label`, e.target.value)} placeholder="Etichetta" />
-                                            <input className="input-small" style={{ textAlign: 'center' }} value={config.voiceSettings?.voiceButtons?.[key]?.emoji || ''} onChange={e => setNested(`voiceSettings.voiceButtons.${key}.emoji`, e.target.value)} placeholder="Emoji" />
-                                        </div>
-                                        <div style={{ display: 'flex', gap: '4px' }}>
-                                            {['SUCCESS', 'DANGER', 'PRIMARY', 'SECONDARY'].map(style => (
-                                                <button 
-                                                    key={style}
-                                                    onClick={() => setNested(`voiceSettings.voiceButtons.${key}.style`, style)}
-                                                    style={{ 
-                                                        width: '100%', 
-                                                        height: '6px', 
-                                                        border: 'none', 
-                                                        borderRadius: '100px', 
-                                                        cursor: 'pointer', 
-                                                        background: style === 'SUCCESS' ? '#22c55e' : style === 'DANGER' ? '#ef4444' : style === 'PRIMARY' ? '#6366f1' : '#64748b',
-                                                        opacity: config.voiceSettings?.voiceButtons?.[key]?.style === style ? 1 : 0.2,
-                                                        transition: '0.2s'
-                                                    }}
-                                                />
-                                            ))}
-                                        </div>
-                                    </div>
-                                ))}
-                             </div>
-                         </section>
-                    </div>
-                </div>
-            )}
-
-            {/* TAB: Messages */}
-            {activeTab === 'messages' && (
-                <div className="animate">
                     <EmbedMessageManager 
                         guildId={guildId}
                         module="whitelist"
                         slugs={[
-                            { key: 'not_configured', label: 'Whitelist disattivata', description: 'Messaggio mostrato quando un utente tenta di iniziare ma il modulo è spento.', variables: ['guild'] },
-                            { key: 'active_session', label: 'Sessione in corso', description: 'Mostrato se l\'utente ha già un ticket aperto.', variables: ['channelId'] },
-                            { key: 'already_submitted', label: 'Dossier in sospeso', description: 'Mostrato se una candidatura è già stata inviata.', variables: ['guild'] },
-                            { key: 'already_passed', label: 'Già Cittadino', description: 'Mostrato se l\'utente ha già il ruolo whitelist.', variables: ['guild'] },
-                            { key: 'cooldown', label: 'Blocco Cooldown', description: 'Messaggio di attesa dopo un rifiuto.', variables: ['time'] },
-                            { key: 'start_success', label: 'Accesso Consentito', description: 'Inviato quando il ticket viene creato con successo.', variables: ['channelId'] },
-                            { key: 'session_completed', label: 'Riepilogo Finale', description: 'Embed inviato alla fine del modulo per confermare l\'invio.', variables: ['recap'] },
-                            { key: 'min_length_error', label: 'Errore Caratteri', description: 'Mostrato quando una risposta è troppo breve.', variables: ['minLength'] },
-                            { key: 'question', label: 'Inviata Domanda', description: 'Embed standard per le domande interattive.', variables: ['currentIndex', 'totalQuestions', 'question', 'timeLeft'] },
+                            { key: 'panel', label: 'Pannello Whitelist', description: 'Messaggio nel canale WL.', variables: ['guild'], group: '1. Accesso', groupIcon: Play },
+                            { key: 'start', label: 'Avvio Candidatura', description: 'DM iniziale.', variables: ['user', 'time_limit'], group: '2. Colloquio', groupIcon: Play },
+                            { key: 'question', label: 'Domanda Standard', description: 'Format domande.', variables: ['text', 'count', 'total'], group: '2. Colloquio', groupIcon: Play },
+                            { key: 'review', label: 'Review Finale', description: 'Riepilogo pre-invio.', variables: ['user'], group: '2. Colloquio', groupIcon: Play },
+                            { key: 'session_completed', label: 'Sessione Completata', description: 'DM fine domande.', variables: ['user'], group: '3. Fine', groupIcon: CheckCircle2 },
+                            { key: 'submission_confirmed', label: 'Ricevuta Ufficiale', description: 'Conferma ricezione.', variables: ['user'], group: '3. Fine', groupIcon: CheckCircle2 },
+                            { key: 'staff_received', label: 'Log Staff', description: 'Messaggio per i selezionatori.', variables: ['user', 'age', 'about'], group: '🛡️ Staff', groupIcon: ShieldCheck },
+                            { key: 'dm_accepted', label: 'Esito Positivo', description: 'DM accettazione.', variables: ['user'], group: '✅ Esito', groupIcon: CheckCircle2 },
+                            { key: 'dm_rejected', label: 'Esito Negativo', description: 'DM rifiuto scritto.', variables: ['user', 'reason'], group: '🟥 Esito', groupIcon: XCircle },
+                            { key: 'dm_text_pass', label: 'Scritto Superato', description: 'DM idoneo orale.', variables: ['user'], group: '✅ Esito', groupIcon: CheckCircle2 },
+                            { key: 'dm_voice_rejected', label: 'Bocciato Orale', description: 'DM rifiuto orale.', variables: ['user', 'reason'], group: '🟥 Esito', groupIcon: XCircle },
+                            { key: 'voice_waiting', label: 'Sala d\'Attesa', description: 'DM utente in attesa.', variables: ['user'], group: '🎙️ Voce', groupIcon: Play },
+                            { key: 'voice_guide', label: 'Guida Staff', description: 'Messaggio per lo staffer.', variables: ['user', 'start_time'], group: '🎙️ Voce', groupIcon: Mic2 },
+                            { key: 'cooldown', label: 'In Cooldown', description: 'Errore tempo.', variables: ['time'], group: '🟥 Errori', groupIcon: XCircle }
                         ]}
                     />
                 </div>
             )}
         </div>
-
-        <style jsx>{`
-            .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: rgba(255,255,255,0.02); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
-            .header-info { display: flex; align-items: center; gap: 16px; }
-            .header-icon { width: 48px; height: 48px; background: rgba(129, 140, 248, 0.1); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-            .header-text h1 { font-size: 1.5rem; margin-bottom: 2px; }
-            .header-text p { font-size: 0.85rem; color: var(--text-muted); }
-            .header-buttons { display: flex; gap: 12px; }
-            
-            .tab-navigation { display: flex; gap: 8px; margin-bottom: 32px; padding: 6px; background: #070912; border-radius: 14px; border: 1px solid var(--border); width: fit-content; }
-            .tab-link { display: flex; align-items: center; gap: 10px; padding: 10px 18px; border: none; background: transparent; color: var(--text-muted); font-size: 0.85rem; font-weight: 600; border-radius: 10px; cursor: pointer; transition: 0.2s; }
-            .tab-link:hover { color: white; background: rgba(255,255,255,0.03); }
-            .tab-link.active { color: white; background: var(--bg-card); box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
-
-            .config-grid { display: grid; grid-template-columns: 1fr 340px; gap: 24px; }
-            .section-card { border-radius: 16px; }
-            .section-header { display: flex; justify-content: space-between; align-items: center; }
-            .section-header h3 { font-size: 1.1rem; }
-            
-            .fields-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-            .field-box { display: flex; flex-direction: column; gap: 6px; }
-            
-            .question-row { display: flex; align-items: flex-start; gap: 16px; padding: 16px; background: rgba(255,255,255,0.01); border-radius: 12px; border: 1px solid var(--border); margin-bottom: 12px; transition: 0.2s; }
-            .question-row:hover { border-color: var(--primary); background: rgba(255,255,255,0.02); }
-            .q-badge { width: 32px; height: 32px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.9rem; flex-shrink: 0; }
-            .q-input-p { flex: 1; }
-            .q-options { display: flex; flex-direction: column; gap: 10px; }
-            
-            .btn-icon-danger { background: rgba(244, 63, 94, 0.1); border: none; color: var(--error); padding: 8px; border-radius: 8px; cursor: pointer; transition: 0.2s; }
-            .btn-icon-danger:hover { background: var(--error); color: white; }
-
-            .editor-layout-modern { display: grid; grid-template-columns: 240px 1fr; padding: 0 !important; border-radius: 16px; }
-            .editor-sidebar-minimal { background: rgba(0,0,0,0.1); padding: 20px; border-right: 1px solid var(--border); display: flex; flex-direction: column; gap: 6px; }
-            .editor-tab { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; background: transparent; border: 1px solid transparent; color: var(--text-muted); border-radius: 10px; cursor: pointer; text-align: left; transition: 0.2s; font-size: 0.85rem; font-weight: 600; }
-            .editor-tab:hover { color: white; background: rgba(255,255,255,0.03); }
-            .editor-tab.active { color: var(--primary); background: rgba(129, 140, 248, 0.05); border-color: rgba(129, 140, 248, 0.1); }
-            .editor-content-p { padding: 32px; }
-
-            .toggle-box { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border); font-size: 0.85rem; font-weight: 600; }
-            .checklist-grid { display: flex; flex-direction: column; gap: 8px; }
-            .checklist-row { display: flex; gap: 10px; }
-
-            @media (max-width: 1100px) { .config-grid { grid-template-columns: 1fr; } .editor-layout-modern { grid-template-columns: 1fr; } .editor-sidebar-minimal { border-right: none; border-bottom: 1px solid var(--border); } }
-        `}</style>
       </div>
-    </Layout>
+    </div>
+
+      <style jsx>{`
+          .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: rgba(255,255,255,0.02); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
+          .header-info { display: flex; align-items: center; gap: 16px; }
+          .header-icon { width: 48px; height: 48px; background: rgba(129, 140, 248, 0.1); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+          .header-text h1 { font-size: 1.5rem; margin-bottom: 2px; }
+          .header-text p { font-size: 0.85rem; color: var(--text-muted); }
+          
+          .tab-navigation { display: flex; gap: 8px; margin-bottom: 32px; padding: 6px; background: #070912; border-radius: 14px; border: 1px solid var(--border); width: fit-content; }
+          .tab-link { display: flex; align-items: center; gap: 10px; padding: 10px 18px; border: none; background: transparent; color: var(--text-muted); font-size: 0.85rem; font-weight: 600; border-radius: 10px; cursor: pointer; transition: 0.2s; }
+          .tab-link:hover { color: white; background: rgba(255,255,255,0.03); }
+          .tab-link.active { color: white; background: var(--bg-card); box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
+
+          .config-grid { display: grid; grid-template-columns: 1fr 300px; gap: 24px; }
+          .grid-left { display: flex; flex-direction: column; gap: 24px; }
+          .section-header { display: flex; justify-content: space-between; align-items: center; }
+          
+          .fields-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+          .field-box { display: flex; flex-direction: column; gap: 8px; }
+          
+          .toggle-box { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border); }
+          .flex-col { display: flex; flex-direction: column; }
+          
+          .q-badge { width: 32px; height: 32px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; fontWeight: bold; flex-shrink: 0; }
+          
+          .align-center { display: flex; align-items: center; gap: 10px; }
+          @media (max-width: 1000px) { .config-grid { grid-template-columns: 1fr; } }
+      `}</style>
+    </div>
   );
 }

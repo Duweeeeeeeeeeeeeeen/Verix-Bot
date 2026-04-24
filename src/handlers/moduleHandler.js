@@ -2,18 +2,24 @@ import fs from 'fs-extra';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import logger from '../utils/logger.js';
+import { getModuleConfig } from '../core/configCache.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Store registered events to avoid duplicates on re-initialization
+// Global registry to prevent double-registration across reloads
+if (!global.eventRegistry) global.eventRegistry = new Map();
+if (!global.registeredEvents) global.registeredEvents = new Set();
+
 export default async (client) => {
+    const eventRegistry = global.eventRegistry;
+    const registeredEvents = global.registeredEvents;
+    
     const modulesPath = path.join(__dirname, '../modules');
     const modulesSubfolders = await fs.readdir(modulesPath);
 
     logger.info('Initializing Modules...');
-
-    // Event Registry: eventName -> Map<moduleName, Array<eventObject>>
-    const eventRegistry = new Map();
 
     for (const moduleName of modulesSubfolders) {
         const modulePath = path.join(modulesPath, moduleName);
@@ -59,7 +65,13 @@ export default async (client) => {
                 if (!moduleEvents.has(moduleName)) {
                     moduleEvents.set(moduleName, []);
                 }
-                moduleEvents.get(moduleName).push(event);
+                
+                // Prevent duplicate files in the same module
+                const alreadyExists = moduleEvents.get(moduleName).some(e => e._filePath === filePath);
+                if (!alreadyExists) {
+                    event._filePath = filePath;
+                    moduleEvents.get(moduleName).push(event);
+                }
             }
         }
     }
@@ -68,32 +80,53 @@ export default async (client) => {
     for (const [eventName, moduleMap] of eventRegistry.entries()) {
         const isOnce = Array.from(moduleMap.values()).flat().some(e => e.once);
 
+        // Skip if already registered for this event (prevents duplicates on hot-reload if used)
+        if (registeredEvents.has(eventName)) {
+            logger.warn(`Event ${eventName} is already registered. Skipping.`);
+            continue;
+        }
+
         const hubExecutor = async (...args) => {
             const interaction = args[0];
             const guildId = interaction?.guildId || interaction?.guild?.id;
 
-            // Iterate through each module that has listeners for this event
+            // Pre-calculate module prefixes/shortnames for matching
+            const modulePrefixes = {
+                'background': 'bg',
+                'whitelist': 'wl',
+                'photocontest': 'pc',
+                'fivem': '5m',
+                'verify': 'vr'
+            };
+
             for (const [moduleName, eventFiles] of moduleMap.entries()) {
+                let matchesModule = false;
                 
-                // If it's a specific module and not 'admin', check activation
-                if (guildId && moduleName !== 'admin') {
-                    const { getModuleConfig } = await import('../core/configCache.js');
-                    const config = await getModuleConfig(guildId, moduleName);
+                // Interaction Routing Logic
+                if (guildId) {
+                    const isInteraction = interaction.type !== undefined && 
+                                         (typeof interaction.isButton === 'function' || 
+                                          typeof interaction.isCommand === 'function' || 
+                                          typeof interaction.isModalSubmit === 'function');
+                    
+                    if (isInteraction) {
+                        const target = (interaction.customId || interaction.commandName || "").toLowerCase();
+                        const prefix = modulePrefixes[moduleName.toLowerCase()];
+                        
+                        // Check if it belongs to this module
+                        matchesModule = target.includes(moduleName.toLowerCase()) || 
+                                             (prefix && (target.startsWith(`${prefix}_`) || target.includes(`_${prefix}_`) || target.endsWith(`_${prefix}`)));
 
-                    if (!config || !config.enabled) {
-                        // Professional feedback ONLY if this is precisely the interaction intended for this module
-                        // and it hasn't been replied to yet.
-                        // We check if the customId or command name belongs to this module (if available)
-                        const matchesModule = interaction?.customId?.toLowerCase().includes(moduleName.toLowerCase()) || 
-                                              interaction?.commandName?.toLowerCase().includes(moduleName.toLowerCase());
+                        // Skip if not admin and not matching
+                        if (moduleName !== 'admin' && !matchesModule) continue;
 
-                        if (matchesModule && interaction?.isInteraction && !interaction.replied && !interaction.deferred) {
-                            await interaction.reply({ 
-                                content: `❌ Il modulo **${moduleName.toUpperCase()}** è attualmente disattivato dalla dashboard amministrativa.`, 
-                                flags: [64] 
-                            }).catch(() => {});
-                        }
-                        continue; // Block execution for THIS module's files
+                        // Module activation check
+                        const config = await getModuleConfig(guildId, moduleName);
+                        if (!config || !config.enabled) continue;
+                    } else {
+                        // For non-interaction events (MessageCreate), check activation
+                        const config = await getModuleConfig(guildId, moduleName);
+                        if (!config || !config.enabled) continue;
                     }
                 }
 
@@ -114,6 +147,7 @@ export default async (client) => {
             client.on(eventName, hubExecutor);
         }
         
+        registeredEvents.add(eventName);
         const count = Array.from(moduleMap.values()).flat().length;
         logger.event(`Registered Central Listener for ${eventName} (${count} handlers across ${moduleMap.size} modules)`);
     }

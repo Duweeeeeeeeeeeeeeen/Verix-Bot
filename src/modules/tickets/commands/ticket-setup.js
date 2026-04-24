@@ -1,4 +1,5 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
+import messageService from '../../../utils/messageService.js';
 
 export default {
     data: new SlashCommandBuilder()
@@ -9,11 +10,7 @@ export default {
     async execute(interaction) {
         const channel = interaction.options.getChannel('channel');
 
-        const embed = new EmbedBuilder()
-            .setColor('#3498db')
-            .setTitle('🎫 Supporto Tecnico')
-            .setDescription('Clicca il pulsante qui sotto per aprire un ticket di assistenza.\nI nostri staffer ti risponderanno al più presto.')
-            .setFooter({ text: 'Sistema Ticket RP' });
+        const embed = await messageService.get(interaction.guildId, 'tickets', 'panel');
 
         const button = new ActionRowBuilder().addComponents(
             new ButtonBuilder()

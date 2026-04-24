@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import Layout from '../../../components/Layout';
 import Skeleton from '../../../components/Skeleton';
 import DiscordSelector from '../../../components/DiscordSelector';
 import EmbedEditor from '../../../components/EmbedEditor';
@@ -11,7 +10,8 @@ import {
     Palette, MessageSquare, Bell, Info, MousePointer2, 
     Type, ShieldAlert, ChevronRight
 } from 'lucide-react';
-import GuideSidebar from '../../../components/GuideSidebar';
+import CustomSelect from '../../../components/CustomSelect';
+import { mergeConfig } from '../../../utils/defaults';
 
 export default function VerifyConfig() {
   const router = useRouter();
@@ -23,25 +23,38 @@ export default function VerifyConfig() {
   const [sendingPanel, setSendingPanel] = useState(false);
    const [activeTab, setActiveTab] = useState('settings');
   const [activeEmbedKey, setActiveEmbedKey] = useState('panel');
+  const [messages, setMessages] = useState({});
+  const [loadingMessages, setLoadingMessages] = useState(true);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  const fetchMessages = async () => {
+    try {
+      const res = await api.request(`/messages/${guildId}/verify`);
+      setMessages(res.data || res || {});
+    } catch (err) {
+      console.error('Error fetching messages:', err);
+    } finally {
+      setLoadingMessages(false);
+    }
+  };
+
   useEffect(() => {
     if (guildId && mounted) {
       const fetchData = async () => {
         try {
+          fetchMessages();
           const [configRes, discordRes] = await Promise.all([
-            api.request(`/config/${guildId}`),
+            api.request(`/config/${guildId}/verify`),
             api.request(`/config/${guildId}/discord-data`)
           ]);
 
-          if (configRes && configRes.data) {
-            setConfig(configRes.data.verify || configRes.data);
-          } else if (configRes && configRes.verify) {
-            setConfig(configRes.verify);
+          if (configRes && (configRes.data || configRes)) {
+            const data = configRes.data || configRes;
+            setConfig(mergeConfig(data.verify || data, 'verify'));
           }
           if (discordRes && discordRes.data) {
             setDiscordData(discordRes.data);
@@ -57,6 +70,12 @@ export default function VerifyConfig() {
       fetchData();
     }
   }, [guildId, mounted]);
+
+  useEffect(() => {
+    if (config) {
+      window.dispatchEvent(new CustomEvent('update-guide-context', { detail: config }));
+    }
+  }, [config]);
 
   const showToast = (message, type = 'success') => {
     window.dispatchEvent(new CustomEvent('show-toast', { detail: { message, type } }));
@@ -101,13 +120,16 @@ export default function VerifyConfig() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await api.request(`/config/${guildId}/verify`, {
-        method: 'POST',
-        body: JSON.stringify(config)
-      });
-      showToast('Configurazione salvata!');
-    } catch (error) {}
-    finally { setSaving(false); }
+      await Promise.all([
+        api.request(`/config/${guildId}/verify`, { method: 'POST', body: JSON.stringify(config) }),
+        api.request(`/messages/${guildId}/verify`, { method: 'POST', body: JSON.stringify(messages) })
+      ]);
+      showToast('Configurazione salvata con successo!');
+    } catch (error) {
+      showToast('Errore durante il salvataggio.', 'error');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleSendPanel = async () => {
@@ -119,12 +141,11 @@ export default function VerifyConfig() {
     finally { setSendingPanel(false); }
   };
 
-  if (loading || !config) return <Layout guildId={guildId}><Skeleton height="500px" /></Layout>;
+  if (loading || !config) return <><Skeleton height="500px" /></>;
 
   return (
-    <Layout guildId={guildId}>
-      <div className="animate">
-        
+    <div className="config-page-layout animate">
+      <div className="config-main-col">
         {/* Module Header */}
         <header className="module-header">
            <div className="header-info">
@@ -132,8 +153,14 @@ export default function VerifyConfig() {
                 <ShieldCheck size={24} />
               </div>
               <div className="header-text">
-                <h1>Sistema Verifica</h1>
-                <p>Configura il portone d'ingresso del tuo server Discord.</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <h1>Sistema Verifica</h1>
+                  <label className="toggle-mini" title={config.enabled ? 'Modulo Attivo' : 'Modulo Disattivato'}>
+                    <input type="checkbox" checked={!!config.enabled} onChange={e => setConfig({...config, enabled: e.target.checked})} />
+                    <span className="slider-mini"></span>
+                  </label>
+                </div>
+                <p>Configura il processo di verifica per i nuovi membri.</p>
               </div>
            </div>
            <div className="header-buttons">
@@ -152,168 +179,137 @@ export default function VerifyConfig() {
                 <Settings2 size={16} />
                 <span>Configurazione</span>
             </button>
-            <button onClick={() => setActiveTab('messages')} className={`tab-link ${activeTab === 'messages' ? 'active' : ''}`}>
-                <MessageSquare size={16} />
-                <span>Messaggi</span>
-            </button>
             <button onClick={() => setActiveTab('personalization')} className={`tab-link ${activeTab === 'personalization' ? 'active' : ''}`}>
                 <Palette size={16} />
-                <span>Design</span>
+                <span>Design & Messaggi</span>
             </button>
         </div>
 
         {activeTab === 'settings' && (
-            <div className="animate fade-in contents-grid">
-                <div className="card status-section">
-                    <div className="section-info">
-                        <div className={`status-box ${config.enabled ? 'on' : ''}`}>
-                            <Power size={20} />
+            <div className="animate fade-in">
+                <section className="card section-card-v">
+                    <div className="align-center" style={{ marginBottom: '24px' }}>
+                        <Settings2 size={18} color="var(--primary)" />
+                        <h3>Core Protocol</h3>
+                    </div>
+                    <div className="fields-grid-v">
+                        <div className="field-box">
+                            <label className="text-label">Ruolo da Assegnare</label>
+                            <DiscordSelector type="role" options={discordData.roles} value={config.roleId} onChange={v => setNested('roleId', v)} error={getRoleError(config.roleId)} />
                         </div>
-                        <div>
-                            <h3>Stato Verifica</h3>
-                            <p className="text-muted">Abilita o disabilita l'accesso protetto via bottone.</p>
+                        <div className="field-box">
+                            <label className="text-label">Canale Pannello</label>
+                            <DiscordSelector type="channel" options={discordData.channels} value={config.channelId} onChange={v => setNested('channelId', v)} />
+                        </div>
+                        <div className="field-box">
+                            <label className="text-label">Ruolo da Rimuovere</label>
+                            <DiscordSelector type="role" options={discordData.roles} value={config.removeRoleId} onChange={v => setNested('removeRoleId', v)} placeholder="Nessuno" />
+                        </div>
+                        <div className="field-box">
+                            <label className="text-label">Canale Audit Log</label>
+                            <DiscordSelector type="channel" options={discordData.channels} value={config.logChannelId} onChange={v => setNested('logChannelId', v)} placeholder="Nessuno" />
                         </div>
                     </div>
-                    <label className="toggle">
-                        <input type="checkbox" checked={!!config.enabled} onChange={(e) => setConfig({...config, enabled: e.target.checked})} />
-                        <span className="slider"></span>
-                    </label>
-                </div>
-
-                <div className="config-grid-v">
-                    <section className="card section-card-v">
-                        <div className="align-center" style={{ marginBottom: '24px' }}>
-                            <Settings2 size={18} color="var(--primary)" />
-                            <h3>Core Protocol</h3>
-                        </div>
-                        <div className="fields-grid-v">
-                            <div className="field-box">
-                                <label className="text-label">Ruolo da Assegnare</label>
-                                <DiscordSelector type="role" options={discordData.roles} value={config.roleId} onChange={v => setNested('roleId', v)} error={getRoleError(config.roleId)} />
-                            </div>
-                            <div className="field-box">
-                                <label className="text-label">Canale Pannello</label>
-                                <DiscordSelector type="channel" options={discordData.channels} value={config.channelId} onChange={v => setNested('channelId', v)} />
-                            </div>
-                            <div className="field-box">
-                                <label className="text-label">Ruolo da Rimuovere</label>
-                                <DiscordSelector type="role" options={discordData.roles} value={config.removeRoleId} onChange={v => setNested('removeRoleId', v)} placeholder="Nessuno" />
-                            </div>
-                            <div className="field-box">
-                                <label className="text-label">Canale Audit Log</label>
-                                <DiscordSelector type="channel" options={discordData.channels} value={config.logChannelId} onChange={v => setNested('logChannelId', v)} placeholder="Nessuno" />
-                            </div>
-                        </div>
-                    </section>
-
-                    <aside className="side-v">
-                        <div className="card section-card-v">
-                             <div className="align-center" style={{ marginBottom: '16px' }}>
-                                <Bell size={16} color="var(--primary)" />
-                                <h3>Notifiche</h3>
-                             </div>
-                             <div className="toggle-list-v">
-                                <div className="toggle-row-v">
-                                    <span>Notifica DM Utente</span>
-                                    <label className="toggle"><input type="checkbox" checked={!!config.dmEnabled} onChange={e => setNested('dmEnabled', e.target.checked)} /><span className="slider"></span></label>
-                                </div>
-                                <div className="toggle-row-v">
-                                    <span>Log Amministrazione</span>
-                                    <label className="toggle"><input type="checkbox" checked={!!config.logEnabled} onChange={e => setNested('logEnabled', e.target.checked)} /><span className="slider"></span></label>
-                                </div>
-                             </div>
-                        </div>
-
-                        <div className="card info-warn-v">
-                             <ShieldAlert size={20} />
-                             <p>Il ruolo del bot deve essere <b>fisicamente sopra</b> i ruoli che desidera assegnare nella lista dei ruoli di Discord.</p>
-                        </div>
-
-                        <div style={{ marginTop: '24px' }}>
-                            <GuideSidebar type="verify" context={config} />
-                        </div>
-                    </aside>
-                </div>
+                </section>
             </div>
         )}
 
         {activeTab === 'personalization' && (
-            <div className="animate fade-in contents-grid">
-                <div className="config-grid-v">
-                    <section className="card editor-container-v">
-                        <div className="editor-header-v">
-                             <div className="align-center">
-                                <Palette size={18} color="var(--primary)" />
-                                <h3>Visual Experience</h3>
-                             </div>
-                             <select className="select" style={{ width: '180px', padding: '8px 12px' }} value={activeEmbedKey} onChange={e => setActiveEmbedKey(e.target.value)}>
-                                <option value="panel">Pagina Verifica</option>
-                                <option value="dm">Messaggio DM</option>
-                             </select>
-                        </div>
-                        <div className="editor-p-v">
-                             <EmbedEditor 
-                                embed={config.embeds?.[activeEmbedKey] || {}} 
-                                onChange={d => updateEmbed(activeEmbedKey, d)}
-                                variables={['user', 'user_mention', 'guild', 'member_count']}
-                             />
-                        </div>
-                    </section>
+            <div className="animate fade-in">
+                <section className="card editor-container-v" style={{ marginBottom: '24px' }}>
+                    <div className="editor-header-v">
+                         <div className="align-center">
+                            <Palette size={18} color="var(--primary)" />
+                            <h3>Visual Experience</h3>
+                         </div>
+                         <CustomSelect 
+                            style={{ width: '200px' }} 
+                            options={[
+                                { value: 'panel', label: 'Pagina Verifica' },
+                                { value: 'dm', label: 'Messaggio DM' }
+                            ]} 
+                            value={activeEmbedKey} 
+                            onChange={val => setActiveEmbedKey(val)} 
+                         />
+                    </div>
+                    <div className="editor-p-v">
+                         <EmbedEditor 
+                            embed={activeEmbedKey === 'panel' ? (messages.panel || {}) : (config.embeds?.dm || {})} 
+                            onChange={(data) => activeEmbedKey === 'panel' ? setMessages({...messages, panel: data}) : updateEmbed('dm', data)}
+                            variables={['user', 'user_mention', 'guild', 'member_count']}
+                         />
+                    </div>
+                </section>
 
-                    <aside className="side-v">
-                        <section className="card section-card-v">
-                             <h4 className="align-center" style={{ marginBottom: '16px' }}><MousePointer2 size={16} color="var(--primary)" /> Pulsante</h4>
-                             <div className="fields-stack-v">
-                                <div className="field-box">
-                                    <label className="text-label">Testo</label>
-                                    <input className="input" value={config.buttons?.verify?.label || ''} onChange={e => updateButton('label', e.target.value)} />
-                                </div>
-                                <div className="field-box">
-                                    <label className="text-label">Emoji</label>
-                                    <input className="input" value={config.buttons?.verify?.emoji || ''} onChange={e => updateButton('emoji', e.target.value)} />
-                                </div>
-                                <div className="field-box">
-                                    <label className="text-label">Style</label>
-                                    <select className="select" value={config.buttons?.verify?.style || 'SUCCESS'} onChange={e => updateButton('style', e.target.value)}>
-                                        <option value="SUCCESS">Success (Verde)</option>
-                                        <option value="PRIMARY">Primary (Blu)</option>
-                                        <option value="SECONDARY">Grey (Grigio)</option>
-                                        <option value="DANGER">Danger (Rosso)</option>
-                                    </select>
-                                </div>
-                             </div>
-                        </section>
-
-                        <section className="card section-card-v" style={{ marginTop: '24px' }}>
-                             <h4 className="align-center" style={{ marginBottom: '16px' }}><Type size={16} color="var(--primary)" /> Microcopy</h4>
-                             <div className="fields-stack-v">
-                                <div className="field-box">
-                                    <label className="text-label">Messaggio Già Verificato</label>
-                                    <input className="input" value={config.messages?.alreadyVerified || ''} onChange={e => setNested('messages.alreadyVerified', e.target.value)} />
-                                </div>
-                                <div className="field-box">
-                                    <label className="text-label">Messaggio Successo</label>
-                                    <input className="input" value={config.messages?.successResponse || ''} onChange={e => setNested('messages.successResponse', e.target.value)} />
-                                </div>
-                             </div>
-                        </section>
-                    </aside>
-                </div>
+                <EmbedMessageManager 
+                    guildId={guildId}
+                    module="verify"
+                    slugs={[
+                        { key: 'success', label: 'Conferma Identità', description: 'Messaggio privato (DM) inviato all\'utente dopo la verifica riuscita.', variables: ['guild'], group: '✅ Successo' },
+                        { key: 'success_reply', label: 'Risposta Pulsante Verifica', description: 'Risposta effimera al click del pulsante di verifica.', variables: ['user'], group: '✅ Successo' },
+                        { key: 'already_verified', label: 'Utente Già Verificato', description: 'Risposta effimera se l\'utente è già verificato.', variables: ['user'], group: '🟥 Errori' },
+                        { key: 'staff_log', label: 'Log Staff', description: 'Log inviato al canale staff quando qualcuno si verifica.', variables: ['user', 'timestamp'], group: '🛡️ Staff' },
+                    ]}
+                />
             </div>
         )}
 
-            {activeTab === 'messages' && (
-                <div className="animate">
-                    <EmbedMessageManager 
-                        guildId={guildId}
-                        module="verify"
-                        slugs={[
-                            { key: 'success', label: 'Conferma Identità', description: 'Inviato in DM all\'utente dopo la verifica riuscita.', variables: ['guild'] },
-                        ]}
-                    />
-                </div>
+        {/* Local Page Side-Content (Moved from legacy sidebar) */}
+        <div className="verify-extra-config">
+            <div className="card section-card-v">
+                    <div className="align-center" style={{ marginBottom: '16px' }}>
+                    <Bell size={16} color="var(--primary)" />
+                    <h3>Notifiche</h3>
+                    </div>
+                    <div className="toggle-list-v">
+                    <div className="toggle-row-v">
+                        <span>Notifica DM Utente</span>
+                        <label className="toggle"><input type="checkbox" checked={!!config.dmEnabled} onChange={e => setNested('dmEnabled', e.target.checked)} /><span className="slider"></span></label>
+                    </div>
+                    <div className="toggle-row-v">
+                        <span>Log Amministrazione</span>
+                        <label className="toggle"><input type="checkbox" checked={!!config.logEnabled} onChange={e => setNested('logEnabled', e.target.checked)} /><span className="slider"></span></label>
+                    </div>
+                    </div>
+            </div>
+
+            <div className="card info-warn-v">
+                    <ShieldAlert size={20} />
+                    <p>Il ruolo del bot deve essere <b>fisicamente sopra</b> i ruoli che desidera assegnare nella lista dei ruoli di Discord.</p>
+            </div>
+            
+            {activeTab === 'personalization' && (
+                <section className="card section-card-v" style={{ gridColumn: 'span 2' }}>
+                    <h4 className="align-center" style={{ marginBottom: '16px' }}><MousePointer2 size={16} color="var(--primary)" /> Pulsante</h4>
+                    <div className="fields-stack-v" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
+                        <div className="field-box">
+                            <label className="text-label">Testo</label>
+                            <input className="input" value={config.buttons?.verify?.label || ''} onChange={e => updateButton('label', e.target.value)} />
+                        </div>
+                        <div className="field-box">
+                            <label className="text-label">Emoji</label>
+                            <input className="input" value={config.buttons?.verify?.emoji || ''} onChange={e => updateButton('emoji', e.target.value)} />
+                        </div>
+                        <div className="field-box">
+                            <label className="text-label">Style</label>
+                            <CustomSelect 
+                                options={[
+                                    { value: 'SUCCESS', label: 'Success (Verde)' },
+                                    { value: 'PRIMARY', label: 'Primary (Blu)' },
+                                    { value: 'SECONDARY', label: 'Grey (Grigio)' },
+                                    { value: 'DANGER', label: 'Danger (Rosso)' }
+                                ]} 
+                                value={config.buttons?.verify?.style || 'SUCCESS'} 
+                                onChange={val => updateButton('style', val)} 
+                            />
+                        </div>
+                    </div>
+                </section>
             )}
-        <style jsx>{`
+        </div>
+      </div>
+
+      <style jsx>{`
             .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: rgba(255,255,255,0.02); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
             .header-info { display: flex; align-items: center; gap: 16px; }
             .header-icon { width: 48px; height: 48px; background: rgba(129, 140, 248, 0.1); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
@@ -330,23 +326,26 @@ export default function VerifyConfig() {
             .status-box { width: 40px; height: 40px; background: #1e293b; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--text-dim); border: 1px solid var(--border); transition: 0.3s; }
             .status-box.on { color: var(--primary); background: rgba(129, 140, 248, 0.1); border-color: rgba(129, 140, 248, 0.2); }
 
-            .config-grid-v { display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
             .fields-grid-v { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
             .toggle-list-v { display: flex; flex-direction: column; gap: 10px; }
             .toggle-row-v { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid var(--border); font-size: 0.85rem; font-weight: 600; }
 
-            .info-warn-v { margin-top: 24px; background: rgba(244, 63, 94, 0.05); border: 1px solid rgba(244, 63, 94, 0.1); display: flex; align-items: center; gap: 16px; padding: 16px 20px; color: var(--error); font-size: 0.85rem; line-height: 1.4; }
+            .info-warn-v { background: rgba(244, 63, 94, 0.05); border: 1px solid rgba(244, 63, 94, 0.1); display: flex; align-items: center; gap: 16px; padding: 16px 20px; color: var(--error); font-size: 0.85rem; line-height: 1.4; }
+            .warn-title { color: white; margin-bottom: 4px; }
 
             .editor-container-v { padding: 0 !important; }
             .editor-header-v { padding: 20px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
             .editor-p-v { padding: 24px; }
 
             .fields-stack-v { display: flex; flex-direction: column; gap: 16px; }
+            .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
             .align-center { display: flex; align-items: center; gap: 10px; }
-
-            @media (max-width: 1000px) { .config-grid-v { grid-template-columns: 1fr; } }
+            .verify-extra-config { margin-top: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+            .full-width { grid-column: span 2; }
+            .spacer-bottom { margin-bottom: 24px; }
+            .spacer-bottom-sm { margin-bottom: 16px; }
+            .header-section-spacer { margin-bottom: 24px; }
         `}</style>
-      </div>
-    </Layout>
+    </div>
   );
 }

@@ -5,6 +5,7 @@ import MongoStore from 'connect-mongo';
 import passport from 'passport';
 import { Strategy as DiscordStrategy } from 'passport-discord';
 import cors from 'cors';
+import rateLimit from 'express-rate-limit';
 import logger from '../utils/logger.js';
 
 // Import Routes (Keeping existing paths for now)
@@ -13,6 +14,7 @@ import configRoutes from '../../dashboard/api/routes/config.js';
 import embedsRoutes from '../../dashboard/api/routes/embeds.js';
 import messageRoutes from '../../dashboard/api/routes/messages.js';
 import managementRoutes from '../../dashboard/api/routes/management.js';
+import webhooksRoutes from '../../dashboard/api/routes/webhooks.js';
 
 /**
  * Initializes and starts the Web Dashboard API hosted by the Bot process.
@@ -73,24 +75,28 @@ export function startDashboard(client) {
         credentials: true 
     }));
     
-    // 4. Auth & Session (Harden for Local Dev)
+    const secret = process.env.SESSION_SECRET;
+    if (!secret) {
+        logger.error('[Dashboard] SESSION_SECRET is not set — using insecure fallback. Please set this in .env immediately!');
+    }
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    // 4. Auth & Session
     app.use(session({
         name: 'verix.sid',
-        secret: process.env.SESSION_SECRET || 'verix-secret-key-development',
+        secret: secret || 'verix-insecure-fallback-key',
         resave: false,
         saveUninitialized: false,
-        proxy: true, // Required for some environments
-        store: MongoStore.create({ 
+        proxy: true,
+        store: MongoStore.create({
             mongoUrl: process.env.MONGODB_URI || process.env.MONGO_URI,
-            mongoOptions: {
-                serverSelectionTimeoutMS: 5000
-            }
+            mongoOptions: { serverSelectionTimeoutMS: 5000 }
         }),
-        cookie: { 
+        cookie: {
             maxAge: 1000 * 60 * 60 * 24, // 24 hours
-            secure: false, // Set to true only if using HTTPS
+            secure: isProduction,
             httpOnly: true,
-            sameSite: 'lax', 
+            sameSite: 'lax',
             path: '/'
         }
     }));
@@ -98,9 +104,19 @@ export function startDashboard(client) {
     app.use(passport.initialize());
     app.use(passport.session());
 
-    // 5. Diagnostics (Correct position after Passport)
+    // 5. Rate Limiting
+    const apiLimiter = rateLimit({
+        windowMs: 60 * 1000,
+        max: 120,
+        standardHeaders: true,
+        legacyHeaders: false,
+        message: { success: false, error: 'Troppe richieste. Riprova tra un minuto.' }
+    });
+    app.use('/api/config', apiLimiter);
+    app.use('/api/messages', apiLimiter);
+
+    // 6. Request context — attach Discord client (no debug logging in production)
     app.use((req, res, next) => {
-        console.log(`[DEBUG_API] ${req.method} ${req.url} | SessionID: ${req.sessionID?.substring(0, 8)}... | Auth: ${req.isAuthenticated && req.isAuthenticated() ? 'true' : 'false'}`);
         req.discordClient = client;
         next();
     });
@@ -111,22 +127,25 @@ export function startDashboard(client) {
     app.use('/api/embeds', embedsRoutes);
     app.use('/api/messages', messageRoutes);
     app.use('/api/management', managementRoutes);
+    app.use('/api/webhooks', webhooksRoutes);
 
     app.get('/api/health', (req, res) => {
+        const dbState = mongoose.connection.readyState;
+        const stateMap = { 0: 'disconnected', 1: 'connected', 2: 'connecting', 3: 'disconnecting' };
         res.json({
-            status: 'online',
-            bot: client.user.tag,
-            time: new Date().toISOString()
+            status: dbState === 1 ? 'ok' : 'degraded',
+            bot: client.user?.tag || 'unknown',
+            uptime: Math.floor(process.uptime()),
+            db: stateMap[dbState] || 'unknown',
+            timestamp: new Date().toISOString()
         });
     });
 
-    // 5. Catch-all 404 Debug (MUST BE LAST)
+    // Catch-all 404
     app.use((req, res) => {
-        console.log(`[404_NOT_FOUND] ${req.method} ${req.url}`);
-        res.status(404).json({ 
-            error: 'Route not found in Integrated API',
-            requestedUrl: req.url,
-            method: req.method
+        res.status(404).json({
+            success: false,
+            error: 'Endpoint non trovato'
         });
     });
 

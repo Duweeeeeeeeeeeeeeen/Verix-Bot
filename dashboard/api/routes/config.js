@@ -16,7 +16,9 @@ import DashboardAuditLog from '../../../src/models/DashboardAuditLog.js';
 import WelcomeConfig from '../../../src/models/WelcomeConfig.js';
 import UtilityConfig from '../../../src/models/UtilityConfig.js';
 import BackgroundConfig from '../../../src/models/BackgroundConfig.js';
-import TwitchConfig from '../../../src/models/TwitchConfig.js';
+import SocialConfig from '../../../src/models/SocialConfig.js';
+import AutoClearConfig from '../../../src/models/AutoClearConfig.js';
+import ModerationConfig from '../../../src/models/ModerationConfig.js';
 
 import { getButtonStyle } from '../../../src/utils/uiBuilder.js';
 import { mergeModuleDefaults } from '../utils/mergeDefaults.js';
@@ -25,6 +27,7 @@ import { checkBotPermissions } from '../../../src/utils/permissionHelper.js';
 import { invalidateCache } from '../../../src/core/configCache.js';
 import { invalidateGlobalCache } from '../../../src/core/globalConfigManager.js';
 import { buildButtonRows } from '../../../src/utils/uiBuilder.js';
+import messageService from '../../../src/utils/messageService.js';
 
 // Centralized Utilities
 import { validate } from '../middleware/validate.js';
@@ -41,8 +44,9 @@ import { welcomeSchema } from '../validations/welcomeSchema.js';
 import { fivemSchema } from '../validations/fivemSchema.js';
 import { utilitySchema } from '../validations/utilitySchema.js';
 import { backgroundSchema } from '../validations/backgroundSchema.js';
-import { twitchSchema } from '../validations/twitchSchema.js';
+import { socialSchema } from '../validations/socialSchema.js';
 import { onboardingSchema } from '../validations/onboardingSchema.js';
+import { moderationSchema } from '../validations/moderationSchema.js';
 
 
 
@@ -54,7 +58,7 @@ router.get('/:guildId', adminCheck, async (req, res) => {
         const { guildId } = req.params;
         
         // Fetch all configurations in parallel to reduce latency
-        const [whitelist, tickets, contest, verify, guild, globalCfg, welcome, utility, fivem, twitch] = await Promise.all([
+        const [whitelist, tickets, contest, verify, guild, globalCfg, welcome, utility, fivem, twitch, autoClear, antispam, moderation] = await Promise.all([
             WhitelistConfig.findOne({ guildId }),
             TicketConfig.findOne({ guildId }),
             PhotoContestConfig.findOne({ guildId }),
@@ -64,7 +68,9 @@ router.get('/:guildId', adminCheck, async (req, res) => {
             WelcomeConfig.findOne({ guildId }),
             UtilityConfig.findOne({ guildId }),
             FiveMConfig.findOne({ guildId }),
-            TwitchConfig.findOne({ guildId })
+            SocialConfig.findOne({ guildId }),
+            AutoClearConfig.findOne({ guildId }),
+            ModerationConfig.findOne({ guildId })
         ]);
 
         let wlConfig = whitelist;
@@ -76,7 +82,9 @@ router.get('/:guildId', adminCheck, async (req, res) => {
         let wlcmConfig = welcome;
         let utilConfig = utility;
         let fmConfig = fivem;
-        let twConfig = twitch;
+        let socConfig = twitch; // Keeping variable name matching Promise.all index
+        let autoClearConfig = autoClear;
+        let modConfig = antispam; // ModerationConfig result is the 12th item now
 
         // Create missing configurations in parallel if they don't exist
         const creations = [];
@@ -89,7 +97,9 @@ router.get('/:guildId', adminCheck, async (req, res) => {
         if (!wlcmConfig) creations.push(WelcomeConfig.create({ guildId }).then(res => wlcmConfig = res));
         if (!utilConfig) creations.push(UtilityConfig.create({ guildId }).then(res => utilConfig = res));
         if (!fmConfig) creations.push(FiveMConfig.create({ guildId }).then(res => fmConfig = res));
-        if (!twConfig) creations.push(TwitchConfig.create({ guildId }).then(res => twConfig = res));
+        if (!socConfig) creations.push(SocialConfig.create({ guildId }).then(res => socConfig = res));
+        if (!autoClearConfig) creations.push(AutoClearConfig.create({ guildId }).then(res => autoClearConfig = res));
+        if (!modConfig) creations.push(ModerationConfig.create({ guildId }).then(res => modConfig = res));
 
         if (creations.length > 0) {
             await Promise.all(creations);
@@ -120,7 +130,9 @@ router.get('/:guildId', adminCheck, async (req, res) => {
                 welcome: mergeModuleDefaults('welcome', wlcmConfig),
                 utility: mergeModuleDefaults('utility', utilConfig),
                 fivem: mergeModuleDefaults('fivem', fmConfig),
-                twitch: twConfig,
+                socials: socConfig,
+                autoclear: autoClearConfig,
+                moderation: mergeModuleDefaults('moderation', modConfig),
                 roles,
                 channels
             }
@@ -146,6 +158,60 @@ router.get('/:guildId/whitelist', adminCheck, async (req, res) => {
     } catch (error) {
         console.error('Error fetching whitelist configuration:', error);
         res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione whitelist' });
+    }
+});
+
+// GET autoclear config
+router.get('/:guildId/autoclear', adminCheck, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        let config = await AutoClearConfig.findOne({ guildId });
+        
+        if (!config) {
+            config = await AutoClearConfig.create({ guildId, slots: [] });
+        }
+        
+        res.json({ success: true, data: config });
+    } catch (error) {
+        console.error('Error fetching autoclear configuration:', error);
+        res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione autoclear' });
+    }
+});
+
+// POST autoclear config
+router.post('/:guildId/autoclear', adminCheck, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const { slots } = req.body;
+
+        // Normalize slots: map 'interval' → 'intervalMinutes' for frontend compatibility
+        // and ensure every slot has a stable id
+        const normalizedSlots = (slots || []).map((slot, i) => ({
+            id: slot.id || `slot_${Date.now()}_${i}`,
+            channelId: slot.channelId,
+            intervalMinutes: slot.intervalMinutes ?? slot.interval ?? 60,
+            amount: slot.amount ?? 100,
+            enabled: slot.enabled ?? true,
+        }));
+
+        let config = await AutoClearConfig.findOne({ guildId });
+        if (!config) {
+            config = new AutoClearConfig({ guildId, slots: normalizedSlots });
+        } else {
+            config.slots = normalizedSlots.map(newSlot => {
+                const existing = config.slots.find(s => s.id === newSlot.id);
+                return existing
+                    ? { ...newSlot, lastClearedAt: existing.lastClearedAt }
+                    : newSlot;
+            });
+        }
+        await config.save();
+
+        await logAudit(req, guildId, 'autoclear_update', 'AutoClear Config Updated', { slots: normalizedSlots });
+        res.json({ success: true, data: config });
+    } catch (error) {
+        console.error('Error updating autoclear configuration:', error);
+        res.status(500).json({ success: false, error: 'Impossibile salvare la configurazione autoclear' });
     }
 });
 
@@ -204,11 +270,7 @@ router.post('/:guildId/background/send-panel', adminCheck, async (req, res) => {
             return res.status(400).json({ success: false, error: 'Canale non specificato.' });
         }
 
-        const panelData = config?.embeds?.panel || {
-            title: '📖 Archivio Storico - Deposito Background',
-            description: 'Carica qui la storia del tuo personaggio.',
-            color: '#5865F2'
-        };
+        const panelData = await messageService.getRaw(guildId, 'background', 'panel');
 
         const client = req.discordClient;
         const guild = await client.guilds.fetch(guildId);
@@ -265,66 +327,34 @@ router.post('/:guildId/background/send-panel', adminCheck, async (req, res) => {
 router.post('/:guildId/whitelist', adminCheck, validate(whitelistSchema), async (req, res) => {
     try {
         const { guildId } = req.params;
-
-        // 3. LOG INPUT
-        console.log(`[DEBUG_WHITELIST_POST] Body:`, JSON.stringify(req.body, null, 2));
-        console.log(`[DEBUG_WHITELIST_POST] ValidatedData:`, JSON.stringify(req.validatedData, null, 2));
-
-        // 4. VALIDAZIONE SICURA
         const data = req.validatedData || req.body;
 
-        if (!data) {
-            throw new Error('Dati della richiesta mancanti o non validi.');
-        }
+        if (!data) throw new Error('Dati della richiesta mancanti o non validi.');
 
-        // 4b. CLEANUP - Prevent Mongoose immutable field errors
+        // Prevent Mongoose immutable field errors
         if (data._id) delete data._id;
         if (data.__v !== undefined) delete data.__v;
-
-        // 5. CHECK FIELDS
-        if (data.questions && !Array.isArray(data.questions)) {
-            console.warn('[DEBUG_WHITELIST_POST] Warning: questions is not an array!');
-        }
-        
-        if (data.embeds) {
-            console.log('[DEBUG_WHITELIST_POST] Embeds config detected');
-        }
 
         const config = await WhitelistConfig.findOneAndUpdate(
             { guildId },
             { $set: data },
             { returnDocument: 'after', upsert: true, runValidators: true }
         );
-        
-        if (!config) {
-            throw new Error('Impossibile trovare o creare la configurazione (Config null after update).');
-        }
+
+        if (!config) throw new Error('Impossibile trovare o creare la configurazione.');
 
         invalidateCache(guildId);
         await logAudit(req, 'UPDATE_WHITELIST', data);
-        
         res.json({ success: true, data: config });
     } catch (error) {
-        // 2. LOG ERRORI
-        console.error('[CRITICAL_WHITELIST_UPDATE_ERROR]:', error);
-        if (error.stack) console.error(error.stack);
-
-        // 6. RESPONSE DEBUG
-        res.status(500).json({ 
-            success: false, 
-            error: error.message,
-            stack: error.stack,
-            hint: 'Controlla i log del server per i dettagli del body e della validazione.'
-        });
+        console.error('[whitelist update error]:', error.message);
+        res.status(500).json({ success: false, error: 'Errore durante il salvataggio della whitelist.' });
     }
 });
 
 // POST send whitelist panel
 router.post('/:guildId/whitelist/send-panel', adminCheck, async (req, res) => {
     try {
-        // 3. LOG BODY RECEIVED
-        console.log(`[DEBUG_API] ${req.method} ${req.url} received body:`, JSON.stringify(req.body, null, 2));
-
         const { guildId } = req.params;
         const { channelId } = req.body;
         const config = await WhitelistConfig.findOne({ guildId });
@@ -335,11 +365,7 @@ router.post('/:guildId/whitelist/send-panel', adminCheck, async (req, res) => {
             return res.status(400).json({ success: false, error: 'Canale non specificato nella richiesta e non configurato nel database.' });
         }
 
-        const panelData = config?.embeds?.panel || {
-            title: config?.title || 'Sistema Whitelist',
-            description: config?.description || 'Clicca il pulsante qui sotto per iniziare la tua candidatura.',
-            color: config?.color || '#5865F2'
-        };
+        const panelData = await messageService.getRaw(guildId, 'whitelist', 'panel');
 
         const client = req.discordClient;
         const guild = await client.guilds.fetch(guildId);
@@ -371,29 +397,21 @@ router.post('/:guildId/whitelist/send-panel', adminCheck, async (req, res) => {
                 .setEmoji(btnData.emoji || '📝')
         );
 
-        // --- ROBUST BULK CLEANUP ---
+        // Cleanup old whitelist panels
         try {
-            console.log(`[DEBUG_WL_CLEANUP] Scanning for existing panels in <#${targetChannelId}>...`);
             const messages = await channel.messages.fetch({ limit: 50 });
-            const legacyPanels = messages.filter(m => 
-                m.author.id === client.user.id && 
-                m.components.some(row => row.components.some(c => 
-                    c.customId === 'start_wl' || 
-                    c.customId === 'apply_whitelist' ||
-                    c.customId === startBtnConfig.customId
+            const legacyPanels = messages.filter(m =>
+                m.author.id === client.user.id &&
+                m.components.some(row => row.components.some(c =>
+                    c.customId === 'start_wl' ||
+                    c.customId === 'apply_whitelist'
                 ))
             );
-
-            if (legacyPanels.size > 0) {
-                console.log(`[DEBUG_WL_CLEANUP] Found ${legacyPanels.size} legacy panels. Purging...`);
-                for (const m of legacyPanels.values()) {
-                    await m.delete().catch(err => console.warn(`[DEBUG_WL_CLEANUP] Failed to delete message ${m.id}: ${err.message}`));
-                }
-            } else {
-                console.log(`[DEBUG_WL_CLEANUP] No legacy panels found via scan.`);
+            for (const m of legacyPanels.values()) {
+                await m.delete().catch(() => {});
             }
         } catch (err) {
-            console.error(`[DEBUG_WL_CLEANUP] Bulk scan failed:`, err.message);
+            console.error('[whitelist cleanup error]:', err.message);
         }
 
         const sentMessage = await channel.send({ embeds: [embed], components: [startButtonRow] });
@@ -468,11 +486,7 @@ router.post('/:guildId/tickets/send-panel', adminCheck, async (req, res) => {
             return res.status(404).json({ success: false, error: 'Canale pannello non trovato su Discord.' });
         }
 
-        const panelData = config.embeds?.panel || {
-            title: '🎫 Centro Assistenza',
-            description: 'Apri un ticket selezionando una categoria.',
-            color: '#3498db'
-        };
+        const panelData = await messageService.getRaw(guildId, 'tickets', 'panel');
 
         const embed = new EmbedBuilder()
             .setTitle(panelData.title || '🎫 Centro Assistenza')
@@ -651,10 +665,12 @@ router.post('/:guildId/verify/send-panel', adminCheck, async (req, res) => {
             return res.status(404).json({ success: false, error: 'Canale di verifica non trovato su Discord.' });
         }
 
+        const panelData = await messageService.getRaw(guildId, 'verify', 'panel');
+
         const embed = new EmbedBuilder()
-            .setTitle(config.embed.title || '✅ Verifica Account')
-            .setDescription(config.embed.description || 'Clicca il bottone qui sotto per verificarti.')
-            .setColor(config.embed.color?.startsWith('#') ? config.embed.color : '#2ecc71')
+            .setTitle(panelData.title || '✅ Verifica Account')
+            .setDescription(panelData.description || 'Clicca il bottone qui sotto per verificarti.')
+            .setColor(panelData.color?.startsWith('#') ? panelData.color : '#2ecc71')
             .setTimestamp()
             .setFooter({ text: guild.name, iconURL: guild.iconURL() });
 
@@ -667,26 +683,21 @@ router.post('/:guildId/verify/send-panel', adminCheck, async (req, res) => {
                 .setStyle(getButtonStyle(btnData.style))
         );
 
-        // --- ROBUST BULK CLEANUP (Verify) ---
+        // Cleanup old verify panels
         try {
-            console.log(`[DEBUG_VERIFY_CLEANUP] Scanning for existing panels in <#${config.channelId}>...`);
             const messages = await channel.messages.fetch({ limit: 50 });
-            const legacyPanels = messages.filter(m => 
-                m.author.id === client.user.id && 
-                m.components.some(row => row.components.some(c => 
-                    c.customId === 'verify_user' || 
+            const legacyPanels = messages.filter(m =>
+                m.author.id === client.user.id &&
+                m.components.some(row => row.components.some(c =>
+                    c.customId === 'verify_user' ||
                     c.customId === 'setup-verify'
                 ))
             );
-
-            if (legacyPanels.size > 0) {
-                console.log(`[DEBUG_VERIFY_CLEANUP] Found ${legacyPanels.size} legacy panels. Purging...`);
-                for (const m of legacyPanels.values()) {
-                    await m.delete().catch(err => console.warn(`[DEBUG_VERIFY_CLEANUP] Failed message deletion: ${err.message}`));
-                }
+            for (const m of legacyPanels.values()) {
+                await m.delete().catch(() => {});
             }
         } catch (err) {
-            console.error(`[DEBUG_VERIFY_CLEANUP] Bulk scan failed:`, err.message);
+            console.error('[verify cleanup error]:', err.message);
         }
 
         const sentMessage = await channel.send({ embeds: [embed], components: [row] });
@@ -863,25 +874,43 @@ router.post('/:guildId/utility/clear', adminCheck, async (req, res) => {
     }
 });
 
-// GET twitch config
-router.get('/:guildId/twitch', adminCheck, async (req, res) => {
+// GET socials config
+router.get('/:guildId/socials', adminCheck, async (req, res) => {
     try {
         const { guildId } = req.params;
-        let config = await TwitchConfig.findOne({ guildId });
+        let config = await SocialConfig.findOne({ guildId });
         
         if (!config) {
-            config = await TwitchConfig.create({ guildId });
+            config = await SocialConfig.create({ guildId });
+        }
+
+        // Ensure all platforms have a webhook token if missing (for existing docs)
+        let modified = false;
+        const platforms = ['twitch', 'youtube', 'instagram', 'tiktok', 'twitter'];
+        for (const p of platforms) {
+            if (!config.platforms[p]) {
+                config.platforms[p] = {};
+                modified = true;
+            }
+            if (!config.platforms[p].webhookToken) {
+                config.platforms[p].webhookToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+                modified = true;
+            }
+        }
+
+        if (modified) {
+            await config.save();
         }
         
         res.json({ success: true, data: config });
     } catch (error) {
-        console.error('Error fetching twitch configuration:', error);
-        res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione twitch' });
+        console.error('Error fetching socials configuration:', error);
+        res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione socials' });
     }
 });
 
-// POST update twitch config
-router.post('/:guildId/twitch', adminCheck, validate(twitchSchema), async (req, res) => {
+// POST update socials config
+router.post('/:guildId/socials', adminCheck, validate(socialSchema), async (req, res) => {
     try {
         const { guildId } = req.params;
         const data = req.validatedData || req.body;
@@ -889,18 +918,18 @@ router.post('/:guildId/twitch', adminCheck, validate(twitchSchema), async (req, 
         if (data._id) delete data._id;
         if (data.__v !== undefined) delete data.__v;
 
-        const config = await TwitchConfig.findOneAndUpdate(
+        const config = await SocialConfig.findOneAndUpdate(
             { guildId },
             { $set: data },
             { returnDocument: 'after', upsert: true, runValidators: true }
         );
 
         invalidateCache(guildId);
-        await logAudit(req, 'UPDATE_TWITCH', data);
+        await logAudit(req, 'UPDATE_SOCIALS', data);
         
         res.json({ success: true, data: config });
     } catch (error) {
-        console.error('Error updating twitch configuration:', error);
+        console.error('Error updating socials configuration:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
@@ -1086,11 +1115,8 @@ router.get('/:guildId/discord-data', adminCheck, async (req, res) => {
             if (!viewChannels) errorMsg += ' Attenzione: Il bot non ha il permesso "Visualizza Canali".';
             if (!manageRoles) errorMsg += ' Attenzione: Il bot non ha il permesso "Gestisci Ruoli".';
             
-            console.warn(`[DEBUG API] Guild ${guildId}: Empty results. ManageRoles: ${manageRoles}, ViewChannels: ${viewChannels}`);
             return res.status(200).json({ success: true, warning: errorMsg, data: { roles: [], channels: [] } });
         }
-
-        console.log(`[DEBUG API] Guild ${guildId}: detected ${roles.length} roles and ${channels.length} channels (Types: 0, 2, 4, 5).`);
 
         res.json({ 
             success: true, 
@@ -1385,6 +1411,36 @@ router.post('/:guildId/onboarding', adminCheck, validate(onboardingSchema), asyn
     } catch (error) {
         console.error('Error during onboarding save:', error);
         res.status(500).json({ success: false, error: 'Errore durante il salvataggio dell\'onboarding.' });
+    }
+});
+
+
+// GET moderation config
+router.get('/:guildId/moderation', adminCheck, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        let config = await ModerationConfig.findOne({ guildId });
+        if (!config) config = await ModerationConfig.create({ guildId });
+        res.json({ success: true, data: mergeModuleDefaults('moderation', config) });
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione moderazione' });
+    }
+});
+
+// POST update moderation config
+router.post('/:guildId/moderation', adminCheck, validate(moderationSchema), async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const config = await ModerationConfig.findOneAndUpdate(
+            { guildId },
+            { $set: req.validatedData },
+            { returnDocument: 'after', upsert: true }
+        );
+        invalidateCache(guildId);
+        await logAudit(req, guildId, 'moderation_update', 'Moderation Config Updated', req.validatedData);
+        res.json({ success: true, data: config });
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'Failed to update moderation config' });
     }
 });
 

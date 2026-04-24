@@ -1,8 +1,9 @@
-import { EmbedBuilder, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
+import { MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 import Guild from '../../../models/Guild.js';
 import fs from 'fs-extra';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import messageService from '../../../utils/messageService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -35,40 +36,35 @@ export default {
         });
 
         if (subcommand === 'list') {
-            const embed = new EmbedBuilder()
-                .setColor('#5865F2')
-                .setTitle('⚙️ Moduli del Server')
-                .setDescription(allModules.map(m => {
-                    const status = (guildData?.enabledModules || []).includes(m) ? '✅ Attivo' : '❌ Disattivato';
-                    return `**${m.toUpperCase()}**: ${status}`;
-                }).join('\n'))
-                .setTimestamp();
-
-            return interaction.reply({ embeds: [embed] });
+            const listStr = allModules.map(m => {
+                const status = (guildData?.enabledModules || []).includes(m) ? '✅ Attivo' : '❌ Disattivato';
+                return `**${m.toUpperCase()}**: ${status}`;
+            }).join('\n');
+            return messageService.reply(interaction, 'system', 'module_list', { list: listStr });
         }
 
         const moduleName = interaction.options.getString('name').toLowerCase();
         if (!allModules.includes(moduleName)) {
-            return interaction.reply({ content: `Modulo \`${moduleName}\` non trovato. Moduli disponibili: ${allModules.join(', ')}`, flags: [MessageFlags.Ephemeral] });
+            return messageService.reply(interaction, 'system', 'module_not_found', { module: moduleName }, { ephemeral: true });
         }
 
         if (subcommand === 'enable') {
             if (!guildData.enabledModules) guildData.enabledModules = [];
             if (guildData.enabledModules.includes(moduleName)) {
-                return interaction.reply({ content: 'Questo modulo è già attivo.', flags: [MessageFlags.Ephemeral] });
+                return messageService.reply(interaction, 'system', 'module_already_in_state', { module: moduleName }, { ephemeral: true });
             }
             guildData.enabledModules.push(moduleName);
             await guildData.save();
-            return interaction.reply({ content: `✅ Modulo **${moduleName.toUpperCase()}** attivato con successo!` });
+            return messageService.reply(interaction, 'system', 'module_enabled', { module: moduleName.toUpperCase() });
         }
 
         if (subcommand === 'disable') {
             if (!guildData.enabledModules || !guildData.enabledModules.includes(moduleName)) {
-                return interaction.reply({ content: 'Questo modulo è già disattivato.', flags: [MessageFlags.Ephemeral] });
+                return messageService.reply(interaction, 'system', 'module_already_in_state', { module: moduleName }, { ephemeral: true });
             }
             guildData.enabledModules = guildData.enabledModules.filter(m => m !== moduleName);
             await guildData.save();
-            return interaction.reply({ content: `❌ Modulo **${moduleName.toUpperCase()}** disattivato con successo!` });
+            return messageService.reply(interaction, 'system', 'module_disabled_success', { module: moduleName.toUpperCase() });
         }
     },
 };

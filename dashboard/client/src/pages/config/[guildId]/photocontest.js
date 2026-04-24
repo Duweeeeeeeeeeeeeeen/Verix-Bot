@@ -1,17 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import Layout from '../../../components/Layout';
-import Skeleton from '../../../components/Skeleton';
-import HelpTooltip from '../../../components/HelpTooltip';
-import api from '../../../utils/api';
 import { 
     Save, Camera, Clock, Settings2, RefreshCcw, Power, Palette, 
     Bell, Trophy, Zap, Info, Calendar, Layout as LayoutIcon, ChevronRight,
-    Shield, Target, Image
+    Shield, Target, Image, MousePointer2, Sparkles, FileText, List, Play, CheckCircle2, XCircle
 } from 'lucide-react';
-import GuideSidebar from '../../../components/GuideSidebar';
+import Skeleton from '../../../components/Skeleton';
+import HelpTooltip from '../../../components/HelpTooltip';
+import api from '../../../utils/api';
 import DiscordSelector from '../../../components/DiscordSelector';
 import EmbedMessageManager from '../../../components/EmbedMessageManager';
+import EmbedEditor from '../../../components/EmbedEditor';
+import EmojiInput from '../../../components/EmojiInput';
+import CustomSelect from '../../../components/CustomSelect';
+import { mergeConfig } from '../../../utils/defaults';
 
 export default function PhotoContestConfig() {
   const router = useRouter();
@@ -25,55 +27,49 @@ export default function PhotoContestConfig() {
 
    const [roles, setRoles] = useState([]);
   const [channels, setChannels] = useState([]);
+  const [messages, setMessages] = useState({});
+  const [loadingMessages, setLoadingMessages] = useState(true);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
+  const fetchMessages = async () => {
+    try {
+      const res = await api.request(`/messages/${guildId}/photocontest`);
+      setMessages(res.data || res || {});
+    } catch (err) {
+      console.error('Error fetching messages:', err);
+    } finally {
+      setLoadingMessages(false);
+    }
+  };
+
   useEffect(() => {
     if (guildId && mounted) {
-      Promise.all([
-        api.request(`/config/${guildId}`),
-        api.request(`/config/${guildId}/discord-data`)
-      ]).then(([configRes, discordRes]) => {
-        let moduleConfig = configRes?.photoContest || configRes || {};
-        
-        // --- SUPER AGGRESSIVE FALLBACK ---
-        if (!moduleConfig.embedSettings) moduleConfig.embedSettings = {};
-        
-        const defaultTitle = '🖼️ Galleria d\'Arte: Esposizione Fotografica';
-        const defaultDesc = 'La città è alla ricerca di scorci unici. Cattura un momento memorabile e depositalo in questa galleria per partecipare al concorso cittadino.';
-        
-        if (!moduleConfig.embedSettings.title || moduleConfig.embedSettings.title.trim() === '') {
-            moduleConfig.embedSettings.title = defaultTitle;
-        }
-        if (!moduleConfig.embedSettings.description || moduleConfig.embedSettings.description.trim() === '') {
-            moduleConfig.embedSettings.description = defaultDesc;
-        }
-        if (!moduleConfig.embedSettings.color) {
-            moduleConfig.embedSettings.color = '#F39C12';
-        }
-        
-        if (!moduleConfig.themesList || moduleConfig.themesList.length === 0) {
-            moduleConfig.themesList = ['Natura', 'Architettura', 'Tramonti', 'Cibo', 'Minimalismo', 'Cyberpunk', 'Ritratti', 'Animali'];
-        }
-        // ---------------------------------
-
-        setConfig(moduleConfig);
-        const dData = discordRes || {};
-        setRoles(dData.roles || []);
-        setChannels(dData.channels || []);
-        setLoading(false);
-        
-        console.log("[DEBUG] PhotoContest Config Loaded:", moduleConfig);
-      }).catch(err => {
-        console.error("Error loading photocontest data:", err);
-        showToast("Errore di caricamento dati. Verifica la console.", "error");
-        setLoading(false);
-      });
+      fetchMessages();
+      api.request(`/config/${guildId}/photocontest`)
+        .then(data => {
+          const moduleConfig = mergeConfig(data.data || data, 'photocontest');
+          setConfig(moduleConfig);
+          setLoading(false);
+        })
+        .catch(() => setLoading(false));
+      
+      api.request(`/config/${guildId}/discord-data`)
+        .then(res => {
+            setRoles(res?.data?.roles || res?.roles || []);
+            setChannels(res?.data?.channels || res?.channels || []);
+        });
     }
   }, [guildId, mounted]);
+
+  useEffect(() => {
+    if (config) {
+      window.dispatchEvent(new CustomEvent('update-guide-context', { detail: config }));
+    }
+  }, [config]);
 
   const showToast = (message, type = 'success') => {
     window.dispatchEvent(new CustomEvent('show-toast', { detail: { message, type } }));
@@ -82,23 +78,13 @@ export default function PhotoContestConfig() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      // Ensure interval is at least 1 to satisfy backend validation
-      const updatedConfig = {
-        ...config,
-        interval: Math.max(1, config.interval || 1)
-      };
-
-      await api.request(`/config/${guildId}/photocontest`, {
-        method: 'POST',
-        body: JSON.stringify(updatedConfig)
-      });
-      
-      setConfig(updatedConfig);
+      await Promise.all([
+        api.request(`/config/${guildId}/photocontest`, { method: 'POST', body: JSON.stringify(config) }),
+        api.request(`/messages/${guildId}/photocontest`, { method: 'POST', body: JSON.stringify(messages) })
+      ]);
       showToast('Configurazione salvata!');
     } catch (error) {
-      console.error("Save error:", error);
-      const errorMsg = error.response?.data?.error || error.message || 'Errore durante il salvataggio';
-      showToast(errorMsg, 'error');
+      showToast('Errore salvataggio.', 'error');
     } finally {
       setSaving(false);
     }
@@ -116,57 +102,57 @@ export default function PhotoContestConfig() {
     setStarting(true);
     try {
         const res = await api.request(`/config/${guildId}/photocontest/force-start`, { method: 'POST' });
-        showToast(res.message || 'Contest avviato!');
+        showToast('Contest avviato!');
     } catch (error) {
-        showToast(error.message || 'Errore durante l\'avvio', 'error');
+        showToast('Errore avvio.', 'error');
     } finally { setStarting(false); }
   };
 
   const handleForceEnd = async () => {
-    if(!confirm("Vuoi terminare il contest attivo?")) return;
+    if(!confirm("Vuoi terminare il contest?")) return;
     setEnding(true);
     try {
-        const res = await api.request(`/config/${guildId}/photocontest/force-end`, { method: 'POST' });
-        showToast(res.message || 'Contest terminato!');
+        await api.request(`/config/${guildId}/photocontest/force-end`, { method: 'POST' });
+        showToast('Contest terminato!');
     } catch (error) {
-        showToast(error.message || 'Errore durante il termine', 'error');
+        showToast('Errore termine.', 'error');
     } finally { setEnding(false); }
   };
 
-  if (!mounted || loading || !config) return <Layout guildId={guildId}><Skeleton height="500px" /></Layout>;
+  if (!mounted || loading || !config) return <Skeleton type="config" />;
 
   return (
-    <Layout guildId={guildId}>
-      <div className="animate">
-        
-        {/* Module Header */}
+    <div className="config-page-layout animate">
+      <div className="config-main-col">
         <header className="module-header">
            <div className="header-info">
               <div className="header-icon">
                 <Camera size={24} />
               </div>
               <div className="header-text">
-                <h1>Photo Contest</h1>
-                <p>Crea engagement nel server con sfide fotografiche automatizzate.</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <h1>Photo Contest</h1>
+                  <label className="toggle-mini" title={config.enabled ? 'Modulo Attivo' : 'Modulo Disattivato'}>
+                    <input type="checkbox" checked={!!config.enabled} onChange={e => setConfig({...config, enabled: e.target.checked})} />
+                    <span className="slider-mini"></span>
+                  </label>
+                </div>
+                <p>Automatizza sfide fotografiche e premia i migliori cittadini.</p>
               </div>
            </div>
-           <div className="header-buttons">
+           <div className="header-buttons-grid">
               <button onClick={handleForceEnd} className="btn-outline" style={{ color: 'var(--error)' }} disabled={ending}>
-                <Clock size={16} /> {ending ? 'Terminando...' : 'Termina Contest'}
+                <Clock size={16} /> Termina
               </button>
               <button onClick={handleForceStart} className="btn-outline" style={{ color: 'var(--success)' }} disabled={starting}>
-                <Zap size={16} /> {starting ? 'Avviando...' : 'Avvia Ora'}
-              </button>
-              <button onClick={handleReset} className="btn-outline">
-                <RefreshCcw size={16} /> Reset
+                <Zap size={16} /> Avvia Ora
               </button>
               <button onClick={handleSave} className="btn-primary" disabled={saving}>
-                <Save size={16} /> {saving ? 'Salvataggio...' : 'Salva Modifiche'}
+                <Save size={16} /> {saving ? 'Salvataggio...' : 'Salva'}
               </button>
            </div>
         </header>
 
-        {/* Minimal Tab System */}
         <div className="tab-navigation">
             <button onClick={() => setActiveTab('settings')} className={`tab-link ${activeTab === 'settings' ? 'active' : ''}`}>
                 <Settings2 size={16} />
@@ -174,85 +160,46 @@ export default function PhotoContestConfig() {
             </button>
             <button onClick={() => setActiveTab('themes')} className={`tab-link ${activeTab === 'themes' ? 'active' : ''}`}>
                 <Image size={16} />
-                <span>Temi & Rotazione</span>
+                <span>Temi</span>
             </button>
             <button onClick={() => setActiveTab('design')} className={`tab-link ${activeTab === 'design' ? 'active' : ''}`}>
                 <Palette size={16} />
-                <span>Style Embed</span>
-            </button>
-            <button onClick={() => setActiveTab('messages')} className={`tab-link ${activeTab === 'messages' ? 'active' : ''}`}>
-                <RefreshCcw size={16} />
-                <span>Messaggi</span>
+                <span>Design & Messaggi</span>
             </button>
         </div>
 
         <div className="tab-panel animate">
-            
             {activeTab === 'settings' && (
-                <div className="config-grid-p">
-                    <div className="grid-main-p">
-                        <section className="card status-card-p" style={{ marginBottom: '24px' }}>
-                            <div className="status-info-p">
-                                <div className={`status-box-p ${config.enabled ? 'on' : ''}`}>
-                                    <Power size={20} />
-                                </div>
-                                <div>
-                                    <h3>Stato Modulo</h3>
-                                    <p className="text-muted">Abilita o disabilita il sistema photocontest.</p>
-                                </div>
+                <div className="config-single-col-p animate fade-in">
+                    <section className="card section-card-p" style={{ marginBottom: '24px' }}>
+                        <h3 className="align-center"><Target size={18} color="var(--primary)" /> Destinazioni</h3>
+                        <div className="fields-grid-p">
+                            <div className="field-box">
+                                <label className="text-label">Canale Contest</label>
+                                <DiscordSelector type="channel" options={channels.filter(c => c.type === 0 || c.type === 5)} value={config.channelId || ''} onChange={val => setConfig({...config, channelId: val})} />
                             </div>
-                            <label className="toggle">
-                                <input type="checkbox" checked={!!config.enabled} onChange={e => setConfig({...config, enabled: e.target.checked})} />
-                                <span className="slider"></span>
-                            </label>
-                        </section>
-
-                        <section className="card section-card-p">
-                            <h3 className="align-center"><Target size={18} color="var(--primary)" /> Destinazioni Core</h3>
-                            <div className="fields-grid-p">
-                                <div className="field-box">
-                                    <label className="text-label">Canale Contest</label>
-                                    <DiscordSelector type="channel" options={channels.filter(c => c.type === 0 || c.type === 5)} value={config.channelId || ''} onChange={val => setConfig({...config, channelId: val})} />
-                                </div>
-                                <div className="field-box">
-                                    <label className="text-label">Hall of Fame</label>
-                                    <DiscordSelector type="channel" options={channels.filter(c => c.type === 0 || c.type === 5)} value={config.hallOfFameChannelId || ''} onChange={val => setConfig({...config, hallOfFameChannelId: val})} />
-                                </div>
-                                <div className="field-box">
-                                    <label className="text-label">Ruolo Vincitore</label>
-                                    <DiscordSelector type="role" options={roles} value={config.prizeRoleId || ''} onChange={val => setConfig({...config, prizeRoleId: val})} />
-                                </div>
-                                <div className="field-box">
-                                    <label className="text-label">Intervallo (Ore)</label>
-                                    <input type="number" className="input" value={config.interval || 1} onChange={(e) => setConfig({...config, interval: parseInt(e.target.value) || 1})} />
-                                </div>
+                            <div className="field-box">
+                                <label className="text-label">Hall of Fame</label>
+                                <DiscordSelector type="channel" options={channels.filter(c => c.type === 0 || c.type === 5)} value={config.hallOfFameChannelId || ''} onChange={val => setConfig({...config, hallOfFameChannelId: val})} />
                             </div>
-                        </section>
-                    </div>
-
-                    <aside className="grid-side-p">
-                        <section className="card section-card-p">
-                            <h3 className="align-center"><Shield size={18} color="var(--primary)" /> Staff Permission</h3>
-                            <div className="field-box" style={{ marginTop: '16px' }}>
-                                <label className="text-label">Gestione Contest</label>
-                                <DiscordSelector type="role" multiple={true} options={roles} value={config.staffRoleIds || []} onChange={val => setConfig({...config, staffRoleIds: val})} />
+                            <div className="field-box">
+                                <label className="text-label">Ruolo Vincitore</label>
+                                <DiscordSelector type="role" options={roles} value={config.prizeRoleId || ''} onChange={val => setConfig({...config, prizeRoleId: val})} />
                             </div>
-                        </section>
-                        <div className="card info-box-p" style={{ marginTop: '20px' }}>
-                            <Bell size={18} color="var(--primary)" />
-                            <div className="toggle-row-p">
-                                <span>Log Eventi Staff</span>
-                                <label className="toggle">
-                                    <input type="checkbox" checked={!!config.enableNotifications} onChange={(e) => setConfig({...config, enableNotifications: e.target.checked})} />
-                                    <span className="slider"></span>
-                                </label>
+                            <div className="field-box">
+                                <label className="text-label">Intervallo (Ore)</label>
+                                <input type="number" className="input" value={config.interval || 1} onChange={(e) => setConfig({...config, interval: parseInt(e.target.value) || 1})} />
                             </div>
                         </div>
-                    </aside>
+                    </section>
 
-                    <div style={{ marginTop: '24px' }}>
-                        <GuideSidebar type="photocontest" context={config} />
-                    </div>
+                    <section className="card section-card-p">
+                        <h3 className="align-center"><Shield size={18} color="var(--primary)" /> Autorizzazioni Staff</h3>
+                        <div className="field-box" style={{ marginTop: '16px' }}>
+                            <DiscordSelector type="role" multiple={true} options={roles} value={config.staffRoleIds || []} onChange={val => setConfig({...config, staffRoleIds: val})} />
+                            <p className="field-help">I ruoli selezionati potranno forzare l'avvio o il termine del contest.</p>
+                        </div>
+                    </section>
                 </div>
             )}
 
@@ -263,10 +210,7 @@ export default function PhotoContestConfig() {
                             <div className={`status-box-p ${config.automaticThemes ? 'on' : ''}`}>
                                 <Zap size={20} />
                             </div>
-                            <div>
-                                <h3>Rotazione Automatica</h3>
-                                <p className="text-muted">Il bot sceglierà un tema casuale ad ogni nuovo evento.</p>
-                            </div>
+                            <h3>Rotazione Automatica</h3>
                         </div>
                         <label className="toggle">
                             <input type="checkbox" checked={!!config.automaticThemes} onChange={e => setConfig({...config, automaticThemes: e.target.checked})} />
@@ -275,60 +219,56 @@ export default function PhotoContestConfig() {
                     </section>
 
                     <section className="card section-card-p">
-                        <h3 className="align-center"><ListIcon size={18} color="var(--primary)" /> Lista Argomenti</h3>
-                        <p className="text-muted" style={{ fontSize: '0.85rem', marginBottom: '16px' }}>Inserisci un tema per riga. Verranno estratti casualmente.</p>
+                        <h3 className="align-center"><List size={18} color="var(--primary)" /> Lista Argomenti</h3>
                         <textarea 
                             className="input" 
                             rows="10" 
                             value={config.themesList?.join('\n') || ''}
                             onChange={(e) => setConfig({...config, themesList: e.target.value.split('\n').filter(t => t.trim())})}
-                            placeholder="Es: Tramonti\nAuto Sportive\nStreet Photography..."
-                            style={{ fontFamily: 'monospace', fontSize: '0.9rem' }}
+                            placeholder="Es: Natura\nArchitettura..."
                         />
                     </section>
                 </div>
             )}
 
             {activeTab === 'design' && (
-                <section className="card section-card-p animate fade-in">
-                    <h3 className="align-center" style={{ marginBottom: '24px' }}><Palette size={20} color="var(--primary)" /> Visual Design</h3>
-                    <div className="design-grid-p">
-                        <div className="fields-stack-p">
+                <div className="animate fade-in">
+                     <section className="card section-card-p" style={{ marginBottom: '24px' }}>
+                        <h4 className="align-center"><MousePointer2 size={18} color="var(--primary)" /> Bottoni di Partecipazione</h4>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '16px' }}>
                             <div className="field-box">
-                                <label className="text-label">Titolo Annuncio</label>
-                                <input type="text" className="input" value={config.embedSettings?.title || ''} onChange={(e) => setConfig({...config, embedSettings: {...config.embedSettings, title: e.target.value}})} />
+                                <label className="text-label">Bottone "Partecipa"</label>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 60px', gap: '8px' }}>
+                                    <EmojiInput className="input" value={config.submitLabel || 'Invia Foto 📸'} onChange={e => setConfig({...config, submitLabel: e.target.value})} />
+                                    <EmojiInput className="input" value={config.submitEmoji || '📸'} onChange={e => setConfig({...config, submitEmoji: e.target.value})} />
+                                </div>
                             </div>
                             <div className="field-box">
-                                <label className="text-label">Colore Tematico</label>
-                                <div style={{ display: 'flex', gap: '8px' }}>
-                                    <input type="color" className="input" style={{ width: '50px', height: '40px', padding: '4px' }} value={config.embedSettings?.color || '#000000'} onChange={(e) => setConfig({...config, embedSettings: {...config.embedSettings, color: e.target.value}})} />
-                                    <input type="text" className="input" value={config.embedSettings?.color || ''} onChange={(e) => setConfig({...config, embedSettings: {...config.embedSettings, color: e.target.value}})} />
+                                <label className="text-label">Bottone "Vota"</label>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 60px', gap: '8px' }}>
+                                    <EmojiInput className="input" value={config.voteLabel || 'Vota ⭐️'} onChange={e => setConfig({...config, voteLabel: e.target.value})} />
+                                    <EmojiInput className="input" value={config.voteEmoji || '⭐️'} onChange={e => setConfig({...config, voteEmoji: e.target.value})} />
                                 </div>
                             </div>
                         </div>
-                        <div className="field-box">
-                            <label className="text-label">Corpo del Messaggio (Regolamento)</label>
-                            <textarea className="input" rows="8" value={config.embedSettings?.description || ''} onChange={(e) => setConfig({...config, embedSettings: {...config.embedSettings, description: e.target.value}})} style={{ resize: 'none' }} />
-                        </div>
-                    </div>
-                </section>
-            )}
+                    </section>
 
-            {activeTab === 'messages' && (
-                <div className="animate fade-in">
                     <EmbedMessageManager 
                         guildId={guildId}
                         module="photocontest"
                         slugs={[
-                            { key: 'entry_not_found', label: 'Voce non trovata', description: 'Inviato quando una foto non è più presente nel database durante il voto.', variables: [] },
-                            { key: 'self_vote_error', label: 'Errore Autovoto', description: 'Inviato quando un utente tenta di votare la propria foto.', variables: [] }
+                            { key: 'panel', label: 'Pannello Contest', description: 'Messaggio principale del concorso.', variables: ['themes'], group: '1. Contest', groupIcon: Camera },
+                            { key: 'submission', label: 'Nuova Opera', description: 'Messaggio Hall of Fame.', variables: ['user'], group: '1. Contest', groupIcon: Camera },
+                            { key: 'vote_up', label: 'Voto Aggiunto', description: 'Risposta voto positivo.', variables: ['user'], group: '2. Voti', groupIcon: Trophy },
+                            { key: 'interaction_notify', label: 'Notifica Autore', description: 'DM per nuovo voto.', variables: ['voter', 'action'], group: '3. DM', groupIcon: Bell },
+                            { key: 'already_submitted', label: 'Già Inviata', description: 'Errore limite.', variables: ['user'], group: '4. Errori', groupIcon: Zap }
                         ]}
                     />
                 </div>
             )}
         </div>
-
-        <style jsx>{`
+      </div>
+      <style jsx>{`
             .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: rgba(255,255,255,0.02); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
             .header-info { display: flex; align-items: center; gap: 16px; }
             .header-icon { width: 48px; height: 48px; background: rgba(129, 140, 248, 0.1); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
@@ -347,21 +287,12 @@ export default function PhotoContestConfig() {
             .status-box-p { width: 40px; height: 40px; background: #1e293b; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--text-dim); border: 1px solid var(--border); transition: 0.3s; }
             .status-box-p.on { color: var(--primary); background: rgba(129, 140, 248, 0.1); border-color: rgba(129, 140, 248, 0.2); }
             
+            .header-buttons-grid { display: flex; gap: 10px; }
             .fields-grid-p { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 16px; }
-            .info-box-p { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
-            .toggle-row-p { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; font-weight: 600; }
-
-            .design-grid-p { display: grid; grid-template-columns: 1fr 1.5fr; gap: 24px; margin-top: 20px; }
-            .fields-stack-p { display: flex; flex-direction: column; gap: 20px; }
 
             .align-center { display: flex; align-items: center; gap: 10px; }
-            @media (max-width: 1000px) { .config-grid-p { grid-template-columns: 1fr; } .design-grid-p { grid-template-columns: 1fr; } }
+            @media (max-width: 1000px) { .config-grid-p { grid-template-columns: 1fr; } .header-buttons-grid { flex-direction: column; } }
         `}</style>
-      </div>
-    </Layout>
+    </div>
   );
-}
-
-function ListIcon({ size, color }) {
-    return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>;
 }

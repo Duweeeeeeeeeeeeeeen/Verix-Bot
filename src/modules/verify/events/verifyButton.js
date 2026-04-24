@@ -1,4 +1,4 @@
-import { EmbedBuilder, Events, MessageFlags } from 'discord.js';
+import { Events, MessageFlags } from 'discord.js';
 import VerifyConfig from '../../../models/VerifyConfig.js';
 import GlobalConfig from '../../../models/GlobalConfig.js';
 import ErrorHelper from '../../../utils/errorHelper.js';
@@ -78,19 +78,15 @@ export default {
             if (config.logEnabled && config.logChannelId) {
                 const logChannel = guild.channels.cache.get(config.logChannelId);
                 if (logChannel) {
-                    const logEmbed = new EmbedBuilder()
-                        .setTitle('🛂 Registro Entrate: Nuovo Cittadino')
-                        .setColor('#2ecc71')
-                        .setThumbnail(user.displayAvatarURL())
-                        .addFields(
-                            { name: '👤 Identità', value: `${user.tag} (${user.toString()})`, inline: true },
-                            { name: '🆔 Codice Univoco', value: `\`${user.id}\``, inline: true },
-                            { name: '📅 Registrazione Account', value: `<t:${Math.floor(user.createdTimestamp / 1000)}:R>`, inline: true },
-                            { name: '✅ Status Assegnato', value: `${role.toString()}`, inline: true }
-                        )
-                        .setTimestamp();
-                    
-                    await logChannel.send({ embeds: [logEmbed] }).catch(() => {});
+                    const logEmbed = await messageService.get(guild.id, 'verify', 'staff_log', {
+                        user: `${user.tag} (${user.toString()})`,
+                        userId: user.id,
+                        role: role.toString()
+                    });
+                    if (logEmbed) {
+                        logEmbed.setThumbnail(user.displayAvatarURL());
+                        await logChannel.send({ embeds: [logEmbed] }).catch(() => {});
+                    }
                 }
             }
 

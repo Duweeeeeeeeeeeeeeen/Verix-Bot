@@ -18,14 +18,18 @@ export function replacePlaceholders(text, variables = {}) {
 
     // Iterate over provided variables and perform case-insensitive replacement
     for (const [key, value] of Object.entries(variables)) {
-        // Escape special regex characters in the key (like {} if they were passed)
+        let cleanValue = value !== undefined && value !== null ? String(value) : '';
+
+        // SECURITY: If this is a 'name' or 'tag' placeholder, strip any discord mentions
+        // to prevent formatting issues in titles/embeds (e.g. {user_name} should not be <@ID>)
+        if (key.toLowerCase().includes('name') || key.toLowerCase().includes('tag')) {
+            cleanValue = cleanValue.replace(/<@!?(\d+)>/g, '').trim();
+        }
+
         const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        
-        // Handle both {key} and key variants
         const placeholder = escapedKey.startsWith('\\{') ? escapedKey : `\\{${escapedKey}\\}`;
-        
         const regex = new RegExp(placeholder, 'gi');
-        result = result.replace(regex, value !== undefined && value !== null ? value : '');
+        result = result.replace(regex, cleanValue);
     }
 
     return result;

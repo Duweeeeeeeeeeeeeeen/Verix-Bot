@@ -29,15 +29,33 @@ import {
   BellOff,
   ExternalLink,
   ChevronRight,
-  Tv
+  Tv,
+  RefreshCcw,
+  Gavel,
+  HelpCircle
 } from 'lucide-react';
+import GuideSidebar from './GuideSidebar';
 
 export default function Layout({ children, guildId }) {
   const { user, logout } = useAuth();
   const router = useRouter();
   const [toast, setToast] = useState(null);
   const [serverInfo, setServerInfo] = useState({ name: 'Loading...', icon: null });
-  const [activeDropdown, setActiveDropdown] = useState(null);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isGuideOpen, setIsGuideOpen] = useState(true);
+
+  // Persistence for Guide Sidebar
+  useEffect(() => {
+    const saved = localStorage.getItem('verix-guide-open');
+    if (saved !== null) {
+      setIsGuideOpen(saved === 'true');
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('verix-guide-open', isGuideOpen);
+  }, [isGuideOpen]);
+  const [guideContext, setGuideContext] = useState({});
 
   useEffect(() => {
     if (guildId && user?.guilds) {
@@ -51,23 +69,50 @@ export default function Layout({ children, guildId }) {
       setToast(e.detail);
       setTimeout(() => setToast(null), 4000);
     };
+    const handleGuideUpdate = (e) => {
+      setGuideContext(e.detail || {});
+    };
+
     window.addEventListener('show-toast', handleToast);
-    return () => window.removeEventListener('show-toast', handleToast);
+    window.addEventListener('update-guide-context', handleGuideUpdate);
+    
+    return () => {
+      window.removeEventListener('show-toast', handleToast);
+      window.removeEventListener('update-guide-context', handleGuideUpdate);
+    };
   }, []);
+
+  const getGuideType = (pathname) => {
+    if (pathname.includes('/whitelist')) return 'whitelist';
+    if (pathname.includes('/verify')) return 'verify';
+    if (pathname.includes('/tickets')) return 'tickets';
+    if (pathname.includes('/welcome')) return 'welcome';
+    if (pathname.includes('/fivem')) return 'fivem';
+    if (pathname.includes('/photocontest')) return 'photocontest';
+    if (pathname.includes('/moderation')) return 'moderation_hub';
+    if (pathname.includes('/socials')) return 'socials';
+    if (pathname.includes('/voice')) return 'voice';
+    if (pathname.includes('/management')) return 'management';
+    if (pathname.includes('/embeds')) return 'embed_studio';
+    if (pathname.includes('/autoclear')) return 'autoclear';
+    if (pathname.includes('/system')) return 'system';
+    if (pathname.includes('/global')) return 'global';
+    return 'global';
+  };
 
   const menuItems = [
     { name: 'Home', icon: Home, path: `/config/${guildId}` },
     { name: 'Whitelist', icon: ShieldCheck, path: `/config/${guildId}/whitelist` },
-    { name: 'Twitch', icon: Tv, path: `/config/${guildId}/twitch` },
+    { name: 'Socials', icon: Tv, path: `/config/${guildId}/socials` },
     { name: 'Verifica', icon: CheckCircle, path: `/config/${guildId}/verify` },
     { name: 'Welcome', icon: UserPlus, path: `/config/${guildId}/welcome` },
     { name: 'Tickets', icon: Ticket, path: `/config/${guildId}/tickets` },
     { name: 'Photo Contest', icon: Camera, path: `/config/${guildId}/photocontest` },
+    { name: 'Moderazione', icon: Gavel, path: `/config/${guildId}/moderation` },
     { name: 'FiveM', icon: Globe, path: `/config/${guildId}/fivem` },
     { name: 'Log & Gestione', icon: History, path: `/config/${guildId}/management` },
     { name: 'Embed Suite', icon: LayoutIcon, path: `/config/${guildId}/embeds` },
-    { name: 'Utility', icon: Cpu, path: `/config/${guildId}/utility` },
-    { name: 'Voice Selection', icon: Mic2, path: `/config/${guildId}/voice` },
+    { name: 'Utility & Clear', icon: Cpu, path: `/config/${guildId}/autoclear` }
   ];
 
   const getToastIcon = (type) => {
@@ -81,17 +126,25 @@ export default function Layout({ children, guildId }) {
 
   return (
     <div className="dashboard-container">
-      {/* Premium Sidebar */}
-      <aside className="sidebar">
+      {/* Premium Sidebar (Left) */}
+      <aside className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
         <div className="sidebar-brand">
           <div className="brand-icon">
             <img src="/logo.png" alt="Verix Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
           </div>
-          <div className="brand-text">
-
-            <h2>Verix</h2>
-            <span>Dashboard</span>
-          </div>
+          {!isCollapsed && (
+            <div className="brand-text animate fade-in">
+              <h2>Verix</h2>
+              <span>Dashboard</span>
+            </div>
+          )}
+          <button 
+            className="btn-collapse" 
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            title={isCollapsed ? "Espandi" : "Contrai"}
+          >
+            {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+          </button>
         </div>
 
         <nav className="nav-group">
@@ -100,12 +153,17 @@ export default function Layout({ children, guildId }) {
             const isActive = router.asPath === item.path;
             
             return (
-              <Link key={item.name} href={item.path} className={`nav-link ${isActive ? 'active' : ''}`}>
+              <Link 
+                key={item.name} 
+                href={item.path} 
+                className={`nav-link ${isActive ? 'active' : ''}`}
+                title={isCollapsed ? item.name : ''}
+              >
                 <div className="nav-link-icon">
                   <Icon size={18} strokeWidth={2.5} />
                 </div>
-                <span className="nav-link-text">{item.name}</span>
-                {isActive && <ChevronRight size={14} className="active-arrow" />}
+                {!isCollapsed && <span className="nav-link-text animate fade-in">{item.name}</span>}
+                {isActive && !isCollapsed && <ChevronRight size={14} className="active-arrow" />}
               </Link>
             );
           })}
@@ -116,33 +174,35 @@ export default function Layout({ children, guildId }) {
             href={`/config/${guildId}/global`} 
             className={`nav-link ${router.asPath === `/config/${guildId}/global` ? 'active' : ''}`}
             style={{ marginBottom: '8px' }}
+            title={isCollapsed ? "Config. Globale" : ""}
           >
             <div className="nav-link-icon">
               <Settings2 size={18} strokeWidth={2.5} />
             </div>
-            <span className="nav-link-text">Config. Globale</span>
-            {router.asPath === `/config/${guildId}/global` && <ChevronRight size={14} className="active-arrow" />}
+            {!isCollapsed && <span className="nav-link-text animate fade-in">Config. Globale</span>}
           </Link>
           <Link 
             href={`/config/${guildId}/system`} 
             className={`nav-link ${router.asPath === `/config/${guildId}/system` ? 'active' : ''}`}
             style={{ marginBottom: '12px' }}
+            title={isCollapsed ? "Sistema" : ""}
           >
             <div className="nav-link-icon">
               <Settings size={18} strokeWidth={2.5} />
             </div>
-            <span className="nav-link-text">Sistema</span>
-            {router.asPath === `/config/${guildId}/system` && <ChevronRight size={14} className="active-arrow" />}
+            {!isCollapsed && <span className="nav-link-text animate fade-in">Sistema</span>}
           </Link>
           <div className="user-mini-card">
             <img 
               src={user?.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : 'https://cdn.discordapp.com/embed/avatars/0.png'} 
               alt=""
             />
-            <div className="user-info">
-              <span className="name">{user?.username || 'User'}</span>
-              <span className="role">Administrator</span>
-            </div>
+            {!isCollapsed && (
+              <div className="user-info animate fade-in">
+                <span className="name">{user?.username || 'User'}</span>
+                <span className="role">Administrator</span>
+              </div>
+            )}
             <button onClick={logout} className="btn-logout" title="Logout">
               <LogOut size={16} strokeWidth={2.5} />
             </button>
@@ -150,46 +210,57 @@ export default function Layout({ children, guildId }) {
         </div>
       </aside>
 
-      {/* Sleek Top Header */}
-      <header className="top-header">
-        <div className="header-left">
-           <Link href="/selector" className="btn-back">
-              <ChevronLeft size={16} strokeWidth={2.5} />
-              <span>Servers</span>
-           </Link>
-           <div className="header-divider"></div>
-           <div className="server-crumb">
-              {serverInfo.icon && (
-                <img 
-                  src={`https://cdn.discordapp.com/icons/${guildId}/${serverInfo.icon}.png`} 
-                  alt="" 
-                />
-              )}
-              <span>{serverInfo.name}</span>
-           </div>
-        </div>
-
-        <div className="header-right">
-            <div className="status-badge">
-              <div className="status-dot"></div>
-              <span>Bot Online</span>
-            </div>
-            <div className="header-actions">
-               <button className="icon-action" title="Notifications">
-                 <Bell size={18} strokeWidth={2} />
-               </button>
-               <button className="icon-action" title="Settings">
-                 <Settings size={18} strokeWidth={2} />
-               </button>
-            </div>
-        </div>
-      </header>
-
+      {/* Main Layout Body */}
       <main className="main-content">
-        <div className="content-container main-container-p">
+        <header className="top-header">
+          <div className="header-left">
+             <Link href="/selector" className="btn-back">
+                <ChevronLeft size={16} strokeWidth={2.5} />
+                <span>Servers</span>
+             </Link>
+             <div className="header-divider"></div>
+             <div className="server-crumb">
+                {serverInfo.icon && (
+                  <img 
+                    src={`https://cdn.discordapp.com/icons/${guildId}/${serverInfo.icon}.png`} 
+                    alt="" 
+                  />
+                )}
+                <span>{serverInfo.name}</span>
+             </div>
+          </div>
+
+          <div className="header-right">
+              <div className="status-badge">
+                <div className="status-dot"></div>
+                <span>Bot Online</span>
+              </div>
+              <div className="header-actions">
+                 {!isGuideOpen && (
+                   <button className="icon-action help-toggle" onClick={() => setIsGuideOpen(true)} title="Show Guide">
+                     <HelpCircle size={18} strokeWidth={2} className="text-amber" />
+                     <span className="dot-pulse"></span>
+                   </button>
+                 )}
+                 <button className="icon-action" title="Notifications">
+                   <Bell size={18} strokeWidth={2} />
+                 </button>
+              </div>
+          </div>
+        </header>
+
+        <div className="content-container">
           {children}
         </div>
       </main>
+
+      {/* Global Right Guide Sidebar */}
+      <GuideSidebar 
+        type={getGuideType(router.pathname)} 
+        context={guideContext} 
+        isOpen={isGuideOpen}
+        onToggle={() => setIsGuideOpen(!isGuideOpen)}
+      />
 
       {/* Refined Toast */}
       {toast && (
@@ -202,47 +273,74 @@ export default function Layout({ children, guildId }) {
       )}
 
       <style jsx>{`
-        /* Local layout refinements */
-        .dashboard-container { display: flex; min-height: 100vh; background: var(--bg-dark); }
-        
-        /* Header Refinement */
-        .top-header { 
-          position: fixed; 
-          top: 16px; 
-          left: 296px; 
-          right: 16px; 
-          height: 64px; 
-          background: rgba(15, 23, 42, 0.6); 
-          backdrop-filter: blur(16px); 
-          border: 1px solid var(--glass-border); 
-          border-radius: 18px; 
-          display: flex; 
-          align-items: center; 
-          justify-content: space-between; 
-          padding: 0 24px; 
-          z-index: 90;
-          box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+
+        .main-content {
+          flex: 1;
+          min-width: 0; /* CRITICAL: prevent content from pushing sidebars */
+          height: 100vh;
+          overflow-y: auto;
+          overflow-x: hidden;
+          position: relative;
+          background: var(--bg-dark);
         }
-        .header-left { display: flex; align-items: center; gap: 16px; }
-        .btn-back { display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 0.85rem; font-weight: 600; text-decoration: none; transition: 0.2s; background: rgba(255,255,255,0.04); padding: 8px 14px; border-radius: 10px; border: 1px solid var(--border); }
-        .btn-back:hover { color: white; border-color: var(--text-muted); }
-        .header-divider { width: 1px; height: 20px; background: var(--border); }
-        .server-crumb { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 0.95rem; }
-        .server-crumb img { width: 28px; height: 28px; border-radius: 8px; border: 1px solid var(--glass-border); }
 
-        .header-right { display: flex; align-items: center; gap: 20px; }
-        .status-badge { display: flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.08); padding: 6px 14px; border-radius: 100px; border: 1px solid rgba(16, 185, 129, 0.1); font-size: 0.75rem; font-weight: 700; color: var(--success); }
-        .status-dot { width: 6px; height: 6px; background: var(--success); border-radius: 50%; animation: pulse 2s infinite; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
-        .icon-action { background: transparent; border: none; color: var(--text-muted); cursor: pointer; transition: 0.2s; padding: 6px; }
-        .icon-action:hover { color: white; transform: translateY(-1px); }
+        .content-container {
+          padding: 120px 32px 32px 32px;
+          max-width: 1400px;
+          margin: 0 auto;
+        }
 
-        /* Toast Refinement */
-        .toast-wrapper { position: fixed; bottom: 32px; right: 32px; z-index: 1000; animation: toastSlide 0.4s var(--transition-normal); }
-        @keyframes toastSlide { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .toast-premium { display: flex; align-items: center; gap: 12px; padding: 16px 24px; background: #1e293b; border-radius: 14px; border: 1px solid var(--border-strong); box-shadow: var(--shadow-premium); font-weight: 600; font-size: 0.9rem; min-width: 280px; }
-        .toast-premium.success { color: #f1f5f9; border-left: 4px solid var(--success); }
-        .toast-premium.error { color: #f1f5f9; border-left: 4px solid var(--error); }
+        .help-toggle {
+          position: relative;
+        }
+
+        .text-amber { color: #f59e0b; }
+
+        .dot-pulse {
+          position: absolute;
+          top: 4px;
+          right: 4px;
+          width: 6px;
+          height: 6px;
+          background: #f59e0b;
+          border-radius: 50%;
+          box-shadow: 0 0 8px #f59e0b;
+          animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+          0% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.5); opacity: 0.5; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+
+        .toast-wrapper {
+          position: fixed;
+          top: 32px;
+          right: 32px;
+          z-index: 9999;
+          animation: slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideInRight {
+          from { transform: translateX(100%); opacity: 0; }
+          to { transform: translateX(0); opacity: 1; }
+        }
+
+        @media (max-width: 1000px) {
+          .content-container {
+            padding: 100px 16px 32px 16px;
+          }
+          .toast-wrapper {
+            top: auto;
+            bottom: 32px;
+            right: 16px;
+            left: 16px;
+          }
+          .toast-premium {
+            width: 100%;
+          }
+        }
       `}</style>
     </div>
   );

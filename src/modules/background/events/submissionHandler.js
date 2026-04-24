@@ -4,8 +4,8 @@ import BackgroundConfig from '../../../models/BackgroundConfig.js';
 import WhitelistApp from '../../../models/WhitelistApp.js';
 import WhitelistConfig from '../../../models/WhitelistConfig.js';
 import User from '../../../models/User.js';
-import { buildEmbed } from '../../../utils/embedHelper.js';
 import logger from '../../../utils/logger.js';
+import messageService from '../../../utils/messageService.js';
 
 export default {
     name: Events.InteractionCreate,
@@ -20,17 +20,16 @@ export default {
                     app.deletionScheduledAt = new Date(Date.now() + 5000);
                     await app.save();
                 }
-                const isWL = channel.name.startsWith('wl-');
-                return interaction.reply(`Annullamento in corso... Il ${isWL ? 'ticket' : 'canale'} sparirà tra 5 secondi.`);
+                return messageService.reply(interaction, 'background', 'session_cancelled', { time: '5s' });
             }
 
             if (customId === 'start_whitelist_from_bg') {
                 const wlConfig = await WhitelistConfig.findOne({ guildId: interaction.guild.id });
-                if (!wlConfig) return interaction.reply({ content: 'Configurazione Whitelist non trovata.', flags: [MessageFlags.Ephemeral] });
+                if (!wlConfig) return messageService.reply(interaction, 'whitelist', 'not_configured', {}, { ephemeral: true });
 
                 const { startWrittenSession } = await import('../../whitelist/utils/sessionHandler.js');
                 
-                await interaction.reply({ content: '🚀 Inizializzazione test scritto in corso...', flags: [MessageFlags.Ephemeral] });
+                await messageService.reply(interaction, 'system', 'setup_success', {}, { content: '🚀 Inizializzazione test scritto in corso...', ephemeral: true });
                 await startWrittenSession(interaction, channel, wlConfig);
                 
                 return interaction.message.delete().catch(() => {});
@@ -94,14 +93,13 @@ export default {
                 User.updateOne({ discordId: interaction.user.id }, { lastBackgroundAttempt: new Date() }).catch(err => logger.warn(`[BG] Failed to update user cooldown: ${err.message}`));
 
                 // Send to Staff
-                const staffEmbed = buildEmbed(config.embeds.staff_received, {
-                    user: interaction.user,
-                    user_id: interaction.user.id,
+                const staffEmbed = await messageService.get(interaction.guild.id, 'background', 'staff_received', {
+                    userId: interaction.user.id,
                     bg_link: link,
                     bg_desc: desc || 'Nessuna descrizione fornita',
                     bg_attachment: app.attachmentURL || 'Nessun allegato caricato',
                     app_id: app._id
-                }, config);
+                });
 
                 if (staffEmbed && app.attachmentURL) {
                     staffEmbed.setThumbnail(app.attachmentURL);
@@ -124,24 +122,21 @@ export default {
                         { status: 'SUBMITTED_BACKGROUND' }
                     );
                     
-                    // Reply first to ensure modal closes and user sees success
-                    await interaction.reply('✅ **Dossier sottomesso!** Lo staff revisionerà la tua storia. Attendi l\'esito qui per procedere.');
+                    await messageService.reply(interaction, 'background', 'submission_confirmed', {});
                 } else {
                     app.deletionScheduledAt = new Date(Date.now() + 10000);
                     await app.save();
-                    await interaction.reply('✅ Background inviato con successo! Il canale si chiuderà tra 10 secondi.');
+                    await messageService.reply(interaction, 'background', 'submission_confirmed', { time: '10s' });
                 }
 
                 // Send long-running tasks after the interaction is acknowledged
                 await logChannel.send({ content: pings, embeds: [staffEmbed], components: [row] }).catch(err => logger.error('[BG] Failed to send log to staff:', err));
 
-                if (config.embeds.dm_received) {
-                    const dmEmbed = buildEmbed(config.embeds.dm_received, {
-                        user: interaction.user.username,
-                        guild: interaction.guild.name
-                    }, config);
-                    if (dmEmbed) interaction.user.send({ embeds: [dmEmbed] }).catch(() => {});
-                }
+                const dmEmbed = await messageService.get(interaction.guild.id, 'background', 'dm_received', {
+                    user: interaction.user.username,
+                    guild: interaction.guild.name
+                });
+                if (dmEmbed) interaction.user.send({ embeds: [dmEmbed] }).catch(() => {});
 
             } catch (error) {
                 logger.error('Error in BG Modal Submit:', error);

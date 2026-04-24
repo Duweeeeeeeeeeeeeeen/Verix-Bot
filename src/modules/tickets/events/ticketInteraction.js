@@ -36,10 +36,10 @@ export default {
 
             const existing = await Ticket.findOne({ userId: interaction.user.id, guildId: interaction.guild.id, type, status: { $ne: 'CLOSED' } });
             if (existing) {
-                const embed = await messageService.get(interaction.guild.id, 'tickets', 'already_exists', {
+                return messageService.reply(interaction, 'tickets', 'already_exists', {
+                    type: type.toUpperCase(),
                     channelId: existing.channelId
-                });
-                return interaction.reply({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
+                }, { ephemeral: true });
             }
 
             const priorityMenu = new ActionRowBuilder().addComponents(
@@ -53,7 +53,11 @@ export default {
                     ])
             );
 
-            return interaction.reply({ content: `### 🎫 Priorità richiesta\nTipo: \`${type.toUpperCase()}\``, components: [priorityMenu], flags: [MessageFlags.Ephemeral] });
+            return interaction.reply({ 
+                content: `### 🎫 Priorità richiesta\nTipo: \`${type.toUpperCase()}\``, 
+                components: [priorityMenu], 
+                flags: [MessageFlags.Ephemeral] 
+            });
         }
 
         // --- 2. TICKET CREATION (Priority Selection) ---
@@ -194,7 +198,7 @@ export default {
                     }
                 }
 
-                await interaction.reply(config.messages?.successClose || '🛡️ **Chiusura professionale...**');
+                await messageService.reply(interaction, 'tickets', 'close_status', {}, { content: '🛡️ **Chiusura professionale...**' });
                 
                 ticket.status = 'CLOSED';
                 ticket.closedAt = new Date();
@@ -203,17 +207,11 @@ export default {
                     const transcript = await generateTranscription(interaction.channel, ticket);
                     
                     if (logChannel) {
-                        const cEmbed = config.embeds?.close || {};
-                        const logEmbed = new EmbedBuilder()
-                            .setTitle(cEmbed.title || '📁 Archivio Ticket')
-                            .setDescription(cEmbed.description || 'Il ticket è stato chiuso.')
-                            .addFields(
-                                { name: 'Utente', value: `<@${ticket.userId}>`, inline: true }, 
-                                { name: 'Tipo', value: `\`${ticket.type.toUpperCase()}\``, inline: true }, 
-                                { name: 'Staff', value: ticket.assignedStaffId ? `<@${ticket.assignedStaffId}>` : 'Nessuno', inline: true }
-                            )
-                            .setColor(cEmbed.color || '#ff4757')
-                            .setTimestamp();
+                        const logEmbed = await messageService.get(interaction.guild.id, 'tickets', 'staff_ticket_log', {
+                            user: `<@${ticket.userId}>`,
+                            type: ticket.type.toUpperCase(),
+                            staff: ticket.assignedStaffId ? `<@${ticket.assignedStaffId}>` : 'Nessuno'
+                        });
                         await logChannel.send({ embeds: [logEmbed], files: [transcript] });
                     }
                     ticket.deletionScheduledAt = new Date(Date.now() + 5000);
@@ -226,12 +224,9 @@ export default {
                         // Remove user visibility, leave staff untouched
                         await interaction.channel.permissionOverwrites.edit(ticket.userId, { ViewChannel: false });
 
-                        const cEmbed = config.embeds?.close || {};
-                        const closedEmbed = new EmbedBuilder()
-                            .setTitle(cEmbed.title || '📁 Ticket Archiviato')
-                            .setDescription(cEmbed.description || 'Questo ticket è stato archiviato.')
-                            .setColor(cEmbed.color || '#ff4757')
-                            .setTimestamp();
+                        const closedEmbed = await messageService.get(interaction.guild.id, 'tickets', 'close', {
+                            user: `<@${ticket.userId}>`
+                        });
                         await interaction.channel.send({ embeds: [closedEmbed] });
                     } catch (e) {
                         logger.error('[TICKET_CLOSE_MOVE] Error moving channel:', e);
@@ -301,10 +296,9 @@ async function createTicket(interaction, type, config, metadata = {}) {
         const intelEmbed = await generateIntelligenceEmbed(guild, user.id);
         if (intelEmbed) await channel.send({ embeds: [intelEmbed] });
 
-        const successMsg = config.messages?.successOpen || '✅ Ticket creato: {channel}';
-        const replyContent = successMsg.replace('{channel}', `${channel}`);
-        if (interaction.deferred || interaction.replied) await interaction.editReply({ content: replyContent, components: [] });
-        else await interaction.reply({ content: replyContent, flags: [MessageFlags.Ephemeral] });
+        await messageService.reply(interaction, 'tickets', 'success_open', {
+            channel: `${channel}`
+        }, { ephemeral: true });
 
         // GlobalConfig log for tickets.onOpen
         await sendLog({
@@ -321,25 +315,22 @@ async function renderTicketDashboard(channel, ticket, config, typeConfig, user, 
     const permCheck = checkBotPermissions(channel);
     if (!permCheck.hasPermission) return logger.error(`[TICKET] Missing permissions to render dashboard in ${channel.name}`);
 
-    const tEmbed = config.embeds?.ticket || {};
-    const embedTitle = (tEmbed.title || '{emoji} Ticket: {type}')
-        .replace('{emoji}', typeConfig?.emoji || '🎫')
-        .replace('{type}', ticket.type.toUpperCase());
-    
-    const embedDesc = (tEmbed.description || 'Bentornato <@{user_id}>, lo staff ti assisterà a breve.\n\n**Metadati Sessione:**\n• Priorità: `{priority}`\n• Stato: `{status}`')
-        .replace('{user_id}', ticket.userId)
-        .replace('{priority}', ticket.priority)
-        .replace('{status}', ticket.status);
+    const embed = await messageService.get(channel.guildId, 'tickets', 'ticket', {
+        type: ticket.type.toUpperCase(),
+        user_id: ticket.userId,
+        priority: ticket.priority,
+        status: ticket.status,
+        assignedStaff: ticket.assignedStaffId ? `<@${ticket.assignedStaffId}>` : '_In attesa..._',
+        tags: ticket.tags.length > 0 ? ticket.tags.map(t => `\`${t}\``).join(' ') : '_Nessuna_'
+    });
 
-    const embed = new EmbedBuilder()
-        .setTitle(embedTitle)
-        .setDescription(embedDesc)
-        .setColor(tEmbed.color || typeConfig?.color || '#3498db')
-        .addFields(
-            { name: '👤 Operatore Assegnato', value: ticket.assignedStaffId ? `<@${ticket.assignedStaffId}>` : '_In attesa di presa in carico..._', inline: true },
-            { name: '🏷️ Protocolli / Tag', value: ticket.tags.length > 0 ? ticket.tags.map(t => `\`${t}\``).join(' ') : '_Nessuna annotazione_', inline: true }
-        )
-        .setTimestamp();
+    if (ticket.assignedStaffId) {
+        embed.addFields({ name: '👤 Operatore Assegnato', value: `<@${ticket.assignedStaffId}>`, inline: true });
+    }
+    
+    if (ticket.tags.length > 0) {
+        embed.addFields({ name: '🏷️ Protocolli / Tag', value: ticket.tags.map(t => `\`${t}\``).join(' '), inline: true });
+    }
 
     if (typeConfig?.image) embed.setImage(typeConfig.image);
 

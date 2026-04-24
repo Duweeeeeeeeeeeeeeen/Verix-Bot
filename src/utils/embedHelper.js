@@ -70,8 +70,9 @@ export function replacePlaceholders(text, placeholders) {
         user: placeholders.user?.toString() || placeholders.user || '',
         user_tag: placeholders.user?.tag || placeholders.user?.user?.tag || placeholders.user || '',
         user_name: placeholders.user?.username || placeholders.user?.user?.username || placeholders.user || '',
-        user_id: placeholders.user?.id || placeholders.user_id || '',
+        user_id: placeholders.user?.id || placeholders.user_id || placeholders.userId || '',
         
+        staff_id: placeholders.staff?.id || placeholders.staff_id || placeholders.staffId || '',
         staff: placeholders.staff?.toString() || placeholders.staff || '',
         staff_tag: placeholders.staff?.tag || placeholders.staff?.user?.tag || placeholders.staff || '',
         staff_name: placeholders.staff?.username || placeholders.staff?.user?.username || placeholders.staff || '',

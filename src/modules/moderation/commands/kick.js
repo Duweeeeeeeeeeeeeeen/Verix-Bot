@@ -1,5 +1,6 @@
-import { EmbedBuilder, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
+import { MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 import logger from '../../../utils/logger.js';
+import messageService from '../../../utils/messageService.js';
 
 export default {
     data: new SlashCommandBuilder()
@@ -18,16 +19,16 @@ export default {
 
         await member.kick(reason);
 
-        const embed = new EmbedBuilder()
-            .setColor('#FFA500')
-            .setTitle('👢 Membro Espulso')
-            .addFields(
-                { name: 'Utente', value: `${user.tag} (${user.id})` },
-                { name: 'Moderatore', value: interaction.user.tag },
-                { name: 'Motivo', value: reason }
-            )
-            .setTimestamp();
+        const embed = await messageService.get(interaction.guildId, 'moderation', 'command_kick', {
+            user: `${user.tag} (${user.id})`,
+            mod: interaction.user.tag,
+            reason: reason
+        });
 
-        await interaction.reply({ embeds: [embed] });
+        await messageService.reply(interaction, 'moderation', 'command_kick', {
+            user: `${user.tag} (${user.id})`,
+            mod: interaction.user.tag,
+            reason: reason
+        }, { embeds: embed ? [embed] : [] });
     },
 };

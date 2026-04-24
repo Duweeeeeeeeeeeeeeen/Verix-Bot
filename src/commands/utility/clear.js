@@ -1,7 +1,8 @@
-import { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder } from 'discord.js';
+import { SlashCommandBuilder, PermissionFlagsBits } from 'discord.js';
 import UtilityConfig from '../../models/UtilityConfig.js';
 import GlobalConfig from '../../models/GlobalConfig.js';
 import logger from '../../utils/logger.js';
+import messageService from '../../utils/messageService.js';
 
 export default {
     data: new SlashCommandBuilder()
@@ -31,7 +32,7 @@ export default {
 
         // Check if module is enabled
         if (utilConfig && utilConfig.enabled === false) {
-            return interaction.reply({ content: '❌ Il modulo Utility è disabilitato in questo server.', ephemeral: true });
+            return messageService.reply(interaction, 'system', 'module_disabled', { module: 'Utility' }, { ephemeral: true });
         }
 
         // Permission check: Admin or Allowed Roles
@@ -44,7 +45,7 @@ export default {
         const hasPermission = isUserAdmin || member.roles.cache.some(role => allAllowedRoles.includes(role.id));
 
         if (!hasPermission) {
-            return interaction.reply({ content: '❌ Non hai i permessi necessari per usare questo comando.', ephemeral: true });
+            return messageService.reply(interaction, 'system', 'no_permission', {}, { ephemeral: true });
         }
 
         try {
@@ -57,27 +58,17 @@ export default {
             }
 
             if (messages.size === 0) {
-                return interaction.editReply({ content: `Non ho trovato messaggi${target ? ` di ${target.username}` : ''} da eliminare.` });
+                return messageService.reply(interaction, 'utility', 'clear_no_messages', {}, { ephemeral: true });
             }
 
             const deleted = await channel.bulkDelete(messages, true);
 
-            const embed = new EmbedBuilder()
-                .setTitle('🧹 Pulizia Completata')
-                .setDescription(`Ho eliminato **${deleted.size}** messaggi${target ? ` di ${target.username}` : ''}.`)
-                .setColor('#2ecc71')
-                .setTimestamp();
-
-            await interaction.editReply({ embeds: [embed] });
+            await messageService.reply(interaction, 'utility', 'clear_success', { amount: deleted.size }, { ephemeral: true });
 
             logger.info(`Guild ${interaction.guildId}: User ${interaction.user.tag} cleared ${deleted.size} messages in #${channel.name}`);
         } catch (error) {
             logger.error(`Error in clear command: ${error.message}`);
-            if (interaction.deferred) {
-                await interaction.editReply({ content: 'Si è verificato un errore durante l\'eliminazione dei messaggi. Assicurati che i messaggi non siano più vecchi di 14 giorni.' });
-            } else {
-                await interaction.reply({ content: 'Si è verificato un errore durante l\'eliminazione dei messaggi.', ephemeral: true });
-            }
+            await messageService.reply(interaction, 'utility', 'clear_error', {}, { ephemeral: true });
         }
     },
 };

@@ -11,7 +11,7 @@ export default {
         const isChoice = interaction.isButton() && interaction.customId === 'choice_edit_wl';
         const isSelect = interaction.isStringSelectMenu() && interaction.customId === 'select_edit_wl';
         const isModal = interaction.isModalSubmit() && interaction.customId.startsWith('modal_edit_wl_');
-        const isClose = interaction.isButton() && interaction.customId === 'close_edit_menu';
+        const isClose = interaction.isButton() && interaction.customId === 'wl_close_edit_menu';
         const isCancel = interaction.isButton() && interaction.customId === 'cancel_wl';
 
         if (!isChoice && !isSelect && !isModal && !isClose && !isCancel) return;
@@ -39,7 +39,7 @@ export default {
                     })));
 
                 const closeButton = new ButtonBuilder()
-                    .setCustomId('close_edit_menu')
+                    .setCustomId('wl_close_edit_menu')
                     .setLabel('Chiudi Menu')
                     .setStyle(ButtonStyle.Secondary);
 
@@ -141,7 +141,7 @@ export default {
                     })));
 
                 const finishedButton = new ButtonBuilder()
-                    .setCustomId('close_edit_menu')
+                    .setCustomId('wl_close_edit_menu')
                     .setLabel('Ho Finito')
                     .setStyle(ButtonStyle.Secondary);
 

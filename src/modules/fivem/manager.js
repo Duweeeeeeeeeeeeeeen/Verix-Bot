@@ -6,6 +6,7 @@ import logger from '../../utils/logger.js';
 import { t } from '../../utils/translator.js';
 import GlobalConfig from '../../models/GlobalConfig.js';
 import { buildEmbed, replacePlaceholders } from '../../utils/embedHelper.js';
+import messageService from '../../utils/messageService.js';
 
 export class FiveMManager {
     constructor(client) {
@@ -192,27 +193,21 @@ export class FiveMManager {
 
             // Fallback base se l'admin non ha configurato né embed né testo custom
             if (!rawContent && payload.embeds.length === 0) {
-                const fallbackEmbed = new EmbedBuilder()
-                    .setAuthor({ name: 'FiveM Live Tracker', iconURL: guild.iconURL() })
-                    .setTitle(isOnline ? `✅ ${t(lang, 'fivem.online_title', { title: 'Server Online' })}` : `🚨 ${t(lang, 'fivem.offline_title', { title: 'Server Offline' })}`)
-                    .setColor(isOnline ? '#2ecc71' : '#e74c3c')
-                    .addFields({
+                const fallbackType = isOnline ? 'status_embed' : 'offline_embed';
+                const embed = await messageService.get(guild.id, 'fivem', fallbackType, {
+                    serverName: placeholders.server,
+                    players: placeholders.players,
+                    maxPlayers: placeholders.maxPlayers
+                });
+                
+                if (embed) {
+                    embed.addFields({
                         name: 'IP Connessione',
                         value: `\`${serverConfig.serverIp}\``,
                         inline: false
                     });
-                if (isOnline) {
-                    fallbackEmbed.addFields({
-                        name: '📌 Server Hostname',
-                        value: placeholders.server,
-                        inline: false
-                    },{
-                        name: '👥 Giocatori',
-                        value: `${data.players}/${data.maxPlayers}`,
-                        inline: false
-                    });
+                    payload.embeds.push(embed);
                 }
-                payload.embeds.push(fallbackEmbed);
             }
 
             // Process Uptime Append string inside Content

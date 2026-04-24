@@ -1,6 +1,7 @@
-import { EmbedBuilder, MessageFlags, SlashCommandBuilder } from 'discord.js';
+import { MessageFlags, SlashCommandBuilder } from 'discord.js';
 import User from '../../../models/User.js';
 import logger from '../../../utils/logger.js';
+import messageService from '../../../utils/messageService.js';
 
 export default {
     data: new SlashCommandBuilder()
@@ -20,20 +21,13 @@ export default {
                 return interaction.reply({ content: 'Utente non trovato nel database.', flags: [MessageFlags.Ephemeral] });
             }
 
-            const embed = new EmbedBuilder()
-                .setColor('#2F3136')
-                .setAuthor({ name: target.username, iconURL: target.displayAvatarURL() })
-                .setTitle('💰 Bilancio Utente')
-                .addFields(
-                    { name: 'Wallet', value: `\`${userData.balance.toLocaleString()} Coins\``, inline: true },
-                    { name: 'Level', value: `\`${userData.level}\``, inline: true },
-                    { name: 'XP', value: `\`${userData.xp}\``, inline: true }
-                )
-                .setThumbnail(target.displayAvatarURL())
-                .setTimestamp()
-                .setFooter({ text: 'Sistema di Economia RP' });
-
-            await interaction.reply({ embeds: [embed] });
+            await messageService.reply(interaction, 'economy', 'balance', {
+                user: target.username,
+                cash: userData.balance.toLocaleString(),
+                bank: userData.bank?.toLocaleString() || '0',
+                level: userData.level?.toString() || '1',
+                xp: userData.xp?.toString() || '0'
+            });
         } catch (error) {
             logger.error('Error in balance command:', error);
             await interaction.reply({ content: 'Si è verificato un errore nel recupero del bilancio.', flags: [MessageFlags.Ephemeral] });

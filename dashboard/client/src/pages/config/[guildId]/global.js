@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
-import Layout from '../../../components/Layout';
 import Skeleton from '../../../components/Skeleton';
 import HelpTooltip from '../../../components/HelpTooltip';
 import DiscordSelector from '../../../components/DiscordSelector';
@@ -12,7 +11,7 @@ import {
   Monitor, Mic2, Ticket, Shield, AlertCircle, Check,
   Zap, Info, Globe, ShieldAlert, Layers
 } from 'lucide-react';
-import GuideSidebar from '../../../components/GuideSidebar';
+import CustomSelect from '../../../components/CustomSelect';
 
 export default function GlobalConfigPage() {
   const router = useRouter();
@@ -32,16 +31,22 @@ export default function GlobalConfigPage() {
 
   useEffect(() => {
     if (guildId && mounted) {
-    Promise.all([
-      api.request(`/config/${guildId}/global`),
-      api.request(`/config/${guildId}/discord-data`)
-    ]).then(([cfgRes, discordRes]) => {
-      setConfig(cfgRes?.data || cfgRes);
-      setChannels(discordRes?.channels || []);
-      setRoles(discordRes?.roles || []);
-      }).catch(console.error).finally(() => setLoading(false));
+        Promise.all([
+            api.request(`/config/${guildId}/global`),
+            api.request(`/config/${guildId}/discord-data`)
+        ]).then(([cfgRes, discordRes]) => {
+            setConfig(cfgRes?.data || cfgRes);
+            setChannels(discordRes?.channels || []);
+            setRoles(discordRes?.roles || []);
+        }).catch(console.error).finally(() => setLoading(false));
     }
   }, [guildId, mounted]);
+
+  useEffect(() => {
+    if (config) {
+      window.dispatchEvent(new CustomEvent('update-guide-context', { detail: config }));
+    }
+  }, [config]);
 
   const showToast = useCallback((message, type = 'success') => {
     window.dispatchEvent(new CustomEvent('show-toast', { detail: { message, type } }));
@@ -54,34 +59,32 @@ export default function GlobalConfigPage() {
         method: 'POST',
         body: JSON.stringify(config)
       });
-      showToast('Configurazione salvata!');
-    } catch {
+      showToast('Configurazione globale salvata!');
+    } catch (error) {
+      showToast('Errore durante il salvataggio', 'error');
     } finally {
       setSaving(false);
     }
   };
 
   const setNested = (path, value) => {
-    setConfig(prev => {
-      const clone = JSON.parse(JSON.stringify(prev));
-      const keys = path.split('.');
-      let cur = clone;
-      for (let i = 0; i < keys.length - 1; i++) {
-        if (!cur[keys[i]]) cur[keys[i]] = {};
-        cur = cur[keys[i]];
-      }
-      cur[keys[keys.length - 1]] = value;
-      return clone;
-    });
+    const newConfig = { ...config };
+    const parts = path.split('.');
+    let cur = newConfig;
+    for (let i = 0; i < parts.length - 1; i++) {
+        if (!cur[parts[i]]) cur[parts[i]] = {};
+        cur = cur[parts[i]];
+    }
+    cur[parts[parts.length - 1]] = value;
+    setConfig(newConfig);
   };
 
-   if (!mounted || loading || !config) return <Layout guildId={guildId}><Skeleton height="500px" /></Layout>;
+  if (loading || !config) return <Skeleton height="600px" />;
 
   return (
-    <Layout guildId={guildId}>
-      <div className="animate">
-        
-        {/* Modern Header */}
+    <div className="config-page-layout animate">
+      <div className="config-main-col">
+        {/* Module Header */}
         <header className="module-header">
            <div className="header-info">
               <div className="header-icon">
@@ -89,7 +92,7 @@ export default function GlobalConfigPage() {
               </div>
               <div className="header-text">
                 <h1>Configurazioni Globali</h1>
-                <p>Gestione permessi master, logging centralizzato e identità del bot.</p>
+                <p>Gestisci le impostazioni di base e i log di sistema del bot.</p>
               </div>
            </div>
            <div className="header-buttons">
@@ -99,91 +102,74 @@ export default function GlobalConfigPage() {
            </div>
         </header>
 
-        {/* Minimal Tab System */}
+        {/* Tabs */}
         <div className="tab-navigation">
-            <button onClick={() => setActiveTab('general')} className={`tab-link ${activeTab === 'general' ? 'active' : ''}`}>
-                <Settings2 size={16} />
-                <span>Base</span>
-            </button>
-            <button onClick={() => setActiveTab('security')} className={`tab-link ${activeTab === 'security' ? 'active' : ''}`}>
-                <ShieldAlert size={16} />
-                <span>Sicurezza</span>
-            </button>
-            <button onClick={() => setActiveTab('logs')} className={`tab-link ${activeTab === 'logs' ? 'active' : ''}`}>
-                <FileText size={16} />
-                <span>Logging</span>
-            </button>
-            <button onClick={() => setActiveTab('advanced')} className={`tab-link ${activeTab === 'advanced' ? 'active' : ''}`}>
-                <Zap size={16} />
-                <span>Data</span>
-            </button>
+            {[
+                { id: 'general', label: 'Generale', icon: Settings2 },
+                { id: 'logs', label: 'Logging System', icon: FileText },
+                { id: 'advanced', label: 'Dati Raw', icon: Layers }
+            ].map(tab => (
+                <button 
+                    key={tab.id} 
+                    onClick={() => setActiveTab(tab.id)} 
+                    className={`tab-link ${activeTab === tab.id ? 'active' : ''}`}
+                >
+                    <tab.icon size={16} />
+                    {tab.label}
+                </button>
+            ))}
         </div>
 
-        <div className="tab-panel animate">
-            
+        <div className="tab-content">
             {/* TAB: General */}
             {activeTab === 'general' && (
-                <div className="config-grid-g">
+                <div className="config-grid-g animate fade-in">
                     <section className="card section-card-g">
-                        <div className="align-center"><Globe size={18} color="var(--primary)" /> <h3>Localizzazione & Identità</h3></div>
+                        <div className="align-center"><Shield size={18} color="var(--primary)" /> <h3>Amministrazione</h3></div>
                         <div className="fields-stack-g">
                             <div className="field-box">
-                                <label className="text-label">Lingua Principale</label>
-                                <select className="select" value={config.language || 'it'} onChange={e => setNested('language', e.target.value)}>
-                                    <option value="it">🇮🇹 Italiano</option>
-                                    <option value="en">🇬🇧 English</option>
-                                </select>
-                            </div>
-                            <div className="field-box">
-                                <label className="text-label">Nome Instance</label>
-                                <input className="input" value={config.instanceName || 'Verix Bot'} onChange={e => setNested('instanceName', e.target.value)} />
+                                <label className="text-label">Ruoli Admin Bot</label>
+                                <DiscordSelector 
+                                    type="role" 
+                                    multiple 
+                                    options={roles} 
+                                    value={config.adminRoleIds || []} 
+                                    onChange={val => setNested('adminRoleIds', val)} 
+                                />
+                                <p className="text-muted" style={{ fontSize: '0.75rem', marginTop: '8px' }}>I membri con questi ruoli possono configurare il bot.</p>
                             </div>
                         </div>
                     </section>
 
                     <section className="card section-card-g">
-                        <div className="align-center"><Palette size={18} color="var(--primary)" /> <h3>Estetica UI Discord</h3></div>
+                        <div className="align-center"><Palette size={18} color="var(--primary)" /> <h3>Personalizzazione</h3></div>
                         <div className="fields-stack-g">
                             <div className="field-box">
-                                <label className="text-label">Sintassi Bottoni</label>
-                                <select className="select">
-                                    <option>Standard (Verix v2)</option>
-                                    <option>Legacy (Discord native)</option>
-                                </select>
+                                <label className="text-label">Colore Embed Default</label>
+                                <div style={{ display: 'flex', gap: '12px' }}>
+                                    <input type="color" value={config.embedColor || '#6366f1'} onChange={e => setNested('embedColor', e.target.value)} style={{ width: '44px', height: '44px', border: 'none', background: 'transparent', cursor: 'pointer' }} />
+                                    <input type="text" className="input" value={config.embedColor || '#6366f1'} onChange={e => setNested('embedColor', e.target.value)} style={{ flex: 1 }} />
+                                </div>
                             </div>
                         </div>
                     </section>
                 </div>
             )}
 
-            {/* TAB: Security */}
-            {activeTab === 'security' && (
-                <section className="card section-card-g animate fade-in" style={{ maxWidth: '800px' }}>
-                    <div className="align-center" style={{ marginBottom: '24px' }}>
-                        <Shield size={20} color="var(--primary)" />
-                        <h3>Permessi Amministratore Bot</h3>
-                    </div>
-                    <p className="text-muted" style={{ marginBottom: '20px' }}>I ruoli qui selezionati avranno pieno potere su ogni comando e modulo, bypassando i limiti dei singoli moduli.</p>
-                    <div className="field-box">
-                        <label className="text-label">Ruoli con Accesso Master</label>
-                        <DiscordSelector type="role" multiple={true} options={roles} value={config.adminRoleIds || []} onChange={val => setNested('adminRoleIds', val)} />
-                    </div>
-                </section>
-            )}
-
-            {/* TAB: Logs */}
+            {/* TAB: Logging */}
             {activeTab === 'logs' && (
                 <div className="config-grid-g animate fade-in">
                     <section className="card section-card-g">
-                        <div className="align-center"><FileText size={18} color="var(--primary)" /> <h3>Logging Centrale</h3></div>
+                        <div className="align-center" style={{ marginBottom: '24px' }}><Bell size={20} color="var(--primary)" /> <h3>Logs di Sistema</h3></div>
                         <div className="fields-stack-g">
                             <div className="status-row-g">
-                                <span>Attiva Log Principali</span>
+                                <span>Attiva Logging Globale</span>
                                 <label className="toggle">
-                                    <input type="checkbox" checked={!!config.logs?.enabled} onChange={() => setNested('logs.enabled', !config.logs?.enabled)} />
+                                    <input type="checkbox" checked={!!config.logs?.enabled} onChange={e => setNested('logs.enabled', e.target.checked)} />
                                     <span className="slider"></span>
                                 </label>
                             </div>
+                            
                             <div className="field-box">
                                 <label className="text-label">Canale di Fallback</label>
                                 <DiscordSelector type="channel" options={channels} value={config.logs?.channelId || ''} onChange={val => setNested('logs.channelId', val)} />
@@ -206,13 +192,10 @@ export default function GlobalConfigPage() {
                     />
                 </section>
             )}
-
-            <div style={{ marginTop: '32px' }}>
-                <GuideSidebar type="global" context={config} />
-            </div>
         </div>
+      </div>
 
-        <style jsx>{`
+      <style jsx>{`
             .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: rgba(255,255,255,0.02); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
             .header-info { display: flex; align-items: center; gap: 16px; }
             .header-icon { width: 48px; height: 48px; background: rgba(129, 140, 248, 0.1); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
@@ -231,7 +214,6 @@ export default function GlobalConfigPage() {
             .align-center { display: flex; align-items: center; gap: 10px; }
             @media (max-width: 1000px) { .config-grid-g { grid-template-columns: 1fr; } }
         `}</style>
-      </div>
-    </Layout>
+    </div>
   );
 }

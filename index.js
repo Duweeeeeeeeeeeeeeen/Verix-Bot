@@ -9,7 +9,8 @@ import { PhotoContestManager } from './src/modules/photoContest/manager.js';
 import { FiveMManager } from './src/modules/fivem/manager.js';
 import CleanupManager from './src/core/cleanupManager.js';
 import EmbedSchedulerManager from './src/core/EmbedSchedulerManager.js';
-import { TwitchManager } from './src/modules/twitch/manager.js';
+import { SocialManager } from './src/modules/socials/manager.js';
+import AutoClearManager from './src/core/autoClearManager.js';
 
 
 // Initialize Discord Client
@@ -26,74 +27,81 @@ const client = new Client({
 // Collections
 client.commands = new Collection();
 
-// Execute Handlers
-const init = async () => {
-    logger.info('Initializing bot...');
-    client.setMaxListeners(25);
+// Singleton check to prevent double-initialization
+if (global.botInitialized) {
+    logger.warn('Bot already initialized in this process. Skipping second initialization.');
+} else {
+    global.botInitialized = true;
+    global.sessionId = Math.random().toString(36).substring(7).toUpperCase();
     
-    // Connect to Database
-    if (config.mongoUri) {
-        try {
-            // Disable buffering to prevent operation timeouts if connection fails
-            mongoose.set('bufferCommands', false);
-            
-            await mongoose.connect(config.mongoUri, {
-                serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
-            });
-            logger.db('Successfully connected to MongoDB.');
-        } catch (error) {
-            logger.error('Failed to connect to MongoDB. This is likely an IP Whitelist issue or incorrect credentials.');
-            logger.error('Error details:', error.message);
-            // We set this to true specifically to avoid the MongooseError throw on first connection failure
-            // but we'll manually check connection in managers.
-            process.env.DB_CONNECTED = 'false';
-        }
-    } else {
-        logger.warn('No MongoDB URI provided. Database features will be disabled.');
-    }
-
-    // Load Handlers
-    await eventHandler(client);
-    await moduleHandler(client);
-
-    // Dashboard & Ready Logic
-    client.once(Events.ClientReady, () => {
-        logger.info(`[Bot] Logged in as ${client.user.tag}!`);
+    // Execute Handlers
+    const init = async () => {
+        logger.info(`Initializing bot [Session: ${global.sessionId}]...`);
+        client.setMaxListeners(25);
         
-        // Modules Manager
-        client.photocontestManager = new PhotoContestManager(client);
-        client.photocontestManager.init();
+        // Connect to Database
+        if (config.mongoUri) {
+            try {
+                // Disable buffering to prevent operation timeouts if connection fails
+                mongoose.set('bufferCommands', false);
+                
+                await mongoose.connect(config.mongoUri, {
+                    serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+                });
+                logger.db('Successfully connected to MongoDB.');
+            } catch (error) {
+                logger.error('Failed to connect to MongoDB. This is likely an IP Whitelist issue or incorrect credentials.');
+                logger.error('Error details:', error.message);
+                process.env.DB_CONNECTED = 'false';
+            }
+        } else {
+            logger.warn('No MongoDB URI provided. Database features will be disabled.');
+        }
 
-        client.fivemManager = new FiveMManager(client);
-        client.fivemManager.init();
+        // Load Handlers
+        await eventHandler(client);
+        await moduleHandler(client);
 
-        // Persistence Manager
-        client.cleanupManager = new CleanupManager(client);
-        client.cleanupManager.start(60000); // Check every minute
+        // Dashboard & Ready Logic
+        client.once(Events.ClientReady, () => {
+            logger.info(`[Bot] Logged in as ${client.user.tag}!`);
+            
+            // Modules Manager
+            client.photocontestManager = new PhotoContestManager(client);
+            client.photocontestManager.init();
 
-        client.embedScheduler = new EmbedSchedulerManager(client);
-        client.embedScheduler.start(60000); // Check every minute
+            client.fivemManager = new FiveMManager(client);
+            client.fivemManager.init();
 
-        client.twitchManager = new TwitchManager(client);
-        client.twitchManager.init();
+            // Persistence Manager
+            client.cleanupManager = new CleanupManager(client);
+            client.cleanupManager.start(60000); 
 
-        startDashboard(client);
-    });
+            client.embedScheduler = new EmbedSchedulerManager(client);
+            client.embedScheduler.start(60000); 
 
-    // Login
-    if (config.token) {
-        client.login(config.token);
-    } else {
-        logger.error('CRITICAL: DISCORD_TOKEN is missing in .env file!');
-        process.exit(1);
-    }
-};
+            client.autoClearManager = new AutoClearManager(client);
+            client.autoClearManager.start(60000); 
 
-init();
+            client.socialManager = new SocialManager(client);
+            client.socialManager.init();
+
+            startDashboard(client);
+        });
+
+        // Login
+        if (config.token) {
+            client.login(config.token);
+        } else {
+            logger.error('CRITICAL: DISCORD_TOKEN is missing in .env file!');
+            process.exit(1);
+        }
+    };
+
+    init();
+}
 
 // Handle unhandled rejections
 process.on('unhandledRejection', (error) => {
     logger.error('Unhandled Rejection:', error);
 });
-
-// Trigger nodemon restart

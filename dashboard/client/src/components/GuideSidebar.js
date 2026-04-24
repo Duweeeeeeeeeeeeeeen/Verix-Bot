@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { HelpCircle, ChevronRight, ChevronLeft, Lightbulb, AlertTriangle, Zap, Info } from 'lucide-react';
+import { HelpCircle, X, Lightbulb, Zap } from 'lucide-react';
 
 const GUIDE_CONTENT = {
   whitelist: (context) => [
@@ -78,9 +78,9 @@ const GUIDE_CONTENT = {
       text: "Non hai messo un canale per la Hall of Fame. È un peccato, le foto dei vincitori andrebbero messe in bacheca!"
     },
     {
-      title: "Rotazione Temi",
-      match: context.automaticThemes && (!context.themesList || context.themesList.length < 5),
-      text: "Hai pochi temi in lista. Se la rotazione è automatica, gli utenti si stuferanno presto di vedere le stesse sfide."
+      title: "Premi Automonici",
+      match: true,
+      text: "Il Photo Contest è il modo migliore per tenere attivo il server. Ricorda che puoi forzare l'avvio di un contest in qualsiasi momento dal tasto in alto!"
     }
   ],
   global: (context) => [
@@ -94,198 +94,368 @@ const GUIDE_CONTENT = {
       match: context.logs?.enabled && !context.logs?.channelId,
       text: "Hai attivato i log ma non hai messo un canale di fallback. Se un modulo non ha un log dedicato, scriverà qui."
     }
+  ],
+  autoclear: (context) => [
+    {
+      title: "Senza Slot",
+      match: !context.slots || context.slots.length === 0,
+      text: "Non hai ancora aggiunto nessuno slot! Clicca su 'Aggiungi Slot' per iniziare a ripulire in automatico i tuoi canali."
+    },
+    {
+      title: "Frequenza Molto Alta",
+      match: context.slots?.some(s => s.intervalMinutes < 10),
+      text: "Hai impostato uno slot con una frequenza inferiore a 10 minuti. Il bot ripulirà il canale molto spesso, assicurati che sia davvero ciò che vuoi."
+    }
+  ],
+  moderation_hub: (context) => [
+    {
+      title: "Protezione Attiva",
+      match: context.enabled,
+      text: "Il sistema è attivo! Ricorda di configurare i limiti anti-spam per non essere troppo punitivo con gli utenti normali."
+    },
+    {
+      title: "Cooldown Warning",
+      match: true,
+      text: "Ho impostato un cooldown di 10 secondi per i messaggi di avviso del bot: così evitiamo che il bot stesso faccia spam!"
+    },
+    {
+      title: "Punizioni Progressive",
+      match: !context.punishments || context.punishments.length < 3,
+      text: "Hai poche punizioni configurate. Un buon sistema ha almeno 3 livelli: Warn, Timeout e poi Ban."
+    },
+    {
+      title: "Logs Staff",
+      match: true,
+      text: "La moderazione automatica è potente, ma controlla sempre i log per assicurarti che non ci siano falsi positivi con gli utenti più attivi."
+    }
+  ],
+  socials: (context) => [
+    {
+      title: "Configurazione Webhook",
+      match: true,
+      text: "Per Instagram, TikTok e Twitter devi usare un servizio come IFTTT. Copia il link che trovi nella tab 'Impostazioni' del social scelto."
+    },
+    {
+      title: "Mention Everyone",
+      match: Object.values(context.platforms || {}).some(p => p.mentionEveryone),
+      text: "Hai attivato il ping @everyone su alcuni social. Occhio che se posti tanto, gli utenti potrebbero arrabbiarsi per le troppe notifiche!"
+    }
+  ],
+  voice: (context) => [
+    {
+      title: "Canale Join",
+      match: !context.joinChannelId,
+      text: "Non hai messo un canale di join! Senza quello, il bot non sa dove 'ascoltare' gli utenti che vogliono fare il colloquio."
+    },
+    {
+      title: "Staff Roles",
+      match: !context.staffRoleIds?.length,
+      text: "Mancano i ruoli staff. Ricorda che solo chi ha questi ruoli può vedere i comandi per spostare le persone dalle code."
+    }
+  ],
+  management: (context) => [
+    {
+      title: "Ricerca Utente",
+      match: true,
+      text: "Inserisci l'ID Discord dell'utente per vedere tutto il suo passato: quante volte ha provato il test e se ha cooldown attivi."
+    },
+    {
+      title: "Reset Totale",
+      match: true,
+      text: "Il tasto rosso 'Resetta Stato' cancella TUTTO. Usalo solo se vuoi dare una seconda possibilità completa a un utente."
+    }
+  ],
+  embed_studio: (context) => [
+    {
+      title: "Variables Guide",
+      match: true,
+      text: "Usa le variabili come {user} o {guild} per rendere i messaggi dinamici. Il bot le sostituirà automaticamente all'invio."
+    },
+    {
+      title: "Colori Premium",
+      match: true,
+      text: "Scegli colori che contrastino bene con il dark mode di Discord. Il verde smeraldo e il blu indigo sono i più eleganti."
+    }
+  ],
+  system: (context) => [
+    {
+      title: "Manutenzione",
+      match: true,
+      text: "Da qui puoi controllare lo stato di salute dei processi. Se vedi errori rossi, prova a riavviare il modulo specifico."
+    }
   ]
 };
 
-export default function GuideSidebar({ type, context }) {
-  const [isOpen, setIsOpen] = useState(true);
+export default function GuideSidebar({ type, context = {}, isOpen, onToggle }) {
   const [hints, setHints] = useState([]);
 
   useEffect(() => {
     if (GUIDE_CONTENT[type]) {
-      setHints(GUIDE_CONTENT[type](context).filter(h => h.match));
+      setHints(GUIDE_CONTENT[type](context || {}).filter(h => h.match));
+    } else {
+      setHints([]);
     }
   }, [type, context]);
 
-  if (!isOpen) {
-    return (
-      <button onClick={() => setIsOpen(true)} className="guide-toggle-closed">
-        <Info size={20} />
-      </button>
-    );
-  }
-
   return (
-    <aside className="guide-sidebar animate fade-in">
-      <div className="guide-header">
-        <div className="guide-title">
-          <HelpCircle size={18} className="text-primary" />
-          <span>Guida</span>
-        </div>
-        <button onClick={() => setIsOpen(false)} className="guide-close-btn">
-          <ChevronRight size={18} />
-        </button>
-      </div>
-
-      <div className="guide-content">
-        {hints.length === 0 ? (
-          <div className="guide-empty">
-             <Zap size={24} opacity={0.3} />
-             <p>Nulla da segnalare al momento, tutto sembra in ordine!</p>
+    <>
+      <aside className={`global-guide-sidebar animate fade-in ${isOpen ? 'is-open' : 'is-closed'}`}>
+        <div className="guide-header">
+          <div className="guide-title">
+            <HelpCircle size={18} className="text-primary" />
+            <span>Guida Contestuale</span>
           </div>
-        ) : (
-          hints.map((hint, i) => (
-            <div key={i} className="guide-card">
-              <div className="guide-card-header">
-                <Lightbulb size={14} className="text-amber" />
-                <span className="guide-card-title">{hint.title}</span>
+          <button onClick={onToggle} className="guide-close-btn">
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="guide-scroll-area">
+          <div className="guide-content">
+            {hints.length === 0 ? (
+              <div className="guide-empty">
+                 <Zap size={24} opacity={0.3} />
+                 <p>Nulla da segnalare per questo modulo, sembra tutto configurato correttamente!</p>
               </div>
-              <p className="guide-card-text">{hint.text}</p>
+            ) : (
+              hints.map((hint, i) => (
+                <div key={i} className="guide-card">
+                  <div className="guide-card-header">
+                    <Lightbulb size={14} className="text-amber" />
+                    <span className="guide-card-title">{hint.title}</span>
+                  </div>
+                  <p className="guide-card-text">{hint.text}</p>
+                </div>
+              ))
+            )}
+            
+            <div className="guide-pro-tip">
+                <div className="pro-tip-header">
+                    <Zap size={14} />
+                    <span>Pro Tip</span>
+                </div>
+                <p>Configura i log per ogni modulo per avere il pieno controllo su cosa accade nel server.</p>
             </div>
-          ))
-        )}
-      </div>
+          </div>
+        </div>
 
-      <div className="guide-footer">
-        <p>Verix Dashboard System v1.2</p>
-      </div>
+        <div className="guide-footer">
+          <div className="footer-logo">
+              <img src="/logo.png" alt="" />
+              <span>Verix Assistant</span>
+          </div>
+          <p>v1.5 Premium Edition</p>
+        </div>
 
-      <style jsx>{`
-        .guide-sidebar {
-          width: 320px;
-          height: fit-content;
-          background: var(--bg-card);
-          border: 1px solid var(--border);
-          border-radius: 20px;
-          display: flex;
-          flex-direction: column;
-          overflow: hidden;
-          position: sticky;
-          top: 100px;
-          backdrop-filter: blur(10px);
-          box-shadow: var(--shadow-lg);
-        }
+        <style jsx>{`
+          .global-guide-sidebar {
+            width: 320px;
+            height: 100vh;
+            background: #05070a;
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
+            overflow: hidden;
+            position: relative;
+            z-index: 50;
+          }
 
-        .guide-header {
-          padding: 18px 20px;
-          border-bottom: 1px solid var(--border);
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          background: rgba(255,255,255,0.02);
-        }
+          .global-guide-sidebar.is-closed {
+            width: 0;
+            border-left: none;
+            opacity: 0;
+            pointer-events: none;
+          }
 
-        .guide-title {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          font-weight: 800;
-          font-size: 0.85rem;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-          color: white;
-        }
+          .guide-header {
+            padding: 32px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #05070a;
+            height: 108px;
+            flex-shrink: 0;
+            min-width: 320px; /* Prevent content squishing during transition */
+          }
 
-        .guide-close-btn {
-          background: transparent;
-          border: none;
-          color: var(--text-dim);
-          cursor: pointer;
-          transition: 0.2s;
-        }
+          .guide-title {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+          }
 
-        .guide-close-btn:hover { color: white; transform: rotate(90deg); }
+          .guide-title span {
+            font-size: 0.75rem;
+            font-weight: 850;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+          }
 
-        .guide-content {
-          padding: 20px;
-          display: flex;
-          flex-direction: column;
-          gap: 16px;
-        }
+          .guide-close-btn {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.2s;
+          }
 
-        .guide-card {
-          background: rgba(255,191,0,0.02);
-          border-radius: 14px;
-          padding: 16px;
-          border: 1px solid rgba(255,191,0,0.1);
-        }
+          .guide-close-btn:hover { 
+            background: var(--error); 
+            color: white; 
+            border-color: var(--error);
+          }
 
-        .guide-card-header {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          margin-bottom: 8px;
-        }
+          .guide-scroll-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+          }
 
-        .guide-card-title {
-          font-size: 0.75rem;
-          font-weight: 800;
-          color: #f59e0b;
-          text-transform: uppercase;
-        }
+          /* Scrollbar Customization */
+          .guide-scroll-area::-webkit-scrollbar { width: 4px; }
+          .guide-scroll-area::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.05); border-radius: 10px; }
 
-        .guide-card-text {
-          font-size: 0.85rem;
-          color: #cbd5e1;
-          line-height: 1.5;
-        }
+          .guide-content {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+          }
 
-        .guide-empty {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          padding: 40px 20px;
-          text-align: center;
-          gap: 12px;
-          color: var(--text-dim);
-        }
+          .guide-card {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid var(--border);
+            transition: 0.3s;
+          }
 
-        .guide-empty p { font-size: 0.8rem; }
+          .guide-card:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(245, 158, 11, 0.2);
+            transform: translateY(-2px);
+          }
 
-        .guide-footer {
-          padding: 12px 20px;
-          text-align: center;
-          border-top: 1px solid var(--border);
-          font-size: 0.65rem;
-          color: var(--text-dim);
-          background: rgba(0,0,0,0.1);
-        }
+          .guide-card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+          }
 
-        .guide-toggle-closed {
-          position: fixed;
-          top: 100px;
-          right: 24px;
-          width: 52px;
-          height: 52px;
-          background: #818cf8; /* Solid base color */
-          color: white;
-          border: none;
-          outline: none;
-          appearance: none;
-          border-radius: 16px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          box-shadow: 0 10px 25px -5px rgba(129, 140, 248, 0.5), 0 8px 10px -6px rgba(129, 140, 248, 0.5);
-          z-index: 1000; /* Ensure it stays on top */
-          transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
+          .guide-card-title {
+            font-size: 0.7rem;
+            font-weight: 900;
+            color: #f59e0b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          }
 
-        .guide-toggle-closed:hover { 
-          transform: translateY(-4px) scale(1.05); 
-          background: #6366f1; 
-          box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.6);
-        }
+          .guide-card-text {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            line-height: 1.6;
+          }
 
-        .guide-toggle-closed svg {
-          filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
-        }
+          .guide-pro-tip {
+            margin-top: 24px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, transparent 100%);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 16px;
+            padding: 20px;
+          }
 
-        .text-primary { color: var(--primary); }
-        .text-amber { color: #f59e0b; }
-      `}</style>
-    </aside>
+          .pro-tip-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary);
+            font-weight: 800;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+          }
+
+          .pro-tip-header span { letter-spacing: 1px; }
+
+          .guide-pro-tip p {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            line-height: 1.5;
+          }
+
+          .guide-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            text-align: center;
+            gap: 16px;
+            color: var(--text-muted);
+          }
+
+          .guide-empty p { font-size: 0.85rem; line-height: 1.5; }
+
+          .guide-footer {
+            padding: 24px;
+            border-top: 1px solid var(--border);
+            background: rgba(0,0,0,0.1);
+          }
+
+          .footer-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 4px;
+          }
+
+          .footer-logo img { width: 16px; height: 16px; opacity: 0.5; }
+          .footer-logo span { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+
+          .guide-footer p {
+            font-size: 0.6rem;
+            color: var(--text-muted);
+          }
+
+
+          .guide-dot {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            width: 14px;
+            height: 14px;
+            background: #f59e0b;
+            border: 3px solid #05070a;
+            border-radius: 50%;
+            animation: pulse-amber 2s infinite;
+          }
+
+          @keyframes pulse-amber {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.5); }
+            70% { transform: scale(1.3); box-shadow: 0 0 0 8px rgba(245, 158, 11, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+          }
+
+          .text-primary { color: var(--primary); }
+          .text-amber { color: #f59e0b; }
+
+          @media (max-width: 1000px) {
+            .global-guide-sidebar {
+              display: none;
+            }
+          }
+        `}</style>
+      </aside>
+    </>
   );
 }

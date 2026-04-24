@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import Layout from '../../../components/Layout';
 import Skeleton from '../../../components/Skeleton';
 import HelpTooltip from '../../../components/HelpTooltip';
 import api from '../../../utils/api';
@@ -38,6 +37,12 @@ export default function AuditLogs() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (logs) {
+      window.dispatchEvent(new CustomEvent('update-guide-context', { detail: logs }));
+    }
+  }, [logs]);
 
   useEffect(() => {
     if (guildId && mounted) {
@@ -88,12 +93,11 @@ export default function AuditLogs() {
     (log.action?.toLowerCase() || '').includes(searchTerm.toLowerCase())
   );
 
-  if (!mounted || (loading && logs.length === 0)) return <Layout guildId={guildId}><Skeleton height="500px" /></Layout>;
+  if (!mounted || (loading && logs.length === 0)) return <><Skeleton height="500px" /></>;
 
   return (
-    <Layout guildId={guildId}>
-      <div className="animate">
-        
+    <div className="config-page-layout animate">
+      <div className="config-main-col">
         {/* Module Header */}
         <header className="module-header">
            <div className="header-info">
@@ -191,8 +195,8 @@ export default function AuditLogs() {
                 )}
             </div>
         </section>
-
-        <style jsx>{`
+      </div>
+      <style jsx>{`
             .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: rgba(255,255,255,0.02); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
             .header-info { display: flex; align-items: center; gap: 16px; }
             .header-icon { width: 48px; height: 48px; background: rgba(129, 140, 248, 0.1); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
@@ -242,7 +246,6 @@ export default function AuditLogs() {
             .spin { animation: spin 1s linear infinite; }
             @media (max-width: 800px) { .header-info { display: none; } }
         `}</style>
-      </div>
-    </Layout>
+    </div>
   );
 }

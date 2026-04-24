@@ -10,6 +10,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "emoji-picker-react": "^4.18.0",
     "lucide-react": "^0.244.0",
     "next": "13.4.4",
     "react": "18.2.0",
