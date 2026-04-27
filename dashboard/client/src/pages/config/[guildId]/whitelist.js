@@ -588,6 +588,12 @@ export default function WhitelistConfig() {
                             { key: 'voice_guide', label: 'Guida Staff', description: 'Messaggio per lo staffer.', variables: ['user', 'start_time'], group: '🎙️ Voce', groupIcon: Mic2 },
                             { key: 'cooldown', label: 'In Cooldown', description: 'Errore tempo.', variables: ['time'], group: '🟥 Errori', groupIcon: XCircle }
                         ]}
+                        extraButtons={(slug) => {
+                            if (slug === 'panel') {
+                                return [config.buttons?.start_wl || { label: 'Inizia Whitelist', emoji: '📝', style: 'SUCCESS' }];
+                            }
+                            return null;
+                        }}
                     />
                 </div>
             )}

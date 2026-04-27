@@ -3,7 +3,8 @@ import { useRouter } from 'next/router';
 import { 
     Save, Camera, Clock, Settings2, RefreshCcw, Power, Palette, 
     Bell, Trophy, Zap, Info, Calendar, Layout as LayoutIcon, ChevronRight,
-    Shield, Target, Image, MousePointer2, Sparkles, FileText, List, Play, CheckCircle2, XCircle
+    Shield, Target, Image, MousePointer2, Sparkles, FileText, List, Play, CheckCircle2, XCircle,
+    Plus, Trash2
 } from 'lucide-react';
 import Skeleton from '../../../components/Skeleton';
 import HelpTooltip from '../../../components/HelpTooltip';
@@ -219,14 +220,43 @@ export default function PhotoContestConfig() {
                     </section>
 
                     <section className="card section-card-p">
-                        <h3 className="align-center"><List size={18} color="var(--primary)" /> Lista Argomenti</h3>
-                        <textarea 
-                            className="input" 
-                            rows="10" 
-                            value={config.themesList?.join('\n') || ''}
-                            onChange={(e) => setConfig({...config, themesList: e.target.value.split('\n').filter(t => t.trim())})}
-                            placeholder="Es: Natura\nArchitettura..."
-                        />
+                        <div className="section-header-p" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                            <h3 className="align-center" style={{ margin: 0 }}><List size={18} color="var(--primary)" /> Lista Argomenti</h3>
+                            <button className="btn-outline-sm" onClick={() => setConfig({...config, themesList: [...(config.themesList || []), '']})}>
+                                <Plus size={14} /> Aggiungi
+                            </button>
+                        </div>
+                        
+                        <div className="themes-grid-p">
+                            {config.themesList && config.themesList.length > 0 ? (
+                                config.themesList.map((theme, idx) => (
+                                    <div key={idx} className="theme-item-p animate fade-in">
+                                        <div className="theme-index">{idx + 1}</div>
+                                        <input 
+                                            className="input-transparent-p" 
+                                            value={theme} 
+                                            onChange={e => {
+                                                const newThemes = [...config.themesList];
+                                                newThemes[idx] = e.target.value;
+                                                setConfig({...config, themesList: newThemes});
+                                            }}
+                                            placeholder="Inserisci argomento..."
+                                        />
+                                        <button className="btn-icon-danger-sm" onClick={() => {
+                                            const newThemes = config.themesList.filter((_, i) => i !== idx);
+                                            setConfig({...config, themesList: newThemes});
+                                        }}>
+                                            <Trash2 size={14} />
+                                        </button>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="empty-themes-p">
+                                    <Camera size={32} />
+                                    <p>Nessun argomento configurato. Aggiungine uno!</p>
+                                </div>
+                            )}
+                        </div>
                     </section>
                 </div>
             )}
@@ -263,6 +293,15 @@ export default function PhotoContestConfig() {
                             { key: 'interaction_notify', label: 'Notifica Autore', description: 'DM per nuovo voto.', variables: ['voter', 'action'], group: '3. DM', groupIcon: Bell },
                             { key: 'already_submitted', label: 'Già Inviata', description: 'Errore limite.', variables: ['user'], group: '4. Errori', groupIcon: Zap }
                         ]}
+                        extraButtons={(slug) => {
+                            if (slug === 'panel') {
+                                return [
+                                    { label: config.submitLabel || 'Invia Foto 📸', emoji: config.submitEmoji || '📸', style: 'PRIMARY' },
+                                    { label: config.voteLabel || 'Vota ⭐️', emoji: config.voteEmoji || '⭐️', style: 'SUCCESS' }
+                                ];
+                            }
+                            return null;
+                        }}
                     />
                 </div>
             )}
@@ -289,6 +328,16 @@ export default function PhotoContestConfig() {
             
             .header-buttons-grid { display: flex; gap: 10px; }
             .fields-grid-p { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 16px; }
+
+            .themes-grid-p { display: flex; flex-direction: column; gap: 10px; }
+            .theme-item-p { display: flex; align-items: center; gap: 12px; padding: 10px 16px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; transition: 0.2s; }
+            .theme-item-p:hover { background: rgba(255,255,255,0.04); border-color: var(--primary); }
+            .theme-index { width: 24px; height: 24px; background: rgba(99, 102, 241, 0.1); color: var(--primary); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; flex-shrink: 0; }
+            .input-transparent-p { flex: 1; background: transparent; border: none; color: white; font-weight: 600; font-size: 0.9rem; padding: 4px 0; }
+            .input-transparent-p:focus { outline: none; }
+            .btn-icon-danger-sm { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+            .btn-icon-danger-sm:hover { background: #ef4444; color: white; }
+            .empty-themes-p { padding: 40px; text-align: center; color: var(--text-dim); opacity: 0.5; display: flex; flex-direction: column; align-items: center; gap: 12px; }
 
             .align-center { display: flex; align-items: center; gap: 10px; }
             @media (max-width: 1000px) { .config-grid-p { grid-template-columns: 1fr; } .header-buttons-grid { flex-direction: column; } }

@@ -425,7 +425,7 @@ export default function TicketConfig() {
                             module="tickets"
                             slugs={[
                                 { key: 'panel', label: 'Pannello Apertura Ticket', description: 'Il messaggio principale con i bottoni o il menu per aprire un ticket.', variables: ['guild'], group: '🎫 Ticket', groupIcon: Ticket },
-                                { key: 'ticket', label: 'Ticket Benvenuto (Generale)', description: 'Messaggio iniziale mandato dentro il ticket se non c\'è un messaggio specifico per categoria.', variables: ['user'], group: '🎫 Ticket', groupIcon: Ticket },
+                                { key: 'ticket', label: 'Ticket Benvenuto (Generale)', description: 'Messaggio iniziale mandato dentro the ticket se non c\'è un messaggio specifico per categoria.', variables: ['user'], group: '🎫 Ticket', groupIcon: Ticket },
                                 { key: 'success_open', label: 'Ticket Aperto', description: 'Risposta effimera al bottone di apertura ticket.', variables: ['user', 'ticketChannel'], group: '🎫 Ticket', groupIcon: Ticket },
                                 { key: 'close', label: 'Ticket Chiuso', description: 'Messaggio di conferma chiusura nel ticket prima dell\'archiviazione.', variables: ['user'], group: '🔒 Chiusura', groupIcon: Archive },
                                 { key: 'already_exists', label: 'Ticket Esistente', description: 'Errore mostrato quando un utente ha già un ticket aperto.', variables: ['user', 'ticketChannel'], group: '🟥 Errori', groupIcon: XCircle },
@@ -436,6 +436,23 @@ export default function TicketConfig() {
                                 { key: 'close_status', label: 'Trascrizione Ticket', description: 'Messaggio finale inviato in DM all\'utente con il transcript del ticket.', variables: ['user', 'ticketId', 'transcriptUrl'], group: '🔒 Chiusura', groupIcon: FileText },
                                 { key: 'cannot_close', label: 'Errore Chiusura', description: 'Errore mostrato se il ticket non può essere chiuso (es. permessi mancanti).', variables: ['user'], group: '🟥 Errori', groupIcon: XCircle }
                             ]}
+                            extraButtons={(slug) => {
+                                if (slug === 'panel') {
+                                    return Object.values(config.typesConfig || {}).map(cat => ({
+                                        label: cat.label,
+                                        emoji: cat.emoji,
+                                        style: 'PRIMARY'
+                                    }));
+                                }
+                                if (slug === 'ticket') {
+                                    return [
+                                        { label: config.buttons?.claim?.label || 'Prendi in Carico', emoji: config.buttons?.claim?.emoji || '🙋‍♂️', style: config.buttons?.claim?.style || 'SUCCESS' },
+                                        { label: config.buttons?.close?.label || 'Chiudi Ticket', emoji: config.buttons?.close?.emoji || '🔒', style: config.buttons?.close?.style || 'DANGER' },
+                                        { label: config.buttons?.tag?.label || 'Aggiorna Stato', emoji: config.buttons?.tag?.emoji || '🏷️', style: config.buttons?.tag?.style || 'SECONDARY' }
+                                    ];
+                                }
+                                return null;
+                            }}
                         />
                     </div>
                 )}

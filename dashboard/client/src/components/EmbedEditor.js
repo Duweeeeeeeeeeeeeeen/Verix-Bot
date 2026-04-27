@@ -23,8 +23,9 @@ import CustomSelect from './CustomSelect';
  * @param {Function} onChange - Callback function when embed data changes
  * @param {Array} variables - List of available variables for this context
  * @param {boolean} showButtonEditor - Whether to show the button customization section
+ * @param {Array} previewButtons - Optional buttons to show in the preview
  */
-export default function EmbedEditor({ embed, onChange, variables = ['user', 'guild'], showButtonEditor = false, renderPreviewFooter }) {
+export default function EmbedEditor({ embed, onChange, variables = ['user', 'guild'], showButtonEditor = false, previewButtons, renderPreviewFooter }) {
   const [isPreviewMobile, setIsPreviewMobile] = useState(false);
 
   const updateEmbed = (key, value) => {
@@ -217,7 +218,7 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
           </div>
           
           <div className="preview-sticky">
-            <EmbedPreview data={embed} isMobile={isPreviewMobile} />
+            <EmbedPreview data={{ ...embed, buttons: previewButtons || embed.buttons }} isMobile={isPreviewMobile} />
             
             {renderPreviewFooter && (
                 <div style={{ marginTop: '16px', width: '100%' }}>

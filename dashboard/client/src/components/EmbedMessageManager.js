@@ -24,8 +24,9 @@ import EmbedEditor from './EmbedEditor';
  * @param {string} guildId
  * @param {string} module - Module name (whitelist, tickets, verify, system)
  * @param {Array} slugs - List of { key, label, description, variables, group, groupIcon }
+ * @param {Function} extraButtons - Optional function (slug) => [buttons] for preview
  */
-export default function EmbedMessageManager({ guildId, module, slugs = [] }) {
+export default function EmbedMessageManager({ guildId, module, slugs = [], extraButtons }) {
   const [messages, setMessages] = useState({});
   const [activeSlug, setActiveSlug] = useState(slugs[0]?.key || null);
   const [loading, setLoading] = useState(true);
@@ -228,6 +229,7 @@ export default function EmbedMessageManager({ guildId, module, slugs = [] }) {
                   }}
                   onChange={(data) => updateMessage(activeSlug, data)}
                   variables={activeSlugData?.variables || ['user', 'guild']}
+                  previewButtons={extraButtons ? extraButtons(activeSlug) : null}
                 />
               </div>
             </div>

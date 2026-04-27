@@ -277,6 +277,12 @@ export default function VerifyConfig() {
                                 { key: 'already_verified', label: 'Già Verificato', description: 'Errore mostrato se l\'utente è già verificato.', variables: ['user', 'guild'], group: '🟥 Errori', groupIcon: AlertCircle },
                                 { key: 'staff_log', label: 'Log Staff', description: 'Log inviato al canale staff quando qualcuno si verifica.', variables: ['user', 'role', 'timestamp'], group: '🛡️ Staff', groupIcon: Shield },
                             ]}
+                            extraButtons={(slug) => {
+                                if (slug === 'panel') {
+                                    return [config.buttons?.verify || { label: 'Verificati Ora', emoji: '✅', style: 'SUCCESS' }];
+                                }
+                                return null;
+                            }}
                         />
                     </div>
                 )}
