@@ -86,10 +86,9 @@ router.get('/:guildId', adminCheck, async (req, res) => {
         let utilConfig = utility;
         let fmConfig = fivem;
         let socConfig = twitch; // Keeping variable name matching Promise.all index
-        let autoClearConfig = autoClear;
-        let modConfig = antispam; // ModerationConfig result is the 12th item now
-        let suppConfig = moderation; // SupportConfig result is the 13th item
-
+        let modConfig = antispam; 
+        let suppConfig = moderation; 
+        
         // Create missing configurations in parallel if they don't exist
         const creations = [];
         if (!wlConfig) creations.push(WhitelistConfig.create({ guildId }).then(res => wlConfig = res));
@@ -102,7 +101,7 @@ router.get('/:guildId', adminCheck, async (req, res) => {
         if (!utilConfig) creations.push(UtilityConfig.create({ guildId }).then(res => utilConfig = res));
         if (!fmConfig) creations.push(FiveMConfig.create({ guildId }).then(res => fmConfig = res));
         if (!socConfig) creations.push(SocialConfig.create({ guildId }).then(res => socConfig = res));
-        if (!autoClearConfig) creations.push(AutoClearConfig.create({ guildId }).then(res => autoClearConfig = res));
+        if (!autoClear.id && !autoClear._id) creations.push(AutoClearConfig.create({ guildId }).then(res => autoClear = res));
         if (!modConfig) creations.push(ModerationConfig.create({ guildId }).then(res => modConfig = res));
         if (!suppConfig) creations.push(SupportConfig.create({ guildId }).then(res => suppConfig = res));
 
@@ -138,7 +137,7 @@ router.get('/:guildId', adminCheck, async (req, res) => {
                 socials: socConfig,
                 autoclear: autoClearConfig,
                 moderation: mergeModuleDefaults('moderation', modConfig),
-                support: suppConfig,
+                support: mergeModuleDefaults('support', suppConfig),
                 roles,
                 channels
             }

@@ -510,5 +510,28 @@ export default {
             description: '**Utente:** {user}\n**Moderatore:** {mod}\n**Motivo:** {reason}',
             color: '#e74c3c'
         }
+    },
+    support: {
+        voiceSettings: {
+            enabled: false,
+            autoDelete: true,
+            maxConcurrent: 1,
+            queueCooldown: 2,
+            pingStaffOnJoin: true,
+            channelNameTemplate: 'assistenza-{user}',
+            messages: {
+                paused: '❌ Il servizio di assistenza vocale è attualmente sospeso. Riprova più tardi.',
+                cooldown: '⚠️ Devi attendere prima di poter richiedere assistenza di nuovo.',
+                queueFull: '📡 Tutti i nostri operatori sono occupati. Sei stato inserito in coda, ti avviseremo qui appena un ufficio sarà disponibile.',
+                sessionStart: '✅ Un operatore è ora disponibile! Sei stato spostato nel tuo ufficio privato.'
+            }
+        },
+        embeds: {
+            staffLog: {
+                title: '🎙️ Registro Assistenza',
+                description: 'L\'utente **{user}** è entrato in assistenza.\n\n**Canale:** {voice_channel}',
+                color: '#f1c40f'
+            }
+        }
     }
 };
