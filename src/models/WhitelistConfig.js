@@ -65,7 +65,9 @@ const whitelistConfigSchema = new mongoose.Schema({
                 emoji: { type: String, default: '⏱️' }, 
                 style: { type: String, default: 'SECONDARY' } 
             }
-        }
+        },
+        channelNameTemplate: { type: String, default: 'wl-{user}' },
+        sessionCounter: { type: Number, default: 0 }
     },
     flowRequirements: {
         requireTextWL: { type: Boolean, default: false },
@@ -164,11 +166,11 @@ const whitelistConfigSchema = new mongoose.Schema({
         },
         staff_received: {
             title: { type: String, default: '👀 Nuova Pratica Whitelist' },
-            description: { type: String, default: 'L\'utente {user} (ID: `{user_id}`) ha inviato una nuova pratica di ammissione.' },
+            description: { type: String, default: 'L\'utente **{user_name}** ha sottomesso il proprio dossier per la valutazione.\n\n**INFO:**\n• Discord: <@{user_id}>\n• ID Pratica: `{app_id}`' },
             color: { type: String, default: 'primary' },
             image: { type: String, default: null },
             thumbnail: { type: String, default: null },
-            footer: { type: String, default: 'Firma Elettronica: {app_id}' }
+            footer: { type: String, default: 'ID Pratica: {app_id}' }
         },
         staff_accepted: {
             title: { type: String, default: '✅ Pratica Validata: ACCETTATA' },

@@ -98,7 +98,8 @@ export default {
                 const user = await client.users.fetch(app.userId).catch(() => null);
 
                 if (action === 'approve') {
-                    const isHybrid = config.mode === 'HYBRID';
+                    // Check if further steps (Oral WL) are required
+                    const isHybrid = ['HYBRID', 'FULL'].includes(config.mode);
                     app.status = isHybrid ? 'WAITING_VOICE' : 'ACCEPTED';
                     app.reviewedBy = interaction.user.id;
                     await app.save();

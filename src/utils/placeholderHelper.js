@@ -23,7 +23,8 @@ export function replacePlaceholders(text, variables = {}) {
         // SECURITY: If this is a 'name' or 'tag' placeholder, strip any discord mentions
         // to prevent formatting issues in titles/embeds (e.g. {user_name} should not be <@ID>)
         if (key.toLowerCase().includes('name') || key.toLowerCase().includes('tag')) {
-            cleanValue = cleanValue.replace(/<@!?(\d+)>/g, '').trim();
+            // Strips <@ID>, <@!ID>, <@&ID>, <#ID>
+            cleanValue = cleanValue.replace(/<@!?&?(\d+)>|<#\d+>/g, '').trim();
         }
 
         const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

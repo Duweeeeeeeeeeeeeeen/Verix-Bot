@@ -22,6 +22,7 @@ import webhooksRoutes from '../../dashboard/api/routes/webhooks.js';
  */
 export function startDashboard(client) {
     const app = express();
+    app.set('trust proxy', 1);
     const PORT = process.env.DASHBOARD_API_PORT || process.env.PORT || 5001;
 
     // 1. Passport Setup with client context
@@ -94,7 +95,7 @@ export function startDashboard(client) {
         }),
         cookie: {
             maxAge: 1000 * 60 * 60 * 24, // 24 hours
-            secure: isProduction,
+            secure: false, // Set to false since the VPS uses HTTP (not HTTPS)
             httpOnly: true,
             sameSite: 'lax',
             path: '/'

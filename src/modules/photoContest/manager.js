@@ -27,18 +27,10 @@ export class PhotoContestManager {
     async checkContests() {
         if (mongoose.connection.readyState !== 1) return;
         try {
-            const [configs, activeContests] = await Promise.all([
-                PhotoContestConfig.find({ enabled: true }),
-                PhotoContest.find({ status: 'ACTIVE' })
-            ]);
-
-            if (!configs.length) return;
-
-            // Build a lookup map: guildId → active contest (O(1) access)
-            const activeMap = new Map(activeContests.map(c => [c.guildId, c]));
+            const configs = await PhotoContestConfig.find({ enabled: true });
 
             for (const config of configs) {
-                const activeContest = activeMap.get(config.guildId);
+                const activeContest = await PhotoContest.findOne({ guildId: config.guildId, status: 'ACTIVE' });
 
                 if (activeContest) {
                     if (new Date() >= activeContest.endTime) {
@@ -185,10 +177,9 @@ export class PhotoContestManager {
                 if (hofChannel) {
                     const hofPermCheck = checkBotPermissions(hofChannel);
                     if (hofPermCheck.hasPermission) {
-                        const winnerUser = await this.client.users.fetch(winner.userId).catch(() => null);
                         const hofEmbed = new EmbedBuilder()
                             .setTitle(`🌟 Hall of Fame: ${contest.theme || 'Photo Contest'}`)
-                            .setAuthor({ name: winnerUser?.username || `Utente ${winner.userId}` })
+                            .setAuthor({ name: (await this.client.users.fetch(winner.userId)).username })
                             .setImage(winner.imageUrl)
                             .setDescription(`Vinto da <@${winner.userId}> con **${winner.score} pt**\nData: ${new Date().toLocaleDateString()}`)
                             .setColor('#F1C40F');

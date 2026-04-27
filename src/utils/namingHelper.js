@@ -25,24 +25,30 @@ function resolve(template, vars = {}) {
         user: vars.user || 'user',
         id: vars.id || '0',
         type: vars.type || 'generale',
-        emoji: vars.emoji || ''
+        emoji: vars.emoji || '',
+        count: vars.count !== undefined ? String(vars.count) : '0'
     });
 
     // Sanitize the result to be Discord-channel-name safe (lowercase, no spaces)
+    // We allow brackets [] and numbers if requested, but Discord will lowercase them anyway.
     return result
         .replace(/\s+/g, '-')
         .toLowerCase()
+        .replace(/[^a-z0-9\-_#\[\]]/g, '') // Keep alphanumeric, dash, underscore, hash, and brackets
         .slice(0, 100); // Discord channel name max length
 }
 
 /**
  * Resolve the name for a whitelist voice channel.
  * @param {string} guildId
- * @param {{ user: string, id?: string }} vars
+ * @param {{ user: string, id?: string, count?: number }} vars
+ * @param {string} [customTemplate] - Optional template to override config
  * @returns {Promise<string>}
  */
-export async function resolveVoiceChannelName(guildId, vars) {
+export async function resolveVoiceChannelName(guildId, vars, customTemplate = null) {
     try {
+        if (customTemplate) return resolve(customTemplate, vars);
+        
         const config = await getGlobalConfig(guildId);
         const template = config?.naming?.voiceChannel || DEFAULTS.voiceChannel;
         return resolve(template, vars);

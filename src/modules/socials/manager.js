@@ -31,13 +31,8 @@ export class SocialManager {
             return;
         }
         try {
-            // Only load guild configs that have at least one platform active
-            const configs = await SocialConfig.find({
-                $or: [
-                    { 'platforms.twitch.enabled': true },
-                    { 'platforms.youtube.enabled': true }
-                ]
-            });
+            // Find all configs that have at least one platform enabled
+            const configs = await SocialConfig.find({});
             if (!configs.length) return;
 
             for (const config of configs) {
@@ -123,13 +118,7 @@ export class SocialManager {
                 }
 
                 try {
-                    // Timeout guard: don't let a slow feed hang the whole loop
-                    const feed = await Promise.race([
-                        rssParser.parseURL(feedUrl),
-                        new Promise((_, reject) =>
-                            setTimeout(() => reject(new Error('RSS_TIMEOUT')), 5000)
-                        )
-                    ]);
+                    const feed = await rssParser.parseURL(feedUrl);
                     if (feed && feed.items && feed.items.length > 0) {
                         const latestVideo = feed.items[0];
                         

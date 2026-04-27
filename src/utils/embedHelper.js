@@ -14,8 +14,13 @@ export function buildEmbed(embedConfig, placeholders = {}, fullConfig = {}) {
 
     const embed = new EmbedBuilder();
 
-    const title = replacePlaceholders(embedConfig.title, placeholders);
-    if (title && title.trim().length > 0) embed.setTitle(title);
+    let title = replacePlaceholders(embedConfig.title, placeholders);
+    if (title && title.trim().length > 0) {
+        // SECURITY: Embed titles do NOT support mentions (<@ID>). 
+        // We strip them to prevent raw strings like <@123> from appearing.
+        title = title.replace(/<@!?&?(\d+)>|<#\d+>/g, '').trim();
+        if (title.length > 0) embed.setTitle(title);
+    }
 
     const desc = replacePlaceholders(embedConfig.description, placeholders);
     if (desc && desc.trim().length > 0) embed.setDescription(desc);
@@ -66,16 +71,21 @@ export function replacePlaceholders(text, placeholders) {
     
     // 1. Prepare raw variables map with standard shortcuts
     const vars = {
+        // Start with manually provided placeholders so they can be used or overridden
+        ...placeholders,
+        
         guild: placeholders.guild?.name || placeholders.guild || '',
         user: placeholders.user?.toString() || placeholders.user || '',
-        user_tag: placeholders.user?.tag || placeholders.user?.user?.tag || placeholders.user || '',
-        user_name: placeholders.user?.username || placeholders.user?.user?.username || placeholders.user || '',
-        user_id: placeholders.user?.id || placeholders.user_id || placeholders.userId || '',
+        user_tag: placeholders.user?.tag || placeholders.user?.user?.tag || (typeof placeholders.user === 'string' ? placeholders.user.replace(/<@!?&?(\d+)>|<#\d+>/g, '') : placeholders.user_tag || placeholders.user || ''),
+        user_name: placeholders.user?.displayName || placeholders.user?.username || placeholders.user?.user?.username || (typeof placeholders.user === 'string' ? placeholders.user.replace(/<@!?&?(\d+)>|<#\d+>/g, '') : placeholders.user_name || placeholders.user || ''),
+        user_id: placeholders.user?.id || placeholders.user?.user?.id || placeholders.user_id || placeholders.userId || '',
         
         staff_id: placeholders.staff?.id || placeholders.staff_id || placeholders.staffId || '',
         staff: placeholders.staff?.toString() || placeholders.staff || '',
-        staff_tag: placeholders.staff?.tag || placeholders.staff?.user?.tag || placeholders.staff || '',
-        staff_name: placeholders.staff?.username || placeholders.staff?.user?.username || placeholders.staff || '',
+        staff_tag: placeholders.staff?.tag || placeholders.staff?.user?.tag || placeholders.staff_tag || placeholders.staff || '',
+        staff_name: placeholders.staff?.displayName || placeholders.staff?.username || placeholders.staff?.user?.username || placeholders.staff_name || placeholders.staff || '',
+        
+        channel: placeholders.channel?.toString() || placeholders.channel || '',
         
         // Dynamic Resolution: map any snake_case <-> camelCase variant provided
         question: placeholders.question || '',

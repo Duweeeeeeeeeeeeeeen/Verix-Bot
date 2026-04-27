@@ -418,6 +418,39 @@ export default function WhitelistConfig() {
                                     <label className="text-label">Cooldown Rifiuto (Ore)</label>
                                     <input type="number" className="input" value={config.voiceSettings?.rejectionCooldown || 24} onChange={e => setNested('voiceSettings.rejectionCooldown', parseInt(e.target.value))} />
                                 </div>
+                                <div className="field-box" style={{ gridColumn: 'span 2' }}>
+                                    <label className="text-label flex-between">
+                                        Template Nome Canale
+                                        <HelpTooltip text="Placeholders: {user}, {id}, {count} (es: whitelist-[#1])" />
+                                    </label>
+                                    <input 
+                                        type="text" 
+                                        className="input" 
+                                        placeholder="es: wl-{user}" 
+                                        value={config.voiceSettings?.channelNameTemplate || ''} 
+                                        onChange={e => setNested('voiceSettings.channelNameTemplate', e.target.value)} 
+                                    />
+                                </div>
+                                <div className="field-box" style={{ gridColumn: 'span 2' }}>
+                                    <div className="alert-box" style={{ background: 'rgba(99, 102, 241, 0.05)', borderColor: 'rgba(99, 102, 241, 0.2)' }}>
+                                        <div className="flex-between w-full">
+                                            <div className="align-center">
+                                                <Hash size={16} color="var(--primary)" />
+                                                <span>Contatore Sessioni: <strong>{config.voiceSettings?.sessionCounter || 0}</strong></span>
+                                            </div>
+                                            <button 
+                                                className="btn-outline-sm" 
+                                                onClick={() => {
+                                                    if(confirm('Sei sicuro di voler resettare il contatore a 0?')) {
+                                                        setNested('voiceSettings.sessionCounter', 0);
+                                                    }
+                                                }}
+                                            >
+                                                <RefreshCcw size={14} /> Reset
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <div className="toggle-list" style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -569,7 +602,7 @@ export default function WhitelistConfig() {
           .header-text h1 { font-size: 1.5rem; margin-bottom: 2px; }
           .header-text p { font-size: 0.85rem; color: var(--text-muted); }
           
-          .tab-navigation { display: flex; gap: 8px; margin-bottom: 32px; padding: 6px; background: #070912; border-radius: 14px; border: 1px solid var(--border); width: fit-content; }
+          .tab-navigation { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 32px; padding: 6px; background: #070912; border-radius: 14px; border: 1px solid var(--border); }
           .tab-link { display: flex; align-items: center; gap: 10px; padding: 10px 18px; border: none; background: transparent; color: var(--text-muted); font-size: 0.85rem; font-weight: 600; border-radius: 10px; cursor: pointer; transition: 0.2s; }
           .tab-link:hover { color: white; background: rgba(255,255,255,0.03); }
           .tab-link.active { color: white; background: var(--bg-card); box-shadow: var(--shadow-sm); border: 1px solid var(--border); }

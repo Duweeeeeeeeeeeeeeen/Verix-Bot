@@ -51,10 +51,9 @@ app.use(session({
     saveUninitialized: false,
     store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
     cookie: {
-        maxAge: 60000 * 60 * 24 * 7, // 7 days
         httpOnly: true,
         sameSite: 'lax',
-        secure: isProduction  // true only over HTTPS in production
+        secure: false  // Set to false since the VPS uses HTTP (not HTTPS)
     }
 }));
 app.use(passport.initialize());

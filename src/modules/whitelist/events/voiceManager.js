@@ -189,11 +189,20 @@ export default {
  * Starts a new voice session for a member.
  */
 async function startVoiceSession(member, guild, config, client) {
-    // Resolve channel name from GlobalConfig template (fallback: 'wl-{user}')
+    // Increment session counter and fetch the new number
+    const updatedConfig = await WhitelistConfig.findOneAndUpdate(
+        { guildId: guild.id },
+        { $inc: { 'voiceSettings.sessionCounter': 1 } },
+        { new: true }
+    );
+    const sessionCount = updatedConfig?.voiceSettings?.sessionCounter || 0;
+
+    // Resolve channel name from config template
     const channelName = await resolveVoiceChannelName(guild.id, {
         user: member.user.username,
-        id: member.id
-    });
+        id: member.id,
+        count: sessionCount
+    }, config.voiceSettings?.channelNameTemplate);
 
     const existingChannel = guild.channels.cache.find(c => c.name === channelName.toLowerCase());
     if (existingChannel) return member.voice.setChannel(existingChannel);

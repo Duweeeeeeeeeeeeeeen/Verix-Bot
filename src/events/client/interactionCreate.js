@@ -32,21 +32,24 @@ export default {
         }
 
         // --- 2. AUTOMATIC DB SYNC (Guild & User) - BACKGROUND ---
-        // Run in parallel (fire-and-forget) to avoid blocking the 3s interaction window
-        Promise.all([
-            Guild.findOneAndUpdate(
-                { guildId },
-                { guildName: interaction.guild.name },
-                { upsert: true }
-            ),
-            User.findOneAndUpdate(
-                { discordId: interaction.user.id },
-                { username: interaction.user.username },
-                { upsert: true }
-            )
-        ]).catch(error => {
-            logger.error('Background database sync error in InteractionCreate:', error);
-        });
+        // We do this in the background to avoid blocking the 3-second interaction window
+        (async () => {
+            try {
+                await Guild.findOneAndUpdate(
+                    { guildId },
+                    { guildName: interaction.guild.name },
+                    { upsert: true }
+                );
+
+                await User.findOneAndUpdate(
+                    { discordId: interaction.user.id },
+                    { username: interaction.user.username },
+                    { upsert: true }
+                );
+            } catch (error) {
+                logger.error('Background database sync error in InteractionCreate:', error);
+            }
+        })();
 
         // --- 3. COMMAND ROUTING ---
         if (interaction.isChatInputCommand()) {

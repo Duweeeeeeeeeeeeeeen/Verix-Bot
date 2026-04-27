@@ -94,7 +94,4 @@ const globalConfigSchema = new mongoose.Schema({
 
 }, { timestamps: true });
 
-// Index for audit/analytics queries on recently-modified configs
-globalConfigSchema.index({ updatedAt: -1 });
-
 export default mongoose.model('GlobalConfig', globalConfigSchema);

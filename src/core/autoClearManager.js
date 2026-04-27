@@ -59,9 +59,7 @@ class AutoClearManager {
 
     async clearChannel(guildId, channelId, amount) {
         try {
-            // Use cache first (O(1), no API call) — fallback to fetch only if not cached
-            const guild = this.client.guilds.cache.get(guildId)
-                ?? await this.client.guilds.fetch(guildId).catch(() => null);
+            const guild = await this.client.guilds.fetch(guildId).catch(() => null);
             if (!guild) return false;
 
             const channel = await guild.channels.fetch(channelId).catch(() => null);

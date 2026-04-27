@@ -10,7 +10,8 @@ const logger = {
     },
     db: (message) => console.log(`${chalk.magenta('[DATABASE]')} ${message}`),
     cmd: (message) => console.log(`${chalk.cyan('[COMMANDS]')} ${message}`),
-    event: (message) => console.log(`${chalk.hex('#FFA500')('[EVENTS]')} ${message}`)
+    event: (message) => console.log(`${chalk.hex('#FFA500')('[EVENTS]')} ${message}`),
+    debug: (message) => console.log(`${chalk.gray('[DEBUG]')} ${message}`)
 };
 
 export default logger;

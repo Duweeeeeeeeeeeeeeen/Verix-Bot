@@ -162,7 +162,7 @@ export default {
         },
         staff_received: {
             title: '📩 Nuova Pratica Whitelist',
-            description: 'L\'utente **{user_name}** ha sottomesso il proprio dossier per la valutazione.\n\n**INFO:**\n• Discord: <@{user_id}>\n• Nome: {user_name}\n• Canale: {channel}\n• ID Pratica: `{app_id}`',
+            description: 'L\'utente **{user_name}** ha sottomesso il proprio dossier per la valutazione.\n\n**INFO:**\n• Discord: <@{user_id}>\n• ID Pratica: `{app_id}`',
             color: '#3498db'
         },
         dm_submitted: {
