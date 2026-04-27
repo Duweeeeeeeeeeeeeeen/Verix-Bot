@@ -1,6 +1,7 @@
 import { MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 import WhitelistConfig from '../../../models/WhitelistConfig.js';
 import Guild from '../../../models/Guild.js';
+import messageService from '../../../utils/messageService.js';
 
 export default {
     data: new SlashCommandBuilder()
@@ -30,7 +31,7 @@ export default {
         // Module enablement check
         const guildData = await Guild.findOne({ guildId: interaction.guild.id });
         if (!guildData || !guildData.enabledModules.includes('whitelist')) {
-            return interaction.reply({ content: '❌ Il modulo Whitelist non è attivo su questo server.', flags: [MessageFlags.Ephemeral] });
+            return messageService.reply(interaction, 'whitelist', 'error', { reason: 'Il modulo Whitelist non è attivo su questo server.' }, { ephemeral: true });
         }
 
         const mode = interaction.options.getString('mode');
@@ -65,17 +66,16 @@ export default {
 
             await config.save();
 
-            let statusMsg = `✅ **Elite Configurazione Vocale Aggiornata**\n- Modalità: \`${mode}\`\n- Limite: \`${config.voiceSettings.maxConcurrent}\`\n- VIP: ${vipRole || 'Nessuno'}\n- Ping Staff: ${config.voiceSettings.pingStaffOnJoin ? '✅' : '❌'}\n- Checklist: \`${config.voiceSettings.interviewChecklist.length}\` voci`;
-            
-            if (mode !== 'TEXT') {
-                statusMsg += `\n- Canale Join: ${joinChannel || 'Non modificato'}\n- Categoria: ${category || 'Non modificata'}`;
-            }
-
-            await interaction.reply({ content: statusMsg, flags: [MessageFlags.Ephemeral] });
+            return messageService.reply(interaction, 'whitelist', 'voice_setup_success', {
+                mode: mode,
+                limit: config.voiceSettings.maxConcurrent,
+                vip_role: vipRole ? `<@&${vipRole.id}>` : 'Nessuno',
+                ping_staff: config.voiceSettings.pingStaffOnJoin ? '✅' : '❌'
+            }, { ephemeral: true });
 
         } catch (error) {
             console.error('Error in setup-voice:', error);
-            await interaction.reply({ content: 'Si è verificato un errore durante il salvataggio.', flags: [MessageFlags.Ephemeral] });
+            await messageService.reply(interaction, 'whitelist', 'error', { reason: 'Si è verificato un errore durante il salvataggio.' }, { ephemeral: true });
         }
     },
 };

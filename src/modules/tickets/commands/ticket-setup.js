@@ -21,6 +21,6 @@ export default {
         );
 
         await channel.send({ embeds: [embed], components: [button] });
-        await interaction.reply({ content: 'Messaggio di setup inviato correttamente!', flags: [MessageFlags.Ephemeral] });
+        await messageService.reply(interaction, 'tickets', 'setup_success', { channel: `${channel}` }, { ephemeral: true });
     },
 };

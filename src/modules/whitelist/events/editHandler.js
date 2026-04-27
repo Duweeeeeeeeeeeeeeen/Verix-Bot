@@ -26,7 +26,7 @@ export default {
             // 1. CLICK "EDIT" BUTTON -> SHOW SELECT MENU
             if (isChoice) {
                 if (!app || app.answers.length === 0) {
-                    return interaction.reply({ content: 'Non hai risposte da modificare.', flags: [MessageFlags.Ephemeral] });
+                    return messageService.reply(interaction, 'whitelist', 'edit_error', { reason: 'Non hai risposte da modificare.' }, { ephemeral: true });
                 }
 
                 const selectMenu = new StringSelectMenuBuilder()
@@ -47,7 +47,7 @@ export default {
                 const row2 = new ActionRowBuilder().addComponents(closeButton);
 
                 await interaction.reply({ 
-                    content: 'Seleziona la domanda che vuoi correggere:', 
+                    embeds: [await messageService.get(interaction.guild.id, 'whitelist', 'edit_menu')], 
                     components: [row, row2], 
                     flags: [MessageFlags.Ephemeral] 
                 });
@@ -55,12 +55,15 @@ export default {
 
             // 1.5 CLOSE MENU
             if (isClose) {
-                return interaction.update({ content: '✅ Menu di modifica chiuso.', components: [] });
+                return interaction.update({ 
+                    embeds: [await messageService.get(interaction.guild.id, 'whitelist', 'edit_closed')], 
+                    components: [] 
+                });
             }
 
             // 2. SELECT QUESTION -> SHOW MODAL
             if (isSelect) {
-                if (!app) return interaction.reply({ content: 'Pratica non trovata.', flags: [MessageFlags.Ephemeral] });
+                if (!app) return messageService.reply(interaction, 'whitelist', 'app_not_found', {}, { ephemeral: true });
                 const questionIndex = parseInt(interaction.values[0]);
                 const answerData = app.answers[questionIndex];
 
@@ -92,10 +95,7 @@ export default {
                 const questionData = sessionQuestions[questionIndex];
 
                 if (newAnswer.length < questionData.minLength) {
-                    return interaction.followUp({ 
-                        content: `❌ Risposta troppo breve. Deve essere almeno ${questionData.minLength} caratteri.`, 
-                        flags: [MessageFlags.Ephemeral] 
-                    });
+                    return messageService.reply(interaction, 'whitelist', 'min_length_error', { minLength: questionData.minLength }, { ephemeral: true });
                 }
 
                 // Update Database
@@ -149,17 +149,18 @@ export default {
                 const row2 = new ActionRowBuilder().addComponents(finishedButton);
 
                 await interaction.editReply({ 
-                    content: `✅ **Risposta ${questionIndex + 1} aggiornata!** Il riepilogo nel canale è stato aggiornato.\nVuoi modificare altro?`,
+                    embeds: [await messageService.get(interaction.guild.id, 'whitelist', 'edit_success', { index: questionIndex + 1 })],
                     components: [row, row2]
                 });
             }
 
         } catch (error) {
             logger.error('[Whitelist_Edit] Interaction Error:', error);
+            const errEmbed = await messageService.get(interaction.guild.id, 'whitelist', 'edit_error', { reason: 'Si è verificato un errore durante la modifica.' });
             if (!interaction.replied && !interaction.deferred) {
-                await interaction.reply({ content: 'Si è verificato un errore durante la modifica.', flags: [MessageFlags.Ephemeral] }).catch(() => {});
+                await interaction.reply({ embeds: [errEmbed], flags: [MessageFlags.Ephemeral] }).catch(() => {});
             } else {
-                await interaction.followUp({ content: 'Si è verificato un errore durante la modifica.', flags: [MessageFlags.Ephemeral] }).catch(() => {});
+                await interaction.followUp({ embeds: [errEmbed], flags: [MessageFlags.Ephemeral] }).catch(() => {});
             }
         }
     }

@@ -1,5 +1,6 @@
 import { EmbedBuilder, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 import WhitelistConfig from '../../../models/WhitelistConfig.js';
+import messageService from '../../../utils/messageService.js';
 
 export default {
     data: new SlashCommandBuilder()
@@ -23,20 +24,16 @@ export default {
         const config = await WhitelistConfig.findOne({ guildId: interaction.guild.id });
 
         if (!config) {
-            return interaction.reply({ content: 'Esegui prima `/setup-wl` per configurare il sistema.', flags: [MessageFlags.Ephemeral] });
+            return messageService.reply(interaction, 'whitelist', 'error', { reason: 'Esegui prima /setup-wl per configurare il sistema.' }, { ephemeral: true });
         }
 
         if (subcommand === 'list') {
             if (config.questions.length === 0) {
-                return interaction.reply({ content: 'Non ci sono domande configurate.', flags: [MessageFlags.Ephemeral] });
+                return messageService.reply(interaction, 'whitelist', 'error', { reason: 'Non ci sono domande configurate.' }, { ephemeral: true });
             }
 
-            const embed = new EmbedBuilder()
-                .setTitle('📋 Domande Whitelist')
-                .setColor('#5865F2')
-                .setDescription(config.questions.map((q, i) => `**${i + 1}.** ${q.text} *(Min: ${q.minLength})*`).join('\n'));
-
-            return interaction.reply({ embeds: [embed] });
+            const questionsStr = config.questions.map((q, i) => `**${i + 1}.** ${q.text} *(Min: ${q.minLength})*`).join('\n');
+            return messageService.reply(interaction, 'whitelist', 'questions_list', { questions: questionsStr });
         }
 
         if (subcommand === 'add') {
@@ -46,20 +43,20 @@ export default {
             config.questions.push({ text, minLength });
             await config.save();
 
-            return interaction.reply({ content: `✅ Domanda aggiunta: "${text}"` });
+            return messageService.reply(interaction, 'whitelist', 'question_added', { text, min_length: minLength });
         }
 
         if (subcommand === 'remove') {
             const index = interaction.options.getInteger('index') - 1;
 
             if (index < 0 || index >= config.questions.length) {
-                return interaction.reply({ content: 'Indice non valido.', flags: [MessageFlags.Ephemeral] });
+                return messageService.reply(interaction, 'whitelist', 'error', { reason: 'Indice non valido.' }, { ephemeral: true });
             }
 
             const removed = config.questions.splice(index, 1);
             await config.save();
 
-            return interaction.reply({ content: `🗑️ Domanda rimossa: "${removed[0].text}"` });
+            return messageService.reply(interaction, 'whitelist', 'question_removed', { text: removed[0].text });
         }
     },
 };

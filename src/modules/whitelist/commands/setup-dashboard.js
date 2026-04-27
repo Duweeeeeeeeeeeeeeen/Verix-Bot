@@ -3,6 +3,7 @@ import WhitelistConfig from '../../../models/WhitelistConfig.js';
 import { getDashboard } from '../utils/voiceDashboard.js';
 import Guild from '../../../models/Guild.js';
 import ErrorHelper from '../../../utils/errorHelper.js';
+import messageService from '../../../utils/messageService.js';
 
 export default {
     data: new SlashCommandBuilder()
@@ -22,7 +23,7 @@ export default {
         try {
             const config = await WhitelistConfig.findOne({ guildId: interaction.guild.id });
             if (!config) {
-                return interaction.reply({ content: '❌ Configura prima la whitelist con `/setup-wl`.', flags: [MessageFlags.Ephemeral] });
+                return messageService.reply(interaction, 'whitelist', 'error', { reason: 'Configura prima la whitelist con /setup-wl.' }, { ephemeral: true });
             }
 
             const { embeds, components } = await getDashboard(interaction.guild.id);
@@ -46,10 +47,10 @@ export default {
             config.voiceSettings.dashboardMsgId = message.id;
             await config.save();
 
-            await interaction.reply({ content: `✅ Dashboard inizializzata correttamente in ${channel}.`, flags: [MessageFlags.Ephemeral] });
+            await messageService.reply(interaction, 'whitelist', 'dashboard_init_success', {}, { ephemeral: true });
         } catch (error) {
             console.error('Error in setup-dashboard:', error);
-            await interaction.reply({ content: '❌ Errore durante l\'inizializzazione della dashboard.', flags: [MessageFlags.Ephemeral] });
+            await messageService.reply(interaction, 'whitelist', 'error', { reason: 'Errore durante l\'inizializzazione della dashboard.' }, { ephemeral: true });
         }
     },
 };

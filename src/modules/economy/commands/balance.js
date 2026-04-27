@@ -18,7 +18,7 @@ export default {
             const userData = await User.findOne({ discordId: target.id });
             
             if (!userData) {
-                return interaction.reply({ content: 'Utente non trovato nel database.', flags: [MessageFlags.Ephemeral] });
+                return messageService.reply(interaction, 'economy', 'error', { reason: 'Utente non trovato nel database.' }, { ephemeral: true });
             }
 
             await messageService.reply(interaction, 'economy', 'balance', {
@@ -30,7 +30,7 @@ export default {
             });
         } catch (error) {
             logger.error('Error in balance command:', error);
-            await interaction.reply({ content: 'Si è verificato un errore nel recupero del bilancio.', flags: [MessageFlags.Ephemeral] });
+            await messageService.reply(interaction, 'economy', 'error', { reason: 'Errore nel recupero del bilancio.' }, { ephemeral: true });
         }
     },
 };

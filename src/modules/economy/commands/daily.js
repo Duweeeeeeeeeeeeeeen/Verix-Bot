@@ -33,7 +33,7 @@ export default {
             });
         } catch (error) {
             logger.error('Error in daily command:', error);
-            await interaction.reply({ content: 'Si è verificato un errore.', flags: [MessageFlags.Ephemeral] });
+            await messageService.reply(interaction, 'economy', 'error', { reason: 'Si è verificato un errore.' }, { ephemeral: true });
         }
     },
 };

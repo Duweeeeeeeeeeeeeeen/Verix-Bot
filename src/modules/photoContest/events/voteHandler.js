@@ -93,7 +93,7 @@ export default {
 
         } catch (error) {
             logger.error('[PhotoContest] Vote handling error:', error);
-            if (!interaction.replied) await interaction.reply({ content: '❌ Errore durante il voto.', flags: [MessageFlags.Ephemeral] });
+            if (!interaction.replied) await messageService.reply(interaction, 'photoContest', 'error', { reason: 'Errore durante il voto.' }, { ephemeral: true });
         }
     }
 };

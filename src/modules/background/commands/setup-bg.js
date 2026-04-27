@@ -3,6 +3,7 @@ import { getButtonStyle } from '../../../utils/uiBuilder.js';
 import BackgroundConfig from '../../../models/BackgroundConfig.js';
 import { buildEmbed } from '../../../utils/embedHelper.js';
 import Guild from '../../../models/Guild.js';
+import messageService from '../../../utils/messageService.js';
 
 export default {
     data: new SlashCommandBuilder()
@@ -29,7 +30,7 @@ export default {
         // Module enablement check
         const guildData = await Guild.findOne({ guildId: interaction.guild.id });
         if (!guildData || !guildData.enabledModules.includes('background')) {
-            return interaction.reply({ content: '❌ Il modulo Background non è attivo su questo server. Attivalo con `/modules enable background`.', flags: [MessageFlags.Ephemeral] });
+            return messageService.reply(interaction, 'background', 'error', { reason: 'Il modulo Background non è attivo su questo server.' }, { ephemeral: true });
         }
 
         const logChannel = interaction.options.getChannel('log_channel');
@@ -102,11 +103,11 @@ export default {
             config.panelMessageId = sentMessage.id;
             await config.save();
 
-            await interaction.reply({ content: `✅ Sistema Background configurato!\n- Logs: ${logChannel}\n- Pannello: ${panelChannel}`, flags: [MessageFlags.Ephemeral] });
+            await messageService.reply(interaction, 'background', 'setup_success', { channel: `${panelChannel}` }, { ephemeral: true });
 
         } catch (error) {
             console.error('Error in setup-bg:', error);
-            await interaction.reply({ content: 'Si è verificato un errore durante la configurazione.', flags: [MessageFlags.Ephemeral] });
+            await messageService.reply(interaction, 'background', 'error', { reason: 'Si è verificato un errore durante la configurazione.' }, { ephemeral: true });
         }
     },
 };

@@ -1,5 +1,6 @@
 import { EmbedBuilder, MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 import Ticket from '../../../models/Ticket.js';
+import messageService from '../../../utils/messageService.js';
 
 export default {
     data: new SlashCommandBuilder()
@@ -17,7 +18,7 @@ export default {
         const closedTickets = await Ticket.find(query);
 
         if (closedTickets.length === 0) {
-            return interaction.reply({ content: '❌ Nessun dato trovato per questo server/staffer.', flags: [MessageFlags.Ephemeral] });
+            return messageService.reply(interaction, 'tickets', 'error', { reason: 'Nessun dato trovato per questo server/staffer.' }, { ephemeral: true });
         }
 
         // Calculate Stats
@@ -28,17 +29,7 @@ export default {
         const avgMinutes = Math.floor(avgResponseMs / (1000 * 60));
         const avgSeconds = Math.floor((avgResponseMs / 1000) % 60);
 
-        const embed = new EmbedBuilder()
-            .setTitle(`📊 Statistiche Performance: ${targetStaff?.tag || 'Globali'}`)
-            .setColor('#3498db')
-            .addFields(
-                { name: '🎫 Ticket Chiusi', value: `\`${total}\``, inline: true },
-                { name: '⏳ Risposta Media (SLA)', value: `\`${avgMinutes}m ${avgSeconds}s\``, inline: true },
-                { name: '📈 Efficienza', value: total > 50 ? 'Eccellente 🏆' : (total > 10 ? 'Buona ✅' : 'In crescita 🌱'), inline: true }
-            )
-            .setTimestamp()
-            .setFooter({ text: 'Analisi Produttività Staff' });
-
+        let lbValue = '';
         if (!targetStaff) {
             // Leaderboard (Top 3)
             const staffStats = {};
@@ -50,11 +41,12 @@ export default {
 
             const sorted = Object.entries(staffStats).sort((a, b) => b[1] - a[1]).slice(0, 3);
             if (sorted.length > 0) {
-                const lbValue = sorted.map(([id, count], idx) => `${['🥇', '🥈', '🥉'][idx]} <@${id}>: \`${count}\` ticket`).join('\n');
-                embed.addFields({ name: '🏆 Top Performers', value: lbValue });
+                lbValue = sorted.map(([id, count], idx) => `${['🥇', '🥈', '🥉'][idx]} <@${id}>: \`${count}\` ticket`).join('\n');
             }
         }
 
-        await interaction.reply({ embeds: [embed] });
+        const statsStr = `🎫 Ticket Chiusi: \`${total}\`\n⏳ Risposta Media: \`${avgMinutes}m ${avgSeconds}s\`\n${lbValue ? `\n🏆 **Top Performers:**\n${lbValue}` : ''}`;
+        
+        return messageService.reply(interaction, 'tickets', 'stats_display', { stats: statsStr });
     },
 };

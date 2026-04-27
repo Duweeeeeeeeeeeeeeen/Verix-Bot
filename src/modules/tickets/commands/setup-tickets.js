@@ -1,6 +1,7 @@
 import { ActionRowBuilder, EmbedBuilder, MessageFlags, PermissionFlagsBits, SlashCommandBuilder, StringSelectMenuBuilder } from 'discord.js';
 import TicketConfig from '../../../models/TicketConfig.js';
 import logger from '../../../utils/logger.js';
+import messageService from '../../../utils/messageService.js';
 
 export default {
     data: new SlashCommandBuilder()
@@ -41,7 +42,7 @@ export default {
         const closeEmoji = interaction.options.getString('close_emoji');
         const closeStyle = interaction.options.getString('close_style');
 
-        if (categoryOpen.type !== 4) return interaction.reply({ content: '❌ Seleziona una **categoria**.', flags: [MessageFlags.Ephemeral] });
+        if (categoryOpen.type !== 4) return messageService.reply(interaction, 'tickets', 'error', { reason: 'Seleziona una categoria valida.' }, { ephemeral: true });
 
         try {
             const config = await TicketConfig.findOneAndUpdate(
@@ -119,14 +120,11 @@ export default {
             config.panelMessageId = sentMessage.id;
             await config.save();
 
-            await interaction.reply({ 
-                content: `✅ **Pannello inviato con successo!**\n- Tipi attivi: \`${options.map(o => o.label).join(', ')}\``, 
-                flags: [MessageFlags.Ephemeral] 
-            });
+            await messageService.reply(interaction, 'tickets', 'setup_success', { channel: `${panelChannel}` }, { ephemeral: true });
 
         } catch (error) {
             logger.error('Error during ticket setup:', error);
-            await interaction.reply({ content: '❌ Errore durante la configurazione.', flags: [MessageFlags.Ephemeral] });
+            await messageService.reply(interaction, 'tickets', 'error', { reason: 'Errore durante la configurazione.' }, { ephemeral: true });
         }
     },
 };

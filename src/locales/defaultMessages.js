@@ -219,6 +219,46 @@ export default {
             title: '✅ Configurazione Whitelist',
             description: 'Il sistema di accesso cittadino è stato configurato e il pannello è stato inviato nel canale indicato.',
             color: '#2ecc71'
+        },
+        edit_menu: {
+            title: '✏️ Correzione Candidatura',
+            description: 'Seleziona dal menu sottostante la domanda che desideri correggere.',
+            color: '#3498db'
+        },
+        edit_success: {
+            title: '✅ Risposta Aggiornata',
+            description: 'La tua risposta alla domanda **{index}** è stata salvata correttamente.\n\nIl riepilogo nel canale è stato aggiornato. Desideri modificare altro?',
+            color: '#2ecc71'
+        },
+        edit_closed: {
+            title: '✅ Correzione Terminata',
+            description: 'Il menu di modifica è stato chiuso. Ora puoi procedere con la sottomissione finale.',
+            color: '#2ecc71'
+        },
+        voice_setup_success: {
+            title: '🎙️ Configurazione Vocale Aggiornata',
+            description: 'I protocolli per l\'accesso vocale sono stati aggiornati con successo.\n\n**DETTAGLI:**\n• Modalità: `{mode}`\n• Limite Contemporanei: `{limit}`\n• Ruolo VIP: `{vip_role}`\n• Pings Staff: `{ping_staff}`',
+            color: '#2ecc71'
+        },
+        questions_list: {
+            title: '📋 Registro Domande Whitelist',
+            description: 'Ecco l\'elenco attuale dei quesiti ministeriali:\n\n{questions}',
+            color: '#3498db'
+        },
+        question_added: {
+            title: '✅ Domanda Aggiunta',
+            description: 'Il nuovo quesito è stato inserito correttamente nel protocollo.\n\n**DOMANDA:** {text}\n**MINIMO CARATTERI:** {min_length}',
+            color: '#2ecc71'
+        },
+        question_removed: {
+            title: '🗑️ Domanda Rimossa',
+            description: 'Il quesito selezionato è stato rimosso dal registro ufficiale.\n\n**DOMANDA:** {text}',
+            color: '#e74c3c'
+        },
+        dashboard_init_success: {
+            title: '💻 Dashboard Whitelist Inizializzata',
+            description: 'L\'interfaccia web per la gestione dei cittadini è stata configurata correttamente.',
+            color: '#2ecc71'
         }
     },
     background: {
@@ -287,6 +327,16 @@ export default {
             title: '⚠️ Protocollo Attivo',
             description: 'Hai già una richiesta di background attiva o in fase di revisione.',
             color: '#f1c40f'
+        },
+        setup_success: {
+            title: '📜 Sistema Background Configurato',
+            description: 'I protocolli di deposito background sono ora attivi.\n\n**PANNELLO:** {channel}',
+            color: '#2ecc71'
+        },
+        review_success: {
+            title: '📝 Revisione Completata',
+            description: 'Hai elaborato la richiesta di background per l\'utente **<@{userId}>**.\n\n**ESITO:** {status}',
+            color: '#2ecc71'
         }
     },
     tickets: {
@@ -399,6 +449,16 @@ export default {
         user_managed: {
             title: '👥 Gestione Utente',
             description: 'L\'utente **{user}** è stato **{action}** dal ticket.',
+            color: '#3498db'
+        },
+        setup_success: {
+            title: '🎫 Pannello Assistenza Configurato',
+            description: 'Il portale sportello al cittadino è stato inviato con successo.\n\n**CANALE:** {channel}',
+            color: '#2ecc71'
+        },
+        stats_display: {
+            title: '📊 Statistiche Assistenza',
+            description: 'Riepilogo attività per il server/operatore:\n\n{stats}',
             color: '#3498db'
         }
     },
