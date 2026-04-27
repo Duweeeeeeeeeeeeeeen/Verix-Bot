@@ -335,6 +335,7 @@ export default function SupportConfig() {
           .align-center { display: flex; align-items: center; gap: 10px; }
           @media (max-width: 1000px) { .config-grid { grid-template-columns: 1fr; } }
       `}</style>
+      </div>
     </div>
   );
 }
