@@ -92,6 +92,7 @@ export default function Layout({ children, guildId }) {
     if (pathname.includes('/moderation')) return 'moderation_hub';
     if (pathname.includes('/socials')) return 'socials';
     if (pathname.includes('/voice')) return 'voice';
+    if (pathname.includes('/support')) return 'support';
     if (pathname.includes('/management')) return 'management';
     if (pathname.includes('/embeds')) return 'embed_studio';
     if (pathname.includes('/autoclear')) return 'autoclear';
@@ -109,6 +110,7 @@ export default function Layout({ children, guildId }) {
     { name: 'Tickets', icon: Ticket, path: `/config/${guildId}/tickets` },
     { name: 'Photo Contest', icon: Camera, path: `/config/${guildId}/photocontest` },
     { name: 'Moderazione', icon: Gavel, path: `/config/${guildId}/moderation` },
+    { name: 'Assistenza', icon: Mic2, path: `/config/${guildId}/support` },
     { name: 'FiveM', icon: Globe, path: `/config/${guildId}/fivem` },
     { name: 'Log & Gestione', icon: History, path: `/config/${guildId}/management` },
     { name: 'Embed Suite', icon: LayoutIcon, path: `/config/${guildId}/embeds` },

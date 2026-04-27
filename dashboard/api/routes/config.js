@@ -19,6 +19,7 @@ import BackgroundConfig from '../../../src/models/BackgroundConfig.js';
 import SocialConfig from '../../../src/models/SocialConfig.js';
 import AutoClearConfig from '../../../src/models/AutoClearConfig.js';
 import ModerationConfig from '../../../src/models/ModerationConfig.js';
+import SupportConfig from '../../../src/models/SupportConfig.js';
 
 import { getButtonStyle } from '../../../src/utils/uiBuilder.js';
 import { mergeModuleDefaults } from '../utils/mergeDefaults.js';
@@ -47,6 +48,7 @@ import { backgroundSchema } from '../validations/backgroundSchema.js';
 import { socialSchema } from '../validations/socialSchema.js';
 import { onboardingSchema } from '../validations/onboardingSchema.js';
 import { moderationSchema } from '../validations/moderationSchema.js';
+import { supportSchema } from '../validations/supportSchema.js';
 
 
 
@@ -70,7 +72,8 @@ router.get('/:guildId', adminCheck, async (req, res) => {
             FiveMConfig.findOne({ guildId }),
             SocialConfig.findOne({ guildId }),
             AutoClearConfig.findOne({ guildId }),
-            ModerationConfig.findOne({ guildId })
+            ModerationConfig.findOne({ guildId }),
+            SupportConfig.findOne({ guildId })
         ]);
 
         let wlConfig = whitelist;
@@ -85,6 +88,7 @@ router.get('/:guildId', adminCheck, async (req, res) => {
         let socConfig = twitch; // Keeping variable name matching Promise.all index
         let autoClearConfig = autoClear;
         let modConfig = antispam; // ModerationConfig result is the 12th item now
+        let suppConfig = moderation; // SupportConfig result is the 13th item
 
         // Create missing configurations in parallel if they don't exist
         const creations = [];
@@ -100,6 +104,7 @@ router.get('/:guildId', adminCheck, async (req, res) => {
         if (!socConfig) creations.push(SocialConfig.create({ guildId }).then(res => socConfig = res));
         if (!autoClearConfig) creations.push(AutoClearConfig.create({ guildId }).then(res => autoClearConfig = res));
         if (!modConfig) creations.push(ModerationConfig.create({ guildId }).then(res => modConfig = res));
+        if (!suppConfig) creations.push(SupportConfig.create({ guildId }).then(res => suppConfig = res));
 
         if (creations.length > 0) {
             await Promise.all(creations);
@@ -133,6 +138,7 @@ router.get('/:guildId', adminCheck, async (req, res) => {
                 socials: socConfig,
                 autoclear: autoClearConfig,
                 moderation: mergeModuleDefaults('moderation', modConfig),
+                support: suppConfig,
                 roles,
                 channels
             }
@@ -1439,8 +1445,35 @@ router.post('/:guildId/moderation', adminCheck, validate(moderationSchema), asyn
         invalidateCache(guildId);
         await logAudit(req, guildId, 'moderation_update', 'Moderation Config Updated', req.validatedData);
         res.json({ success: true, data: config });
+    }
+});
+
+// GET support config
+router.get('/:guildId/support', adminCheck, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        let config = await SupportConfig.findOne({ guildId });
+        if (!config) config = await SupportConfig.create({ guildId });
+        res.json({ success: true, data: config });
     } catch (error) {
-        res.status(500).json({ success: false, error: 'Failed to update moderation config' });
+        res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione assistenza' });
+    }
+});
+
+// POST update support config
+router.post('/:guildId/support', adminCheck, validate(supportSchema), async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const config = await SupportConfig.findOneAndUpdate(
+            { guildId },
+            { $set: req.validatedData },
+            { returnDocument: 'after', upsert: true }
+        );
+        invalidateCache(guildId);
+        await logAudit(req, guildId, 'support_update', 'Support Config Updated', req.validatedData);
+        res.json({ success: true, data: config });
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'Failed to update support config' });
     }
 });
 

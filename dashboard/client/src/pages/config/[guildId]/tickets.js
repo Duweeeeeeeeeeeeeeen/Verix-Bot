@@ -480,7 +480,8 @@ export default function TicketConfig() {
             .field-box { display: flex; flex-direction: column; gap: 8px; }
             
             .categories-stack { display: flex; flex-direction: column; gap: 16px; }
-            .category-item { background: rgba(255,255,255,0.015); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
+            .category-item { background: rgba(255,255,255,0.015); border-radius: 12px; border: 1px solid var(--border); overflow: visible; position: relative; transition: z-index 0s; }
+            .category-item:focus-within { z-index: 100; }
             .category-main { display: flex; align-items: center; gap: 16px; padding: 16px 20px; background: rgba(255,255,255,0.01); border-bottom: 1px solid var(--border); }
             .category-drag { cursor: grab; }
             .category-emoji { width: 50px; }

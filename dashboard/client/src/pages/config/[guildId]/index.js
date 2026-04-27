@@ -162,6 +162,7 @@ export default function GuildHome() {
                       { id: 'verify', label: 'Sistema Verifica', desc: 'Protezione entry e ruoli.', icon: Shield, color: 'var(--primary)', config: config.verify },
 
                       { id: 'photocontest', label: 'Photo Contest', desc: 'Eventi e contest community.', icon: Camera, color: '#f59e0b', config: config.photocontest },
+                      { id: 'support', label: 'Assistenza Vocale', desc: 'Coda assistenza automatica.', icon: Mic2, color: '#f1c40f', config: config.support },
                       { id: 'fivem', label: 'FiveM Status', desc: 'Tracking server di gioco.', icon: Globe, color: '#3b82f6', config: config.fivem },
                       { id: 'welcome', label: 'Welcome & Leave', desc: 'Accoglienza nuovi membri.', icon: UserPlus, color: 'var(--primary)', config: config.welcome }
                   ].map(module => (
@@ -203,6 +204,7 @@ export default function GuildHome() {
                       { label: 'Whitelist', path: 'whitelist', emoji: '🛡️' },
                       { label: 'Verifica', path: 'verify', emoji: '✅' },
                       { label: 'Supporto', path: 'tickets', emoji: '🎫' },
+                      { label: 'Assistenza', path: 'support', emoji: '🎙️' },
                       { label: 'Contest', path: 'photocontest', emoji: '📸' },
                       { label: 'Status Server', path: 'fivem', emoji: '🎮' },
                       { label: 'Embed Suite', path: 'embeds', emoji: '📝' },

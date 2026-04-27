@@ -13,6 +13,8 @@ import {
   CheckCircle2
 } from 'lucide-react';
 
+import LoadingScreen from '../../components/LoadingScreen';
+
 export default function Selector() {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
@@ -23,11 +25,7 @@ export default function Selector() {
     if (!loading && !user) router.push('/');
   }, [user, loading]);
 
-  if (loading || !user) return (
-    <div className="landing-page-p centered-content-p">
-      <div className="spinner-s" style={{ width: '40px', height: '40px' }}></div>
-    </div>
-  );
+  if (loading || !user) return <LoadingScreen message="Caricamento dei tuoi server..." />;
 
   // Filter logic
   const filteredGuilds = user.guilds

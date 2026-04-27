@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import WhitelistApp from '../models/WhitelistApp.js';
 import Ticket from '../models/Ticket.js';
 import VoiceQueue from '../models/VoiceQueue.js';
+import SupportQueue from '../models/SupportQueue.js';
 import Background from '../models/Background.js';
 import logger from '../utils/logger.js';
 
@@ -30,7 +31,8 @@ class CleanupManager {
                 this.cleanupWhitelist(now),
                 this.cleanupTickets(now),
                 this.cleanupVoice(now),
-                this.cleanupBackground(now)
+                this.cleanupBackground(now),
+                this.cleanupSupport(now)
             ]);
         } catch (error) {
             logger.error('[CleanupManager] General Execution Error:', error);
@@ -87,6 +89,31 @@ class CleanupManager {
             await this.deleteChannel(bg.guildId, bg.channelId, `Background Process Finished Cleanup (${bg.userId})`);
             bg.deletionScheduledAt = null;
             await bg.save();
+        }
+    }
+
+    async cleanupSupport(now) {
+        // Ghost Active Sessions Cleanup
+        const activeSessions = await SupportQueue.find({ status: 'ACTIVE' });
+        for (const session of activeSessions) {
+            try {
+                const guild = await this.client.guilds.fetch(session.guildId).catch(() => null);
+                if (guild) {
+                    const channel = await guild.channels.fetch(session.voiceChannelId).catch(() => null);
+                    if (!channel) {
+                        session.status = 'CANCELLED';
+                        await session.save();
+                    }
+                }
+            } catch (err) {}
+        }
+
+        // Scheduled Deletion Cleanup
+        const sessions = await SupportQueue.find({ deletionScheduledAt: { $lte: now } });
+        for (const session of sessions) {
+            await this.deleteChannel(session.guildId, session.voiceChannelId, `Support Session Finished Cleanup (${session.userId})`);
+            session.deletionScheduledAt = null;
+            await session.save();
         }
     }
 

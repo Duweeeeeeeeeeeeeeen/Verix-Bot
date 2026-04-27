@@ -16,6 +16,8 @@ import {
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 
+import LoadingScreen from '../components/LoadingScreen';
+
 export default function Home() {
   const { user, login, loading } = useAuth();
   const router = useRouter();
@@ -57,11 +59,7 @@ export default function Home() {
     }
   ];
 
-  if (loading) return (
-    <div className="landing-page-p centered-content-p">
-      <div className="spinner-s" style={{ width: '40px', height: '40px' }}></div>
-    </div>
-  );
+  if (loading || user) return <LoadingScreen message="Sincronizzazione account..." />;
 
   return (
     <div className="landing-page-p">

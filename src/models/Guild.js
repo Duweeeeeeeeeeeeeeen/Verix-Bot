@@ -32,7 +32,7 @@ const guildSchema = new mongoose.Schema({
 
     enabledModules: {
         type: [String],
-        default: ['whitelist', 'tickets', 'voice', 'verify', 'economy', 'logs', 'background']
+        default: ['whitelist', 'tickets', 'voice', 'verify', 'economy', 'logs', 'background', 'support']
     }
 });
 
