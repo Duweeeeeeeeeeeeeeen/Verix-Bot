@@ -41,6 +41,7 @@ import {
 } from 'lucide-react';
 import EmojiInput from '../../../components/EmojiInput';
 import CustomSelect from '../../../components/CustomSelect';
+import NotificationSettings from '../../../components/NotificationSettings';
 import { mergeConfig } from '../../../utils/defaults';
 
 export default function WhitelistConfig() {
@@ -291,6 +292,14 @@ export default function WhitelistConfig() {
                             </div>
                         </section>
 
+                        <NotificationSettings 
+                            guildId={guildId}
+                            value={config.notifications}
+                            onChange={val => setConfig({...config, notifications: val})}
+                            title="Notifiche Whitelist"
+                            description="Scegli come l'utente riceverà l'esito della sua candidatura (Accettato/Rifiutato/Scritto Superato)."
+                        />
+
                         {config.mode !== 'BG_ONLY' && (
                             <>
                                 <section className="card section-card" style={{ marginTop: '24px' }}>
@@ -385,6 +394,14 @@ export default function WhitelistConfig() {
                                 </div>
                             </div>
                         </section>
+
+                        <NotificationSettings 
+                            guildId={guildId}
+                            value={bgConfig.notifications}
+                            onChange={val => setBgConfig({...bgConfig, notifications: val})}
+                            title="Notifiche Background"
+                            description="Scegli come l'utente riceverà l'esito del suo Background."
+                        />
                     </div>
                 </div>
             )}

@@ -47,6 +47,7 @@ if (global.botInitialized) {
                 
                 await mongoose.connect(config.mongoUri, {
                     serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+                    family: 4, // Force IPv4
                 });
                 logger.db('Successfully connected to MongoDB.');
             } catch (error) {

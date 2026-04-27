@@ -91,7 +91,10 @@ export function startDashboard(client) {
         proxy: true,
         store: MongoStore.create({
             mongoUrl: process.env.MONGODB_URI || process.env.MONGO_URI,
-            mongoOptions: { serverSelectionTimeoutMS: 5000 }
+            mongoOptions: { 
+                serverSelectionTimeoutMS: 5000,
+                family: 4 // Force IPv4
+            }
         }),
         cookie: {
             maxAge: 1000 * 60 * 60 * 24, // 24 hours

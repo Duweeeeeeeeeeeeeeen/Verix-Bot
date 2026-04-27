@@ -68,9 +68,9 @@ const verifyConfigSchema = new mongoose.Schema({
         successResponse: { type: String, default: '✅ **IDENTITÀ VALIDATA:** Benvenuto oltre il perimetro.' },
         errorResponse: { type: String, default: '❌ **ERRORE DI SISTEMA:** Impossibile validare i documenti al momento.' }
     },
-    dmEnabled: {
-        type: Boolean,
-        default: true
+    notifications: {
+        mode: { type: String, enum: ['DM', 'CHANNEL', 'BOTH', 'NONE'], default: 'DM' },
+        channelId: { type: String, default: null }
     },
     logEnabled: {
         type: Boolean,

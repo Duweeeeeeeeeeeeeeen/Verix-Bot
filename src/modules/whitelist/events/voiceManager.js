@@ -44,6 +44,7 @@ export default {
         // 1. JOIN LOGIC
         if (channelId && channelId === config.voiceSettings.joinChannelId) {
             logger.info(`[VOICE-DEBUG] User ${member.user.tag} joined the Join Channel in ${guild.name}`);
+            const reasons = [];
             try {
                 // Check if paused
                 if (config.voiceSettings.paused) {

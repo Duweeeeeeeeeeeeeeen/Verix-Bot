@@ -1,7 +1,10 @@
 import { z } from 'zod';
+import { notificationSchema } from './common.js';
 
 export const moderationSchema = z.object({
     enabled: z.boolean().default(true),
+    logChannelId: z.string().nullable().optional(),
+    notifications: notificationSchema,
     
     antispam: z.object({
         enabled: z.boolean().default(false),

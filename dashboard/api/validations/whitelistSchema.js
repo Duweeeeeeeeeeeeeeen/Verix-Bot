@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { discordId, colorHex, embedDataSchema } from './common.js';
+import { discordId, colorHex, embedDataSchema, notificationSchema } from './common.js';
 
 export const whitelistSchema = z.object({
     enabled: z.boolean().optional(),
@@ -24,6 +24,7 @@ export const whitelistSchema = z.object({
     mode: z.enum(['BG_ONLY', 'TEXT', 'VOICE', 'BG_TEXT', 'BG_VOICE', 'HYBRID', 'FULL']).optional(),
     rolesToAddOnTextPass: z.array(z.string()).optional().nullable(),
     rolesToRemoveOnTextPass: z.array(z.string()).optional().nullable(),
+    notifications: notificationSchema,
     voiceSettings: z.object({
         joinChannelId: discordId.or(z.literal('')).optional().nullable(),
         categoryId: discordId.or(z.literal('')).optional().nullable(),

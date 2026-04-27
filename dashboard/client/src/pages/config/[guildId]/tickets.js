@@ -17,6 +17,7 @@ import EmojiInput from '../../../components/EmojiInput';
 import EmbedMessageManager from '../../../components/EmbedMessageManager';
 import CustomSelect from '../../../components/CustomSelect';
 import { mergeConfig } from '../../../utils/defaults';
+import NotificationSettings from '../../../components/NotificationSettings';
 
 export default function TicketConfig() {
   const router = useRouter();
@@ -345,10 +346,10 @@ export default function TicketConfig() {
                                         <label className="text-label">Timeout Inattività (Ore)</label>
                                         <input type="number" className="input" value={config.inactivityTimeout || 24} onChange={e => setConfig({...config, inactivityTimeout: parseInt(e.target.value)})} />
                                     </div>
-                                    <div className="field-box flex-center-between" style={{ background: 'rgba(255,255,255,0.02)', padding: '12px 16px', borderRadius: '10px', border: '1px solid var(--border)', marginTop: '8px' }}>
+                                    <div className="transcription-box">
                                         <div className="flex-col">
                                             <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>Trascrizioni HTML</span>
-                                            <p className="text-dim" style={{ fontSize: '0.75rem' }}>Salva la cronologia chat alla chiusura.</p>
+                                            <p className="text-dim" style={{ fontSize: '0.75rem', margin: 0 }}>Salva la cronologia chat alla chiusura.</p>
                                         </div>
                                         <label className="toggle">
                                             <input type="checkbox" checked={!!config.transcriptionEnabled} onChange={e => setConfig({...config, transcriptionEnabled: e.target.checked})} />
@@ -360,23 +361,36 @@ export default function TicketConfig() {
                         </div>
                         <div className="grid-right">
                              <section className="card section-card">
-                                <h3 className="align-center"><Bell size={18} color="var(--primary)" /> Notifiche</h3>
+                                <NotificationSettings 
+                                    guildId={guildId}
+                                    value={config.notifications}
+                                    onChange={val => setConfig({...config, notifications: val})}
+                                    title="Notifiche Utente"
+                                    description="Scegli come notificare l'utente per apertura e chiusura ticket."
+                                />
                                 <div className="events-stack" style={{ marginTop: '16px' }}>
-                                    {['onOpen', 'onClose'].map(ev => (
-                                        <div key={ev} className="event-item">
-                                            <span className="event-name">{ev === 'onOpen' ? 'Apertura' : 'Chiusura'}</span>
-                                            <div className="event-actions">
-                                                <label className="mini-check">
-                                                    <input type="checkbox" checked={!!globalConfig?.notifications?.[`tickets_${ev}`]?.dm} onChange={e => setGlobalNested(`notifications.tickets_${ev}.dm`, e.target.checked)} /> 
-                                                    <span>DM</span>
+                                    <div className="event-item-v">
+                                        <div className="event-info-v">
+                                            <span className="event-name">Log Amministrazione</span>
+                                            <p className="text-tiny" style={{ margin: 0 }}>Invia log nel canale dedicato.</p>
+                                        </div>
+                                        <div className="event-switches-v">
+                                            <div className="switch-with-label">
+                                                <span className="label-tiny">Apertura</span>
+                                                <label className="toggle">
+                                                    <input type="checkbox" checked={!!globalConfig?.logs?.log_onOpen} onChange={e => setGlobalNested('logs.log_onOpen', e.target.checked)} /> 
+                                                    <span className="slider"></span>
                                                 </label>
-                                                <label className="mini-check">
-                                                    <input type="checkbox" checked={!!globalConfig?.logs?.[`log_${ev}`]} onChange={e => setGlobalNested(`logs.log_${ev}`, e.target.checked)} /> 
-                                                    <span>LOG</span>
+                                            </div>
+                                            <div className="switch-with-label">
+                                                <span className="label-tiny">Chiusura</span>
+                                                <label className="toggle">
+                                                    <input type="checkbox" checked={!!globalConfig?.logs?.log_onClose} onChange={e => setGlobalNested('logs.log_onClose', e.target.checked)} /> 
+                                                    <span className="slider"></span>
                                                 </label>
                                             </div>
                                         </div>
-                                    ))}
+                                    </div>
                                 </div>
                             </section>
                         </div>
@@ -511,6 +525,13 @@ export default function TicketConfig() {
             .empty-state { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 48px; color: var(--text-dim); opacity: 0.5; }
             .align-center { display: flex; align-items: center; gap: 10px; }
             .flex-center-between { display: flex; align-items: center; justify-content: space-between; }
+            
+            .transcription-box { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.02); padding: 16px; border-radius: 12px; border: 1px solid var(--border); margin-top: 12px; }
+            .event-item-v { display: flex; flex-direction: column; gap: 12px; padding: 16px; background: rgba(255,255,255,0.015); border-radius: 12px; border: 1px solid var(--border); margin-top: 12px; }
+            .event-info-v { display: flex; flex-direction: column; }
+            .event-switches-v { display: flex; gap: 20px; border-top: 1px solid var(--border); pt: 12px; padding-top: 12px; }
+            .switch-with-label { display: flex; align-items: center; gap: 10px; }
+            
             @media (max-width: 1000px) { .config-grid { grid-template-columns: 1fr; } .fields-grid { grid-template-columns: 1fr; } }
         `}</style>
     </div>

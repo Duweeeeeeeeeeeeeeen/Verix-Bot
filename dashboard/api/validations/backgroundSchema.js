@@ -1,8 +1,9 @@
 import { z } from 'zod';
-import { embedDataSchema } from './common.js';
+import { embedDataSchema, notificationSchema } from './common.js';
 
 export const backgroundSchema = z.object({
     enabled: z.boolean().optional(),
+    notifications: notificationSchema,
     panelChannelId: z.string().optional().nullable(),
     logChannelId: z.string().optional().nullable(),
     entryPoint: z.enum(['PANEL', 'INTEGRATED']).optional(),

@@ -28,3 +28,8 @@ export const embedDataSchema = z.object({
     }).passthrough().optional().nullable(),
     fields: z.array(embedFieldSchema.passthrough()).max(25).optional().nullable()
 }).passthrough();
+
+export const notificationSchema = z.object({
+    mode: z.enum(['DM', 'CHANNEL', 'BOTH', 'NONE']).default('DM'),
+    channelId: z.string().nullable().optional()
+}).optional();

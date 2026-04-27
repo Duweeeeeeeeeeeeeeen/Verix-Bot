@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { discordId, embedDataSchema } from './common.js';
+import { discordId, embedDataSchema, notificationSchema } from './common.js';
 
 const buttonSchema = z.object({
     label: z.string().max(80).optional(),
@@ -25,6 +25,6 @@ export const verifySchema = z.object({
         successResponse: z.string().max(500).optional(),
         errorResponse: z.string().max(500).optional()
     }).optional(),
-    dmEnabled: z.boolean().optional(),
+    notifications: notificationSchema,
     logEnabled: z.boolean().optional()
 }).passthrough();

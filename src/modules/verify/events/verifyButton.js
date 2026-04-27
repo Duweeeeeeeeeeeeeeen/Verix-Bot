@@ -5,6 +5,7 @@ import ErrorHelper from '../../../utils/errorHelper.js';
 import logger from '../../../utils/logger.js';
 import { t } from '../../../utils/translator.js';
 import { replacePlaceholders } from '../../../utils/placeholderHelper.js';
+import { sendUserNotification } from '../../../utils/notificationService.js';
 import messageService from '../../../utils/messageService.js';
 
 export default {
@@ -60,18 +61,16 @@ export default {
                 }
             }
 
-            // Send DM Notification
-            if (config.dmEnabled) {
-                const dmEmbed = await messageService.get(guild.id, 'verify', 'success', {
-                    user: user.username,
-                    user_mention: user.toString(),
-                    guild: guild.name,
-                    member_count: guild.memberCount.toString()
-                });
+            // Notification Notification
+            const verifySuccessEmbed = await messageService.get(guild.id, 'verify', 'success', {
+                user: user.username,
+                user_mention: user.toString(),
+                guild: guild.name,
+                member_count: guild.memberCount.toString()
+            });
 
-                await user.send({ embeds: [dmEmbed] }).catch(() => {
-                    logger.warn(`[Verify] Could not send DM to ${user.tag} (DMs closed)`);
-                });
+            if (verifySuccessEmbed) {
+                await sendUserNotification(guild, user, config.notifications, { embeds: [verifySuccessEmbed] });
             }
 
             // Send Log

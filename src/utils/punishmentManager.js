@@ -1,5 +1,6 @@
 import ModerationConfig from '../models/ModerationConfig.js';
 import Infraction from '../models/Infraction.js';
+import { sendUserNotification } from './notificationService.js';
 import logger from './logger.js';
 import messageService from './messageService.js';
 
@@ -47,7 +48,7 @@ export async function handleUserInfraction(member, reason = 'Violazione protocol
         if (!punishment) return;
 
         // 4. Apply Action
-        await applyPunishment(member, punishment, reason, channel);
+        await applyPunishment(member, punishment, reason, channel, config);
 
     } catch (error) {
         logger.error(`[PunishmentManager] Error handling infraction for ${userId}:`, error);
@@ -60,8 +61,9 @@ export async function handleUserInfraction(member, reason = 'Violazione protocol
  * @param {object} punishment 
  * @param {string} reason 
  * @param {import('discord.js').TextChannel} channel
+ * @param {object} config - Moderation config
  */
-async function applyPunishment(member, punishment, reason, channel) {
+async function applyPunishment(member, punishment, reason, channel, config) {
     const { guild, user } = member;
     const action = punishment.action;
     const duration = punishment.duration;
@@ -76,46 +78,40 @@ async function applyPunishment(member, punishment, reason, channel) {
         warningCooldowns.set(userKey, Date.now());
     }
 
-    const targetChannel = channel || guild.channels.cache.find(c => c.isTextBased() && c.permissionsFor(guild.members.me).has('SendMessages'));
-
     try {
-        let sentMsg = null;
         const embed = await messageService.get(guildId, 'moderation', action, {
             user: `<@${userId}>`,
             reason,
             duration: duration?.toString() || '0'
         });
 
+        const notificationPayload = { embeds: [embed] };
+        
+        // Use flexible notification system
+        await sendUserNotification(guild, user, config.notifications, notificationPayload);
+
         switch (action) {
             case 'warn':
-                sentMsg = await targetChannel?.send({ embeds: [embed] });
+                // Warn is just notification, already handled by sendUserNotification
                 break;
 
             case 'timeout':
                 if (member.manageable) {
                     await member.timeout(duration * 60 * 1000, reason);
-                    sentMsg = await targetChannel?.send({ embeds: [embed] });
                 }
                 break;
 
             case 'kick':
                 if (member.kickable) {
                     await member.kick(reason);
-                    sentMsg = await targetChannel?.send({ embeds: [embed] });
                 }
                 break;
 
             case 'ban':
                 if (member.bannable) {
                     await member.ban({ reason });
-                    sentMsg = await targetChannel?.send({ embeds: [embed] });
                 }
                 break;
-        }
-
-        // Auto-delete feedback messages after 10 seconds to keep UX clean
-        if (sentMsg && (action === 'warn' || action === 'timeout')) {
-            setTimeout(() => sentMsg.delete().catch(() => {}), 10000);
         }
 
         logger.info(`[PunishmentManager] Applied ${action} to ${user.tag} in ${guild.name} (Reason: ${reason})`);

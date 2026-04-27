@@ -13,6 +13,7 @@ import {
 import CustomSelect from '../../../components/CustomSelect';
 import { mergeConfig } from '../../../utils/defaults';
 import EmojiInput from '../../../components/EmojiInput';
+import NotificationSettings from '../../../components/NotificationSettings';
 
 export default function VerifyConfig() {
   const router = useRouter();
@@ -205,11 +206,14 @@ export default function VerifyConfig() {
                         <div className="grid-right">
                             <section className="card section-card">
                                 <h3 className="sidebar-title align-center" style={{ marginBottom: '16px' }}><Bell size={18} /> Notifiche</h3>
+                                <NotificationSettings 
+                                    guildId={guildId}
+                                    value={config.notifications}
+                                    onChange={val => setConfig({...config, notifications: val})}
+                                    title="Notifica Utente"
+                                    description="Scegli come notificare l'utente dopo la verifica."
+                                />
                                 <div className="toggle-list-v">
-                                    <div className="toggle-row-v">
-                                        <span>Notifica DM Utente</span>
-                                        <label className="toggle"><input type="checkbox" checked={!!config.dmEnabled} onChange={e => setNested('dmEnabled', e.target.checked)} /><span className="slider"></span></label>
-                                    </div>
                                     <div className="toggle-row-v">
                                         <span>Log Amministrazione</span>
                                         <label className="toggle"><input type="checkbox" checked={!!config.logEnabled} onChange={e => setNested('logEnabled', e.target.checked)} /><span className="slider"></span></label>

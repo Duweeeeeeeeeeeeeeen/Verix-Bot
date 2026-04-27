@@ -5,6 +5,7 @@ import Guild from '../../../models/Guild.js';
 import { buildEmbed } from '../../../utils/embedHelper.js';
 import { resolveVoiceChannelName } from '../../../utils/namingHelper.js';
 import { sendLog } from '../../../utils/notificationSender.js';
+import { sendUserNotification } from '../../../utils/notificationService.js';
 import logger from '../../../utils/logger.js';
 
 const antiSpam = new Map();
@@ -28,7 +29,7 @@ export default {
                 // Check if paused
                 if (config.voiceSettings.paused) {
                     await member.voice.disconnect('Servizio assistenza chiuso.');
-                    return member.send(config.voiceSettings.messages.paused).catch(() => {});
+                    return sendUserNotification(guild, member, config.voiceSettings.notifications, { content: config.voiceSettings.messages.paused });
                 }
 
                 // Anti-Spam Check
@@ -36,7 +37,7 @@ export default {
                 const lastJoin = antiSpam.get(member.id);
                 if (lastJoin && (now - lastJoin < (config.voiceSettings.queueCooldown || 2) * 60 * 1000)) {
                     await member.voice.disconnect('Anti-Spam active.');
-                    return member.send(config.voiceSettings.messages.cooldown).catch(() => {});
+                    return sendUserNotification(guild, member, config.voiceSettings.notifications, { content: config.voiceSettings.messages.cooldown });
                 }
                 antiSpam.set(member.id, now);
 
@@ -68,7 +69,7 @@ export default {
                         }
                     }
                     
-                    return member.send(config.voiceSettings.messages.queueFull).catch(() => {});
+                    return sendUserNotification(guild, member, config.voiceSettings.notifications, { content: config.voiceSettings.messages.queueFull });
                 }
 
                 // Start Session
@@ -161,7 +162,7 @@ async function startSupportSession(member, guild, config, client) {
         }
     }
 
-    await member.send(config.voiceSettings.messages.sessionStart).catch(() => {});
+    await sendUserNotification(guild, member, config.voiceSettings.notifications, { content: config.voiceSettings.messages.sessionStart });
 }
 
 async function processQueue(guild, config, client) {

@@ -4,6 +4,7 @@ import BackgroundConfig from '../../../models/BackgroundConfig.js';
 import WhitelistConfig from '../../../models/WhitelistConfig.js';
 import WhitelistApp from '../../../models/WhitelistApp.js';
 import { buildEmbed } from '../../../utils/embedHelper.js';
+import { sendUserNotification } from '../../../utils/notificationService.js';
 import logger from '../../../utils/logger.js';
 
 export default {
@@ -101,7 +102,7 @@ export default {
                     await interaction.update({ content: `✅ Background approvato da ${interaction.user.tag}`, embeds: [], components: [] });
                 }
 
-                // DM to User
+                // Notification to User
                 if (user && config.embeds.dm_accepted) {
                     const dmEmbed = buildEmbed(config.embeds.dm_accepted, {
                         user: user.username,
@@ -111,7 +112,7 @@ export default {
                     if (dmEmbed) {
                         const currentDesc = dmEmbed.data.description || "";
                         dmEmbed.setDescription(currentDesc + nextStep);
-                        await user.send({ embeds: [dmEmbed] }).catch(() => {});
+                        await sendUserNotification(interaction.guild, user, config.notifications, { embeds: [dmEmbed] });
                     }
                 }
             }
@@ -191,14 +192,14 @@ export default {
                 await interaction.update({ content: `❌ Background rifiutato da ${interaction.user.tag} per: ${reason}`, embeds: [], components: [] });
             }
 
-            // DM to User
+            // Notification to User
             if (user && config.embeds.dm_rejected) {
                 const dmEmbed = buildEmbed(config.embeds.dm_rejected, {
                     user: user.username,
                     guild: interaction.guild.name,
                     reason: reason
                 }, config);
-                if (dmEmbed) await user.send({ embeds: [dmEmbed] }).catch(() => {});
+                if (dmEmbed) await sendUserNotification(interaction.guild, user, config.notifications, { embeds: [dmEmbed] });
             }
         }
     },

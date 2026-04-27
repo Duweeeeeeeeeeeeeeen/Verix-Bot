@@ -3,6 +3,7 @@ import WhitelistConfig from '../../../models/WhitelistConfig.js';
 import WhitelistApp from '../../../models/WhitelistApp.js';
 import WhitelistAudit from '../../../models/WhitelistAudit.js';
 import { sendNotification, sendLog } from '../../../utils/notificationSender.js';
+import { sendUserNotification } from '../../../utils/notificationService.js';
 import logger from '../../../utils/logger.js';
 import messageService from '../../../utils/messageService.js';
 
@@ -59,16 +60,13 @@ export default {
                     await app.save();
 
                     // Delegate Notification and Log
-                    await sendNotification({
-                        event: 'whitelist.onSubmit',
-                        guildId: interaction.guild.id,
-                        guild: interaction.guild,
-                        user: interaction.user,
-                        embed: await messageService.get(interaction.guild.id, 'whitelist', 'dm_submitted', {
-                            guild: interaction.guild.name,
-                            user: interaction.user.username
-                        }),
-                        content: `📋 La tua candidatura in **${interaction.guild.name}** è stata ricevuta! Sarai avvisato a breve.`
+                    const submitEmbed = await messageService.get(interaction.guild.id, 'whitelist', 'dm_submitted', {
+                        guild: interaction.guild.name,
+                        user: interaction.user.username
+                    });
+                    await sendUserNotification(interaction.guild, interaction.user, config.notifications, { 
+                        embeds: submitEmbed ? [submitEmbed] : [],
+                        content: `📋 La tua candidatura in **${interaction.guild.name}** è stata ricevuta!`
                     });
                     await sendLog({
                         event: 'whitelist.onSubmit',
@@ -134,25 +132,20 @@ export default {
                     // Delegate Notification and Log
                     const event = isHybrid ? 'whitelist.onTextPass' : 'whitelist.onAccept';
                     const slug = isHybrid ? 'dm_text_pass' : 'dm_accepted';
-                    
-                    const notifyResult = await sendNotification({
-                        event,
-                        guildId: interaction.guild.id,
-                        guild: interaction.guild,
-                        user,
-                        embed: await messageService.get(interaction.guild.id, 'whitelist', slug, {
-                            guild: interaction.guild.name,
-                            user: user?.username || 'Utente'
-                        }),
+                    const resultEmbed = await messageService.get(interaction.guild.id, 'whitelist', slug, {
+                        guild: interaction.guild.name,
+                        user: user?.username || 'Utente'
+                    });
+
+                    await sendUserNotification(interaction.guild, user, config.notifications, {
+                        embeds: resultEmbed ? [resultEmbed] : [],
                         content: isHybrid 
                             ? `📝 Hai superato la prova scritta su **${interaction.guild.name}**!`
                             : `✅ La tua candidatura whitelist in **${interaction.guild.name}** è stata **accettata**!`
                     });
 
-                    // Update the staff embed to show status and DM status
-                    const dmStatus = notifyResult?.dm?.attempted 
-                        ? (notifyResult.dm.success ? '✅ Inviata' : '❌ Fallita (DM Chiusi)') 
-                        : '灰色 (Disabilitata)';
+                    // Update the staff embed to show status
+                    const dmStatus = 'Inviata (config)'; // Simplified since it now depends on config mode
 
                     const originalEmbed = interaction.message.embeds[0];
                     if (originalEmbed) {
@@ -240,23 +233,19 @@ export default {
                 });
 
                 // Delegate Notification and Log
-                const notifyResult = await sendNotification({
-                    event: 'whitelist.onReject',
-                    guildId: interaction.guild.id,
-                    guild: interaction.guild,
-                    user,
-                    embed: await messageService.get(interaction.guild.id, 'whitelist', 'dm_rejected', {
-                        guild: interaction.guild.name,
-                        user: user?.username || 'Utente',
-                        reason: reason
-                    }),
+                const rejectEmbed = await messageService.get(interaction.guild.id, 'whitelist', 'dm_rejected', {
+                    guild: interaction.guild.name,
+                    user: user?.username || 'Utente',
+                    reason: reason
+                });
+
+                await sendUserNotification(interaction.guild, user, config.notifications, {
+                    embeds: rejectEmbed ? [rejectEmbed] : [],
                     content: `❌ La tua candidatura whitelist in **${interaction.guild.name}** è stata **rifiutata**.`
                 });
 
-                // Update the staff embed to show rejection and DM status
-                const dmStatus = notifyResult?.dm?.attempted 
-                    ? (notifyResult.dm.success ? '✅ Inviata' : '❌ Fallita (DM Chiusi)') 
-                    : '灰色 (Disabilitata)';
+                // Update the staff embed to show status
+                const dmStatus = 'Inviata (config)';
 
                 const originalEmbed = interaction.message.embeds[0];
                 if (originalEmbed) {

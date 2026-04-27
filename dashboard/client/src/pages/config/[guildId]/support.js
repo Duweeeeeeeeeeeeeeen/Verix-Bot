@@ -22,6 +22,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import CustomSelect from '../../../components/CustomSelect';
+import NotificationSettings from '../../../components/NotificationSettings';
 
 export default function SupportConfig() {
   const router = useRouter();
@@ -200,6 +201,13 @@ export default function SupportConfig() {
                                         <span className="slider"></span>
                                     </label>
                                 </div>
+                                <NotificationSettings 
+                                    guildId={guildId}
+                                    value={config.voiceSettings?.notifications}
+                                    onChange={val => setNested('voiceSettings.notifications', val)}
+                                    title="Notifiche Utente"
+                                    description="Scegli come l'utente riceverà le notifiche (coda, inizio sessione, etc)."
+                                />
                                 <div className="toggle-box">
                                     <div className="flex-col">
                                         <span style={{ fontWeight: 600 }}>Ping Staff all'Ingresso</span>

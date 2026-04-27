@@ -518,6 +518,7 @@ export default {
             maxConcurrent: 1,
             queueCooldown: 2,
             pingStaffOnJoin: true,
+            sendDms: true,
             channelNameTemplate: 'assistenza-{user}',
             messages: {
                 paused: '❌ Il servizio di assistenza vocale è attualmente sospeso. Riprova più tardi.',

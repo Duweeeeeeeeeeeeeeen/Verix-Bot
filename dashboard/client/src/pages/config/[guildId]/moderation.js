@@ -12,6 +12,7 @@ import {
 import CustomSelect from '../../../components/CustomSelect';
 import EmbedMessageManager from '../../../components/EmbedMessageManager';
 import { mergeConfig } from '../../../utils/defaults';
+import NotificationSettings from '../../../components/NotificationSettings';
 
 export default function ModerationConfig() {
   const router = useRouter();
@@ -294,6 +295,14 @@ export default function ModerationConfig() {
                                 <Plus size={14} /> Aggiungi Livello
                             </button>
                         </div>
+                        <NotificationSettings 
+                            guildId={guildId}
+                            value={config.notifications}
+                            onChange={val => setConfig({...config, notifications: val})}
+                            title="Notifiche Infrazioni"
+                            description="Scegli come l'utente riceverà l'avviso per i suoi richiami (Ban, Kick, Warn, etc)."
+                        />
+
                         <div className="punishments-list" style={{ marginTop: '24px' }}>
                             {(config.punishments || []).sort((a,b) => a.level - b.level).map((p, index) => (
                                 <div key={index} className="punishment-item card">

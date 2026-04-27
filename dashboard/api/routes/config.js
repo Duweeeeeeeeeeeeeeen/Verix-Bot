@@ -60,7 +60,7 @@ router.get('/:guildId', adminCheck, async (req, res) => {
         const { guildId } = req.params;
         
         // Fetch all configurations in parallel to reduce latency
-        const [whitelist, tickets, contest, verify, guild, globalCfg, welcome, utility, fivem, twitch, autoClear, antispam, moderation] = await Promise.all([
+        let [whitelist, tickets, contest, verify, guild, globalCfg, welcome, utility, fivem, twitch, autoClearConfig, antispam, moderation] = await Promise.all([
             WhitelistConfig.findOne({ guildId }),
             TicketConfig.findOne({ guildId }),
             PhotoContestConfig.findOne({ guildId }),
@@ -101,7 +101,7 @@ router.get('/:guildId', adminCheck, async (req, res) => {
         if (!utilConfig) creations.push(UtilityConfig.create({ guildId }).then(res => utilConfig = res));
         if (!fmConfig) creations.push(FiveMConfig.create({ guildId }).then(res => fmConfig = res));
         if (!socConfig) creations.push(SocialConfig.create({ guildId }).then(res => socConfig = res));
-        if (!autoClear.id && !autoClear._id) creations.push(AutoClearConfig.create({ guildId }).then(res => autoClear = res));
+        if (!autoClearConfig) creations.push(AutoClearConfig.create({ guildId }).then(res => autoClearConfig = res));
         if (!modConfig) creations.push(ModerationConfig.create({ guildId }).then(res => modConfig = res));
         if (!suppConfig) creations.push(SupportConfig.create({ guildId }).then(res => suppConfig = res));
 
@@ -1442,8 +1442,11 @@ router.post('/:guildId/moderation', adminCheck, validate(moderationSchema), asyn
             { returnDocument: 'after', upsert: true }
         );
         invalidateCache(guildId);
-        await logAudit(req, guildId, 'moderation_update', 'Moderation Config Updated', req.validatedData);
+        await logAudit(req, 'UPDATE_MODERATION', req.validatedData);
         res.json({ success: true, data: config });
+    } catch (error) {
+        console.error('Error updating moderation config:', error);
+        res.status(500).json({ success: false, error: 'Errore durante il salvataggio della configurazione moderazione' });
     }
 });
 
@@ -1469,7 +1472,7 @@ router.post('/:guildId/support', adminCheck, validate(supportSchema), async (req
             { returnDocument: 'after', upsert: true }
         );
         invalidateCache(guildId);
-        await logAudit(req, guildId, 'support_update', 'Support Config Updated', req.validatedData);
+        await logAudit(req, 'UPDATE_SUPPORT', req.validatedData);
         res.json({ success: true, data: config });
     } catch (error) {
         res.status(500).json({ success: false, error: 'Failed to update support config' });

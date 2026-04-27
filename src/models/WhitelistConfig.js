@@ -28,6 +28,10 @@ const whitelistConfigSchema = new mongoose.Schema({
     mode: { type: String, enum: ['BG_ONLY', 'TEXT', 'VOICE', 'BG_TEXT', 'BG_VOICE', 'HYBRID', 'FULL'], default: 'TEXT' },
     rolesToAddOnTextPass: { type: [String], default: [] },
     rolesToRemoveOnTextPass: { type: [String], default: [] },
+    notifications: {
+        mode: { type: String, enum: ['DM', 'CHANNEL', 'BOTH', 'NONE'], default: 'DM' },
+        channelId: { type: String, default: null }
+    },
     voiceSettings: {
         joinChannelId: { type: String, default: null },
         categoryId: { type: String, default: null },

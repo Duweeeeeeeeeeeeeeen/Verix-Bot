@@ -3,6 +3,11 @@ import mongoose from 'mongoose';
 const moderationConfigSchema = new mongoose.Schema({
     guildId: { type: String, required: true, unique: true },
     enabled: { type: Boolean, default: true },
+    logChannelId: { type: String, default: null },
+    notifications: {
+        mode: { type: String, enum: ['DM', 'CHANNEL', 'BOTH', 'NONE'], default: 'DM' },
+        channelId: { type: String, default: null }
+    },
     
     // [ ANTI SPAM ]
     antispam: {

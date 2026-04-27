@@ -13,6 +13,10 @@ const supportConfigSchema = new mongoose.Schema({
         queueCooldown: { type: Number, default: 2 }, // Minutes
         vipRoleId: { type: String, default: null },
         paused: { type: Boolean, default: false },
+        notifications: {
+            mode: { type: String, enum: ['DM', 'CHANNEL', 'BOTH', 'NONE'], default: 'DM' },
+            channelId: { type: String, default: null }
+        },
         pingStaffOnJoin: { type: Boolean, default: true },
         channelNameTemplate: { type: String, default: 'assistenza-{user}' },
         sessionCounter: { type: Number, default: 0 },

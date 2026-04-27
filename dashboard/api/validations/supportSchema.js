@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { notificationSchema } from './common.js';
 
 export const supportSchema = z.object({
     enabled: z.boolean().optional(),
@@ -12,6 +13,7 @@ export const supportSchema = z.object({
         queueCooldown: z.number().min(0).optional(),
         vipRoleId: z.string().nullable().optional(),
         paused: z.boolean().optional(),
+        notifications: notificationSchema,
         pingStaffOnJoin: z.boolean().optional(),
         channelNameTemplate: z.string().optional(),
         messages: z.object({

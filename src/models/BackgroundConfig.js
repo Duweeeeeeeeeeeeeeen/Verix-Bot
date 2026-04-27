@@ -11,6 +11,10 @@ const backgroundConfigSchema = new mongoose.Schema({
     cooldown: { type: Number, default: 24 }, // Hours for Panel
     correctionCooldown: { type: Number, default: 2 }, // Hours for Integrated Correction
     enabled: { type: Boolean, default: true },
+    notifications: {
+        mode: { type: String, enum: ['DM', 'CHANNEL', 'BOTH', 'NONE'], default: 'DM' },
+        channelId: { type: String, default: null }
+    },
     entryPoint: { type: String, enum: ['PANEL', 'INTEGRATED'], default: 'PANEL' },
     colors: {
         primary: { type: String, default: '#5865F2' },

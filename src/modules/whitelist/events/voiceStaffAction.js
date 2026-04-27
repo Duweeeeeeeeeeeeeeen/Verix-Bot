@@ -4,6 +4,7 @@ import WhitelistApp from '../../../models/WhitelistApp.js';
 import WhitelistAudit from '../../../models/WhitelistAudit.js';
 import VoiceQueue from '../../../models/VoiceQueue.js';
 import { updateDashboard, getDashboard } from '../utils/voiceDashboard.js';
+import { sendUserNotification } from '../../../utils/notificationService.js';
 import logger from '../../../utils/logger.js';
 import messageService from '../../../utils/messageService.js';
 
@@ -115,11 +116,14 @@ export default {
 
                 // Notifica Utente
                 if (user) {
-                    const embed = await messageService.get(interaction.guild.id, 'voice', 'dm_accepted', {
+                    const oralAcceptEmbed = await messageService.get(interaction.guild.id, 'voice', 'dm_accepted', {
                         user: user.username,
                         guild: interaction.guild.name
                     });
-                    await user.send({ embeds: [embed] }).catch(() => {});
+                    await sendUserNotification(interaction.guild, user, config.notifications, {
+                        embeds: oralAcceptEmbed ? [oralAcceptEmbed] : [],
+                        content: `✅ Hai superato con successo il colloquio orale presso **${interaction.guild.name}**!`
+                    });
                 }
 
                 // --- Role Management ---
@@ -189,13 +193,16 @@ export default {
 
             // Notifica Utente (Voice Specific)
             if (user) {
-                const embed = await messageService.get(interaction.guild.id, 'voice', 'dm_rejected', {
+                const oralRejectEmbed = await messageService.get(interaction.guild.id, 'voice', 'dm_rejected', {
                     user: user.username,
                     guild: interaction.guild.name,
                     reason: reason,
                     cooldown: config.voiceSettings.rejectionCooldown || 24
                 });
-                await user.send({ embeds: [embed] }).catch(() => {});
+                await sendUserNotification(interaction.guild, user, config.notifications, {
+                    embeds: oralRejectEmbed ? [oralRejectEmbed] : [],
+                    content: `❌ Il tuo colloquio orale presso **${interaction.guild.name}** è stato respinto.`
+                });
             }
 
             // Log Audit DB
