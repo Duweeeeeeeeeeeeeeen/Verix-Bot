@@ -5,7 +5,7 @@ import Guild from '../../../models/Guild.js';
 import { buildEmbed } from '../../../utils/embedHelper.js';
 import { resolveVoiceChannelName } from '../../../utils/namingHelper.js';
 import { sendLog } from '../../../utils/notificationSender.js';
-import { sendUserNotification } from '../../../utils/notificationService.js';
+import messageService from '../../../utils/messageService.js';
 import logger from '../../../utils/logger.js';
 
 const antiSpam = new Map();
@@ -29,7 +29,7 @@ export default {
                 // Check if paused
                 if (config.voiceSettings.paused) {
                     await member.voice.disconnect('Servizio assistenza chiuso.');
-                    return sendUserNotification(guild, member, config.voiceSettings.notifications, { content: config.voiceSettings.messages.paused });
+                    return messageService.sendNotification(guild, member, 'support', 'paused', {}, config.voiceSettings.notifications);
                 }
 
                 // Anti-Spam Check
@@ -37,7 +37,7 @@ export default {
                 const lastJoin = antiSpam.get(member.id);
                 if (lastJoin && (now - lastJoin < (config.voiceSettings.queueCooldown || 2) * 60 * 1000)) {
                     await member.voice.disconnect('Anti-Spam active.');
-                    return sendUserNotification(guild, member, config.voiceSettings.notifications, { content: config.voiceSettings.messages.cooldown });
+                    return messageService.sendNotification(guild, member, 'support', 'cooldown', {}, config.voiceSettings.notifications);
                 }
                 antiSpam.set(member.id, now);
 
@@ -65,11 +65,15 @@ export default {
                                 ? (config.staffRoleIds || []).map(id => `<@&${id}>`).join(' ') 
                                 : '';
                             const vipText = isVip ? ' ⭐ **UTENTE PRIORITARIO (VIP)**' : '';
-                            await logChannel.send(`${pings} 📢 **CODA ASSISTENZA:** Nuovo utente in attesa!${vipText}\nUtente: ${member} (${member.id})\nPosizione: \`${waitingCount}\``);
+                            await messageService.send(logChannel, 'support', 'queue_log', {
+                                user: member,
+                                vip_text: vipText,
+                                position: waitingCount
+                            }, { content: pings });
                         }
                     }
                     
-                    return sendUserNotification(guild, member, config.voiceSettings.notifications, { content: config.voiceSettings.messages.queueFull });
+                    return messageService.sendNotification(guild, member, 'support', 'queueFull', {}, config.voiceSettings.notifications);
                 }
 
                 // Start Session
@@ -162,7 +166,7 @@ async function startSupportSession(member, guild, config, client) {
         }
     }
 
-    await sendUserNotification(guild, member, config.voiceSettings.notifications, { content: config.voiceSettings.messages.sessionStart });
+    await messageService.sendNotification(guild, member, 'support', 'sessionStart', {}, config.voiceSettings.notifications);
 }
 
 async function processQueue(guild, config, client) {

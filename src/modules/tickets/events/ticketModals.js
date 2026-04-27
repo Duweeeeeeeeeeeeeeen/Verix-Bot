@@ -14,7 +14,7 @@ export default {
             const desc = interaction.fields.getTextInputValue('report_desc');
 
             const config = await TicketConfig.findOne({ guildId: interaction.guild.id });
-            if (!config) return interaction.reply({ content: '❌ Errore: Configurazione abbandonata.', flags: [MessageFlags.Ephemeral] });
+            if (!config) return messageService.reply(interaction, 'tickets', 'error', { reason: 'Configurazione mancante.' }, { ephemeral: true });
 
             try {
                 // Call the creation logic with gathered metadata
@@ -25,7 +25,7 @@ export default {
                 });
             } catch (error) {
                 logger.error('Error handling report modal:', error);
-                await interaction.reply({ content: '❌ Errore durante l\'apertura del ticket di segnalazione.', flags: [MessageFlags.Ephemeral] });
+                await messageService.reply(interaction, 'tickets', 'error', { reason: 'Errore apertura ticket.' }, { ephemeral: true });
             }
         }
 
@@ -35,8 +35,7 @@ export default {
 
             try {
                 const member = await interaction.guild.members.fetch(userId).catch(() => null);
-                if (!member) return interaction.reply({ content: '❌ Utente non trovato nel server.', flags: [MessageFlags.Ephemeral] });
-
+                if (!member) return messageService.reply(interaction, 'tickets', 'error', { reason: 'Utente non trovato.' }, { ephemeral: true });
                 if (action === 'add') {
                     await interaction.channel.permissionOverwrites.edit(member, {
                         ViewChannel: true,
@@ -44,14 +43,14 @@ export default {
                         ReadMessageHistory: true,
                         AttachFiles: true
                     });
-                    await interaction.reply({ content: `✅ <@${userId}> è stato aggiunto al ticket.` });
+                    await messageService.reply(interaction, 'tickets', 'user_managed', { user: `<@${userId}>`, action: 'aggiunto' });
                 } else {
                     await interaction.channel.permissionOverwrites.delete(member);
-                    await interaction.reply({ content: `✅ <@${userId}> è stato rimosso dal ticket.` });
+                    await messageService.reply(interaction, 'tickets', 'user_managed', { user: `<@${userId}>`, action: 'rimosso' });
                 }
             } catch (error) {
                 logger.error('Error managing user in ticket:', error);
-                await interaction.reply({ content: '❌ Errore durante la gestione dell\'utente.', flags: [MessageFlags.Ephemeral] });
+                await messageService.reply(interaction, 'tickets', 'error', { reason: 'Errore gestione utente.' }, { ephemeral: true });
             }
         }
     },

@@ -2,6 +2,7 @@ import { Events, EmbedBuilder } from 'discord.js';
 import Ticket from '../../../models/Ticket.js';
 import TicketConfig from '../../../models/TicketConfig.js';
 import { generateTranscription } from '../utils/ticketHelper.js';
+import messageService from '../../../utils/messageService.js';
 import logger from '../../../utils/logger.js';
 
 export default {
@@ -40,15 +41,14 @@ export default {
                         const logChannel = guild.channels.cache.get(config.logChannelId);
 
                         if (logChannel) {
-                            const logEmbed = new EmbedBuilder()
-                                .setTitle('🛡️ Auto-Chiusura Inattività')
-                                .setDescription(`Il ticket di <@${ticket.userId}> è stato chiuso per inattività (${config.inactivityTimeout}h).`)
-                                .setColor('#ffa502')
-                                .setTimestamp();
-                            await logChannel.send({ embeds: [logEmbed], files: [transcript] });
+                            await messageService.send(logChannel, 'tickets', 'staff_ticket_log', {
+                                user: `<@${ticket.userId}>`,
+                                type: ticket.type,
+                                staff: '`SYSTEM_INACTIVITY`'
+                            }, { files: [transcript] });
                         }
 
-                        await channel.send('⚠️ **Questo ticket è stato chiuso automaticamente per inattività.**');
+                        await messageService.send(channel, 'tickets', 'inactivity_close');
                         
                         ticket.status = 'CLOSED';
                         ticket.closedAt = new Date();

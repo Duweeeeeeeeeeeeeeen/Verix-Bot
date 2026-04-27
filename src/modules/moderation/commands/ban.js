@@ -24,8 +24,7 @@ export default {
                     reason: reason
                 });
                 await sendUserNotification(interaction.guild, user, config.notifications, {
-                    embeds: banEmbed ? [banEmbed] : [],
-                    content: `🔨 Sei stato permanentemente bandito da **${interaction.guild.name}** per: ${reason}`
+                    embeds: banEmbed ? [banEmbed] : []
                 });
             }
 
@@ -44,7 +43,7 @@ export default {
             }, { embeds: embed ? [embed] : [] });
         } catch (error) {
             logger.error('Error in ban command:', error);
-            await interaction.reply({ content: 'Impossibile bannare questo utente.', flags: [MessageFlags.Ephemeral] });
+            await messageService.reply(interaction, 'moderation', 'error', {}, { ephemeral: true });
         }
     },
 };

@@ -29,7 +29,7 @@ export default {
 
                 const { startWrittenSession } = await import('../../whitelist/utils/sessionHandler.js');
                 
-                await messageService.reply(interaction, 'system', 'setup_success', {}, { content: '🚀 Inizializzazione test scritto in corso...', ephemeral: true });
+                await messageService.reply(interaction, 'whitelist', 'start_success', { channelId: channel.id }, { ephemeral: true });
                 await startWrittenSession(interaction, channel, wlConfig);
                 
                 return interaction.message.delete().catch(() => {});
@@ -76,11 +76,11 @@ export default {
                     BackgroundConfig.findOne({ guildId: interaction.guild.id })
                 ]);
 
-                if (!app) return interaction.reply({ content: 'Sessione non trovata.', flags: [MessageFlags.Ephemeral] });
-                if (!config) return interaction.reply({ content: 'Configurazione non trovata.', flags: [MessageFlags.Ephemeral] });
+                if (!app) return messageService.reply(interaction, 'background', 'error', { reason: 'Sessione non trovata.' }, { ephemeral: true });
+                if (!config) return messageService.reply(interaction, 'background', 'error', { reason: 'Configurazione non trovata.' }, { ephemeral: true });
 
                 const logChannel = interaction.guild.channels.cache.get(config.logChannelId);
-                if (!logChannel) return interaction.reply({ content: 'Canale log non trovato.', flags: [MessageFlags.Ephemeral] });
+                if (!logChannel) return messageService.reply(interaction, 'background', 'error', { reason: 'Canale log non trovato.' }, { ephemeral: true });
 
                 // Update Progress
                 app.link = link;
@@ -138,11 +138,7 @@ export default {
                 });
                 if (dmEmbed) interaction.user.send({ embeds: [dmEmbed] }).catch(() => {});
 
-            } catch (error) {
-                logger.error('Error in BG Modal Submit:', error);
-                if (!interaction.replied && !interaction.deferred) {
-                    await interaction.reply({ content: 'Si è verificato un errore durante l\'invio.', flags: [MessageFlags.Ephemeral] });
-                }
+                await messageService.reply(interaction, 'background', 'error', { reason: 'Si è verificato un errore durante l\'invio.' }, { ephemeral: true });
             }
         }
     },

@@ -19,7 +19,18 @@ class MessageService {
      * @param {Object} placeholders 
      * @returns {EmbedBuilder}
      */
-    async get(guildId, module, slug, placeholders = {}) {
+    async get(guildId, moduleOrFullSlug, slugOrPlaceholders = {}, placeholders = {}) {
+        let module, slug, finalPlaceholders;
+
+        if (typeof moduleOrFullSlug === 'string' && moduleOrFullSlug.includes('.')) {
+            [module, slug] = moduleOrFullSlug.split('.');
+            finalPlaceholders = slugOrPlaceholders;
+        } else {
+            module = moduleOrFullSlug;
+            slug = slugOrPlaceholders;
+            finalPlaceholders = placeholders;
+        }
+
         const embedData = await this.getRaw(guildId, module, slug);
 
         if (!embedData) {
@@ -119,6 +130,54 @@ class MessageService {
             logger.warn(`[MessageService] Could not send DM to ${user.tag} for ${module}.${slug}`);
             return null;
         });
+    }
+
+    /**
+     * Centralized notification dispatcher.
+     * Uses the guild's notification settings to send an embed via DM, Channel, or Both.
+     */
+    async sendNotification(guild, member, module, slug, placeholders = {}, notificationConfig = {}) {
+        if (!guild || !member || !notificationConfig || notificationConfig.mode === 'NONE') return false;
+
+        const embed = await this.get(guild.id, module, slug, {
+            user: member.user || member,
+            guild: guild,
+            ...placeholders
+        });
+
+        const { mode, channelId } = notificationConfig;
+        const canSendDM = mode === 'DM' || mode === 'BOTH';
+        const canSendChannel = mode === 'CHANNEL' || mode === 'BOTH';
+
+        let success = false;
+
+        // 1. Send DM
+        if (canSendDM) {
+            try {
+                await (member.user || member).send({ embeds: [embed] });
+                success = true;
+            } catch (err) {
+                logger.debug(`[MessageService] DM failed for ${member.id}: ${err.message}`);
+            }
+        }
+
+        // 2. Send to Channel
+        if (canSendChannel && channelId) {
+            try {
+                const channel = await guild.channels.fetch(channelId).catch(() => null);
+                if (channel) {
+                    await channel.send({ 
+                        content: `<@${member.id}>`, 
+                        embeds: [embed] 
+                    });
+                    success = true;
+                }
+            } catch (err) {
+                logger.error(`[MessageService] Channel notification failed for ${channelId}:`, err);
+            }
+        }
+
+        return success;
     }
 
     /**

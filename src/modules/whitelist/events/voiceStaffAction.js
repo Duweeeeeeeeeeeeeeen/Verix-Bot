@@ -21,7 +21,7 @@ export default {
             );
 
             await updateDashboard(interaction.guild, client);
-            return interaction.reply({ content: `💎 Utente <@${userId}> promosso in testa alla coda.`, flags: [MessageFlags.Ephemeral] });
+            return messageService.reply(interaction, 'whitelist', 'promote_vip_success', { userId }, { ephemeral: true });
         }
 
         // --- 2. Dashboard Buttons ---
@@ -39,12 +39,12 @@ export default {
                 config.voiceSettings.paused = (action === 'pause');
                 await config.save();
                 await updateDashboard(interaction.guild, client);
-                return interaction.reply({ content: `✅ Sistema **${action === 'pause' ? 'messo in pausa' : 'riattivato'}**.`, flags: [MessageFlags.Ephemeral] });
+                return messageService.reply(interaction, 'whitelist', action === 'pause' ? 'pause_success' : 'resume_success', {}, { ephemeral: true });
             }
 
             if (action === 'skip') {
                 const activeSession = await VoiceQueue.findOne({ guildId: interaction.guild.id, status: 'ACTIVE' }).sort({ joinedAt: 1 });
-                if (!activeSession) return interaction.reply({ content: '❌ Nessuna sessione attiva da saltare.', flags: [MessageFlags.Ephemeral] });
+                if (!activeSession) return messageService.reply(interaction, 'whitelist', 'skip_error_no_session', {}, { ephemeral: true });
 
                 activeSession.status = 'CANCELLED';
                 await activeSession.save();
@@ -53,7 +53,7 @@ export default {
                 if (channel) await channel.delete().catch(() => {});
 
                 await updateDashboard(interaction.guild, client);
-                return interaction.reply({ content: '✅ Sessione saltata. Il prossimo in coda verrà invitato.', flags: [MessageFlags.Ephemeral] });
+                return messageService.reply(interaction, 'whitelist', 'skip_success', {}, { ephemeral: true });
             }
         }
 
@@ -82,7 +82,7 @@ export default {
                 if (oldEmbeds.length > 1) {
                     updatedEmbeds.push(oldEmbeds[1]); // Retain the recap embed
                 }
-                await interaction.update({ embeds: updatedEmbeds });
+                await interaction.update({ embeds: updatedEmbeds, content: null });
             } else {
                 await interaction.update({ content: `⏱️ Timer Riavviato: <t:${Math.floor(now.getTime() / 1000)}:R>` });
             }
@@ -121,8 +121,7 @@ export default {
                         guild: interaction.guild.name
                     });
                     await sendUserNotification(interaction.guild, user, config.notifications, {
-                        embeds: oralAcceptEmbed ? [oralAcceptEmbed] : [],
-                        content: `✅ Hai superato con successo il colloquio orale presso **${interaction.guild.name}**!`
+                        embeds: oralAcceptEmbed ? [oralAcceptEmbed] : []
                     });
                 }
 
@@ -200,8 +199,7 @@ export default {
                     cooldown: config.voiceSettings.rejectionCooldown || 24
                 });
                 await sendUserNotification(interaction.guild, user, config.notifications, {
-                    embeds: oralRejectEmbed ? [oralRejectEmbed] : [],
-                    content: `❌ Il tuo colloquio orale presso **${interaction.guild.name}** è stato respinto.`
+                    embeds: oralRejectEmbed ? [oralRejectEmbed] : []
                 });
             }
 

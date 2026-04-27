@@ -65,8 +65,7 @@ export default {
                         user: interaction.user.username
                     });
                     await sendUserNotification(interaction.guild, interaction.user, config.notifications, { 
-                        embeds: submitEmbed ? [submitEmbed] : [],
-                        content: `📋 La tua candidatura in **${interaction.guild.name}** è stata ricevuta!`
+                        embeds: submitEmbed ? [submitEmbed] : []
                     });
                     await sendLog({
                         event: 'whitelist.onSubmit',
@@ -90,7 +89,7 @@ export default {
                 const appId = parts[2];
 
                 const app = await WhitelistApp.findById(appId);
-                if (!app) return interaction.reply({ content: 'Candidatura non trovata.', flags: [MessageFlags.Ephemeral] });
+                if (!app) return messageService.reply(interaction, 'whitelist', 'app_not_found', {}, { ephemeral: true });
 
                 const config = await WhitelistConfig.findOne({ guildId: interaction.guild.id });
                 const user = await client.users.fetch(app.userId).catch(() => null);
@@ -138,10 +137,7 @@ export default {
                     });
 
                     await sendUserNotification(interaction.guild, user, config.notifications, {
-                        embeds: resultEmbed ? [resultEmbed] : [],
-                        content: isHybrid 
-                            ? `📝 Hai superato la prova scritta su **${interaction.guild.name}**!`
-                            : `✅ La tua candidatura whitelist in **${interaction.guild.name}** è stata **accettata**!`
+                        embeds: resultEmbed ? [resultEmbed] : []
                     });
 
                     // Update the staff embed to show status
@@ -211,7 +207,7 @@ export default {
                 const reason = interaction.fields.getTextInputValue('denial_reason');
 
                 const app = await WhitelistApp.findById(appId);
-                if (!app) return interaction.followUp({ content: 'Candidatura non trovata.', flags: [MessageFlags.Ephemeral] });
+                if (!app) return messageService.reply(interaction, 'whitelist', 'app_not_found', {}, { ephemeral: true });
 
                 const config = await WhitelistConfig.findOne({ guildId: interaction.guild.id });
                 const user = await client.users.fetch(app.userId).catch(() => null);
@@ -240,8 +236,7 @@ export default {
                 });
 
                 await sendUserNotification(interaction.guild, user, config.notifications, {
-                    embeds: rejectEmbed ? [rejectEmbed] : [],
-                    content: `❌ La tua candidatura whitelist in **${interaction.guild.name}** è stata **rifiutata**.`
+                    embeds: rejectEmbed ? [rejectEmbed] : []
                 });
 
                 // Update the staff embed to show status

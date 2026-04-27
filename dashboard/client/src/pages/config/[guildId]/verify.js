@@ -279,6 +279,7 @@ export default function VerifyConfig() {
                                 { key: 'success', label: 'Conferma Identità (DM)', description: 'Messaggio privato inviato all\'utente dopo la verifica riuscita.', variables: ['user', 'guild', 'member_count'], group: '✅ Successo', groupIcon: MessageCircle },
                                 { key: 'success_reply', label: 'Risposta Pulsante', description: 'Risposta effimera mostrata al click del pulsante.', variables: ['user', 'guild'], group: '✅ Successo', groupIcon: Zap },
                                 { key: 'already_verified', label: 'Già Verificato', description: 'Errore mostrato se l\'utente è già verificato.', variables: ['user', 'guild'], group: '🟥 Errori', groupIcon: AlertCircle },
+                                { key: 'error', label: 'Errore Identificazione', description: 'Errore mostrato in caso di problemi tecnici durante la verifica.', variables: [], group: '🟥 Errori', groupIcon: XCircle },
                                 { key: 'staff_log', label: 'Log Staff', description: 'Log inviato al canale staff quando qualcuno si verifica.', variables: ['user', 'role', 'timestamp'], group: '🛡️ Staff', groupIcon: Shield },
                             ]}
                             extraButtons={(slug) => {

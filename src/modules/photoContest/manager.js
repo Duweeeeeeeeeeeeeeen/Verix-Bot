@@ -6,6 +6,7 @@ import PhotoSubmission from '../../models/PhotoSubmission.js';
 import User from '../../models/User.js';
 import logger from '../../utils/logger.js';
 import { checkBotPermissions } from '../../utils/permissionHelper.js';
+import messageService from '../../utils/messageService.js';
 
 export class PhotoContestManager {
     constructor(client) {
@@ -131,7 +132,7 @@ export class PhotoContestManager {
             }
 
             if (submissions.length === 0) {
-                await channel.send('😔 Il contest è terminato senza partecipanti.');
+                await messageService.send(channel, 'photocontest', 'no_participants');
                 this.scheduleNext(config);
                 return;
             }

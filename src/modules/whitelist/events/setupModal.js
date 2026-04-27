@@ -39,18 +39,12 @@ export default {
 
             const panelChannel = interaction.guild.channels.cache.get(config.panelChannelId);
             if (!panelChannel) {
-                return interaction.reply({ 
-                    content: '❌ Errore: Il canale del pannello non è più valido o il bot non ha accesso. Riesegui `/setup-wl`.', 
-                    flags: [MessageFlags.Ephemeral] 
-                });
+                return messageService.reply(interaction, 'moderation', 'error', { reason: 'Il canale del pannello non è più valido. Riesegui /setup-wl.' }, { ephemeral: true });
             }
 
             // Check if bot can send messages in that channel
             if (!panelChannel.permissionsFor(interaction.guild.members.me).has('SendMessages')) {
-                return interaction.reply({ 
-                    content: `❌ Il bot non ha i permessi per inviare messaggi nel canale <#${config.panelChannelId}>.`, 
-                    flags: [MessageFlags.Ephemeral] 
-                });
+                return messageService.reply(interaction, 'moderation', 'error', { reason: `Il bot non ha i permessi per inviare messaggi nel canale <#${config.panelChannelId}>.` }, { ephemeral: true });
             }
 
             const embed = new EmbedBuilder()
@@ -94,15 +88,12 @@ export default {
             config.lastPanelChannelId = config.panelChannelId;
             await config.save();
 
-            await interaction.reply({ content: '✅ Pannello Whitelist configurato e inviato correttamente!', flags: [MessageFlags.Ephemeral] });
+            await interaction.reply({ embeds: [await messageService.get(interaction.guild.id, 'whitelist', 'setup_success')], flags: [MessageFlags.Ephemeral] });
 
         } catch (error) {
             logger.error('Error in WL Modal Submit:', error);
             if (!interaction.replied && !interaction.deferred) {
-                await interaction.reply({ 
-                    content: `❌ Errore durante il salvataggio: ${error.message || 'Errore interno'}`, 
-                    flags: [MessageFlags.Ephemeral] 
-                });
+                await messageService.reply(interaction, 'moderation', 'error', { reason: error.message || 'Errore interno' }, { ephemeral: true });
             }
         }
     },

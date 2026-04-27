@@ -1,6 +1,7 @@
 import { Events } from 'discord.js';
 import Background from '../../../models/Background.js';
 import BackgroundConfig from '../../../models/BackgroundConfig.js';
+import messageService from '../../../utils/messageService.js';
 import logger from '../../../utils/logger.js';
 
 export default {
@@ -47,7 +48,9 @@ export default {
 
                 if (timePassed < cooldownMs) {
                     const nextDate = new Date(app.updatedAt.getTime() + cooldownMs);
-                    return message.reply(`⚠️ **Cooldown attivo!** Potrai inviare una nuova versione del tuo background <t:${Math.floor(nextDate.getTime() / 1000)}:R>.\nUsa questo tempo per correggere la storia secondo le indicazioni dello staff.`);
+                    return messageService.reply(message, 'background', 'cooldown', {
+                        time_left: `<t:${Math.floor(nextDate.getTime() / 1000)}:R>`
+                    });
                 }
             }
             
@@ -62,7 +65,10 @@ export default {
             app.attachmentURL = attachment.url;
             await app.save();
             
-            await message.reply(`✅ **File caricato correttamente!**\nL'ufficiale ha registrato l'allegato: [${attachment.name}](${attachment.url})`);
+            await messageService.reply(message, 'background', 'upload_success', {
+                filename: attachment.name,
+                url: attachment.url
+            });
         }
     },
 };

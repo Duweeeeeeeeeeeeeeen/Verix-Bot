@@ -287,11 +287,16 @@ export default function PhotoContestConfig() {
                         guildId={guildId}
                         module="photocontest"
                         slugs={[
-                            { key: 'panel', label: 'Pannello Contest', description: 'Messaggio principale del concorso.', variables: ['themes'], group: '1. Contest', groupIcon: Camera },
-                            { key: 'submission', label: 'Nuova Opera', description: 'Messaggio Hall of Fame.', variables: ['user'], group: '1. Contest', groupIcon: Camera },
-                            { key: 'vote_up', label: 'Voto Aggiunto', description: 'Risposta voto positivo.', variables: ['user'], group: '2. Voti', groupIcon: Trophy },
-                            { key: 'interaction_notify', label: 'Notifica Autore', description: 'DM per nuovo voto.', variables: ['voter', 'action'], group: '3. DM', groupIcon: Bell },
-                            { key: 'already_submitted', label: 'Già Inviata', description: 'Errore limite.', variables: ['user'], group: '4. Errori', groupIcon: Zap }
+                            { key: 'panel', label: 'Pannello Contest', description: 'Messaggio principale del concorso nel canale dedicato.', variables: ['themes'], group: '1. Contest', groupIcon: Camera },
+                            { key: 'submission_confirmed', label: 'Conferma Invio', description: 'Risposta effimera mostrata all\'utente quando carica una foto.', variables: [], group: '1. Contest', groupIcon: CheckCircle2 },
+                            { key: 'vote_up', label: 'Voto Aggiunto', description: 'Risposta effimera mostrata al click del voto.', variables: ['user'], group: '2. Voti', groupIcon: Trophy },
+                            { key: 'interaction_notify', label: 'Notifica Autore (DM)', description: 'Messaggio privato per l\'autore quando la sua foto viene votata.', variables: ['voter', 'action'], group: '3. DM', groupIcon: Bell },
+                            { key: 'leaderboard_display', label: 'Classifica (Comando)', description: 'Messaggio mostrato dal comando /leaderboard.', variables: ['ranking'], group: '🏆 Risultati', groupIcon: Trophy },
+                            { key: 'contest_end_log', label: 'Proclamazione Vincitore', description: 'Messaggio finale inviato in Hall of Fame con il vincitore.', variables: ['user', 'votes'], group: '🏆 Risultati', groupIcon: Trophy },
+                            { key: 'staff_log', label: 'Log Nuova Opera', description: 'Alert staff quando viene caricata una foto (se configurato).', variables: ['user'], group: '🛡️ Staff', groupIcon: Shield },
+                            { key: 'already_submitted', label: 'Errore Limite Invio', description: 'Mostrato se l\'utente tenta di inviare più di una foto.', variables: ['user'], group: '🟥 Errori', groupIcon: Zap },
+                            { key: 'error_no_participants', label: 'Errore Partecipanti', description: 'Mostrato se il contest termina senza partecipanti.', variables: [], group: '🟥 Errori', groupIcon: XCircle },
+                            { key: 'leaderboard_error', label: 'Errore Classifica', description: 'Mostrato se il comando classifica fallisce.', variables: [], group: '🟥 Errori', groupIcon: XCircle }
                         ]}
                         extraButtons={(slug) => {
                             if (slug === 'panel') {

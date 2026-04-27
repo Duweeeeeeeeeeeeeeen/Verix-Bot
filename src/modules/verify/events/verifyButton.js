@@ -105,10 +105,7 @@ export default {
             logger.error('[Verify] Interaction Error:', error);
             const errLang = typeof lang !== 'undefined' ? lang : 'it';
             const errMsg = config?.messages?.errorResponse || t(errLang, 'general.error');
-            await interaction.reply({ 
-                content: errMsg.startsWith('❌') ? errMsg : `❌ ${errMsg} (${error.message})`, 
-                flags: [MessageFlags.Ephemeral] 
-            }).catch(() => {});
+            await messageService.reply(interaction, 'verify', 'error', {}, { ephemeral: true }).catch(() => {});
         }
     }
 };

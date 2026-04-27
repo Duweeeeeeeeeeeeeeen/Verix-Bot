@@ -53,11 +53,9 @@ export default {
                     ])
             );
 
-            return interaction.reply({ 
-                content: `### 🎫 Priorità richiesta\nTipo: \`${type.toUpperCase()}\``, 
-                components: [priorityMenu], 
-                flags: [MessageFlags.Ephemeral] 
-            });
+            return messageService.reply(interaction, 'tickets', 'priority_select', { 
+                type: type.toUpperCase() 
+            }, { components: [priorityMenu], ephemeral: true });
         }
 
         // --- 2. TICKET CREATION (Priority Selection) ---
@@ -97,7 +95,7 @@ export default {
                         .setPlaceholder('Scegli un template...')
                         .addOptions(config.cannedResponses.map(r => ({ label: r.label, value: r.label })))
                 );
-                return interaction.reply({ content: '📝 **Seleziona la risposta da inviare:**', components: [menu], flags: [MessageFlags.Ephemeral] });
+                return messageService.reply(interaction, 'tickets', 'quick_reply_menu', {}, { components: [menu], ephemeral: true });
             }
 
             if (interaction.isStringSelectMenu() && interaction.customId === 'tk_quick_reply_send') {
@@ -127,7 +125,7 @@ export default {
                         .setPlaceholder('Seleziona un tag...')
                         .addOptions(tags.map(t => ({ label: t, value: t })))
                 );
-                return interaction.reply({ content: '🏷️ **Aggiungi un tag al ticket:**', components: [menu], flags: [MessageFlags.Ephemeral] });
+                return messageService.reply(interaction, 'tickets', 'tag_menu', {}, { components: [menu], ephemeral: true });
             }
 
             if (interaction.isStringSelectMenu() && interaction.customId === 'tk_tag_select') {
@@ -180,21 +178,18 @@ export default {
                 const closeMode = config.closeMode || 'DELETE';
 
                 if (closeMode === 'DELETE') {
-                    if (logChannel) {
-                        const logPermCheck = checkBotPermissions(logChannel, [PermissionFlagsBits.SendMessages, PermissionFlagsBits.EmbedLinks, PermissionFlagsBits.AttachFiles]);
-                        if (!logPermCheck.hasPermission) {
-                            return interaction.reply({ 
-                                content: `❌ **Errore Chiusura:** Il bot non ha i permessi necessari nel canale LOGS (${logChannel.name}).\nRichiesti: ${logPermCheck.missing.join(', ')}`, 
-                                flags: [MessageFlags.Ephemeral] 
-                            });
+                        if (logChannel) {
+                            const logPermCheck = checkBotPermissions(logChannel, [PermissionFlagsBits.SendMessages, PermissionFlagsBits.EmbedLinks, PermissionFlagsBits.AttachFiles]);
+                            if (!logPermCheck.hasPermission) {
+                                return messageService.reply(interaction, 'tickets', 'close_error_logs', {
+                                    channel: logChannel.name,
+                                    missing: logPermCheck.missing.join(', ')
+                                }, { ephemeral: true });
+                            }
                         }
-                    }
                 } else if (closeMode === 'MOVE') {
                     if (!config.categoryClosedId) {
-                        return interaction.reply({ 
-                            content: `❌ **Errore Chiusura:** La Categoria Chiusi non è configurata.`, 
-                            flags: [MessageFlags.Ephemeral] 
-                        });
+                        return messageService.reply(interaction, 'tickets', 'close_error_category', {}, { ephemeral: true });
                     }
                 }
 

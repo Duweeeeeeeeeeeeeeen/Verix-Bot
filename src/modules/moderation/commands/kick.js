@@ -16,8 +16,9 @@ export default {
         const reason = interaction.options.getString('reason') || 'Nessun motivo fornito';
         const member = await interaction.guild.members.fetch(user.id);
 
-        if (!member) return interaction.reply({ content: 'Membro non trovato.', flags: [MessageFlags.Ephemeral] });
-        if (!member.kickable) return interaction.reply({ content: 'Non posso espellere questo membro.', flags: [MessageFlags.Ephemeral] });
+        if (!member || !member.kickable) {
+            return messageService.reply(interaction, 'moderation', 'error', {}, { ephemeral: true });
+        }
 
         // Notify User
         const config = await ModerationConfig.findOne({ guildId: interaction.guildId });
@@ -27,8 +28,7 @@ export default {
                 reason: reason
             });
             await sendUserNotification(interaction.guild, user, config.notifications, {
-                embeds: kickEmbed ? [kickEmbed] : [],
-                content: `👢 Sei stato espulso da **${interaction.guild.name}** per: ${reason}`
+                embeds: kickEmbed ? [kickEmbed] : []
             });
         }
 

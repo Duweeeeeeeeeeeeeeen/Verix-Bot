@@ -115,7 +115,7 @@ export default {
             await message.channel.send({ embeds: [nextEmbed] });
         } catch (error) {
             logger.error(`[WHITELIST] Critical error in answerHandler:`, error);
-            await message.channel.send('❌ Si è verificato un errore nel processare la tua risposta.').catch(() => {});
+            await messageService.send(message.channel, 'system', 'generic_error').catch(() => {});
         }
     },
 };

@@ -15,19 +15,19 @@ export default {
         // Module enablement check
         const guildData = await Guild.findOne({ guildId: interaction.guild.id });
         if (!guildData || !guildData.enabledModules?.includes('background')) {
-            return interaction.reply({ content: '❌ Il modulo Background non è attivo su questo server.', flags: [MessageFlags.Ephemeral] });
+            return messageService.reply(interaction, 'background', 'error', { reason: 'Il modulo Background non è attivo su questo server.' }, { ephemeral: true });
         }
 
         try {
             const config = await BackgroundConfig.findOne({ guildId: interaction.guild.id });
             if (!config) {
-                return interaction.reply({ content: 'Configurazione del modulo non trovata.', flags: [MessageFlags.Ephemeral] });
+                return messageService.reply(interaction, 'background', 'error', { reason: 'Configurazione del modulo non trovata.' }, { ephemeral: true });
             }
 
             // Cooldown & Pending Check
             const existingPending = await Background.findOne({ userId: interaction.user.id, guildId: interaction.guild.id, status: { $in: ['PENDING', 'SUBMITTED'] } });
             if (existingPending) {
-                return interaction.reply({ content: 'Hai già una richiesta di background attiva o in revisione.', flags: [MessageFlags.Ephemeral] });
+                return messageService.reply(interaction, 'background', 'active_session', {}, { ephemeral: true });
             }
 
             const userData = await User.findOne({ discordId: interaction.user.id }) || await User.create({ discordId: interaction.user.id, username: interaction.user.username });
@@ -40,10 +40,7 @@ export default {
                     const hours = Math.floor(timeLeft / (1000 * 60 * 60));
                     const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
                     
-                    return interaction.reply({ 
-                        content: `⚠️ Devi attendere ancora **${hours} ore e ${minutes} minuti** prima di inviare un nuovo background.`, 
-                        flags: [MessageFlags.Ephemeral] 
-                    });
+                    return messageService.reply(interaction, 'background', 'cooldown', { time: `${hours}h ${minutes}m` }, { ephemeral: true });
                 }
             }
 
@@ -90,11 +87,11 @@ export default {
             );
 
             await channel.send({ content: `${interaction.user}`, embeds: [embed], components: [row] });
-            await interaction.reply({ content: `✅ Canale creato: ${channel}`, flags: [MessageFlags.Ephemeral] });
+            await messageService.reply(interaction, 'background', 'channel_created', { channel: `${channel}` }, { ephemeral: true });
 
         } catch (error) {
             logger.error('Error starting background submission:', error);
-            await interaction.reply({ content: 'Si è verificato un errore critico.', flags: [MessageFlags.Ephemeral] });
+            await messageService.reply(interaction, 'background', 'error', { reason: 'Si è verificato un errore critico.' }, { ephemeral: true });
         }
     },
 };

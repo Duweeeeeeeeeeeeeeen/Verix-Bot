@@ -9,6 +9,7 @@ import { buildEmbed } from '../../../utils/embedHelper.js';
 import { updateDashboard } from '../utils/voiceDashboard.js';
 import { resolveVoiceChannelName } from '../../../utils/namingHelper.js';
 import { sendLog } from '../../../utils/notificationSender.js';
+import messageService from '../../../utils/messageService.js';
 import logger from '../../../utils/logger.js';
 
 const antiSpam = new Map();
@@ -49,7 +50,7 @@ export default {
                 // Check if paused
                 if (config.voiceSettings.paused) {
                     await member.voice.disconnect('Ufficio Vocale temporaneamente chiuso.');
-                    return member.send(config.voiceSettings.voiceMessages?.paused || '⏸️ **PROTOCOLLO SOSPESO:** Gli uffici vocali sono temporaneamente chiusi dallo staff. Riprova più tardi.').catch(() => {});
+                    return messageService.sendNotification(guild, member, 'support', 'paused', {}, config.voiceSettings.notifications);
                 }
 
                 // Anti-Spam Check
@@ -57,7 +58,7 @@ export default {
                 const lastJoin = antiSpam.get(member.id);
                 if (lastJoin && (now - lastJoin < (config.voiceSettings.queueCooldown || 5) * 60 * 1000)) {
                     await member.voice.disconnect('Anti-Spam Cooldown active.');
-                    return member.send(config.voiceSettings.voiceMessages?.cooldown || '⚠️ Hai provato a unirti troppo velocemente. Attendi qualche minuto prima di riprovare.').catch(() => {});
+                    return messageService.sendNotification(guild, member, 'support', 'cooldown', {}, config.voiceSettings.notifications);
                 }
                 antiSpam.set(member.id, now);
 
@@ -68,7 +69,7 @@ export default {
                 const hasVoice = ['VOICE', 'HYBRID', 'BG_VOICE', 'FULL'].includes(m);
                 if (!hasVoice) {
                     await member.voice.disconnect('Procedura non prevista.');
-                    return member.send('❌ **ERRORE PROCEDURALE:** Lo Stato non prevede colloqui orali per questo tipo di visto.').catch(() => {});
+                    return messageService.sendNotification(guild, member, 'whitelist', 'voice_procedural_error', {}, config.voiceSettings.notifications);
                 }
 
                 // 2. Background Prerequisite
@@ -136,13 +137,16 @@ export default {
                             const pings = config.voiceSettings.pingStaffOnJoin 
                                 ? (config.staffRoleIds || []).map(id => `<@&${id}>`).join(' ') 
                                 : '';
-                            await logChannel.send(`${pings} 📢 **PROTOCOLLO CODA:** Nuovo cittadino in attesa!\nSoggetto: ${member} (${member.id})\nCoda attuale: \`${waitingCount}\``);
+                            await messageService.send(logChannel, 'whitelist', 'queue_log', { 
+                                user: member, 
+                                waiting_count: waitingCount 
+                            }, { content: pings });
                         }
                     }
                     
-                    const queueMsg = config.voiceSettings.voiceMessages?.queueFull || '⏳ Tutti gli uffici sono occupati. Sei in coda. {vip_priority} Verrai spostato automaticamente appena disponibile.';
-                    const finalMsg = queueMsg.replace('{vip_priority}', isVip ? '💎 **Priorità VIP Attiva!**' : '');
-                    return member.send(finalMsg).catch(() => {});
+                    return messageService.sendNotification(guild, member, 'support', 'queueFull', { 
+                        vip_priority: isVip ? '💎 **Priorità VIP Attiva!**' : '' 
+                    }, config.voiceSettings.notifications);
                 }
 
                 // Start Session

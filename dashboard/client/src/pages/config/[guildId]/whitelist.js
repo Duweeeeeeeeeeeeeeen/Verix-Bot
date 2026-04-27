@@ -596,14 +596,21 @@ export default function WhitelistConfig() {
                             { key: 'review', label: 'Review Finale', description: 'Riepilogo pre-invio.', variables: ['user'], group: '2. Colloquio', groupIcon: Play },
                             { key: 'session_completed', label: 'Sessione Completata', description: 'DM fine domande.', variables: ['user'], group: '3. Fine', groupIcon: CheckCircle2 },
                             { key: 'submission_confirmed', label: 'Ricevuta Ufficiale', description: 'Conferma ricezione.', variables: ['user'], group: '3. Fine', groupIcon: CheckCircle2 },
-                            { key: 'staff_received', label: 'Log Staff', description: 'Messaggio per i selezionatori.', variables: ['user', 'age', 'about'], group: '🛡️ Staff', groupIcon: ShieldCheck },
+                            { key: 'staff_received', label: 'Log Staff (Scritto)', description: 'Messaggio per i selezionatori.', variables: ['user', 'age', 'about'], group: '🛡️ Staff', groupIcon: ShieldCheck },
+                            { key: 'queue_log', label: 'Log Staff (Coda)', description: 'Alert ingresso cittadini in attesa.', variables: ['user', 'waiting_count'], group: '🛡️ Staff', groupIcon: ShieldCheck },
                             { key: 'dm_accepted', label: 'Esito Positivo', description: 'DM accettazione.', variables: ['user'], group: '✅ Esito', groupIcon: CheckCircle2 },
                             { key: 'dm_rejected', label: 'Esito Negativo', description: 'DM rifiuto scritto.', variables: ['user', 'reason'], group: '🟥 Esito', groupIcon: XCircle },
                             { key: 'dm_text_pass', label: 'Scritto Superato', description: 'DM idoneo orale.', variables: ['user'], group: '✅ Esito', groupIcon: CheckCircle2 },
                             { key: 'dm_voice_rejected', label: 'Bocciato Orale', description: 'DM rifiuto orale.', variables: ['user', 'reason'], group: '🟥 Esito', groupIcon: XCircle },
+                            { key: 'promote_vip_success', label: 'Promozione VIP', description: 'Alert quando un utente viene promosso in coda.', variables: ['user'], group: '🎙️ Staff Actions', groupIcon: Mic2 },
+                            { key: 'pause_success', label: 'Sistema Sospeso', description: 'Alert sospensione uffici vocali.', variables: [], group: '🎙️ Staff Actions', groupIcon: Mic2 },
+                            { key: 'resume_success', label: 'Sistema Ripristinato', description: 'Alert riattivazione uffici vocali.', variables: [], group: '🎙️ Staff Actions', groupIcon: Mic2 },
+                            { key: 'skip_success', label: 'Sessione Saltata', description: 'Alert salto sessione corrente.', variables: [], group: '🎙️ Staff Actions', groupIcon: Mic2 },
                             { key: 'voice_waiting', label: 'Sala d\'Attesa', description: 'DM utente in attesa.', variables: ['user'], group: '🎙️ Voce', groupIcon: Play },
                             { key: 'voice_guide', label: 'Guida Staff', description: 'Messaggio per lo staffer.', variables: ['user', 'start_time'], group: '🎙️ Voce', groupIcon: Mic2 },
-                            { key: 'cooldown', label: 'In Cooldown', description: 'Errore tempo.', variables: ['time'], group: '🟥 Errori', groupIcon: XCircle }
+                            { key: 'voice_procedural_error', label: 'Errore Procedurale', description: 'Alert se l\'utente non deve fare l\'orale.', variables: [], group: '🟥 Errori', groupIcon: XCircle },
+                            { key: 'cooldown', label: 'In Cooldown', description: 'Errore tempo.', variables: ['time'], group: '🟥 Errori', groupIcon: XCircle },
+                            { key: 'app_not_found', label: 'Pratica Inesistente', description: 'Errore ricerca dossier.', variables: [], group: '🟥 Errori', groupIcon: XCircle }
                         ]}
                         extraButtons={(slug) => {
                             if (slug === 'panel') {

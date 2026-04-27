@@ -438,17 +438,23 @@ export default function TicketConfig() {
                             guildId={guildId}
                             module="tickets"
                             slugs={[
-                                { key: 'panel', label: 'Pannello Apertura Ticket', description: 'Il messaggio principale con i bottoni o il menu per aprire un ticket.', variables: ['guild'], group: '🎫 Ticket', groupIcon: Ticket },
-                                { key: 'ticket', label: 'Ticket Benvenuto (Generale)', description: 'Messaggio iniziale mandato dentro the ticket se non c\'è un messaggio specifico per categoria.', variables: ['user'], group: '🎫 Ticket', groupIcon: Ticket },
-                                { key: 'success_open', label: 'Ticket Aperto', description: 'Risposta effimera al bottone di apertura ticket.', variables: ['user', 'ticketChannel'], group: '🎫 Ticket', groupIcon: Ticket },
+                                { key: 'panel', label: 'Pannello Apertura Ticket', description: 'Il messaggio principale con i bottoni o il menu per aprire un ticket.', variables: ['guild'], group: '1. Accesso', groupIcon: Play },
+                                { key: 'ticket', label: 'Ticket Benvenuto (Generale)', description: 'Messaggio iniziale mandato dentro the ticket se non c\'è un messaggio specifico per categoria.', variables: ['user'], group: '2. Gestione', groupIcon: Ticket },
+                                { key: 'success_open', label: 'Ticket Aperto', description: 'Risposta effimera al bottone di apertura ticket.', variables: ['user', 'ticketChannel'], group: '2. Gestione', groupIcon: Ticket },
+                                { key: 'priority_select', label: 'Scelta Priorità', description: 'Messaggio che chiede la priorità all\'apertura.', variables: ['type'], group: '2. Gestione', groupIcon: Clock },
+                                { key: 'quick_reply_menu', label: 'Menu Risposte Rapide', description: 'Pannello di selezione template per lo staff.', variables: [], group: '🛡️ Staff Tools', groupIcon: MessageSquare },
+                                { key: 'tag_menu', label: 'Menu Tag/Protocolli', description: 'Pannello di selezione tag per lo staff.', variables: [], group: '🛡️ Staff Tools', groupIcon: Tag },
+                                { key: 'staff_claimed', label: 'Ticket Preso in Carico', description: 'Messaggio inviato quando un membro dello staff clicca "Prendi in carico".', variables: ['staff'], group: '🛡️ Staff', groupIcon: Shield },
+                                { key: 'status_updated', label: 'Stato Aggiornato', description: 'Messaggio che indica il cambio di stato del ticket (es. in attesa utente).', variables: ['user', 'status'], group: '2. Gestione', groupIcon: Tag },
+                                { key: 'inactivity_close', label: 'Chiusura per Inattività', description: 'Messaggio inviato prima di chiudere un ticket inattivo.', variables: ['hours'], group: '🔒 Chiusura', groupIcon: Archive },
                                 { key: 'close', label: 'Ticket Chiuso', description: 'Messaggio di conferma chiusura nel ticket prima dell\'archiviazione.', variables: ['user'], group: '🔒 Chiusura', groupIcon: Archive },
+                                { key: 'close_status', label: 'Trascrizione Ticket', description: 'Messaggio finale inviato in DM all\'utente con il transcript del ticket.', variables: ['user', 'ticketId', 'transcriptUrl'], group: '🔒 Chiusura', groupIcon: FileText },
+                                { key: 'staff_ticket_log', label: 'Log Ticket Staff', description: 'Log inviato nel canale log ticket quando un ticket viene chiuso.', variables: ['user', 'staff', 'ticketId'], group: '🛡️ Staff', groupIcon: Shield },
                                 { key: 'already_exists', label: 'Ticket Esistente', description: 'Errore mostrato quando un utente ha già un ticket aperto.', variables: ['user', 'ticketChannel'], group: '🟥 Errori', groupIcon: XCircle },
                                 { key: 'already_claimed', label: 'Ticket Già Preso', description: 'Errore mostrato quando un membro staff tenta di prendere un ticket già gestito.', variables: ['user'], group: '🟥 Errori', groupIcon: XCircle },
-                                { key: 'staff_claimed', label: 'Ticket Preso in Carico', description: 'Messaggio inviato quando un membro dello staff clicca "Prendi in carico".', variables: ['staff'], group: '🛡️ Staff', groupIcon: Shield },
-                                { key: 'status_updated', label: 'Stato Aggiornato', description: 'Messaggio che indica il cambio di stato del ticket (es. in attesa utente).', variables: ['user', 'status'], group: '🎫 Ticket', groupIcon: Tag },
-                                { key: 'staff_ticket_log', label: 'Log Ticket Staff', description: 'Log inviato nel canale log ticket quando un ticket viene chiuso.', variables: ['user', 'staff', 'ticketId'], group: '🛡️ Staff', groupIcon: Shield },
-                                { key: 'close_status', label: 'Trascrizione Ticket', description: 'Messaggio finale inviato in DM all\'utente con il transcript del ticket.', variables: ['user', 'ticketId', 'transcriptUrl'], group: '🔒 Chiusura', groupIcon: FileText },
-                                { key: 'cannot_close', label: 'Errore Chiusura', description: 'Errore mostrato se il ticket non può essere chiuso (es. permessi mancanti).', variables: ['user'], group: '🟥 Errori', groupIcon: XCircle }
+                                { key: 'cannot_close', label: 'Errore Chiusura (Generico)', description: 'Errore mostrato se il ticket non può essere chiuso.', variables: ['user'], group: '🟥 Errori', groupIcon: XCircle },
+                                { key: 'close_error_logs', label: 'Errore Permessi Log', description: 'Errore mostrato se il bot non può scrivere nel canale log.', variables: ['channel', 'missing'], group: '🟥 Errori', groupIcon: XCircle },
+                                { key: 'close_error_category', label: 'Errore Config Categoria', description: 'Errore mostrato se la categoria chiusi manca.', variables: [], group: '🟥 Errori', groupIcon: XCircle }
                             ]}
                             extraButtons={(slug) => {
                                 if (slug === 'panel') {
