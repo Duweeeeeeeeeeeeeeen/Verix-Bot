@@ -88,8 +88,12 @@ export function mergeModuleDefaults(moduleName, dbConfig) {
             continue;
         }
 
-        // Handle nested objects (voiceSettings, embedSettings, etc.)
+        // Handle nested objects (voiceSettings, typesConfig, etc.)
         if (value && typeof value === 'object' && !value.title && !value.description) {
+            // Special case for typesConfig: if the user has ANY category, don't add defaults
+            if (key === 'typesConfig' && result[key] && Object.keys(result[key]).length > 0) {
+                continue;
+            }
             result[key] = { ...value, ...(result[key] || {}) };
             continue;
         }
