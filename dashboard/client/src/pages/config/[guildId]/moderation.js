@@ -77,15 +77,18 @@ export default function ModerationConfig() {
   };
 
   const updateNested = (path, value) => {
-    const keys = path.split('.');
-    const newConfig = { ...config };
-    let current = newConfig;
-    for (let i = 0; i < keys.length - 1; i++) {
-        if (!current[keys[i]]) current[keys[i]] = {};
-        current = current[keys[i]];
-    }
-    current[keys[keys.length - 1]] = value;
-    setConfig(newConfig);
+    setConfig(prev => {
+        const keys = path.split('.');
+        const newConfig = { ...prev };
+        let current = newConfig;
+        for (let i = 0; i < keys.length - 1; i++) {
+            if (!current[keys[i]]) current[keys[i]] = {};
+            else current[keys[i]] = { ...current[keys[i]] };
+            current = current[keys[i]];
+        }
+        current[keys[keys.length - 1]] = value;
+        return newConfig;
+    });
   };
 
   const addPunishment = () => {

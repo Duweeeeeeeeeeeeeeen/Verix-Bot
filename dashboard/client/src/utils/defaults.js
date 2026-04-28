@@ -4,7 +4,7 @@ export const defaultDesign = {
     embedColor: '#6366f1',
     buttonStyle: 'PRIMARY',
     showFooter: true,
-    footerText: 'Verix Assistant | Premium RP',
+    footerText: '',
     voiceSettings: {
         joinChannelId: '',
         staffRoleIds: [],

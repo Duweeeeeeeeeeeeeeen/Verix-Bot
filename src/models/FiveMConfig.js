@@ -40,6 +40,10 @@ const fiveMConfigSchema = new mongoose.Schema({
     guildId: { type: String, required: true, unique: true, match: discordIdRegex },
     enabled: { type: Boolean, default: false },
     staffRoleIds: { type: [String], default: [] },
+    notifications: {
+        mode: { type: String, enum: ['DM', 'CHANNEL', 'BOTH', 'NONE'], default: 'DM' },
+        channelId: { type: String, default: null }
+    },
     servers: { type: [serverTrackerSchema], default: [] }
 }, { timestamps: true });
 

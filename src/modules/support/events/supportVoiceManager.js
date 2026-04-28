@@ -156,13 +156,10 @@ async function startSupportSession(member, guild, config, client) {
     if (config.logChannelId) {
         const logChannel = guild.channels.cache.get(config.logChannelId);
         if (logChannel) {
-            const logEmbed = new EmbedBuilder()
-                .setTitle(config.embeds.staffLog.title)
-                .setDescription(config.embeds.staffLog.description.replace('{user}', member.toString()).replace('{voice_channel}', tempChannel.name))
-                .setColor(config.embeds.staffLog.color)
-                .setTimestamp();
-            
-            await logChannel.send({ embeds: [logEmbed] });
+            await messageService.send(logChannel, 'support', 'staffLog', {
+                user: member.toString(),
+                voice_channel: tempChannel.name
+            });
         }
     }
 

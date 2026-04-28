@@ -16,6 +16,10 @@ export const ticketSchema = z.object({
         emoji: z.string().max(32).optional(),
         image: z.string().url().or(z.string().length(0)).optional().nullable()
     })).optional(),
+    notifications: z.object({
+        mode: z.enum(['DM', 'CHANNEL', 'BOTH', 'NONE']).default('DM'),
+        channelId: discordId.or(z.literal('')).optional().nullable()
+    }).optional(),
     transcriptionEnabled: z.boolean().optional(),
     inactivityTimeout: z.number().min(1).max(720).optional(),
     cannedResponses: z.array(z.object({

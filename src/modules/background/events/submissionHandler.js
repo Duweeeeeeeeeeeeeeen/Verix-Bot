@@ -136,7 +136,13 @@ export default {
                     user: interaction.user.username,
                     guild: interaction.guild.name
                 });
-                if (dmEmbed) interaction.user.send({ embeds: [dmEmbed] }).catch(() => {});
+                
+                if (dmEmbed) {
+                    await messageService.sendNotification(interaction.guild, interaction.user, 'background', 'dm_received', {
+                        user: interaction.user.username,
+                        guild: interaction.guild.name
+                    }, config.notifications);
+                }
 
             } catch (err) {
                 logger.error('[BG] Error in submissionHandler:', err);

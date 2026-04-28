@@ -10,7 +10,7 @@ import {
   Settings2, Info, ChevronRight, Bell, Tag, MessageSquare, 
   MousePointer2, Type, Hash, Shield, Palette, Layers,
   Archive, FileText, XCircle, CheckCircle2, Zap, Send, Users,
-  GripVertical
+  GripVertical, Play
 } from 'lucide-react';
 import DiscordSelector from '../../../components/DiscordSelector';
 import EmojiInput from '../../../components/EmojiInput';
@@ -106,34 +106,42 @@ export default function TicketConfig() {
   };
 
   const setNested = (path, value) => {
-    const newConfig = { ...config };
-    const parts = path.split('.');
-    let cur = newConfig;
-    for (let i = 0; i < parts.length - 1; i++) {
-        if (!cur[parts[i]]) cur[parts[i]] = {};
-        cur = cur[parts[i]];
-    }
-    cur[parts[parts.length - 1]] = value;
-    setConfig(newConfig);
+    setConfig(prev => {
+        const newConfig = { ...prev };
+        const parts = path.split('.');
+        let cur = newConfig;
+        for (let i = 0; i < parts.length - 1; i++) {
+            if (!cur[parts[i]]) cur[parts[i]] = {};
+            else cur[parts[i]] = { ...cur[parts[i]] }; // Clone level
+            cur = cur[parts[i]];
+        }
+        cur[parts[parts.length - 1]] = value;
+        return newConfig;
+    });
   };
 
   const setGlobalNested = (path, value) => {
-    const newGlobal = { ...globalConfig };
-    const parts = path.split('.');
-    let cur = newGlobal;
-    for (let i = 0; i < parts.length - 1; i++) {
-        if (!cur[parts[i]]) cur[parts[i]] = {};
-        cur = cur[parts[i]];
-    }
-    cur[parts[parts.length - 1]] = value;
-    setGlobalConfig(newGlobal);
+    setGlobalConfig(prev => {
+        const newGlobal = { ...prev };
+        const parts = path.split('.');
+        let cur = newGlobal;
+        for (let i = 0; i < parts.length - 1; i++) {
+            if (!cur[parts[i]]) cur[parts[i]] = {};
+            else cur[parts[i]] = { ...cur[parts[i]] };
+            cur = cur[parts[i]];
+        }
+        cur[parts[parts.length - 1]] = value;
+        return newGlobal;
+    });
   };
 
   const addCategory = () => {
-    const id = `cat_${Math.random().toString(36).substr(2, 5)}`;
-    const newTypes = { ...(config.typesConfig || {}) };
-    newTypes[id] = { label: 'Nuova Categoria', emoji: '🎫', color: '#6366f1', staffRoleIds: [] };
-    setConfig({ ...config, typesConfig: newTypes });
+    setConfig(prev => {
+        const id = `cat_${Math.random().toString(36).substr(2, 5)}`;
+        const newTypes = { ...(prev.typesConfig || {}) };
+        newTypes[id] = { label: 'Nuova Categoria', emoji: '🎫', color: '#6366f1', staffRoleIds: [] };
+        return { ...prev, typesConfig: newTypes };
+    });
   };
 
   if (!mounted || loading || !config) return <Skeleton height="600px" />;
@@ -260,12 +268,16 @@ export default function TicketConfig() {
                                                 <div className="category-drag">
                                                     <GripVertical size={20} className="text-dim" />
                                                 </div>
-                                                <div className="category-emoji">
-                                                    <EmojiInput value={data.emoji || '🎫'} onChange={e => {
-                                                        const newTypes = { ...config.typesConfig };
-                                                        newTypes[id] = { ...data, emoji: e.target.value };
-                                                        setConfig({ ...config, typesConfig: newTypes });
-                                                    }} />
+                                                <div className="category-emoji-picker">
+                                                    <EmojiInput 
+                                                        value={data.emoji || '🎫'} 
+                                                        hideInput={true}
+                                                        onChange={e => {
+                                                            const newTypes = { ...config.typesConfig };
+                                                            newTypes[id] = { ...data, emoji: e.target.value };
+                                                            setConfig({ ...config, typesConfig: newTypes });
+                                                        }} 
+                                                    />
                                                 </div>
                                                 <div className="category-label">
                                                     <input className="input-transparent" value={data.label || ''} onChange={e => {
@@ -274,7 +286,8 @@ export default function TicketConfig() {
                                                         setConfig({ ...config, typesConfig: newTypes });
                                                     }} placeholder="Nome categoria..." />
                                                 </div>
-                                                <div className="category-color">
+                                                <div className="category-color" title="Colore dell'Embed del Ticket">
+                                                    <label className="label-tiny">Colore Embed</label>
                                                     <input type="color" value={data.color || '#6366f1'} onChange={e => {
                                                         const newTypes = { ...config.typesConfig };
                                                         newTypes[id] = { ...data, color: e.target.value };
@@ -420,13 +433,19 @@ export default function TicketConfig() {
                                             </div>
                                         </div>
                                         <div className="style-selector">
-                                            {['SUCCESS', 'DANGER', 'PRIMARY', 'SECONDARY'].map(style => (
+                                            {[
+                                                { id: 'SUCCESS', label: 'Verde' },
+                                                { id: 'DANGER', label: 'Rosso' },
+                                                { id: 'PRIMARY', label: 'Blu' },
+                                                { id: 'SECONDARY', label: 'Grigio' }
+                                            ].map(style => (
                                                 <button 
-                                                    key={style}
-                                                    onClick={() => setNested(`buttons.${btn.key}.style`, style)}
-                                                    className={`style-dot ${style} ${config.buttons?.[btn.key]?.style === style ? 'active' : ''}`}
-                                                    title={style}
-                                                />
+                                                    key={style.id}
+                                                    onClick={() => setNested(`buttons.${btn.key}.style`, style.id)}
+                                                    className={`style-pill ${style.id} ${config.buttons?.[btn.key]?.style === style.id ? 'active' : ''}`}
+                                                >
+                                                    {style.label}
+                                                </button>
                                             ))}
                                         </div>
                                     </div>
@@ -502,15 +521,16 @@ export default function TicketConfig() {
             .categories-stack { display: flex; flex-direction: column; gap: 16px; }
             .category-item { background: rgba(255,255,255,0.015); border-radius: 12px; border: 1px solid var(--border); overflow: visible; position: relative; transition: z-index 0s; }
             .category-item:focus-within { z-index: 100; }
-            .category-main { display: flex; align-items: center; gap: 16px; padding: 16px 20px; background: rgba(255,255,255,0.01); border-bottom: 1px solid var(--border); }
+            .category-main { display: flex; align-items: center; gap: 16px; padding: 16px 20px; background: rgba(255,255,255,0.01); border-bottom: 1px solid var(--border); overflow: visible; }
             .category-drag { cursor: grab; }
-            .category-emoji { width: 50px; }
+            .category-emoji-picker { width: 44px; height: 44px; flex-shrink: 0; }
             .category-label { flex: 1; }
-            .category-color input { width: 32px; height: 32px; border: none; border-radius: 6px; background: none; cursor: pointer; }
+            .category-color { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+            .category-color input { width: 28px; height: 28px; border: none; border-radius: 6px; background: none; cursor: pointer; }
             .input-transparent { width: 100%; background: transparent; border: none; color: white; font-weight: 600; font-size: 1rem; padding: 4px 0; border-bottom: 1px solid transparent; }
             .input-transparent:focus { border-color: var(--primary); outline: none; }
-            .category-details { padding: 16px 20px; background: rgba(0,0,0,0.1); }
-            .label-tiny { font-size: 0.65rem; text-transform: uppercase; color: var(--text-dim); font-weight: 800; margin-bottom: 8px; display: block; }
+            .category-details { padding: 16px 20px; background: rgba(0,0,0,0.1); overflow: visible; }
+            .label-tiny { font-size: 0.65rem; text-transform: uppercase; color: var(--text-dim); font-weight: 800; margin-bottom: 4px; display: block; white-space: nowrap; }
             
             .event-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid var(--border); margin-bottom: 8px; }
             .event-name { font-size: 0.85rem; font-weight: 600; }
@@ -518,15 +538,21 @@ export default function TicketConfig() {
             .mini-check { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; font-weight: 700; cursor: pointer; }
             
             .buttons-config-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
-            .btn-config-card { background: rgba(255,255,255,0.02); padding: 20px; border-radius: 14px; border: 1px solid var(--border); }
+            .btn-config-card { background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 14px; padding: 16px; }
             .btn-inputs { display: flex; gap: 10px; margin-bottom: 16px; }
-            .style-selector { display: flex; gap: 8px; }
-            .style-dot { flex: 1; height: 8px; border: none; border-radius: 4px; cursor: pointer; opacity: 0.15; transition: 0.2s; }
-            .style-dot.active { opacity: 1; transform: scaleY(1.2); }
-            .style-dot.SUCCESS { background: #22c55e; }
-            .style-dot.DANGER { background: #ef4444; }
-            .style-dot.PRIMARY { background: #6366f1; }
-            .style-dot.SECONDARY { background: #64748b; }
+            .style-selector { display: flex; gap: 6px; margin-top: 12px; }
+            .style-pill { flex: 1; padding: 6px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: white; opacity: 0.25; transition: 0.2s; }
+            .style-pill.active { opacity: 1; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+            .style-pill.SUCCESS { background: #248046; }
+            .style-pill.DANGER { background: #da373c; }
+            .style-pill.PRIMARY { background: #5865f2; }
+            .style-pill.SECONDARY { background: #4f545c; }
+
+            .preview-button { padding: 6px 12px; border-radius: 4px; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; justify-content: center; color: white; border: none; margin-right: 8px; }
+            .preview-button.SUCCESS { background: #248046; }
+            .preview-button.DANGER { background: #da373c; }
+            .preview-button.PRIMARY { background: #5865f2; }
+            .preview-button.SECONDARY { background: #4f545c; }
 
             .empty-state { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 48px; color: var(--text-dim); opacity: 0.5; }
             .align-center { display: flex; align-items: center; gap: 10px; }
@@ -535,7 +561,7 @@ export default function TicketConfig() {
             .transcription-box { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.02); padding: 16px; border-radius: 12px; border: 1px solid var(--border); margin-top: 12px; }
             .event-item-v { display: flex; flex-direction: column; gap: 12px; padding: 16px; background: rgba(255,255,255,0.015); border-radius: 12px; border: 1px solid var(--border); margin-top: 12px; }
             .event-info-v { display: flex; flex-direction: column; }
-            .event-switches-v { display: flex; gap: 20px; border-top: 1px solid var(--border); pt: 12px; padding-top: 12px; }
+            .event-switches-v { display: flex; gap: 20px; border-top: 1px solid var(--border); padding-top: 12px; }
             .switch-with-label { display: flex; align-items: center; gap: 10px; }
             
             @media (max-width: 1000px) { .config-grid { grid-template-columns: 1fr; } .fields-grid { grid-template-columns: 1fr; } }

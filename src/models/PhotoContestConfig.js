@@ -60,9 +60,9 @@ const photoContestConfigSchema = new mongoose.Schema({
         type: [String],
         default: ['Natura', 'Architettura', 'Tramonti', 'Cibo', 'Minimalismo', 'Cyberpunk', 'Ritratti', 'Animali']
     },
-    enableNotifications: {
-        type: Boolean,
-        default: true
+    notifications: {
+        mode: { type: String, enum: ['DM', 'CHANNEL', 'BOTH', 'NONE'], default: 'DM' },
+        channelId: { type: String, default: null }
     }
 });
 

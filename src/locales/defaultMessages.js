@@ -460,13 +460,13 @@ export default {
             title: '📊 Statistiche Assistenza',
             description: 'Riepilogo attività per il server/operatore:\n\n{stats}',
             color: '#3498db'
+        },
+        typesConfig: {
+            supporto: { label: 'Supporto Generale', emoji: '🎫', color: '#6366f1', staffRoleIds: [] },
+            segnalazione: { label: 'Segnalazione Utente', emoji: '🚨', color: '#ef4444', staffRoleIds: [] },
+            donazione: { label: 'Donazioni', emoji: '💰', color: '#f59e0b', staffRoleIds: [] },
+            bug: { label: 'Segnalazione Bug', emoji: '🐛', color: '#10b981', staffRoleIds: [] }
         }
-    },
-    typesConfig: {
-        supporto: { label: 'Supporto Generale', emoji: '🎫', color: '#6366f1', staffRoleIds: [] },
-        segnalazione: { label: 'Segnalazione Utente', emoji: '🚨', color: '#ef4444', staffRoleIds: [] },
-        donazione: { label: 'Donazioni', emoji: '💰', color: '#f59e0b', staffRoleIds: [] },
-        bug: { label: 'Segnalazione Bug', emoji: '🐛', color: '#10b981', staffRoleIds: [] }
     },
     verify: {
         panel: {
@@ -727,48 +727,35 @@ export default {
         }
     },
     support: {
-        voiceSettings: {
-            enabled: false,
-            autoDelete: true,
-            maxConcurrent: 1,
-            queueCooldown: 2,
-            pingStaffOnJoin: true,
-            sendDms: true,
-            channelNameTemplate: 'assistenza-{user}',
-            messages: {
-                paused: {
-                    title: '❌ Servizio Sospeso',
-                    description: 'I protocolli di assistenza vocale sono attualmente disattivati. Riprova più tardi.',
-                    color: '#e74c3c'
-                },
-                cooldown: {
-                    title: '⏳ Protocollo Cooldown',
-                    description: 'Hai già richiesto assistenza recentemente. Devi attendere prima di poter aprire un nuovo ufficio.',
-                    color: '#f1c40f'
-                },
-                queueFull: {
-                    title: '📡 Uffici Occupati',
-                    description: 'Tutti i canali di assistenza sono attualmente impegnati. Sei stato inserito nel sistema di attesa prioritario.',
-                    color: '#3498db'
-                },
-                sessionStart: {
-                    title: '✅ Operatore Disponibile',
-                    description: 'Un ufficio è stato liberato per te. Sei stato riallocato nel tuo canale di assistenza privato.',
-                    color: '#2ecc71'
-                }
-            }
+        paused: {
+            title: '❌ Servizio Sospeso',
+            description: 'I protocolli di assistenza vocale sono attualmente disattivati. Riprova più tardi.',
+            color: '#e74c3c'
         },
-        embeds: {
-            staffLog: {
-                title: '🎙️ Registro Assistenza',
-                description: 'L\'utente **{user}** è entrato in assistenza.\n\n**Canale:** {voice_channel}',
-                color: '#f1c40f'
-            },
-            queue_log: {
-                title: '📢 Coda Assistenza: Nuovo Utente',
-                description: '{vip_text}Un utente è in attesa di assistenza.\n\n**UTENTE:** {user}\n**ID:** `{user_id}`\n**POSIZIONE:** `{position}`',
-                color: '#f1c40f'
-            }
+        cooldown: {
+            title: '⏳ Protocollo Cooldown',
+            description: 'Hai già richiesto assistenza recentemente. Devi attendere prima di poter aprire un nuovo ufficio.',
+            color: '#f1c40f'
+        },
+        queueFull: {
+            title: '📡 Uffici Occupati',
+            description: 'Tutti i canali di assistenza sono attualmente impegnati. Sei stato inserito nel sistema di attesa prioritario.',
+            color: '#3498db'
+        },
+        sessionStart: {
+            title: '✅ Operatore Disponibile',
+            description: 'Un ufficio è stato liberato per te. Sei stato riallocato nel tuo canale di assistenza privato.',
+            color: '#2ecc71'
+        },
+        staffLog: {
+            title: '🎙️ Registro Assistenza',
+            description: 'L\'utente **{user}** è entrato in assistenza.\n\n**Canale:** {voice_channel}',
+            color: '#f1c40f'
+        },
+        queue_log: {
+            title: '📢 Coda Assistenza: Nuovo Utente',
+            description: '{vip_text}Un utente è in attesa di assistenza.\n\n**UTENTE:** {user}\n**ID:** `{user_id}`\n**POSIZIONE:** `{position}`',
+            color: '#f1c40f'
         }
     }
 };

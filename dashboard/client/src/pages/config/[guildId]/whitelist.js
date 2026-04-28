@@ -105,15 +105,18 @@ export default function WhitelistConfig() {
   }, [config]);
 
   const setNested = (path, value) => {
-    const newConfig = { ...config };
-    const parts = path.split('.');
-    let cur = newConfig;
-    for (let i = 0; i < parts.length - 1; i++) {
-        if (!cur[parts[i]]) cur[parts[i]] = {};
-        cur = cur[parts[i]];
-    }
-    cur[parts[parts.length - 1]] = value;
-    setConfig(newConfig);
+    setConfig(prev => {
+        const newConfig = { ...prev };
+        const parts = path.split('.');
+        let cur = newConfig;
+        for (let i = 0; i < parts.length - 1; i++) {
+            if (!cur[parts[i]]) cur[parts[i]] = {};
+            else cur[parts[i]] = { ...cur[parts[i]] };
+            cur = cur[parts[i]];
+        }
+        cur[parts[parts.length - 1]] = value;
+        return newConfig;
+    });
   };
 
   const showToast = (message, type = 'success') => {

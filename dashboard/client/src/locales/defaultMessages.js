@@ -77,7 +77,7 @@ export default {
             color: '#3498db'
         }
     },
-    whitelist: {
+        whitelist: {
         panel: {
             title: '🛂 Ufficio Immigrazione - Ingresso in Città',
             description: 'Benvenuto nel portale di accesso. Per risiedere stabilmente in città, devi sottoporti a una valutazione d\'idoneità civile.\n\nAssicurati di rispondere onestamente ai protocolli che ti verranno sottoposti.',
@@ -85,7 +85,7 @@ export default {
             footer: 'Dipartimento Civile | Verix RP'
         },
         start: {
-            title: '📄 Pratica d\'Ingresso: {user}',
+            title: '📄 Pratica d\'Ingresso: {user_name}',
             description: 'Benvenuto cittadino. Per essere ammesso ufficialmente, dobbiamo compilare il tuo dossier informativo.\n\n**DIRETTIVE MINISTERIALI:**\n• Rispondi onestamente e con dovizia di particolari.\n• Rispetta i protocolli di tempo per evitare l\'annullamento dell\'istanza.',
             color: '#3BA4FF',
             footer: 'Ufficio Accoglienza | Verix RP'
@@ -159,6 +159,106 @@ export default {
             title: '📝 Scritto Superato',
             description: 'Hai superato la prova scritta su **{guild}**! Ora puoi recarti nel canale vocale d\'attesa per il colloquio finale.',
             color: '#f1c40f'
+        },
+        staff_received: {
+            title: '📩 Nuova Pratica Whitelist',
+            description: 'L\'utente **{user_name}** ha sottomesso il proprio dossier per la valutazione.\n\n**INFO:**\n• Discord: <@{user_id}>\n• ID Pratica: `{app_id}`',
+            color: '#3498db'
+        },
+        dm_submitted: {
+            title: '📋 Dossier Ricevuto',
+            description: 'La tua candidatura per entrare in **{guild}** è stata acquisita dai nostri sistemi.\n\nUn membro della Commissione la revisionerà il prima possibile. Verrai avvisato qui non appena ci sarà un esito.',
+            color: '#3498db'
+        },
+        submission_confirmed: {
+            title: '✅ Dossier Sottomesso',
+            description: 'La tua documentazione è stata inviata correttamente agli uffici competenti. Verrai avvisato a breve dell\'esito.',
+            color: '#2ecc71'
+        },
+        voice_procedural_error: {
+            title: '❌ Errore Procedurale',
+            description: 'Spiacente cittadino, ma lo Stato non prevede colloqui orali per il tipo di visto da te richiesto.',
+            color: '#e74c3c'
+        },
+        queue_log: {
+            title: '📢 Protocollo Coda: Nuovo Ingresso',
+            description: 'Un nuovo cittadino è in attesa per il colloquio.\n\n**SOGGETTO:** {user}\n**ID:** `{user_id}`\n**CODA ATTUALE:** `{waiting_count}`',
+            color: '#3498db'
+        },
+        promote_vip_success: {
+            title: '💎 Priorità VIP',
+            description: 'L\'utente **{user}** è stato spostato in testa alla coda ministeriale.',
+            color: '#2ecc71'
+        },
+        pause_success: {
+            title: '⏸️ Sistema in Pausa',
+            description: 'I protocolli di accesso vocale sono stati sospesi. Nessun nuovo cittadino potrà unirsi alla coda.',
+            color: '#f1c40f'
+        },
+        resume_success: {
+            title: '▶️ Sistema Riattivato',
+            description: 'I protocolli di accesso vocale sono stati ripristinati. Gli uffici sono nuovamente operativi.',
+            color: '#2ecc71'
+        },
+        skip_success: {
+            title: '⏭️ Sessione Saltata',
+            description: 'La sessione corrente è stata archiviata forzatamente. Il prossimo cittadino in coda verrà invitato.',
+            color: '#3498db'
+        },
+        skip_error_no_session: {
+            title: '❌ Nessuna Sessione',
+            description: 'Non risultano sessioni attive da poter saltare al momento.',
+            color: '#e74c3c'
+        },
+        app_not_found: {
+            title: '❌ Candidatura Non Trovata',
+            description: 'Il dossier richiesto non risulta presente nei nostri archivi digitali.',
+            color: '#e74c3c'
+        },
+        setup_success: {
+            title: '✅ Configurazione Whitelist',
+            description: 'Il sistema di accesso cittadino è stato configurato e il pannello è stato inviato nel canale indicato.',
+            color: '#2ecc71'
+        },
+        edit_menu: {
+            title: '✏️ Correzione Candidatura',
+            description: 'Seleziona dal menu sottostante la domanda che desideri correggere.',
+            color: '#3498db'
+        },
+        edit_success: {
+            title: '✅ Risposta Aggiornata',
+            description: 'La tua risposta alla domanda **{index}** è stata salvata correttamente.\n\nIl riepilogo nel canale è stato aggiornato. Desideri modificare altro?',
+            color: '#2ecc71'
+        },
+        edit_closed: {
+            title: '✅ Correzione Terminata',
+            description: 'Il menu di modifica è stato chiuso. Ora puoi procedere con la sottomissione finale.',
+            color: '#2ecc71'
+        },
+        voice_setup_success: {
+            title: '🎙️ Configurazione Vocale Aggiornata',
+            description: 'I protocolli per l\'accesso vocale sono stati aggiornati con successo.\n\n**DETTAGLI:**\n• Modalità: `{mode}`\n• Limite Contemporanei: `{limit}`\n• Ruolo VIP: `{vip_role}`\n• Pings Staff: `{ping_staff}`',
+            color: '#2ecc71'
+        },
+        questions_list: {
+            title: '📋 Registro Domande Whitelist',
+            description: 'Ecco l\'elenco attuale dei quesiti ministeriali:\n\n{questions}',
+            color: '#3498db'
+        },
+        question_added: {
+            title: '✅ Domanda Aggiunta',
+            description: 'Il nuovo quesito è stato inserito correttamente nel protocollo.\n\n**DOMANDA:** {text}\n**MINIMO CARATTERI:** {min_length}',
+            color: '#2ecc71'
+        },
+        question_removed: {
+            title: '🗑️ Domanda Rimossa',
+            description: 'Il quesito selezionato è stato rimosso dal registro ufficiale.\n\n**DOMANDA:** {text}',
+            color: '#e74c3c'
+        },
+        dashboard_init_success: {
+            title: '💻 Dashboard Whitelist Inizializzata',
+            description: 'L\'interfaccia web per la gestione dei cittadini è stata configurata correttamente.',
+            color: '#2ecc71'
         }
     },
     background: {
@@ -197,6 +297,46 @@ export default {
             title: '⚠️ Procedura Interrotta',
             description: 'Il deposito del background è stato annullato. Il canale verrà rimosso tra **{time}**.',
             color: '#e74c3c'
+        },
+        dm_received: {
+            title: '✅ Dossier Background Ricevuto',
+            description: 'Il tuo dossier per **{guild}** è stato correttamente archiviato nei nostri sistemi. Un ufficiale della commissione lo revisionerà a breve.',
+            color: '#2ecc71'
+        },
+        cooldown: {
+            title: '⚠️ Protocollo Cooldown',
+            description: 'Hai inviato un background troppo recentemente. Potrai sottomettere una nuova versione {time_left}.\n\nUsa questo tempo per perfezionare la tua storia.',
+            color: '#f1c40f'
+        },
+        upload_success: {
+            title: '✅ Allegato Registrato',
+            description: 'Il file è stato acquisito correttamente dai sistemi.\n\n**DOCUMENTO:** [{filename}]({url})',
+            color: '#2ecc71'
+        },
+        error: {
+            title: '❌ Errore Background',
+            description: 'Non è stato possibile elaborare la tua richiesta. {reason}',
+            color: '#e74c3c'
+        },
+        channel_created: {
+            title: '✅ Sessione Avviata',
+            description: 'Il tuo canale per il deposito del background è pronto: {channel}',
+            color: '#2ecc71'
+        },
+        active_session: {
+            title: '⚠️ Protocollo Attivo',
+            description: 'Hai già una richiesta di background attiva o in fase di revisione.',
+            color: '#f1c40f'
+        },
+        setup_success: {
+            title: '📜 Sistema Background Configurato',
+            description: 'I protocolli di deposito background sono ora attivi.\n\n**PANNELLO:** {channel}',
+            color: '#2ecc71'
+        },
+        review_success: {
+            title: '📝 Revisione Completata',
+            description: 'Hai elaborato la richiesta di background per l\'utente **<@{userId}>**.\n\n**ESITO:** {status}',
+            color: '#2ecc71'
         }
     },
     tickets: {
@@ -260,6 +400,72 @@ export default {
             title: '🎫 Richiesta di Supporto',
             description: 'Benvenuto nell\'ufficio assistenza. Un membro dello staff sarà qui a breve.\n\nMotivo: **{reason}**',
             color: '#5865F2'
+        },
+        inactivity_close: {
+            title: '⚠️ Protocollo Inattività',
+            description: 'Questo ufficio è stato chiuso automaticamente dai sistemi per mancanza di comunicazioni recenti.',
+            color: '#e74c3c'
+        },
+        claim_success: {
+            title: '✅ Ticket Preso in Carico',
+            description: 'Hai assunto correttamente la supervisione di questa pratica.',
+            color: '#2ecc71'
+        },
+        close_success: {
+            title: '🔒 Ticket Archiviato',
+            description: 'La pratica è stata chiusa e i registri sono stati salvati.',
+            color: '#2ecc71'
+        },
+        priority_select: {
+            title: '🎫 Priorità Richiesta',
+            description: 'Seleziona il livello di urgenza per la tua pratica di tipo **{type}**.',
+            color: '#3498db'
+        },
+        quick_reply_menu: {
+            title: '📝 Risposte Rapide',
+            description: 'Seleziona un template predefinito da inviare all\'utente.',
+            color: '#3498db'
+        },
+        tag_menu: {
+            title: '🏷️ Gestione Tag',
+            description: 'Scegli un protocollo o un tag da assegnare a questa pratica.',
+            color: '#3498db'
+        },
+        close_error_logs: {
+            title: '❌ Errore Archiviazione',
+            description: 'Il bot non dispone dei permessi necessari nel canale LOGS ({channel}).\n\n**Mancanti:** {missing}',
+            color: '#e74c3c'
+        },
+        close_error_category: {
+            title: '❌ Configurazione Mancante',
+            description: 'La categoria per i ticket chiusi non è stata configurata correttamente nella dashboard.',
+            color: '#e74c3c'
+        },
+        error: {
+            title: '❌ Errore Ticket',
+            description: 'Non è stato possibile completare l\'operazione richiesta. Riprova o contatta un amministratore.',
+            color: '#e74c3c'
+        },
+        user_managed: {
+            title: '👥 Gestione Utente',
+            description: 'L\'utente **{user}** è stato **{action}** dal ticket.',
+            color: '#3498db'
+        },
+        setup_success: {
+            title: '🎫 Pannello Assistenza Configurato',
+            description: 'Il portale sportello al cittadino è stato inviato con successo.\n\n**CANALE:** {channel}',
+            color: '#2ecc71'
+        },
+        stats_display: {
+            title: '📊 Statistiche Assistenza',
+            description: 'Riepilogo attività per il server/operatore:\n\n{stats}',
+            color: '#3498db'
+        },
+        typesConfig: {
+            supporto: { label: 'Supporto Generale', emoji: '🎫', color: '#6366f1', staffRoleIds: [] },
+            segnalazione: { label: 'Segnalazione Utente', emoji: '🚨', color: '#ef4444', staffRoleIds: [] },
+            donazione: { label: 'Donazioni', emoji: '💰', color: '#f59e0b', staffRoleIds: [] },
+            bug: { label: 'Segnalazione Bug', emoji: '🐛', color: '#10b981', staffRoleIds: [] }
         }
     },
     verify: {
@@ -292,6 +498,11 @@ export default {
             title: '🛂 Registro Entrate: Nuovo Cittadino',
             description: 'Un nuovo utente ha completato la verifica.\n\n**IDENTITÀ:** {user}\n**ID:** `{userId}`\n**STATUS:** {role}',
             color: '#2ecc71'
+        },
+        error: {
+            title: '❌ Errore Identificazione',
+            description: 'Si è verificato un problema tecnico durante la conferma della tua identità. Per favore, contatta un ufficiale del Ministero o riprova più tardi.',
+            color: '#e74c3c'
         }
     },
     fivem: {
@@ -392,6 +603,27 @@ export default {
             description: 'I regolamenti cittadini impediscono di votare la propria opera d\'arte. Lascia che siano gli altri a giudicare il tuo talento!',
             color: '#f1c40f'
         },
+        no_participants: {
+            title: '😔 Contest Concluso',
+            description: 'Il concorso fotografico è terminato, ma purtroppo non sono state depositate opere valide nei nostri archivi.',
+            color: '#e74c3c'
+        },
+        no_winners: {
+            title: '😔 Nessun Registro',
+            description: 'Non risultano vincitori registrati per i concorsi precedenti nei nostri database.',
+            color: '#f1c40f'
+        },
+        leaderboard: {
+            title: '🏆 Leaderboard Photo Contest',
+            description: 'Gli utenti con più vittorie nel server!\n\n{list}',
+            color: '#FFD700',
+            thumbnail: 'https://i.imgur.com/89k5I5L.png'
+        },
+        error: {
+            title: '❌ Errore Contest',
+            description: 'Si è verificato un errore durante l\'elaborazione dei dati del concorso fotografico.',
+            color: '#e74c3c'
+        },
         themesList: ['Natura', 'Architettura', 'Tramonti', 'Cibo', 'Minimalismo', 'Cyberpunk', 'Ritratti', 'Animali']
     },
     twitch: {
@@ -449,7 +681,11 @@ export default {
         timeWindow: 5000,
         deleteSpam: true,
         warnUser: true,
-        warnMessage: '⚠️ {user}, per favore non spammare! Hai inviato troppi messaggi in poco tempo.',
+        warn: {
+            title: '🛡️ Protezione Anti-Spam',
+            description: '{user}, i tuoi invii sono troppo rapidi. Rallenta il ritmo per evitare restrizioni permanenti.',
+            color: '#f1c40f'
+        },
         ignoredRoles: [],
         ignoredChannels: []
     },
@@ -464,14 +700,14 @@ export default {
             description: '{user}, sei stato messo in isolamento per **{duration} minuti**.\n\n**MOTIVO:** {reason}',
             color: '#e67e22'
         },
-        kick: {
+        dm_kick: {
             title: '👢 Espulsione Coatta',
-            description: '{user} è stato rimosso dalla città per gravi violazioni dei protocolli.\n\n**MOTIVO:** {reason}',
+            description: '{user}, sei stato rimosso dalla città per gravi violazioni dei protocolli.\n\n**MOTIVO:** {reason}',
             color: '#e74c3c'
         },
-        ban: {
+        dm_ban: {
             title: '🚫 Esilio Definitivo',
-            description: '{user} è stato bandito permanentemente dalla città.\n\n**MOTIVO:** {reason}',
+            description: '{user}, sei stato bandito permanentemente dalla città.\n\n**MOTIVO:** {reason}',
             color: '#000000'
         },
         command_ban: {
@@ -483,6 +719,43 @@ export default {
             title: '👢 Membro Espulso',
             description: '**Utente:** {user}\n**Moderatore:** {mod}\n**Motivo:** {reason}',
             color: '#e74c3c'
+        },
+        error: {
+            title: '❌ Errore Moderazione',
+            description: 'Non è stato possibile eseguire l\'azione disciplinare richiesta. Verifica i permessi del bot o la gerarchia dei ruoli.',
+            color: '#e74c3c'
+        }
+    },
+    support: {
+        paused: {
+            title: '❌ Servizio Sospeso',
+            description: 'I protocolli di assistenza vocale sono attualmente disattivati. Riprova più tardi.',
+            color: '#e74c3c'
+        },
+        cooldown: {
+            title: '⏳ Protocollo Cooldown',
+            description: 'Hai già richiesto assistenza recentemente. Devi attendere prima di poter aprire un nuovo ufficio.',
+            color: '#f1c40f'
+        },
+        queueFull: {
+            title: '📡 Uffici Occupati',
+            description: 'Tutti i canali di assistenza sono attualmente impegnati. Sei stato inserito nel sistema di attesa prioritario.',
+            color: '#3498db'
+        },
+        sessionStart: {
+            title: '✅ Operatore Disponibile',
+            description: 'Un ufficio è stato liberato per te. Sei stato riallocato nel tuo canale di assistenza privato.',
+            color: '#2ecc71'
+        },
+        staffLog: {
+            title: '🎙️ Registro Assistenza',
+            description: 'L\'utente **{user}** è entrato in assistenza.\n\n**Canale:** {voice_channel}',
+            color: '#f1c40f'
+        },
+        queue_log: {
+            title: '📢 Coda Assistenza: Nuovo Utente',
+            description: '{vip_text}Un utente è in attesa di assistenza.\n\n**UTENTE:** {user}\n**ID:** `{user_id}`\n**POSIZIONE:** `{position}`',
+            color: '#f1c40f'
         }
     }
 };

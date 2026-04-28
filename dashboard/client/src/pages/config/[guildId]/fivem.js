@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import EmbedMessageManager from '../../../components/EmbedMessageManager';
 import { mergeConfig } from '../../../utils/defaults';
+import NotificationSettings from '../../../components/NotificationSettings';
 
 export default function FiveMConfig() {
   const router = useRouter();
@@ -53,6 +54,21 @@ export default function FiveMConfig() {
       window.dispatchEvent(new CustomEvent('update-guide-context', { detail: config }));
     }
   }, [config]);
+
+  const setNested = (path, value) => {
+    setConfig(prev => {
+        const newConfig = { ...prev };
+        const parts = path.split('.');
+        let cur = newConfig;
+        for (let i = 0; i < parts.length - 1; i++) {
+            if (!cur[parts[i]]) cur[parts[i]] = {};
+            else cur[parts[i]] = { ...cur[parts[i]] };
+            cur = cur[parts[i]];
+        }
+        cur[parts[parts.length - 1]] = value;
+        return newConfig;
+    });
+  };
 
   const showToast = (message, type = 'success') => {
     window.dispatchEvent(new CustomEvent('show-toast', { detail: { message, type } }));
@@ -137,6 +153,16 @@ export default function FiveMConfig() {
                 <div className="section-header-row">
                     <h2>Lista Server</h2>
                     <button onClick={addServer} className="btn-add-premium"><Plus size={16} /> Aggiungi Server</button>
+                </div>
+
+                <div style={{ marginBottom: '24px' }}>
+                    <NotificationSettings 
+                        guildId={guildId}
+                        value={config.notifications}
+                        onChange={val => setNested('notifications', val)}
+                        title="Notifiche Status"
+                        description="Scegli come notificare lo staff quando un server cambia stato (Online/Offline)."
+                    />
                 </div>
 
                 <div className="servers-list">

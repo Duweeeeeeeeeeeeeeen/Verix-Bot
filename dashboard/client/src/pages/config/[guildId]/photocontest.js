@@ -15,6 +15,7 @@ import EmbedEditor from '../../../components/EmbedEditor';
 import EmojiInput from '../../../components/EmojiInput';
 import CustomSelect from '../../../components/CustomSelect';
 import { mergeConfig } from '../../../utils/defaults';
+import NotificationSettings from '../../../components/NotificationSettings';
 
 export default function PhotoContestConfig() {
   const router = useRouter();
@@ -71,6 +72,21 @@ export default function PhotoContestConfig() {
       window.dispatchEvent(new CustomEvent('update-guide-context', { detail: config }));
     }
   }, [config]);
+
+  const setNested = (path, value) => {
+    setConfig(prev => {
+        const newConfig = { ...prev };
+        const parts = path.split('.');
+        let cur = newConfig;
+        for (let i = 0; i < parts.length - 1; i++) {
+            if (!cur[parts[i]]) cur[parts[i]] = {};
+            else cur[parts[i]] = { ...cur[parts[i]] };
+            cur = cur[parts[i]];
+        }
+        cur[parts[parts.length - 1]] = value;
+        return newConfig;
+    });
+  };
 
   const showToast = (message, type = 'success') => {
     window.dispatchEvent(new CustomEvent('show-toast', { detail: { message, type } }));
@@ -201,6 +217,16 @@ export default function PhotoContestConfig() {
                             <p className="field-help">I ruoli selezionati potranno forzare l'avvio o il termine del contest.</p>
                         </div>
                     </section>
+
+                    <div style={{ marginTop: '24px' }}>
+                        <NotificationSettings 
+                            guildId={guildId}
+                            value={config.notifications}
+                            onChange={val => setNested('notifications', val)}
+                            title="Notifiche Contest"
+                            description="Scegli come notificare l'autore della foto quando riceve voti o vince."
+                        />
+                    </div>
                 </div>
             )}
 

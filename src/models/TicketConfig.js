@@ -14,6 +14,10 @@ const ticketConfigSchema = new mongoose.Schema({
         type: [String], 
         default: ['supporto', 'segnalazione', 'whitelist', 'staff', 'altro'] 
     },
+    notifications: {
+        mode: { type: String, enum: ['DM', 'CHANNEL', 'BOTH', 'NONE'], default: 'DM' },
+        channelId: { type: String, default: null }
+    },
     typesConfig: {
         type: Map,
         of: {

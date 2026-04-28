@@ -23,6 +23,8 @@ import {
 } from 'lucide-react';
 import CustomSelect from '../../../components/CustomSelect';
 import NotificationSettings from '../../../components/NotificationSettings';
+import EmbedMessageManager from '../../../components/EmbedMessageManager';
+import { MessageSquare as MsgIcon, LogOut, Terminal } from 'lucide-react';
 
 export default function SupportConfig() {
   const router = useRouter();
@@ -57,15 +59,18 @@ export default function SupportConfig() {
   }, [guildId, mounted]);
 
   const setNested = (path, value) => {
-    const newConfig = { ...config };
-    const parts = path.split('.');
-    let cur = newConfig;
-    for (let i = 0; i < parts.length - 1; i++) {
-        if (!cur[parts[i]]) cur[parts[i]] = {};
-        cur = cur[parts[i]];
-    }
-    cur[parts[parts.length - 1]] = value;
-    setConfig(newConfig);
+    setConfig(prev => {
+        const newConfig = { ...prev };
+        const parts = path.split('.');
+        let cur = newConfig;
+        for (let i = 0; i < parts.length - 1; i++) {
+            if (!cur[parts[i]]) cur[parts[i]] = {};
+            else cur[parts[i]] = { ...cur[parts[i]] };
+            cur = cur[parts[i]];
+        }
+        cur[parts[parts.length - 1]] = value;
+        return newConfig;
+    });
   };
 
   const showToast = (message, type = 'success') => {
@@ -249,69 +254,66 @@ export default function SupportConfig() {
                     </div>
                 </div>
             )}
-
             {/* TAB: Messages */}
             {activeTab === 'messages' && (
-                <div className="config-grid">
-                    <div className="grid-left">
-                        <section className="card section-card">
-                            <div className="section-header">
-                                <div className="align-center">
-                                    <MessageSquare size={18} color="var(--primary)" />
-                                    <h3>Messaggi di Sistema (DM)</h3>
-                                </div>
-                            </div>
-                            <div className="fields-grid" style={{ marginTop: '24px' }}>
-                                <div className="field-box" style={{ gridColumn: 'span 2' }}>
-                                    <label className="text-label">Messaggio Servizio Chiuso</label>
-                                    <textarea className="input" rows="2" value={config.voiceSettings?.messages?.paused || ''} onChange={e => setNested('voiceSettings.messages.paused', e.target.value)} />
-                                </div>
-                                <div className="field-box" style={{ gridColumn: 'span 2' }}>
-                                    <label className="text-label">Messaggio Cooldown</label>
-                                    <textarea className="input" rows="2" value={config.voiceSettings?.messages?.cooldown || ''} onChange={e => setNested('voiceSettings.messages.cooldown', e.target.value)} />
-                                </div>
-                                <div className="field-box" style={{ gridColumn: 'span 2' }}>
-                                    <label className="text-label">Messaggio Coda Piena</label>
-                                    <textarea className="input" rows="2" value={config.voiceSettings?.messages?.queueFull || ''} onChange={e => setNested('voiceSettings.messages.queueFull', e.target.value)} />
-                                </div>
-                                <div className="field-box" style={{ gridColumn: 'span 2' }}>
-                                    <label className="text-label">Messaggio Inizio Sessione</label>
-                                    <textarea className="input" rows="2" value={config.voiceSettings?.messages?.sessionStart || ''} onChange={e => setNested('voiceSettings.messages.sessionStart', e.target.value)} />
-                                </div>
-                            </div>
-                        </section>
-
-                        <section className="card section-card" style={{ marginTop: '24px' }}>
-                            <div className="section-header">
-                                <div className="align-center">
-                                    <Palette size={18} color="var(--primary)" />
-                                    <h3>Embed Log Staff</h3>
-                                </div>
-                            </div>
-                            <div className="fields-grid" style={{ marginTop: '24px' }}>
-                                <div className="field-box">
-                                    <label className="text-label">Titolo Embed</label>
-                                    <input type="text" className="input" value={config.embeds?.staffLog?.title || ''} onChange={e => setNested('embeds.staffLog.title', e.target.value)} />
-                                </div>
-                                <div className="field-box">
-                                    <label className="text-label">Colore Embed</label>
-                                    <div style={{ display: 'flex', gap: '8px' }}>
-                                        <input type="color" value={config.embeds?.staffLog?.color || '#f1c40f'} onChange={e => setNested('embeds.staffLog.color', e.target.value)} style={{ width: '40px', height: '40px', padding: '0', border: 'none', background: 'transparent' }} />
-                                        <input type="text" className="input" value={config.embeds?.staffLog?.color || ''} onChange={e => setNested('embeds.staffLog.color', e.target.value)} placeholder="#HEX" />
-                                    </div>
-                                </div>
-                                <div className="field-box" style={{ gridColumn: 'span 2' }}>
-                                    <label className="text-label flex-between">
-                                        Descrizione Embed
-                                        <HelpTooltip text="Placeholders: {user}, {voice_channel}" />
-                                    </label>
-                                    <textarea className="input" rows="3" value={config.embeds?.staffLog?.description || ''} onChange={e => setNested('embeds.staffLog.description', e.target.value)} />
-                                </div>
-                            </div>
-                        </section>
-                    </div>
+                <div className="animate fade-in">
+                    <EmbedMessageManager 
+                        guildId={guildId}
+                        module="support"
+                        slugs={[
+                            { 
+                              key: 'paused', 
+                              label: 'Servizio Chiuso', 
+                              description: 'Inviato quando un utente prova a entrare mentre il servizio è disattivato.',
+                              group: 'Stato Servizio',
+                              groupIcon: Power,
+                              variables: ['user', 'guild']
+                            },
+                            { 
+                              key: 'cooldown', 
+                              label: 'Anti-Spam (Cooldown)', 
+                              description: 'Inviato quando l\'utente ha già richiesto assistenza troppo recentemente.',
+                              group: 'Stato Servizio',
+                              groupIcon: Clock,
+                              variables: ['user', 'guild']
+                            },
+                            { 
+                              key: 'queueFull', 
+                              label: 'Coda Piena', 
+                              description: 'Inviato quando il limite di sessioni contemporanee è raggiunto.',
+                              group: 'Coda Assistenza',
+                              groupIcon: Users,
+                              variables: ['user', 'guild', 'position']
+                            },
+                            { 
+                              key: 'sessionStart', 
+                              label: 'Inizio Sessione', 
+                              description: 'Notifica inviata all\'utente quando viene spostato nel canale privato.',
+                              group: 'Sessione',
+                              groupIcon: MsgIcon,
+                              variables: ['user', 'guild', 'channel']
+                            },
+                            { 
+                              key: 'staffLog', 
+                              label: 'Log Staff: Inizio', 
+                              description: 'Inviato nel canale log quando una nuova sessione viene avviata.',
+                              group: 'Log & Monitoraggio',
+                              groupIcon: ShieldCheck,
+                              variables: ['user', 'voice_channel']
+                            },
+                            { 
+                              key: 'queue_log', 
+                              label: 'Log Staff: Nuova Coda', 
+                              description: 'Inviato nel canale log quando un utente entra in lista d\'attesa.',
+                              group: 'Log & Monitoraggio',
+                              groupIcon: Terminal,
+                              variables: ['user', 'user_id', 'position', 'vip_text']
+                            }
+                        ]}
+                    />
                 </div>
             )}
+
         </div>
       </div>
 

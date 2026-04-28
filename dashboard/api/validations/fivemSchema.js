@@ -21,5 +21,9 @@ const serverTrackerSchema = z.object({
 export const fivemSchema = z.object({
     enabled: z.boolean().optional(),
     staffRoleIds: z.array(discordId).optional().nullable(),
+    notifications: z.object({
+        mode: z.enum(['DM', 'CHANNEL', 'BOTH', 'NONE']).default('DM'),
+        channelId: discordId.or(z.literal('')).optional().nullable()
+    }).optional(),
     servers: z.array(serverTrackerSchema.passthrough()).optional()
 }).passthrough();
