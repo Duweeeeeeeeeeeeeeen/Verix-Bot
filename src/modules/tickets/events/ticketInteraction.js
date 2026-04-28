@@ -58,6 +58,34 @@ export default {
             }, { components: [priorityMenu], ephemeral: true });
         }
 
+        // --- 1.1 TICKET CREATION (Dynamic Buttons) ---
+        if (interaction.isButton() && interaction.customId.startsWith('ticket_create_btn_')) {
+            const type = interaction.customId.split('_')[3];
+            
+            const existing = await Ticket.findOne({ userId: interaction.user.id, guildId: interaction.guild.id, type, status: { $ne: 'CLOSED' } });
+            if (existing) {
+                return messageService.reply(interaction, 'tickets', 'already_exists', {
+                    type: type.toUpperCase(),
+                    channelId: existing.channelId
+                }, { ephemeral: true });
+            }
+
+            const priorityMenu = new ActionRowBuilder().addComponents(
+                new StringSelectMenuBuilder()
+                    .setCustomId(`ticket_priority_select_${type}`)
+                    .setPlaceholder('Seleziona la priorità...')
+                    .addOptions([
+                        { label: 'Normale', value: 'NORMALE', emoji: '🟢' },
+                        { label: 'Importante', value: 'IMPORTANTE', emoji: '🟡' },
+                        { label: 'Urgente', value: 'URGENTE', emoji: '🔴' }
+                    ])
+            );
+
+            return messageService.reply(interaction, 'tickets', 'priority_select', { 
+                type: type.toUpperCase() 
+            }, { components: [priorityMenu], ephemeral: true });
+        }
+
         // --- 2. TICKET CREATION (Priority Selection) ---
         if (interaction.isStringSelectMenu() && interaction.customId.startsWith('ticket_priority_select_')) {
             const type = interaction.customId.split('_')[3];

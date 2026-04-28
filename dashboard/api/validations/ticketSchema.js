@@ -4,6 +4,7 @@ import { discordId, colorHex } from './common.js';
 export const ticketSchema = z.object({
     enabled: z.boolean().optional(),
     closeMode: z.enum(['MOVE', 'DELETE']).optional(),
+    inputType: z.enum(['BUTTONS', 'SELECT']).optional(),
     panelChannelId: discordId.or(z.literal('')).optional().nullable(),
     categoryOpenId: discordId.or(z.literal('')).optional().nullable(),
     categoryClosedId: discordId.or(z.literal('')).optional().nullable(),
@@ -14,6 +15,7 @@ export const ticketSchema = z.object({
         label: z.string().max(32).optional(),
         color: colorHex.optional(),
         emoji: z.string().max(32).optional(),
+        style: z.enum(['PRIMARY', 'SECONDARY', 'SUCCESS', 'DANGER']).optional(),
         image: z.string().url().or(z.string().length(0)).optional().nullable()
     })).optional(),
     notifications: z.object({

@@ -4,6 +4,7 @@ const ticketConfigSchema = new mongoose.Schema({
     guildId: { type: String, required: true, unique: true },
     enabled: { type: Boolean, default: true },
     closeMode: { type: String, enum: ['MOVE', 'DELETE'], default: 'DELETE' },
+    inputType: { type: String, enum: ['BUTTONS', 'SELECT'], default: 'SELECT' },
     panelChannelId: { type: String },
     panelMessageId: { type: String, default: null },
     categoryOpenId: { type: String },
@@ -24,6 +25,7 @@ const ticketConfigSchema = new mongoose.Schema({
             label: { type: String }, // Optional custom label
             color: { type: String, default: '#3498db' },
             emoji: { type: String, default: '🎫' },
+            style: { type: String, default: 'PRIMARY' },
             image: { type: String, default: null }
         },
         default: {

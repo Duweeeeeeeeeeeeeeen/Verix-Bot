@@ -1,4 +1,5 @@
-import { ActionRowBuilder, EmbedBuilder, MessageFlags, PermissionFlagsBits, SlashCommandBuilder, StringSelectMenuBuilder } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, MessageFlags, PermissionFlagsBits, SlashCommandBuilder, StringSelectMenuBuilder } from 'discord.js';
+import { getButtonStyle } from '../../../utils/uiBuilder.js';
 import TicketConfig from '../../../models/TicketConfig.js';
 import logger from '../../../utils/logger.js';
 import messageService from '../../../utils/messageService.js';
@@ -94,12 +95,34 @@ export default {
             if (pEmbed.thumbnail) embed.setThumbnail(pEmbed.thumbnail);
             if (pEmbed.image || config.panelImage) embed.setImage(pEmbed.image || config.panelImage);
 
-            const menu = new ActionRowBuilder().addComponents(
-                new StringSelectMenuBuilder()
-                    .setCustomId('ticket_create_select')
-                    .setPlaceholder('Seleziona il tipo di ticket...')
-                    .addOptions(options.slice(0, 25)) // Discord limit
-            );
+            const components = [];
+            const inputType = config.inputType || 'SELECT';
+
+            if (inputType === 'BUTTONS') {
+                const types = Array.from(config.typesConfig.entries());
+                for (let i = 0; i < types.length; i += 5) {
+                    const row = new ActionRowBuilder();
+                    const slice = types.slice(i, i + 5);
+                    for (const [id, data] of slice) {
+                        row.addComponents(
+                            new ButtonBuilder()
+                                .setCustomId(`ticket_create_btn_${id}`)
+                                .setLabel(data.label || id.charAt(0).toUpperCase() + id.slice(1))
+                                .setEmoji(data.emoji || '🎫')
+                                .setStyle(getButtonStyle(data.style))
+                        );
+                    }
+                    components.push(row);
+                }
+            } else {
+                const menu = new ActionRowBuilder().addComponents(
+                    new StringSelectMenuBuilder()
+                        .setCustomId('ticket_create_select')
+                        .setPlaceholder('Seleziona il tipo di ticket...')
+                        .addOptions(options.slice(0, 25))
+                );
+                components.push(menu);
+            }
 
             // --- AUTO-CLEANUP OLD PANEL ---
             if (config.panelMessageId && config.panelChannelId) {
@@ -114,7 +137,7 @@ export default {
                 }
             }
 
-            const sentMessage = await panelChannel.send({ embeds: [embed], components: [menu] });
+            const sentMessage = await panelChannel.send({ embeds: [embed], components });
 
             // Store new message ID
             config.panelMessageId = sentMessage.id;

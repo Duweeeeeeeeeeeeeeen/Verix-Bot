@@ -139,7 +139,7 @@ export default function TicketConfig() {
     setConfig(prev => {
         const id = `cat_${Math.random().toString(36).substr(2, 5)}`;
         const newTypes = { ...(prev.typesConfig || {}) };
-        newTypes[id] = { label: 'Nuova Categoria', emoji: '🎫', color: '#6366f1', staffRoleIds: [] };
+        newTypes[id] = { label: 'Nuova Categoria', emoji: '🎫', color: '#6366f1', style: 'PRIMARY', staffRoleIds: [] };
         return { ...prev, typesConfig: newTypes };
     });
   };
@@ -293,6 +293,30 @@ export default function TicketConfig() {
                                                         newTypes[id] = { ...data, color: e.target.value };
                                                         setConfig({ ...config, typesConfig: newTypes });
                                                     }} />
+                                                </div>
+                                                <div className="category-style">
+                                                    <label className="label-tiny">Colore Bottone</label>
+                                                    <div className="style-selector-mini">
+                                                        {[
+                                                            { id: 'SUCCESS', label: 'V' },
+                                                            { id: 'DANGER', label: 'R' },
+                                                            { id: 'PRIMARY', label: 'B' },
+                                                            { id: 'SECONDARY', label: 'G' }
+                                                        ].map(style => (
+                                                            <button 
+                                                                key={style.id}
+                                                                title={style.label}
+                                                                onClick={() => {
+                                                                    const newTypes = { ...config.typesConfig };
+                                                                    newTypes[id] = { ...data, style: style.id };
+                                                                    setConfig({ ...config, typesConfig: newTypes });
+                                                                }}
+                                                                className={`style-pill-mini ${style.id} ${data.style === style.id ? 'active' : ''}`}
+                                                            >
+                                                                {style.label}
+                                                            </button>
+                                                        ))}
+                                                    </div>
                                                 </div>
                                                 <div className="category-actions">
                                                     <button className="btn-icon-danger" onClick={() => {
@@ -547,6 +571,14 @@ export default function TicketConfig() {
             .style-pill.DANGER { background: #da373c; }
             .style-pill.PRIMARY { background: #5865f2; }
             .style-pill.SECONDARY { background: #4f545c; }
+            
+            .style-selector-mini { display: flex; gap: 4px; }
+            .style-pill-mini { width: 24px; height: 24px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.6rem; font-weight: 800; color: white; opacity: 0.3; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
+            .style-pill-mini.active { opacity: 1; transform: scale(1.1); }
+            .style-pill-mini.SUCCESS { background: #248046; }
+            .style-pill-mini.DANGER { background: #da373c; }
+            .style-pill-mini.PRIMARY { background: #5865f2; }
+            .style-pill-mini.SECONDARY { background: #4f545c; }
 
             .preview-button { padding: 6px 12px; border-radius: 4px; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; justify-content: center; color: white; border: none; margin-right: 8px; }
             .preview-button.SUCCESS { background: #248046; }
