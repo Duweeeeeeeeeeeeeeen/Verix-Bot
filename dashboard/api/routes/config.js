@@ -1,6 +1,7 @@
 import express from 'express';
 import { z } from 'zod';
 import { PermissionFlagsBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder } from 'discord.js';
+import { getButtonStyle } from '../../../src/utils/uiBuilder.js';
 
 import WhitelistConfig from '../../../src/models/WhitelistConfig.js';
 import TicketConfig from '../../../src/models/TicketConfig.js';
@@ -546,7 +547,7 @@ router.post('/:guildId/tickets/send-panel', adminCheck, async (req, res) => {
                         new ButtonBuilder()
                             .setCustomId(`ticket_type_${id}`)
                             .setLabel(data.label || (id.charAt(0).toUpperCase() + id.slice(1)))
-                            .setStyle(ButtonStyle.Primary)
+                            .setStyle(getButtonStyle(data.style))
                             .setEmoji(data.emoji || '🎫')
                     );
                 }
