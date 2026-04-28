@@ -15,7 +15,8 @@ export const ticketSchema = z.object({
         label: z.string().max(32).optional(),
         color: colorHex.optional(),
         emoji: z.string().max(32).optional(),
-        style: z.enum(['PRIMARY', 'SECONDARY', 'SUCCESS', 'DANGER']).optional(),
+        style: z.enum(['PRIMARY', 'SECONDARY', 'SUCCESS', 'DANGER', 'LINK']).optional(),
+        url: z.string().url().or(z.string().length(0)).optional().nullable(),
         image: z.string().url().or(z.string().length(0)).optional().nullable(),
         staffRoleIds: z.array(z.string()).optional()
     }).passthrough()).optional(),

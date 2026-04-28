@@ -188,7 +188,7 @@ export default function EmbedPreview({ data, isMobile = false }) {
                     {data.buttons ? (
                         data.buttons.map((btn, i) => (
                             <button key={i} style={{
-                                background: btn.style === 'SUCCESS' ? '#248046' : (btn.style === 'DANGER' ? '#da373c' : (btn.style === 'SECONDARY' ? '#4e5058' : '#5865f2')),
+                                background: btn.style === 'SUCCESS' ? '#248046' : (btn.style === 'DANGER' ? '#da373c' : (btn.style === 'SECONDARY' || btn.style === 'LINK' ? '#4e5058' : '#5865f2')),
                                 color: 'white',
                                 border: 'none',
                                 padding: '6px 16px',
@@ -202,11 +202,12 @@ export default function EmbedPreview({ data, isMobile = false }) {
                             }}>
                                 {btn.emoji && <span>{btn.emoji}</span>}
                                 {btn.label && <span>{processPlaceholders(btn.label)}</span>}
+                                {btn.style === 'LINK' && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>}
                             </button>
                         ))
                     ) : (
                         <button style={{
-                            background: data.button.style === 'SUCCESS' ? '#248046' : (data.button.style === 'DANGER' ? '#da373c' : (data.button.style === 'SECONDARY' ? '#4e5058' : '#5865f2')),
+                            background: data.button.style === 'SUCCESS' ? '#248046' : (data.button.style === 'DANGER' ? '#da373c' : (data.button.style === 'SECONDARY' || data.button.style === 'LINK' ? '#4e5058' : '#5865f2')),
                             color: 'white',
                             border: 'none',
                             padding: '6px 16px',
@@ -220,6 +221,7 @@ export default function EmbedPreview({ data, isMobile = false }) {
                         }}>
                             {data.button.emoji && <span>{data.button.emoji}</span>}
                             {data.button.label && <span>{processPlaceholders(data.button.label)}</span>}
+                            {data.button.style === 'LINK' && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>}
                         </button>
                     )}
                 </div>

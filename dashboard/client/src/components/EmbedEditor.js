@@ -196,13 +196,26 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
                       { value: 'PRIMARY', label: 'Blu (Primary)' },
                       { value: 'SUCCESS', label: 'Verde (Success)' },
                       { value: 'DANGER', label: 'Rosso (Danger)' },
-                      { value: 'SECONDARY', label: 'Grigio (Secondary)' }
+                      { value: 'SECONDARY', label: 'Grigio (Secondary)' },
+                      { value: 'LINK', label: 'Link (Esterno) 🔗' }
                     ]} 
                     value={embed?.button?.style || 'PRIMARY'} 
                     onChange={val => onChange({ ...embed, button: { ...(embed.button || {}), style: val } })} 
                   />
                 </div>
               </div>
+              {embed?.button?.style === 'LINK' && (
+                <div className="input-group animate fade-in" style={{ marginTop: '20px' }}>
+                  <label className="text-label">URL del Link</label>
+                  <input 
+                    className="input" 
+                    value={embed?.button?.url || ''} 
+                    onChange={(e) => onChange({ ...embed, button: { ...(embed.button || {}), url: e.target.value } })} 
+                    placeholder="https://google.com" 
+                  />
+                  <p className="field-help">I bottoni di tipo Link non possono eseguire comandi, servono solo a reindirizzare l'utente.</p>
+                </div>
+              )}
             </section>
           )}
         </div>

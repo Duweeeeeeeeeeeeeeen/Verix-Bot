@@ -301,11 +301,12 @@ export default function TicketConfig() {
                                                             { id: 'SUCCESS', label: 'V' },
                                                             { id: 'DANGER', label: 'R' },
                                                             { id: 'PRIMARY', label: 'B' },
-                                                            { id: 'SECONDARY', label: 'G' }
+                                                            { id: 'SECONDARY', label: 'G' },
+                                                            { id: 'LINK', label: 'L' }
                                                         ].map(style => (
                                                             <button 
                                                                 key={style.id}
-                                                                title={style.label}
+                                                                title={style.id === 'LINK' ? 'Link Esterno' : style.label}
                                                                 onClick={() => {
                                                                     const newTypes = { ...config.typesConfig };
                                                                     newTypes[id] = { ...data, style: style.id };
@@ -331,13 +332,31 @@ export default function TicketConfig() {
                                                 </div>
                                             </div>
                                             <div className="category-details">
-                                                <div className="detail-field">
-                                                    <label className="label-tiny">Staff Specifico</label>
-                                                    <DiscordSelector type="role" multiple options={roles} value={data.staffRoleIds || []} onChange={val => {
-                                                        const newTypes = { ...config.typesConfig };
-                                                        newTypes[id] = { ...data, staffRoleIds: val };
-                                                        setConfig({ ...config, typesConfig: newTypes });
-                                                    }} />
+                                                <div style={{ display: 'grid', gridTemplateColumns: data.style === 'LINK' ? '1fr 1fr' : '1fr', gap: '20px' }}>
+                                                    <div className="detail-field">
+                                                        <label className="label-tiny">Staff Specifico</label>
+                                                        <DiscordSelector type="role" multiple options={roles} value={data.staffRoleIds || []} onChange={val => {
+                                                            const newTypes = { ...config.typesConfig };
+                                                            newTypes[id] = { ...data, staffRoleIds: val };
+                                                            setConfig({ ...config, typesConfig: newTypes });
+                                                        }} />
+                                                    </div>
+                                                    {data.style === 'LINK' && (
+                                                        <div className="detail-field animate fade-in">
+                                                            <label className="label-tiny">URL Destinazione</label>
+                                                            <input 
+                                                                className="input" 
+                                                                value={data.url || ''} 
+                                                                onChange={e => {
+                                                                    const newTypes = { ...config.typesConfig };
+                                                                    newTypes[id] = { ...data, url: e.target.value };
+                                                                    setConfig({ ...config, typesConfig: newTypes });
+                                                                }} 
+                                                                placeholder="https://..."
+                                                                style={{ padding: '8px 12px', fontSize: '0.85rem' }}
+                                                            />
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>
@@ -504,7 +523,7 @@ export default function TicketConfig() {
                                     return Object.values(config.typesConfig || {}).map(cat => ({
                                         label: cat.label,
                                         emoji: cat.emoji,
-                                        style: 'PRIMARY'
+                                        style: cat.style || 'PRIMARY'
                                     }));
                                 }
                                 if (slug === 'ticket') {
@@ -579,12 +598,14 @@ export default function TicketConfig() {
             .style-pill-mini.DANGER { background: #da373c; }
             .style-pill-mini.PRIMARY { background: #5865f2; }
             .style-pill-mini.SECONDARY { background: #4f545c; }
+            .style-pill-mini.LINK { background: #4f545c; position: relative; }
+            .style-pill-mini.LINK::after { content: '🔗'; position: absolute; top: -5px; right: -5px; font-size: 0.5rem; }
 
             .preview-button { padding: 6px 12px; border-radius: 4px; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; justify-content: center; color: white; border: none; margin-right: 8px; }
             .preview-button.SUCCESS { background: #248046; }
             .preview-button.DANGER { background: #da373c; }
             .preview-button.PRIMARY { background: #5865f2; }
-            .preview-button.SECONDARY { background: #4f545c; }
+            .preview-button.SECONDARY, .preview-button.LINK { background: #4f545c; }
 
             .empty-state { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 48px; color: var(--text-dim); opacity: 0.5; }
             .align-center { display: flex; align-items: center; gap: 10px; }

@@ -26,7 +26,13 @@ export const embedDataSchema = z.object({
         iconURL: urlOrEmpty,
         url: urlOrEmpty
     }).passthrough().optional().nullable(),
-    fields: z.array(embedFieldSchema.passthrough()).max(25).optional().nullable()
+    fields: z.array(embedFieldSchema.passthrough()).max(25).optional().nullable(),
+    button: z.object({
+        label: z.string().max(80).optional().nullable(),
+        emoji: z.string().max(32).optional().nullable(),
+        style: z.enum(['PRIMARY', 'SECONDARY', 'SUCCESS', 'DANGER', 'LINK']).optional().nullable(),
+        url: urlOrEmpty
+    }).passthrough().optional().nullable()
 }).passthrough();
 
 export const notificationSchema = z.object({

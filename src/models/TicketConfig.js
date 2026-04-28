@@ -26,6 +26,7 @@ const ticketConfigSchema = new mongoose.Schema({
             color: { type: String, default: '#3498db' },
             emoji: { type: String, default: '🎫' },
             style: { type: String, default: 'PRIMARY' },
+            url: { type: String, default: null },
             image: { type: String, default: null }
         },
         default: {

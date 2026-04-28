@@ -395,13 +395,20 @@ router.post('/:guildId/whitelist/send-panel', adminCheck, async (req, res) => {
 
         // Whitelist Start Button
         const btnData = config?.embeds?.panel?.button || { label: 'Inizia Whitelist', emoji: '📝', style: 'PRIMARY' };
-        const startButtonRow = new ActionRowBuilder().addComponents(
-            new ButtonBuilder()
-                .setCustomId('start_wl')
-                .setLabel(btnData.label || 'Inizia Whitelist')
-                .setStyle(getButtonStyle(btnData.style))
-                .setEmoji(btnData.emoji || '📝')
-        );
+        const isLink = btnData.style === 'LINK' && btnData.url;
+        
+        const startButton = new ButtonBuilder()
+            .setLabel(btnData.label || 'Inizia Whitelist')
+            .setStyle(isLink ? ButtonStyle.Link : getButtonStyle(btnData.style))
+            .setEmoji(btnData.emoji || '📝');
+
+        if (isLink) {
+            startButton.setURL(btnData.url);
+        } else {
+            startButton.setCustomId('start_wl');
+        }
+
+        const startButtonRow = new ActionRowBuilder().addComponents(startButton);
 
         // Cleanup old whitelist panels
         try {
@@ -516,6 +523,8 @@ router.post('/:guildId/tickets/send-panel', adminCheck, async (req, res) => {
 
             if (typesSource.length > 0) {
                 for (const [id, data] of typesSource) {
+                    if (data.style === 'LINK') continue; // Select menu non supporta link esterni
+                    
                     options.push({
                         label: data.label || (id.charAt(0).toUpperCase() + id.slice(1)),
                         value: `ticket_type_${id}`,
@@ -543,13 +552,19 @@ router.post('/:guildId/tickets/send-panel', adminCheck, async (req, res) => {
             if (typesSource.length > 0) {
                 const entries = typesSource.slice(0, 5); // Discord limit
                 for (const [id, data] of entries) {
-                    row.addComponents(
-                        new ButtonBuilder()
-                            .setCustomId(`ticket_type_${id}`)
-                            .setLabel(data.label || (id.charAt(0).toUpperCase() + id.slice(1)))
-                            .setStyle(getButtonStyle(data.style))
-                            .setEmoji(data.emoji || '🎫')
-                    );
+                    const isLink = data.style === 'LINK' && data.url;
+                    const btn = new ButtonBuilder()
+                        .setLabel(data.label || (id.charAt(0).toUpperCase() + id.slice(1)))
+                        .setStyle(isLink ? ButtonStyle.Link : getButtonStyle(data.style))
+                        .setEmoji(data.emoji || '🎫');
+
+                    if (isLink) {
+                        btn.setURL(data.url);
+                    } else {
+                        btn.setCustomId(`ticket_type_${id}`);
+                    }
+
+                    row.addComponents(btn);
                 }
             } else {
                 row.addComponents(
@@ -681,13 +696,20 @@ router.post('/:guildId/verify/send-panel', adminCheck, async (req, res) => {
             .setFooter({ text: guild.name, iconURL: guild.iconURL() });
 
         const btnData = config.buttons?.verify || { label: 'Verificati Ora', emoji: '✅', style: 'SUCCESS' };
-        const row = new ActionRowBuilder().addComponents(
-            new ButtonBuilder()
-                .setCustomId('verify_user')
-                .setLabel(btnData.label || 'Verificati Ora')
-                .setEmoji(btnData.emoji || '✅')
-                .setStyle(getButtonStyle(btnData.style))
-        );
+        const isLink = btnData.style === 'LINK' && btnData.url;
+
+        const verifyButton = new ButtonBuilder()
+            .setLabel(btnData.label || 'Verificati Ora')
+            .setEmoji(btnData.emoji || '✅')
+            .setStyle(isLink ? ButtonStyle.Link : getButtonStyle(btnData.style));
+
+        if (isLink) {
+            verifyButton.setURL(btnData.url);
+        } else {
+            verifyButton.setCustomId('verify_user');
+        }
+
+        const row = new ActionRowBuilder().addComponents(verifyButton);
 
         // Cleanup old verify panels
         try {
