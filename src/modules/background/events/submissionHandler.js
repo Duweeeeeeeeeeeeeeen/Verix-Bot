@@ -138,6 +138,8 @@ export default {
                 });
                 if (dmEmbed) interaction.user.send({ embeds: [dmEmbed] }).catch(() => {});
 
+            } catch (err) {
+                logger.error('[BG] Error in submissionHandler:', err);
                 await messageService.reply(interaction, 'background', 'error', { reason: 'Si è verificato un errore durante l\'invio.' }, { ephemeral: true });
             }
         }

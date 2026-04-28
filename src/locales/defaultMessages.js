@@ -462,12 +462,11 @@ export default {
             color: '#3498db'
         }
     },
-        typesConfig: {
-            supporto: { label: 'Supporto Generale', emoji: '🎫', color: '#6366f1', staffRoleIds: [] },
-            segnalazione: { label: 'Segnalazione Utente', emoji: '🚨', color: '#ef4444', staffRoleIds: [] },
-            donazione: { label: 'Donazioni', emoji: '💰', color: '#f59e0b', staffRoleIds: [] },
-            bug: { label: 'Segnalazione Bug', emoji: '🐛', color: '#10b981', staffRoleIds: [] }
-        }
+    typesConfig: {
+        supporto: { label: 'Supporto Generale', emoji: '🎫', color: '#6366f1', staffRoleIds: [] },
+        segnalazione: { label: 'Segnalazione Utente', emoji: '🚨', color: '#ef4444', staffRoleIds: [] },
+        donazione: { label: 'Donazioni', emoji: '💰', color: '#f59e0b', staffRoleIds: [] },
+        bug: { label: 'Segnalazione Bug', emoji: '🐛', color: '#10b981', staffRoleIds: [] }
     },
     verify: {
         panel: {
