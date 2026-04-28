@@ -74,24 +74,32 @@ export class PhotoContestManager {
                 return;
             }
 
-            let theme = null;
+            let themeName = null;
+            let duration = config.duration || 24;
+
             if (config.automaticThemes && config.themesList.length > 0) {
-                theme = config.themesList[Math.floor(Math.random() * config.themesList.length)];
+                const themeData = config.themesList[Math.floor(Math.random() * config.themesList.length)];
+                if (typeof themeData === 'string') {
+                    themeName = themeData;
+                } else {
+                    themeName = themeData.name;
+                    if (themeData.duration) duration = themeData.duration;
+                }
             }
 
-            const endTime = new Date(Date.now() + config.duration * 3600000);
+            const endTime = new Date(Date.now() + duration * 3600000);
             
             const newContest = await PhotoContest.create({
                 guildId: config.guildId,
                 status: 'ACTIVE',
                 startTime: new Date(),
                 endTime: endTime,
-                theme: theme
+                theme: themeName
             });
 
             const embed = new EmbedBuilder()
-                .setTitle(config.embedSettings.title + (theme ? `: ${theme}` : ''))
-                .setDescription(config.embedSettings.description + `\n\n**Tema:** ${theme || 'Libero'}\n**Scadenza:** <t:${Math.floor(endTime.getTime() / 1000)}:R>`)
+                .setTitle(config.embedSettings.title + (themeName ? `: ${themeName}` : ''))
+                .setDescription(config.embedSettings.description + `\n\n**Tema:** ${themeName || 'Libero'}\n**Scadenza:** <t:${Math.floor(endTime.getTime() / 1000)}:R>`)
                 .setColor(config.embedSettings.color)
                 .setThumbnail('https://i.imgur.com/8Qj8XzX.png') // Optional: Camera Icon
                 .setTimestamp();

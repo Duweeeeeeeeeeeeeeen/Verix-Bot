@@ -57,8 +57,15 @@ const photoContestConfigSchema = new mongoose.Schema({
         default: false
     },
     themesList: {
-        type: [String],
-        default: ['Natura', 'Architettura', 'Tramonti', 'Cibo', 'Minimalismo', 'Cyberpunk', 'Ritratti', 'Animali']
+        type: [new mongoose.Schema({
+            name: String,
+            duration: { type: Number, default: null }
+        }, { _id: false })],
+        default: [
+            { name: 'Natura' }, { name: 'Architettura' }, { name: 'Tramonti' }, 
+            { name: 'Cibo' }, { name: 'Minimalismo' }, { name: 'Cyberpunk' }, 
+            { name: 'Ritratti' }, { name: 'Animali' }
+        ]
     },
     notifications: {
         mode: { type: String, enum: ['DM', 'CHANNEL', 'BOTH', 'NONE'], default: 'DM' },

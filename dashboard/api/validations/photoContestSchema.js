@@ -14,7 +14,13 @@ export const photoContestSchema = z.object({
     }).passthrough().optional(),
     hallOfFameChannelId: discordId.or(z.literal('')).optional().nullable(),
     automaticThemes: z.boolean().optional(),
-    themesList: z.array(z.string()).optional(),
+    themesList: z.array(z.union([
+        z.string(),
+        z.object({
+            name: z.string(),
+            duration: z.number().min(1).max(168).nullable().optional()
+        })
+    ])).optional(),
     notifications: z.object({
         mode: z.enum(['DM', 'CHANNEL', 'BOTH', 'NONE']).default('DM'),
         channelId: discordId.or(z.literal('')).optional().nullable()

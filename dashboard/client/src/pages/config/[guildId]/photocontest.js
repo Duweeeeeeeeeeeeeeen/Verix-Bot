@@ -248,34 +248,63 @@ export default function PhotoContestConfig() {
                     <section className="card section-card-p">
                         <div className="section-header-p" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                             <h3 className="align-center" style={{ margin: 0 }}><List size={18} color="var(--primary)" /> Lista Argomenti</h3>
-                            <button className="btn-outline-sm" onClick={() => setConfig({...config, themesList: [...(config.themesList || []), '']})}>
+                            <button className="btn-outline-sm" onClick={() => setConfig({...config, themesList: [...(config.themesList || []), { name: '', duration: null }]})}>
                                 <Plus size={14} /> Aggiungi
                             </button>
                         </div>
                         
                         <div className="themes-grid-p">
                             {config.themesList && config.themesList.length > 0 ? (
-                                config.themesList.map((theme, idx) => (
-                                    <div key={idx} className="theme-item-p animate fade-in">
-                                        <div className="theme-index">{idx + 1}</div>
-                                        <input 
-                                            className="input-transparent-p" 
-                                            value={theme} 
-                                            onChange={e => {
-                                                const newThemes = [...config.themesList];
-                                                newThemes[idx] = e.target.value;
+                                config.themesList.map((theme, idx) => {
+                                    const themeName = typeof theme === 'string' ? theme : theme.name;
+                                    const themeDuration = (typeof theme === 'string' ? '' : theme.duration) ?? '';
+
+                                    return (
+                                        <div key={idx} className="theme-item-p animate fade-in">
+                                            <div className="theme-index">{idx + 1}</div>
+                                            <input 
+                                                className="input-transparent-p" 
+                                                value={themeName} 
+                                                onChange={e => {
+                                                    const newThemes = [...config.themesList];
+                                                    if (typeof newThemes[idx] === 'string') {
+                                                        newThemes[idx] = { name: e.target.value, duration: null };
+                                                    } else {
+                                                        newThemes[idx] = { ...newThemes[idx], name: e.target.value };
+                                                    }
+                                                    setConfig({...config, themesList: newThemes});
+                                                }}
+                                                placeholder="Inserisci argomento..."
+                                            />
+                                            <div className="theme-duration-input" title="Durata personalizzata per questo tema (in ore). Lascia vuoto per usare il default.">
+                                                <Clock size={14} />
+                                                <input 
+                                                    type="number" 
+                                                    className="mini-duration-input"
+                                                    value={themeDuration}
+                                                    onChange={e => {
+                                                        const val = e.target.value === '' ? null : parseInt(e.target.value);
+                                                        const newThemes = [...config.themesList];
+                                                        if (typeof newThemes[idx] === 'string') {
+                                                            newThemes[idx] = { name: newThemes[idx], duration: val };
+                                                        } else {
+                                                            newThemes[idx] = { ...newThemes[idx], duration: val };
+                                                        }
+                                                        setConfig({...config, themesList: newThemes});
+                                                    }}
+                                                    placeholder="Def."
+                                                />
+                                                <span className="unit">h</span>
+                                            </div>
+                                            <button className="btn-icon-danger-sm" onClick={() => {
+                                                const newThemes = config.themesList.filter((_, i) => i !== idx);
                                                 setConfig({...config, themesList: newThemes});
-                                            }}
-                                            placeholder="Inserisci argomento..."
-                                        />
-                                        <button className="btn-icon-danger-sm" onClick={() => {
-                                            const newThemes = config.themesList.filter((_, i) => i !== idx);
-                                            setConfig({...config, themesList: newThemes});
-                                        }}>
-                                            <Trash2 size={14} />
-                                        </button>
-                                    </div>
-                                ))
+                                            }}>
+                                                <Trash2 size={14} />
+                                            </button>
+                                        </div>
+                                    );
+                                })
                             ) : (
                                 <div className="empty-themes-p">
                                     <Camera size={32} />
@@ -369,6 +398,11 @@ export default function PhotoContestConfig() {
             .btn-icon-danger-sm { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; }
             .btn-icon-danger-sm:hover { background: #ef4444; color: white; }
             .empty-themes-p { padding: 40px; text-align: center; color: var(--text-dim); opacity: 0.5; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+
+            .theme-duration-input { display: flex; align-items: center; gap: 6px; padding: 4px 8px; background: rgba(255,255,255,0.03); border-radius: 8px; color: var(--text-dim); }
+            .mini-duration-input { width: 40px; background: transparent; border: none; color: var(--primary); font-weight: 700; font-size: 0.8rem; text-align: right; padding: 0; }
+            .mini-duration-input:focus { outline: none; }
+            .theme-duration-input .unit { font-size: 0.7rem; opacity: 0.5; font-weight: 800; }
 
             .align-center { display: flex; align-items: center; gap: 10px; }
             @media (max-width: 1000px) { .config-grid-p { grid-template-columns: 1fr; } .header-buttons-grid { flex-direction: column; } }
