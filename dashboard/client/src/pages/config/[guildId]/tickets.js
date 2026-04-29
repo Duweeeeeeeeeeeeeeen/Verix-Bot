@@ -32,6 +32,7 @@ export default function TicketConfig() {
   const [saving, setSaving] = useState(false);
   const [sendingPanel, setSendingPanel] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [blacklistInput, setBlacklistInput] = useState('');
 
   useEffect(() => {
     setMounted(true);
@@ -171,7 +172,6 @@ export default function TicketConfig() {
     });
   };
 
-  const [blacklistInput, setBlacklistInput] = useState('');
   const addToBlacklist = () => {
     if (!blacklistInput) return;
     setConfig(prev => ({
