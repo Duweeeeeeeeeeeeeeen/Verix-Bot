@@ -18,6 +18,7 @@ if (!process.env.SESSION_SECRET) {
 }
 
 const app = express();
+app.set('trust proxy', 1); // Trust the proxy (Nginx/VPS) to allow session cookies
 const PORT = process.env.DASHBOARD_API_PORT || 5000;
 const isProduction = process.env.NODE_ENV === 'production';
 
