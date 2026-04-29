@@ -91,10 +91,15 @@ export function mergeModuleDefaults(moduleName, dbConfig) {
         // Handle nested objects (voiceSettings, typesConfig, etc.)
         if (value && typeof value === 'object' && !value.title && !value.description) {
             // Special case for typesConfig: if the user has ANY category, don't add defaults
-            if (key === 'typesConfig' && result[key] && Object.keys(result[key]).length > 0) {
-                continue;
+            if (key === 'typesConfig') {
+                const configValue = result[key];
+                const hasEntries = configValue instanceof Map ? configValue.size > 0 : (configValue && Object.keys(configValue).length > 0);
+                if (hasEntries) continue;
             }
-            result[key] = { ...value, ...(result[key] || {}) };
+            
+            // Ensure we handle Mongoose Maps and plain objects correctly for merging
+            const dbValue = result[key] instanceof Map ? Object.fromEntries(result[key]) : (result[key] || {});
+            result[key] = { ...value, ...dbValue };
             continue;
         }
 

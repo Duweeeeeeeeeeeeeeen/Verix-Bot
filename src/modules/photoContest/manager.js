@@ -107,7 +107,7 @@ export class PhotoContestManager {
             newContest.announcementMessageId = msg.id;
             await newContest.save();
 
-            logger.info(`[PhotoContest] Started themed contest [${theme || 'FREE'}] in ${guild.name}`);
+            logger.info(`[PhotoContest] Started themed contest [${themeName || 'FREE'}] in ${guild.name}`);
         } catch (error) {
             logger.error(`[PhotoContest] Error starting contest for guild ${config.guildId}:`, error);
         }

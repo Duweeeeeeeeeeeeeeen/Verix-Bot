@@ -537,7 +537,7 @@ router.post('/:guildId/tickets/send-panel', adminCheck, async (req, res) => {
 
             components.push(new ActionRowBuilder().addComponents(
                 new StringSelectMenuBuilder()
-                    .setCustomId('open_ticket_select')
+                    .setCustomId('ticket_create_select')
                     .setPlaceholder('Seleziona una categoria...')
                     .addOptions(options.slice(0, 25))
             ));

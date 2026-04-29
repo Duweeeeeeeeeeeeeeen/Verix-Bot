@@ -96,7 +96,8 @@ export default async (client) => {
                 'whitelist': 'wl',
                 'photocontest': 'pc',
                 'fivem': '5m',
-                'verify': 'vr'
+                'verify': 'vr',
+                'tickets': 'tk'
             };
 
             for (const [moduleName, eventFiles] of moduleMap.entries()) {
@@ -115,7 +116,8 @@ export default async (client) => {
                         
                         // Check if it belongs to this module
                         matchesModule = target.includes(moduleName.toLowerCase()) || 
-                                             (prefix && (target.startsWith(`${prefix}_`) || target.includes(`_${prefix}_`) || target.endsWith(`_${prefix}`)));
+                                        (moduleName === 'tickets' && target.includes('ticket')) ||
+                                        (prefix && (target.startsWith(`${prefix}_`) || target.includes(`_${prefix}_`) || target.endsWith(`_${prefix}`)));
 
                         // Skip if not admin and not matching
                         if (moduleName !== 'admin' && !matchesModule) continue;
