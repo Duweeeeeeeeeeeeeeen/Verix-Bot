@@ -220,11 +220,17 @@ export default function PhotoContestConfig() {
                                 <DiscordSelector type="role" options={roles} value={config.prizeRoleId || ''} onChange={val => setConfig({...config, prizeRoleId: val})} />
                             </div>
                             <div className="field-box">
-                                <label className="text-label">Intervallo (Ore)</label>
+                                <label className="text-label">
+                                    Intervallo (Ore)
+                                    <HelpTooltip text="Il tempo di attesa tra la fine di un contest e l'inizio automatico del prossimo." />
+                                </label>
                                 <input type="number" className="input" value={config.interval || 1} onChange={(e) => setConfig({...config, interval: parseInt(e.target.value) || 1})} />
                             </div>
                             <div className="field-box">
-                                <label className="text-label">Durata Contest (Ore)</label>
+                                <label className="text-label">
+                                    Durata Contest (Ore)
+                                    <HelpTooltip text="Quanto tempo rimane attivo il contest per ricevere foto e voti dopo che è iniziato." />
+                                </label>
                                 <input type="number" className="input" value={config.duration || 24} onChange={(e) => setConfig({...config, duration: parseInt(e.target.value) || 24})} />
                             </div>
                         </div>
@@ -427,10 +433,10 @@ export default function PhotoContestConfig() {
             .btn-icon-danger-sm:hover { background: #ef4444; color: white; }
             .empty-themes-p { padding: 40px; text-align: center; color: var(--text-dim); opacity: 0.5; display: flex; flex-direction: column; align-items: center; gap: 12px; }
 
-            .theme-duration-input { display: flex; align-items: center; gap: 6px; padding: 4px 8px; background: rgba(255,255,255,0.03); border-radius: 8px; color: var(--text-dim); }
-            .mini-duration-input { width: 40px; background: transparent; border: none; color: var(--primary); font-weight: 700; font-size: 0.8rem; text-align: right; padding: 0; }
-            .mini-duration-input:focus { outline: none; }
-            .theme-duration-input .unit { font-size: 0.7rem; opacity: 0.5; font-weight: 800; }
+            .theme-duration-input { display: flex; align-items: center; gap: 4px; padding: 4px 10px; background: rgba(255,255,255,0.05); border-radius: 8px; color: var(--text-dim); border: 1px solid transparent; transition: 0.2s; }
+            .theme-duration-input:focus-within { border-color: var(--primary); background: rgba(255,255,255,0.08); }
+            .mini-duration-input { width: 50px; background: transparent; border: none; color: var(--primary); font-weight: 700; font-size: 0.85rem; text-align: right; padding: 0; outline: none; }
+            .theme-duration-input .unit { font-size: 0.75rem; opacity: 0.6; font-weight: 800; color: var(--text-dim); margin-left: 2px; }
 
             .align-center { display: flex; align-items: center; gap: 10px; }
             @media (max-width: 1000px) { .config-grid-p { grid-template-columns: 1fr; } .header-buttons-grid { flex-direction: column; } }
