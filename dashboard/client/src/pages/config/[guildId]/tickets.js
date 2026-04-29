@@ -379,10 +379,14 @@ export default function TicketConfig() {
                                     <label className="text-label">Chiusura Automatica</label>
                                     <div className="flex-between">
                                         <span className="text-dim">Chiudi ticket dopo inattività</span>
-                                        <CustomSwitch 
-                                            checked={config.autoClose?.enabled || false} 
-                                            onChange={val => setConfig({...config, autoClose: {...(config.autoClose || {}), enabled: val}})} 
-                                        />
+                                        <label className="toggle-mini">
+                                            <input 
+                                                type="checkbox"
+                                                checked={config.autoClose?.enabled || false} 
+                                                onChange={e => setConfig({...config, autoClose: {...(config.autoClose || {}), enabled: e.target.checked}})} 
+                                            />
+                                            <span className="slider-mini"></span>
+                                        </label>
                                     </div>
                                 </div>
                                 <div className="field-group">
