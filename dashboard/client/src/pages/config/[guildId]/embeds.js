@@ -224,6 +224,7 @@ export default function EmbedBuilder() {
                         embed={currentEmbed} 
                         onChange={setCurrentEmbed} 
                         variables={['user', 'guild', 'time', 'date']} 
+                        showButtonEditor={true}
                     />
                 </div>
             </div>

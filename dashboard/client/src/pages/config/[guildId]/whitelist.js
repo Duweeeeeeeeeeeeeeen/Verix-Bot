@@ -568,23 +568,66 @@ export default function WhitelistConfig() {
             {activeTab === 'personalization' && (
                 <div className="animate fade-in">
                     <section className="card section-card" style={{ marginBottom: '24px' }}>
+                        <div className="align-center" style={{ marginBottom: '20px' }}>
+                            <MousePointer2 size={18} color="var(--primary)" />
+                            <h3>Branding Pulsante Avvio</h3>
+                        </div>
+                        <div className="fields-grid">
+                            <div className="field-box">
+                                <label className="label-tiny">Testo Bottone</label>
+                                <input className="input" value={config.buttons?.start_wl?.label || ''} onChange={e => setNested('buttons.start_wl.label', e.target.value)} placeholder="Inizia Whitelist" />
+                            </div>
+                            <div className="field-box">
+                                <label className="label-tiny">Emoji</label>
+                                <div style={{ width: '60px' }}>
+                                    <EmojiInput value={config.buttons?.start_wl?.emoji || ''} onChange={e => setNested('buttons.start_wl.emoji', e.target.value)} />
+                                </div>
+                            </div>
+                            <div className="field-box" style={{ gridColumn: 'span 2' }}>
+                                <label className="label-tiny">Stile Pulsante</label>
+                                <div className="style-selector-v">
+                                    {[
+                                        { id: 'SUCCESS', label: 'Verde', color: '#22c55e' },
+                                        { id: 'PRIMARY', label: 'Blu', color: '#6366f1' },
+                                        { id: 'SECONDARY', label: 'Grigio', color: '#64748b' },
+                                        { id: 'DANGER', label: 'Rosso', color: '#ef4444' },
+                                        { id: 'LINK', label: 'Link 🔗', color: '#3b82f6' }
+                                    ].map(style => (
+                                        <button 
+                                            key={style.id}
+                                            onClick={() => setNested('buttons.start_wl.style', style.id)}
+                                            className={`style-btn ${config.buttons?.start_wl?.style === style.id ? 'active' : ''}`}
+                                        >
+                                            <div className="dot" style={{ backgroundColor: style.color }}></div>
+                                            <span>{style.label}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                            {config.buttons?.start_wl?.style === 'LINK' && (
+                                <div className="field-box animate fade-in" style={{ gridColumn: 'span 2' }}>
+                                    <label className="label-tiny">URL del Link</label>
+                                    <input className="input" value={config.buttons?.start_wl?.url || ''} onChange={e => setNested('buttons.start_wl.url', e.target.value)} placeholder="https://..." />
+                                </div>
+                            )}
+                        </div>
+                    </section>
+
+                    <section className="card section-card" style={{ marginBottom: '24px' }}>
                         <div className="section-header">
                             <div className="align-center">
                                 <Palette size={18} color="var(--primary)" />
-                                <h3>Branding & Colori</h3>
+                                <h3>Colori Globali</h3>
                             </div>
                         </div>
                         <div className="fields-grid" style={{ marginTop: '16px' }}>
                             <div className="field-box">
-                                <label className="text-label">Colore Primario (Embed)</label>
-                                <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                                    <input type="color" value={messages.panel?.color || '#6366f1'} onChange={e => setMessages({...messages, panel: { ...messages.panel, color: e.target.value }})} style={{ width: '40px', height: '40px', border: '1px solid var(--border)', borderRadius: '6px' }} />
-                                    <input type="text" className="input" value={messages.panel?.color || ''} onChange={e => setMessages({...messages, panel: { ...messages.panel, color: e.target.value }})} placeholder="#HEX" />
-                                </div>
+                                <label className="text-label">Colore Successo (Accettazione)</label>
+                                <input type="color" value={config.colors?.success || '#2ecc71'} onChange={e => setNested('colors.success', e.target.value)} />
                             </div>
                             <div className="field-box">
-                                <label className="text-label">Colore Successo</label>
-                                <input type="color" value={config.colors?.success || '#2ecc71'} onChange={e => setNested('colors.success', e.target.value)} />
+                                <label className="text-label">Colore Rifiuto</label>
+                                <input type="color" value={config.colors?.danger || '#e74c3c'} onChange={e => setNested('colors.danger', e.target.value)} />
                             </div>
                         </div>
                     </section>

@@ -207,6 +207,10 @@ export default function PhotoContestConfig() {
                                 <label className="text-label">Intervallo (Ore)</label>
                                 <input type="number" className="input" value={config.interval || 1} onChange={(e) => setConfig({...config, interval: parseInt(e.target.value) || 1})} />
                             </div>
+                            <div className="field-box">
+                                <label className="text-label">Durata Contest (Ore)</label>
+                                <input type="number" className="input" value={config.duration || 24} onChange={(e) => setConfig({...config, duration: parseInt(e.target.value) || 24})} />
+                            </div>
                         </div>
                     </section>
 

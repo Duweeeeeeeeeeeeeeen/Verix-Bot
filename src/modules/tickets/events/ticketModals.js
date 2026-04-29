@@ -17,6 +17,7 @@ export default {
             if (!config) return messageService.reply(interaction, 'tickets', 'error', { reason: 'Configurazione mancante.' }, { ephemeral: true });
 
             try {
+                await interaction.deferReply({ flags: [MessageFlags.Ephemeral] });
                 // Call the creation logic with gathered metadata
                 await createTicket(interaction, 'segnalazione', config, { 
                     priority: priority,

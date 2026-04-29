@@ -256,7 +256,8 @@ export default function VerifyConfig() {
                                                     { id: 'SUCCESS', label: 'Verde', color: '#22c55e' },
                                                     { id: 'PRIMARY', label: 'Blu', color: '#6366f1' },
                                                     { id: 'SECONDARY', label: 'Grigio', color: '#64748b' },
-                                                    { id: 'DANGER', label: 'Rosso', color: '#ef4444' }
+                                                    { id: 'DANGER', label: 'Rosso', color: '#ef4444' },
+                                                    { id: 'LINK', label: 'Link 🔗', color: '#3b82f6' }
                                                 ].map(style => (
                                                     <button 
                                                         key={style.id}
@@ -269,6 +270,13 @@ export default function VerifyConfig() {
                                                 ))}
                                             </div>
                                         </div>
+                                        {config.buttons?.verify?.style === 'LINK' && (
+                                            <div className="field-box animate fade-in" style={{ gridColumn: 'span 2' }}>
+                                                <label className="label-tiny">URL del Link</label>
+                                                <input className="input" value={config.buttons?.verify?.url || ''} onChange={e => setNested('buttons.verify.url', e.target.value)} placeholder="https://google.com" />
+                                                <p className="field-help" style={{ marginTop: '4px', fontSize: '0.7rem' }}>I bottoni Link aprono un sito web esterno e non attivano il sistema di verifica.</p>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </div>

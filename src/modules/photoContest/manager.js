@@ -74,16 +74,15 @@ export class PhotoContestManager {
                 return;
             }
 
+            let duration = config.duration ?? 24;
             let themeName = null;
-            let duration = config.duration || 24;
 
             if (config.automaticThemes && config.themesList.length > 0) {
                 const themeData = config.themesList[Math.floor(Math.random() * config.themesList.length)];
-                if (typeof themeData === 'string') {
-                    themeName = themeData;
-                } else {
-                    themeName = themeData.name;
-                    if (themeData.duration) duration = themeData.duration;
+                themeName = typeof themeData === 'string' ? themeData : themeData.name;
+                
+                if (typeof themeData === 'object' && themeData.duration) {
+                    duration = themeData.duration;
                 }
             }
 

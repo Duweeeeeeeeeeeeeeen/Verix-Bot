@@ -624,7 +624,12 @@ export default {
             description: 'Si è verificato un errore durante l\'elaborazione dei dati del concorso fotografico.',
             color: '#e74c3c'
         },
-        themesList: ['Natura', 'Architettura', 'Tramonti', 'Cibo', 'Minimalismo', 'Cyberpunk', 'Ritratti', 'Animali']
+        themesList: [
+            { name: 'Natura' }, { name: 'Architettura' }, { name: 'Tramonti' }, 
+            { name: 'Cibo' }, { name: 'Minimalismo' }, { name: 'Cyberpunk' }, 
+            { name: 'Ritratti' }, { name: 'Animali' }
+        ],
+        duration: 24
     },
     twitch: {
         stream_online: {

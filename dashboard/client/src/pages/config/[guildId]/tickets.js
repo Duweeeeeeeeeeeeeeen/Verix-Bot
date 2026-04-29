@@ -480,7 +480,8 @@ export default function TicketConfig() {
                                                 { id: 'SUCCESS', label: 'Verde' },
                                                 { id: 'DANGER', label: 'Rosso' },
                                                 { id: 'PRIMARY', label: 'Blu' },
-                                                { id: 'SECONDARY', label: 'Grigio' }
+                                                { id: 'SECONDARY', label: 'Grigio' },
+                                                { id: 'LINK', label: 'Link 🔗' }
                                             ].map(style => (
                                                 <button 
                                                     key={style.id}
@@ -491,6 +492,12 @@ export default function TicketConfig() {
                                                 </button>
                                             ))}
                                         </div>
+                                        {config.buttons?.[btn.key]?.style === 'LINK' && (
+                                            <div className="animate fade-in" style={{ marginTop: '12px' }}>
+                                                <label className="label-tiny">URL del Link</label>
+                                                <input className="input" value={config.buttons?.[btn.key]?.url || ''} onChange={e => setNested(`buttons.${btn.key}.url`, e.target.value)} placeholder="https://..." />
+                                            </div>
+                                        )}
                                     </div>
                                 ))}
                             </div>
@@ -523,14 +530,15 @@ export default function TicketConfig() {
                                     return Object.values(config.typesConfig || {}).map(cat => ({
                                         label: cat.label,
                                         emoji: cat.emoji,
-                                        style: cat.style || 'PRIMARY'
+                                        style: cat.style || 'PRIMARY',
+                                        url: cat.url
                                     }));
                                 }
                                 if (slug === 'ticket') {
                                     return [
-                                        { label: config.buttons?.claim?.label || 'Prendi in Carico', emoji: config.buttons?.claim?.emoji || '🙋‍♂️', style: config.buttons?.claim?.style || 'SUCCESS' },
-                                        { label: config.buttons?.close?.label || 'Chiudi Ticket', emoji: config.buttons?.close?.emoji || '🔒', style: config.buttons?.close?.style || 'DANGER' },
-                                        { label: config.buttons?.tag?.label || 'Aggiorna Stato', emoji: config.buttons?.tag?.emoji || '🏷️', style: config.buttons?.tag?.style || 'SECONDARY' }
+                                        { label: config.buttons?.claim?.label || 'Prendi in Carico', emoji: config.buttons?.claim?.emoji || '🙋‍♂️', style: config.buttons?.claim?.style || 'SUCCESS', url: config.buttons?.claim?.url },
+                                        { label: config.buttons?.close?.label || 'Chiudi Ticket', emoji: config.buttons?.close?.emoji || '🔒', style: config.buttons?.close?.style || 'DANGER', url: config.buttons?.close?.url },
+                                        { label: config.buttons?.tag?.label || 'Aggiorna Stato', emoji: config.buttons?.tag?.emoji || '🏷️', style: config.buttons?.tag?.style || 'SECONDARY', url: config.buttons?.tag?.url }
                                     ];
                                 }
                                 return null;

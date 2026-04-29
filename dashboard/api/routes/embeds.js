@@ -156,10 +156,38 @@ router.post('/:guildId/send', adminCheck, validate(sendEmbedSchema), async (req,
             discordEmbed.addFields(embed.fields.filter(f => f.name && f.value));
         }
 
-        await channel.send({ embeds: [discordEmbed] });
+        const messageOptions = { embeds: [discordEmbed] };
+
+        // --- BUTTON LOGIC ---
+        if (embed.button && embed.button.label) {
+            const { ButtonBuilder, ButtonStyle, ActionRowBuilder } = await import('discord.js');
+            
+            const buttonStyle = embed.button.style === 'LINK' ? ButtonStyle.Link : (
+                embed.button.style === 'SUCCESS' ? ButtonStyle.Success :
+                embed.button.style === 'DANGER' ? ButtonStyle.Danger :
+                embed.button.style === 'SECONDARY' ? ButtonStyle.Secondary : ButtonStyle.Primary
+            );
+
+            const button = new ButtonBuilder()
+                .setLabel(embed.button.label)
+                .setStyle(buttonStyle);
+
+            if (embed.button.emoji) button.setEmoji(embed.button.emoji);
+            
+            if (embed.button.style === 'LINK') {
+                if (embed.button.url) button.setURL(embed.button.url);
+            } else {
+                button.setCustomId(`manual_embed_btn_${Date.now()}`);
+            }
+
+            const row = new ActionRowBuilder().addComponents(button);
+            messageOptions.components = [row];
+        }
+
+        await channel.send(messageOptions);
         await logAudit(req, 'SEND_MANUAL_EMBED', { channelId, title: embed.title });
         
-        res.json({ success: true, message: 'Embed sent successfully!' });
+        res.json({ success: true, message: 'Messaggio inviato con successo!' });
 
     } catch (error) {
         res.status(500).json({ error: error.message });

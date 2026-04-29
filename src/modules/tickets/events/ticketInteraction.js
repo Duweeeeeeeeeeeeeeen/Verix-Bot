@@ -100,6 +100,10 @@ export default {
                 return interaction.showModal(modal);
             }
 
+            // Defer if not showing a modal
+            if (type !== 'segnalazione') {
+                await interaction.deferReply({ flags: [MessageFlags.Ephemeral] });
+            }
             return createTicket(interaction, type, config, { priority });
         }
 
@@ -183,9 +187,9 @@ export default {
                 await interaction.reply({ embeds: [embed] });
                 
                 // Background updates
-                channel.setName(`⚙️-${channel.name}`).catch(() => {});
-                const staffRoles = (config.staffRoleIds || []).map(id => guild.roles.cache.get(id)).filter(r => r);
-                renderTicketDashboard(channel, ticket, config, config.typesConfig.get(ticket.type), interaction.user, staffRoles, true);
+                interaction.channel.setName(`⚙️-${interaction.channel.name}`).catch(() => {});
+                const staffRoles = (config.staffRoleIds || []).map(id => interaction.guild.roles.cache.get(id)).filter(r => r);
+                renderTicketDashboard(interaction.channel, ticket, config, config.typesConfig.get(ticket.type), interaction.user, staffRoles, true);
                 return;
             }
 
@@ -309,8 +313,6 @@ async function createTicket(interaction, type, config, metadata = {}) {
             parent: config.categoryOpenId 
         });
         
-        await channel.permissionOverwrites.set(overwrites);
-
         await setInitialPermissions(channel, user, staffRoles);
 
         const ticket = await Ticket.create({ userId: user.id, guildId: guild.id, channelId: channel.id, type, priority, metadata });
