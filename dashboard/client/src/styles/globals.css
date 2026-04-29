@@ -370,8 +370,8 @@ h1, h2, h3, h4 {
 .content-container {
   padding: 32px;
   width: 100%;
-  max-width: 1800px;
-  margin: 0 auto;
+  max-width: 100%;
+  margin: 0;
 }
 
 /* Top Header (Sticky inside main-content) */
@@ -1204,7 +1204,7 @@ input:checked + .slider-mini:before {
     border-radius: 14px;
     border: 1px solid var(--border);
     width: 100%;
-    max-width: 600px;
+    max-width: none;
 }
 
 .tab-link {

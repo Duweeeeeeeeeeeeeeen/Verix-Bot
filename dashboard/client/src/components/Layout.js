@@ -288,9 +288,9 @@ export default function Layout({ children, guildId }) {
 
         .content-container {
           padding: 120px 48px 48px 48px;
-          width: 100%;
-          max-width: 1800px;
-          margin: 0 auto;
+          width: 100% !important;
+          max-width: none !important;
+          margin: 0 !important;
         }
 
         .help-toggle {
