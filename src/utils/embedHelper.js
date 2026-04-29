@@ -37,11 +37,17 @@ export function buildEmbed(embedConfig, placeholders = {}, fullConfig = {}) {
     }
 
     if (embedConfig.image) {
-        embed.setImage(replacePlaceholders(embedConfig.image, placeholders));
+        let imageUrl = replacePlaceholders(embedConfig.image, placeholders);
+        // Sanitize legacy broken links
+        if (imageUrl === 'https://i.imgur.com/FmK6O9S.png') imageUrl = 'https://i.imgur.com/89k5I5L.png';
+        embed.setImage(imageUrl);
     }
 
     if (embedConfig.thumbnail) {
-        embed.setThumbnail(replacePlaceholders(embedConfig.thumbnail, placeholders));
+        let thumbUrl = replacePlaceholders(embedConfig.thumbnail, placeholders);
+        // Sanitize legacy broken links
+        if (thumbUrl === 'https://i.imgur.com/FmK6O9S.png') thumbUrl = 'https://i.imgur.com/89k5I5L.png';
+        embed.setThumbnail(thumbUrl);
     }
 
     if (embedConfig.fields && Array.from(embedConfig.fields).length > 0) {
