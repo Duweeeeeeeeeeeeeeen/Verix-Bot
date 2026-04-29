@@ -50,7 +50,9 @@ class CleanupManager {
 
     async cleanupTickets(now) {
         const tickets = await Ticket.find({ deletionScheduledAt: { $lte: now } });
+        if (tickets.length > 0) logger.debug(`[CleanupManager] Found ${tickets.length} tickets scheduled for deletion.`);
         for (const ticket of tickets) {
+            logger.info(`[CleanupManager] Executing deletion for ticket ${ticket.channelId} (User: ${ticket.userId})`);
             await this.deleteChannel(ticket.guildId, ticket.channelId, `Ticket Closed Cleanup (${ticket.userId})`);
             ticket.deletionScheduledAt = null;
             await ticket.save();
@@ -121,14 +123,19 @@ class CleanupManager {
         if (!channelId) return;
         try {
             const guild = await this.client.guilds.fetch(guildId).catch(() => null);
-            if (!guild) return;
+            if (!guild) {
+                logger.warn(`[CleanupManager] Guild ${guildId} not found for channel deletion.`);
+                return;
+            }
 
             const channel = await guild.channels.fetch(channelId).catch(() => null);
             if (channel) {
                 await channel.delete(reason).catch(err => {
-                    logger.warn(`[CleanupManager] Failed to delete channel ${channelId} in ${guildId}:`, err.message);
+                    logger.error(`[CleanupManager] FAILED to delete channel ${channelId} in ${guildId}:`, err.message);
                 });
-                logger.info(`[CleanupManager] Deleted channel ${channelId} | Reason: ${reason}`);
+                logger.info(`[CleanupManager] Successfully deleted channel ${channelId} | Reason: ${reason}`);
+            } else {
+                logger.debug(`[CleanupManager] Channel ${channelId} already deleted or not found in guild ${guildId}.`);
             }
         } catch (error) {
             logger.error(`[CleanupManager] Error processing deletion for channel ${channelId}:`, error);

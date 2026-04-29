@@ -150,8 +150,24 @@ export default function TicketConfig() {
     { id: 'settings', name: 'Settaggi', icon: Settings2 },
     { id: 'categories', name: 'Categorie', icon: Layers },
     { id: 'automation', name: 'Automazione', icon: Zap },
+    { id: 'responses', name: 'Risposte Rapide', icon: MessageSquare },
     { id: 'personalization', name: 'Design & Messaggi', icon: Palette },
   ];
+
+  const addCannedResponse = () => {
+    setConfig(prev => ({
+        ...prev,
+        cannedResponses: [...(prev.cannedResponses || []), { label: 'Nuova Risposta', content: 'Messaggio...' }]
+    }));
+  };
+
+  const removeCannedResponse = (index) => {
+    setConfig(prev => {
+        const newResponses = [...(prev.cannedResponses || [])];
+        newResponses.splice(index, 1);
+        return { ...prev, cannedResponses: newResponses };
+    });
+  };
 
   return (
     <div className="config-page-layout">
@@ -446,7 +462,60 @@ export default function TicketConfig() {
                     </div>
                 )}
 
-                {/* TAB: Design & Messaggi */}
+                {/* TAB: Risposte Rapide */}
+                {activeTab === 'responses' && (
+                    <div className="animate fade-in">
+                        <section className="card section-card">
+                            <div className="section-header">
+                                <div className="align-center">
+                                    <MessageSquare size={20} color="var(--primary)" />
+                                    <h3>Template Risposte Rapide</h3>
+                                </div>
+                                <button className="btn-outline" onClick={addCannedResponse}><Plus size={14} /> Aggiungi Template</button>
+                            </div>
+                            <p className="text-description" style={{ marginBottom: '24px' }}>Crea dei template di risposta che lo staff potrà inviare con un click nel ticket.</p>
+                            
+                            <div className="responses-grid">
+                                {config.cannedResponses && config.cannedResponses.length > 0 ? (
+                                    config.cannedResponses.map((res, index) => (
+                                        <div key={index} className="response-card animate fade-in">
+                                            <div className="response-header">
+                                                <input 
+                                                    className="input-transparent" 
+                                                    value={res.label || ''} 
+                                                    onChange={e => {
+                                                        const newResponses = [...config.cannedResponses];
+                                                        newResponses[index] = { ...res, label: e.target.value };
+                                                        setConfig({ ...config, cannedResponses: newResponses });
+                                                    }} 
+                                                    placeholder="Titolo (es. Saluto)" 
+                                                />
+                                                <button className="btn-icon-danger" onClick={() => removeCannedResponse(index)}>
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                            <textarea 
+                                                className="textarea-simple" 
+                                                value={res.content || ''} 
+                                                onChange={e => {
+                                                    const newResponses = [...config.cannedResponses];
+                                                    newResponses[index] = { ...res, content: e.target.value };
+                                                    setConfig({ ...config, cannedResponses: newResponses });
+                                                }} 
+                                                placeholder="Contenuto della risposta..."
+                                            />
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="empty-state">
+                                        <MessageSquare size={48} />
+                                        <p>Nessuna risposta rapida configurata.</p>
+                                    </div>
+                                )}
+                            </div>
+                        </section>
+                    </div>
+                )}
                 {activeTab === 'personalization' && (
                     <div className="animate fade-in">
                         <section className="card section-card" style={{ marginBottom: '24px' }}>
@@ -618,6 +687,12 @@ export default function TicketConfig() {
             .event-switches-v { display: flex; gap: 20px; border-top: 1px solid var(--border); padding-top: 12px; }
             .switch-with-label { display: flex; align-items: center; gap: 10px; }
             
+            .responses-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+            .response-card { background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border); padding: 16px; }
+            .response-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+            .textarea-simple { width: 100%; min-height: 100px; background: rgba(0,0,0,0.2); border: 1px solid transparent; border-radius: 8px; color: var(--text-dim); padding: 10px; font-size: 0.85rem; resize: vertical; outline: none; transition: 0.2s; }
+            .textarea-simple:focus { border-color: var(--primary); background: rgba(0,0,0,0.3); color: white; }
+
             @media (max-width: 1000px) { .config-grid { grid-template-columns: 1fr; } .fields-grid { grid-template-columns: 1fr; } }
         `}</style>
     </div>
