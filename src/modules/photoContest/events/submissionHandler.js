@@ -38,7 +38,7 @@ export default {
             });
 
             if (existing) {
-                const embed = await messageService.get(message.guild.id, 'photoContest', 'already_submitted');
+                const embed = await messageService.get(message.guild.id, 'photocontest', 'already_submitted');
                 const warn = await message.reply({ embeds: [embed] });
                 setTimeout(() => {
                     warn.delete().catch(() => null);
@@ -50,7 +50,7 @@ export default {
             const imgName = attachment.name || 'photo.png';
             const file = new AttachmentBuilder(attachment.url, { name: imgName });
 
-            const submissionEmbed = await messageService.get(message.guild.id, 'photoContest', 'submission', {
+            const submissionEmbed = await messageService.get(message.guild.id, 'photocontest', 'submission', {
                 username: message.author.username,
                 theme: activeContest.theme || 'Libero',
                 endTime: `<t:${Math.floor(activeContest.endTime.getTime() / 1000)}:R>`

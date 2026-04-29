@@ -27,7 +27,7 @@ export default {
             });
 
             if (!submission) {
-                const embed = await messageService.get(interaction.guildId, 'photoContest', 'entry_not_found');
+                const embed = await messageService.get(interaction.guildId, 'photocontest', 'entry_not_found');
                 return interaction.reply({ 
                     embeds: [embed], 
                     flags: [MessageFlags.Ephemeral] 
@@ -35,7 +35,7 @@ export default {
             }
 
             if (submission.userId === voterId) {
-                const embed = await messageService.get(interaction.guildId, 'photoContest', 'self_vote_error');
+                const embed = await messageService.get(interaction.guildId, 'photocontest', 'self_vote_error');
                 return interaction.reply({ 
                     embeds: [embed], 
                     flags: [MessageFlags.Ephemeral] 
@@ -51,21 +51,21 @@ export default {
             if (type === 'up') {
                 if (upIndex > -1) {
                     submission.upvotes.splice(upIndex, 1);
-                    await messageService.reply(interaction, 'photoContest', 'vote_removed', {});
+                    await messageService.reply(interaction, 'photocontest', 'vote_removed', {});
                 } else {
                     submission.upvotes.push(voterId);
                     if (downIndex > -1) submission.downvotes.splice(downIndex, 1);
-                    await messageService.reply(interaction, 'photoContest', 'vote_up', {});
+                    await messageService.reply(interaction, 'photocontest', 'vote_up', {});
                     notifyContent = true;
                 }
             } else if (type === 'down') {
                 if (downIndex > -1) {
                     submission.downvotes.splice(downIndex, 1);
-                    await messageService.reply(interaction, 'photoContest', 'vote_removed', {});
+                    await messageService.reply(interaction, 'photocontest', 'vote_removed', {});
                 } else {
                     submission.downvotes.push(voterId);
                     if (upIndex > -1) submission.upvotes.splice(upIndex, 1);
-                    await messageService.reply(interaction, 'photoContest', 'vote_down', {});
+                    await messageService.reply(interaction, 'photocontest', 'vote_down', {});
                 }
             }
 
@@ -83,7 +83,7 @@ export default {
             if (notifyContent && config?.enableNotifications) {
                 const author = await interaction.guild.members.fetch(submission.userId).catch(() => null);
                 if (author) {
-                    const notifyEmbed = await messageService.get(interaction.guildId, 'photoContest', 'interaction_notify');
+                    const notifyEmbed = await messageService.get(interaction.guildId, 'photocontest', 'interaction_notify');
                     if (notifyEmbed) {
                         notifyEmbed.addFields({ name: 'Contest', value: `[Link al Messaggio](${interaction.message.url})` });
                         await author.send({ embeds: [notifyEmbed] }).catch(() => {});
@@ -93,7 +93,7 @@ export default {
 
         } catch (error) {
             logger.error('[PhotoContest] Vote handling error:', error);
-            if (!interaction.replied) await messageService.reply(interaction, 'photoContest', 'error', { reason: 'Errore durante il voto.' }, { ephemeral: true });
+            if (!interaction.replied) await messageService.reply(interaction, 'photocontest', 'error', { reason: 'Errore durante il voto.' }, { ephemeral: true });
         }
     }
 };

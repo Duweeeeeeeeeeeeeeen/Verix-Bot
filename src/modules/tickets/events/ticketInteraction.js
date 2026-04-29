@@ -134,12 +134,45 @@ export default {
                 });
             }
 
-            // --- 4. PRODUCTIVITY TOOLS (Staff Only) ---
+            // --- 4. PRODUCTIVITY TOOLS & MODALS ---
+            const ticket = await Ticket.findOne({ channelId: interaction.channel.id });
+            
+            // Check if user is staff (Administrator, has one of the staff roles, or is the assigned operator)
+            const staffRoleIds = Array.isArray(config.staffRoleIds) ? config.staffRoleIds : [];
+            const userRoles = interaction.member.roles.cache || interaction.member.roles;
+            const hasStaffRole = Array.isArray(userRoles) 
+                ? staffRoleIds.some(roleId => userRoles.includes(roleId))
+                : staffRoleIds.some(roleId => userRoles.has(roleId));
+
+            const isStaff = interaction.member.permissions.has(PermissionFlagsBits.Administrator) || hasStaffRole;
+            
+            const isAssigned = ticket.assignedStaffId === interaction.user.id;
+
             if (interaction.isButton() || interaction.isStringSelectMenu()) {
-                const ticket = await Ticket.findOne({ channelId: interaction.channel.id });
                 if (!ticket) {
                     if (interaction.deferred) return interaction.editReply({ content: '❌ Errore: Questo canale non è associato a un ticket attivo nel database.' });
                     return;
+                }
+
+                // --- PERMISSION PROTECTION ---
+                // Staff-only tools list
+                const staffOnlyButtons = [
+                    'tk_claim', 'tk_quick_reply', 'tk_tag', 'tk_status_select', 
+                    'tk_note', 'tk_quick_reply_send', 'tk_tag_select'
+                ];
+
+                const isStaffTool = staffOnlyButtons.some(id => customId === id || customId.startsWith(id));
+                const isCloseAction = customId === 'tk_close';
+
+                // 1. Block regular users from staff tools
+                if (isStaffTool && !isStaff) {
+                    return interaction.editReply({ content: '❌ Solo i membri dello staff possono utilizzare questo strumento.' });
+                }
+
+                // 2. Block regular users from closing if they are not the owner (unless staff)
+                // If you want owners to be able to close their own tickets, remove the `&& ticket.userId !== interaction.user.id`
+                if (isCloseAction && !isStaff && ticket.userId !== interaction.user.id) {
+                    return interaction.editReply({ content: '❌ Solo lo staff o il proprietario del ticket possono chiudere questa pratica.' });
                 }
 
                 // QUICK REPLIES
@@ -317,25 +350,39 @@ export default {
                     modal.addComponents(new ActionRowBuilder().addComponents(noteInput));
                     return interaction.showModal(modal);
                 }
+            }
 
-                if (interaction.isModalSubmit() && interaction.customId === 'tk_note_modal') {
-                    await interaction.deferReply({ ephemeral: true });
-                    const content = interaction.fields.getTextInputValue('note_content');
-                    
-                    ticket.internalNotes.push({
-                        staffId: interaction.user.id,
-                        content: content,
-                        createdAt: new Date()
-                    });
-                    await ticket.save();
+            // --- 5. MODAL SUBMISSIONS (Note) ---
+            if (interaction.isModalSubmit() && interaction.customId === 'tk_note_modal') {
+                if (!ticket) return interaction.editReply({ content: '❌ Errore: Ticket non trovato.' });
+                
+                // Staff check for modal too (Administrator or has one of the staff roles)
+                const staffRoleIds = Array.isArray(config.staffRoleIds) ? config.staffRoleIds : [];
+                const userRoles = interaction.member.roles.cache || interaction.member.roles;
+                const hasStaffRole = Array.isArray(userRoles) 
+                    ? staffRoleIds.some(roleId => userRoles.includes(roleId))
+                    : staffRoleIds.some(roleId => userRoles.has(roleId));
 
-                    const typeConfig = (config.typesConfig instanceof Map 
-                        ? config.typesConfig.get(ticket.type) 
-                        : config.typesConfig?.[ticket.type]);
-                    const staffRoles = (config.staffRoleIds || []).map(id => interaction.guild.roles.cache.get(id)).filter(r => r);
-                    await renderTicketDashboard(interaction.channel, ticket, config, typeConfig, interaction.user, staffRoles, true);
-                    return interaction.editReply({ content: '✅ Nota interna aggiunta con successo.' });
-                }
+                const isUserStaff = interaction.member.permissions.has(PermissionFlagsBits.Administrator) || hasStaffRole;
+
+                if (!isUserStaff) return interaction.editReply({ content: '❌ Solo lo staff può aggiungere note.' });
+
+                await interaction.deferReply({ flags: [MessageFlags.Ephemeral] });
+                const content = interaction.fields.getTextInputValue('note_content');
+                
+                ticket.internalNotes.push({
+                    staffId: interaction.user.id,
+                    content: content,
+                    createdAt: new Date()
+                });
+                await ticket.save();
+
+                const typeConfig = (config.typesConfig instanceof Map 
+                    ? config.typesConfig.get(ticket.type) 
+                    : config.typesConfig?.[ticket.type]);
+                const staffRoles = (config.staffRoleIds || []).map(id => interaction.guild.roles.cache.get(id)).filter(r => r);
+                await renderTicketDashboard(interaction.channel, ticket, config, typeConfig, interaction.user, staffRoles, true);
+                return interaction.editReply({ content: '✅ Nota interna aggiunta con successo.' });
             }
 
             // If we reached here without a response for a ticket interaction

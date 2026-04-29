@@ -100,7 +100,7 @@ export class PhotoContestManager {
                 .setTitle(config.embedSettings.title + (theme ? `: ${theme}` : ''))
                 .setDescription(config.embedSettings.description + `\n\n**Tema:** ${theme || 'Libero'}\n**Scadenza:** <t:${Math.floor(endTime.getTime() / 1000)}:R>`)
                 .setColor(config.embedSettings.color)
-                .setThumbnail('https://i.imgur.com/8Qj8XzX.png') // Optional: Camera Icon
+                .setThumbnail('https://i.imgur.com/89k5I5L.png') // Optional: Camera Icon
                 .setTimestamp();
 
             const msg = await channel.send({ embeds: [embed] });

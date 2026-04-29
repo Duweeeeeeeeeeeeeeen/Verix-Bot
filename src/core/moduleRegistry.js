@@ -42,7 +42,7 @@ export const registry = {
         prefixes: [], // No prefix components for now
         model: WelcomeConfig
     },
-    photoContest: {
+    photocontest: {
         name: 'PhotoContest',
         prefixes: ['photo_'], // Used for photo_vote_up, photo_vote_down
         model: PhotoContestConfig
