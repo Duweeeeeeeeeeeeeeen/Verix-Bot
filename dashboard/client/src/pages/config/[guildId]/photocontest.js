@@ -16,6 +16,7 @@ import EmojiInput from '../../../components/EmojiInput';
 import CustomSelect from '../../../components/CustomSelect';
 import { mergeConfig } from '../../../utils/defaults';
 import NotificationSettings from '../../../components/NotificationSettings';
+import ConfirmModal from '../../../components/ConfirmModal';
 
 export default function PhotoContestConfig() {
   const router = useRouter();
@@ -26,6 +27,7 @@ export default function PhotoContestConfig() {
   const [starting, setStarting] = useState(false);
   const [ending, setEnding] = useState(false);
   const [activeTab, setActiveTab] = useState('settings');
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: 'danger', title: '', message: '', onConfirm: null });
 
    const [roles, setRoles] = useState([]);
   const [channels, setChannels] = useState([]);
@@ -108,11 +110,18 @@ export default function PhotoContestConfig() {
   };
 
   const handleReset = async () => {
-    if (!confirm('Vuoi davvero ripristinare?')) return;
-    try {
-        await api.request(`/config/${guildId}/reset/photocontest`, { method: 'POST' });
-        window.location.reload();
-    } catch (error) {}
+    setConfirmModal({
+        isOpen: true,
+        type: 'danger',
+        title: 'Ripristina Modulo',
+        message: 'Vuoi davvero ripristinare tutte le impostazioni ai valori predefiniti? Questa azione non può essere annullata.',
+        onConfirm: async () => {
+            try {
+                await api.request(`/config/${guildId}/reset/photocontest`, { method: 'POST' });
+                window.location.reload();
+            } catch (error) {}
+        }
+    });
   };
 
   const handleForceStart = async () => {
@@ -126,14 +135,21 @@ export default function PhotoContestConfig() {
   };
 
   const handleForceEnd = async () => {
-    if(!confirm("Vuoi terminare il contest?")) return;
-    setEnding(true);
-    try {
-        await api.request(`/config/${guildId}/photocontest/force-end`, { method: 'POST' });
-        showToast('Contest terminato!');
-    } catch (error) {
-        showToast('Errore termine.', 'error');
-    } finally { setEnding(false); }
+    setConfirmModal({
+        isOpen: true,
+        type: 'warning',
+        title: 'Termina Contest',
+        message: 'Vuoi terminare manualmente il contest in corso? Verranno calcolati i voti e proclamato il vincitore.',
+        onConfirm: async () => {
+            setEnding(true);
+            try {
+                await api.request(`/config/${guildId}/photocontest/force-end`, { method: 'POST' });
+                showToast('Contest terminato!');
+            } catch (error) {
+                showToast('Errore termine.', 'error');
+            } finally { setEnding(false); }
+        }
+    });
   };
 
   if (!mounted || loading || !config) return <Skeleton type="config" />;
@@ -370,6 +386,14 @@ export default function PhotoContestConfig() {
                 </div>
             )}
         </div>
+        <ConfirmModal 
+            isOpen={confirmModal.isOpen}
+            onClose={() => setConfirmModal({...confirmModal, isOpen: false})}
+            onConfirm={confirmModal.onConfirm}
+            title={confirmModal.title}
+            message={confirmModal.message}
+            type={confirmModal.type}
+        />
       </div>
       <style jsx>{`
             .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: rgba(255,255,255,0.02); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
