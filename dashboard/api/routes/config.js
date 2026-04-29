@@ -10,6 +10,7 @@ import Ticket from '../../../src/models/Ticket.js';
 import WhitelistApp from '../../../src/models/WhitelistApp.js';
 import VoiceQueue from '../../../src/models/VoiceQueue.js';
 import PhotoContestConfig from '../../../src/models/PhotoContestConfig.js';
+import PhotoContest from '../../../src/models/PhotoContest.js';
 import VerifyConfig from '../../../src/models/VerifyConfig.js';
 import GlobalConfig from '../../../src/models/GlobalConfig.js';
 import FiveMConfig from '../../../src/models/FiveMConfig.js';
