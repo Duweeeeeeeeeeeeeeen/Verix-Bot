@@ -98,10 +98,22 @@ export function mergeModuleDefaults(moduleName, dbConfig) {
             
             // Special case for typesConfig: deep merge each category to avoid losing fields or resetting colors
             if (key === 'typesConfig') {
-                const mergedTypes = { ...value }; // Start with default categories
-                for (const [tKey, tValue] of Object.entries(dbValue)) {
-                    // Merge DB category over Default category (if it exists)
-                    mergedTypes[tKey] = { ...(mergedTypes[tKey] || {}), ...tValue };
+                const dbCategories = dbValue || {};
+                const defaultCategories = value || {};
+                
+                // Get union of all category keys
+                const allKeys = Array.from(new Set([...Object.keys(defaultCategories), ...Object.keys(dbCategories)]));
+                
+                const mergedTypes = {};
+                for (const tKey of allKeys) {
+                    const defaultValue = defaultCategories[tKey] || {};
+                    const dbValueObj = dbCategories[tKey] || {};
+                    
+                    // Merge: DB overrides defaults
+                    mergedTypes[tKey] = { 
+                        ...defaultValue, 
+                        ...dbValueObj 
+                    };
                 }
                 result[key] = mergedTypes;
                 continue;

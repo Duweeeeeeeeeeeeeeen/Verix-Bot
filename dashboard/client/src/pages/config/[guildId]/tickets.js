@@ -333,14 +333,7 @@ export default function TicketConfig() {
                                             </div>
                                             <div className="category-details">
                                                 <div style={{ display: 'grid', gridTemplateColumns: data.style === 'LINK' ? '1fr 1fr' : '1fr', gap: '20px' }}>
-                                                    <div className="detail-field">
-                                                        <label className="label-tiny">Staff Specifico</label>
-                                                        <DiscordSelector type="role" multiple options={roles} value={data.staffRoleIds || []} onChange={val => {
-                                                            const newTypes = { ...config.typesConfig };
-                                                            newTypes[id] = { ...data, staffRoleIds: val };
-                                                            setConfig({ ...config, typesConfig: newTypes });
-                                                        }} />
-                                                    </div>
+                                                    {/* Staff Specifico rimosso */}
                                                     {data.style === 'LINK' && (
                                                         <div className="detail-field animate fade-in">
                                                             <label className="label-tiny">URL Destinazione</label>

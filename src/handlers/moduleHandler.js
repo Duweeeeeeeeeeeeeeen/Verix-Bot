@@ -90,6 +90,10 @@ export default async (client) => {
             const interaction = args[0];
             const guildId = interaction?.guildId || interaction?.guild?.id;
 
+            if (interaction && (interaction.customId || interaction.commandName)) {
+                logger.debug(`[HUB] Interaction: ${interaction.customId || interaction.commandName} | Guild: ${guildId}`);
+            }
+
             // Pre-calculate module prefixes/shortnames for matching
             const modulePrefixes = {
                 'background': 'bg',
@@ -117,7 +121,7 @@ export default async (client) => {
                         
                         // Check if it belongs to this module
                         matchesModule = target.includes(moduleName.toLowerCase()) || 
-                                        (moduleName === 'tickets' && target.includes('ticket')) ||
+                                        (moduleName === 'tickets' && (target.includes('ticket') || target.startsWith('tk_'))) ||
                                         (prefix && (target.startsWith(`${prefix}_`) || target.includes(`_${prefix}_`) || target.endsWith(`_${prefix}`)));
 
                         // Skip if not admin and not matching
@@ -125,7 +129,21 @@ export default async (client) => {
 
                         // Module activation check
                         const config = await getModuleConfig(guildId, moduleName);
-                        if (!config || !config.enabled) continue;
+                        if (!config || !config.enabled) {
+                            if (matchesModule) {
+                                logger.warn(`[HUB] Module ${moduleName} is DISABLED for guild ${guildId} but received interaction ${target}`);
+                                // Send a response to avoid "Interaction failed"
+                                if (!interaction.replied && !interaction.deferred) {
+                                    await interaction.reply({ 
+                                        content: `❌ Il modulo **${moduleName.toUpperCase()}** è attualmente disattivato in questo server.`, 
+                                        flags: [MessageFlags.Ephemeral] 
+                                    }).catch(() => {});
+                                }
+                            }
+                            continue;
+                        }
+                        
+                        if (matchesModule) logger.debug(`[HUB] Routing ${target} to module: ${moduleName}`);
                     } else {
                         // For non-interaction events (MessageCreate), check activation
                         const config = await getModuleConfig(guildId, moduleName);

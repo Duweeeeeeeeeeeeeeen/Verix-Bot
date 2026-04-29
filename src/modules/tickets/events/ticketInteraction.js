@@ -19,78 +19,17 @@ export default {
         if (!interaction.guild) return;
 
         // Early exit for non-ticket interactions
-        const isTicketInteraction = interaction.customId?.includes('ticket') || interaction.customId?.startsWith('tk_');
+        const customId = interaction.customId || '';
+        const isTicketInteraction = customId.includes('ticket') || customId.startsWith('tk_');
         if (!isTicketInteraction) return;
 
-        const config = await TicketConfig.findOne({ guildId: interaction.guild.id });
-        if (!config) {
-            logger.warn(`[Tickets] Config not found for guild ${interaction.guild.id}`);
-            return;
-        }
+        // 1. Log customId for debugging
+        logger.debug(`[TICKET_INTERACTION] User: ${interaction.user.tag} | CustomID: ${customId}`);
 
-        // --- 1. TICKET CREATION (Dynamic Select Menu) ---
-        if (interaction.isStringSelectMenu() && interaction.customId === 'ticket_create_select') {
-            const type = interaction.values[0];
-            
-            // Check permissions in the current channel before replying with menu
-            const permCheck = checkBotPermissions(interaction.channel, [PermissionFlagsBits.SendMessages, PermissionFlagsBits.EmbedLinks]);
-            if (!permCheck.hasPermission) return interaction.reply({ content: formatMissingPermissions(permCheck.missing), flags: [MessageFlags.Ephemeral] });
-
-            const existing = await Ticket.findOne({ userId: interaction.user.id, guildId: interaction.guild.id, type, status: { $ne: 'CLOSED' } });
-            if (existing) {
-                return messageService.reply(interaction, 'tickets', 'already_exists', {
-                    type: type.toUpperCase(),
-                    channelId: existing.channelId
-                }, { ephemeral: true });
-            }
-
-            const priorityMenu = new ActionRowBuilder().addComponents(
-                new StringSelectMenuBuilder()
-                    .setCustomId(`ticket_priority_select_${type}`)
-                    .setPlaceholder('Seleziona la priorità...')
-                    .addOptions([
-                        { label: 'Normale', value: 'NORMALE', emoji: '🟢' },
-                        { label: 'Importante', value: 'IMPORTANTE', emoji: '🟡' },
-                        { label: 'Urgente', value: 'URGENTE', emoji: '🔴' }
-                    ])
-            );
-
-            return messageService.reply(interaction, 'tickets', 'priority_select', { 
-                type: type.toUpperCase() 
-            }, { components: [priorityMenu], ephemeral: true });
-        }
-
-        // --- 1.1 TICKET CREATION (Dynamic Buttons) ---
-        if (interaction.isButton() && interaction.customId.startsWith('ticket_create_btn_')) {
-            const type = interaction.customId.split('_')[3];
-            
-            const existing = await Ticket.findOne({ userId: interaction.user.id, guildId: interaction.guild.id, type, status: { $ne: 'CLOSED' } });
-            if (existing) {
-                return messageService.reply(interaction, 'tickets', 'already_exists', {
-                    type: type.toUpperCase(),
-                    channelId: existing.channelId
-                }, { ephemeral: true });
-            }
-
-            const priorityMenu = new ActionRowBuilder().addComponents(
-                new StringSelectMenuBuilder()
-                    .setCustomId(`ticket_priority_select_${type}`)
-                    .setPlaceholder('Seleziona la priorità...')
-                    .addOptions([
-                        { label: 'Normale', value: 'NORMALE', emoji: '🟢' },
-                        { label: 'Importante', value: 'IMPORTANTE', emoji: '🟡' },
-                        { label: 'Urgente', value: 'URGENTE', emoji: '🔴' }
-                    ])
-            );
-
-            return messageService.reply(interaction, 'tickets', 'priority_select', { 
-                type: type.toUpperCase() 
-            }, { components: [priorityMenu], ephemeral: true });
-        }
-
-        // --- 2. TICKET CREATION (Priority Selection) ---
-        if (interaction.isStringSelectMenu() && interaction.customId.startsWith('ticket_priority_select_')) {
-            const type = interaction.customId.split('_')[3];
+        // Special case: Priority selection for 'segnalazione' triggers a modal.
+        // Modals MUST be shown BEFORE deferReply and cannot be deferred.
+        if (interaction.isStringSelectMenu() && customId.startsWith('ticket_priority_select_')) {
+            const type = customId.replace('ticket_priority_select_', '');
             const priority = interaction.values[0];
 
             if (type === 'segnalazione') {
@@ -101,185 +40,271 @@ export default {
                 );
                 return interaction.showModal(modal);
             }
-
-            // Defer if not showing a modal
-            if (type !== 'segnalazione') {
-                await interaction.deferReply({ flags: [MessageFlags.Ephemeral] });
-            }
-            return createTicket(interaction, type, config, { priority });
         }
 
-        // --- 3. PRODUCTIVITY TOOLS (Staff Only) ---
-        if (interaction.isButton() || interaction.isStringSelectMenu()) {
-            const ticket = await Ticket.findOne({ channelId: interaction.channel.id });
-            if (!ticket) return;
-
-            // QUICK REPLIES (Canned Responses)
-            if (interaction.customId === 'tk_quick_reply') {
-                if (!config.cannedResponses.length) {
-                    const embed = await messageService.get(interaction.guild.id, 'system', 'generic_error', {
-                        error: 'Nessuna risposta rapida configurata nella dashboard.'
-                    });
-                    return interaction.reply({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
-                }
-
-                const menu = new ActionRowBuilder().addComponents(
-                    new StringSelectMenuBuilder()
-                        .setCustomId('tk_quick_reply_send')
-                        .setPlaceholder('Scegli un template...')
-                        .addOptions(config.cannedResponses.map(r => ({ label: r.label, value: r.label })))
-                );
-                return messageService.reply(interaction, 'tickets', 'quick_reply_menu', {}, { components: [menu], ephemeral: true });
-            }
-
-            if (interaction.isStringSelectMenu() && interaction.customId === 'tk_quick_reply_send') {
-                const label = interaction.values[0];
-                const template = config.cannedResponses.find(r => r.label === label);
-                if (!template) return;
-
-                // Check permissions before sending quick reply
-                const permCheck = checkBotPermissions(interaction.channel, [PermissionFlagsBits.SendMessages]);
-                if (!permCheck.hasPermission) return interaction.reply({ content: formatMissingPermissions(permCheck.missing), flags: [MessageFlags.Ephemeral] });
-
-                const responseContent = placeholderHelper.replace(template.content, {
-                    user: `<@${ticket.userId}>`,
-                    staff: `${interaction.user}`
-                });
-
-                await interaction.channel.send({ content: responseContent });
-                return interaction.update({ content: `✅ Inviato: \`${label}\``, components: [] });
-            }
-
-            // TAGGING
-            if (interaction.customId === 'tk_tag') {
-                const tags = ['Bug 🐛', 'Sospeso ⛔', 'Donazione 💰', 'RP Help 🎭', 'Risolto ✅'];
-                const menu = new ActionRowBuilder().addComponents(
-                    new StringSelectMenuBuilder()
-                        .setCustomId('tk_tag_select')
-                        .setPlaceholder('Seleziona un tag...')
-                        .addOptions(tags.map(t => ({ label: t, value: t })))
-                );
-                return messageService.reply(interaction, 'tickets', 'tag_menu', {}, { components: [menu], ephemeral: true });
-            }
-
-            if (interaction.isStringSelectMenu() && interaction.customId === 'tk_tag_select') {
-                const tag = interaction.values[0];
-                if (!ticket.tags.includes(tag)) ticket.tags.push(tag);
-                await ticket.save();
-
-                const staffRoles = (config.staffRoleIds || []).map(id => interaction.guild.roles.cache.get(id)).filter(r => r);
-                return renderTicketDashboard(interaction.channel, ticket, config, config.typesConfig.get(ticket.type), interaction.user, staffRoles, true);
-            }
-
-            // CLAIM & STATUS
-            if (interaction.customId === 'tk_claim') {
-                if (ticket.assignedStaffId) {
-                    const embed = await messageService.get(interaction.guild.id, 'tickets', 'already_claimed', {
-                        assignedStaffId: ticket.assignedStaffId
-                    });
-                    return interaction.reply({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
-                }
-                ticket.assignedStaffId = interaction.user.id;
-                ticket.status = 'PROCESSING';
-                await ticket.save();
-                
-                const embed = await messageService.get(interaction.guild.id, 'tickets', 'staff_claimed', {
-                    staff: `<@${interaction.user.id}>`
-                });
-                await interaction.reply({ embeds: [embed] });
-                
-                // Background updates
-                interaction.channel.setName(`⚙️-${interaction.channel.name}`).catch(() => {});
-                const staffRoles = (config.staffRoleIds || []).map(id => interaction.guild.roles.cache.get(id)).filter(r => r);
-                renderTicketDashboard(interaction.channel, ticket, config, config.typesConfig.get(ticket.type), interaction.user, staffRoles, true);
+        // 3. DeferReply BEFORE any await (to satisfy 3-second limit)
+        // Modals need special handling: they can't be deferred if you want to show them,
+        // but ModalSubmit interactions DO need a response.
+        if (!interaction.deferred && !interaction.replied) {
+            try {
+                await interaction.deferReply({ flags: [MessageFlags.Ephemeral] });
+            } catch (error) {
+                logger.error('[TICKET_DEFER_ERROR]', error);
                 return;
             }
+        }
 
-            if (interaction.isStringSelectMenu() && interaction.customId === 'tk_status_select') {
-                ticket.status = interaction.values[0];
-                await ticket.save();
-                const embed = await messageService.get(interaction.guild.id, 'tickets', 'status_updated', {
-                    status: ticket.status
-                });
-                await interaction.reply({ embeds: [embed] });
-                const staffRoles = (config.staffRoleIds || []).map(id => interaction.guild.roles.cache.get(id)).filter(r => r);
-                return renderTicketDashboard(interaction.channel, ticket, config, config.typesConfig.get(ticket.type), interaction.user, staffRoles, true);
+        try {
+            const config = await TicketConfig.findOne({ guildId: interaction.guild.id });
+            if (!config) {
+                const errorContent = '❌ Configurazione ticket non trovata per questo server. Contatta un amministratore.';
+                return interaction.editReply({ content: errorContent });
             }
 
-            // Standard buttons
-            if (interaction.customId === 'tk_close') {
-                const logChannel = config.logChannelId ? interaction.guild.channels.cache.get(config.logChannelId) : null;
-                const closeMode = config.closeMode || 'DELETE';
+            // --- 1. TICKET CATEGORY EXTRACTION ---
+            let type = null;
+            if (interaction.isStringSelectMenu() && customId === 'ticket_create_select') {
+                type = interaction.values[0].replace('ticket_type_', '');
+            } else if (interaction.isButton() && (customId.startsWith('ticket_type_') || customId.startsWith('ticket_create_btn_'))) {
+                type = customId.replace('ticket_type_', '').replace('ticket_create_btn_', '');
+            }
 
-                if (closeMode === 'DELETE') {
-                        if (logChannel) {
-                            const logPermCheck = checkBotPermissions(logChannel, [PermissionFlagsBits.SendMessages, PermissionFlagsBits.EmbedLinks, PermissionFlagsBits.AttachFiles]);
-                            if (!logPermCheck.hasPermission) {
-                                return messageService.reply(interaction, 'tickets', 'close_error_logs', {
-                                    channel: logChannel.name,
-                                    missing: logPermCheck.missing.join(', ')
-                                }, { ephemeral: true });
-                            }
-                        }
-                } else if (closeMode === 'MOVE') {
-                    if (!config.categoryClosedId) {
-                        return messageService.reply(interaction, 'tickets', 'close_error_category', {}, { ephemeral: true });
-                    }
+            if (type) {
+                const typeConfig = (config.typesConfig instanceof Map 
+                    ? config.typesConfig.get(type) 
+                    : config.typesConfig?.[type]);
+
+                if (!typeConfig && type !== 'supporto') {
+                    return interaction.editReply({ content: '❌ Questa categoria di ticket non è più disponibile.' });
                 }
 
-                await messageService.reply(interaction, 'tickets', 'close_status', {}, { content: '🛡️ **Chiusura professionale...**' });
-                
-                ticket.status = 'CLOSED';
-                ticket.closedAt = new Date();
+                const permCheck = checkBotPermissions(interaction.channel, [PermissionFlagsBits.SendMessages, PermissionFlagsBits.EmbedLinks]);
+                if (!permCheck.hasPermission) {
+                    return interaction.editReply({ content: `❌ Il bot non ha i permessi necessari in questo canale: ${permCheck.missing.join(', ')}` });
+                }
 
-                if (closeMode === 'DELETE') {
-                    const transcript = await generateTranscription(interaction.channel, ticket);
+                const existing = await Ticket.findOne({ userId: interaction.user.id, guildId: interaction.guild.id, type, status: { $ne: 'CLOSED' } });
+                if (existing) {
+                    const embed = await messageService.get(interaction.guild.id, 'tickets', 'already_exists', {
+                        type: type.toUpperCase(),
+                        channelId: existing.channelId
+                    });
+                    return interaction.editReply({ embeds: [embed] });
+                }
+
+                const priorityMenu = new ActionRowBuilder().addComponents(
+                    new StringSelectMenuBuilder()
+                        .setCustomId(`ticket_priority_select_${type}`)
+                        .setPlaceholder('Seleziona la priorità del tuo ticket...')
+                        .addOptions([
+                            { label: 'Normale', value: 'NORMALE', emoji: '🟢' },
+                            { label: 'Importante', value: 'IMPORTANTE', emoji: '🟡' },
+                            { label: 'Urgente', value: 'URGENTE', emoji: '🔴' }
+                        ])
+                );
+
+                const embed = await messageService.get(interaction.guild.id, 'tickets', 'priority_select', { 
+                    type: type.toUpperCase() 
+                });
+                return interaction.editReply({ embeds: [embed], components: [priorityMenu] });
+            }
+
+            // --- 2. TICKET CREATION (Priority Selection) ---
+            if (interaction.isStringSelectMenu() && customId.startsWith('ticket_priority_select_')) {
+                const type = customId.replace('ticket_priority_select_', '');
+                const priority = interaction.values[0];
+
+                if (type === 'segnalazione') return; // Handled before defer
+
+                return createTicket(interaction, type, config, { priority });
+            }
+
+            // --- 3. MODAL SUBMISSIONS (Report) ---
+            if (interaction.isModalSubmit() && customId.startsWith('ticket_modal_report_')) {
+                const priority = customId.replace('ticket_modal_report_', '');
+                const subject = interaction.fields.getTextInputValue('report_subject');
+                const description = interaction.fields.getTextInputValue('report_desc');
+
+                return createTicket(interaction, 'segnalazione', config, { 
+                    priority, 
+                    subject, 
+                    description 
+                });
+            }
+
+            // --- 4. PRODUCTIVITY TOOLS (Staff Only) ---
+            if (interaction.isButton() || interaction.isStringSelectMenu()) {
+                const ticket = await Ticket.findOne({ channelId: interaction.channel.id });
+                if (!ticket) {
+                    if (interaction.deferred) return interaction.editReply({ content: '❌ Errore: Questo canale non è associato a un ticket attivo nel database.' });
+                    return;
+                }
+
+                // QUICK REPLIES
+                if (customId === 'tk_quick_reply') {
+                    if (!config.cannedResponses || !config.cannedResponses.length) {
+                        return interaction.editReply({ content: '❌ Nessuna risposta rapida configurata nella dashboard.' });
+                    }
+
+                    const menu = new ActionRowBuilder().addComponents(
+                        new StringSelectMenuBuilder()
+                            .setCustomId('tk_quick_reply_send')
+                            .setPlaceholder('Scegli un template da inviare...')
+                            .addOptions(config.cannedResponses.map(r => ({ label: r.label, value: r.label })))
+                    );
+                    const embed = await messageService.get(interaction.guild.id, 'tickets', 'quick_reply_menu', {});
+                    return interaction.editReply({ embeds: [embed], components: [menu] });
+                }
+
+                if (interaction.isStringSelectMenu() && customId === 'tk_quick_reply_send') {
+                    const label = interaction.values[0];
+                    const template = config.cannedResponses.find(r => r.label === label);
+                    if (!template) return interaction.editReply({ content: '❌ Errore: Template selezionato non trovato.' });
+
+                    const permCheck = checkBotPermissions(interaction.channel, [PermissionFlagsBits.SendMessages]);
+                    if (!permCheck.hasPermission) return interaction.editReply({ content: `❌ Permessi insufficienti per inviare messaggi: ${permCheck.missing.join(', ')}` });
+
+                    const responseContent = placeholderHelper.replace(template.content, {
+                        user: `<@${ticket.userId}>`,
+                        staff: `${interaction.user}`
+                    });
+
+                    await interaction.channel.send({ content: responseContent });
+                    return interaction.editReply({ content: `✅ Risposta rapida inviata: \`${label}\``, components: [] });
+                }
+
+                // TAGGING
+                if (customId === 'tk_tag') {
+                    const tags = ['Bug 🐛', 'Sospeso ⛔', 'Donazione 💰', 'RP Help 🎭', 'Risolto ✅'];
+                    const menu = new ActionRowBuilder().addComponents(
+                        new StringSelectMenuBuilder()
+                            .setCustomId('tk_tag_select')
+                            .setPlaceholder('Seleziona un protocollo...')
+                            .addOptions(tags.map(t => ({ label: t, value: t })))
+                    );
+                    const embed = await messageService.get(interaction.guild.id, 'tickets', 'tag_menu', {});
+                    return interaction.editReply({ embeds: [embed], components: [menu] });
+                }
+
+                if (interaction.isStringSelectMenu() && customId === 'tk_tag_select') {
+                    const tag = interaction.values[0];
+                    if (!ticket.tags.includes(tag)) ticket.tags.push(tag);
+                    await ticket.save();
+
+                    const staffRoles = (config.staffRoleIds || []).map(id => interaction.guild.roles.cache.get(id)).filter(r => r);
+                    await renderTicketDashboard(interaction.channel, ticket, config, config.typesConfig.get(ticket.type), interaction.user, staffRoles, true);
+                    return interaction.editReply({ content: `✅ Tag \`${tag}\` aggiunto con successo.` });
+                }
+
+                // CLAIM & STATUS
+                if (customId === 'tk_claim') {
+                    if (ticket.assignedStaffId) {
+                        return interaction.editReply({ content: `❌ Questo ticket è già stato preso in carico da <@${ticket.assignedStaffId}>.` });
+                    }
+                    ticket.assignedStaffId = interaction.user.id;
+                    ticket.status = 'PROCESSING';
+                    await ticket.save();
                     
-                    if (logChannel) {
-                        const logEmbed = await messageService.get(interaction.guild.id, 'tickets', 'staff_ticket_log', {
-                            user: `<@${ticket.userId}>`,
-                            type: ticket.type.toUpperCase(),
-                            staff: ticket.assignedStaffId ? `<@${ticket.assignedStaffId}>` : 'Nessuno'
-                        });
-                        await logChannel.send({ embeds: [logEmbed], files: [transcript] });
-                    }
-                    ticket.deletionScheduledAt = new Date(Date.now() + 5000);
-                } else if (closeMode === 'MOVE') {
-                    try {
-                        const newName = interaction.channel.name.startsWith('closed-') ? interaction.channel.name : `closed-${interaction.channel.name}`.substring(0, 100);
-                        await interaction.channel.setParent(config.categoryClosedId, { lockPermissions: false });
-                        await interaction.channel.setName(newName);
-                        
-                        // Remove user visibility, leave staff untouched
-                        await interaction.channel.permissionOverwrites.edit(ticket.userId, { ViewChannel: false });
-
-                        const closedEmbed = await messageService.get(interaction.guild.id, 'tickets', 'close', {
-                            user: `<@${ticket.userId}>`
-                        });
-                        await interaction.channel.send({ embeds: [closedEmbed] });
-                    } catch (e) {
-                        logger.error('[TICKET_CLOSE_MOVE] Error moving channel:', e);
-                    }
+                    const embed = await messageService.get(interaction.guild.id, 'tickets', 'staff_claimed', {
+                        staff: `<@${interaction.user.id}>`
+                    });
+                    
+                    await interaction.editReply({ content: '✅ Ticket preso in carico correttamente.' });
+                    await interaction.channel.send({ embeds: [embed] });
+                    
+                    interaction.channel.setName(`⚙️-${interaction.channel.name}`).catch(() => {});
+                    const staffRoles = (config.staffRoleIds || []).map(id => interaction.guild.roles.cache.get(id)).filter(r => r);
+                    return renderTicketDashboard(interaction.channel, ticket, config, config.typesConfig.get(ticket.type), interaction.user, staffRoles, true);
                 }
-                
-                await ticket.save();
 
-                // GlobalConfig notification & log for tickets.onClose
-                const closingUser = await interaction.guild.members.fetch(ticket.userId).catch(() => null);
-                await sendNotification({
-                    event: 'tickets.onClose',
-                    guildId: interaction.guild.id,
-                    guild: interaction.guild,
-                    user: closingUser?.user || null,
-                    content: `🔒 Il tuo ticket è stato chiuso da ${interaction.user} in **${interaction.guild.name}**.`
-                });
-                await sendLog({
-                    event: 'tickets.onClose',
-                    guildId: interaction.guild.id,
-                    guild: interaction.guild,
-                    content: `🔒 Ticket \`${ticket.type}\` di <@${ticket.userId}> **chiuso** da ${interaction.user}`
-                });
+                if (interaction.isStringSelectMenu() && customId === 'tk_status_select') {
+                    ticket.status = interaction.values[0];
+                    await ticket.save();
+                    
+                    await interaction.editReply({ content: `✅ Stato del ticket aggiornato a: **${ticket.status}**` });
+                    
+                    const embed = await messageService.get(interaction.guild.id, 'tickets', 'status_updated', {
+                        status: ticket.status
+                    });
+                    await interaction.channel.send({ embeds: [embed] });
+                    
+                    const staffRoles = (config.staffRoleIds || []).map(id => interaction.guild.roles.cache.get(id)).filter(r => r);
+                    return renderTicketDashboard(interaction.channel, ticket, config, config.typesConfig.get(ticket.type), interaction.user, staffRoles, true);
+                }
+
+                // Standard buttons (CLOSE)
+                if (customId === 'tk_close') {
+                    const logChannel = config.logChannelId ? interaction.guild.channels.cache.get(config.logChannelId) : null;
+                    const closeMode = config.closeMode || 'DELETE';
+
+                    if (closeMode === 'DELETE' && logChannel) {
+                        const logPermCheck = checkBotPermissions(logChannel, [PermissionFlagsBits.SendMessages, PermissionFlagsBits.EmbedLinks, PermissionFlagsBits.AttachFiles]);
+                        if (!logPermCheck.hasPermission) {
+                            return interaction.editReply({ content: `❌ Impossibile chiudere: il bot non ha i permessi nel canale log (${logPermCheck.missing.join(', ')})` });
+                        }
+                    }
+
+                    if (closeMode === 'MOVE' && !config.categoryClosedId) {
+                        return interaction.editReply({ content: '❌ Errore: Categoria per i ticket chiusi non configurata nella dashboard.' });
+                    }
+
+                    await interaction.editReply({ content: '🛡️ **Protocollo di chiusura avviato...**' });
+                    
+                    ticket.status = 'CLOSED';
+                    ticket.closedAt = new Date();
+
+                    if (closeMode === 'DELETE') {
+                        const transcript = await generateTranscription(interaction.channel, ticket);
+                        if (logChannel) {
+                            const logEmbed = await messageService.get(interaction.guild.id, 'tickets', 'staff_ticket_log', {
+                                user: `<@${ticket.userId}>`,
+                                type: ticket.type.toUpperCase(),
+                                staff: ticket.assignedStaffId ? `<@${ticket.assignedStaffId}>` : 'Nessuno'
+                            });
+                            await logChannel.send({ embeds: [logEmbed], files: [transcript] });
+                        }
+                        ticket.deletionScheduledAt = new Date(Date.now() + 5000);
+                    } else if (closeMode === 'MOVE') {
+                        try {
+                            const newName = `closed-${interaction.channel.name}`.substring(0, 100);
+                            await interaction.channel.setParent(config.categoryClosedId, { lockPermissions: false });
+                            await interaction.channel.setName(newName);
+                            await interaction.channel.permissionOverwrites.edit(ticket.userId, { ViewChannel: false });
+
+                            const closedEmbed = await messageService.get(interaction.guild.id, 'tickets', 'close', {
+                                user: `<@${ticket.userId}>`
+                            });
+                            await interaction.channel.send({ embeds: [closedEmbed] });
+                        } catch (e) {
+                            console.error('[TICKET_CLOSE_ERROR]', e);
+                        }
+                    }
+                    
+                    await ticket.save();
+
+                    const closingUser = await interaction.guild.members.fetch(ticket.userId).catch(() => null);
+                    await sendNotification({
+                        event: 'tickets.onClose',
+                        guildId: interaction.guild.id,
+                        guild: interaction.guild,
+                        user: closingUser?.user || null,
+                        content: `🔒 Il tuo ticket è stato chiuso correttamente in **${interaction.guild.name}**.`
+                    });
+                    return;
+                }
             }
+
+            // If we reached here without a response for a ticket interaction
+            if (interaction.deferred) {
+                return interaction.editReply({ content: '⚠️ L\'operazione è stata completata, ma non è stato possibile generare una risposta specifica.' });
+            }
+
+        } catch (error) {
+            console.error('[TICKET_FATAL_ERROR]', error);
+            logger.error('[TICKET_INTERACTION_FATAL]', error);
+            const fatalMsg = '❌ Errore critico nel sistema ticket. Contatta un amministratore.';
+            if (interaction.deferred || interaction.replied) return interaction.editReply({ content: fatalMsg });
+            return interaction.reply({ content: fatalMsg, flags: [MessageFlags.Ephemeral] });
         }
     },
 };
@@ -290,14 +315,25 @@ async function createTicket(interaction, type, config, metadata = {}) {
         const user = interaction.user;
         const priority = metadata.priority || 'NORMALE';
 
+        logger.debug(`[TICKET_CREATE] Starting creation for ${user.tag} (Type: ${type}, Priority: ${priority})`);
+
         // Robust retrieval of typeConfig handling both Map and Object
         const typeConfig = (config.typesConfig instanceof Map 
             ? config.typesConfig.get(type) 
             : config.typesConfig?.[type]) || { color: '#3498db', emoji: '🎫' };
 
         const staffRoles = (config.staffRoleIds || []).map(id => guild.roles.cache.get(id)).filter(r => r);
+        
+        // --- CATEGORY VALIDATION ---
+        const categoryId = config.categoryOpenId;
+        const parentCategory = categoryId ? guild.channels.cache.get(categoryId) : null;
+        
+        if (categoryId && !parentCategory) {
+            logger.error(`[TICKET_CREATE] Category ${categoryId} not found in guild cache.`);
+            return interaction.editReply({ content: `❌ Errore: La categoria dei ticket (ID: \`${categoryId}\`) non esiste più. Contatta un amministratore.` });
+        }
+
         // --- PERMISSION CHECK ---
-        const parentCategory = config.categoryOpenId ? guild.channels.cache.get(config.categoryOpenId) : null;
         const permCheck = checkBotPermissions(parentCategory || guild.channels.cache.first(), [
             PermissionFlagsBits.ManageChannels,
             PermissionFlagsBits.ViewChannel,
@@ -306,18 +342,24 @@ async function createTicket(interaction, type, config, metadata = {}) {
         ]);
 
         if (!permCheck.hasPermission) {
+            logger.error(`[TICKET_CREATE] Missing permissions: ${permCheck.missing.join(', ')}`);
             const errorEmbed = await ErrorHelper.permissionsError(guild.id, permCheck.missing);
-            if (interaction.deferred || interaction.replied) await interaction.editReply({ embeds: [errorEmbed], components: [] });
-            else await interaction.reply({ embeds: [errorEmbed], flags: [MessageFlags.Ephemeral] });
-            return;
+            return interaction.editReply({ embeds: [errorEmbed], components: [] });
         }
 
+        // --- CHANNEL CREATION ---
         const priorityEmoji = priority === 'URGENTE' ? '🔴' : (priority === 'IMPORTANTE' ? '🟡' : '🟢');
-        const channel = await guild.channels.create({ 
-            name: `${priorityEmoji}-${type}-${user.username}`, 
-            type: ChannelType.GuildText, 
-            parent: config.categoryOpenId 
-        });
+        let channel;
+        try {
+            channel = await guild.channels.create({ 
+                name: `${priorityEmoji}-${type}-${user.username}`.substring(0, 100), 
+                type: ChannelType.GuildText, 
+                parent: categoryId 
+            });
+        } catch (err) {
+            logger.error('[TICKET_CREATE] Channel creation failed:', err);
+            return interaction.editReply({ content: `❌ Impossibile creare il canale del ticket. Assicurati che il bot abbia il permesso 'Gestire Canali' e che la categoria sia valida.\n\`Dettagli: ${err.message}\`` });
+        }
         
         await setInitialPermissions(channel, user, staffRoles);
 
@@ -327,9 +369,7 @@ async function createTicket(interaction, type, config, metadata = {}) {
         const intelEmbed = await generateIntelligenceEmbed(guild, user.id);
         if (intelEmbed) await channel.send({ embeds: [intelEmbed] });
 
-        await messageService.reply(interaction, 'tickets', 'success_open', {
-            channel: `${channel}`
-        }, { ephemeral: true });
+        await interaction.editReply({ content: `✅ **RICHIESTA PROTOCOLLATA:** Recati allo sportello ${channel}.`, embeds: [], components: [] });
 
         // GlobalConfig log for tickets.onOpen
         await sendLog({
@@ -339,7 +379,12 @@ async function createTicket(interaction, type, config, metadata = {}) {
             content: `🎫 Nuovo ticket \`${type.toUpperCase()}\` aperto da <@${user.id}> — ${channel}`
         });
 
-    } catch (error) { logger.error('Error creating ticket:', error); }
+    } catch (error) { 
+        logger.error('[TICKET_CREATE_FATAL]', error);
+        if (interaction.deferred || interaction.replied) {
+            await interaction.editReply({ content: '❌ Si è verificato un errore critico durante la creazione del ticket.' }).catch(() => {});
+        }
+    }
 }
 
 async function renderTicketDashboard(channel, ticket, config, typeConfig, user, staffRoles = [], isUpdate = false) {

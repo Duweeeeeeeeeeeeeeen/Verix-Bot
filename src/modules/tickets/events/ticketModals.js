@@ -8,27 +8,7 @@ export default {
     async execute(interaction, client) {
         if (!interaction.isModalSubmit()) return;
 
-        if (interaction.customId.startsWith('ticket_modal_report_')) {
-            const priority = interaction.customId.split('_')[3];
-            const subject = interaction.fields.getTextInputValue('report_subject');
-            const desc = interaction.fields.getTextInputValue('report_desc');
-
-            const config = await TicketConfig.findOne({ guildId: interaction.guild.id });
-            if (!config) return messageService.reply(interaction, 'tickets', 'error', { reason: 'Configurazione mancante.' }, { ephemeral: true });
-
-            try {
-                await interaction.deferReply({ flags: [MessageFlags.Ephemeral] });
-                // Call the creation logic with gathered metadata
-                await createTicket(interaction, 'segnalazione', config, { 
-                    priority: priority,
-                    report_subject: subject, 
-                    report_desc: desc 
-                });
-            } catch (error) {
-                logger.error('Error handling report modal:', error);
-                await messageService.reply(interaction, 'tickets', 'error', { reason: 'Errore apertura ticket.' }, { ephemeral: true });
-            }
-        }
+        // User management modals are handled here
 
         if (interaction.customId === 'tk_add_user_modal' || interaction.customId === 'tk_remove_user_modal') {
             const userId = interaction.fields.getTextInputValue('user_id');
