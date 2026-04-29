@@ -137,14 +137,18 @@ export default {
             // --- 4. PRODUCTIVITY TOOLS & MODALS ---
             const ticket = await Ticket.findOne({ channelId: interaction.channel.id });
             
-            // Check if user is staff (Administrator, has one of the staff roles, or is the assigned operator)
-            const staffRoleIds = Array.isArray(config.staffRoleIds) ? config.staffRoleIds : [];
+            // Robust staff check (handles both string IDs and object IDs from older dashboard saves)
+            const staffRoleIds = (Array.isArray(config.staffRoleIds) ? config.staffRoleIds : [])
+                .map(r => typeof r === 'string' ? r : (r.id || r._id || String(r)));
+            
             const userRoles = interaction.member.roles.cache || interaction.member.roles;
             const hasStaffRole = Array.isArray(userRoles) 
                 ? staffRoleIds.some(roleId => userRoles.includes(roleId))
                 : staffRoleIds.some(roleId => userRoles.has(roleId));
 
-            const isStaff = interaction.member.permissions.has(PermissionFlagsBits.Administrator) || hasStaffRole;
+            const isStaff = interaction.member.permissions.has(PermissionFlagsBits.Administrator) || 
+                           interaction.guild.ownerId === interaction.user.id || 
+                           hasStaffRole;
             
             const isAssigned = ticket.assignedStaffId === interaction.user.id;
 
@@ -356,14 +360,18 @@ export default {
             if (interaction.isModalSubmit() && interaction.customId === 'tk_note_modal') {
                 if (!ticket) return interaction.editReply({ content: '❌ Errore: Ticket non trovato.' });
                 
-                // Staff check for modal too (Administrator or has one of the staff roles)
-                const staffRoleIds = Array.isArray(config.staffRoleIds) ? config.staffRoleIds : [];
+                // Staff check for modal too (Administrator, has one of the staff roles, or is the assigned operator)
+                const staffRoleIds = (Array.isArray(config.staffRoleIds) ? config.staffRoleIds : [])
+                    .map(r => typeof r === 'string' ? r : (r.id || r._id || String(r)));
+                
                 const userRoles = interaction.member.roles.cache || interaction.member.roles;
                 const hasStaffRole = Array.isArray(userRoles) 
                     ? staffRoleIds.some(roleId => userRoles.includes(roleId))
                     : staffRoleIds.some(roleId => userRoles.has(roleId));
 
-                const isUserStaff = interaction.member.permissions.has(PermissionFlagsBits.Administrator) || hasStaffRole;
+                const isUserStaff = interaction.member.permissions.has(PermissionFlagsBits.Administrator) || 
+                                   interaction.guild.ownerId === interaction.user.id || 
+                                   hasStaffRole;
 
                 if (!isUserStaff) return interaction.editReply({ content: '❌ Solo lo staff può aggiungere note.' });
 
