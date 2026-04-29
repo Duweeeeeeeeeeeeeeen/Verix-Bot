@@ -18,13 +18,15 @@ export default {
     async execute(interaction, client) {
         if (!interaction.guild) return;
 
-        // Update Last Activity - BACKGROUND
-        if (interaction.channel?.name.includes('tk-') || interaction.channel?.name.includes('🟢-') || interaction.channel?.name.includes('🟡-') || interaction.channel?.name.includes('🔴-')) {
-            updateLastActivity(interaction.channel.id).catch(() => {});
-        }
+        // Early exit for non-ticket interactions
+        const isTicketInteraction = interaction.customId?.includes('ticket') || interaction.customId?.startsWith('tk_');
+        if (!isTicketInteraction) return;
 
         const config = await TicketConfig.findOne({ guildId: interaction.guild.id });
-        if (!config) return;
+        if (!config) {
+            logger.warn(`[Tickets] Config not found for guild ${interaction.guild.id}`);
+            return;
+        }
 
         // --- 1. TICKET CREATION (Dynamic Select Menu) ---
         if (interaction.isStringSelectMenu() && interaction.customId === 'ticket_create_select') {
@@ -283,13 +285,17 @@ export default {
 };
 
 async function createTicket(interaction, type, config, metadata = {}) {
-    const guild = interaction.guild;
-    const user = interaction.user;
-    const staffRoles = (config.staffRoleIds || []).map(id => guild.roles.cache.get(id)).filter(r => r);
-    const typeConfig = config.typesConfig.get(type) || { color: '#3498db', emoji: '🎫' };
-    const priority = metadata.priority || 'NORMALE';
-
     try {
+        const guild = interaction.guild;
+        const user = interaction.user;
+        const priority = metadata.priority || 'NORMALE';
+
+        // Robust retrieval of typeConfig handling both Map and Object
+        const typeConfig = (config.typesConfig instanceof Map 
+            ? config.typesConfig.get(type) 
+            : config.typesConfig?.[type]) || { color: '#3498db', emoji: '🎫' };
+
+        const staffRoles = (config.staffRoleIds || []).map(id => guild.roles.cache.get(id)).filter(r => r);
         // --- PERMISSION CHECK ---
         const parentCategory = config.categoryOpenId ? guild.channels.cache.get(config.categoryOpenId) : null;
         const permCheck = checkBotPermissions(parentCategory || guild.channels.cache.first(), [

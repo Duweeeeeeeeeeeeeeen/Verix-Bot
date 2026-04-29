@@ -108,7 +108,8 @@ export default async (client) => {
                     const isInteraction = interaction.type !== undefined && 
                                          (typeof interaction.isButton === 'function' || 
                                           typeof interaction.isCommand === 'function' || 
-                                          typeof interaction.isModalSubmit === 'function');
+                                          typeof interaction.isModalSubmit === 'function' ||
+                                          typeof interaction.isStringSelectMenu === 'function');
                     
                     if (isInteraction) {
                         const target = (interaction.customId || interaction.commandName || "").toLowerCase();

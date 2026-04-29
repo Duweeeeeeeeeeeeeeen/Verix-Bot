@@ -11,7 +11,11 @@ export function mergeModuleDefaults(moduleName, dbConfig) {
     
     const defaults = defaultMessages[moduleName] || {};
     // Extract plain object if it's a Mongoose document
-    const result = typeof dbConfig.toObject === 'function' ? dbConfig.toObject() : { ...dbConfig };
+    const result = typeof dbConfig.toObject === 'function' ? dbConfig.toObject({ flattenMaps: true }) : JSON.parse(JSON.stringify(dbConfig));
+    
+    if (moduleName === 'tickets') {
+        console.log(`[DEBUG] Merging Tickets: Found ${Object.keys(result.typesConfig || {}).length} categories in DB`);
+    }
 
     /**
      * Helper to deep merge an embed object
@@ -90,15 +94,19 @@ export function mergeModuleDefaults(moduleName, dbConfig) {
 
         // Handle nested objects (voiceSettings, typesConfig, etc.)
         if (value && typeof value === 'object' && !value.title && !value.description) {
-            // Special case for typesConfig: if the user has ANY category, don't add defaults
-            if (key === 'typesConfig') {
-                const configValue = result[key];
-                const hasEntries = configValue instanceof Map ? configValue.size > 0 : (configValue && Object.keys(configValue).length > 0);
-                if (hasEntries) continue;
-            }
-            
-            // Ensure we handle Mongoose Maps and plain objects correctly for merging
             const dbValue = result[key] instanceof Map ? Object.fromEntries(result[key]) : (result[key] || {});
+            
+            // Special case for typesConfig: deep merge each category to avoid losing fields or resetting colors
+            if (key === 'typesConfig') {
+                const mergedTypes = { ...value }; // Start with default categories
+                for (const [tKey, tValue] of Object.entries(dbValue)) {
+                    // Merge DB category over Default category (if it exists)
+                    mergedTypes[tKey] = { ...(mergedTypes[tKey] || {}), ...tValue };
+                }
+                result[key] = mergedTypes;
+                continue;
+            }
+
             result[key] = { ...value, ...dbValue };
             continue;
         }
