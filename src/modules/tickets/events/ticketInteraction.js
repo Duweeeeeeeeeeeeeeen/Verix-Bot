@@ -205,12 +205,7 @@ export default {
                     ticket.status = 'PROCESSING';
                     await ticket.save();
                     
-                    const embed = await messageService.get(interaction.guild.id, 'tickets', 'staff_claimed', {
-                        staff: `<@${interaction.user.id}>`
-                    });
-                    
                     await interaction.editReply({ content: '✅ Ticket preso in carico correttamente.' });
-                    await interaction.channel.send({ embeds: [embed] });
                     
                     interaction.channel.setName(`⚙️-${interaction.channel.name}`).catch(() => {});
                     const staffRoles = (config.staffRoleIds || []).map(id => interaction.guild.roles.cache.get(id)).filter(r => r);
@@ -366,9 +361,6 @@ async function createTicket(interaction, type, config, metadata = {}) {
         const ticket = await Ticket.create({ userId: user.id, guildId: guild.id, channelId: channel.id, type, priority, metadata });
         await renderTicketDashboard(channel, ticket, config, typeConfig, user, staffRoles);
 
-        const intelEmbed = await generateIntelligenceEmbed(guild, user.id);
-        if (intelEmbed) await channel.send({ embeds: [intelEmbed] });
-
         await interaction.editReply({ content: `✅ **RICHIESTA PROTOCOLLATA:** Recati allo sportello ${channel}.`, embeds: [], components: [] });
 
         // GlobalConfig log for tickets.onOpen
@@ -391,6 +383,9 @@ async function renderTicketDashboard(channel, ticket, config, typeConfig, user, 
     const permCheck = checkBotPermissions(channel);
     if (!permCheck.hasPermission) return logger.error(`[TICKET] Missing permissions to render dashboard in ${channel.name}`);
 
+    // Fetch Intelligence Data
+    const intelEmbed = await generateIntelligenceEmbed(channel.guild, ticket.userId);
+
     const embed = await messageService.get(channel.guildId, 'tickets', 'ticket', {
         type: ticket.type.toUpperCase(),
         user_id: ticket.userId,
@@ -404,14 +399,16 @@ async function renderTicketDashboard(channel, ticket, config, typeConfig, user, 
         embed.addFields({ name: '👤 Operatore Assegnato', value: `<@${ticket.assignedStaffId}>`, inline: true });
     }
     
-    if (ticket.tags.length > 0) {
-        embed.addFields({ name: '🏷️ Protocolli / Tag', value: ticket.tags.map(t => `\`${t}\``).join(' '), inline: true });
+    // Add Intelligence directly into the main embed (Compact)
+    if (intelEmbed && intelEmbed.data.fields) {
+        const stats = intelEmbed.data.fields.map(f => `${f.name}: ${f.value}`).join('\n');
+        embed.addFields({ name: '🔍 Intelligence Utente', value: stats, inline: false });
     }
 
     if (typeConfig?.image) embed.setImage(typeConfig.image);
 
     const buttons = config.buttons || {};
-    const btnRow1 = new ActionRowBuilder().addComponents(
+    const btnRow = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
             .setCustomId('tk_claim')
             .setLabel(buttons.claim?.label || 'Assumi')
@@ -430,19 +427,6 @@ async function renderTicketDashboard(channel, ticket, config, typeConfig, user, 
             .setStyle(getButtonStyle(buttons.quickReply?.style))
     );
 
-    const btnRow2 = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-            .setCustomId('tk_tag')
-            .setLabel(buttons.tag?.label || 'Tagga')
-            .setEmoji(buttons.tag?.emoji || '🏷️')
-            .setStyle(getButtonStyle(buttons.tag?.style)),
-        new ButtonBuilder()
-            .setCustomId('tk_transcript')
-            .setLabel(buttons.transcript?.label || 'Logs')
-            .setEmoji(buttons.transcript?.emoji || '📄')
-            .setStyle(getButtonStyle(buttons.transcript?.style))
-    );
-
     const statusMenu = new ActionRowBuilder().addComponents(
         new StringSelectMenuBuilder()
             .setCustomId('tk_status_select')
@@ -454,13 +438,14 @@ async function renderTicketDashboard(channel, ticket, config, typeConfig, user, 
     );
 
     if (isUpdate) {
-        const messages = await channel.messages.fetch({ limit: 10 });
-        const dashboard = messages.find(m => m.embeds[0]?.title?.includes('Ticket:'));
-        if (dashboard) return dashboard.edit({ embeds: [embed], components: [btnRow1, btnRow2, statusMenu] });
+        const messages = await channel.messages.fetch({ limit: 20 });
+        // Find dashboard by checking for the bot author and the specific title structure
+        const dashboard = messages.find(m => m.author.id === channel.client.user.id && m.embeds[0]?.title?.includes('Pratica'));
+        if (dashboard) return dashboard.edit({ embeds: [embed], components: [btnRow, statusMenu] });
     }
 
     const mention = staffRoles.length > 0 ? staffRoles.map(r => r.toString()).join(' ') : '@staff';
-    await channel.send({ content: mention, embeds: [embed], components: [btnRow1, btnRow2, statusMenu] });
+    await channel.send({ content: mention, embeds: [embed], components: [btnRow, statusMenu] });
 }
 
 export { createTicket };
