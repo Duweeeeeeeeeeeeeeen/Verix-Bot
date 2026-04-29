@@ -38,16 +38,18 @@ export function buildEmbed(embedConfig, placeholders = {}, fullConfig = {}) {
 
     if (embedConfig.image) {
         let imageUrl = replacePlaceholders(embedConfig.image, placeholders);
-        // Sanitize legacy broken links
-        if (imageUrl === 'https://i.imgur.com/FmK6O9S.png') imageUrl = 'https://i.imgur.com/89k5I5L.png';
-        embed.setImage(imageUrl);
+        // Remove legacy broken links
+        if (imageUrl !== 'https://i.imgur.com/FmK6O9S.png') {
+            embed.setImage(imageUrl);
+        }
     }
 
     if (embedConfig.thumbnail) {
         let thumbUrl = replacePlaceholders(embedConfig.thumbnail, placeholders);
-        // Sanitize legacy broken links
-        if (thumbUrl === 'https://i.imgur.com/FmK6O9S.png') thumbUrl = 'https://i.imgur.com/89k5I5L.png';
-        embed.setThumbnail(thumbUrl);
+        // Remove legacy broken links
+        if (thumbUrl !== 'https://i.imgur.com/FmK6O9S.png') {
+            embed.setThumbnail(thumbUrl);
+        }
     }
 
     if (embedConfig.fields && Array.from(embedConfig.fields).length > 0) {

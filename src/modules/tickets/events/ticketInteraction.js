@@ -173,10 +173,9 @@ export default {
                     return interaction.editReply({ content: '❌ Solo i membri dello staff possono utilizzare questo strumento.' });
                 }
 
-                // 2. Block regular users from closing if they are not the owner (unless staff)
-                // If you want owners to be able to close their own tickets, remove the `&& ticket.userId !== interaction.user.id`
-                if (isCloseAction && !isStaff && ticket.userId !== interaction.user.id) {
-                    return interaction.editReply({ content: '❌ Solo lo staff o il proprietario del ticket possono chiudere questa pratica.' });
+                // 2. Block regular users from closing (Strict Staff Only)
+                if (isCloseAction && !isStaff) {
+                    return interaction.editReply({ content: '❌ Solo i membri dello staff possono chiudere questa pratica.' });
                 }
 
                 // QUICK REPLIES
