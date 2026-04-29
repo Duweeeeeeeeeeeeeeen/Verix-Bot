@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import EmojiPicker, { Theme } from 'emoji-picker-react';
-import { Smile } from 'lucide-react';
+import { Smile, X } from 'lucide-react';
 
 export default function EmojiInput({ value, onChange, placeholder, className, style, alignPicker = 'right', hideInput = false }) {
     const [showPicker, setShowPicker] = useState(false);
@@ -20,7 +20,12 @@ export default function EmojiInput({ value, onChange, placeholder, className, st
     const handleEmojiClick = (emojiData) => {
         const newValue = hideInput ? emojiData.emoji : (value || '') + emojiData.emoji;
         onChange({ target: { value: newValue } });
-        if (hideInput) setShowPicker(false);
+        setShowPicker(false);
+    };
+
+    const handleClear = (e) => {
+        e.stopPropagation();
+        onChange({ target: { value: '' } });
     };
 
     return (
@@ -61,27 +66,54 @@ export default function EmojiInput({ value, onChange, placeholder, className, st
                     </button>
                 </>
             ) : (
-                <button 
-                    type="button"
-                    onClick={() => setShowPicker(!showPicker)}
-                    style={{ 
-                        width: '100%', 
-                        height: '100%', 
-                        background: 'rgba(255,255,255,0.05)', 
-                        border: '1px solid var(--border)', 
-                        borderRadius: '10px',
-                        fontSize: '1.2rem',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        transition: '0.2s'
-                    }}
-                    onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
-                    onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-                >
-                    {value || '🎫'}
-                </button>
+                <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+                    <button 
+                        type="button"
+                        onClick={() => setShowPicker(!showPicker)}
+                        className="emoji-selector-btn"
+                        style={{ 
+                            width: '100%', 
+                            height: '100%', 
+                            background: 'rgba(255,255,255,0.05)', 
+                            border: '1px solid var(--border)', 
+                            borderRadius: '10px',
+                            fontSize: '1.2rem',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            transition: '0.2s',
+                            padding: '0'
+                        }}
+                    >
+                        {value || <Smile size={20} opacity={0.3} />}
+                    </button>
+                    {value && (
+                        <button 
+                            type="button"
+                            onClick={handleClear}
+                            style={{
+                                position: 'absolute',
+                                top: '-6px',
+                                right: '-6px',
+                                width: '18px',
+                                height: '18px',
+                                borderRadius: '50%',
+                                background: 'var(--error)',
+                                border: 'none',
+                                color: 'white',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                cursor: 'pointer',
+                                zIndex: 3,
+                                boxShadow: '0 2px 5px rgba(0,0,0,0.3)'
+                            }}
+                        >
+                            <X size={10} strokeWidth={4} />
+                        </button>
+                    )}
+                </div>
             )}
             
             {showPicker && (
