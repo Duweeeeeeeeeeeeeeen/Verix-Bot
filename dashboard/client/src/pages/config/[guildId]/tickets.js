@@ -10,7 +10,7 @@ import {
   Settings2, Info, ChevronRight, Bell, Tag, MessageSquare, 
   MousePointer2, Type, Hash, Shield, Palette, Layers,
   Archive, FileText, XCircle, CheckCircle2, Zap, Send, Users,
-  GripVertical, Play
+  GripVertical, Play, ShieldAlert, BarChart3
 } from 'lucide-react';
 import DiscordSelector from '../../../components/DiscordSelector';
 import EmojiInput from '../../../components/EmojiInput';
@@ -151,6 +151,8 @@ export default function TicketConfig() {
     { id: 'categories', name: 'Categorie', icon: Layers },
     { id: 'automation', name: 'Automazione', icon: Zap },
     { id: 'responses', name: 'Risposte Rapide', icon: MessageSquare },
+    { id: 'blacklist', name: 'Blacklist', icon: ShieldAlert },
+    { id: 'stats', name: 'Statistiche Staff', icon: BarChart3 },
     { id: 'personalization', name: 'Design & Messaggi', icon: Palette },
   ];
 
@@ -167,6 +169,23 @@ export default function TicketConfig() {
         newResponses.splice(index, 1);
         return { ...prev, cannedResponses: newResponses };
     });
+  };
+
+  const [blacklistInput, setBlacklistInput] = useState('');
+  const addToBlacklist = () => {
+    if (!blacklistInput) return;
+    setConfig(prev => ({
+        ...prev,
+        blacklist: [...new Set([...(prev.blacklist || []), blacklistInput])]
+    }));
+    setBlacklistInput('');
+  };
+
+  const removeFromBlacklist = (userId) => {
+    setConfig(prev => ({
+        ...prev,
+        blacklist: (prev.blacklist || []).filter(id => id !== userId)
+    }));
   };
 
   return (
@@ -209,7 +228,87 @@ export default function TicketConfig() {
             </div>
 
             <div className="tab-panel animate fade-in">
-                {/* TAB: Settaggi */}
+                {/* TAB: Blacklist */}
+                {activeTab === 'blacklist' && (
+                    <div className="animate fade-in">
+                        <section className="card section-card">
+                            <div className="section-header">
+                                <div className="align-center">
+                                    <ShieldAlert size={20} color="var(--danger)" />
+                                    <h3>Blacklist Ticket</h3>
+                                </div>
+                            </div>
+                            <p className="text-description" style={{ marginBottom: '24px' }}>Gli utenti in questa lista non potranno aprire ticket.</p>
+                            
+                            <div className="blacklist-input-group">
+                                <input 
+                                    className="input" 
+                                    placeholder="Inserisci ID Utente..." 
+                                    value={blacklistInput}
+                                    onChange={e => setBlacklistInput(e.target.value)}
+                                />
+                                <button className="btn-primary" onClick={addToBlacklist}><Plus size={16} /> Blocca Utente</button>
+                            </div>
+
+                            <div className="blacklist-list">
+                                {config.blacklist && config.blacklist.length > 0 ? (
+                                    config.blacklist.map(userId => (
+                                        <div key={userId} className="blacklist-item animate slide-in">
+                                            <div className="align-center">
+                                                <div className="avatar-placeholder">{userId.substring(0, 2)}</div>
+                                                <span className="text-white">{userId}</span>
+                                            </div>
+                                            <button className="btn-icon-danger" onClick={() => removeFromBlacklist(userId)}>
+                                                <UserMinus size={16} />
+                                            </button>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="empty-state">
+                                        <Shield size={48} />
+                                        <p>Nessun utente bloccato.</p>
+                                    </div>
+                                )}
+                            </div>
+                        </section>
+                    </div>
+                )}
+
+                {/* TAB: Stats */}
+                {activeTab === 'stats' && (
+                    <div className="animate fade-in">
+                        <section className="card section-card">
+                            <div className="section-header">
+                                <div className="align-center">
+                                    <BarChart3 size={20} color="var(--primary)" />
+                                    <h3>Leaderboard Staff</h3>
+                                </div>
+                            </div>
+                            <p className="text-description" style={{ marginBottom: '24px' }}>Monitora le performance e l'attività del team di supporto.</p>
+                            
+                            <div className="stats-table-container">
+                                <table className="stats-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Staff Member</th>
+                                            <th>Ticket Assunti</th>
+                                            <th>Ticket Chiusi</th>
+                                            <th>Tempo Risposta Medio</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {/* In a real scenario, this would be fetched from the API */}
+                                        <tr>
+                                            <td colSpan="4" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-dim)' }}>
+                                                Statistiche in fase di raccolta... I dati appariranno qui man mano che i ticket verranno gestiti.
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+                    </div>
+                )}
                 {activeTab === 'settings' && (
                     <div className="config-grid">
                         <div className="grid-left">
@@ -266,6 +365,37 @@ export default function TicketConfig() {
                 {/* TAB: Categorie */}
                 {activeTab === 'categories' && (
                     <div className="animate fade-in">
+                        <section className="card section-card">
+                            <div className="section-header">
+                                <div className="align-center">
+                                    <Zap size={20} color="var(--primary)" />
+                                    <h3>Automazione & Inattività</h3>
+                                </div>
+                            </div>
+                            <p className="text-description" style={{ marginBottom: '24px' }}>Gestisci il comportamento automatico del sistema.</p>
+
+                            <div className="fields-grid">
+                                <div className="field-group">
+                                    <label className="text-label">Chiusura Automatica</label>
+                                    <div className="flex-between">
+                                        <span className="text-dim">Chiudi ticket dopo inattività</span>
+                                        <CustomSwitch 
+                                            checked={config.autoClose?.enabled || false} 
+                                            onChange={val => setConfig({...config, autoClose: {...(config.autoClose || {}), enabled: val}})} 
+                                        />
+                                    </div>
+                                </div>
+                                <div className="field-group">
+                                    <label className="text-label">Soglia Inattività (Ore)</label>
+                                    <input 
+                                        type="number" 
+                                        className="input" 
+                                        value={config.autoClose?.hours || 24} 
+                                        onChange={e => setConfig({...config, autoClose: {...(config.autoClose || {}), hours: parseInt(e.target.value)}})} 
+                                    />
+                                </div>
+                            </div>
+                        </section>
                         <section className="card section-card">
                             <div className="section-header">
                                 <div className="align-center">
@@ -692,6 +822,17 @@ export default function TicketConfig() {
             .response-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
             .textarea-simple { width: 100%; min-height: 100px; background: rgba(0,0,0,0.2); border: 1px solid transparent; border-radius: 8px; color: var(--text-dim); padding: 10px; font-size: 0.85rem; resize: vertical; outline: none; transition: 0.2s; }
             .textarea-simple:focus { border-color: var(--primary); background: rgba(0,0,0,0.3); color: white; }
+
+            .blacklist-input-group { display: flex; gap: 12px; margin-bottom: 24px; }
+            .blacklist-list { display: flex; flex-direction: column; gap: 10px; }
+            .blacklist-item { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); padding: 12px 16px; border-radius: 10px; border: 1px solid var(--border); }
+            .avatar-placeholder { width: 32px; height: 32px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: bold; margin-right: 12px; }
+            
+            .stats-table-container { overflow-x: auto; }
+            .stats-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+            .stats-table th { text-align: left; padding: 12px; border-bottom: 2px solid var(--border); color: var(--text-dim); font-size: 0.8rem; text-transform: uppercase; }
+            .stats-table td { padding: 16px 12px; border-bottom: 1px solid var(--border); color: var(--text-white); font-size: 0.9rem; }
+            .stats-table tr:hover { background: rgba(255,255,255,0.02); }
 
             @media (max-width: 1000px) { .config-grid { grid-template-columns: 1fr; } .fields-grid { grid-template-columns: 1fr; } }
         `}</style>

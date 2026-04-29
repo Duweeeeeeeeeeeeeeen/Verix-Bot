@@ -13,6 +13,7 @@ import logger from '../../../utils/logger.js';
 import { checkBotPermissions, formatMissingPermissions } from '../../../utils/permissionHelper.js';
 import placeholderHelper from '../../../utils/placeholderHelper.js';
 import messageService from '../../../utils/messageService.js';
+import StaffStatsService from '../../../services/staffStatsService.js';
 
 export default {
     name: Events.InteractionCreate,
@@ -206,6 +207,9 @@ export default {
                     ticket.status = 'PROCESSING';
                     await ticket.save();
                     
+                    // Record Stats
+                    await StaffStatsService.recordClaim(interaction.guildId, interaction.user.id);
+
                     await interaction.editReply({ content: '✅ Ticket preso in carico correttamente.' });
                     
                     interaction.channel.setName(`⚙️-${interaction.channel.name}`).catch(() => {});
@@ -260,7 +264,15 @@ export default {
                             await logChannel.send({ embeds: [logEmbed], files: [transcript] });
                         }
                         ticket.deletionScheduledAt = new Date(Date.now() + 5000);
-                    } else if (closeMode === 'MOVE') {
+                    }
+
+                    // Record Stats on Close
+                    if (ticket.assignedStaffId) {
+                        const responseTimeMs = ticket.firstResponseAt ? (ticket.firstResponseAt.getTime() - ticket.openedAt.getTime()) : 0;
+                        await StaffStatsService.recordClose(interaction.guildId, ticket.assignedStaffId, responseTimeMs);
+                    }
+                    
+                    if (closeMode === 'MOVE') {
                         try {
                             const newName = `closed-${interaction.channel.name}`.substring(0, 100);
                             await interaction.channel.setParent(config.categoryClosedId, { lockPermissions: false });
@@ -288,6 +300,42 @@ export default {
                     });
                     return;
                 }
+
+                // INTERNAL NOTES
+                if (interaction.customId === 'tk_note') {
+                    const modal = new ModalBuilder()
+                        .setCustomId('tk_note_modal')
+                        .setTitle('Aggiungi Nota Interna');
+
+                    const noteInput = new TextInputBuilder()
+                        .setCustomId('note_content')
+                        .setLabel('Contenuto della nota')
+                        .setStyle(TextInputStyle.Paragraph)
+                        .setPlaceholder('Scrivi qui una nota visibile solo allo staff...')
+                        .setRequired(true);
+
+                    modal.addComponents(new ActionRowBuilder().addComponents(noteInput));
+                    return interaction.showModal(modal);
+                }
+
+                if (interaction.isModalSubmit() && interaction.customId === 'tk_note_modal') {
+                    await interaction.deferReply({ ephemeral: true });
+                    const content = interaction.fields.getTextInputValue('note_content');
+                    
+                    ticket.internalNotes.push({
+                        staffId: interaction.user.id,
+                        content: content,
+                        createdAt: new Date()
+                    });
+                    await ticket.save();
+
+                    const typeConfig = (config.typesConfig instanceof Map 
+                        ? config.typesConfig.get(ticket.type) 
+                        : config.typesConfig?.[ticket.type]);
+                    const staffRoles = (config.staffRoleIds || []).map(id => interaction.guild.roles.cache.get(id)).filter(r => r);
+                    await renderTicketDashboard(interaction.channel, ticket, config, typeConfig, interaction.user, staffRoles, true);
+                    return interaction.editReply({ content: '✅ Nota interna aggiunta con successo.' });
+                }
             }
 
             // If we reached here without a response for a ticket interaction
@@ -297,6 +345,7 @@ export default {
 
         } catch (error) {
             console.error('[TICKET_FATAL_ERROR]', error);
+
             logger.error('[TICKET_INTERACTION_FATAL]', error);
             const fatalMsg = '❌ Errore critico nel sistema ticket. Contatta un amministratore.';
             if (interaction.deferred || interaction.replied) return interaction.editReply({ content: fatalMsg });
@@ -310,6 +359,13 @@ async function createTicket(interaction, type, config, metadata = {}) {
         const guild = interaction.guild;
         const user = interaction.user;
         const priority = metadata.priority || 'NORMALE';
+
+        // --- BLACKLIST CHECK ---
+        if (config.blacklist && config.blacklist.includes(user.id)) {
+            return interaction.editReply({ 
+                content: '❌ **ACCESSO NEGATO:** Ti è stato vietato l\'utilizzo del sistema di assistenza.' 
+            });
+        }
 
         logger.debug(`[TICKET_CREATE] Starting creation for ${user.tag} (Type: ${type}, Priority: ${priority})`);
 
@@ -371,7 +427,20 @@ async function createTicket(interaction, type, config, metadata = {}) {
         const ticket = await Ticket.create({ userId: user.id, guildId: guild.id, channelId: channel.id, type, priority, metadata });
         await renderTicketDashboard(channel, ticket, config, typeConfig, user, staffRoles);
 
-        await interaction.editReply({ content: `✅ **RICHIESTA PROTOCOLLATA:** Recati allo sportello ${channel}.`, embeds: [], components: [] });
+        // --- AUTO-PING ---
+        const pingRoleId = typeConfig.pingRoleId;
+        const pingContent = pingRoleId ? `<@&${pingRoleId}>` : '';
+        
+        await interaction.editReply({ 
+            content: `✅ **RICHIESTA PROTOCOLLATA:** Recati allo sportello ${channel}. ${pingContent}`, 
+            embeds: [], 
+            components: [] 
+        });
+
+        if (pingRoleId) {
+            await channel.send({ content: `${pingContent} - Nuova istanza di tipo **${typeConfig.label || type}** aperta.` })
+                .then(m => setTimeout(() => m.delete().catch(() => {}), 5000));
+        }
 
         // GlobalConfig log for tickets.onOpen
         await sendLog({
@@ -415,6 +484,11 @@ async function renderTicketDashboard(channel, ticket, config, typeConfig, user, 
         embed.addFields({ name: '🔍 Intelligence Utente', value: stats, inline: false });
     }
 
+    if (ticket.internalNotes && ticket.internalNotes.length > 0) {
+        const notes = ticket.internalNotes.map(n => `• **<@${n.staffId}>**: ${n.content}`).join('\n');
+        embed.addFields({ name: '📝 Note Interne', value: notes.substring(0, 1024), inline: false });
+    }
+
     if (typeConfig?.image) embed.setImage(typeConfig.image);
 
     const buttons = config.buttons || {};
@@ -429,12 +503,17 @@ async function renderTicketDashboard(channel, ticket, config, typeConfig, user, 
             .setCustomId('tk_close')
             .setLabel(buttons.close?.label || 'Chiudi')
             .setEmoji(buttons.close?.emoji || '🔒')
-            .setStyle(getButtonStyle(buttons.close?.style)),
+            .setStyle(ButtonStyle.Danger),
         new ButtonBuilder()
             .setCustomId('tk_quick_reply')
             .setLabel(buttons.quickReply?.label || 'Risposte Rapide')
             .setEmoji(buttons.quickReply?.emoji || '📝')
-            .setStyle(getButtonStyle(buttons.quickReply?.style))
+            .setStyle(ButtonStyle.Primary),
+        new ButtonBuilder()
+            .setCustomId('tk_note')
+            .setLabel('Nota')
+            .setEmoji('📌')
+            .setStyle(ButtonStyle.Secondary)
     );
 
     const statusMenu = new ActionRowBuilder().addComponents(

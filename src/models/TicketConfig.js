@@ -27,7 +27,8 @@ const ticketConfigSchema = new mongoose.Schema({
             emoji: { type: String, default: '🎫' },
             style: { type: String, default: 'PRIMARY' },
             url: { type: String, default: null },
-            image: { type: String, default: null }
+            image: { type: String, default: null },
+            pingRoleId: { type: String, default: null }
         },
         default: {
             'supporto': { label: 'Supporto Generale', color: '#6366f1', emoji: '🎫' },
@@ -42,6 +43,11 @@ const ticketConfigSchema = new mongoose.Schema({
         label: { type: String, required: true },
         content: { type: String, required: true }
     }],
+    blacklist: { type: [String], default: [] },
+    autoClose: {
+        enabled: { type: Boolean, default: false },
+        hours: { type: Number, default: 24 }
+    },
     panelImage: { type: String, default: null },
     embeds: {
         panel: {

@@ -4,6 +4,7 @@ import Ticket from '../models/Ticket.js';
 import VoiceQueue from '../models/VoiceQueue.js';
 import SupportQueue from '../models/SupportQueue.js';
 import Background from '../models/Background.js';
+import TicketConfig from '../models/TicketConfig.js';
 import logger from '../utils/logger.js';
 
 class CleanupManager {
@@ -32,7 +33,8 @@ class CleanupManager {
                 this.cleanupTickets(now),
                 this.cleanupVoice(now),
                 this.cleanupBackground(now),
-                this.cleanupSupport(now)
+                this.cleanupSupport(now),
+                this.cleanupAutoClose(now)
             ]);
         } catch (error) {
             logger.error('[CleanupManager] General Execution Error:', error);
@@ -56,6 +58,40 @@ class CleanupManager {
             await this.deleteChannel(ticket.guildId, ticket.channelId, `Ticket Closed Cleanup (${ticket.userId})`);
             ticket.deletionScheduledAt = null;
             await ticket.save();
+        }
+    }
+
+    async cleanupAutoClose(now) {
+        const configs = await TicketConfig.find({ 'autoClose.enabled': true });
+        for (const config of configs) {
+            const timeoutMs = (config.autoClose.hours || 24) * 60 * 60 * 1000;
+            const threshold = new Date(now.getTime() - timeoutMs);
+
+            const inactiveTickets = await Ticket.find({
+                guildId: config.guildId,
+                status: { $in: ['OPEN', 'PROCESSING', 'WAITING'] },
+                lastActivityAt: { $lte: threshold }
+            });
+
+            for (const ticket of inactiveTickets) {
+                logger.info(`[CleanupManager] Auto-closing inactive ticket ${ticket.channelId} in ${ticket.guildId}`);
+                
+                ticket.status = 'CLOSED';
+                ticket.closedAt = now;
+                ticket.closedBy = this.client.user.id;
+                
+                if (config.closeMode === 'DELETE') {
+                    ticket.deletionScheduledAt = new Date(now.getTime() + 5000);
+                }
+                
+                await ticket.save();
+
+                // Notify in channel if possible
+                const channel = await this.client.channels.fetch(ticket.channelId).catch(() => null);
+                if (channel) {
+                    await channel.send({ content: '⚠️ **CHIUSURA AUTOMATICA:** Questo ticket è stato chiuso per inattività.' }).catch(() => {});
+                }
+            }
         }
     }
 

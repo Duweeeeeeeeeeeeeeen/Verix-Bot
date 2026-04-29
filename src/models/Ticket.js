@@ -17,6 +17,11 @@ const ticketSchema = new mongoose.Schema({
     tags: { type: [String], default: [] },
     transcriptURL: { type: String },
     metadata: { type: Map, of: String, default: {} }, // For custom data (like report subject)
+    internalNotes: [{
+        staffId: { type: String, required: true },
+        content: { type: String, required: true },
+        createdAt: { type: Date, default: Date.now }
+    }],
     deletionScheduledAt: { type: Date, default: null }
 });
 
