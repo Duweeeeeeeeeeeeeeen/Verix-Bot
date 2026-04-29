@@ -219,13 +219,7 @@ export default function PhotoContestConfig() {
                                 <label className="text-label">Ruolo Vincitore</label>
                                 <DiscordSelector type="role" options={roles} value={config.prizeRoleId || ''} onChange={val => setConfig({...config, prizeRoleId: val})} />
                             </div>
-                            <div className="field-box">
-                                <label className="text-label">
-                                    Miniatura (URL Immagine)
-                                    <HelpTooltip text="L'icona piccola che compare in alto a destra nell'annuncio del contest." />
-                                </label>
-                                <input type="text" className="input" placeholder="https://i.imgur.com/..." value={config.embedSettings?.thumbnail || ''} onChange={(e) => setConfig({...config, embedSettings: {...config.embedSettings, thumbnail: e.target.value}})} />
-                            </div>
+
                             <div className="field-box">
                                 <label className="text-label">
                                     Intervallo (Ore)
