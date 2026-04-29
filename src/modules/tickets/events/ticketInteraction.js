@@ -1,6 +1,7 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, EmbedBuilder, Events, MessageFlags, ModalBuilder, PermissionFlagsBits, StringSelectMenuBuilder, TextInputBuilder, TextInputStyle } from 'discord.js';
 import { getButtonStyle } from '../../../utils/uiBuilder.js';
 import TicketConfig from '../../../models/TicketConfig.js';
+import GlobalConfig from '../../../models/GlobalConfig.js';
 import Ticket from '../../../models/Ticket.js';
 import Guild from '../../../models/Guild.js';
 import WhitelistApp from '../../../models/WhitelistApp.js';
@@ -343,11 +344,20 @@ async function createTicket(interaction, type, config, metadata = {}) {
         }
 
         // --- CHANNEL CREATION ---
+        const globalConfig = await GlobalConfig.findOne({ guildId: guild.id });
+        const namingTemplate = globalConfig?.naming?.ticket || '{emoji}-{type}-{user}';
+        
         const priorityEmoji = priority === 'URGENTE' ? '🔴' : (priority === 'IMPORTANTE' ? '🟡' : '🟢');
+        const channelName = placeholderHelper.replace(namingTemplate, {
+            emoji: priorityEmoji,
+            type: type,
+            user: user.username
+        }).substring(0, 100);
+
         let channel;
         try {
             channel = await guild.channels.create({ 
-                name: `${priorityEmoji}-${type}-${user.username}`.substring(0, 100), 
+                name: channelName, 
                 type: ChannelType.GuildText, 
                 parent: categoryId 
             });
