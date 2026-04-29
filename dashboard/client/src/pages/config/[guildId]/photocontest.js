@@ -221,6 +221,13 @@ export default function PhotoContestConfig() {
                             </div>
                             <div className="field-box">
                                 <label className="text-label">
+                                    Miniatura (URL Immagine)
+                                    <HelpTooltip text="L'icona piccola che compare in alto a destra nell'annuncio del contest." />
+                                </label>
+                                <input type="text" className="input" placeholder="https://i.imgur.com/..." value={config.embedSettings?.thumbnail || ''} onChange={(e) => setConfig({...config, embedSettings: {...config.embedSettings, thumbnail: e.target.value}})} />
+                            </div>
+                            <div className="field-box">
+                                <label className="text-label">
                                     Intervallo (Ore)
                                     <HelpTooltip text="Il tempo di attesa tra la fine di un contest e l'inizio automatico del prossimo." />
                                 </label>

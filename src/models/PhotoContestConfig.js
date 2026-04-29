@@ -38,6 +38,10 @@ const photoContestConfigSchema = new mongoose.Schema({
         color: {
             type: String,
             default: '#F39C12'
+        },
+        thumbnail: {
+            type: String,
+            default: 'https://i.imgur.com/FmK6O9S.png' // New Stable Camera Icon
         }
     },
     lastWinnerId: {

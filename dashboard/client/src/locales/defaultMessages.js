@@ -617,7 +617,7 @@ export default {
             title: '🏆 Leaderboard Photo Contest',
             description: 'Gli utenti con più vittorie nel server!\n\n{list}',
             color: '#FFD700',
-            thumbnail: 'https://i.imgur.com/89k5I5L.png'
+            thumbnail: 'https://i.imgur.com/FmK6O9S.png'
         },
         error: {
             title: '❌ Errore Contest',
