@@ -70,8 +70,8 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
       slugs.forEach(slug => {
         if (!merged[slug.key]) {
           merged[slug.key] = defaults[slug.key] || {
-            title: 'Senza Titolo',
-            description: 'Nessun contenuto impostato.',
+            title: '⚠️ Protocollo Titolo Mancante',
+            description: 'Nessun contenuto informativo è stato rilevato per questo modulo. Configura i testi nel pannello di editing.',
             color: '#6366f1'
           };
         }
@@ -86,8 +86,8 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
       const fallback = {};
       slugs.forEach(slug => {
         fallback[slug.key] = defaults[slug.key] || {
-          title: 'Senza Titolo',
-          description: 'Nessun contenuto impostato.',
+          title: '⚠️ Protocollo Titolo Mancante',
+          description: 'Nessun contenuto informativo è stato rilevato per questo modulo. Configura i testi nel pannello di editing.',
           color: '#6366f1'
         };
       });
@@ -223,8 +223,8 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
               <div className="editor-card-p">
                 <EmbedEditor
                   embed={messages[activeSlug] || defaultMessages[module]?.[activeSlug] || {
-                    title: 'Senza Titolo',
-                    description: 'Nessun contenuto impostato.',
+                    title: '⚠️ Protocollo Titolo Mancante',
+                    description: 'Nessun contenuto informativo è stato rilevato per questo modulo. Configura i testi nel pannello di editing.',
                     color: '#6366f1'
                   }}
                   onChange={(data) => updateMessage(activeSlug, data)}

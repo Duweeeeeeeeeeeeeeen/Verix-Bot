@@ -24,16 +24,16 @@ export function mergeModuleDefaults(moduleName, dbConfig) {
         if (!defEmbed) return dbEmbed || {};
         const db = dbEmbed || {};
         
-        // Helper to check if a string is effectively empty
-        const isEmpty = (s) => !s || s.trim() === '';
+        // Helper to check if a value is a generic placeholder
+        const isPlaceholder = (val) => !val || val.trim() === '' || val === 'Senza Titolo' || val === 'Nessun contenuto impostato.';
 
         return {
             ...defEmbed,
             ...db,
-            title: !isEmpty(db.title) ? db.title : (defEmbed.title || 'Senza Titolo'),
-            description: !isEmpty(db.description) ? db.description : (defEmbed.description || 'Nessun contenuto impostato.'),
+            title: !isPlaceholder(db.title) ? db.title : (defEmbed.title || '⚠️ Protocollo Titolo Mancante'),
+            description: !isPlaceholder(db.description) ? db.description : (defEmbed.description || 'Nessun contenuto informativo rilevato nei registri.'),
             color: db.color || defEmbed.color || '#5865F2',
-            footer: !isEmpty(db.footer) ? db.footer : (defEmbed.footer || ''),
+            footer: !isPlaceholder(db.footer) ? db.footer : (defEmbed.footer || ''),
             enabled: db.enabled !== undefined ? db.enabled : (defEmbed.enabled !== undefined ? defEmbed.enabled : true)
         };
     };
