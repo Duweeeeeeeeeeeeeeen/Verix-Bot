@@ -559,13 +559,13 @@ export default {
     photocontest: {
         panel: {
             title: '🖼️ Galleria d\'Arte: Esposizione Fotografica',
-            description: 'La città è alla ricerca di scorci unici. Cattura un momento memorabile e depositalo in questa galleria per partecipare al concorso cittadino.',
+            description: 'La città è alla ricerca di scorci unici. Cattura un momento memorabile e depositalo in questa galleria per partecipare al concorso cittadino.\n\n**Tema Attuale:** `{theme}`\n**Scadenza:** `{endTime}`',
             color: '#F39C12',
             footer: 'Dipartimento Cultura | Verix RP'
         },
-        submission: {
+        submission_confirmed: {
             title: '🎨 Nuova Opera Esposta',
-            description: '>>> **Dettagli Esposizione:**\n• Autore: {username}\n• Tema: `{theme}`\n• Scadenza: {endTime}',
+            description: 'Hai depositato correttamente la tua opera nella galleria cittadina. Ora gli altri cittadini potranno ammirarla e votarla.\n\n**Tema:** `{theme}`',
             color: '#3498db'
         },
         already_submitted: {
@@ -578,50 +578,35 @@ export default {
             description: 'Hai espresso il tuo apprezzamento per quest\'opera. Il tuo voto è stato aggiunto al conteggio ufficiale.',
             color: '#2ecc71'
         },
-        vote_down: {
-            title: '👎 Voto Registrato',
-            description: 'Hai registrato il tuo dissenso per quest\'opera. Il punteggio è stato aggiornato secondo i protocolli.',
-            color: '#e74c3c'
-        },
-        vote_removed: {
-            title: '🔄 Voto Ritirato',
-            description: 'Hai rimosso la tua preferenza da quest\'opera. Il conteggio è stato aggiornato.',
-            color: '#f1c40f'
-        },
         interaction_notify: {
             title: '📸 Nuova Interazione!',
             description: 'Qualcuno ha appena apprezzato la tua opera nel contest! La tua popolarità in città sta crescendo.',
             color: '#00FF7F'
         },
-        entry_not_found: {
-            title: '❌ Opera Non Trovata',
-            description: 'Spiacente, ma questa fotografia sembra essere stata rimossa dall\'esposizione durante il processo di votazione.',
-            color: '#e74c3c'
+        leaderboard_display: {
+            title: '🏆 Hall of Fame: Grandi Fotografi',
+            description: 'Ecco i cittadini che hanno immortalato i momenti più iconici della nostra città:\n\n{list}',
+            color: '#FFD700',
+            thumbnail: 'https://i.imgur.com/89k5I5L.png'
         },
-        self_vote_error: {
-            title: '⚖️ Conflitto d\'Interesse',
-            description: 'I regolamenti cittadini impediscono di votare la propria opera d\'arte. Lascia che siano gli altri a giudicare il tuo talento!',
-            color: '#f1c40f'
+        contest_end_log: {
+            title: '🏆 Proclamazione Vincitore',
+            description: 'Il concorso fotografico si è concluso! Congratulazioni a **{user}** per aver vinto con l\'opera "{theme}".\n\n**VOTI RICEVUTI:** {votes}',
+            color: '#F1C40F'
         },
-        no_participants: {
+        staff_log: {
+            title: '🛡️ Alert Staff: Nuova Foto',
+            description: 'L\'utente **{user}** ha caricato una nuova fotografia nel contest.\n\n**TEMA:** {theme}',
+            color: '#3498db'
+        },
+        error_no_participants: {
             title: '😔 Contest Concluso',
             description: 'Il concorso fotografico è terminato, ma purtroppo non sono state depositate opere valide nei nostri archivi.',
             color: '#e74c3c'
         },
-        no_winners: {
-            title: '😔 Nessun Registro',
-            description: 'Non risultano vincitori registrati per i concorsi precedenti nei nostri database.',
-            color: '#f1c40f'
-        },
-        leaderboard: {
-            title: '🏆 Leaderboard Photo Contest',
-            description: 'Gli utenti con più vittorie nel server!\n\n{list}',
-            color: '#FFD700',
-            thumbnail: 'https://i.imgur.com/89k5I5L.png'
-        },
-        error: {
-            title: '❌ Errore Contest',
-            description: 'Si è verificato un errore durante l\'elaborazione dei dati del concorso fotografico.',
+        leaderboard_error: {
+            title: '❌ Errore Registro',
+            description: 'Non è stato possibile recuperare i dati dei vincitori dai registri ministeriali.',
             color: '#e74c3c'
         },
         themesList: [

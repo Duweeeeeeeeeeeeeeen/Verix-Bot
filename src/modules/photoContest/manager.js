@@ -96,11 +96,10 @@ export class PhotoContestManager {
                 theme: themeName
             });
 
-            const embed = new EmbedBuilder()
-                .setTitle(config.embedSettings.title + (themeName ? `: ${themeName}` : ''))
-                .setDescription(config.embedSettings.description + `\n\n**Tema:** ${themeName || 'Libero'}\n**Scadenza:** <t:${Math.floor(endTime.getTime() / 1000)}:R>`)
-                .setColor(config.embedSettings.color)
-                .setTimestamp();
+            const embed = await messageService.get(config.guildId, 'photocontest', 'panel', { 
+                theme: themeName || 'Libero', 
+                endTime: `<t:${Math.floor(endTime.getTime() / 1000)}:R>` 
+            });
 
             const msg = await channel.send({ embeds: [embed] });
             newContest.announcementMessageId = msg.id;
@@ -138,7 +137,7 @@ export class PhotoContestManager {
             }
 
             if (submissions.length === 0) {
-                await messageService.send(channel, 'photocontest', 'no_participants');
+                await messageService.send(channel, 'photocontest', 'error_no_participants');
                 this.scheduleNext(config);
                 return;
             }
@@ -169,12 +168,12 @@ export class PhotoContestManager {
                 }
             }
 
-            const winnerEmbed = new EmbedBuilder()
-                .setTitle('🏆 Vincitore del Contest!')
-                .setDescription(`Congratulazioni a <@${winner.userId}> per aver vinto il contest [${contest.theme || 'Libero'}]!\n\n**Punteggio:** ${winner.score} pt`)
-                .setImage(winner.imageUrl)
-                .setColor('#FFD700')
-                .setTimestamp();
+            const winnerEmbed = await messageService.get(contest.guildId, 'photocontest', 'contest_end_log', {
+                user: `<@${winner.userId}>`,
+                theme: contest.theme || 'Libero',
+                votes: winner.score
+            });
+            winnerEmbed.setImage(winner.imageUrl);
 
             const winnerMsg = await channel.send({ content: `Festeggiamo il nostro vincitore! <@${winner.userId}>`, embeds: [winnerEmbed] });
 
