@@ -67,12 +67,9 @@ export default {
                 .addComponents(
                     new ButtonBuilder()
                         .setCustomId(`photo_vote_up_${activeContest._id}`)
-                        .setEmoji('👍')
-                        .setStyle(ButtonStyle.Success),
-                    new ButtonBuilder()
-                        .setCustomId(`photo_vote_down_${activeContest._id}`)
-                        .setEmoji('👎')
-                        .setStyle(ButtonStyle.Danger)
+                        .setLabel(config.voteLabel || 'Vota')
+                        .setEmoji(config.voteEmoji || '👍')
+                        .setStyle(ButtonStyle.Success)
                 );
 
             const botMsg = await message.channel.send({ embeds: [submissionEmbed], components: [row], files: [file] });

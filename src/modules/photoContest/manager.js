@@ -96,12 +96,21 @@ export class PhotoContestManager {
                 theme: themeName
             });
 
-            const embed = await messageService.get(config.guildId, 'photocontest', 'panel', { 
-                theme: themeName || 'Libero', 
-                endTime: `<t:${Math.floor(endTime.getTime() / 1000)}:R>` 
-            });
+            const row = new ActionRowBuilder()
+                .addComponents(
+                    new ButtonBuilder()
+                        .setCustomId('photo_submit_info')
+                        .setLabel(config.submitLabel || 'Invia Foto')
+                        .setEmoji(config.submitEmoji || '📸')
+                        .setStyle(ButtonStyle.Primary),
+                    new ButtonBuilder()
+                        .setCustomId('photo_leaderboard_view')
+                        .setLabel(config.voteLabel || 'Classifica')
+                        .setEmoji(config.voteEmoji || '🏆')
+                        .setStyle(ButtonStyle.Secondary)
+                );
 
-            const msg = await channel.send({ embeds: [embed] });
+            const msg = await channel.send({ embeds: [embed], components: [row] });
             newContest.announcementMessageId = msg.id;
             await newContest.save();
 

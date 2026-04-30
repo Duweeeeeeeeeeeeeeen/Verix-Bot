@@ -74,6 +74,22 @@ const photoContestConfigSchema = new mongoose.Schema({
     notifications: {
         mode: { type: String, enum: ['DM', 'CHANNEL', 'BOTH', 'NONE'], default: 'DM' },
         channelId: { type: String, default: null }
+    },
+    submitLabel: {
+        type: String,
+        default: 'Invia Foto'
+    },
+    submitEmoji: {
+        type: String,
+        default: '📸'
+    },
+    voteLabel: {
+        type: String,
+        default: 'Vota'
+    },
+    voteEmoji: {
+        type: String,
+        default: '⭐️'
     }
 });
 

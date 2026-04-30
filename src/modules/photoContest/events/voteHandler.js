@@ -9,6 +9,15 @@ export default {
     name: 'interactionCreate',
     async execute(interaction, client) {
         if (!interaction.isButton()) return;
+        if (!interaction.customId.startsWith('photo_')) return;
+        
+        if (interaction.customId === 'photo_submit_info') {
+            return interaction.reply({ 
+                content: '📸 **Come partecipare:** Invia una foto (come allegato) in questo canale per partecipare al contest attuale!\n\n*Nota: Puoi inviare una sola foto per contest.*', 
+                flags: [MessageFlags.Ephemeral] 
+            });
+        }
+
         if (!interaction.customId.startsWith('photo_vote_')) return;
 
         const parts = interaction.customId.split('_');
