@@ -29,14 +29,17 @@ router.get('/:guildId/:module', adminCheck, async (req, res) => {
             const def = defaults[key] || {};
             const db = dbMessages[key] || {};
 
+            // Helper to check if a value is a generic placeholder
+            const isPlaceholder = (val) => !val || val.trim() === '' || val === 'Senza Titolo' || val === 'Nessun contenuto impostato.';
+
             mergedMessages[key] = {
                 ...def,
                 ...db,
-                // Force professional defaults if DB fields are TRULY empty (null, undefined, or empty string)
-                title: (db.title && db.title.trim() !== '') ? db.title : (def.title || 'Senza Titolo'),
-                description: (db.description && db.description.trim() !== '') ? db.description : (def.description || 'Nessun contenuto impostato.'),
+                // Force professional defaults if DB fields are TRULY empty or generic placeholders
+                title: !isPlaceholder(db.title) ? db.title : (def.title || 'Senza Titolo'),
+                description: !isPlaceholder(db.description) ? db.description : (def.description || 'Nessun contenuto impostato.'),
                 color: db.color || def.color || '#5865F2',
-                footer: (db.footer && db.footer.trim() !== '') ? db.footer : (def.footer || ''),
+                footer: !isPlaceholder(db.footer) ? db.footer : (def.footer || ''),
                 enabled: db.enabled !== undefined ? db.enabled : (def.enabled !== undefined ? def.enabled : true)
             };
         });
