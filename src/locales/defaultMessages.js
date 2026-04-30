@@ -77,7 +77,7 @@ export default {
             color: '#3498db'
         }
     },
-        whitelist: {
+    whitelist: {
         panel: {
             title: '🛂 Ufficio Immigrazione - Ingresso in Città',
             description: 'Benvenuto nel portale di accesso. Per risiedere stabilmente in città, devi sottoporti a una valutazione d\'idoneità civile.\n\nAssicurati di rispondere onestamente ai protocolli che ti verranno sottoposti.',
@@ -507,52 +507,60 @@ export default {
     },
     fivem: {
         status_embed: {
-            title: '🏙️ Stato della Città',
-            description: 'Informazioni in tempo reale sul server FiveM.\n\n📡 **Server:** {serverName}\n👥 **Cittadini:** {players}/{maxPlayers}\n🟢 **Status:** Operativo',
-            color: '#2ecc71'
+            title: '🏙️ Stato della Città: Online',
+            description: 'Il cuore pulsante della metropoli è attivo. I cittadini sono invitati a connettersi per iniziare la loro giornata.\n\n📡 **Server:** `{serverName}`\n👥 **Cittadini in Città:** `{players}/{maxPlayers}`\n🟢 **Stato Protocolli:** Operativo',
+            color: '#2ecc71',
+            footer: 'Monitoraggio Urbano | Verix RP'
         },
         offline_embed: {
-            title: '🔴 Città Inaccessibile',
-            description: 'Al momento il server FiveM non risponde. Potrebbe esserci un riavvio in corso.',
-            color: '#e74c3c'
+            title: '🔴 Stato della Città: Offline',
+            description: 'Attenzione cittadini. Il collegamento con la metropoli è stato interrotto. I tecnici stanno lavorando per ripristinare i protocolli di accesso.\n\n⚠️ **Stato:** Inaccessibile / Manutenzione',
+            color: '#e74c3c',
+            footer: 'Emergenza Urbana | Verix RP'
         }
     },
     welcome: {
         join: {
-            title: '✈️ Nuovo Arrivo in Città',
-            description: 'Benvenuto **{user}** in **{guild}**! Siamo felici di vederti qui. Assicurati di leggere il regolamento.',
+            title: '✈️ Benvenuto in Città',
+            description: 'Un nuovo cittadino, **{user}**, è appena atterrato! Ti auguriamo una permanenza prospera.\n\nAssicurati di consultare i protocolli regolamentari per evitare sanzioni.',
             color: '#2ecc71'
         },
         leave: {
-            title: '🚗 Un Cittadino ha Lasciato la Città',
-            description: 'Spiace vedere **{user}** lasciare **{guild}**. Speriamo di rivederti presto.',
+            title: '🚗 Partenza Cittadina',
+            description: 'Il cittadino **{user}** ha lasciato la città. Speriamo di rivederlo presto nei nostri registri.',
             color: '#e74c3c'
         }
     },
     economy: {
         balance: {
             title: '💰 Estratto Conto Bancario',
-            description: 'Gentile **{user}**, ecco il riepilogo delle tue finanze:\n\n💵 **Contanti:** `${cash}`\n🏦 **Banca:** `${bank}`',
-            color: '#2ecc71'
+            description: 'Gentile **{user}**, ecco il riepilogo delle tue finanze correnti:\n\n💵 **Contanti:** `${cash}`\n🏦 **Conto in Banca:** `${bank}`\n💳 **Totale Asset:** `${total}`',
+            color: '#2ecc71',
+            footer: 'Banca Centrale | Verix RP'
         },
         daily: {
-            title: '🎁 Bonus Fedeltà',
-            description: 'Hai ritirato il tuo bonus giornaliero di **${amount}**. Torna domani per il prossimo accredito!',
+            title: '🎁 Bonus Fedeltà Erogato',
+            description: 'Il tuo accredito giornaliero di **${amount}** è stato depositato con successo sul tuo conto.\n\nTorna tra 24 ore per il prossimo bonus di cittadinanza!',
             color: '#f1c40f'
         },
         cooldown: {
-            title: '⏳ Protocollo d\'Attesa',
-            description: 'Hai già riscattato il tuo premio per oggi. I protocolli bancari richiedono un attesa di **{time}** prima del prossimo accredito.',
+            title: '⏳ Protocollo d\'Attesa Bancario',
+            description: 'Hai già ricevuto il tuo accredito quotidiano. I nostri sistemi richiedono un attesa di **{time}** prima di procedere con una nuova erogazione.',
             color: '#f1c40f'
+        },
+        pay_success: {
+            title: '💸 Transazione Completata',
+            description: 'Hai trasferito correttamente **${amount}** a **{recipient}**.\n\nLa ricevuta è stata archiviata nei tuoi registri personali.',
+            color: '#2ecc71'
         },
         user_not_found: {
             title: '❌ Soggetto Non Censito',
-            description: 'L\'utente specificato non risulta registrato nei nostri database economici.',
+            description: 'L\'utente specificato non risulta registrato nei database economici della città.',
             color: '#e74c3c'
         },
         generic_error: {
-            title: '❌ Errore Transazione',
-            description: 'Si è verificato un errore durante l\'operazione bancaria. Riprova più tardi.',
+            title: '❌ Anomalia Transazionale',
+            description: 'Si è verificato un errore critico durante l\'operazione bancaria. La transazione è stata annullata per sicurezza.',
             color: '#e74c3c'
         }
     },
@@ -681,38 +689,39 @@ export default {
     },
     moderation: {
         warn: {
-            title: '⚠️ Richiamo Ufficiale',
-            description: '{user}, i tuoi comportamenti hanno violato i protocolli cittadini.\n\n**MOTIVO:** {reason}',
-            color: '#f1c40f'
+            title: '⚠️ Protocollo di Richiamo',
+            description: 'Attenzione **{user}**, hai ricevuto un richiamo ufficiale per violazione dei codici civili.\n\n**MOTIVAZIONE:**\n>>> {reason}',
+            color: '#f1c40f',
+            footer: 'Ufficio Disciplinare | Verix RP'
         },
         timeout: {
             title: '🔇 Restrizione Comunicazioni',
-            description: '{user}, sei stato messo in isolamento per **{duration} minuti**.\n\n**MOTIVO:** {reason}',
+            description: 'Il cittadino **{user}** è stato messo in isolamento temporaneo per **{duration}**.\n\n**MOTIVAZIONE:**\n>>> {reason}',
             color: '#e67e22'
         },
         dm_kick: {
             title: '👢 Espulsione Coatta',
-            description: '{user}, sei stato rimosso dalla città per gravi violazioni dei protocolli.\n\n**MOTIVO:** {reason}',
+            description: 'Sei stato allontanato dalla città per gravi mancanze verso i protocolli cittadini.\n\n**MOTIVAZIONE:**\n>>> {reason}',
             color: '#e74c3c'
         },
         dm_ban: {
             title: '🚫 Esilio Definitivo',
-            description: '{user}, sei stato bandito permanentemente dalla città.\n\n**MOTIVO:** {reason}',
+            description: 'Il tuo visto per risiedere in città è stato revocato permanentemente. L\'accesso ti è ora precluso.\n\n**MOTIVAZIONE:**\n>>> {reason}',
             color: '#000000'
         },
         command_ban: {
-            title: '🔨 Membro Bannato',
-            description: '**Utente:** {user}\n**Moderatore:** {mod}\n**Motivo:** {reason}',
+            title: '🔨 Protocollo Ban Eseguito',
+            description: '**SOGGETTO:** {user}\n**UFFICIALE:** {mod}\n**MOTIVAZIONE:** {reason}',
             color: '#FF0000'
         },
         command_kick: {
-            title: '👢 Membro Espulso',
-            description: '**Utente:** {user}\n**Moderatore:** {mod}\n**Motivo:** {reason}',
+            title: '👢 Protocollo Kick Eseguito',
+            description: '**SOGGETTO:** {user}\n**UFFICIALE:** {mod}\n**MOTIVAZIONE:** {reason}',
             color: '#e74c3c'
         },
         error: {
-            title: '❌ Errore Moderazione',
-            description: 'Non è stato possibile eseguire l\'azione disciplinare richiesta. Verifica i permessi del bot o la gerarchia dei ruoli.',
+            title: '❌ Errore Disciplinare',
+            description: 'Impossibile eseguire l\'azione richiesta. Il soggetto potrebbe avere uno status superiore o il bot non dispone dei permessi necessari.',
             color: '#e74c3c'
         }
     },
