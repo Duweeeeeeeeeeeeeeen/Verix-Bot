@@ -19,7 +19,7 @@ router.get('/:guildId/:module', adminCheck, async (req, res) => {
         const dbMessages = (config && config.messages) ? config.messages : {};
         const defaults = defaultMessages[module] || {};
 
-        console.log(`[DEBUG_MESSAGES] Merging for ${module} in ${guildId}. Found ${Object.keys(dbMessages).length} overrides in DB.`);
+        console.log(`[DEBUG_API] Module: ${module}. Defaults keys: ${Object.keys(defaults).join(', ')}. DB keys: ${Object.keys(dbMessages).join(', ')}`);
 
         // Merge defaults and DB overrides into a single flat object
         const mergedMessages = {};
