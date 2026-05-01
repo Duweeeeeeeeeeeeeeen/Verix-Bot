@@ -3,7 +3,6 @@ const nextConfig = {
   reactStrictMode: true,
   devIndicators: {
     buildActivity: false,
-    appIsrStatus: false,
   },
 };
 
