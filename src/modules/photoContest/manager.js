@@ -115,7 +115,16 @@ export class PhotoContestManager {
                 endTime: `<t:${Math.floor(endTime.getTime() / 1000)}:R>`
             });
 
-            const msg = await channel.send({ embeds: [embed], components: [row] });
+            let msg;
+            try {
+                msg = await channel.send({ embeds: [embed], components: [row] });
+            } catch (sendError) {
+                logger.error(`[PhotoContest] Failed to send contest panel with emojis, retrying without emojis: ${sendError.message}`);
+                // Fallback: Remove emojis from buttons
+                row.components.forEach(btn => btn.setEmoji(null));
+                msg = await channel.send({ embeds: [embed], components: [row] });
+            }
+
             newContest.announcementMessageId = msg.id;
             await newContest.save();
 

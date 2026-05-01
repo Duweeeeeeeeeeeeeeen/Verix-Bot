@@ -89,7 +89,7 @@ const photoContestConfigSchema = new mongoose.Schema({
     },
     voteEmoji: {
         type: String,
-        default: '⭐️'
+        default: '🏆'
     }
 });
 
