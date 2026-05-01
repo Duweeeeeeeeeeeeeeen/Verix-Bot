@@ -316,7 +316,7 @@ router.get('/:guildId/giveaways/scheduled', adminCheck, async (req, res) => {
 router.post('/:guildId/giveaways/create', adminCheck, async (req, res) => {
     try {
         const { guildId } = req.params;
-        const { prize, duration, winnerCount, channelId, scheduledStart } = req.body;
+        const { prize, duration, winnerCount, channelId, scheduledStart, customTitle, customDescription, color } = req.body;
         const client = req.discordClient;
 
         const startTime = scheduledStart ? new Date(scheduledStart) : new Date();
@@ -328,11 +328,19 @@ router.post('/:guildId/giveaways/create', adminCheck, async (req, res) => {
             const channel = await client.channels.fetch(channelId).catch(() => null);
             if (!channel) return res.status(400).json({ success: false, error: 'Canale non trovato' });
 
+            const title = customTitle || `🎉 GIVEAWAY: ${prize}`;
+            let description = customDescription || `Clicca il tasto qui sotto per partecipare!\n\n⌛ **Termina:** <t:${Math.floor(endTime.getTime() / 1000)}:R>`;
+            
+            // Basic placeholder replacement
+            description = description
+                .replace(/{prize}/g, prize)
+                .replace(/{endtime}/g, `<t:${Math.floor(endTime.getTime() / 1000)}:R>`);
+
             const embed = new EmbedBuilder()
-                .setTitle(`🎉 GIVEAWAY: ${prize}`)
-                .setDescription(`Clicca il tasto qui sotto per partecipare!\n\n⌛ **Termina:** <t:${Math.floor(endTime.getTime() / 1000)}:R>`)
+                .setTitle(title)
+                .setDescription(description)
                 .addFields({ name: '👥 Partecipanti', value: '0', inline: true })
-                .setColor('#5865F2')
+                .setColor(color || '#5865F2')
                 .setTimestamp(endTime)
                 .setFooter({ text: 'Termina il' });
 
@@ -356,7 +364,10 @@ router.post('/:guildId/giveaways/create', adminCheck, async (req, res) => {
                 startTime,
                 endTime,
                 hostId: req.user.id,
-                status: 'ACTIVE'
+                status: 'ACTIVE',
+                customTitle,
+                customDescription,
+                color
             });
 
             return res.json({ success: true, data: giveaway });
@@ -370,7 +381,10 @@ router.post('/:guildId/giveaways/create', adminCheck, async (req, res) => {
                 startTime,
                 endTime,
                 hostId: req.user.id,
-                status: 'SCHEDULED'
+                status: 'SCHEDULED',
+                customTitle,
+                customDescription,
+                color
             });
 
             return res.json({ success: true, data: giveaway, scheduled: true });

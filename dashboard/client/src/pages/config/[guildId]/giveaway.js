@@ -26,6 +26,7 @@ import {
     AlertCircle
 } from 'lucide-react';
 import DiscordSelector from '../../../components/DiscordSelector';
+import EmbedPreview from '../../../components/EmbedPreview';
 
 export default function GiveawayConfig() {
   const router = useRouter();
@@ -47,8 +48,25 @@ export default function GiveawayConfig() {
     duration: 60, // minutes
     winnerCount: 1,
     channelId: '',
-    scheduledStart: ''
+    scheduledStart: '',
+    customTitle: '🎁 NUOVO GIVEAWAY!',
+    customDescription: 'Partecipa cliccando sul tasto qui sotto!\n\n🏆 **Premio:** {prize}\n⌛ **Termina:** {endtime}',
+    color: '#5865F2'
   });
+
+  const previewEmbed = {
+    title: newGw.customTitle || `🎉 GIVEAWAY: ${newGw.prize || '...' }`,
+    description: (newGw.customDescription || '')
+        .replace(/{prize}/g, newGw.prize || '...')
+        .replace(/{endtime}/g, `<t:${Math.floor((Date.now() + newGw.duration * 60000) / 1000)}:R>`),
+    color: newGw.color,
+    footer: 'Termina il',
+    timestamp: true,
+    fields: [
+        { name: '👥 Partecipanti', value: '0', inline: true }
+    ],
+    button: { label: 'Partecipa', emoji: '🎉', style: 'PRIMARY' }
+  };
 
   useEffect(() => {
     if (guildId) {
@@ -115,7 +133,16 @@ export default function GiveawayConfig() {
       });
       if (res.success) {
         showToast(dataToPost.scheduledStart ? 'Giveaway programmato con successo!' : 'Giveaway avviato con successo!');
-        setNewGw({ prize: '', duration: 60, winnerCount: 1, channelId: '', scheduledStart: '' });
+        setNewGw({ 
+          prize: '', 
+          duration: 60, 
+          winnerCount: 1, 
+          channelId: '', 
+          scheduledStart: '',
+          customTitle: '🎁 NUOVO GIVEAWAY!',
+          customDescription: 'Partecipa cliccando sul tasto qui sotto!\n\n🏆 **Premio:** {prize}\n⌛ **Termina:** {endtime}',
+          color: '#5865F2'
+        });
         fetchData();
       }
     } catch (e) {
@@ -198,86 +225,137 @@ export default function GiveawayConfig() {
                                     <Plus size={18} color="#ec4899" />
                                     <h3>Nuovo Giveaway</h3>
                                 </div>
-                                <form className="create-gw-form">
-                                    <div className="fields-grid-v">
-                                        <div className="field-box">
-                                            <label className="text-label">Premio in palio</label>
-                                            <input 
-                                                type="text" 
-                                                className="input" 
-                                                placeholder="Es: VIP Gold per 1 mese"
-                                                value={newGw.prize}
-                                                onChange={e => setNewGw({...newGw, prize: e.target.value})}
-                                            />
+                                
+                                <div className="creation-split-v">
+                                    <form className="create-gw-form">
+                                        <div className="fields-grid-v" style={{ gridTemplateColumns: '1fr' }}>
+                                            <div className="field-box">
+                                                <label className="text-label">Premio in palio</label>
+                                                <input 
+                                                    type="text" 
+                                                    className="input" 
+                                                    placeholder="Es: VIP Gold per 1 mese"
+                                                    value={newGw.prize}
+                                                    onChange={e => setNewGw({...newGw, prize: e.target.value})}
+                                                />
+                                            </div>
+                                            <div className="field-box">
+                                                <label className="text-label">Canale Discord</label>
+                                                <DiscordSelector 
+                                                    type="channel" 
+                                                    options={channels} 
+                                                    value={newGw.channelId} 
+                                                    onChange={val => setNewGw({...newGw, channelId: val})}
+                                                />
+                                            </div>
+                                            <div className="fields-row-v">
+                                                <div className="field-box">
+                                                    <label className="text-label">Durata (Minuti)</label>
+                                                    <input 
+                                                        type="number" 
+                                                        className="input" 
+                                                        min="1"
+                                                        value={newGw.duration}
+                                                        onChange={e => setNewGw({...newGw, duration: parseInt(e.target.value)})}
+                                                    />
+                                                </div>
+                                                <div className="field-box">
+                                                    <label className="text-label">Numero Vincitori</label>
+                                                    <input 
+                                                        type="number" 
+                                                        className="input" 
+                                                        min="1"
+                                                        max="50"
+                                                        value={newGw.winnerCount}
+                                                        onChange={e => setNewGw({...newGw, winnerCount: parseInt(e.target.value)})}
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="field-divider">Personalizzazione Embed</div>
+
+                                            <div className="field-box">
+                                                <label className="text-label">Titolo Embed</label>
+                                                <input 
+                                                    type="text" 
+                                                    className="input" 
+                                                    value={newGw.customTitle}
+                                                    onChange={e => setNewGw({...newGw, customTitle: e.target.value})}
+                                                />
+                                            </div>
+                                            <div className="field-box">
+                                                <label className="text-label">Descrizione Embed</label>
+                                                <textarea 
+                                                    className="input" 
+                                                    rows="4"
+                                                    value={newGw.customDescription}
+                                                    onChange={e => setNewGw({...newGw, customDescription: e.target.value})}
+                                                />
+                                                <p className="field-help">Usa {'{prize}'} e {'{endtime}'} come variabili.</p>
+                                            </div>
+                                            <div className="field-box">
+                                                <label className="text-label">Colore Embed</label>
+                                                <div className="color-input-wrapper-v">
+                                                    <input 
+                                                        type="color" 
+                                                        value={newGw.color}
+                                                        onChange={e => setNewGw({...newGw, color: e.target.value})}
+                                                    />
+                                                    <input 
+                                                        type="text" 
+                                                        className="input"
+                                                        value={newGw.color}
+                                                        onChange={e => setNewGw({...newGw, color: e.target.value})}
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="field-box">
+                                                <label className="text-label">Avvio Programmato (Opzionale)</label>
+                                                <input 
+                                                    type="datetime-local" 
+                                                    className="input" 
+                                                    value={newGw.scheduledStart}
+                                                    onChange={e => setNewGw({...newGw, scheduledStart: e.target.value})}
+                                                />
+                                            </div>
                                         </div>
-                                        <div className="field-box">
-                                            <label className="text-label">Canale Discord</label>
-                                            <DiscordSelector 
-                                                type="channel" 
-                                                options={channels} 
-                                                value={newGw.channelId} 
-                                                onChange={val => setNewGw({...newGw, channelId: val})}
-                                            />
+                                        
+                                        <div className="form-actions-v" style={{ marginTop: '32px' }}>
+                                            <button 
+                                                type="button" 
+                                                className="btn-quick-start" 
+                                                disabled={creating}
+                                                onClick={(e) => {
+                                                    const gw = { ...newGw, scheduledStart: '' };
+                                                    handleCreateGiveaway(gw);
+                                                }}
+                                            >
+                                                <Zap size={16} />
+                                                Avvia Subito
+                                            </button>
+                                            <button 
+                                                type="button" 
+                                                className="btn-schedule" 
+                                                disabled={creating}
+                                                onClick={(e) => {
+                                                    if (!newGw.scheduledStart) return showToast('Seleziona una data per programmare!', 'warning');
+                                                    handleCreateGiveaway(newGw);
+                                                }}
+                                            >
+                                                <Calendar size={16} />
+                                                Programma
+                                            </button>
                                         </div>
-                                        <div className="field-box">
-                                            <label className="text-label">Durata (Minuti)</label>
-                                            <input 
-                                                type="number" 
-                                                className="input" 
-                                                min="1"
-                                                value={newGw.duration}
-                                                onChange={e => setNewGw({...newGw, duration: parseInt(e.target.value)})}
-                                            />
-                                        </div>
-                                        <div className="field-box">
-                                            <label className="text-label">Numero Vincitori</label>
-                                            <input 
-                                                type="number" 
-                                                className="input" 
-                                                min="1"
-                                                max="50"
-                                                value={newGw.winnerCount}
-                                                onChange={e => setNewGw({...newGw, winnerCount: parseInt(e.target.value)})}
-                                            />
-                                        </div>
-                                        <div className="field-box full-width">
-                                            <label className="text-label">Avvio Programmato (Solo per programmazione)</label>
-                                            <input 
-                                                type="datetime-local" 
-                                                className="input" 
-                                                value={newGw.scheduledStart}
-                                                onChange={e => setNewGw({...newGw, scheduledStart: e.target.value})}
-                                            />
+                                    </form>
+
+                                    <div className="preview-container-v">
+                                        <div className="preview-label">Anteprima Live</div>
+                                        <div className="preview-sticky-v">
+                                            <EmbedPreview data={previewEmbed} />
                                         </div>
                                     </div>
-                                    
-                                    <div className="form-actions-v">
-                                        <button 
-                                            type="button" 
-                                            className="btn-quick-start" 
-                                            disabled={creating}
-                                            onClick={(e) => {
-                                                const gw = { ...newGw, scheduledStart: '' };
-                                                handleCreateGiveaway(gw);
-                                            }}
-                                        >
-                                            <Zap size={16} />
-                                            Avvia Subito
-                                        </button>
-                                        <button 
-                                            type="button" 
-                                            className="btn-schedule" 
-                                            disabled={creating}
-                                            onClick={(e) => {
-                                                if (!newGw.scheduledStart) return showToast('Seleziona una data per programmare!', 'warning');
-                                                handleCreateGiveaway(newGw);
-                                            }}
-                                        >
-                                            <Calendar size={16} />
-                                            Programma Giveaway
-                                        </button>
-                                    </div>
-                                </form>
+                                </div>
                             </section>
 
                             {/* Active List */}
@@ -446,6 +524,16 @@ export default function GiveawayConfig() {
             .align-center { display: flex; align-items: center; gap: 10px; }
             
             .create-gw-form { background: rgba(255,255,255,0.01); border-radius: 12px; }
+            .creation-split-v { display: grid; grid-template-columns: 1fr 400px; gap: 40px; }
+            .fields-row-v { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+            .field-divider { margin: 24px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); font-size: 0.75rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
+            .color-input-wrapper-v { display: flex; gap: 12px; align-items: center; }
+            .color-input-wrapper-v input[type="color"] { width: 42px; height: 42px; border: none; border-radius: 8px; background: none; cursor: pointer; }
+            
+            .preview-container-v { border-left: 1px solid var(--border); padding-left: 40px; }
+            .preview-label { font-size: 0.7rem; font-weight: 800; color: var(--text-dim); text-transform: uppercase; margin-bottom: 12px; letter-spacing: 1px; }
+            .preview-sticky-v { position: sticky; top: 20px; }
+
             .form-actions-v { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px; }
             .btn-quick-start { padding: 14px; background: #ec4899; color: white; border: none; border-radius: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 12px rgba(236, 72, 153, 0.2); }
             .btn-quick-start:hover { background: #db2777; transform: translateY(-2px); }
@@ -453,7 +541,9 @@ export default function GiveawayConfig() {
             .btn-schedule:hover { background: rgba(52, 152, 219, 0.2); border-color: #3498db; }
             .btn-quick-start:disabled, .btn-schedule:disabled { opacity: 0.5; cursor: not-allowed; }
 
-            .field-box.full-width { grid-column: span 2; }
+            .field-box.full-width { grid-column: span 1; }
+
+            @media (max-width: 1200px) { .creation-split-v { grid-template-columns: 1fr; } .preview-container-v { border-left: none; padding-left: 0; padding-top: 40px; border-top: 1px solid var(--border); } }
 
             .active-gw-list { display: flex; flex-direction: column; gap: 12px; }
             .active-gw-item { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; }

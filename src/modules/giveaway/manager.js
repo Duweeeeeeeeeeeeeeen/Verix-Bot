@@ -54,11 +54,19 @@ class GiveawayManager {
             const channel = await guild.channels.fetch(giveaway.channelId).catch(() => null);
             if (!channel) return;
 
+            const title = giveaway.customTitle || `🎉 GIVEAWAY: ${giveaway.prize}`;
+            let description = giveaway.customDescription || `Clicca il tasto qui sotto per partecipare!\n\n⌛ **Termina:** <t:${Math.floor(giveaway.endTime.getTime() / 1000)}:R>`;
+            
+            // Basic placeholder replacement
+            description = description
+                .replace(/{prize}/g, giveaway.prize)
+                .replace(/{endtime}/g, `<t:${Math.floor(giveaway.endTime.getTime() / 1000)}:R>`);
+
             const embed = new EmbedBuilder()
-                .setTitle(`🎉 GIVEAWAY: ${giveaway.prize}`)
-                .setDescription(`Clicca il tasto qui sotto per partecipare!\n\n⌛ **Termina:** <t:${Math.floor(giveaway.endTime.getTime() / 1000)}:R>`)
+                .setTitle(title)
+                .setDescription(description)
                 .addFields({ name: '👥 Partecipanti', value: '0', inline: true })
-                .setColor('#5865F2')
+                .setColor(giveaway.color || '#5865F2')
                 .setTimestamp(giveaway.endTime)
                 .setFooter({ text: 'Termina il' });
 

@@ -46,6 +46,12 @@ const giveawaySchema = new mongoose.Schema({
     hostId: {
         type: String,
         required: true
+    },
+    customTitle: String,
+    customDescription: String,
+    color: {
+        type: String,
+        default: '#5865F2'
     }
 }, { timestamps: true });
 
