@@ -19,7 +19,12 @@ import {
   Lock,
   HelpCircle,
   ChevronRight,
-  FileText
+  FileText,
+  Filter,
+  Eye,
+  EyeOff,
+  PlusCircle,
+  Send
 } from 'lucide-react';
 
 export default function ManagementPage() {
@@ -35,6 +40,13 @@ export default function ManagementPage() {
   const [searching, setSearching] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState('users');
+  
+  // Audit Logs State
+  const [logs, setLogs] = useState([]);
+  const [logsLoading, setLogsLoading] = useState(false);
+  const [expandedLog, setExpandedLog] = useState(null);
+  const [logSearch, setLogSearch] = useState('');
 
   useEffect(() => {
     setMounted(true);
@@ -43,8 +55,9 @@ export default function ManagementPage() {
   useEffect(() => {
     if (guildId && mounted) {
       fetchUserList();
+      fetchLogs();
     }
-  }, [guildId, mounted]);
+  }, [guildId, mounted, activeTab]);
 
   useEffect(() => {
     if (searchTerm.trim() === '') {
@@ -63,7 +76,6 @@ export default function ManagementPage() {
     try {
       const res = await api.request(`/management/${guildId}/users`);
       if (res) {
-        // api.request returns res.data directly
         const list = Array.isArray(res) ? res : [];
         setUserList(list);
         setFilteredList(list);
@@ -74,6 +86,46 @@ export default function ManagementPage() {
       setListLoading(false);
     }
   };
+
+  const fetchLogs = async () => {
+    if (activeTab !== 'logs') return;
+    setLogsLoading(true);
+    try {
+      const res = await api.request(`/config/${guildId}/audit-logs`);
+      const logsData = res.data || (Array.isArray(res) ? res : []);
+      setLogs(logsData);
+    } catch (error) {
+      console.error('Fetch logs error:', error);
+    } finally {
+      setLogsLoading(false);
+    }
+  };
+
+  const handleClearLogs = async () => {
+    if (!window.confirm('Cancellare tutta la cronologia?')) return;
+    try {
+      setLogsLoading(true);
+      await api.request(`/config/${guildId}/audit-logs`, { method: 'DELETE' });
+      await fetchLogs();
+    } catch (error) {
+    } finally {
+      setLogsLoading(false);
+    }
+  };
+
+  const getActionInfo = (action) => {
+    if (action.startsWith('UPDATE')) return { icon: RefreshCcw, color: '#6366f1', label: 'Aggiornamento' };
+    if (action.startsWith('CREATE')) return { icon: PlusCircle, color: '#22c55e', label: 'Creazione' };
+    if (action.startsWith('DELETE')) return { icon: Trash2, color: '#ef4444', label: 'Eliminazione' };
+    if (action.startsWith('RESET')) return { icon: XCircle, color: '#f59e0b', label: 'Reset' };
+    if (action.startsWith('SEND')) return { icon: Send, color: '#a855f7', label: 'Invio' };
+    return { icon: FileText, color: 'var(--text-dim)', label: 'Azione' };
+  };
+
+  const filteredLogs = logs.filter(log => 
+    (log.username?.toLowerCase() || '').includes(logSearch.toLowerCase()) ||
+    (log.action?.toLowerCase() || '').includes(logSearch.toLowerCase())
+  );
 
   useEffect(() => {
     if (userData) {
@@ -229,43 +281,56 @@ export default function ManagementPage() {
               <History size={24} />
             </div>
             <div>
-              <h1>Log & Gestione Utenti</h1>
-              <p className="text-muted">Ricerca diretta tramite ID o gestione della cronologia cittadina.</p>
+              <h1>Log & Gestione Hub</h1>
+              <p className="text-muted">Centro di controllo amministrativo e monitoraggio attività.</p>
             </div>
           </div>
           
-          <form className="search-box-v2" onSubmit={handleSearch}>
-            <Search className="search-icon" size={20} />
-            <input 
-              type="text" 
-              placeholder="Inserisci ID Discord per ricerca rapida..." 
-              value={userId}
-              onChange={(e) => setUserId(e.target.value)}
-              className="search-input"
-            />
+          <div className="tab-navigation">
             <button 
-              type="submit" 
-              disabled={searching}
-              className="btn-search"
+              className={`tab-btn ${activeTab === 'users' ? 'active' : ''}`}
+              onClick={() => setActiveTab('users')}
             >
-              {searching ? '...' : <Search size={18} />}
+              <User size={16} /> <span>Gestione Utenti</span>
             </button>
-          </form>
+            <button 
+              className={`tab-btn ${activeTab === 'logs' ? 'active' : ''}`}
+              onClick={() => setActiveTab('logs')}
+            >
+              <History size={16} /> <span>Audit Logs</span>
+            </button>
+          </div>
         </div>
 
         <div className="content-area">
-          {!userData && !loading && (
-            <div className="empty-state-v2 card">
-              <div className="pulse-icon">
-                <User size={48} />
-              </div>
-              <h3>Seleziona un Cittadino</h3>
-              <p className="text-muted">
-                Usa la lista a sinistra per navigare tra i cittadini registrati,<br />
-                oppure inserisci un ID Discord sopra per una ricerca istantanea.
-              </p>
-            </div>
-          )}
+          {activeTab === 'users' ? (
+            <div className="users-tab-content animate fade-in">
+              <form className="search-box-v3" onSubmit={handleSearch}>
+                <Search className="search-icon" size={20} />
+                <input 
+                  type="text" 
+                  placeholder="Inserisci ID Discord per ricerca rapida..." 
+                  value={userId}
+                  onChange={(e) => setUserId(e.target.value)}
+                  className="search-input"
+                />
+                <button type="submit" disabled={searching} className="btn-search-p">
+                  {searching ? '...' : 'Cerca'}
+                </button>
+              </form>
+
+              {!userData && !loading && (
+                <div className="empty-state-v2 card">
+                  <div className="pulse-icon">
+                    <User size={48} />
+                  </div>
+                  <h3>Seleziona un Cittadino</h3>
+                  <p className="text-muted">
+                    Usa la lista a sinistra per navigare tra i cittadini registrati,<br />
+                    oppure inserisci un ID Discord sopra per una ricerca istantanea.
+                  </p>
+                </div>
+              )}
 
           {loading && (
             <div className="loading-grid">
@@ -275,132 +340,87 @@ export default function ManagementPage() {
           )}
 
           {userData && !loading && (
-            <div className="results-container animate fade-in">
-              {/* User Overview Card */}
-              <div className="user-profile card">
-                <div className="profile-main">
-                  <div className="avatar-placeholder">
-                    <User size={32} />
-                  </div>
-                  <div className="profile-info">
-                    <div className="name-badge-row">
-                      <h3>{userData.user.username || 'Sconosciuto'}</h3>
-                      <span className="id-badge">{userData.user.discordId || userId}</span>
-                    </div>
-                    <p className="text-dim">Dati archiviati nel database globale Verix</p>
-                  </div>
-                  <div className="profile-actions">
-                    <button onClick={handleResetAll} className="btn-reset">
-                      <RefreshCcw size={16} />
-                      Resetta Tutto
-                    </button>
-                  </div>
-                </div>
-                
-                <div className="cooldowns-row">
-                  <div className="cooldown-item">
-                    <ShieldCheck size={16} />
-                    <span>Ultima Whitelist: {userData.user.lastWhitelistAttempt ? new Date(userData.user.lastWhitelistAttempt).toLocaleString() : 'Mai effettuata'}</span>
-                  </div>
-                  <div className="cooldown-item">
-                    <BookOpen size={16} />
-                    <span>Ultimo Background: {userData.user.lastBackgroundAttempt ? new Date(userData.user.lastBackgroundAttempt).toLocaleString() : 'Mai effettuato'}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="records-grid">
-                {/* Whitelist Records */}
-                <div className="record-section card">
-                  <div className="section-header">
-                    <ShieldCheck size={20} className="text-primary" />
-                    <h3>Iter Whitelist</h3>
-                    <span className="count">{userData.whitelist.length}</span>
-                  </div>
-                  
-                  {userData.whitelist.length === 0 ? (
-                    <div className="no-records">
-                      <XCircle size={24} />
-                      <p>Nessuna prova scritta</p>
-                    </div>
-                  ) : (
-                    <div className="records-list">
-                      {userData.whitelist.map(app => (
-                        <div key={app._id} className="record-item">
-                          <div className="item-info">
-                            <span className={`status-pill ${app.status.toLowerCase()}`}>{app.status}</span>
-                            <span className="date-text">{new Date(app.submittedAt || app.startTime).toLocaleDateString()}</span>
-                          </div>
-                          <button onClick={() => handleDelete('whitelist', app._id)} className="btn-delete-mini" title="Elimina">
-                            <Trash2 size={14} />
-                          </button>
+            </div>
+          ) : (
+            <div className="logs-tab-content animate fade-in">
+                <section className="card log-container-hub">
+                    <div className="log-filters-row">
+                        <Search size={18} className="search-icon-p" />
+                        <input 
+                            className="transparent-input" 
+                            placeholder="Filtra per amministratore o azione..." 
+                            value={logSearch}
+                            onChange={(e) => setLogSearch(e.target.value)}
+                        />
+                        <div className="log-actions">
+                            <button onClick={handleClearLogs} className="btn-danger-mini">
+                                <Trash2 size={14} /> Pulisci
+                            </button>
+                            <button onClick={fetchLogs} className="btn-refresh-p" disabled={logsLoading}>
+                                <RefreshCcw size={14} className={logsLoading ? 'spin' : ''} />
+                            </button>
                         </div>
-                      ))}
                     </div>
-                  )}
-                </div>
 
-                {/* Background Records */}
-                <div className="record-section card">
-                  <div className="section-header">
-                    <BookOpen size={20} className="text-warning" />
-                    <h3>Dossier Background</h3>
-                    <span className="count">{userData.backgrounds.length}</span>
-                  </div>
-                  
-                  {userData.backgrounds.length === 0 ? (
-                    <div className="no-records">
-                      <FileText size={24} />
-                      <p>Nessuna storia inviata</p>
+                    <div className="log-table-wrapper">
+                        <table className="log-table">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Admin</th>
+                                    <th>Action</th>
+                                    <th style={{ textAlign: 'right' }}>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filteredLogs.map((log) => {
+                                    const info = getActionInfo(log.action);
+                                    return (
+                                        <React.Fragment key={log._id}>
+                                            <tr className={`log-row-p ${expandedLog === log._id ? 'expanded' : ''}`}>
+                                                <td className="time-cell">
+                                                    {new Date(log.timestamp).toLocaleString('it-IT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                                                </td>
+                                                <td className="admin-cell">
+                                                    <div className="admin-badge-p">
+                                                        <User size={10} />
+                                                        <span>{log.username || 'Sistema'}</span>
+                                                    </div>
+                                                </td>
+                                                <td className="action-cell-p">
+                                                    <div className="action-tag" style={{ color: info.color, borderLeft: `2px solid ${info.color}` }}>
+                                                        {info.label}
+                                                    </div>
+                                                    <code className="action-raw">{log.action}</code>
+                                                </td>
+                                                <td className="action-view">
+                                                    <button onClick={() => setExpandedLog(expandedLog === log._id ? null : log._id)} className={`view-btn-p ${expandedLog === log._id ? 'active' : ''}`}>
+                                                        {expandedLog === log._id ? <EyeOff size={14} /> : <Eye size={14} />}
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            {expandedLog === log._id && (
+                                                <tr className="expansion-row">
+                                                    <td colSpan="4">
+                                                        <div className="json-diff-p animate fade-in">
+                                                            <pre>{JSON.stringify(log.changes, null, 2)}</pre>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </React.Fragment>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                        {filteredLogs.length === 0 && (
+                            <div className="empty-logs">
+                                <History size={40} />
+                                <p>Nessun log trovato.</p>
+                            </div>
+                        )}
                     </div>
-                  ) : (
-                    <div className="records-list">
-                      {userData.backgrounds.map(bg => (
-                        <div key={bg._id} className="record-item">
-                          <div className="item-info">
-                            <span className={`status-pill ${bg.status.toLowerCase()}`}>{bg.status}</span>
-                            <span className="date-text">{new Date(bg.submittedAt).toLocaleDateString()}</span>
-                            {bg.link && <a href={bg.link} target="_blank" rel="noreferrer" className="external-link-icon"><ExternalLink size={14} /></a>}
-                          </div>
-                          <button onClick={() => handleDelete('background', bg._id)} className="btn-delete-mini" title="Elimina">
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Voice Queue Records */}
-                <div className="record-section card">
-                  <div className="section-header">
-                    <Mic2 size={20} className="text-info" />
-                    <h3>Coda Colloqui</h3>
-                    <span className="count">{userData.voice.length}</span>
-                  </div>
-                  
-                  {userData.voice.length === 0 ? (
-                    <div className="no-records">
-                      <Mic2 size={24} />
-                      <p>Mai entrato in coda</p>
-                    </div>
-                  ) : (
-                    <div className="records-list">
-                      {userData.voice.map(v => (
-                        <div key={v._id} className="record-item">
-                          <div className="item-info">
-                            <span className="status-pill blue">CODA VOCALE</span>
-                            <span className="date-text">{new Date(v.joinedAt).toLocaleString()}</span>
-                          </div>
-                          <button onClick={() => handleDelete('voice', v._id)} className="btn-delete-mini" title="Elimina">
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
+                </section>
             </div>
           )}
         </div>
@@ -526,6 +546,7 @@ export default function ManagementPage() {
           gap: 24px;
           overflow-y: auto;
           padding-right: 8px;
+          width: 100%;
         }
         .management-main::-webkit-scrollbar { width: 4px; }
         .management-main::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
@@ -541,45 +562,45 @@ export default function ManagementPage() {
           gap: 32px;
         }
 
-        .title-group { display: flex; gap: 20px; align-items: center; }
-        .icon-badge { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-        .icon-badge.primary { background: var(--primary-glow); color: var(--primary); }
-        .page-header h1 { font-size: 1.5rem; margin-bottom: 2px; }
+        .tab-navigation { display: flex; gap: 8px; background: rgba(0,0,0,0.2); padding: 4px; border-radius: 12px; border: 1px solid var(--border); }
+        .tab-btn { display: flex; align-items: center; gap: 8px; padding: 8px 16px; border: none; background: transparent; color: var(--text-dim); font-size: 0.85rem; font-weight: 600; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        .tab-btn:hover { color: white; background: rgba(255,255,255,0.02); }
+        .tab-btn.active { background: var(--primary); color: white; }
 
-        .search-box-v2 {
+        .search-box-v3 {
           display: flex;
-          align-items: center;
-          background: rgba(0,0,0,0.3);
-          border: 1px solid var(--border);
-          border-radius: 14px;
-          padding: 4px;
-          flex: 1;
-          max-width: 400px;
+          gap: 12px;
+          margin-bottom: 24px;
         }
-        .search-box-v2 .search-icon { margin-left: 14px; color: var(--text-dim); }
-        .search-box-v2 .search-input {
-          background: transparent;
-          border: none;
-          color: white;
-          flex: 1;
-          padding: 10px 12px;
-          font-size: 0.9rem;
-          outline: none;
-        }
-        .btn-search {
-          background: var(--primary);
-          color: white;
-          border: none;
-          width: 38px;
-          height: 38px;
-          border-radius: 10px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-          transition: 0.2s;
-        }
-        .btn-search:hover { filter: brightness(1.2); transform: scale(1.05); }
+        .search-box-v3 .search-input { flex: 1; background: #070912; border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px; color: white; outline: none; }
+        .btn-search-p { background: var(--primary); color: white; border: none; padding: 0 24px; border-radius: 12px; font-weight: 700; cursor: pointer; }
+
+        /* Logs Hub styles */
+        .log-container-hub { padding: 0 !important; overflow: hidden; }
+        .log-filters-row { display: flex; align-items: center; gap: 12px; padding: 12px 20px; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.2); }
+        .transparent-input { background: transparent; border: none; flex: 1; color: white; font-size: 0.85rem; outline: none; }
+        .log-actions { display: flex; gap: 8px; }
+        .btn-danger-mini { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; cursor: pointer; }
+        .btn-refresh-p { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-dim); width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        
+        .log-table-wrapper { overflow-x: auto; }
+        .log-table { width: 100%; border-collapse: collapse; }
+        .log-table th { text-align: left; padding: 12px 20px; font-size: 0.65rem; text-transform: uppercase; color: var(--text-dim); border-bottom: 1px solid var(--border); }
+        .log-table td { padding: 12px 20px; border-bottom: 1px solid var(--border); font-size: 0.8rem; }
+        
+        .log-row-p:hover { background: rgba(255,255,255,0.01); }
+        .admin-badge-p { display: flex; align-items: center; gap: 6px; color: var(--text-muted); font-weight: 600; }
+        .action-cell-p { display: flex; flex-direction: column; gap: 2px; }
+        .action-tag { font-size: 0.6rem; font-weight: 900; text-transform: uppercase; padding-left: 6px; }
+        
+        .view-btn-p { background: transparent; border: 1px solid var(--border); color: var(--text-dim); padding: 6px; border-radius: 6px; cursor: pointer; }
+        .view-btn-p.active { background: var(--primary); color: white; border-color: var(--primary); }
+        
+        .json-diff-p { padding: 16px; background: #020617; }
+        .json-diff-p pre { margin: 0; font-size: 0.75rem; color: #a5b4fc; font-family: monospace; overflow-x: auto; }
+        
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .spin { animation: spin 1s linear infinite; }
 
         .content-area { flex: 1; }
 

@@ -35,7 +35,9 @@ import {
   Gavel,
   HelpCircle,
   Coins,
-  Shield
+  Shield,
+  Sun,
+  Moon
 } from 'lucide-react';
 import GuideSidebar from './GuideSidebar';
 
@@ -47,6 +49,7 @@ export default function Layout({ children, guildId }) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(true);
   const [isActivity, setIsActivity] = useState(false);
+  const [theme, setTheme] = useState('dark');
 
   // Persistence for Guide Sidebar
   useEffect(() => {
@@ -59,6 +62,25 @@ export default function Layout({ children, guildId }) {
   useEffect(() => {
     localStorage.setItem('verix-guide-open', isGuideOpen);
   }, [isGuideOpen]);
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('verix-theme') || 'dark';
+    setTheme(savedTheme);
+    if (savedTheme === 'light') {
+        document.body.classList.add('light-theme');
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    localStorage.setItem('verix-theme', newTheme);
+    if (newTheme === 'light') {
+        document.body.classList.add('light-theme');
+    } else {
+        document.body.classList.remove('light-theme');
+    }
+  };
   const [guideContext, setGuideContext] = useState({});
 
   useEffect(() => {
@@ -122,14 +144,11 @@ export default function Layout({ children, guildId }) {
     { name: 'Tickets', icon: Ticket, path: `/config/${guildId}/tickets` },
     { name: 'Photo Contest', icon: Camera, path: `/config/${guildId}/photocontest` },
     { name: 'Giveaway', icon: Gift, path: `/config/${guildId}/giveaway` },
-    { name: 'Economia', icon: Coins, path: `/config/${guildId}/economy` },
     { name: 'Moderazione', icon: Gavel, path: `/config/${guildId}/moderation` },
-    { name: 'Anti Spam', icon: Shield, path: `/config/${guildId}/antispam` },
     { name: 'Temp Voice', icon: Mic2, path: `/config/${guildId}/tempvoice` },
     { name: 'Assistenza', icon: Mic2, path: `/config/${guildId}/support` },
     { name: 'FiveM', icon: Globe, path: `/config/${guildId}/fivem` },
-    { name: 'Audit Logs', icon: History, path: `/config/${guildId}/audit-logs` },
-    { name: 'Gestione', icon: Settings2, path: `/config/${guildId}/management` },
+    { name: 'Log & Gestione', icon: History, path: `/config/${guildId}/management` },
     { name: 'Embed Suite', icon: LayoutIcon, path: `/config/${guildId}/embeds` },
     { name: 'Auto Clear', icon: Cpu, path: `/config/${guildId}/autoclear` }
   ];
@@ -254,7 +273,10 @@ export default function Layout({ children, guildId }) {
                 <div className="status-dot"></div>
                 <span>Bot Online</span>
               </div>
-              <div className="header-actions">
+               <div className="header-actions">
+                  <button className="icon-action theme-toggle" onClick={toggleTheme} title={theme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}>
+                    {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+                  </button>
                  {!isGuideOpen && (
                    <button className="icon-action help-toggle" onClick={() => setIsGuideOpen(true)} title="Show Guide">
                      <HelpCircle size={18} strokeWidth={2} className="text-amber" />

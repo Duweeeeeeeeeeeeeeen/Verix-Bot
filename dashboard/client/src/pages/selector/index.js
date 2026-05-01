@@ -75,7 +75,7 @@ export default function Selector() {
         </div>
 
         <div style={{ flex: 1, marginTop: '8px' }}>
-          <h3 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'white', marginBottom: '4px' }}>{guild.name}</h3>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--text-main)', marginBottom: '4px' }}>{guild.name}</h3>
           <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: '600' }}>ID: {guild.id}</p>
         </div>
 
@@ -112,7 +112,7 @@ export default function Selector() {
             <img src="/logo.png" alt="Verix Logo" className="logo-img-p" />
             <div>
               <span className="portal-subtitle-p">Verix Portal</span>
-              <h1 className="portal-title-p">Seleziona un Server</h1>
+              <h1 className="portal-title-p" style={{ color: 'var(--text-main)' }}>Seleziona un Server</h1>
             </div>
           </div>
           
@@ -159,8 +159,8 @@ export default function Selector() {
                 <div style={{ padding: '8px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '10px', color: 'var(--success)' }}>
                   <Shield size={20} />
                 </div>
-                <h2 style={{ fontSize: '1.4rem', fontWeight: '850', color: 'white' }}>I Tuoi Regni Attivi</h2>
-                <div style={{ flex: 1, height: '1px', background: 'linear-gradient(to right, rgba(255,255,255,0.1), transparent)' }}></div>
+                <h2 style={{ fontSize: '1.4rem', fontWeight: '850', color: 'var(--text-main)' }}>I Tuoi Regni Attivi</h2>
+                <div style={{ flex: 1, height: '1px', background: 'linear-gradient(to right, var(--border), transparent)' }}></div>
               </div>
               <div className="selector-grid-p" style={{ marginTop: 0 }}>
                 {activeGuilds.map((guild, i) => (
@@ -199,7 +199,7 @@ export default function Selector() {
             marginTop: '40px'
           }}>
             <Search size={48} color="var(--text-muted)" style={{ marginBottom: '20px', opacity: 0.3 }} />
-            <h3 style={{ fontSize: '1.2rem', color: 'white', marginBottom: '8px' }}>Nessun server trovato</h3>
+            <h3 style={{ fontSize: '1.2rem', color: 'var(--text-main)', marginBottom: '8px' }}>Nessun server trovato</h3>
             <p style={{ color: 'var(--text-muted)' }}>Prova a cambiare i filtri o il termine di ricerca.</p>
           </div>
         )}

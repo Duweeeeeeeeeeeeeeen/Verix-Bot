@@ -70,7 +70,7 @@ export default function Home() {
             <div className="step-badge" style={{ marginBottom: '24px' }}>
               <Rocket size={14} style={{ marginRight: '8px' }} /> Verix Bot v2.0
             </div>
-            <h1>Gestisci il tuo server Discord come un professionista</h1>
+            <h1 style={{ color: 'var(--text-main)' }}>Gestisci il tuo server Discord come un professionista</h1>
             <p>
               Whitelist, Ticket, Voice, Verify, Contest e molto altro — tutto racchiuso in una dashboard moderna e ultra-veloce.
             </p>
@@ -130,7 +130,7 @@ export default function Home() {
       {/* Features Grid */}
       <section className="landing-container-p features-section-p">
         <div style={{ textAlign: 'center', marginBottom: '80px' }}>
-          <h2 style={{ fontSize: '2.5rem', marginBottom: '16px', color: 'white' }}>Tutto quello che ti serve in un unico posto</h2>
+          <h2 style={{ fontSize: '2.5rem', marginBottom: '16px', color: 'var(--text-main)' }}>Tutto quello che ti serve in un unico posto</h2>
           <p style={{ color: 'var(--text-dim)', maxWidth: '600px', margin: '0 auto' }}>
             Dimentica i bot frammentati. Verix consolida le funzionalità più richieste in un'unica piattaforma potente e facile da usare.
           </p>
@@ -153,7 +153,7 @@ export default function Home() {
       <footer className="landing-container-p" style={{ padding: '80px 0', borderTop: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '24px' }}>
           <img src="/logo.png" alt="Verix" style={{ width: '40px' }} />
-          <span style={{ fontWeight: '800', fontSize: '1.2rem', color: 'white' }}>Verix Bot</span>
+          <span style={{ fontWeight: '800', fontSize: '1.2rem', color: 'var(--text-main)' }}>Verix Bot</span>
         </div>
         <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
           &copy; {new Date().getFullYear()} Verix Team. Gestisci il tuo server con stile.

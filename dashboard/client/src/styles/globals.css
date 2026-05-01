@@ -2,20 +2,48 @@
   --primary: #6366f1;
   --primary-rgb: 99, 102, 241;
   --primary-glow: 0 0 15px rgba(99, 102, 241, 0.4);
+  
+  /* Dark Theme (Default) */
   --bg-dark: #020617;
+  --bg-sidebar: #05070a;
   --bg-card: #0a0c14;
+  --bg-header: rgba(15, 23, 42, 0.6);
+  --bg-input: #020617;
+  
   --text-main: #f8fafc;
   --text-dim: #94a3b8;
   --text-muted: #64748b;
+  --text-on-primary: #ffffff;
+  
   --border: rgba(255, 255, 255, 0.06);
-  --border-strong: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.12);
   --glass-border: rgba(255, 255, 255, 0.05);
+  
   --success: #10b981;
   --error: #ef4444;
   --warning: #f59e0b;
   --shadow-premium: 0 20px 40px rgba(0, 0, 0, 0.4);
   --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-bounce: 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.light-theme {
+  --bg-dark: #f8fafc;
+  --bg-sidebar: #ffffff;
+  --bg-card: #ffffff;
+  --bg-header: rgba(255, 255, 255, 0.7);
+  --bg-input: #f1f5f9;
+  
+  --text-main: #0f172a;
+  --text-dim: #334155;
+  --text-muted: #64748b;
+  --text-on-primary: #ffffff;
+  
+  --border: rgba(0, 0, 0, 0.08);
+  --border-strong: rgba(0, 0, 0, 0.15);
+  --glass-border: rgba(0, 0, 0, 0.04);
+  
+  --shadow-premium: 0 15px 35px rgba(0, 0, 0, 0.08);
 }
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800;900&display=swap');
@@ -67,14 +95,14 @@ input::-webkit-clear-button {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(var(--primary-rgb), 0.2);
   border-radius: 10px;
   border: 2px solid transparent;
   background-clip: content-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(var(--primary-rgb), 0.4);
   border: 2px solid transparent;
   background-clip: content-box;
 }
@@ -121,7 +149,7 @@ h1, h2, h3, h4 {
 .sidebar {
   width: 240px;
   height: 100vh;
-  background: #05070a;
+  background: var(--bg-sidebar);
   border-right: 1px solid var(--glass-border);
   display: flex;
   flex-direction: column;
@@ -129,7 +157,7 @@ h1, h2, h3, h4 {
   flex-shrink: 0;
   transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-  box-shadow: 10px 0 50px rgba(0,0,0,0.2);
+  box-shadow: 10px 0 50px rgba(0,0,0,0.1);
 }
 
 .sidebar.collapsed {
@@ -141,7 +169,7 @@ h1, h2, h3, h4 {
   align-items: center;
   gap: 14px;
   padding: 32px 24px;
-  background: #05070a;
+  background: var(--bg-sidebar);
   z-index: 10;
   flex-shrink: 0;
   transition: padding 0.4s;
@@ -169,7 +197,7 @@ h1, h2, h3, h4 {
 .brand-text h2 { 
   font-size: 1.4rem; 
   font-weight: 850; 
-  color: white; 
+  color: var(--text-main); 
   line-height: 1.1;
   letter-spacing: -1px;
 }
@@ -266,7 +294,7 @@ h1, h2, h3, h4 {
   top: 42px;
   width: 24px;
   height: 24px;
-  background: #0f172a;
+  background: var(--bg-sidebar);
   border: 1px solid var(--border-strong);
   border-radius: 6px;
   display: flex;
@@ -276,7 +304,7 @@ h1, h2, h3, h4 {
   cursor: pointer;
   z-index: 110;
   transition: 0.3s;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
 .btn-collapse:hover {
@@ -289,7 +317,7 @@ h1, h2, h3, h4 {
 .sidebar-footer {
   padding: 24px 12px;
   border-top: 1px solid var(--glass-border);
-  background: #05070a;
+  background: var(--bg-sidebar);
 }
 
 .user-mini-card {
@@ -324,7 +352,7 @@ h1, h2, h3, h4 {
 .user-info .name {
   font-weight: 700;
   font-size: 0.85rem;
-  color: white;
+  color: var(--text-main);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -380,7 +408,7 @@ h1, h2, h3, h4 {
   top: 24px;
   margin: 0 24px;
   height: 64px;
-  background: rgba(15, 23, 42, 0.6);
+  background: var(--bg-header);
   backdrop-filter: blur(20px);
   border: 1px solid var(--glass-border);
   border-radius: 18px;
@@ -389,7 +417,7 @@ h1, h2, h3, h4 {
   justify-content: space-between;
   padding: 0 24px;
   z-index: 120;
-  box-shadow: 0 4px 30px rgba(0,0,0,0.2);
+  box-shadow: var(--shadow-premium);
 }
 
 .header-left { display: flex; align-items: center; gap: 16px; }
@@ -588,9 +616,9 @@ h1, h2, h3, h4 {
 
 /* Input Fields */
 .input, .select {
-  background: #020617;
+  background: var(--bg-input);
   border: 1px solid var(--border);
-  color: white;
+  color: var(--text-main);
   padding: 12px 16px;
   border-radius: 12px;
   width: 100%;
