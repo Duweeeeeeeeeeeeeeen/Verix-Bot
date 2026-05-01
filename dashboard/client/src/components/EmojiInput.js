@@ -74,9 +74,10 @@ export default function EmojiInput({ value, onChange, placeholder, className, st
                         style={{ 
                             width: '100%', 
                             height: '100%', 
-                            background: 'rgba(255,255,255,0.05)', 
+                            background: 'var(--bg-input)', 
                             border: '1px solid var(--border)', 
                             borderRadius: '10px',
+                            color: 'var(--text-main)',
                             fontSize: '1.2rem',
                             cursor: 'pointer',
                             display: 'flex',
@@ -129,7 +130,7 @@ export default function EmojiInput({ value, onChange, placeholder, className, st
                     border: '1px solid var(--border-strong)'
                 }}>
                     <EmojiPicker 
-                        theme={Theme.DARK} 
+                        theme={typeof document !== 'undefined' && document.body.classList.contains('light-theme') ? Theme.LIGHT : Theme.DARK} 
                         onEmojiClick={handleEmojiClick}
                         autoFocusSearch={false}
                         lazyLoadEmojis={true}

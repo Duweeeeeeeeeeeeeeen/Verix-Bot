@@ -85,7 +85,7 @@ export default function Selector() {
           alignItems: 'center', 
           justifyContent: 'space-between',
           paddingTop: '16px',
-          borderTop: '1px solid rgba(255,255,255,0.05)'
+          borderTop: '1px solid var(--border)'
         }}>
           <span style={{ 
             fontSize: '0.8rem', 
@@ -174,11 +174,11 @@ export default function Selector() {
           {(filter === 'all' || filter === 'missing') && pendingGuilds.length > 0 && (
             <section>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-                <div style={{ padding: '8px', background: 'rgba(255, 255, 255, 0.05)', borderRadius: '10px', color: 'var(--text-muted)' }}>
+                <div style={{ padding: '8px', background: 'var(--bg-badge)', borderRadius: '10px', color: 'var(--text-muted)' }}>
                   <Server size={20} />
                 </div>
                 <h2 style={{ fontSize: '1.4rem', fontWeight: '850', color: 'var(--text-muted)' }}>Configura Nuovi Server</h2>
-                <div style={{ flex: 1, height: '1px', background: 'linear-gradient(to right, rgba(255,255,255,0.05), transparent)' }}></div>
+                <div style={{ flex: 1, height: '1px', background: 'linear-gradient(to right, var(--border), transparent)' }}></div>
               </div>
               <div className="selector-grid-p" style={{ marginTop: 0 }}>
                 {pendingGuilds.map((guild, i) => (
@@ -193,7 +193,7 @@ export default function Selector() {
           <div style={{ 
             textAlign: 'center', 
             padding: '100px 0', 
-            background: 'rgba(255,255,255,0.02)', 
+            background: 'var(--bg-badge)', 
             borderRadius: '24px',
             border: '1px dashed var(--border)',
             marginTop: '40px'

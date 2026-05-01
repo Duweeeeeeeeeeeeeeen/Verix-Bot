@@ -318,16 +318,16 @@ export default function SupportConfig() {
       </div>
 
       <style jsx>{`
-          .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: rgba(255,255,255,0.02); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
+          .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-badge); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
           .header-info { display: flex; align-items: center; gap: 16px; }
-          .header-icon { width: 48px; height: 48px; background: rgba(241, 196, 15, 0.1); color: #f1c40f; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-          .header-text h1 { font-size: 1.5rem; margin-bottom: 2px; }
+          .header-icon { width: 48px; height: 48px; background: var(--primary-glow); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+          .header-text h1 { font-size: 1.5rem; margin-bottom: 2px; color: var(--text-main); }
           .header-text p { font-size: 0.85rem; color: var(--text-muted); }
           
-          .tab-navigation { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 32px; padding: 6px; background: #070912; border-radius: 14px; border: 1px solid var(--border); }
+          .tab-navigation { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 32px; padding: 6px; background: var(--bg-sidebar-alt); border-radius: 14px; border: 1px solid var(--border); }
           .tab-link { display: flex; align-items: center; gap: 10px; padding: 10px 18px; border: none; background: transparent; color: var(--text-muted); font-size: 0.85rem; font-weight: 600; border-radius: 10px; cursor: pointer; transition: 0.2s; }
-          .tab-link:hover { color: white; background: rgba(255,255,255,0.03); }
-          .tab-link.active { color: white; background: var(--bg-card); box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
+          .tab-link:hover { color: var(--text-main); background: var(--bg-badge); }
+          .tab-link.active { color: var(--text-main); background: var(--bg-card); box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
 
           .config-grid { display: grid; grid-template-columns: 1fr 300px; gap: 24px; }
           .grid-left { display: flex; flex-direction: column; gap: 24px; }
@@ -336,7 +336,7 @@ export default function SupportConfig() {
           .fields-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
           .field-box { display: flex; flex-direction: column; gap: 8px; }
           
-          .toggle-box { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border); }
+          .toggle-box { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: var(--bg-badge); border-radius: 12px; border: 1px solid var(--border); }
           .flex-col { display: flex; flex-direction: column; }
           
           .stat-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }

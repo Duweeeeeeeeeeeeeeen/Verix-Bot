@@ -214,16 +214,16 @@ export default function TempVoiceConfig() {
       </div>
 
       <style jsx>{`
-            .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: rgba(255,255,255,0.02); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
+            .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-badge); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
             .header-info { display: flex; align-items: center; gap: 16px; }
-            .header-icon { width: 48px; height: 48px; background: rgba(129, 140, 248, 0.1); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-            .header-text h1 { font-size: 1.5rem; margin-bottom: 2px; }
+            .header-icon { width: 48px; height: 48px; background: var(--primary-glow); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+            .header-text h1 { font-size: 1.5rem; margin-bottom: 2px; color: var(--text-main); }
             .header-text p { font-size: 0.85rem; color: var(--text-muted); }
             
-            .tab-navigation { display: flex; gap: 8px; margin-bottom: 32px; padding: 6px; background: #070912; border-radius: 14px; border: 1px solid var(--border); width: fit-content; }
+            .tab-navigation { display: flex; gap: 8px; margin-bottom: 32px; padding: 6px; background: var(--bg-sidebar-alt); border-radius: 14px; border: 1px solid var(--border); width: fit-content; }
             .tab-link { display: flex; align-items: center; gap: 10px; padding: 10px 18px; border: none; background: transparent; color: var(--text-muted); font-size: 0.85rem; font-weight: 600; border-radius: 10px; cursor: pointer; transition: 0.2s; }
-            .tab-link:hover { color: white; background: rgba(255,255,255,0.03); }
-            .tab-link.active { color: white; background: var(--bg-card); box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
+            .tab-link:hover { color: var(--text-main); background: var(--bg-badge); }
+            .tab-link.active { color: var(--text-main); background: var(--bg-card); box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
 
             .config-grid-v { display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
             .fields-grid-v { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
@@ -231,8 +231,8 @@ export default function TempVoiceConfig() {
             
             .toggle-mini { position: relative; display: inline-block; width: 34px; height: 18px; }
             .toggle-mini input { opacity: 0; width: 0; height: 0; }
-            .slider-mini { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #334155; transition: .3s; border-radius: 18px; }
-            .slider-mini:before { position: absolute; content: ""; height: 12px; width: 12px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
+            .slider-mini { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--bg-sidebar-alt); transition: .3s; border-radius: 18px; border: 1px solid var(--border); }
+            .slider-mini:before { position: absolute; content: ""; height: 10px; width: 10px; left: 3px; bottom: 3px; background-color: var(--text-main); transition: .3s; border-radius: 50%; }
             input:checked + .slider-mini { background-color: var(--primary); }
             input:checked + .slider-mini:before { transform: translateX(16px); }
 

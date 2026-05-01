@@ -298,33 +298,33 @@ export default function VoiceConfig() {
       </div>
 
       <style jsx>{`
-            .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: rgba(255,255,255,0.02); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
+            .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-badge); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
             .header-info { display: flex; align-items: center; gap: 16px; }
-            .header-icon { width: 48px; height: 48px; background: rgba(129, 140, 248, 0.1); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-            .header-text h1 { font-size: 1.5rem; margin-bottom: 2px; }
+            .header-icon { width: 48px; height: 48px; background: var(--primary-glow); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+            .header-text h1 { font-size: 1.5rem; margin-bottom: 2px; color: var(--text-main); }
             .header-text p { font-size: 0.85rem; color: var(--text-muted); }
             
-            .tab-navigation { display: flex; gap: 8px; margin-bottom: 32px; padding: 6px; background: #070912; border-radius: 14px; border: 1px solid var(--border); width: fit-content; }
+            .tab-navigation { display: flex; gap: 8px; margin-bottom: 32px; padding: 6px; background: var(--bg-sidebar-alt); border-radius: 14px; border: 1px solid var(--border); width: fit-content; }
             .tab-link { display: flex; align-items: center; gap: 10px; padding: 10px 18px; border: none; background: transparent; color: var(--text-muted); font-size: 0.85rem; font-weight: 600; border-radius: 10px; cursor: pointer; transition: 0.2s; }
-            .tab-link:hover { color: white; background: rgba(255,255,255,0.03); }
-            .tab-link.active { color: white; background: var(--bg-card); box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
+            .tab-link:hover { color: var(--text-main); background: var(--bg-badge); }
+            .tab-link.active { color: var(--text-main); background: var(--bg-card); box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
 
             .config-grid-v { display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
             .status-row-v { display: flex; justify-content: space-between; align-items: center; }
-            .status-icon-v { width: 40px; height: 40px; background: #1e293b; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--text-dim); border: 1px solid var(--border); }
-            .status-icon-v.on { color: var(--primary); background: rgba(129, 140, 248, 0.1); border-color: rgba(129, 140, 248, 0.2); }
+            .status-icon-v { width: 40px; height: 40px; background: var(--bg-status-box); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--text-dim); border: 1px solid var(--border); }
+            .status-icon-v.on { color: var(--primary); background: var(--primary-glow); border-color: var(--primary); }
 
             .fields-grid-v { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
             .toggle-item-v { display: flex; justify-content: space-between; align-items: center; }
 
             .buttons-editor-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
-            .btn-edit-box { padding: 16px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 12px; }
+            .btn-edit-box { padding: 16px; background: var(--bg-badge); border: 1px solid var(--border); border-radius: 12px; }
             .btn-label-tag { font-size: 0.65rem; font-weight: 800; color: var(--text-dim); margin-bottom: 12px; }
 
             .embed-selector-v { display: flex; gap: 8px; flex-wrap: wrap; }
             .selector-btn { padding: 8px 14px; background: transparent; border: 1px solid var(--border); border-radius: 8px; color: var(--text-muted); font-size: 0.8rem; cursor: pointer; transition: 0.2s; text-transform: capitalize; }
-            .selector-btn:hover { color: white; border-color: var(--text-dim); }
-            .selector-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+            .selector-btn:hover { color: var(--text-main); border-color: var(--text-dim); }
+            .selector-btn.active { background: var(--primary); color: var(--text-main); border-color: var(--primary); }
 
             .align-center { display: flex; align-items: center; gap: 10px; }
             @media (max-width: 1000px) { .config-grid-v { grid-template-columns: 1fr; } }

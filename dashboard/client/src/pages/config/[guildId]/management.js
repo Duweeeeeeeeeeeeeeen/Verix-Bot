@@ -114,11 +114,11 @@ export default function ManagementPage() {
   };
 
   const getActionInfo = (action) => {
-    if (action.startsWith('UPDATE')) return { icon: RefreshCcw, color: '#6366f1', label: 'Aggiornamento' };
-    if (action.startsWith('CREATE')) return { icon: PlusCircle, color: '#22c55e', label: 'Creazione' };
-    if (action.startsWith('DELETE')) return { icon: Trash2, color: '#ef4444', label: 'Eliminazione' };
-    if (action.startsWith('RESET')) return { icon: XCircle, color: '#f59e0b', label: 'Reset' };
-    if (action.startsWith('SEND')) return { icon: Send, color: '#a855f7', label: 'Invio' };
+    if (action.startsWith('UPDATE')) return { icon: RefreshCcw, color: 'var(--primary)', label: 'Aggiornamento' };
+    if (action.startsWith('CREATE')) return { icon: PlusCircle, color: 'var(--success)', label: 'Creazione' };
+    if (action.startsWith('DELETE')) return { icon: Trash2, color: 'var(--error)', label: 'Eliminazione' };
+    if (action.startsWith('RESET')) return { icon: XCircle, color: 'var(--warning)', label: 'Reset' };
+    if (action.startsWith('SEND')) return { icon: Send, color: 'var(--info)', label: 'Invio' };
     return { icon: FileText, color: 'var(--text-dim)', label: 'Azione' };
   };
 
@@ -340,9 +340,99 @@ export default function ManagementPage() {
           )}
 
           {userData && !loading && (
+            <div className="user-profile card animate fade-in">
+              <div className="profile-main">
+                <div className="avatar-placeholder">
+                  <User size={32} />
+                </div>
+                <div className="profile-info">
+                  <div className="name-badge-row">
+                    <h2>{userData.user?.username || 'Utente'}</h2>
+                    <span className="id-badge">{userData.user?.discordId}</span>
+                  </div>
+                  <p className="text-dim">Profilo Amministrativo & Cronologia Attività</p>
+                </div>
+                <button className="btn-reset" onClick={handleResetAll}>
+                  <RefreshCcw size={18} />
+                  <span>Reset Totale</span>
+                </button>
+              </div>
+
+              <div className="cooldowns-row">
+                <div className="cooldown-item">
+                  <ShieldCheck size={18} />
+                  <span>Whitelist: {userData.whitelist?.status || 'Non Registrato'}</span>
+                </div>
+                <div className="cooldown-item">
+                  <Mic2 size={18} />
+                  <span>Background: {userData.background?.status || 'Non Presente'}</span>
+                </div>
+                <div className="cooldown-item">
+                  <Clock size={18} />
+                  <span>Cooldown: {userData.cooldowns?.some(c => new Date(c.endsAt) > new Date()) ? 'Attivo' : 'Nessuno'}</span>
+                </div>
+              </div>
+
+              <div className="records-grid">
+                <section className="record-section card">
+                  <div className="section-header">
+                    <ShieldCheck size={20} style={{ color: 'var(--success)' }} />
+                    <h3>Richieste Whitelist</h3>
+                    <span className="count">{userData.whitelist?.history?.length || 0}</span>
+                  </div>
+                  <div className="records-list">
+                    {userData.whitelist?.history?.length > 0 ? (
+                      userData.whitelist.history.map((h, i) => (
+                        <div key={i} className="record-item">
+                          <div className="item-info">
+                            <span className={`status-pill ${h.status?.toLowerCase()}`}>{h.status}</span>
+                            <span className="date-text">{new Date(h.timestamp).toLocaleDateString('it-IT')}</span>
+                          </div>
+                          <button className="btn-remove-premium" onClick={() => handleDelete('whitelist', h._id)}>
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="no-records">
+                        <p>Nessun record whitelist trovato</p>
+                      </div>
+                    )}
+                  </div>
+                </section>
+
+                <section className="record-section card">
+                  <div className="section-header">
+                    <BookOpen size={20} style={{ color: 'var(--info)' }} />
+                    <h3>Background Story</h3>
+                    <span className="count">{userData.background?.history?.length || 0}</span>
+                  </div>
+                  <div className="records-list">
+                    {userData.background?.history?.length > 0 ? (
+                      userData.background.history.map((h, i) => (
+                        <div key={i} className="record-item">
+                          <div className="item-info">
+                            <span className="status-pill blue">{h.status || 'SUBMITTED'}</span>
+                            <span className="date-text">{new Date(h.timestamp).toLocaleDateString('it-IT')}</span>
+                          </div>
+                          <button className="btn-remove-premium" onClick={() => handleDelete('background', h._id)}>
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="no-records">
+                        <p>Nessun background trovato</p>
+                      </div>
+                    )}
+                  </div>
+                </section>
+              </div>
             </div>
-          ) : (
-            <div className="logs-tab-content animate fade-in">
+          )}
+        </div>
+      ) : (
+        <div className="logs-tab-content animate fade-in">
                 <section className="card log-container-hub">
                     <div className="log-filters-row">
                         <Search size={18} className="search-icon-p" />
@@ -439,7 +529,7 @@ export default function ManagementPage() {
         .user-list-sidebar {
           display: flex;
           flex-direction: column;
-          background: #070912;
+          background: var(--bg-sidebar-alt);
           border-radius: 20px;
           border: 1px solid var(--border);
           overflow: hidden;
@@ -472,7 +562,7 @@ export default function ManagementPage() {
           position: relative;
           display: flex;
           align-items: center;
-          background: rgba(255,255,255,0.03);
+          background: var(--bg-badge);
           border: 1px solid var(--border);
           border-radius: 12px;
           padding: 0 14px;
@@ -480,7 +570,7 @@ export default function ManagementPage() {
         .sidebar-search input {
           background: transparent;
           border: none;
-          color: white;
+          color: var(--text-main);
           padding: 12px 10px;
           font-size: 0.85rem;
           outline: none;
@@ -513,13 +603,13 @@ export default function ManagementPage() {
           width: 100%;
           color: var(--text-muted);
         }
-        .user-list-item:hover { background: rgba(255,255,255,0.03); color: white; }
+        .user-list-item:hover { background: var(--bg-badge); color: var(--text-main); }
         .user-list-item.active { 
           background: var(--primary-glow); 
-          border-color: var(--primary-light); 
-          color: white; 
+          border-color: var(--primary); 
+          color: var(--text-main); 
         }
-        .user-list-item.active .user-avatar { background: var(--primary); color: white; }
+        .user-list-item.active .user-avatar { background: var(--primary); color: var(--text-main); }
         .user-list-item.active .arrow { opacity: 1; transform: translateX(0); }
 
         .user-avatar {
@@ -556,31 +646,31 @@ export default function ManagementPage() {
           justify-content: space-between;
           align-items: center;
           padding: 24px 32px;
-          background: #070912;
+          background: var(--bg-sidebar-alt);
           border-radius: 20px;
           border: 1px solid var(--border);
           gap: 32px;
         }
 
-        .tab-navigation { display: flex; gap: 8px; background: rgba(0,0,0,0.2); padding: 4px; border-radius: 12px; border: 1px solid var(--border); }
+        .tab-navigation { display: flex; gap: 8px; background: var(--bg-badge); padding: 4px; border-radius: 12px; border: 1px solid var(--border); }
         .tab-btn { display: flex; align-items: center; gap: 8px; padding: 8px 16px; border: none; background: transparent; color: var(--text-dim); font-size: 0.85rem; font-weight: 600; border-radius: 8px; cursor: pointer; transition: 0.2s; }
-        .tab-btn:hover { color: white; background: rgba(255,255,255,0.02); }
-        .tab-btn.active { background: var(--primary); color: white; }
+        .tab-btn:hover { color: var(--text-main); background: var(--bg-badge); }
+        .tab-btn.active { background: var(--primary); color: var(--text-main); }
 
         .search-box-v3 {
           display: flex;
           gap: 12px;
           margin-bottom: 24px;
         }
-        .search-box-v3 .search-input { flex: 1; background: #070912; border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px; color: white; outline: none; }
-        .btn-search-p { background: var(--primary); color: white; border: none; padding: 0 24px; border-radius: 12px; font-weight: 700; cursor: pointer; }
+        .search-box-v3 .search-input { flex: 1; background: var(--bg-sidebar-alt); border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px; color: var(--text-main); outline: none; }
+        .btn-search-p { background: var(--primary); color: var(--text-main); border: none; padding: 0 24px; border-radius: 12px; font-weight: 700; cursor: pointer; }
 
         /* Logs Hub styles */
         .log-container-hub { padding: 0 !important; overflow: hidden; }
-        .log-filters-row { display: flex; align-items: center; gap: 12px; padding: 12px 20px; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.2); }
-        .transparent-input { background: transparent; border: none; flex: 1; color: white; font-size: 0.85rem; outline: none; }
+        .log-filters-row { display: flex; align-items: center; gap: 12px; padding: 12px 20px; border-bottom: 1px solid var(--border); background: var(--bg-badge); }
+        .transparent-input { background: transparent; border: none; flex: 1; color: var(--text-main); font-size: 0.85rem; outline: none; }
         .log-actions { display: flex; gap: 8px; }
-        .btn-danger-mini { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; cursor: pointer; }
+        .btn-danger-mini { background: var(--bg-badge); color: var(--error); border: 1px solid var(--border); padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; cursor: pointer; }
         .btn-refresh-p { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-dim); width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
         
         .log-table-wrapper { overflow-x: auto; }
@@ -588,16 +678,16 @@ export default function ManagementPage() {
         .log-table th { text-align: left; padding: 12px 20px; font-size: 0.65rem; text-transform: uppercase; color: var(--text-dim); border-bottom: 1px solid var(--border); }
         .log-table td { padding: 12px 20px; border-bottom: 1px solid var(--border); font-size: 0.8rem; }
         
-        .log-row-p:hover { background: rgba(255,255,255,0.01); }
+        .log-row-p:hover { background: var(--bg-badge); }
         .admin-badge-p { display: flex; align-items: center; gap: 6px; color: var(--text-muted); font-weight: 600; }
         .action-cell-p { display: flex; flex-direction: column; gap: 2px; }
         .action-tag { font-size: 0.6rem; font-weight: 900; text-transform: uppercase; padding-left: 6px; }
         
         .view-btn-p { background: transparent; border: 1px solid var(--border); color: var(--text-dim); padding: 6px; border-radius: 6px; cursor: pointer; }
-        .view-btn-p.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .view-btn-p.active { background: var(--primary); color: var(--text-main); border-color: var(--primary); }
         
-        .json-diff-p { padding: 16px; background: #020617; }
-        .json-diff-p pre { margin: 0; font-size: 0.75rem; color: #a5b4fc; font-family: monospace; overflow-x: auto; }
+        .json-diff-p { padding: 16px; background: var(--bg-dark); }
+        .json-diff-p pre { margin: 0; font-size: 0.75rem; color: var(--primary); font-family: monospace; overflow-x: auto; }
         
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .spin { animation: spin 1s linear infinite; }
@@ -611,8 +701,9 @@ export default function ManagementPage() {
           justify-content: center;
           padding: 100px 40px;
           text-align: center;
-          background: rgba(255,255,255,0.01);
-          border-style: dashed;
+          background: var(--bg-badge);
+          border: 2px dashed var(--border);
+          border-radius: 24px;
         }
         .pulse-icon {
           width: 80px;
@@ -651,9 +742,9 @@ export default function ManagementPage() {
         .text-dim { font-size: 0.85rem; color: var(--text-dim); }
 
         .btn-reset {
-          background: rgba(239, 68, 68, 0.1);
-          color: #ef4444;
-          border: 1px solid rgba(239, 68, 68, 0.2);
+          background: var(--bg-badge);
+          color: var(--error);
+          border: 1px solid var(--border);
           padding: 10px 20px;
           border-radius: 12px;
           font-weight: 700;
@@ -663,7 +754,7 @@ export default function ManagementPage() {
           gap: 10px;
           transition: 0.2s;
         }
-        .btn-reset:hover { background: #ef4444; color: white; }
+        .btn-reset:hover { background: var(--error); color: var(--text-on-primary); }
 
         .cooldowns-row {
           display: grid;
@@ -673,7 +764,7 @@ export default function ManagementPage() {
           border-top: 1px solid var(--border);
         }
         .cooldown-item {
-          background: rgba(255,255,255,0.02);
+          background: var(--bg-badge);
           padding: 14px 20px;
           border-radius: 14px;
           display: flex;
@@ -700,20 +791,19 @@ export default function ManagementPage() {
           justify-content: space-between;
           align-items: center;
           padding: 12px 16px;
-          background: rgba(255,255,255,0.02);
+          background: var(--bg-badge);
           border-radius: 10px;
-          border: 1px solid var(--border-light);
+          border: 1px solid var(--border);
         }
         .item-info { display: flex; align-items: center; gap: 12px; }
         .status-pill { font-size: 0.65rem; font-weight: 900; padding: 2px 8px; border-radius: 5px; text-transform: uppercase; }
-        .status-pill.accepted { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
-        .status-pill.rejected { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
-        .status-pill.blue { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
-        .status-pill.pending { background: rgba(129, 140, 248, 0.1); color: var(--primary); }
+        .status-pill.accepted { background: var(--primary-glow); color: var(--success); }
+        .status-pill.rejected { background: var(--primary-glow); color: var(--error); }
+        .status-pill.blue { background: var(--primary-glow); color: var(--info); }
+        .status-pill.pending { background: var(--primary-glow); color: var(--primary); }
 
         .date-text { font-size: 0.8rem; color: var(--text-dim); font-family: monospace; }
-        .btn-delete-mini { background: transparent; border: none; padding: 6px; border-radius: 6px; color: var(--text-dim); transition: 0.2s; }
-        .btn-delete-mini:hover { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+        .btn-delete-mini:hover { background: var(--hover-bg); color: var(--error); }
 
         .no-records { padding: 30px; text-align: center; color: var(--text-dim); opacity: 0.5; }
         .no-records p { font-size: 0.85rem; margin-top: 8px; }

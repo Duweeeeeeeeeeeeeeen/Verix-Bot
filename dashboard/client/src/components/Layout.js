@@ -326,12 +326,12 @@ export default function Layout({ children, guildId }) {
 
         .main-content {
           flex: 1;
-          min-width: 0; /* CRITICAL: prevent content from pushing sidebars */
+          min-width: 0;
           height: 100vh;
           overflow-y: auto;
           overflow-x: hidden;
           position: relative;
-          background: var(--bg-dark);
+          background: var(--bg-main);
         }
 
         .content-container {
@@ -345,7 +345,7 @@ export default function Layout({ children, guildId }) {
           position: relative;
         }
 
-        .text-amber { color: #f59e0b; }
+        .text-amber { color: var(--warning); }
 
         .dot-pulse {
           position: absolute;
@@ -353,9 +353,9 @@ export default function Layout({ children, guildId }) {
           right: 4px;
           width: 6px;
           height: 6px;
-          background: #f59e0b;
+          background: var(--warning);
           border-radius: 50%;
-          box-shadow: 0 0 8px #f59e0b;
+          box-shadow: 0 0 8px var(--warning);
           animation: pulse 2s infinite;
         }
 
@@ -410,7 +410,7 @@ export default function Layout({ children, guildId }) {
           width: 100%;
           height: 100%;
           border-radius: 8px;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
 
         .activity-orbit {

@@ -103,7 +103,7 @@ export default function GuildHome() {
       {/* Modern Header */}
       <header className="module-header-v2">
          <div className="header-info-p">
-            <div className="header-icon-p">
+            <div className="header-icon-p" style={{ background: 'var(--primary-glow)', color: 'var(--primary)' }}>
               <Box size={24} />
             </div>
             <div className="header-text-p">
@@ -158,17 +158,17 @@ export default function GuildHome() {
               <div className="modules-list-p">
                   {[
                       { id: 'whitelist', label: 'Sistema Whitelist', desc: 'Gestione cittadini e orali.', icon: ShieldCheck, color: 'var(--primary)', config: config.whitelist },
-                      { id: 'tickets', label: 'Support Tickets', desc: 'Assistenza utenti via canali.', icon: Ticket, color: '#3b82f6', config: config.tickets },
+                      { id: 'tickets', label: 'Support Tickets', desc: 'Assistenza utenti via canali.', icon: Ticket, color: 'var(--info)', config: config.tickets },
                       { id: 'verify', label: 'Sistema Verifica', desc: 'Protezione entry e ruoli.', icon: Shield, color: 'var(--primary)', config: config.verify },
 
-                      { id: 'photocontest', label: 'Photo Contest', desc: 'Eventi e contest community.', icon: Camera, color: '#f59e0b', config: config.photocontest },
-                      { id: 'support', label: 'Assistenza Vocale', desc: 'Coda assistenza automatica.', icon: Mic2, color: '#f1c40f', config: config.support },
-                      { id: 'fivem', label: 'FiveM Status', desc: 'Tracking server di gioco.', icon: Globe, color: '#3b82f6', config: config.fivem },
+                      { id: 'photocontest', label: 'Photo Contest', desc: 'Eventi e contest community.', icon: Camera, color: 'var(--warning)', config: config.photocontest },
+                      { id: 'support', label: 'Assistenza Vocale', desc: 'Coda assistenza automatica.', icon: Mic2, color: 'var(--warning)', config: config.support },
+                      { id: 'fivem', label: 'FiveM Status', desc: 'Tracking server di gioco.', icon: Globe, color: 'var(--info)', config: config.fivem },
                       { id: 'welcome', label: 'Welcome & Leave', desc: 'Accoglienza nuovi membri.', icon: UserPlus, color: 'var(--primary)', config: config.welcome }
                   ].map(module => (
                       <div key={module.id} className="module-toggle-card">
                           <div className="m-card-info">
-                              <div className="m-card-icon" style={{ backgroundColor: `${module.color}15`, color: module.color }}>
+                              <div className="m-card-icon" style={{ backgroundColor: 'var(--primary-glow)', color: module.color }}>
                                   <module.icon size={24} />
                               </div>
                               <div className="m-card-text">
@@ -232,23 +232,23 @@ export default function GuildHome() {
       <style jsx>{`
           .module-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; padding: 0 4px; }
           .header-info-p { display: flex; align-items: center; gap: 16px; }
-          .header-icon-p { width: 44px; height: 44px; background: rgba(129, 140, 248, 0.1); color: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
-          .header-text-p h1 { font-size: 1.5rem; margin-bottom: 2px; }
+          .header-icon-p { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+          .header-text-p h1 { font-size: 1.5rem; margin-bottom: 2px; color: var(--text-main); }
           .header-text-p p { font-size: 0.85rem; color: var(--text-muted); }
-          .btn-outline-p { background: rgba(255,255,255,0.02); border: 1px solid var(--border); color: white; padding: 8px 16px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.8rem; font-weight: 700; transition: 0.2s; }
-          .btn-outline-p:hover { background: rgba(255,255,255,0.05); }
+          .btn-outline-p { background: var(--bg-badge); border: 1px solid var(--border); color: var(--text-main); padding: 8px 16px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 0.8rem; font-weight: 700; transition: 0.2s; }
+          .btn-outline-p:hover { background: var(--bg-badge); }
 
           .stats-grid-p { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 32px; }
           .stat-card-v2 { background: var(--bg-card); border: 1px solid var(--border); padding: 20px; border-radius: 16px; display: flex; align-items: center; gap: 16px; position: relative; transition: 0.2s; }
           .stat-card-v2:hover { border-color: var(--primary); transform: translateY(-2px); }
           .stat-icon-v2 { width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
-          .stat-icon-v2.indigo { background: rgba(129,140,248,0.1); color: var(--primary); }
-          .stat-icon-v2.amber { background: rgba(245,158,11,0.1); color: #f59e0b; }
-          .stat-icon-v2.rose { background: rgba(244,114,182,0.1); color: #f472b6; }
+          .stat-icon-v2.indigo { background: var(--primary-glow); color: var(--primary); }
+          .stat-icon-v2.amber { background: var(--primary-glow); color: var(--warning); }
+          .stat-icon-v2.rose { background: var(--primary-glow); color: var(--error); }
           .stat-data-v2 { display: flex; flex-direction: column; }
           .stat-label-v2 { font-size: 0.75rem; color: var(--text-muted); font-weight: 700; }
-          .stat-value-v2 { font-size: 1.4rem; font-weight: 800; color: white; }
-          .stat-trend-v2 { position: absolute; top: 16px; right: 16px; color: #10b981; opacity: 0.5; }
+          .stat-value-v2 { font-size: 1.4rem; font-weight: 800; color: var(--text-main); }
+          .stat-trend-v2 { position: absolute; top: 16px; right: 16px; color: var(--success); opacity: 0.5; }
 
           .dashboard-grid-p { display: grid; grid-template-columns: 1fr 300px; gap: 32px; }
           .section-title-p { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; color: var(--text-muted); }
@@ -259,20 +259,20 @@ export default function GuildHome() {
           .module-toggle-card:hover { border-color: var(--primary); background: rgba(255,255,255,0.01); }
           .m-card-info { display: flex; align-items: center; gap: 16px; }
           .m-card-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
-          .m-card-text h3 { font-size: 0.95rem; margin-bottom: 2px; }
+          .m-card-text h3 { font-size: 0.95rem; margin-bottom: 2px; color: var(--text-main); }
           .m-card-text p { font-size: 0.75rem; color: var(--text-muted); }
           .m-card-action { display: flex; align-items: center; gap: 12px; }
-          .spinner-s { width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.1); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+          .spinner-s { width: 14px; height: 14px; border: 2px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
 
           .nav-stack-p { display: flex; flex-direction: column; gap: 8px; }
           .nav-item-v2 { display: flex; align-items: center; justify-content: space-between; background: var(--bg-card); border: 1px solid var(--border); color: var(--text-muted); padding: 12px 16px; border-radius: 12px; cursor: pointer; font-size: 0.85rem; font-weight: 700; transition: 0.2s; }
-          .nav-item-v2:hover { background: rgba(255,255,255,0.03); color: white; border-color: var(--primary); transform: translateX(4px); }
+          .nav-item-v2:hover { background: rgba(255,255,255,0.03); color: var(--text-main); border-color: var(--primary); transform: translateX(4px); }
           .nav-arrow-v2 { opacity: 0.3; transition: 0.2s; }
           .nav-item-v2:hover .nav-arrow-v2 { color: var(--primary); opacity: 1; transform: translateX(2px); }
 
           .side-separator-p { height: 1px; background: var(--border); margin: 12px 0; }
-          .btn-danger-v2 { width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 12px; background: rgba(244, 63, 94, 0.05); color: var(--error); border: 1px solid rgba(244, 63, 94, 0.1); border-radius: 12px; cursor: pointer; font-size: 0.85rem; font-weight: 900; transition: 0.2s; }
-          .btn-danger-v2:hover { background: var(--error); color: white; }
+          .btn-danger-v2 { width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 12px; background: var(--bg-badge); color: var(--error); border: 1px solid var(--border); border-radius: 12px; cursor: pointer; font-size: 0.85rem; font-weight: 900; transition: 0.2s; }
+          .btn-danger-v2:hover { background: var(--error); color: var(--text-on-primary); }
 
           .error-container-p { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh; gap: 20px; text-align: center; }
 

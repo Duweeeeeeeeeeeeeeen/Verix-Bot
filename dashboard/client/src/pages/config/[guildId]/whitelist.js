@@ -452,7 +452,7 @@ export default function WhitelistConfig() {
                                     />
                                 </div>
                                 <div className="field-box" style={{ gridColumn: 'span 2' }}>
-                                    <div className="alert-box" style={{ background: 'rgba(99, 102, 241, 0.05)', borderColor: 'rgba(99, 102, 241, 0.2)' }}>
+                                <div className="alert-box" style={{ background: 'var(--primary-glow)', borderColor: 'var(--primary)' }}>
                                         <div className="flex-between w-full">
                                             <div className="align-center">
                                                 <Hash size={16} color="var(--primary)" />
@@ -587,11 +587,11 @@ export default function WhitelistConfig() {
                                 <label className="label-tiny">Stile Pulsante</label>
                                 <div className="style-selector-v">
                                     {[
-                                        { id: 'SUCCESS', label: 'Verde', color: '#22c55e' },
-                                        { id: 'PRIMARY', label: 'Blu', color: '#6366f1' },
-                                        { id: 'SECONDARY', label: 'Grigio', color: '#64748b' },
-                                        { id: 'DANGER', label: 'Rosso', color: '#ef4444' },
-                                        { id: 'LINK', label: 'Link 🔗', color: '#3b82f6' }
+                                        { id: 'SUCCESS', label: 'Verde', color: 'var(--discord-green)' },
+                                        { id: 'PRIMARY', label: 'Blu', color: 'var(--discord-blurple)' },
+                                        { id: 'SECONDARY', label: 'Grigio', color: 'var(--discord-gray)' },
+                                        { id: 'DANGER', label: 'Rosso', color: 'var(--discord-red)' },
+                                        { id: 'LINK', label: 'Link 🔗', color: 'var(--info)' }
                                     ].map(style => (
                                         <button 
                                             key={style.id}
@@ -623,11 +623,11 @@ export default function WhitelistConfig() {
                         <div className="fields-grid" style={{ marginTop: '16px' }}>
                             <div className="field-box">
                                 <label className="text-label">Colore Successo (Accettazione)</label>
-                                <input type="color" value={config.colors?.success || '#2ecc71'} onChange={e => setNested('colors.success', e.target.value)} />
+                                <input type="color" value={config.colors?.success || 'var(--success)'} onChange={e => setNested('colors.success', e.target.value)} />
                             </div>
                             <div className="field-box">
                                 <label className="text-label">Colore Rifiuto</label>
-                                <input type="color" value={config.colors?.danger || '#e74c3c'} onChange={e => setNested('colors.danger', e.target.value)} />
+                                <input type="color" value={config.colors?.danger || 'var(--error)'} onChange={e => setNested('colors.danger', e.target.value)} />
                             </div>
                         </div>
                     </section>
@@ -672,16 +672,16 @@ export default function WhitelistConfig() {
     </div>
 
       <style jsx>{`
-          .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: rgba(255,255,255,0.02); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
+          .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-badge); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
           .header-info { display: flex; align-items: center; gap: 16px; }
-          .header-icon { width: 48px; height: 48px; background: rgba(129, 140, 248, 0.1); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-          .header-text h1 { font-size: 1.5rem; margin-bottom: 2px; }
+          .header-icon { width: 48px; height: 48px; background: var(--primary-glow); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+          .header-text h1 { font-size: 1.5rem; margin-bottom: 2px; color: var(--text-main); }
           .header-text p { font-size: 0.85rem; color: var(--text-muted); }
           
-          .tab-navigation { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 32px; padding: 6px; background: #070912; border-radius: 14px; border: 1px solid var(--border); }
+          .tab-navigation { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 32px; padding: 6px; background: var(--bg-sidebar-alt); border-radius: 14px; border: 1px solid var(--border); }
           .tab-link { display: flex; align-items: center; gap: 10px; padding: 10px 18px; border: none; background: transparent; color: var(--text-muted); font-size: 0.85rem; font-weight: 600; border-radius: 10px; cursor: pointer; transition: 0.2s; }
-          .tab-link:hover { color: white; background: rgba(255,255,255,0.03); }
-          .tab-link.active { color: white; background: var(--bg-card); box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
+          .tab-link:hover { color: var(--text-main); background: var(--bg-badge); }
+          .tab-link.active { color: var(--text-main); background: var(--bg-card); box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
 
           .config-grid { display: grid; grid-template-columns: 1fr 300px; gap: 24px; }
           .grid-left { display: flex; flex-direction: column; gap: 24px; }
@@ -690,10 +690,10 @@ export default function WhitelistConfig() {
           .fields-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
           .field-box { display: flex; flex-direction: column; gap: 8px; }
           
-          .toggle-box { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border); }
+          .toggle-box { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: var(--bg-badge); border-radius: 12px; border: 1px solid var(--border); }
           .flex-col { display: flex; flex-direction: column; }
           
-          .q-badge { width: 32px; height: 32px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; fontWeight: bold; flex-shrink: 0; }
+          .q-badge { width: 32px; height: 32px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--text-main); fontWeight: bold; flex-shrink: 0; }
           
           .align-center { display: flex; align-items: center; gap: 10px; }
           @media (max-width: 1000px) { .config-grid { grid-template-columns: 1fr; } }

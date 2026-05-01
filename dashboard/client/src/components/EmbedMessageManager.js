@@ -256,13 +256,13 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
         }
 
         .slug-sidebar {
-          background: #0a0c14;
+          background: var(--bg-sidebar-alt);
           border: 1px solid var(--border);
           border-radius: 20px;
           overflow: hidden;
           position: sticky;
           top: 24px;
-          box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+          box-shadow: var(--shadow-premium);
         }
 
         .sidebar-header {
@@ -322,7 +322,7 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
           gap: 12px;
           font-weight: 700;
           font-size: 0.9rem;
-          color: white;
+          color: var(--text-main);
         }
 
         .group-icon-wrapper {
@@ -374,12 +374,12 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
 
         .slug-item-v2:hover {
           background: rgba(255,255,255,0.04);
-          color: white;
+          color: var(--text-main);
         }
 
         .slug-item-v2.active {
-          background: rgba(99, 102, 241, 0.08);
-          color: white;
+          background: rgba(var(--primary-rgb), 0.08);
+          color: var(--text-main);
         }
 
         .slug-dot {
@@ -463,11 +463,11 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
         }
 
         .editor-card-p {
-          background: #0a0c14;
+          background: var(--bg-card);
           border: 1px solid var(--border);
           border-radius: 24px;
           padding: 32px;
-          box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+          box-shadow: var(--shadow-premium);
         }
 
         .empty-manager-state {
@@ -493,7 +493,7 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
 
         .empty-manager-state h3 {
           font-size: 1.4rem;
-          color: white;
+          color: var(--text-main);
           margin-bottom: 8px;
         }
 

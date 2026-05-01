@@ -143,7 +143,7 @@ export default function GuidePage() {
         </section>
 
         <style jsx>{`
-            .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: rgba(255,255,255,0.02); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
+            .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-badge); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
             .header-info { display: flex; align-items: center; gap: 16px; }
             .header-icon { width: 48px; height: 48px; background: rgba(129, 140, 248, 0.1); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
             .header-text h1 { font-size: 1.5rem; margin-bottom: 2px; }
@@ -152,11 +152,11 @@ export default function GuidePage() {
             .guide-grid-p { display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
             
             .tags-grid-p { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
-            .tag-card-v2 { background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 16px; border-radius: 14px; display: flex; flex-direction: column; gap: 10px; transition: 0.2s; }
+            .tag-card-v2 { background: var(--bg-badge); border: 1px solid var(--border); padding: 16px; border-radius: 14px; display: flex; flex-direction: column; gap: 10px; transition: 0.2s; }
             .tag-card-v2:hover { border-color: var(--primary); transform: translateY(-2px); }
             .tag-p { color: var(--primary); font-weight: 800; font-family: monospace; background: rgba(129, 140, 248, 0.1); padding: 2px 6px; border-radius: 4px; font-size: 0.85rem; }
             .tag-desc-p { font-size: 0.8rem; color: var(--text-muted); }
-            .tag-example-p { font-size: 0.75rem; background: #020617; padding: 8px; border-radius: 6px; }
+            .tag-example-p { font-size: 0.75rem; background: var(--bg-dark); padding: 8px; border-radius: 6px; }
             .tag-example-p span { color: var(--text-dim); display: block; margin-bottom: 4px; font-size: 0.65rem; text-transform: uppercase; }
             .tag-example-p code { color: #10b981; }
 
@@ -166,10 +166,10 @@ export default function GuidePage() {
             .limit-row-p span { color: var(--text-muted); }
             
             .markdown-hints-p { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-            .markdown-hints-p code { background: #020617; border: 1px solid var(--border); padding: 6px; border-radius: 6px; font-size: 0.75rem; text-align: center; }
+            .markdown-hints-p code { background: var(--bg-dark); border: 1px solid var(--border); padding: 6px; border-radius: 6px; font-size: 0.75rem; text-align: center; }
 
             .preview-demo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
-            .mock-field-v2 { background: #020617; border: 1px solid var(--border); border-radius: 12px; padding: 16px; font-family: monospace; font-size: 0.85rem; color: var(--text-muted); margin-top: 10px; height: 100px; }
+            .mock-field-v2 { background: var(--bg-dark); border: 1px solid var(--border); border-radius: 12px; padding: 16px; font-family: monospace; font-size: 0.85rem; color: var(--text-muted); margin-top: 10px; height: 100px; }
             .embed-container-p { margin-top: 10px; }
 
             .align-center { display: flex; align-items: center; gap: 10px; }

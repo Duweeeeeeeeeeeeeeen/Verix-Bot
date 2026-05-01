@@ -269,10 +269,10 @@ export default function EmbedBuilder() {
       </div>
 
       <style jsx>{`
-            .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: rgba(255,255,255,0.02); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
+            .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-badge); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
             .header-info { display: flex; align-items: center; gap: 16px; }
-            .header-icon { width: 48px; height: 48px; background: rgba(129, 140, 248, 0.1); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-            .header-text h1 { font-size: 1.5rem; margin-bottom: 2px; }
+            .header-icon { width: 48px; height: 48px; background: var(--primary-glow); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+            .header-text h1 { font-size: 1.5rem; margin-bottom: 2px; color: var(--text-main); }
             .header-text p { font-size: 0.85rem; color: var(--text-muted); }
             .header-buttons { display: flex; align-items: center; gap: 12px; }
 
@@ -284,9 +284,9 @@ export default function EmbedBuilder() {
             .editor-card-s { padding: 0 !important; }
 
             .schedule-stack-s { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
-            .schedule-btn-s { display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: 10px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); color: var(--text-muted); font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: 0.2s; text-align: left; }
-            .schedule-btn-s:hover { background: rgba(255,255,255,0.04); color: white; }
-            .schedule-btn-s.active { background: rgba(129,140,248,0.1); border-color: var(--primary); color: white; }
+            .schedule-btn-s { display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: 10px; background: var(--bg-badge); border: 1px solid var(--border); color: var(--text-muted); font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: 0.2s; text-align: left; }
+            .schedule-btn-s:hover { background: var(--bg-sidebar-alt); color: var(--text-main); }
+            .schedule-btn-s.active { background: var(--primary-glow); border-color: var(--primary); color: var(--text-main); }
 
             .info-box-s { padding: 16px; display: flex; flex-direction: row; align-items: center; gap: 10px; font-size: 0.8rem; color: var(--text-muted); }
 

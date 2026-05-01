@@ -253,11 +253,11 @@ export default function VerifyConfig() {
                                             <label className="label-tiny">Stile Pulsante</label>
                                             <div className="style-selector-v">
                                                 {[
-                                                    { id: 'SUCCESS', label: 'Verde', color: '#22c55e' },
-                                                    { id: 'PRIMARY', label: 'Blu', color: '#6366f1' },
-                                                    { id: 'SECONDARY', label: 'Grigio', color: '#64748b' },
-                                                    { id: 'DANGER', label: 'Rosso', color: '#ef4444' },
-                                                    { id: 'LINK', label: 'Link 🔗', color: '#3b82f6' }
+                                                    { id: 'SUCCESS', label: 'Verde', color: 'var(--discord-green)' },
+                                                    { id: 'PRIMARY', label: 'Blu', color: 'var(--discord-blurple)' },
+                                                    { id: 'SECONDARY', label: 'Grigio', color: 'var(--discord-gray)' },
+                                                    { id: 'DANGER', label: 'Rosso', color: 'var(--discord-red)' },
+                                                    { id: 'LINK', label: 'Link 🔗', color: 'var(--discord-gray)' }
                                                 ].map(style => (
                                                     <button 
                                                         key={style.id}
@@ -307,16 +307,16 @@ export default function VerifyConfig() {
       </div>
 
         <style jsx>{`
-            .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: rgba(255,255,255,0.02); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
+            .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-badge); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
             .header-info { display: flex; align-items: center; gap: 16px; }
-            .header-icon { width: 48px; height: 48px; background: rgba(34, 197, 94, 0.1); color: #22c55e; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-            .header-text h1 { font-size: 1.5rem; margin-bottom: 2px; }
+            .header-icon { width: 48px; height: 48px; background: var(--primary-glow); color: var(--success); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+            .header-text h1 { font-size: 1.5rem; margin-bottom: 2px; color: var(--text-main); }
             .header-text p { font-size: 0.85rem; color: var(--text-muted); }
             
-            .tab-navigation { display: flex; gap: 8px; margin-bottom: 32px; padding: 6px; background: #070912; border-radius: 14px; border: 1px solid var(--border); width: fit-content; }
+            .tab-navigation { display: flex; gap: 8px; margin-bottom: 32px; padding: 6px; background: var(--bg-sidebar-alt); border-radius: 14px; border: 1px solid var(--border); width: fit-content; }
             .tab-link { display: flex; align-items: center; gap: 10px; padding: 10px 18px; border: none; background: transparent; color: var(--text-muted); font-size: 0.85rem; font-weight: 600; border-radius: 10px; cursor: pointer; transition: 0.2s; }
-            .tab-link:hover { color: white; background: rgba(255,255,255,0.03); }
-            .tab-link.active { color: white; background: var(--bg-card); box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
+            .tab-link:hover { color: var(--text-main); background: var(--bg-badge); }
+            .tab-link.active { color: var(--text-main); background: var(--bg-card); box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
 
             .config-grid { display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
             .grid-left { display: flex; flex-direction: column; gap: 24px; }
@@ -325,17 +325,17 @@ export default function VerifyConfig() {
             .field-box { display: flex; flex-direction: column; gap: 8px; }
             
             .toggle-list-v { display: flex; flex-direction: column; gap: 10px; }
-            .toggle-row-v { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid var(--border); font-size: 0.85rem; font-weight: 600; }
+            .toggle-row-v { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: var(--bg-badge); border-radius: 10px; border: 1px solid var(--border); font-size: 0.85rem; font-weight: 600; }
             
-            .info-warn-v { background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.1); display: flex; align-items: center; gap: 16px; padding: 20px; color: #ef4444; border-radius: 16px; }
+            .info-warn-v { background: var(--bg-badge); border: 1px solid var(--border); display: flex; align-items: center; gap: 16px; padding: 20px; color: var(--error); border-radius: 16px; }
             
-            .btn-config-card-v { background: rgba(255,255,255,0.015); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
+            .btn-config-card-v { background: var(--bg-badge); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
             .label-tiny { font-size: 0.65rem; text-transform: uppercase; color: var(--text-dim); font-weight: 800; margin-bottom: 8px; display: block; }
             
             .style-selector-v { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 4px; }
-            .style-btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 10px; cursor: pointer; transition: 0.2s; color: var(--text-dim); font-size: 0.8rem; font-weight: 600; }
-            .style-btn:hover { background: rgba(255,255,255,0.05); color: white; }
-            .style-btn.active { border-color: var(--primary); background: rgba(99, 102, 241, 0.05); color: white; }
+            .style-btn { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 10px; background: var(--bg-badge); border: 1px solid var(--border); border-radius: 10px; cursor: pointer; transition: 0.2s; color: var(--text-dim); font-size: 0.8rem; font-weight: 600; }
+            .style-btn:hover { background: var(--bg-badge); color: var(--text-main); }
+            .style-btn.active { border-color: var(--primary); background: var(--primary-glow); color: var(--text-main); }
             .style-btn .dot { width: 8px; height: 8px; border-radius: 50%; }
 
             .align-center { display: flex; align-items: center; gap: 10px; }

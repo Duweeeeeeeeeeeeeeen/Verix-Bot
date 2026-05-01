@@ -207,7 +207,7 @@ export default function UtilityConfig() {
         </div>
 
         <style jsx>{`
-            .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: rgba(255,255,255,0.02); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
+            .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-badge); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
             .header-info { display: flex; align-items: center; gap: 16px; }
             .header-icon { width: 48px; height: 48px; background: rgba(129, 140, 248, 0.1); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
             .header-text h1 { font-size: 1.5rem; margin-bottom: 2px; }
@@ -215,7 +215,7 @@ export default function UtilityConfig() {
             
             .status-section { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; margin-bottom: 24px; }
             .section-info { display: flex; align-items: center; gap: 16px; }
-            .status-box { width: 40px; height: 40px; background: #1e293b; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--text-dim); border: 1px solid var(--border); transition: 0.3s; }
+            .status-box { width: 40px; height: 40px; background: var(--bg-status-box); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--text-dim); border: 1px solid var(--border); transition: 0.3s; }
             .status-box.on { color: var(--primary); background: rgba(129, 140, 248, 0.1); border-color: rgba(129, 140, 248, 0.2); }
             .section-info h3 { font-size: 1rem; margin-bottom: 2px; }
 
@@ -225,7 +225,7 @@ export default function UtilityConfig() {
             .align-center { display: flex; align-items: center; gap: 10px; }
 
             .info-card-p { margin-top: 24px; background: rgba(129, 140, 248, 0.05); border: 1px solid rgba(129, 140, 248, 0.1); display: flex; align-items: center; gap: 16px; padding: 16px 24px; font-size: 0.9rem; color: var(--text-muted); }
-            .info-card-p code { background: rgba(0,0,0,0.2); padding: 2px 6px; border-radius: 4px; color: var(--primary); font-family: monospace; }
+            .info-card-p code { background: var(--bg-badge); padding: 2px 6px; border-radius: 4px; color: var(--primary); font-family: monospace; }
         `}</style>
       </div>
     </>

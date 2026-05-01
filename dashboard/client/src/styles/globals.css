@@ -1,14 +1,19 @@
 :root {
+  /* Brand Colors */
   --primary: #6366f1;
   --primary-rgb: 99, 102, 241;
-  --primary-glow: 0 0 15px rgba(99, 102, 241, 0.4);
+  --primary-glow: rgba(99, 102, 241, 0.15);
+  --primary-hover: #4f46e5;
   
   /* Dark Theme (Default) */
-  --bg-dark: #020617;
+  --bg-main: #020617;
   --bg-sidebar: #05070a;
+  --bg-sidebar-alt: #070912;
   --bg-card: #0a0c14;
-  --bg-header: rgba(15, 23, 42, 0.6);
+  --bg-header: rgba(15, 23, 42, 0.7);
   --bg-input: #020617;
+  --bg-badge: rgba(255, 255, 255, 0.03);
+  --bg-status-box: #1e293b;
   
   --text-main: #f8fafc;
   --text-dim: #94a3b8;
@@ -19,31 +24,97 @@
   --border-strong: rgba(255, 255, 255, 0.12);
   --glass-border: rgba(255, 255, 255, 0.05);
   
+  --hover-bg: rgba(255, 255, 255, 0.04);
+  --hover-text: #ffffff;
+  
   --success: #10b981;
   --error: #ef4444;
   --warning: #f59e0b;
+  --info: #3b82f6;
+  --accent-pink: #ec4899;
+  --accent-blue: #3498db;
+  --discord-blurple: #5865f2;
+  --discord-green: #248046;
+  --discord-red: #da373c;
+  --discord-gray: #4f545c;
   --shadow-premium: 0 20px 40px rgba(0, 0, 0, 0.4);
-  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-bounce: 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
-.light-theme {
-  --bg-dark: #f8fafc;
+/* Light Theme Overrides */
+.light-theme, [data-theme="light"] {
+  --bg-main: #f8fafc;
   --bg-sidebar: #ffffff;
+  --bg-sidebar-alt: #f1f5f9;
   --bg-card: #ffffff;
-  --bg-header: rgba(255, 255, 255, 0.7);
-  --bg-input: #f1f5f9;
+  --bg-header: rgba(255, 255, 255, 0.8);
+  --bg-input: #ffffff;
+  --bg-badge: rgba(0, 0, 0, 0.04);
+  --bg-status-box: #e2e8f0;
   
   --text-main: #0f172a;
   --text-dim: #334155;
-  --text-muted: #64748b;
+  --text-muted: #475569;
   --text-on-primary: #ffffff;
   
   --border: rgba(0, 0, 0, 0.08);
   --border-strong: rgba(0, 0, 0, 0.15);
   --glass-border: rgba(0, 0, 0, 0.04);
   
+  --hover-bg: rgba(0, 0, 0, 0.03);
+  --hover-text: var(--primary);
+  
   --shadow-premium: 0 15px 35px rgba(0, 0, 0, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-main);
+  color: var(--text-main);
+  font-family: 'Inter', sans-serif;
+  line-height: 1.5;
+}
+
+/* Global Component Themes */
+.card, section.card, .section-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+
+.input, textarea, .custom-select-trigger, .selector-trigger {
+  background-color: var(--bg-input) !important;
+  color: var(--text-main) !important;
+  border: 1px solid var(--border) !important;
+}
+
+.text-muted { color: var(--text-muted) !important; }
+.text-dim { color: var(--text-dim) !important; }
+
+h1, h2, h3, h4 { color: var(--text-main); }
+
+svg {
+  color: currentColor;
+}
+
+/* Light Theme Specific Refinements */
+.light-theme .sidebar {
+  box-shadow: 10px 0 30px rgba(0, 0, 0, 0.03);
+}
+
+.light-theme .nav-link:hover {
+  background: var(--bg-sidebar-alt);
+  color: var(--primary);
+}
+
+.light-theme .nav-link.active {
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--primary);
 }
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800;900&display=swap');
@@ -236,14 +307,14 @@ h1, h2, h3, h4 {
 }
 
 .nav-link:hover {
-  background: rgba(255, 255, 255, 0.04);
-  color: white;
+  background: var(--bg-badge);
+  color: var(--text-main);
   transform: translateX(4px);
 }
 
 .nav-link.active {
-  background: rgba(99, 102, 241, 0.08);
-  color: white;
+  background: var(--primary-glow);
+  color: var(--primary);
 }
 
 .nav-link.active::before {

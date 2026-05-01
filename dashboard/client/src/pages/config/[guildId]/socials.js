@@ -255,30 +255,30 @@ export default function SocialsConfig() {
       </div>
 
       <style jsx>{`
-            .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: rgba(255,255,255,0.02); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
+            .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-badge); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
             .header-info { display: flex; align-items: center; gap: 16px; }
-            .header-icon { width: 48px; height: 48px; background: rgba(129, 140, 248, 0.1); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-            .header-text h1 { font-size: 1.5rem; margin-bottom: 2px; }
+            .header-icon { width: 48px; height: 48px; background: var(--primary-glow); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+            .header-text h1 { font-size: 1.5rem; margin-bottom: 2px; color: var(--text-main); }
             .header-text p { font-size: 0.85rem; color: var(--text-muted); }
             
             .platform-grid-s { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; margin-bottom: 32px; }
             .platform-card-s { position: relative; background: var(--bg-card); border: 1px solid var(--border); padding: 20px; border-radius: 18px; display: flex; flex-direction: column; align-items: center; gap: 12px; cursor: pointer; transition: 0.3s; border-bottom: 3px solid var(--border); }
-            .platform-card-s:hover { transform: translateY(-4px); background: rgba(255,255,255,0.02); }
-            .platform-card-s.active { border-color: var(--platform-color); border-bottom-color: var(--platform-color); background: rgba(255,255,255,0.04); }
+            .platform-card-s:hover { transform: translateY(-4px); background: var(--bg-badge); }
+            .platform-card-s.active { border-color: var(--platform-color); border-bottom-color: var(--platform-color); background: var(--bg-badge); }
             .platform-card-s.active .p-icon-s { color: var(--platform-color); transform: scale(1.1); }
             .p-icon-s { color: var(--text-muted); transition: 0.3s; }
             .platform-card-s span { font-size: 0.85rem; font-weight: 800; }
-            .p-active-dot { position: absolute; top: 12px; right: 12px; width: 8px; height: 8px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px #10b981; }
+            .p-active-dot { position: absolute; top: 12px; right: 12px; width: 8px; height: 8px; background: var(--success); border-radius: 50%; box-shadow: 0 0 10px var(--success); }
 
-            .platform-content-s { background: var(--bg-card); border: 1px solid var(--border); border-radius: 24px; overflow: hidden; }
-            .content-header-s { padding: 32px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.01); }
+            .platform-content { background: var(--bg-card); border: 1px solid var(--border); border-radius: 24px; overflow: hidden; }
+            .content-header-s { padding: 32px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--bg-badge); }
             .p-hero-icon { width: 56px; height: 56px; border-radius: 14px; display: flex; align-items: center; justify-content: center; }
-            .content-header-s h2 { font-size: 1.25rem; font-weight: 850; }
+            .content-header-s h2 { font-size: 1.25rem; font-weight: 850; color: var(--text-main); }
 
             .platform-tabs-s { padding: 0; }
-            .tab-nav-s { display: flex; background: #070912; padding: 0 32px; border-bottom: 1px solid var(--border); gap: 32px; }
+            .tab-nav-s { display: flex; background: var(--bg-sidebar-alt); padding: 0 32px; border-bottom: 1px solid var(--border); gap: 32px; }
             .tab-btn-s { background: transparent; border: none; padding: 20px 0; color: var(--text-muted); font-size: 0.85rem; font-weight: 700; cursor: pointer; position: relative; }
-            .tab-btn-s.active { color: white; }
+            .tab-btn-s.active { color: var(--text-main); }
             .tab-btn-s.active:after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 2px; background: var(--primary); }
 
             .tab-body-s { padding: 32px; }
@@ -286,22 +286,22 @@ export default function SocialsConfig() {
             
             .accounts-list-s { display: flex; flex-direction: column; gap: 12px; margin-top: 16px; }
             .account-item-s { display: flex; gap: 10px; }
-            .btn-remove-s { background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.1); color: #ef4444; width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-            .btn-add-s { margin-top: 8px; background: rgba(255,255,255,0.03); border: 1px dashed var(--border); color: var(--text-muted); padding: 12px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 0.8rem; }
-            .btn-add-s:hover { border-color: var(--primary); color: white; }
+            .btn-remove-s { background: var(--error-glow); border: 1px solid var(--error); color: var(--error); width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+            .btn-add-s { margin-top: 8px; background: var(--bg-sidebar-alt); border: 1px dashed var(--border); color: var(--text-muted); padding: 12px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 0.8rem; }
+            .btn-add-s:hover { border-color: var(--primary); color: var(--text-main); }
 
             .fields-stack-s { display: flex; flex-direction: column; gap: 16px; margin-top: 16px; }
-            .status-row-s { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid var(--border); font-size: 0.85rem; font-weight: 700; }
+            .status-row-s { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: var(--bg-badge); border-radius: 10px; border: 1px solid var(--border); font-size: 0.85rem; font-weight: 700; }
 
             .toggle-s { position: relative; width: 36px; height: 20px; }
             .toggle-s input { opacity: 0; width: 0; height: 0; }
-            .slider-s { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255, 255, 255, 0.1); transition: 0.3s; border-radius: 20px; }
-            .slider-s:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: 0.3s; border-radius: 50%; }
+            .slider-s { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--bg-badge); transition: 0.3s; border-radius: 20px; border: 1px solid var(--border); }
+            .slider-s:before { position: absolute; content: ""; height: 12px; width: 12px; left: 3px; bottom: 3px; background-color: var(--text-main); transition: 0.3s; border-radius: 50%; }
             input:checked + .slider-s { background-color: var(--primary); }
             input:checked + .slider-s:before { transform: translateX(16px); }
 
             .align-center { display: flex; align-items: center; gap: 12px; }
-            .glass-dark { background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 24px; }
+            .glass-dark { background: var(--bg-badge); border: 1px solid var(--border); border-radius: 24px; }
             @media (max-width: 1100px) { .settings-grid-s { grid-template-columns: 1fr; } }
         `}</style>
     </div>

@@ -134,7 +134,7 @@ export default function ModerationConfig() {
               </div>
               <div className="header-text">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <h1>Hub Moderazione</h1>
+                  <h1 style={{ color: 'var(--text-main)' }}>Hub Moderazione</h1>
                   <label className="toggle-mini" title={config.enabled ? 'Modulo Attivo' : 'Modulo Disattivato'}>
                     <input type="checkbox" checked={!!config.enabled} onChange={e => setConfig({...config, enabled: e.target.checked})} />
                     <span className="slider-mini"></span>
@@ -407,37 +407,37 @@ export default function ModerationConfig() {
         </div>
 
       <style jsx>{`
-            .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: rgba(255,255,255,0.02); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
+            .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-badge); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
             .header-info { display: flex; align-items: center; gap: 16px; }
-            .header-icon { width: 48px; height: 48px; background: rgba(129, 140, 248, 0.1); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-            .header-text h1 { font-size: 1.5rem; margin-bottom: 2px; }
+            .header-icon { width: 48px; height: 48px; background: var(--primary-glow); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+            .header-text h1 { font-size: 1.5rem; margin-bottom: 2px; color: var(--text-main); }
             .header-text p { font-size: 0.85rem; color: var(--text-muted); }
 
             .status-section { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; margin-bottom: 24px; }
             .section-info { display: flex; align-items: center; gap: 16px; }
-            .status-box { width: 40px; height: 40px; background: #1e293b; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--text-dim); border: 1px solid var(--border); transition: 0.3s; }
-            .status-box.on { color: var(--primary); background: rgba(129, 140, 248, 0.1); border-color: rgba(129, 140, 248, 0.2); }
+            .status-box { width: 40px; height: 40px; background: var(--bg-status-box); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--text-dim); border: 1px solid var(--border); transition: 0.3s; }
+            .status-box.on { color: var(--primary); background: var(--primary-glow); border-color: var(--primary); }
 
-            .tab-navigation { display: flex; gap: 8px; margin-bottom: 32px; padding: 6px; background: #070912; border-radius: 14px; border: 1px solid var(--border); width: fit-content; }
+            .tab-navigation { display: flex; gap: 8px; margin-bottom: 32px; padding: 6px; background: var(--bg-sidebar-alt); border-radius: 14px; border: 1px solid var(--border); width: fit-content; }
             .tab-link { display: flex; align-items: center; gap: 10px; padding: 10px 18px; border: none; background: transparent; color: var(--text-muted); font-size: 0.85rem; font-weight: 600; border-radius: 10px; cursor: pointer; transition: 0.2s; }
-            .tab-link:hover { color: white; background: rgba(255,255,255,0.03); }
-            .tab-link.active { color: white; background: var(--bg-card); box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
+            .tab-link:hover { color: var(--text-main); background: var(--bg-badge); }
+            .tab-link.active { color: var(--text-main); background: var(--bg-card); box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
 
             .section-title-row { display: flex; justify-content: space-between; align-items: center; }
             .header-with-action { display: flex; justify-content: space-between; align-items: center; }
             
-            .btn-add-small { display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
+            .btn-add-small { display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: var(--primary); color: var(--text-main); border: none; border-radius: 8px; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
             
             .add-word-row { display: flex; gap: 12px; }
-            .btn-add-word { background: var(--primary); color: white; border: none; border-radius: 8px; width: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+            .btn-add-word { background: var(--primary); color: var(--text-main); border: none; border-radius: 8px; width: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
             
             .words-tags-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
-            .word-tag { display: flex; align-items: center; gap: 8px; padding: 6px 12px; background: rgba(255,255,255,0.05); border-radius: 8px; border: 1px solid var(--border); font-size: 0.85rem; }
+            .word-tag { display: flex; align-items: center; gap: 8px; padding: 6px 12px; background: var(--bg-badge); border-radius: 8px; border: 1px solid var(--border); font-size: 0.85rem; }
             .word-tag button { background: transparent; border: none; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; }
             .word-tag button:hover { color: var(--error); }
-            .punishment-item { padding: 16px; background: rgba(255,255,255,0.01); margin-bottom: 12px; border-radius: 12px; border: 1px solid var(--border); }
+            .punishment-item { padding: 16px; background: var(--bg-badge); margin-bottom: 12px; border-radius: 12px; border: 1px solid var(--border); }
             .p-item-header { display: flex; justify-content: space-between; margin-bottom: 12px; }
-            .p-level-badge { padding: 4px 8px; background: rgba(129, 140, 248, 0.1); color: var(--primary); border-radius: 6px; font-size: 0.65rem; font-weight: 700; }
+            .p-level-badge { padding: 4px 8px; background: var(--primary-glow); color: var(--primary); border-radius: 6px; font-size: 0.65rem; font-weight: 700; }
             .p-item-grid { display: grid; grid-template-columns: 1fr 1.5fr 1fr; gap: 12px; }
             .fields-grid-v { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
             .align-center { display: flex; align-items: center; gap: 10px; }

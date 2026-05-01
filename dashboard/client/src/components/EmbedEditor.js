@@ -243,7 +243,7 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
                <div style={{ display: 'flex', gap: '12px' }}>
                   <Info size={18} color="var(--primary)" />
                   <div>
-                    <p style={{ fontSize: '0.8rem', fontWeight: '800', color: 'white', marginBottom: '6px' }}>TAG DISPONIBILI</p>
+                    <p style={{ fontSize: '0.8rem', fontWeight: '800', color: 'var(--text-main)', marginBottom: '6px' }}>TAG DISPONIBILI</p>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
                        {variables.map(v => <code key={v} className="variable-tag">{`{${v}}`}</code>)}
                     </div>
@@ -265,11 +265,11 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
           top: 20px;
         }
         .input-small {
-          background: rgba(255, 255, 255, 0.05);
+          background: var(--bg-input);
           border: 1px solid var(--border);
           border-radius: 10px;
           padding: 8px 12px;
-          color: white;
+          color: var(--text-main);
           font-size: 0.85rem;
           width: 100%;
         }
@@ -297,7 +297,7 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
         }
         .view-btn.active {
           background: var(--primary);
-          color: white;
+          color: var(--text-on-primary);
         }
         .variable-tag {
           font-family: monospace;

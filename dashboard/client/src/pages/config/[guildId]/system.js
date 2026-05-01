@@ -124,12 +124,12 @@ export default function SystemConfig() {
       </div>
 
       <style jsx>{`
-            .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: rgba(255,255,255,0.02); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
+            .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-badge); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
             .header-info { display: flex; align-items: center; gap: 16px; }
             .header-icon { width: 48px; height: 48px; background: rgba(255, 255, 255, 0.05); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
             .header-text h1 { font-size: 1.5rem; margin-bottom: 2px; }
             .header-text p { font-size: 0.85rem; color: var(--text-muted); }
-            .glass-dark { background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 24px; }
+            .glass-dark { background: var(--bg-badge); border: 1px solid var(--border); border-radius: 24px; }
         `}</style>
     </div>
   );

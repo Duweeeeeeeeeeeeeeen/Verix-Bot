@@ -104,7 +104,7 @@ export default function Home() {
           <div className="hero-visual-p animate fadeIn">
             <div className="mockup-card-p">
               {/* Mockup Content */}
-              <div style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '16px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between' }}>
+              <div style={{ borderBottom: '1px solid var(--border)', paddingBottom: '16px', marginBottom: '24px', display: 'flex', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ff5f56' }}></div>
                   <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#ffbd2e' }}></div>
@@ -113,13 +113,13 @@ export default function Home() {
                 <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: '700' }}>VERIX DASHBOARD PREVIEW</div>
               </div>
               <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
-                <div style={{ width: '30%', height: '8px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px' }}></div>
-                <div style={{ width: '60%', height: '8px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px' }}></div>
+                <div style={{ width: '30%', height: '8px', background: 'var(--border)', borderRadius: '4px' }}></div>
+                <div style={{ width: '60%', height: '8px', background: 'var(--bg-badge)', borderRadius: '4px' }}></div>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div style={{ height: '60px', background: 'rgba(129, 140, 248, 0.1)', borderRadius: '12px', border: '1px solid rgba(129, 140, 248, 0.2)' }}></div>
-                <div style={{ height: '60px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}></div>
-                <div style={{ height: '60px', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}></div>
+                <div style={{ height: '60px', background: 'var(--bg-badge)', borderRadius: '12px', border: '1px solid var(--border)' }}></div>
+                <div style={{ height: '60px', background: 'var(--bg-badge)', borderRadius: '12px', border: '1px solid var(--border)' }}></div>
                 <div style={{ height: '60px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '12px', border: '1px solid rgba(16, 185, 129, 0.2)' }}></div>
               </div>
             </div>
@@ -150,7 +150,7 @@ export default function Home() {
       </section>
 
       {/* Footer / Final CTA */}
-      <footer className="landing-container-p" style={{ padding: '80px 0', borderTop: '1px solid rgba(255,255,255,0.05)', textAlign: 'center' }}>
+      <footer className="landing-container-p" style={{ padding: '80px 0', borderTop: '1px solid var(--border)', textAlign: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '24px' }}>
           <img src="/logo.png" alt="Verix" style={{ width: '40px' }} />
           <span style={{ fontWeight: '800', fontSize: '1.2rem', color: 'var(--text-main)' }}>Verix Bot</span>

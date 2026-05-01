@@ -147,8 +147,8 @@ export default function GlobalConfigPage() {
                             <div className="field-box">
                                 <label className="text-label">Colore Embed Default</label>
                                 <div style={{ display: 'flex', gap: '12px' }}>
-                                    <input type="color" value={config.embedColor || '#6366f1'} onChange={e => setNested('embedColor', e.target.value)} style={{ width: '44px', height: '44px', border: 'none', background: 'transparent', cursor: 'pointer' }} />
-                                    <input type="text" className="input" value={config.embedColor || '#6366f1'} onChange={e => setNested('embedColor', e.target.value)} style={{ flex: 1 }} />
+                                    <input type="color" value={config.embedColor || 'var(--primary)'} onChange={e => setNested('embedColor', e.target.value)} style={{ width: '44px', height: '44px', border: 'none', background: 'transparent', cursor: 'pointer' }} />
+                                    <input type="text" className="input" value={config.embedColor || 'var(--primary)'} onChange={e => setNested('embedColor', e.target.value)} style={{ flex: 1 }} />
                                 </div>
                             </div>
                         </div>
@@ -196,20 +196,20 @@ export default function GlobalConfigPage() {
       </div>
 
       <style jsx>{`
-            .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: rgba(255,255,255,0.02); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
+            .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-badge); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
             .header-info { display: flex; align-items: center; gap: 16px; }
-            .header-icon { width: 48px; height: 48px; background: rgba(129, 140, 248, 0.1); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-            .header-text h1 { font-size: 1.5rem; margin-bottom: 2px; }
+            .header-icon { width: 48px; height: 48px; background: var(--primary-glow); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+            .header-text h1 { font-size: 1.5rem; margin-bottom: 2px; color: var(--text-main); }
             .header-text p { font-size: 0.85rem; color: var(--text-muted); }
             
-            .tab-navigation { display: flex; gap: 8px; margin-bottom: 32px; padding: 6px; background: #070912; border-radius: 14px; border: 1px solid var(--border); width: fit-content; }
+            .tab-navigation { display: flex; gap: 8px; margin-bottom: 32px; padding: 6px; background: var(--bg-sidebar-alt); border-radius: 14px; border: 1px solid var(--border); width: fit-content; }
             .tab-link { display: flex; align-items: center; gap: 10px; padding: 10px 18px; border: none; background: transparent; color: var(--text-muted); font-size: 0.85rem; font-weight: 600; border-radius: 10px; cursor: pointer; transition: 0.2s; }
-            .tab-link:hover { color: white; background: rgba(255,255,255,0.03); }
-            .tab-link.active { color: white; background: var(--bg-card); box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
+            .tab-link:hover { color: var(--text-main); background: var(--bg-badge); }
+            .tab-link.active { color: var(--text-main); background: var(--bg-card); box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
 
             .config-grid-g { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 24px; }
             .fields-stack-g { display: flex; flex-direction: column; gap: 20px; margin-top: 16px; }
-            .status-row-g { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid var(--border); font-size: 0.85rem; font-weight: 700; }
+            .status-row-g { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: var(--bg-badge); border-radius: 10px; border: 1px solid var(--border); font-size: 0.85rem; font-weight: 700; }
 
             .align-center { display: flex; align-items: center; gap: 10px; }
             @media (max-width: 1000px) { .config-grid-g { grid-template-columns: 1fr; } }

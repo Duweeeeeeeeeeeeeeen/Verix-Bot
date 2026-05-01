@@ -193,7 +193,7 @@ export default function GiveawayConfig() {
         {/* Header */}
         <header className="module-header">
            <div className="header-info">
-              <div className="header-icon" style={{ background: 'rgba(236, 72, 153, 0.1)', color: '#ec4899' }}>
+              <div className="header-icon" style={{ background: 'var(--primary-glow)', color: 'var(--accent-pink)' }}>
                 <Gift size={24} />
               </div>
               <div className="header-text">
@@ -239,7 +239,7 @@ export default function GiveawayConfig() {
                             {/* Creation Form */}
                             <section className="card section-card-v" style={{ marginBottom: '24px' }}>
                                 <div className="align-center" style={{ marginBottom: '20px' }}>
-                                    <Plus size={18} color="#ec4899" />
+                                    <Plus size={18} color="var(--accent-pink)" />
                                     <h3>Nuovo Giveaway</h3>
                                 </div>
                                 
@@ -417,7 +417,7 @@ export default function GiveawayConfig() {
                             {/* Active List */}
                             <section className="card section-card-v">
                                 <div className="align-center" style={{ marginBottom: '20px' }}>
-                                    <Trophy size={18} color="#f1c40f" />
+                                    <Trophy size={18} color="var(--warning)" />
                                     <h3>Giveaway in Corso</h3>
                                 </div>
                                 
@@ -455,7 +455,7 @@ export default function GiveawayConfig() {
                             <section className="card section-card-v">
                                 <div className="align-center" style={{ marginBottom: '20px', justifyContent: 'space-between' }}>
                                     <div className="align-center">
-                                        <Calendar size={18} color="#3498db" />
+                                        <Calendar size={18} color="var(--accent-blue)" />
                                         <h3>Giveaway Programmati</h3>
                                     </div>
                                     <button className="btn-outline-sm" onClick={() => setActiveTab('active')}>
@@ -496,7 +496,7 @@ export default function GiveawayConfig() {
                         <div className="animate fade-in">
                             <section className="card section-card-v">
                                 <div className="align-center" style={{ marginBottom: '20px' }}>
-                                    <History size={18} color="#94a3b8" />
+                                    <History size={18} color="var(--text-dim)" />
                                     <h3>Ultimi Giveaway Conclusi</h3>
                                 </div>
                                 <div className="logs-table-wrapper">
@@ -563,23 +563,23 @@ export default function GiveawayConfig() {
     </div>
 
       <style jsx>{`
-            .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: rgba(255,255,255,0.02); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
+            .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-badge); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
             .header-info { display: flex; align-items: center; gap: 16px; }
             .header-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-            .header-text h1 { font-size: 1.5rem; margin-bottom: 2px; }
+            .header-text h1 { font-size: 1.5rem; margin-bottom: 2px; color: var(--text-main); }
             .header-text p { font-size: 0.85rem; color: var(--text-muted); }
             
-            .tab-navigation { display: flex; gap: 8px; margin-bottom: 32px; padding: 6px; background: #070912; border-radius: 14px; border: 1px solid var(--border); width: fit-content; }
+            .tab-navigation { display: flex; gap: 8px; margin-bottom: 32px; padding: 6px; background: var(--bg-sidebar-alt); border-radius: 14px; border: 1px solid var(--border); width: fit-content; }
             .tab-link { display: flex; align-items: center; gap: 10px; padding: 10px 18px; border: none; background: transparent; color: var(--text-muted); font-size: 0.85rem; font-weight: 600; border-radius: 10px; cursor: pointer; transition: 0.2s; }
-            .tab-link:hover { color: white; background: rgba(255,255,255,0.03); }
-            .tab-link.active { color: white; background: var(--bg-card); box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
+            .tab-link:hover { color: var(--text-main); background: var(--bg-badge); }
+            .tab-link.active { color: var(--text-main); background: var(--bg-card); box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
 
             .config-grid-v { display: block; }
             .grid-main-v { display: flex; flex-direction: column; gap: 24px; }
             .fields-grid-v { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
             .align-center { display: flex; align-items: center; gap: 10px; }
             
-            .create-gw-form { background: rgba(255,255,255,0.01); border-radius: 12px; }
+            .create-gw-form { background: var(--bg-badge); border-radius: 12px; }
             .creation-split-v { display: grid; grid-template-columns: 1fr 400px; gap: 40px; }
             .fields-row-v { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
             .field-divider { margin: 24px 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--border); font-size: 0.75rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; }
@@ -591,10 +591,10 @@ export default function GiveawayConfig() {
             .preview-sticky-v { position: sticky; top: 20px; }
 
             .form-actions-v { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px; }
-            .btn-quick-start { padding: 14px; background: #ec4899; color: white; border: none; border-radius: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 12px rgba(236, 72, 153, 0.2); }
-            .btn-quick-start:hover { background: #db2777; transform: translateY(-2px); }
-            .btn-schedule { padding: 14px; background: rgba(52, 152, 219, 0.1); color: #3498db; border: 1px solid rgba(52, 152, 219, 0.2); border-radius: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; transition: 0.2s; }
-            .btn-schedule:hover { background: rgba(52, 152, 219, 0.2); border-color: #3498db; }
+            .btn-quick-start { padding: 14px; background: var(--accent-pink); color: var(--text-on-primary); border: none; border-radius: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 12px rgba(236, 72, 153, 0.2); }
+            .btn-quick-start:hover { opacity: 0.9; transform: translateY(-2px); }
+            .btn-schedule { padding: 14px; background: var(--bg-badge); color: var(--accent-blue); border: 1px solid var(--border); border-radius: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; transition: 0.2s; }
+            .btn-schedule:hover { background: var(--bg-sidebar-alt); border-color: var(--accent-blue); }
             .btn-quick-start:disabled, .btn-schedule:disabled { opacity: 0.5; cursor: not-allowed; }
 
             .field-box.full-width { grid-column: span 1; }
@@ -602,22 +602,22 @@ export default function GiveawayConfig() {
             @media (max-width: 1200px) { .creation-split-v { grid-template-columns: 1fr; } .preview-container-v { border-left: none; padding-left: 0; padding-top: 40px; border-top: 1px solid var(--border); } }
 
             .active-gw-list { display: flex; flex-direction: column; gap: 12px; }
-            .active-gw-item { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; }
-            .active-gw-item.scheduled { border-left: 4px solid #3498db; }
-            .gw-info h4 { font-size: 1rem; font-weight: 700; color: white; margin-bottom: 4px; }
+            .active-gw-item { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: var(--bg-badge); border: 1px solid var(--border); border-radius: 12px; }
+            .active-gw-item.scheduled { border-left: 4px solid var(--accent-blue); }
+            .gw-info h4 { font-size: 1rem; font-weight: 700; color: var(--text-main); margin-bottom: 4px; }
             .gw-meta { display: flex; gap: 12px; font-size: 0.75rem; color: var(--text-dim); }
             .gw-meta span { display: flex; align-items: center; gap: 4px; }
-            .time-tag { color: #f1c40f; }
-            .time-tag-blue { color: #3498db; font-weight: 700; }
+            .time-tag { color: var(--warning); }
+            .time-tag-blue { color: var(--accent-blue); font-weight: 700; }
 
-            .btn-icon-danger { width: 36px; height: 36px; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.05); color: #ef4444; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
-            .btn-icon-danger:hover { background: #ef4444; color: white; }
+            .btn-icon-danger { width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-badge); color: var(--error); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+            .btn-icon-danger:hover { background: var(--error); color: var(--text-on-primary); }
 
             .logs-table-wrapper { overflow-x: auto; }
             .logs-table { width: 100%; border-collapse: collapse; }
             .logs-table th { text-align: left; padding: 12px; font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; border-bottom: 1px solid var(--border); }
-            .logs-table td { padding: 16px 12px; border-bottom: 1px solid rgba(255,255,255,0.02); font-size: 0.85rem; color: var(--text-muted); }
-            .winners-pill { background: rgba(34, 197, 94, 0.1); color: #22c55e; padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; width: fit-content; }
+            .logs-table td { padding: 16px 12px; border-bottom: 1px solid var(--border); font-size: 0.85rem; color: var(--text-muted); opacity: 0.8; }
+            .winners-pill { background: var(--primary-glow); color: var(--success); padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; width: fit-content; }
 
             .tips-list { list-style: none; padding: 0; margin: 0; }
             .tips-list li { display: flex; gap: 12px; margin-bottom: 16px; color: var(--text-muted); font-size: 0.8rem; line-height: 1.4; }

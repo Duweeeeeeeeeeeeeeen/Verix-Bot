@@ -80,7 +80,7 @@ export default function CustomSelect({
           display: flex;
           align-items: center;
           justify-content: space-between;
-          background: #020617;
+          background: var(--bg-input);
           border: 1px solid var(--border);
           padding: 12px 16px;
           border-radius: 12px;
@@ -101,7 +101,7 @@ export default function CustomSelect({
 
         .selected-text {
           font-weight: 600;
-          color: white;
+          color: var(--text-main);
           font-size: 0.95rem;
         }
 
@@ -126,12 +126,12 @@ export default function CustomSelect({
           left: 0;
           right: 0;
           z-index: 1000;
-          background: #0b0e1a;
+          background: var(--bg-card);
           backdrop-filter: blur(20px);
           border-radius: 16px;
           border: 1px solid var(--border-strong);
           overflow: hidden;
-          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+          box-shadow: var(--shadow-premium);
         }
 
         .options-list {
@@ -155,13 +155,13 @@ export default function CustomSelect({
         }
 
         .option-item:hover {
-          background: rgba(255, 255, 255, 0.05);
-          color: white;
+          background: var(--bg-badge);
+          color: var(--text-main);
         }
 
         .option-item.selected {
-          background: rgba(99, 102, 241, 0.1);
-          color: white;
+          background: rgba(var(--primary-rgb), 0.1);
+          color: var(--primary);
         }
 
         .text-primary { color: var(--primary); }

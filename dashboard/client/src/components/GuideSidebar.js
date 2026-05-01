@@ -296,7 +296,7 @@ export default function GuideSidebar({ type, context = {}, isOpen, onToggle }) {
           .global-guide-sidebar {
             width: 320px;
             height: 100vh;
-            background: #05070a;
+            background: var(--bg-sidebar);
             border-left: 1px solid var(--border);
             display: flex;
             flex-direction: column;
@@ -320,7 +320,7 @@ export default function GuideSidebar({ type, context = {}, isOpen, onToggle }) {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: #05070a;
+            background: var(--bg-sidebar);
             height: 108px;
             flex-shrink: 0;
             min-width: 320px; /* Prevent content squishing during transition */
@@ -335,13 +335,13 @@ export default function GuideSidebar({ type, context = {}, isOpen, onToggle }) {
           .guide-title span {
             font-size: 0.75rem;
             font-weight: 850;
-            color: white;
+            color: var(--text-main);
             text-transform: uppercase;
             letter-spacing: 1px;
           }
 
           .guide-close-btn {
-            background: rgba(255,255,255,0.03);
+            background: var(--bg-badge);
             border: 1px solid var(--border);
             color: var(--text-dim);
             width: 32px;
@@ -356,7 +356,7 @@ export default function GuideSidebar({ type, context = {}, isOpen, onToggle }) {
 
           .guide-close-btn:hover { 
             background: var(--error); 
-            color: white; 
+            color: var(--text-on-primary); 
             border-color: var(--error);
           }
 
@@ -368,7 +368,7 @@ export default function GuideSidebar({ type, context = {}, isOpen, onToggle }) {
 
           /* Scrollbar Customization */
           .guide-scroll-area::-webkit-scrollbar { width: 4px; }
-          .guide-scroll-area::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.05); border-radius: 10px; }
+          .guide-scroll-area::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 10px; }
 
           .guide-content {
             display: flex;
@@ -377,7 +377,7 @@ export default function GuideSidebar({ type, context = {}, isOpen, onToggle }) {
           }
 
           .guide-card {
-            background: rgba(255, 255, 255, 0.02);
+            background: var(--bg-badge);
             border-radius: 16px;
             padding: 20px;
             border: 1px solid var(--border);
@@ -385,8 +385,8 @@ export default function GuideSidebar({ type, context = {}, isOpen, onToggle }) {
           }
 
           .guide-card:hover {
-            background: rgba(255, 255, 255, 0.04);
-            border-color: rgba(245, 158, 11, 0.2);
+            background: var(--bg-badge);
+            border-color: var(--primary);
             transform: translateY(-2px);
           }
 
@@ -454,7 +454,7 @@ export default function GuideSidebar({ type, context = {}, isOpen, onToggle }) {
           .guide-footer {
             padding: 24px;
             border-top: 1px solid var(--border);
-            background: rgba(0,0,0,0.1);
+            background: var(--bg-sidebar-alt);
           }
 
           .footer-logo {
@@ -480,7 +480,7 @@ export default function GuideSidebar({ type, context = {}, isOpen, onToggle }) {
             width: 14px;
             height: 14px;
             background: #f59e0b;
-            border: 3px solid #05070a;
+            border: 3px solid var(--bg-sidebar);
             border-radius: 50%;
             animation: pulse-amber 2s infinite;
           }

@@ -260,28 +260,28 @@ export default function AutoClearConfig() {
       </div>
 
       <style jsx>{`
-            .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: rgba(255,255,255,0.02); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
+            .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-badge); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
             .header-info { display: flex; align-items: center; gap: 16px; }
-            .header-icon { width: 48px; height: 48px; background: rgba(239, 68, 68, 0.1); color: var(--error); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-            .header-text h1 { font-size: 1.5rem; margin-bottom: 2px; }
+            .header-icon { width: 48px; height: 48px; background: var(--primary-glow); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+            .header-text h1 { font-size: 1.5rem; margin-bottom: 2px; color: var(--text-main); }
             .header-text p { font-size: 0.85rem; color: var(--text-muted); }
 
-            .status-hero { display: flex; justify-content: space-between; align-items: center; padding: 24px 32px; background: linear-gradient(135deg, rgba(10,12,20,1) 0%, rgba(20,24,40,1) 100%); margin-bottom: 40px; border-left: 4px solid var(--primary); }
+            .status-hero { display: flex; justify-content: space-between; align-items: center; padding: 24px 32px; background: var(--bg-badge); margin-bottom: 40px; border-left: 4px solid var(--primary); border-radius: 16px; }
             .hero-info { display: flex; align-items: center; gap: 20px; }
-            .status-orb { width: 44px; height: 44px; background: #1e293b; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--text-dim); transition: 0.4s; }
-            .status-orb.active { color: var(--primary); background: rgba(99, 102, 241, 0.1); box-shadow: 0 0 20px rgba(99, 102, 241, 0.2); }
+            .status-orb { width: 44px; height: 44px; background: var(--bg-status-box); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--text-dim); transition: 0.4s; border: 1px solid var(--border); }
+            .status-orb.active { color: var(--primary); background: var(--primary-glow); box-shadow: 0 0 20px var(--primary-glow); }
 
             .section-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
             .section-header-row h2 { font-size: 1.25rem; font-weight: 800; }
 
-            .btn-add-premium { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.3s; box-shadow: var(--primary-glow); }
+            .btn-add-premium { background: var(--primary); color: var(--text-main); border: none; padding: 10px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.3s; box-shadow: var(--primary-glow); }
             .btn-add-premium:hover { transform: translateY(-2px); filter: brightness(1.1); }
 
             .slots-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 24px; }
             .slot-card { padding: 0 !important; overflow: hidden; border-top: 3px solid var(--border); transition: 0.3s; }
             .slot-card:hover { border-top-color: var(--primary); transform: translateY(-4px); }
             
-            .slot-header { padding: 16px 20px; background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+            .slot-header { padding: 16px 20px; background: var(--bg-badge); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
             .slot-title { display: flex; align-items: center; gap: 10px; color: var(--text-muted); font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
             .slot-actions { display: flex; align-items: center; gap: 12px; }
 
@@ -289,7 +289,7 @@ export default function AutoClearConfig() {
 
             .input-with-icon { position: relative; display: flex; align-items: center; }
             .icon-p { position: absolute; left: 14px; color: var(--primary); }
-            .input-p { background: #020617; border: 1px solid var(--border); color: white; padding: 12px 16px 12px 42px; border-radius: 12px; width: 100%; transition: 0.2s; }
+            .input-p { background: var(--bg-dark); border: 1px solid var(--border); color: var(--text-main); padding: 12px 16px 12px 42px; border-radius: 12px; width: 100%; transition: 0.2s; }
             .input-p:focus { border-color: var(--primary); outline: none; }
 
             .empty-state-card { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 40px; text-align: center; gap: 16px; border: 2px dashed var(--border); background: transparent; }
@@ -299,8 +299,8 @@ export default function AutoClearConfig() {
 
             .toggle-s { position: relative; width: 36px; height: 20px; }
             .toggle-s input { opacity: 0; width: 0; height: 0; }
-            .slider-s { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255, 255, 255, 0.1); transition: 0.3s; border-radius: 20px; }
-            .slider-s:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background-color: white; transition: 0.3s; border-radius: 50%; }
+            .slider-s { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--bg-badge); transition: 0.3s; border-radius: 20px; border: 1px solid var(--border); }
+            .slider-s:before { position: absolute; content: ""; height: 12px; width: 12px; left: 3px; bottom: 3px; background-color: var(--text-main); transition: 0.3s; border-radius: 50%; }
             input:checked + .slider-s { background-color: var(--primary); }
             input:checked + .slider-s:before { transform: translateX(16px); }
 

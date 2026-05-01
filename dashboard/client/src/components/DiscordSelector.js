@@ -187,7 +187,7 @@ export default function DiscordSelector({
           display: flex;
           align-items: center;
           justify-content: space-between;
-          background: rgba(0, 0, 0, 0.3);
+          background: var(--bg-input);
           border: 1px solid var(--border);
           padding: 12px 16px;
           border-radius: 12px;
@@ -231,13 +231,13 @@ export default function DiscordSelector({
           display: flex;
           align-items: center;
           gap: 6px;
-          background: rgba(255, 255, 255, 0.1);
-          border: 1px solid rgba(255, 255, 255, 0.1);
+          background: var(--bg-badge);
+          border: 1px solid var(--border);
           padding: 4px 8px;
           border-radius: 8px;
           font-size: 0.8rem;
           font-weight: 600;
-          color: white;
+          color: var(--text-main);
           transition: var(--transition-fast);
         }
 
@@ -272,7 +272,7 @@ export default function DiscordSelector({
         .selected-text {
           font-weight: 600;
           font-size: 0.95rem;
-          color: white;
+          color: var(--text-main);
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -300,12 +300,12 @@ export default function DiscordSelector({
           left: 0;
           right: 0;
           z-index: 1000;
-          background: #0b0e1a; /* Solid background base */
+          background: var(--bg-card); /* Use themed background */
           backdrop-filter: blur(20px);
           border-radius: 16px;
           border: 1px solid var(--border-strong);
           overflow: hidden;
-          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+          box-shadow: var(--shadow-premium);
         }
 
         .search-box {
@@ -324,7 +324,7 @@ export default function DiscordSelector({
         .search-input {
           background: none;
           border: none;
-          color: white;
+          color: var(--text-main);
           font-size: 0.9rem;
           width: 100%;
           outline: none;
