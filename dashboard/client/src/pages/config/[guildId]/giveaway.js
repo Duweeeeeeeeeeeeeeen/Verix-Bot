@@ -399,10 +399,8 @@ export default function GiveawayConfig() {
                     )}
                 </div>
             </div>
-
-            </div>
         </div>
-      </div>
+    </div>
 
       <style jsx>{`
             .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: rgba(255,255,255,0.02); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
