@@ -244,7 +244,7 @@ router.post('/:guildId/autoclear/manual', adminCheck, async (req, res) => {
 
         await logAudit(req, guildId, 'manual_clear', 'Manual Clear Executed', { channelId, amount: deleted.size });
         
-        res.json({ success: true, count: deleted.size });
+        res.json({ success: true, data: { count: deleted.size } });
     } catch (error) {
         console.error('Error in manual clear:', error);
         res.status(500).json({ success: false, error: 'Impossibile eseguire la pulizia manuale. Verifica i permessi del bot.' });

@@ -238,7 +238,7 @@ export default function AutoClearConfig() {
                                 method: 'POST',
                                 body: JSON.stringify({ channelId: config.manualChannelId, amount: config.manualAmount || 50 })
                             });
-                            if (res.success) showToast(`Eliminati ${res.count} messaggi!`);
+                            if (res && res.count !== undefined) showToast(`Eliminati ${res.count} messaggi!`);
                         } catch (e) {
                             showToast('Errore durante la pulizia.', 'error');
                         }
