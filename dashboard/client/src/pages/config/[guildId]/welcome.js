@@ -31,13 +31,12 @@ export default function WelcomeConfig() {
       const fetchData = async () => {
         try {
           const [configRes, discordRes] = await Promise.all([
-            api.request(`/config/${guildId}`),
+            api.request(`/config/${guildId}/welcome`),
             api.request(`/config/${guildId}/discord-data`)
           ]);
 
-          if (configRes && (configRes.data || configRes)) {
-            const data = configRes.data || configRes;
-            setConfig(mergeConfig(data.welcome || data, 'welcome'));
+          if (configRes) {
+            setConfig(mergeConfig(configRes, 'welcome'));
           }
           if (discordRes && (discordRes.data || discordRes)) {
             setDiscordData(discordRes.data || discordRes);

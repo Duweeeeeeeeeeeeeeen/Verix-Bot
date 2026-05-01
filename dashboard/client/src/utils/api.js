@@ -2,6 +2,16 @@ const API_BASE_URL = typeof window !== 'undefined'
   ? '/api' 
   : 'http://localhost:5001/api';
 
+// Counter-based loader: prevents the loader from flickering when multiple
+// parallel requests are fired simultaneously (e.g., via Promise.all)
+let _activeRequests = 0;
+function _setActivity(active) {
+  if (typeof window === 'undefined') return;
+  if (active) _activeRequests++;
+  else _activeRequests = Math.max(0, _activeRequests - 1);
+  window.dispatchEvent(new CustomEvent('set-activity', { detail: _activeRequests > 0 }));
+}
+
 /**
  * Standardized request helper for fetch calls.
  * @param {string} endpoint - The API endpoint (starts with /).
@@ -24,20 +34,17 @@ export async function apiRequest(endpoint, options = {}) {
     defaultOptions.body = JSON.stringify(options.data);
   }
 
+  _setActivity(true);
   try {
-    if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
-    }
     const response = await fetch(url, defaultOptions);
-    if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
-    }
     
     // Check if redirect or error without body
     if (!response.ok && response.status === 401) {
-        window.dispatchEvent(new CustomEvent('show-toast', { 
-            detail: { message: 'Sessione scaduta. Riconnettiti.', type: 'error' } 
-        }));
+        if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('show-toast', { 
+                detail: { message: 'Sessione scaduta. Riconnettiti.', type: 'error' } 
+            }));
+        }
         throw new Error('Unauthorized');
     }
 
@@ -45,9 +52,11 @@ export async function apiRequest(endpoint, options = {}) {
 
     // Standardized check for success: false
     if (result.success === false) {
-      window.dispatchEvent(new CustomEvent('show-toast', { 
-        detail: { message: result.error || 'Si è verificato un errore API.', type: 'error' } 
-      }));
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('show-toast', { 
+          detail: { message: result.error || 'Si è verificato un errore API.', type: 'error' } 
+        }));
+      }
       throw new Error(result.error);
     }
 
@@ -55,15 +64,17 @@ export async function apiRequest(endpoint, options = {}) {
     return result.success ? result.data : result;
     
   } catch (error) {
-    if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
-    }
     if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
-      window.dispatchEvent(new CustomEvent('show-toast', { 
-        detail: { message: 'Errore di connessione al server.', type: 'error' } 
-      }));
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('show-toast', { 
+          detail: { message: 'Errore di connessione al server.', type: 'error' } 
+        }));
+      }
     }
     throw error;
+  } finally {
+    // Always decrement — even on error — so the loader never stays stuck
+    _setActivity(false);
   }
 }
 

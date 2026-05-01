@@ -175,7 +175,12 @@ export default function GiveawayConfig() {
     try {
       await api.request(`/config/${guildId}/giveaways/${id}`, { method: 'DELETE' });
       showToast('Operazione completata');
-      fetchData();
+      // Update state locally to avoid a full 5-API refetch
+      if (isScheduled) {
+        setScheduledGiveaways(prev => prev.filter(g => (g._id || g.messageId) !== id));
+      } else {
+        setActiveGiveaways(prev => prev.filter(g => g.messageId !== id));
+      }
     } catch (e) {
       showToast('Errore durante l\'eliminazione', 'error');
     }

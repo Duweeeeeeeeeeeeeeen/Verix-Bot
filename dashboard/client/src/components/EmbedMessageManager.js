@@ -48,15 +48,16 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
     }
   }, [guildId, module]);
 
-  // Open the group containing the active slug
+  // Open the group containing the active slug (runs only when activeSlug changes,
+  // avoids re-running fetchMessages unnecessarily)
   useEffect(() => {
-    if (activeSlug) {
-      const activeGroup = Object.values(groups).find(g => g.items.some(s => s.key === activeSlug));
-      if (activeGroup) {
-        setOpenGroups(prev => ({ ...prev, [activeGroup.name]: true }));
-      }
+    if (!activeSlug) return;
+    const activeGroup = Object.values(groups).find(g => g.items.some(s => s.key === activeSlug));
+    if (activeGroup) {
+      setOpenGroups(prev => ({ ...prev, [activeGroup.name]: true }));
     }
-  }, [activeSlug]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeSlug]); // `groups` is derived from `slugs` which is stable — no extra dep needed
 
   const fetchMessages = async () => {
     setLoading(true);
