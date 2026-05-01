@@ -64,55 +64,22 @@ router.get('/:guildId', adminCheck, async (req, res) => {
     try {
         const { guildId } = req.params;
         
-        // Fetch all configurations in parallel to reduce latency
-        let [whitelist, tickets, contest, verify, guild, globalCfg, welcome, utility, fivem, twitch, autoClearConfig, antispam, moderation] = await Promise.all([
-            WhitelistConfig.findOne({ guildId }),
-            TicketConfig.findOne({ guildId }),
-            PhotoContestConfig.findOne({ guildId }),
-            VerifyConfig.findOne({ guildId }),
-            Guild.findOne({ guildId }),
-            GlobalConfig.findOne({ guildId }),
-            WelcomeConfig.findOne({ guildId }),
-            UtilityConfig.findOne({ guildId }),
-            FiveMConfig.findOne({ guildId }),
-            SocialConfig.findOne({ guildId }),
-            AutoClearConfig.findOne({ guildId }),
-            ModerationConfig.findOne({ guildId }),
-            SupportConfig.findOne({ guildId })
+        // Fetch or create all configurations atomically in parallel using upsert
+        let [wlConfig, tkConfig, photoConfig, verifyConfig, guildData, globalConfig, wlcmConfig, utilConfig, fmConfig, socConfig, autoClearConfig, modConfig, suppConfig] = await Promise.all([
+            WhitelistConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, new: true, setDefaultsOnInsert: true }),
+            TicketConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, new: true, setDefaultsOnInsert: true }),
+            PhotoContestConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, new: true, setDefaultsOnInsert: true }),
+            VerifyConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, new: true, setDefaultsOnInsert: true }),
+            Guild.findOneAndUpdate({ guildId }, {}, { upsert: true, new: true, setDefaultsOnInsert: true }),
+            GlobalConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, new: true, setDefaultsOnInsert: true }),
+            WelcomeConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, new: true, setDefaultsOnInsert: true }),
+            UtilityConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, new: true, setDefaultsOnInsert: true }),
+            FiveMConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, new: true, setDefaultsOnInsert: true }),
+            SocialConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, new: true, setDefaultsOnInsert: true }),
+            AutoClearConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, new: true, setDefaultsOnInsert: true }),
+            ModerationConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, new: true, setDefaultsOnInsert: true }),
+            SupportConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, new: true, setDefaultsOnInsert: true })
         ]);
-
-        let wlConfig = whitelist;
-        let tkConfig = tickets;
-        let photoConfig = contest;
-        let verifyConfig = verify;
-        let guildData = guild;
-        let globalConfig = globalCfg;
-        let wlcmConfig = welcome;
-        let utilConfig = utility;
-        let fmConfig = fivem;
-        let socConfig = twitch; // Keeping variable name matching Promise.all index
-        let modConfig = antispam; 
-        let suppConfig = moderation; 
-        
-        // Create missing configurations in parallel if they don't exist
-        const creations = [];
-        if (!wlConfig) creations.push(WhitelistConfig.create({ guildId }).then(res => wlConfig = res));
-        if (!tkConfig) creations.push(TicketConfig.create({ guildId }).then(res => tkConfig = res));
-        if (!photoConfig) creations.push(PhotoContestConfig.create({ guildId }).then(res => photoConfig = res));
-        if (!verifyConfig) creations.push(VerifyConfig.create({ guildId }).then(res => verifyConfig = res));
-        if (!guildData) creations.push(Guild.create({ guildId }).then(res => guildData = res));
-        if (!globalConfig) creations.push(GlobalConfig.create({ guildId }).then(res => globalConfig = res));
-        if (!wlcmConfig) creations.push(WelcomeConfig.create({ guildId }).then(res => wlcmConfig = res));
-        if (!utilConfig) creations.push(UtilityConfig.create({ guildId }).then(res => utilConfig = res));
-        if (!fmConfig) creations.push(FiveMConfig.create({ guildId }).then(res => fmConfig = res));
-        if (!socConfig) creations.push(SocialConfig.create({ guildId }).then(res => socConfig = res));
-        if (!autoClearConfig) creations.push(AutoClearConfig.create({ guildId }).then(res => autoClearConfig = res));
-        if (!modConfig) creations.push(ModerationConfig.create({ guildId }).then(res => modConfig = res));
-        if (!suppConfig) creations.push(SupportConfig.create({ guildId }).then(res => suppConfig = res));
-
-        if (creations.length > 0) {
-            await Promise.all(creations);
-        }
 
         // Fetch roles and channels from Discord Client
         const client = req.discordClient;
@@ -474,6 +441,11 @@ router.post('/:guildId/autoclear/manual', adminCheck, async (req, res) => {
             return res.status(400).json({ success: false, error: 'Parametri mancanti (canale o quantità).' });
         }
 
+        const parsedAmount = parseInt(amount, 10);
+        if (isNaN(parsedAmount) || parsedAmount <= 0) {
+            return res.status(400).json({ success: false, error: 'La quantità inserita non è un numero valido.' });
+        }
+
         const client = req.discordClient;
         const guild = await client.guilds.fetch(guildId);
         const channel = await guild.channels.fetch(channelId);
@@ -482,7 +454,7 @@ router.post('/:guildId/autoclear/manual', adminCheck, async (req, res) => {
             return res.status(404).json({ success: false, error: 'Canale non trovato o non testuale.' });
         }
 
-        const deleted = await channel.bulkDelete(Math.min(parseInt(amount), 100), true);
+        const deleted = await channel.bulkDelete(Math.min(parsedAmount, 100), true);
 
         await logAudit(req, guildId, 'manual_clear', 'Manual Clear Executed', { channelId, amount: deleted.size });
         

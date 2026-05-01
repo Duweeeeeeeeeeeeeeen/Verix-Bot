@@ -61,11 +61,14 @@ export default {
             } catch (error) {
                 logger.error(`Error executing command ${interaction.commandName}`, error);
                 const errorMsg = { content: 'Si è verificato un errore durante l\'esecuzione di questo comando!', flags: [MessageFlags.Ephemeral] };
-                
-                if (interaction.replied || interaction.deferred) {
-                    await interaction.followUp(errorMsg);
-                } else {
-                    await interaction.reply(errorMsg);
+                try {
+                    if (interaction.replied || interaction.deferred) {
+                        await interaction.followUp(errorMsg);
+                    } else if (interaction.isRepliable()) {
+                        await interaction.reply(errorMsg);
+                    }
+                } catch (replyError) {
+                    logger.error(`Failed to send error message to user (Token expired or interaction invalid): ${replyError.message}`);
                 }
             }
         }
