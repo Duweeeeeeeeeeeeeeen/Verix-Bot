@@ -301,50 +301,80 @@ router.get('/:guildId/giveaways/logs', adminCheck, async (req, res) => {
     }
 });
 
+// GET scheduled giveaways
+router.get('/:guildId/giveaways/scheduled', adminCheck, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const scheduled = await Giveaway.find({ guildId, status: 'SCHEDULED' }).sort({ startTime: 1 });
+        res.json({ success: true, data: scheduled });
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'Impossibile caricare i giveaway programmati' });
+    }
+});
+
 // POST create giveaway from dashboard
 router.post('/:guildId/giveaways/create', adminCheck, async (req, res) => {
     try {
         const { guildId } = req.params;
-        const { prize, duration, winnerCount, channelId } = req.body;
+        const { prize, duration, winnerCount, channelId, scheduledStart } = req.body;
         const client = req.discordClient;
 
-        const durationMs = 1000 * 60 * (parseInt(duration) || 60); // duration is in minutes from dashboard
-        const endTime = new Date(Date.now() + durationMs);
+        const startTime = scheduledStart ? new Date(scheduledStart) : new Date();
+        const durationMs = 1000 * 60 * (parseInt(duration) || 60);
+        const endTime = new Date(startTime.getTime() + durationMs);
 
-        const channel = await client.channels.fetch(channelId).catch(() => null);
-        if (!channel) return res.status(400).json({ success: false, error: 'Canale non trovato' });
+        // If not scheduled (start now), send message immediately
+        if (!scheduledStart || startTime <= new Date()) {
+            const channel = await client.channels.fetch(channelId).catch(() => null);
+            if (!channel) return res.status(400).json({ success: false, error: 'Canale non trovato' });
 
-        const embed = new EmbedBuilder()
-            .setTitle(`🎉 GIVEAWAY: ${prize}`)
-            .setDescription(`Clicca il tasto qui sotto per partecipare!\n\n⌛ **Termina:** <t:${Math.floor(endTime.getTime() / 1000)}:R>`)
-            .addFields({ name: '👥 Partecipanti', value: '0', inline: true })
-            .setColor('#5865F2')
-            .setTimestamp(endTime)
-            .setFooter({ text: 'Termina il' });
+            const embed = new EmbedBuilder()
+                .setTitle(`🎉 GIVEAWAY: ${prize}`)
+                .setDescription(`Clicca il tasto qui sotto per partecipare!\n\n⌛ **Termina:** <t:${Math.floor(endTime.getTime() / 1000)}:R>`)
+                .addFields({ name: '👥 Partecipanti', value: '0', inline: true })
+                .setColor('#5865F2')
+                .setTimestamp(endTime)
+                .setFooter({ text: 'Termina il' });
 
-        const row = new ActionRowBuilder()
-            .addComponents(
-                new ButtonBuilder()
-                    .setCustomId(`gw_join_${Date.now()}`)
-                    .setLabel('Partecipa')
-                    .setEmoji('🎉')
-                    .setStyle(ButtonStyle.Primary)
-            );
+            const row = new ActionRowBuilder()
+                .addComponents(
+                    new ButtonBuilder()
+                        .setCustomId(`gw_join_${Date.now()}`)
+                        .setLabel('Partecipa')
+                        .setEmoji('🎉')
+                        .setStyle(ButtonStyle.Primary)
+                );
 
-        const msg = await channel.send({ embeds: [embed], components: [row] });
+            const msg = await channel.send({ embeds: [embed], components: [row] });
 
-        const giveaway = await Giveaway.create({
-            guildId,
-            channelId,
-            messageId: msg.id,
-            prize,
-            winnerCount: parseInt(winnerCount) || 1,
-            endTime,
-            hostId: req.user.id,
-            status: 'ACTIVE'
-        });
+            const giveaway = await Giveaway.create({
+                guildId,
+                channelId,
+                messageId: msg.id,
+                prize,
+                winnerCount: parseInt(winnerCount) || 1,
+                startTime,
+                endTime,
+                hostId: req.user.id,
+                status: 'ACTIVE'
+            });
 
-        res.json({ success: true, data: giveaway });
+            return res.json({ success: true, data: giveaway });
+        } else {
+            // Scheduled for future
+            const giveaway = await Giveaway.create({
+                guildId,
+                channelId,
+                prize,
+                winnerCount: parseInt(winnerCount) || 1,
+                startTime,
+                endTime,
+                hostId: req.user.id,
+                status: 'SCHEDULED'
+            });
+
+            return res.json({ success: true, data: giveaway, scheduled: true });
+        }
     } catch (error) {
         console.error('[Giveaway] Create error:', error);
         res.status(500).json({ success: false, error: 'Errore durante la creazione del giveaway' });

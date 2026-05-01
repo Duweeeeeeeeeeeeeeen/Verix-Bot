@@ -20,7 +20,8 @@ import {
     MessageSquare,
     ExternalLink,
     History,
-    X
+    X,
+    Calendar
 } from 'lucide-react';
 import DiscordSelector from '../../../components/DiscordSelector';
 
@@ -34,6 +35,7 @@ export default function GiveawayConfig() {
   const [roles, setRoles] = useState([]);
   const [channels, setChannels] = useState([]);
   const [activeGiveaways, setActiveGiveaways] = useState([]);
+  const [scheduledGiveaways, setScheduledGiveaways] = useState([]);
   const [logs, setLogs] = useState([]);
   const [activeTab, setActiveTab] = useState('active');
 
@@ -42,7 +44,8 @@ export default function GiveawayConfig() {
     prize: '',
     duration: 60, // minutes
     winnerCount: 1,
-    channelId: ''
+    channelId: '',
+    scheduledStart: '' // New field
   });
 
   useEffect(() => {
@@ -54,10 +57,11 @@ export default function GiveawayConfig() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [configRes, discordRes, activeRes, logsRes] = await Promise.all([
+      const [configRes, discordRes, activeRes, scheduledRes, logsRes] = await Promise.all([
         api.request(`/config/${guildId}/giveaway`),
         api.request(`/config/${guildId}/discord-data`),
         api.request(`/config/${guildId}/giveaways/active`),
+        api.request(`/config/${guildId}/giveaways/scheduled`),
         api.request(`/config/${guildId}/giveaways/logs`)
       ]);
       
@@ -68,6 +72,7 @@ export default function GiveawayConfig() {
         setChannels(dData.channels?.filter(c => c.type === 0) || []); // Text channels
       }
       if (activeRes) setActiveGiveaways(activeRes.data || []);
+      if (scheduledRes) setScheduledGiveaways(scheduledRes.data || []);
       if (logsRes) setLogs(logsRes.data || []);
     } catch (e) {
       console.error(e);
@@ -160,6 +165,9 @@ export default function GiveawayConfig() {
             <button onClick={() => setActiveTab('active')} className={`tab-link ${activeTab === 'active' ? 'active' : ''}`}>
                 <Zap size={16} /> <span>Live & Crea</span>
             </button>
+            <button onClick={() => setActiveTab('scheduled')} className={`tab-link ${activeTab === 'scheduled' ? 'active' : ''}`}>
+                <Calendar size={16} /> <span>Programmati</span>
+            </button>
             <button onClick={() => setActiveTab('logs')} className={`tab-link ${activeTab === 'logs' ? 'active' : ''}`}>
                 <Clock size={16} /> <span>Cronologia</span>
             </button>
@@ -220,6 +228,16 @@ export default function GiveawayConfig() {
                                             onChange={e => setNewGw({...newGw, winnerCount: parseInt(e.target.value)})}
                                         />
                                     </div>
+                                    <div className="field-box">
+                                        <label className="text-label">Avvio Programmato (Opzionale)</label>
+                                        <input 
+                                            type="datetime-local" 
+                                            className="input" 
+                                            value={newGw.scheduledStart}
+                                            onChange={e => setNewGw({...newGw, scheduledStart: e.target.value})}
+                                        />
+                                        <p className="field-help">Lascia vuoto per avviare subito.</p>
+                                    </div>
                                 </div>
                                 <button type="submit" className="btn-create-gw" disabled={creating}>
                                     {creating ? <RefreshCcw className="animate-spin" size={16} /> : <Zap size={16} />}
@@ -277,6 +295,42 @@ export default function GiveawayConfig() {
                 </div>
             )}
 
+            {activeTab === 'scheduled' && (
+                <div className="animate fade-in">
+                    <section className="card section-card-v">
+                        <div className="align-center" style={{ marginBottom: '20px' }}>
+                            <Calendar size={18} color="var(--primary)" />
+                            <h3>Giveaway Programmati</h3>
+                        </div>
+                        
+                        {scheduledGiveaways.length === 0 ? (
+                            <div className="empty-state">
+                                <Clock size={32} opacity="0.2" />
+                                <p>Nessun giveaway programmato.</p>
+                            </div>
+                        ) : (
+                            <div className="active-gw-list">
+                                {scheduledGiveaways.map(gw => (
+                                    <div key={gw._id} className="active-gw-item scheduled">
+                                        <div className="gw-info">
+                                            <h4>{gw.prize}</h4>
+                                            <div className="gw-meta">
+                                                <span><Calendar size={12}/> Avvio: <t className="time-tag-blue">{new Date(gw.startTime).toLocaleString()}</t></span>
+                                                <span><Clock size={12}/> Durata: {Math.round((new Date(gw.endTime) - new Date(gw.startTime)) / 60000)}m</span>
+                                            </div>
+                                        </div>
+                                        <div className="gw-actions">
+                                            <button onClick={() => handleDeleteGiveaway(gw._id)} className="btn-icon-danger" title="Elimina Programmazione">
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </section>
+                </div>
+            )}
             {activeTab === 'logs' && (
                 <div className="animate fade-in">
                     <section className="card section-card-v">
@@ -374,6 +428,7 @@ export default function GiveawayConfig() {
             .gw-meta { display: flex; gap: 12px; font-size: 0.75rem; color: var(--text-dim); }
             .gw-meta span { display: flex; align-items: center; gap: 4px; }
             .time-tag { color: #f1c40f; }
+            .time-tag-blue { color: #3498db; font-weight: 700; }
 
             .btn-icon-danger { width: 36px; height: 36px; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.05); color: #ef4444; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
             .btn-icon-danger:hover { background: #ef4444; color: white; }

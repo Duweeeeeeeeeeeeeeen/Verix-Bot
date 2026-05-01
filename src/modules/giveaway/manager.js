@@ -21,6 +21,8 @@ class GiveawayManager {
     async checkGiveaways() {
         try {
             const now = new Date();
+            
+            // 1. End active giveaways that reached their endTime
             const giveawaysToEnd = await Giveaway.find({ 
                 endTime: { $lte: now }, 
                 status: 'ACTIVE' 
@@ -29,8 +31,55 @@ class GiveawayManager {
             for (const giveaway of giveawaysToEnd) {
                 await this.endGiveaway(giveaway);
             }
+
+            // 2. Start scheduled giveaways that reached their startTime
+            const giveawaysToStart = await Giveaway.find({
+                startTime: { $lte: now },
+                status: 'SCHEDULED'
+            });
+
+            for (const giveaway of giveawaysToStart) {
+                await this.startGiveaway(giveaway);
+            }
         } catch (error) {
             logger.error('[Giveaway] Error in check loop:', error);
+        }
+    }
+
+    async startGiveaway(giveaway) {
+        try {
+            const guild = await this.client.guilds.fetch(giveaway.guildId).catch(() => null);
+            if (!guild) return;
+
+            const channel = await guild.channels.fetch(giveaway.channelId).catch(() => null);
+            if (!channel) return;
+
+            const embed = new EmbedBuilder()
+                .setTitle(`🎉 GIVEAWAY: ${giveaway.prize}`)
+                .setDescription(`Clicca il tasto qui sotto per partecipare!\n\n⌛ **Termina:** <t:${Math.floor(giveaway.endTime.getTime() / 1000)}:R>`)
+                .addFields({ name: '👥 Partecipanti', value: '0', inline: true })
+                .setColor('#5865F2')
+                .setTimestamp(giveaway.endTime)
+                .setFooter({ text: 'Termina il' });
+
+            const row = new ActionRowBuilder()
+                .addComponents(
+                    new ButtonBuilder()
+                        .setCustomId(`gw_join_${Date.now()}`)
+                        .setLabel('Partecipa')
+                        .setEmoji('🎉')
+                        .setStyle(ButtonStyle.Primary)
+                );
+
+            const msg = await channel.send({ embeds: [embed], components: [row] });
+            
+            giveaway.messageId = msg.id;
+            giveaway.status = 'ACTIVE';
+            await giveaway.save();
+
+            logger.info(`[Giveaway] Started scheduled giveaway ${giveaway._id} in ${guild.name}`);
+        } catch (error) {
+            logger.error(`[Giveaway] Error starting scheduled giveaway ${giveaway._id}:`, error);
         }
     }
 

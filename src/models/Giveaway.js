@@ -11,8 +11,8 @@ const giveawaySchema = new mongoose.Schema({
     },
     messageId: {
         type: String,
-        required: true,
-        unique: true
+        unique: true,
+        sparse: true // Allows multiple nulls for scheduled giveaways
     },
     prize: {
         type: String,
@@ -21,6 +21,10 @@ const giveawaySchema = new mongoose.Schema({
     winnerCount: {
         type: Number,
         default: 1
+    },
+    startTime: {
+        type: Date,
+        default: Date.now
     },
     endTime: {
         type: Date,
@@ -36,7 +40,7 @@ const giveawaySchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ['ACTIVE', 'ENDED'],
+        enum: ['SCHEDULED', 'ACTIVE', 'ENDED'],
         default: 'ACTIVE'
     },
     hostId: {
