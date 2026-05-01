@@ -117,6 +117,11 @@ export default {
             });
 
             if (!submission) return interaction.reply({ content: '❌ Errore: Foto non trovata nel registro.', flags: [MessageFlags.Ephemeral] });
+            
+            // 2. NO SELF-VOTE
+            if (submission.userId === voterId) {
+                return interaction.reply({ content: '❌ Non puoi votare la tua stessa opera!', flags: [MessageFlags.Ephemeral] });
+            }
 
             const upIndex = submission.upvotes.indexOf(voterId);
             const downIndex = submission.downvotes.indexOf(voterId);
@@ -125,8 +130,8 @@ export default {
 
             if (type === 'up') {
                 if (upIndex > -1) {
-                    submission.upvotes.splice(upIndex, 1);
-                    await interaction.reply({ content: '✅ Voto rimosso.', flags: [MessageFlags.Ephemeral] });
+                    // 3. NO UN-VOTE (Voto già presente)
+                    return interaction.reply({ content: '⚠️ Hai già votato positivamente questa foto! Non puoi cambiare o rimuovere il voto.', flags: [MessageFlags.Ephemeral] });
                 } else {
                     submission.upvotes.push(voterId);
                     if (downIndex > -1) submission.downvotes.splice(downIndex, 1);
@@ -135,8 +140,7 @@ export default {
                 }
             } else if (type === 'down') {
                 if (downIndex > -1) {
-                    submission.downvotes.splice(downIndex, 1);
-                    await interaction.reply({ content: '✅ Voto rimosso.', flags: [MessageFlags.Ephemeral] });
+                    return interaction.reply({ content: '⚠️ Hai già votato negativamente questa foto! Non puoi cambiare o rimuovere il voto.', flags: [MessageFlags.Ephemeral] });
                 } else {
                     submission.downvotes.push(voterId);
                     if (upIndex > -1) submission.upvotes.splice(upIndex, 1);

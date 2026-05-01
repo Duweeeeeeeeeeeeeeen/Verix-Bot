@@ -72,23 +72,24 @@ export default {
 
             // Check for Modal data
             const pending = message.client.photocontestManager?.pendingSubmissions.get(message.author.id);
-            let finalTitle = '';
-            let finalDesc = '';
+            let dbTitle = '';
+            let dbDesc = '';
 
             if (pending && (Date.now() - pending.timestamp < 300000)) { // 5 mins validity
-                finalTitle = pending.title;
-                finalDesc = pending.description;
+                dbTitle = pending.title || '';
+                dbDesc = pending.description || '';
                 message.client.photocontestManager.pendingSubmissions.delete(message.author.id);
             } else {
-                finalDesc = message.content.trim();
+                dbDesc = message.content.trim();
             }
 
-            if (finalTitle) {
-                submissionEmbed.setTitle(finalTitle);
-            }
+            // Format for Embed
+            const titlePart = dbTitle ? `**Titolo:** ${dbTitle}\n` : '';
+            const descPart = dbDesc ? `**Descrizione:** ${dbDesc}` : '';
+            const embedDesc = `${titlePart}${descPart}`;
 
-            if (finalDesc) {
-                submissionEmbed.setDescription(finalDesc.substring(0, 2048));
+            if (embedDesc) {
+                submissionEmbed.setDescription(embedDesc.substring(0, 2048));
             }
 
             // Set the image AT THE END
@@ -114,8 +115,8 @@ export default {
                 guildId: message.guildId,
                 userId: message.author.id,
                 imageUrl: botAttachment,
-                title: finalTitle,
-                description: finalDesc,
+                title: dbTitle,
+                description: dbDesc,
                 messageId: botMsg.id
             });
 
