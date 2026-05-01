@@ -391,8 +391,8 @@ export default function PhotoContestConfig() {
                         extraButtons={(slug) => {
                             if (slug === 'panel') {
                                 return [
-                                    { label: config.submitLabel || 'Invia Foto 📸', emoji: config.submitEmoji || '📸', style: 'PRIMARY' },
-                                    { label: config.voteLabel || 'Vota ⭐️', emoji: config.voteEmoji || '⭐️', style: 'SUCCESS' }
+                                    { label: config.submitLabel || 'Invia Foto', emoji: config.submitEmoji || '📸', style: 'PRIMARY' },
+                                    { label: config.voteLabel || 'Classifica', emoji: config.voteEmoji || '🏆', style: 'SUCCESS' }
                                 ];
                             }
                             return null;
