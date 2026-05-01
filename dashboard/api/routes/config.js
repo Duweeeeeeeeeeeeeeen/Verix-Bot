@@ -412,7 +412,11 @@ router.post('/:guildId/giveaways/create', adminCheck, async (req, res) => {
 router.delete('/:guildId/giveaways/:messageId', adminCheck, async (req, res) => {
     try {
         const { guildId, messageId } = req.params;
-        const giveaway = await Giveaway.findOne({ guildId, messageId });
+        // Search by messageId (active) OR _id (scheduled)
+        const giveaway = await Giveaway.findOne({ 
+            guildId, 
+            $or: [{ messageId: messageId }, { _id: messageId.length === 24 ? messageId : null }] 
+        });
         if (!giveaway) return res.status(404).json({ success: false, error: 'Giveaway non trovato' });
 
         const client = req.discordClient;

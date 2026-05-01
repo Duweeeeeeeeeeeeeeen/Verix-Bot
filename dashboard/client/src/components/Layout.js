@@ -113,11 +113,14 @@ export default function Layout({ children, guildId }) {
     { name: 'Tickets', icon: Ticket, path: `/config/${guildId}/tickets` },
     { name: 'Photo Contest', icon: Camera, path: `/config/${guildId}/photocontest` },
     { name: 'Giveaway', icon: Gift, path: `/config/${guildId}/giveaway` },
+    { name: 'Economia', icon: Coins, path: `/config/${guildId}/economy` },
     { name: 'Moderazione', icon: Gavel, path: `/config/${guildId}/moderation` },
+    { name: 'Anti Spam', icon: Shield, path: `/config/${guildId}/antispam` },
     { name: 'Temp Voice', icon: Mic2, path: `/config/${guildId}/tempvoice` },
     { name: 'Assistenza', icon: Mic2, path: `/config/${guildId}/support` },
     { name: 'FiveM', icon: Globe, path: `/config/${guildId}/fivem` },
-    { name: 'Log & Gestione', icon: History, path: `/config/${guildId}/management` },
+    { name: 'Audit Logs', icon: History, path: `/config/${guildId}/audit-logs` },
+    { name: 'Gestione', icon: Settings2, path: `/config/${guildId}/management` },
     { name: 'Embed Suite', icon: LayoutIcon, path: `/config/${guildId}/embeds` },
     { name: 'Auto Clear', icon: Cpu, path: `/config/${guildId}/autoclear` }
   ];

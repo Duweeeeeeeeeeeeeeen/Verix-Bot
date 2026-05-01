@@ -427,7 +427,7 @@ export default function GiveawayConfig() {
                                                 <div className="gw-info">
                                                     <h4>{gw.prize}</h4>
                                                     <div className="gw-meta">
-                                                        <span><Clock size={12}/> <t className="time-tag">{new Date(gw.endTime).toLocaleString()}</t></span>
+                                                        <span><Clock size={12}/> <span className="time-tag">{new Date(gw.endTime).toLocaleString()}</span></span>
                                                         <span><Users size={12}/> {gw.participants?.length || 0} iscritti</span>
                                                     </div>
                                                 </div>
@@ -469,7 +469,7 @@ export default function GiveawayConfig() {
                                                 <div className="gw-info">
                                                     <h4>{gw.prize}</h4>
                                                     <div className="gw-meta">
-                                                        <span><Calendar size={12}/> Avvio: <t className="time-tag-blue">{new Date(gw.startTime).toLocaleString()}</t></span>
+                                                        <span><Calendar size={12}/> Avvio: <span className="time-tag-blue">{new Date(gw.startTime).toLocaleString()}</span></span>
                                                         <span><Clock size={12}/> Durata: {Math.round((new Date(gw.endTime) - new Date(gw.startTime)) / 60000)}m</span>
                                                     </div>
                                                 </div>
