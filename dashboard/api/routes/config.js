@@ -283,10 +283,122 @@ router.post('/:guildId/giveaway', adminCheck, async (req, res) => {
 router.get('/:guildId/giveaways/active', adminCheck, async (req, res) => {
     try {
         const { guildId } = req.params;
-        const active = await Giveaway.find({ guildId, status: 'ACTIVE' }).sort({ endTime: 1 });
+        const active = await Giveaway.find({ guildId, status: 'ACTIVE' }).sort({ endTime: -1 });
         res.json({ success: true, data: active });
     } catch (error) {
         res.status(500).json({ success: false, error: 'Impossibile caricare i giveaway attivi' });
+    }
+});
+
+// GET giveaway logs (ended)
+router.get('/:guildId/giveaways/logs', adminCheck, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const logs = await Giveaway.find({ guildId, status: 'ENDED' }).sort({ endTime: -1 }).limit(20);
+        res.json({ success: true, data: logs });
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'Impossibile caricare i log dei giveaway' });
+    }
+});
+
+// POST create giveaway from dashboard
+router.post('/:guildId/giveaways/create', adminCheck, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const { prize, duration, winnerCount, channelId } = req.body;
+        const client = req.discordClient;
+
+        const durationMs = 1000 * 60 * (parseInt(duration) || 60); // duration is in minutes from dashboard
+        const endTime = new Date(Date.now() + durationMs);
+
+        const channel = await client.channels.fetch(channelId).catch(() => null);
+        if (!channel) return res.status(400).json({ success: false, error: 'Canale non trovato' });
+
+        const embed = new EmbedBuilder()
+            .setTitle(`🎉 GIVEAWAY: ${prize}`)
+            .setDescription(`Clicca il tasto qui sotto per partecipare!\n\n⌛ **Termina:** <t:${Math.floor(endTime.getTime() / 1000)}:R>`)
+            .addFields({ name: '👥 Partecipanti', value: '0', inline: true })
+            .setColor('#5865F2')
+            .setTimestamp(endTime)
+            .setFooter({ text: 'Termina il' });
+
+        const row = new ActionRowBuilder()
+            .addComponents(
+                new ButtonBuilder()
+                    .setCustomId(`gw_join_${Date.now()}`)
+                    .setLabel('Partecipa')
+                    .setEmoji('🎉')
+                    .setStyle(ButtonStyle.Primary)
+            );
+
+        const msg = await channel.send({ embeds: [embed], components: [row] });
+
+        const giveaway = await Giveaway.create({
+            guildId,
+            channelId,
+            messageId: msg.id,
+            prize,
+            winnerCount: parseInt(winnerCount) || 1,
+            endTime,
+            hostId: req.user.id,
+            status: 'ACTIVE'
+        });
+
+        res.json({ success: true, data: giveaway });
+    } catch (error) {
+        console.error('[Giveaway] Create error:', error);
+        res.status(500).json({ success: false, error: 'Errore durante la creazione del giveaway' });
+    }
+});
+
+// DELETE giveaway (cancel/delete)
+router.delete('/:guildId/giveaways/:messageId', adminCheck, async (req, res) => {
+    try {
+        const { guildId, messageId } = req.params;
+        const giveaway = await Giveaway.findOne({ guildId, messageId });
+        if (!giveaway) return res.status(404).json({ success: false, error: 'Giveaway non trovato' });
+
+        const client = req.discordClient;
+        const channel = await client.channels.fetch(giveaway.channelId).catch(() => null);
+        if (channel) {
+            const msg = await channel.messages.fetch(messageId).catch(() => null);
+            if (msg) await msg.delete().catch(() => null);
+        }
+
+        await Giveaway.deleteOne({ _id: giveaway._id });
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'Errore durante l\'eliminazione' });
+    }
+});
+
+// POST remove participant
+router.post('/:guildId/giveaways/:messageId/remove-participant', adminCheck, async (req, res) => {
+    try {
+        const { guildId, messageId } = req.params;
+        const { userId } = req.body;
+
+        const giveaway = await Giveaway.findOne({ guildId, messageId });
+        if (!giveaway) return res.status(404).json({ success: false, error: 'Giveaway non trovato' });
+
+        giveaway.participants = giveaway.participants.filter(id => id !== userId);
+        await giveaway.save();
+
+        // Update Discord message
+        const client = req.discordClient;
+        const channel = await client.channels.fetch(giveaway.channelId).catch(() => null);
+        if (channel) {
+            const msg = await channel.messages.fetch(messageId).catch(() => null);
+            if (msg && msg.embeds[0]) {
+                const embed = EmbedBuilder.from(msg.embeds[0]);
+                embed.setFields({ name: '👥 Partecipanti', value: `${giveaway.participants.length}`, inline: true });
+                await msg.edit({ embeds: [embed] }).catch(() => null);
+            }
+        }
+
+        res.json({ success: true, data: giveaway });
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'Errore durante la rimozione' });
     }
 });
 

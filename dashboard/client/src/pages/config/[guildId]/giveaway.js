@@ -16,7 +16,10 @@ import {
     Power,
     Palette,
     Zap,
-    Info
+    Info,
+    MessageSquare,
+    ExternalLink,
+    X
 } from 'lucide-react';
 import DiscordSelector from '../../../components/DiscordSelector';
 
@@ -25,10 +28,21 @@ export default function GiveawayConfig() {
   const { guildId } = router.query;
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [creating, setCreating] = useState(false);
   const [config, setConfig] = useState(null);
   const [roles, setRoles] = useState([]);
+  const [channels, setChannels] = useState([]);
   const [activeGiveaways, setActiveGiveaways] = useState([]);
-  const [activeTab, setActiveTab] = useState('settings');
+  const [logs, setLogs] = useState([]);
+  const [activeTab, setActiveTab] = useState('active');
+
+  // Form State for new giveaway
+  const [newGw, setNewGw] = useState({
+    prize: '',
+    duration: 60, // minutes
+    winnerCount: 1,
+    channelId: ''
+  });
 
   useEffect(() => {
     if (guildId) {
@@ -39,18 +53,21 @@ export default function GiveawayConfig() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [configRes, discordRes, activeRes] = await Promise.all([
+      const [configRes, discordRes, activeRes, logsRes] = await Promise.all([
         api.request(`/config/${guildId}/giveaway`),
         api.request(`/config/${guildId}/discord-data`),
-        api.request(`/config/${guildId}/giveaways/active`)
+        api.request(`/config/${guildId}/giveaways/active`),
+        api.request(`/config/${guildId}/giveaways/logs`)
       ]);
       
       if (configRes) setConfig(configRes.data || configRes);
       if (discordRes) {
-        const discordData = discordRes.data || {};
-        setRoles(discordData.roles || []);
+        const dData = discordRes.data || {};
+        setRoles(dData.roles || []);
+        setChannels(dData.channels?.filter(c => c.type === 0) || []); // Text channels
       }
       if (activeRes) setActiveGiveaways(activeRes.data || []);
+      if (logsRes) setLogs(logsRes.data || []);
     } catch (e) {
       console.error(e);
     } finally {
@@ -58,32 +75,54 @@ export default function GiveawayConfig() {
     }
   };
 
-  const handleSave = async () => {
+  const handleSaveConfig = async () => {
     setSaving(true);
     try {
       await api.request(`/config/${guildId}/giveaway`, {
         method: 'POST',
         body: JSON.stringify(config)
       });
-      window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Configurazione salvata!', type: 'success' } }));
+      showToast('Configurazione salvata!');
     } catch (e) {
-      console.error(e);
-      window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Errore nel salvataggio', type: 'error' } }));
-    } finally {
-      setSaving(false);
+      showToast('Errore nel salvataggio', 'error');
+    }
+    setSaving(false);
+  };
+
+  const handleCreateGiveaway = async (e) => {
+    e.preventDefault();
+    if (!newGw.prize || !newGw.channelId) return showToast('Compila tutti i campi!', 'error');
+    
+    setCreating(true);
+    try {
+      const res = await api.request(`/config/${guildId}/giveaways/create`, {
+        method: 'POST',
+        body: JSON.stringify(newGw)
+      });
+      if (res.success) {
+        showToast('Giveaway avviato con successo!');
+        setNewGw({ prize: '', duration: 60, winnerCount: 1, channelId: '' });
+        fetchData();
+      }
+    } catch (e) {
+      showToast('Errore durante la creazione', 'error');
+    }
+    setCreating(false);
+  };
+
+  const handleDeleteGiveaway = async (messageId) => {
+    if (!confirm('Sei sicuro di voler annullare questo giveaway? Il messaggio su Discord verrà eliminato.')) return;
+    try {
+      await api.request(`/config/${guildId}/giveaways/${messageId}`, { method: 'DELETE' });
+      showToast('Giveaway eliminato');
+      fetchData();
+    } catch (e) {
+      showToast('Errore durante l\'eliminazione', 'error');
     }
   };
 
-  const setNested = (path, value) => {
-    const newConfig = { ...config };
-    const parts = path.split('.');
-    let cur = newConfig;
-    for (let i = 0; i < parts.length - 1; i++) {
-        if (!cur[parts[i]]) cur[parts[i]] = {};
-        cur = cur[parts[i]];
-    }
-    cur[parts[parts.length - 1]] = value;
-    setConfig(newConfig);
+  const showToast = (message, type = 'success') => {
+    window.dispatchEvent(new CustomEvent('show-toast', { detail: { message, type } }));
   };
 
   if (loading || !config) return <Skeleton type="config" />;
@@ -91,7 +130,7 @@ export default function GiveawayConfig() {
   return (
     <div className="config-page-layout animate">
       <div className="config-main-col">
-        {/* Module Header */}
+        {/* Header */}
         <header className="module-header">
            <div className="header-info">
               <div className="header-icon" style={{ background: 'rgba(236, 72, 153, 0.1)', color: '#ec4899' }}>
@@ -100,110 +139,208 @@ export default function GiveawayConfig() {
               <div className="header-text">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <h1>Giveaway Manager</h1>
-                  <label className="toggle-mini" title={config.enabled ? 'Modulo Attivo' : 'Modulo Disattivato'}>
+                  <label className="toggle-mini">
                     <input type="checkbox" checked={!!config.enabled} onChange={e => setConfig({...config, enabled: e.target.checked})} />
                     <span className="slider-mini"></span>
                   </label>
                 </div>
-                <p>Gestisci estrazioni e premi per la tua community in modo semplice e automatico.</p>
+                <p>Gestisci le estrazioni del tuo server direttamente dalla dashboard.</p>
               </div>
            </div>
            <div className="header-buttons">
-              <button onClick={handleSave} className="btn-primary" disabled={saving}>
-                <Save size={16} /> {saving ? 'Salvataggio...' : 'Salva Modifiche'}
+              <button onClick={handleSaveConfig} className="btn-primary" disabled={saving}>
+                <Save size={16} /> {saving ? 'Salvataggio...' : 'Salva Impostazioni'}
               </button>
            </div>
         </header>
 
-        {/* Tab Navigation */}
+        {/* Navigation */}
         <div className="tab-navigation">
-            <button onClick={() => setActiveTab('settings')} className={`tab-link ${activeTab === 'settings' ? 'active' : ''}`}>
-                <Settings2 size={16} /> <span>Settaggi</span>
-            </button>
             <button onClick={() => setActiveTab('active')} className={`tab-link ${activeTab === 'active' ? 'active' : ''}`}>
-                <Trophy size={16} /> <span>In Corso</span>
+                <Zap size={16} /> <span>Live & Crea</span>
+            </button>
+            <button onClick={() => setActiveTab('logs')} className={`tab-link ${activeTab === 'logs' ? 'active' : ''}`}>
+                <Clock size={16} /> <span>Cronologia</span>
+            </button>
+            <button onClick={() => setActiveTab('settings')} className={`tab-link ${activeTab === 'settings' ? 'active' : ''}`}>
+                <Settings2 size={16} /> <span>Permessi</span>
             </button>
         </div>
 
         <div className="tab-content">
-            {activeTab === 'settings' && (
+            {activeTab === 'active' && (
                 <div className="config-grid-v animate fade-in">
                     <div className="grid-main-v">
+                        {/* Creation Form */}
+                        <section className="card section-card-v" style={{ marginBottom: '24px' }}>
+                            <div className="align-center" style={{ marginBottom: '20px' }}>
+                                <Plus size={18} color="#ec4899" />
+                                <h3>Avvia Nuovo Giveaway</h3>
+                            </div>
+                            <form onSubmit={handleCreateGiveaway} className="create-gw-form">
+                                <div className="fields-grid-v">
+                                    <div className="field-box">
+                                        <label className="text-label">Premio in palio</label>
+                                        <input 
+                                            type="text" 
+                                            className="input" 
+                                            placeholder="Es: VIP Gold per 1 mese"
+                                            value={newGw.prize}
+                                            onChange={e => setNewGw({...newGw, prize: e.target.value})}
+                                        />
+                                    </div>
+                                    <div className="field-box">
+                                        <label className="text-label">Canale Discord</label>
+                                        <DiscordSelector 
+                                            type="channel" 
+                                            options={channels} 
+                                            value={newGw.channelId} 
+                                            onChange={val => setNewGw({...newGw, channelId: val})}
+                                        />
+                                    </div>
+                                    <div className="field-box">
+                                        <label className="text-label">Durata (Minuti)</label>
+                                        <input 
+                                            type="number" 
+                                            className="input" 
+                                            min="1"
+                                            value={newGw.duration}
+                                            onChange={e => setNewGw({...newGw, duration: parseInt(e.target.value)})}
+                                        />
+                                    </div>
+                                    <div className="field-box">
+                                        <label className="text-label">Numero Vincitori</label>
+                                        <input 
+                                            type="number" 
+                                            className="input" 
+                                            min="1"
+                                            max="50"
+                                            value={newGw.winnerCount}
+                                            onChange={e => setNewGw({...newGw, winnerCount: parseInt(e.target.value)})}
+                                        />
+                                    </div>
+                                </div>
+                                <button type="submit" className="btn-create-gw" disabled={creating}>
+                                    {creating ? <RefreshCcw className="animate-spin" size={16} /> : <Zap size={16} />}
+                                    Avvia Giveaway
+                                </button>
+                            </form>
+                        </section>
+
+                        {/* Active List */}
                         <section className="card section-card-v">
                             <div className="align-center" style={{ marginBottom: '20px' }}>
-                                <Shield size={18} color="var(--primary)" />
-                                <h3>Permessi Manager</h3>
+                                <Trophy size={18} color="#f1c40f" />
+                                <h3>Giveaway in Corso</h3>
                             </div>
-                            <div className="field-box">
-                                <label className="text-label">Ruoli Manager</label>
-                                <DiscordSelector 
-                                    type="role" 
-                                    multiple={true} 
-                                    options={roles} 
-                                    value={config.managerRoles || []} 
-                                    onChange={val => setNested('managerRoles', val)} 
-                                    placeholder="Ruoli che possono creare giveaway..."
-                                />
-                                <p className="field-help">I ruoli con permesso 'Gestisci Messaggi' possono sempre creare giveaway.</p>
-                            </div>
+                            
+                            {activeGiveaways.length === 0 ? (
+                                <div className="empty-state">
+                                    <Gift size={32} opacity="0.2" />
+                                    <p>Nessun giveaway attivo.</p>
+                                </div>
+                            ) : (
+                                <div className="active-gw-list">
+                                    {activeGiveaways.map(gw => (
+                                        <div key={gw._id} className="active-gw-item">
+                                            <div className="gw-info">
+                                                <h4>{gw.prize}</h4>
+                                                <div className="gw-meta">
+                                                    <span><Clock size={12}/> <t className="time-tag">{new Date(gw.endTime).toLocaleString()}</t></span>
+                                                    <span><Users size={12}/> {gw.participants?.length || 0} iscritti</span>
+                                                </div>
+                                            </div>
+                                            <div className="gw-actions">
+                                                <button onClick={() => handleDeleteGiveaway(gw.messageId)} className="btn-icon-danger" title="Elimina/Annulla">
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </section>
                     </div>
 
                     <div className="grid-side-v">
-                        <section className="card section-card-v">
+                         <section className="card section-card-v">
                             <div className="align-center" style={{ marginBottom: '16px' }}>
-                                <Zap size={16} color="var(--primary)" />
-                                <h3>Quick Help</h3>
+                                <Info size={16} color="var(--primary)" />
+                                <h3>Tips</h3>
                             </div>
-                            <p className="text-sm text-muted leading-relaxed">
-                                Usa il comando <code>/giveaway start</code> su Discord per creare un nuovo giveaway istantaneamente.
+                            <p className="text-sm text-muted">
+                                Puoi gestire i partecipanti direttamente da qui. In futuro aggiungeremo la possibilità di visualizzare la lista completa dei nomi.
                             </p>
                         </section>
                     </div>
                 </div>
             )}
 
-            {activeTab === 'active' && (
+            {activeTab === 'logs' && (
                 <div className="animate fade-in">
                     <section className="card section-card-v">
-                        <div className="align-center" style={{ marginBottom: '24px' }}>
-                            <Clock size={18} color="var(--primary)" />
-                            <h3>Giveaway Attualmente in Corso</h3>
+                        <div className="align-center" style={{ marginBottom: '20px' }}>
+                            <History size={18} color="var(--primary)" />
+                            <h3>Ultimi 20 Giveaway Conclusi</h3>
                         </div>
-                        
-                        {activeGiveaways.length === 0 ? (
-                            <div className="empty-state">
-                                <Gift size={48} className="empty-icon" />
-                                <p>Nessun giveaway attivo al momento.</p>
-                                <span className="text-xs text-muted">Crea il primo con /giveaway start!</span>
-                            </div>
-                        ) : (
-                            <div className="giveaway-list-grid">
-                                {activeGiveaways.map(gw => (
-                                    <div key={gw._id} className="gw-card">
-                                        <div className="gw-card-header">
-                                            <div className="gw-prize">{gw.prize}</div>
-                                            <div className="gw-badge">ATTIVO</div>
-                                        </div>
-                                        <div className="gw-stats">
-                                            <div className="gw-stat-item">
-                                                <Users size={14} />
-                                                <span>{gw.participants?.length || 0} Partecipanti</span>
-                                            </div>
-                                            <div className="gw-stat-item">
-                                                <Trophy size={14} />
-                                                <span>{gw.winnerCount} Vincitori</span>
-                                            </div>
-                                        </div>
-                                        <div className="gw-footer">
-                                            <Clock size={12} />
-                                            <span>Termina: {new Date(gw.endTime).toLocaleString()}</span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
+                        <div className="logs-table-wrapper">
+                            <table className="logs-table">
+                                <thead>
+                                    <tr>
+                                        <th>Premio</th>
+                                        <th>Data</th>
+                                        <th>Vincitori</th>
+                                        <th>Partecipanti</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {logs.map(log => (
+                                        <tr key={log._id}>
+                                            <td className="font-bold">{log.prize}</td>
+                                            <td>{new Date(log.endTime).toLocaleDateString()}</td>
+                                            <td>
+                                                <div className="winners-pill">
+                                                    {log.winners?.length || 0} Estratti
+                                                </div>
+                                            </td>
+                                            <td>{log.participants?.length || 0}</td>
+                                        </tr>
+                                    ))}
+                                    {logs.length === 0 && (
+                                        <tr>
+                                            <td colSpan="4" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-dim)' }}>
+                                                Nessun log disponibile.
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
                     </section>
+                </div>
+            )}
+
+            {activeTab === 'settings' && (
+                <div className="config-grid-v animate fade-in">
+                    <div className="grid-main-v">
+                        <section className="card section-card-v">
+                            <div className="align-center" style={{ marginBottom: '20px' }}>
+                                <Shield size={18} color="var(--primary)" />
+                                <h3>Autorizzazioni</h3>
+                            </div>
+                            <div className="field-box">
+                                <label className="text-label">Ruoli con permessi Giveaway</label>
+                                <DiscordSelector 
+                                    type="role" 
+                                    multiple={true} 
+                                    options={roles} 
+                                    value={config.managerRoles || []} 
+                                    onChange={val => setConfig({...config, managerRoles: val})} 
+                                />
+                                <p className="field-help">I ruoli selezionati potranno usare i comandi di gestione giveaway su Discord.</p>
+                            </div>
+                        </section>
+                    </div>
                 </div>
             )}
         </div>
@@ -212,7 +349,7 @@ export default function GiveawayConfig() {
       <style jsx>{`
             .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: rgba(255,255,255,0.02); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
             .header-info { display: flex; align-items: center; gap: 16px; }
-            .header-icon { width: 48px; height: 48px; background: rgba(129, 140, 248, 0.1); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+            .header-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
             .header-text h1 { font-size: 1.5rem; margin-bottom: 2px; }
             .header-text p { font-size: 0.85rem; color: var(--text-muted); }
             
@@ -222,30 +359,33 @@ export default function GiveawayConfig() {
             .tab-link.active { color: white; background: var(--bg-card); box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
 
             .config-grid-v { display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
+            .fields-grid-v { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
             .align-center { display: flex; align-items: center; gap: 10px; }
             
-            .toggle-mini { position: relative; display: inline-block; width: 34px; height: 18px; }
-            .toggle-mini input { opacity: 0; width: 0; height: 0; }
-            .slider-mini { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #334155; transition: .3s; border-radius: 18px; }
-            .slider-mini:before { position: absolute; content: ""; height: 12px; width: 12px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
-            input:checked + .slider-mini { background-color: var(--primary); }
-            input:checked + .slider-mini:before { transform: translateX(16px); }
+            .create-gw-form { background: rgba(255,255,255,0.01); border-radius: 12px; }
+            .btn-create-gw { width: 100%; padding: 14px; background: #ec4899; color: white; border: none; border-radius: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 12px rgba(236, 72, 153, 0.2); }
+            .btn-create-gw:hover { background: #db2777; transform: translateY(-2px); }
+            .btn-create-gw:disabled { opacity: 0.5; cursor: not-allowed; }
 
-            .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px; background: rgba(255,255,255,0.02); border: 2px dashed var(--border); border-radius: 20px; }
-            .empty-icon { color: var(--text-dim); margin-bottom: 16px; opacity: 0.3; }
-            .empty-state p { color: var(--text-muted); font-weight: 500; }
+            .active-gw-list { display: flex; flex-direction: column; gap: 12px; }
+            .active-gw-item { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; }
+            .gw-info h4 { font-size: 1rem; font-weight: 700; color: white; margin-bottom: 4px; }
+            .gw-meta { display: flex; gap: 12px; font-size: 0.75rem; color: var(--text-dim); }
+            .gw-meta span { display: flex; align-items: center; gap: 4px; }
+            .time-tag { color: #f1c40f; }
 
-            .giveaway-list-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-            .gw-card { padding: 20px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 16px; transition: 0.3s; }
-            .gw-card:hover { border-color: var(--primary); background: rgba(255,255,255,0.05); }
-            .gw-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
-            .gw-prize { font-size: 1.1rem; font-weight: 700; color: white; }
-            .gw-badge { font-size: 0.65rem; font-weight: 900; background: rgba(34, 197, 94, 0.1); color: #22c55e; padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(34, 197, 94, 0.2); }
-            .gw-stats { display: flex; gap: 16px; margin-bottom: 16px; }
-            .gw-stat-item { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--text-muted); }
-            .gw-footer { display: flex; align-items: center; gap: 6px; font-size: 0.7rem; color: var(--text-dim); border-top: 1px solid var(--border); pt: 12px; margin-top: 12px; pt: 12px; }
+            .btn-icon-danger { width: 36px; height: 36px; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.05); color: #ef4444; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+            .btn-icon-danger:hover { background: #ef4444; color: white; }
 
-            @media (max-width: 1000px) { .config-grid-v { grid-template-columns: 1fr; } }
+            .logs-table-wrapper { overflow-x: auto; }
+            .logs-table { width: 100%; border-collapse: collapse; }
+            .logs-table th { text-align: left; padding: 12px; font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; border-bottom: 1px solid var(--border); }
+            .logs-table td { padding: 16px 12px; border-bottom: 1px solid rgba(255,255,255,0.02); font-size: 0.85rem; color: var(--text-muted); }
+            .winners-pill { background: rgba(34, 197, 94, 0.1); color: #22c55e; padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; width: fit-content; }
+
+            .empty-state { padding: 40px; text-align: center; color: var(--text-dim); }
+
+            @media (max-width: 1000px) { .config-grid-v { grid-template-columns: 1fr; } .fields-grid-v { grid-template-columns: 1fr; } }
         `}</style>
     </div>
   );
