@@ -260,6 +260,7 @@ router.get('/:guildId/giveaway', adminCheck, async (req, res) => {
         if (!config) config = await GiveawayConfig.create({ guildId });
         res.json({ success: true, data: mergeModuleDefaults('giveaway', config) });
     } catch (error) {
+        console.error('[Giveaway] Config GET Error:', error);
         res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione giveaway' });
     }
 });

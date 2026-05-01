@@ -90,6 +90,7 @@ export default function GiveawayConfig() {
 
   const fetchData = async () => {
     setLoading(true);
+    window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
     try {
       const [configRes, discordRes, activeRes, scheduledRes, logsRes] = await Promise.all([
         api.request(`/config/${guildId}/giveaway`),
