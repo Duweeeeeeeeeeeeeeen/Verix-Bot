@@ -1267,6 +1267,7 @@ router.post('/:guildId/reset/:module', adminCheck, async (req, res) => {
 router.get('/:guildId/audit-logs', adminCheck, async (req, res) => {
     try {
         const logs = await DashboardAuditLog.find({ guildId: req.params.guildId })
+            .select('userId username action timestamp changes') // explicit projection
             .sort({ timestamp: -1 })
             .limit(100);
         res.json({ success: true, data: logs });

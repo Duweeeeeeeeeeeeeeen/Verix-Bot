@@ -45,6 +45,7 @@ export default function ManagementPage() {
   // Audit Logs State
   const [logs, setLogs] = useState([]);
   const [logsLoading, setLogsLoading] = useState(false);
+  const [logsLoaded, setLogsLoaded] = useState(false); // tracks if logs were fetched at least once
   const [expandedLog, setExpandedLog] = useState(null);
   const [logSearch, setLogSearch] = useState('');
 
@@ -52,9 +53,16 @@ export default function ManagementPage() {
     setMounted(true);
   }, []);
 
+  // Load user list only once at mount — NOT on every tab change
   useEffect(() => {
     if (guildId && mounted) {
       fetchUserList();
+    }
+  }, [guildId, mounted]);
+
+  // Load logs lazily — only when the 'logs' tab is opened for the first time
+  useEffect(() => {
+    if (guildId && mounted && activeTab === 'logs' && !logsLoaded) {
       fetchLogs();
     }
   }, [guildId, mounted, activeTab]);
@@ -88,12 +96,12 @@ export default function ManagementPage() {
   };
 
   const fetchLogs = async () => {
-    if (activeTab !== 'logs') return;
     setLogsLoading(true);
     try {
       const res = await api.request(`/config/${guildId}/audit-logs`);
       const logsData = res.data || (Array.isArray(res) ? res : []);
       setLogs(logsData);
+      setLogsLoaded(true);
     } catch (error) {
       console.error('Fetch logs error:', error);
     } finally {

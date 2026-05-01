@@ -54,7 +54,8 @@ app.use(session({
     cookie: {
         httpOnly: true,
         sameSite: 'lax',
-        secure: false  // Set to false since the VPS uses HTTP (not HTTPS)
+        secure: false,  // Set to false since the VPS uses HTTP (not HTTPS)
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days explicit expiry
     }
 }));
 app.use(passport.initialize());
@@ -70,6 +71,21 @@ const apiLimiter = rateLimit({
 });
 app.use('/api/config', apiLimiter);
 app.use('/api/messages', apiLimiter);
+
+// Strict limiter for destructive operations (reset, delete, manual clear)
+const strictLimiter = rateLimit({
+    windowMs: 60 * 1000,    // 1 minute window
+    max: 10,                // max 10 destructive actions/min per IP
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, error: 'Troppe operazioni distruttive. Attendi un minuto.' }
+});
+// Apply to all POST routes under /management and all DELETE routes under /config
+app.use('/api/management', strictLimiter);
+app.use((req, res, next) => {
+    if (req.method === 'DELETE') return strictLimiter(req, res, next);
+    next();
+});
 
 // ─── Routes ──────────────────────────────────────────────────────────────────
 app.use('/api/auth', authRoutes);

@@ -72,4 +72,11 @@ giveawaySchema.index({ status: 1, endTime: 1 });   // checkGiveaways: find ACTIV
 giveawaySchema.index({ status: 1, startTime: 1 }); // checkGiveaways: find SCHEDULED past startTime
 giveawaySchema.index({ guildId: 1, status: 1 });   // dashboard: filter by guild + status
 
+// TTL Index: auto-delete ENDED giveaways after 90 days to keep collection lean
+// MongoDB checks this index periodically (~60s) and removes expired docs automatically
+giveawaySchema.index({ updatedAt: 1 }, {
+    expireAfterSeconds: 90 * 24 * 60 * 60, // 90 days
+    partialFilterExpression: { status: 'ENDED' } // only affects ENDED giveaways
+});
+
 export default mongoose.model('Giveaway', giveawaySchema);
