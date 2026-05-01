@@ -47,8 +47,8 @@ const NotificationSettings = ({
             </div>
 
             <div className="fields-grid" style={{ display: 'grid', gridTemplateColumns: (value?.mode === 'CHANNEL' || value?.mode === 'BOTH') ? '1fr 1.2fr' : '1fr', gap: '20px' }}>
-                <div className="field-box">
-                    <label className="text-label">Modalità Notifica</label>
+                <div className="field-box" style={{ maxWidth: (value?.mode === 'CHANNEL' || value?.mode === 'BOTH') ? '100%' : '350px' }}>
+                    <label className="text-label" style={{ textTransform: 'uppercase', fontSize: '0.75rem', letterSpacing: '1px', fontWeight: 700, color: 'var(--text-muted)' }}>Modalità Notifica</label>
                     <CustomSelect
                         value={value?.mode || 'DM'}
                         onChange={handleModeChange}
