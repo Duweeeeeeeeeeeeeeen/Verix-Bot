@@ -103,18 +103,18 @@ export default function GiveawayConfig() {
     setSaving(false);
   };
 
-  const handleCreateGiveaway = async (e) => {
-    e.preventDefault();
-    if (!newGw.prize || !newGw.channelId) return showToast('Compila tutti i campi!', 'error');
+  const handleCreateGiveaway = async (gwData) => {
+    const dataToPost = gwData || newGw;
+    if (!dataToPost.prize || !dataToPost.channelId) return showToast('Compila tutti i campi!', 'error');
     
     setCreating(true);
     try {
       const res = await api.request(`/config/${guildId}/giveaways/create`, {
         method: 'POST',
-        body: JSON.stringify(newGw)
+        body: JSON.stringify(dataToPost)
       });
       if (res.success) {
-        showToast('Giveaway avviato con successo!');
+        showToast(dataToPost.scheduledStart ? 'Giveaway programmato con successo!' : 'Giveaway avviato con successo!');
         setNewGw({ prize: '', duration: 60, winnerCount: 1, channelId: '', scheduledStart: '' });
         fetchData();
       }
@@ -196,9 +196,9 @@ export default function GiveawayConfig() {
                             <section className="card section-card-v" style={{ marginBottom: '24px' }}>
                                 <div className="align-center" style={{ marginBottom: '20px' }}>
                                     <Plus size={18} color="#ec4899" />
-                                    <h3>Avvia Nuovo Giveaway</h3>
+                                    <h3>Nuovo Giveaway</h3>
                                 </div>
-                                <form onSubmit={handleCreateGiveaway} className="create-gw-form">
+                                <form className="create-gw-form">
                                     <div className="fields-grid-v">
                                         <div className="field-box">
                                             <label className="text-label">Premio in palio</label>
@@ -240,21 +240,43 @@ export default function GiveawayConfig() {
                                                 onChange={e => setNewGw({...newGw, winnerCount: parseInt(e.target.value)})}
                                             />
                                         </div>
-                                        <div className="field-box">
-                                            <label className="text-label">Avvio Programmato (Opzionale)</label>
+                                        <div className="field-box full-width">
+                                            <label className="text-label">Avvio Programmato (Solo per programmazione)</label>
                                             <input 
                                                 type="datetime-local" 
                                                 className="input" 
                                                 value={newGw.scheduledStart}
                                                 onChange={e => setNewGw({...newGw, scheduledStart: e.target.value})}
                                             />
-                                            <p className="field-help">Lascia vuoto per avviare subito.</p>
                                         </div>
                                     </div>
-                                    <button type="submit" className="btn-create-gw" disabled={creating}>
-                                        {creating ? <RefreshCcw className="animate-spin" size={16} /> : <Zap size={16} />}
-                                        Avvia Giveaway
-                                    </button>
+                                    
+                                    <div className="form-actions-v">
+                                        <button 
+                                            type="button" 
+                                            className="btn-quick-start" 
+                                            disabled={creating}
+                                            onClick={(e) => {
+                                                const gw = { ...newGw, scheduledStart: '' };
+                                                handleCreateGiveaway(gw);
+                                            }}
+                                        >
+                                            <Zap size={16} />
+                                            Avvia Subito
+                                        </button>
+                                        <button 
+                                            type="button" 
+                                            className="btn-schedule" 
+                                            disabled={creating}
+                                            onClick={(e) => {
+                                                if (!newGw.scheduledStart) return showToast('Seleziona una data per programmare!', 'warning');
+                                                handleCreateGiveaway(newGw);
+                                            }}
+                                        >
+                                            <Calendar size={16} />
+                                            Programma Giveaway
+                                        </button>
+                                    </div>
                                 </form>
                             </section>
 
@@ -297,9 +319,14 @@ export default function GiveawayConfig() {
                     {activeTab === 'scheduled' && (
                         <div className="animate fade-in">
                             <section className="card section-card-v">
-                                <div className="align-center" style={{ marginBottom: '20px' }}>
-                                    <Calendar size={18} color="#3498db" />
-                                    <h3>Giveaway Programmati</h3>
+                                <div className="align-center" style={{ marginBottom: '20px', justifyContent: 'space-between' }}>
+                                    <div className="align-center">
+                                        <Calendar size={18} color="#3498db" />
+                                        <h3>Giveaway Programmati</h3>
+                                    </div>
+                                    <button className="btn-outline-sm" onClick={() => setActiveTab('active')}>
+                                        <Plus size={14} /> Nuovo
+                                    </button>
                                 </div>
                                 
                                 {scheduledGiveaways.length === 0 ? (
@@ -419,9 +446,14 @@ export default function GiveawayConfig() {
             .align-center { display: flex; align-items: center; gap: 10px; }
             
             .create-gw-form { background: rgba(255,255,255,0.01); border-radius: 12px; }
-            .btn-create-gw { width: 100%; padding: 14px; background: #ec4899; color: white; border: none; border-radius: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 12px rgba(236, 72, 153, 0.2); }
-            .btn-create-gw:hover { background: #db2777; transform: translateY(-2px); }
-            .btn-create-gw:disabled { opacity: 0.5; cursor: not-allowed; }
+            .form-actions-v { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 24px; }
+            .btn-quick-start { padding: 14px; background: #ec4899; color: white; border: none; border-radius: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 12px rgba(236, 72, 153, 0.2); }
+            .btn-quick-start:hover { background: #db2777; transform: translateY(-2px); }
+            .btn-schedule { padding: 14px; background: rgba(52, 152, 219, 0.1); color: #3498db; border: 1px solid rgba(52, 152, 219, 0.2); border-radius: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; transition: 0.2s; }
+            .btn-schedule:hover { background: rgba(52, 152, 219, 0.2); border-color: #3498db; }
+            .btn-quick-start:disabled, .btn-schedule:disabled { opacity: 0.5; cursor: not-allowed; }
+
+            .field-box.full-width { grid-column: span 2; }
 
             .active-gw-list { display: flex; flex-direction: column; gap: 12px; }
             .active-gw-item { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; }
