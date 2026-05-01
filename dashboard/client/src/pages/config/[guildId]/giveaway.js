@@ -19,6 +19,7 @@ import {
     Info,
     MessageSquare,
     ExternalLink,
+    History,
     X
 } from 'lucide-react';
 import DiscordSelector from '../../../components/DiscordSelector';
