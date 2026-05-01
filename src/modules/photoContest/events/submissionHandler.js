@@ -59,8 +59,25 @@ export default {
             submissionEmbed.setImage(`attachment://${imgName}`);
             submissionEmbed.setAuthor({ name: `Inviato da ${message.author.username}`, iconURL: message.author.displayAvatarURL() });
 
-            if (message.content && message.content.trim().length > 0) {
-                submissionEmbed.addFields({ name: '📝 Descrizione', value: message.content.trim().substring(0, 1024) });
+            // Check for Modal data
+            const pending = message.client.photocontestManager?.pendingSubmissions.get(message.author.id);
+            let finalTitle = '';
+            let finalDesc = '';
+
+            if (pending && (Date.now() - pending.timestamp < 300000)) { // 5 mins validity
+                finalTitle = pending.title;
+                finalDesc = pending.description;
+                message.client.photocontestManager.pendingSubmissions.delete(message.author.id);
+            } else {
+                finalDesc = message.content.trim();
+            }
+
+            if (finalTitle) {
+                submissionEmbed.setTitle(finalTitle);
+            }
+
+            if (finalDesc) {
+                submissionEmbed.setDescription(finalDesc.substring(0, 2048));
             }
 
             const row = new ActionRowBuilder()
@@ -83,6 +100,8 @@ export default {
                 guildId: message.guildId,
                 userId: message.author.id,
                 imageUrl: botAttachment,
+                title: finalTitle,
+                description: finalDesc,
                 messageId: botMsg.id
             });
 

@@ -12,6 +12,7 @@ export class PhotoContestManager {
     constructor(client) {
         this.client = client;
         this.checkInterval = null;
+        this.pendingSubmissions = new Map(); // Store { userId: { title, description, timestamp } }
     }
 
     /**

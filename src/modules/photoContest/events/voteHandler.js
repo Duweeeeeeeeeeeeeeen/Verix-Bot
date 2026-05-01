@@ -1,4 +1,4 @@
-import { EmbedBuilder, MessageFlags } from 'discord.js';
+import { EmbedBuilder, MessageFlags, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } from 'discord.js';
 import PhotoSubmission from '../../../models/PhotoSubmission.js';
 import PhotoContest from '../../../models/PhotoContest.js';
 import PhotoContestConfig from '../../../models/PhotoContestConfig.js';
@@ -9,15 +9,70 @@ import messageService from '../../../utils/messageService.js';
 export default {
     name: 'interactionCreate',
     async execute(interaction, client) {
-        if (!interaction.isButton()) return;
-        if (!interaction.customId.startsWith('pc_')) return;
-        
-        if (interaction.customId === 'pc_submit_info') {
+        if (interaction.isButton() && interaction.customId === 'pc_submit_info') {
+            // Check if contest is active
+            const activeContest = await PhotoContest.findOne({ guildId: interaction.guildId, status: 'ACTIVE' });
+            if (!activeContest) {
+                return interaction.reply({ content: '❌ Non c\'è alcun contest attivo al momento.', flags: [MessageFlags.Ephemeral] });
+            }
+
+            // Check if user already submitted
+            const existing = await PhotoSubmission.findOne({ contestId: activeContest._id, userId: interaction.user.id });
+            if (existing) {
+                return interaction.reply({ content: '❌ Hai già inviato una foto per questo contest!', flags: [MessageFlags.Ephemeral] });
+            }
+
+            const modal = new ModalBuilder()
+                .setCustomId('pc_submit_modal')
+                .setTitle('Invia la tua Foto');
+
+            const titleInput = new TextInputBuilder()
+                .setCustomId('pc_modal_title')
+                .setLabel('Titolo della Foto')
+                .setPlaceholder('Inserisci un titolo accattivante...')
+                .setStyle(TextInputStyle.Short)
+                .setRequired(false)
+                .setMaxLength(100);
+
+            const descInput = new TextInputBuilder()
+                .setCustomId('pc_modal_desc')
+                .setLabel('Descrizione / Storia')
+                .setPlaceholder('Raccontaci qualcosa di questa foto...')
+                .setStyle(TextInputStyle.Paragraph)
+                .setRequired(false)
+                .setMaxLength(500);
+
+            modal.addComponents(
+                new ActionRowBuilder().addComponents(titleInput),
+                new ActionRowBuilder().addComponents(descInput)
+            );
+
+            return await interaction.showModal(modal);
+        }
+
+        // Handle Modal Submission
+        if (interaction.isModalSubmit() && interaction.customId === 'pc_submit_modal') {
+            const title = interaction.fields.getTextInputValue('pc_modal_title');
+            const description = interaction.fields.getTextInputValue('pc_modal_desc');
+
+            if (client.photocontestManager) {
+                client.photocontestManager.pendingSubmissions.set(interaction.user.id, {
+                    title,
+                    description,
+                    timestamp: Date.now()
+                });
+            }
+
             return interaction.reply({ 
-                content: '📸 **Come partecipare:** Invia una foto (come allegato) in questo canale per partecipare al contest attuale!\n\n*Nota: Puoi inviare una sola foto per contest.*', 
+                content: '✅ **Dati salvati!** Ora invia la tua foto (come allegato) in questo canale entro 5 minuti per completare la sottomissione.', 
                 flags: [MessageFlags.Ephemeral] 
             });
         }
+
+        if (!interaction.isButton()) return;
+        if (!interaction.customId.startsWith('pc_')) return;
+        
+        // ... (rest of the file starts with pc_leaderboard_view)
 
         if (interaction.customId === 'pc_leaderboard_view') {
             try {

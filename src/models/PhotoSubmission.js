@@ -18,6 +18,14 @@ const photoSubmissionSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    title: {
+        type: String,
+        default: ''
+    },
+    description: {
+        type: String,
+        default: ''
+    },
     messageId: {
         type: String,
         required: true
