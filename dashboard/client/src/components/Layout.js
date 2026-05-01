@@ -283,10 +283,7 @@ export default function Layout({ children, guildId }) {
                      <span className="dot-pulse"></span>
                    </button>
                  )}
-                 <button className="icon-action" title="Notifications">
-                   <Bell size={18} strokeWidth={2} />
-                 </button>
-              </div>
+               </div>
           </div>
         </header>
 

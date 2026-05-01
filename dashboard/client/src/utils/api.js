@@ -25,7 +25,13 @@ export async function apiRequest(endpoint, options = {}) {
   }
 
   try {
+    if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
+    }
     const response = await fetch(url, defaultOptions);
+    if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
+    }
     
     // Check if redirect or error without body
     if (!response.ok && response.status === 401) {
@@ -49,6 +55,9 @@ export async function apiRequest(endpoint, options = {}) {
     return result.success ? result.data : result;
     
   } catch (error) {
+    if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
+    }
     if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
       window.dispatchEvent(new CustomEvent('show-toast', { 
         detail: { message: 'Errore di connessione al server.', type: 'error' } 

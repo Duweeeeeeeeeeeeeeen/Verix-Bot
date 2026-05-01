@@ -719,15 +719,15 @@ option {
 .toast-premium {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 16px 24px;
+  gap: 10px;
+  padding: 10px 16px;
   background: #1e293b;
-  border-radius: 14px;
+  border-radius: 10px;
   border: 1px solid var(--border-strong);
   box-shadow: var(--shadow-premium);
   font-weight: 600;
-  font-size: 0.9rem;
-  min-width: 280px;
+  font-size: 0.85rem;
+  min-width: 200px;
 }
 
 .toast-premium.success { color: #f1f5f9; border-left: 4px solid var(--success); }
