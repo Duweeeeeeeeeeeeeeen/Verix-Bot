@@ -12,17 +12,22 @@ export function buildEmbed(embedConfig, placeholders = {}, fullConfig = {}) {
     if (!embedConfig) return null;
     if (embedConfig.enabled === false) return null;
 
+    const isPlaceholder = (val) => !val || (typeof val === 'string' && (val.trim() === '' || val === 'Senza Titolo' || val === 'Nessun contenuto impostato.'));
+
     const embed = new EmbedBuilder();
 
-    let title = replacePlaceholders(embedConfig.title, placeholders);
+    // 1. Title
+    let rawTitle = isPlaceholder(embedConfig.title) ? '' : embedConfig.title;
+    let title = replacePlaceholders(rawTitle, placeholders);
     if (title && title.trim().length > 0) {
         // SECURITY: Embed titles do NOT support mentions (<@ID>). 
-        // We strip them to prevent raw strings like <@123> from appearing.
         title = title.replace(/<@!?&?(\d+)>|<#\d+>/g, '').trim();
         if (title.length > 0) embed.setTitle(title);
     }
 
-    const desc = replacePlaceholders(embedConfig.description, placeholders);
+    // 2. Description
+    let rawDesc = isPlaceholder(embedConfig.description) ? '' : embedConfig.description;
+    const desc = replacePlaceholders(rawDesc, placeholders);
     if (desc && desc.trim().length > 0) embed.setDescription(desc);
 
     // Resolve Theme Color or Hex
@@ -30,39 +35,49 @@ export function buildEmbed(embedConfig, placeholders = {}, fullConfig = {}) {
     if (fullConfig.colors && fullConfig.colors[color]) {
         color = fullConfig.colors[color];
     }
+    // Prevent black color fallback if invalid
+    if (color === '#000000') color = '#5865F2';
     embed.setColor(color);
 
-    if (embedConfig.footer) {
+    if (embedConfig.footer && !isPlaceholder(embedConfig.footer)) {
         embed.setFooter({ text: replacePlaceholders(embedConfig.footer, placeholders) });
     }
 
-    if (embedConfig.image) {
+    if (embedConfig.image && !isPlaceholder(embedConfig.image)) {
         let imageUrl = replacePlaceholders(embedConfig.image, placeholders);
         // Remove legacy broken links
-        if (imageUrl !== 'https://i.imgur.com/FmK6O9S.png') {
+        if (imageUrl && imageUrl.startsWith('http') && imageUrl !== 'https://i.imgur.com/FmK6O9S.png') {
             embed.setImage(imageUrl);
         }
     }
 
-    if (embedConfig.thumbnail) {
+    if (embedConfig.thumbnail && !isPlaceholder(embedConfig.thumbnail)) {
         let thumbUrl = replacePlaceholders(embedConfig.thumbnail, placeholders);
         // Remove legacy broken links
-        if (thumbUrl !== 'https://i.imgur.com/FmK6O9S.png') {
+        if (thumbUrl && thumbUrl.startsWith('http') && thumbUrl !== 'https://i.imgur.com/FmK6O9S.png') {
             embed.setThumbnail(thumbUrl);
         }
     }
 
     if (embedConfig.fields && Array.from(embedConfig.fields).length > 0) {
-        const fields = embedConfig.fields.map(f => ({
-            name: replacePlaceholders(f.name, placeholders),
-            value: replacePlaceholders(f.value, placeholders),
-            inline: f.inline || false
-        }));
-        embed.addFields(fields);
+        const validFields = embedConfig.fields
+            .filter(f => !isPlaceholder(f.name) && !isPlaceholder(f.value))
+            .map(f => ({
+                name: replacePlaceholders(f.name, placeholders),
+                value: replacePlaceholders(f.value, placeholders),
+                inline: f.inline || false
+            }));
+        
+        if (validFields.length > 0) embed.addFields(validFields);
     }
 
     if (embedConfig.timestamp !== false) {
         embed.setTimestamp();
+    }
+
+    // FINAL CHECK: Discord requires at least one field (title, description, etc)
+    if (!embed.data.title && !embed.data.description && (!embed.data.fields || embed.data.fields.length === 0)) {
+        embed.setDescription('*(Nessun contenuto impostato)*');
     }
 
     return embed;

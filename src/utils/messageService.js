@@ -54,6 +54,7 @@ class MessageService {
 
     /**
      * Internal: Get the raw message object (DB or Default)
+     * Performs a field-by-field merge to avoid "Senza Titolo" placeholders.
      */
     async getRaw(guildId, module, slug) {
         const cacheKey = `${guildId}_${module}`;
@@ -78,7 +79,32 @@ class MessageService {
         const dbEmbed = moduleMessages instanceof Map ? moduleMessages.get(slug) : moduleMessages[slug];
         const defaultEmbed = defaultMessages[module]?.[slug];
 
-        return dbEmbed || defaultEmbed;
+        if (!dbEmbed) return defaultEmbed;
+        if (!defaultEmbed) return dbEmbed;
+
+        // --- MERGE LOGIC ---
+        // If the DB version has "Senza Titolo" or empty fields, we fall back to defaults for those fields
+        const isPlaceholder = (val) => !val || (typeof val === 'string' && (val.trim() === '' || val === 'Senza Titolo' || val === 'Nessun contenuto impostato.'));
+
+        const merged = { ...dbEmbed };
+        
+        if (isPlaceholder(merged.title)) merged.title = defaultEmbed.title;
+        if (isPlaceholder(merged.description)) merged.description = defaultEmbed.description;
+        if (isPlaceholder(merged.footer)) merged.footer = defaultEmbed.footer;
+        if (isPlaceholder(merged.image)) merged.image = defaultEmbed.image;
+        if (isPlaceholder(merged.thumbnail)) merged.thumbnail = defaultEmbed.thumbnail;
+        
+        // Only override color if DB has default or invalid color
+        if (!merged.color || merged.color === '#5865f2' || merged.color === '#000000') {
+            merged.color = defaultEmbed.color || merged.color;
+        }
+
+        // Merge fields if DB has none or they are empty
+        if (defaultEmbed.fields && (!merged.fields || merged.fields.length === 0)) {
+            merged.fields = defaultEmbed.fields;
+        }
+
+        return merged;
     }
 
     /**

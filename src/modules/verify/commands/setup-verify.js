@@ -92,12 +92,14 @@ export default {
 
             // Create the Embed
             const pEmbed = config.embeds?.panel || {};
+            const isPlaceholder = (val) => !val || (typeof val === 'string' && (val.trim() === '' || val === 'Senza Titolo' || val === 'Nessun contenuto impostato.'));
+
             const embed = new EmbedBuilder()
-                .setTitle(pEmbed.title || '✅ Verifica Account')
-                .setDescription(pEmbed.description || 'Clicca il bottone qui sotto per verificarti e accedere al server!')
-                .setColor(pEmbed.color || '#2ecc71')
+                .setTitle(!isPlaceholder(pEmbed.title) ? pEmbed.title : '🛡️ Protocollo di Identificazione')
+                .setDescription(!isPlaceholder(pEmbed.description) ? pEmbed.description : 'Per accedere alla città, devi confermare la tua identità cittadina. Clicca il pulsante qui sotto per procedere.')
+                .setColor(pEmbed.color && pEmbed.color !== '#000000' ? pEmbed.color : '#3BA4FF')
                 .setTimestamp()
-                .setFooter({ text: pEmbed.footer || interaction.guild.name, iconURL: interaction.guild.iconURL() });
+                .setFooter({ text: !isPlaceholder(pEmbed.footer) ? pEmbed.footer : (interaction.guild.name + ' | Verix RP'), iconURL: interaction.guild.iconURL() });
             
             if (pEmbed.thumbnail) embed.setThumbnail(pEmbed.thumbnail);
             if (pEmbed.image) embed.setImage(pEmbed.image);

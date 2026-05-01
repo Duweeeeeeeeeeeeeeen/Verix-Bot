@@ -22,10 +22,15 @@ export default {
             };
 
             const lEmbed = config.leave.embed || {};
+            const isPlaceholder = (val) => !val || (typeof val === 'string' && (val.trim() === '' || val === 'Senza Titolo' || val === 'Nessun contenuto impostato.'));
+
+            const rawTitle = isPlaceholder(lEmbed.title) ? '🚗 Partenza Cittadina' : lEmbed.title;
+            const rawDesc = isPlaceholder(lEmbed.description) ? 'Il cittadino **{user}** ha lasciato la città. Speriamo di rivederlo presto nei nostri registri.' : lEmbed.description;
+
             const embed = new EmbedBuilder()
-                .setTitle(placeholderHelper.replace(lEmbed.title || '👋 Arrivederci', placeholders))
-                .setDescription(placeholderHelper.replace(lEmbed.description || 'Ha lasciato il server.', placeholders))
-                .setColor(lEmbed.color || '#ED4245')
+                .setTitle(placeholderHelper.replace(rawTitle, placeholders))
+                .setDescription(placeholderHelper.replace(rawDesc, placeholders))
+                .setColor(lEmbed.color && lEmbed.color !== '#000000' ? lEmbed.color : '#e74c3c')
                 .setTimestamp();
 
             if (lEmbed.footer) embed.setFooter({ text: placeholderHelper.replace(lEmbed.footer, placeholders), iconURL: member.guild.iconURL() });

@@ -25,10 +25,15 @@ export default {
             };
 
             const wEmbed = config.welcome.embed || {};
+            const isPlaceholder = (val) => !val || (typeof val === 'string' && (val.trim() === '' || val === 'Senza Titolo' || val === 'Nessun contenuto impostato.'));
+
+            const rawTitle = isPlaceholder(wEmbed.title) ? '✈️ Benvenuto in Città' : wEmbed.title;
+            const rawDesc = isPlaceholder(wEmbed.description) ? 'Un nuovo cittadino, **{user}**, è appena atterrato! Ti auguriamo una permanenza prospera.\n\nAssicurati di consultare i protocolli regolamentari per evitare sanzioni.' : wEmbed.description;
+
             const embed = new EmbedBuilder()
-                .setTitle(placeholderHelper.replace(wEmbed.title || '✨ Benvenuto!', placeholders))
-                .setDescription(placeholderHelper.replace(wEmbed.description || 'Benvenuto nel server!', placeholders))
-                .setColor(wEmbed.color || '#5865F2')
+                .setTitle(placeholderHelper.replace(rawTitle, placeholders))
+                .setDescription(placeholderHelper.replace(rawDesc, placeholders))
+                .setColor(wEmbed.color && wEmbed.color !== '#000000' ? wEmbed.color : '#2ecc71')
                 .setTimestamp();
 
             if (wEmbed.footer) embed.setFooter({ text: placeholderHelper.replace(wEmbed.footer, placeholders), iconURL: member.guild.iconURL() });

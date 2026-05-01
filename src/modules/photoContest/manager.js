@@ -110,6 +110,11 @@ export class PhotoContestManager {
                         .setStyle(ButtonStyle.Secondary)
                 );
 
+            const embed = await messageService.get(config.guildId, 'photocontest', 'panel', {
+                theme: themeName || 'Libero',
+                endTime: `<t:${Math.floor(endTime.getTime() / 1000)}:R>`
+            });
+
             const msg = await channel.send({ embeds: [embed], components: [row] });
             newContest.announcementMessageId = msg.id;
             await newContest.save();

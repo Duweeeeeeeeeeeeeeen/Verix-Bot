@@ -287,7 +287,7 @@ export default function Layout({ children, guildId }) {
         }
 
         .content-container {
-          padding: 120px 48px 48px 48px;
+          padding: 96px 48px 48px 48px;
           width: 100% !important;
           max-width: none !important;
           margin: 0 !important;
@@ -332,7 +332,7 @@ export default function Layout({ children, guildId }) {
 
         @media (max-width: 1000px) {
           .content-container {
-            padding: 100px 16px 32px 16px;
+            padding: 88px 16px 32px 16px;
           }
           .toast-wrapper {
             top: auto;
