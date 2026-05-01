@@ -199,24 +199,11 @@ export class PhotoContestManager {
             });
             winnerEmbed.setImage(winner.imageUrl);
 
-            const winnerMsg = await channel.send({ content: `Festeggiamo il nostro vincitore! <@${winner.userId}>`, embeds: [winnerEmbed] });
+            winnerEmbed.setImage(winner.imageUrl);
 
-            // Post to Hall of Fame
-            if (config.hallOfFameChannelId) {
-                const hofChannel = await guild.channels.fetch(config.hallOfFameChannelId).catch(() => null);
-                if (hofChannel) {
-                    const hofPermCheck = checkBotPermissions(hofChannel);
-                    if (hofPermCheck.hasPermission) {
-                        const hofEmbed = new EmbedBuilder()
-                            .setTitle(`🌟 Hall of Fame: ${contest.theme || 'Photo Contest'}`)
-                            .setAuthor({ name: (await this.client.users.fetch(winner.userId)).username })
-                            .setImage(winner.imageUrl)
-                            .setDescription(`Vinto da <@${winner.userId}> con **${winner.score} pt**\nData: ${new Date().toLocaleDateString()}`)
-                            .setColor('#F1C40F');
-                        await hofChannel.send({ embeds: [hofEmbed] });
-                    }
-                }
-            }
+            const winnerMsg = await channel.send({ embeds: [winnerEmbed] });
+
+            // Cleanup
 
             // Cleanup
             setTimeout(async () => {
