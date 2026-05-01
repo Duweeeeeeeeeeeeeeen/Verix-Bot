@@ -113,11 +113,13 @@ export default function GiveawayConfig() {
       console.error(e);
     } finally {
       setLoading(false);
+      window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
     }
   };
 
   const handleSaveConfig = async () => {
     setSaving(true);
+    window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
     try {
       await api.request(`/config/${guildId}/giveaway`, {
         method: 'POST',
@@ -126,8 +128,10 @@ export default function GiveawayConfig() {
       showToast('Configurazione salvata!');
     } catch (e) {
       showToast('Errore nel salvataggio', 'error');
+    } finally {
+      setSaving(false);
+      window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
     }
-    setSaving(false);
   };
 
   const handleCreateGiveaway = async (gwData) => {
@@ -141,6 +145,7 @@ export default function GiveawayConfig() {
     };
     
     setCreating(true);
+    window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
     try {
       const res = await api.request(`/config/${guildId}/giveaways/create`, {
         method: 'POST',
