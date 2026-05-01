@@ -222,6 +222,35 @@ router.post('/:guildId/autoclear', adminCheck, async (req, res) => {
     }
 });
 
+// POST manual clear
+router.post('/:guildId/autoclear/manual', adminCheck, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const { channelId, amount } = req.body;
+
+        if (!channelId || !amount) {
+            return res.status(400).json({ success: false, error: 'Parametri mancanti (canale o quantità).' });
+        }
+
+        const client = req.discordClient;
+        const guild = await client.guilds.fetch(guildId);
+        const channel = await guild.channels.fetch(channelId);
+
+        if (!channel || !channel.isTextBased()) {
+            return res.status(404).json({ success: false, error: 'Canale non trovato o non testuale.' });
+        }
+
+        const deleted = await channel.bulkDelete(Math.min(parseInt(amount), 100), true);
+
+        await logAudit(req, guildId, 'manual_clear', 'Manual Clear Executed', { channelId, amount: deleted.size });
+        
+        res.json({ success: true, count: deleted.size });
+    } catch (error) {
+        console.error('Error in manual clear:', error);
+        res.status(500).json({ success: false, error: 'Impossibile eseguire la pulizia manuale. Verifica i permessi del bot.' });
+    }
+});
+
 // GET background config
 router.get('/:guildId/background', adminCheck, async (req, res) => {
     try {

@@ -114,7 +114,7 @@ export default function Layout({ children, guildId }) {
     { name: 'FiveM', icon: Globe, path: `/config/${guildId}/fivem` },
     { name: 'Log & Gestione', icon: History, path: `/config/${guildId}/management` },
     { name: 'Embed Suite', icon: LayoutIcon, path: `/config/${guildId}/embeds` },
-    { name: 'Utility & Clear', icon: Cpu, path: `/config/${guildId}/autoclear` }
+    { name: 'Auto Clear', icon: Cpu, path: `/config/${guildId}/autoclear` }
   ];
 
   const getToastIcon = (type) => {

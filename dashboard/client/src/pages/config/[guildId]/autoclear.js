@@ -17,7 +17,8 @@ import {
     ChevronRight,
     MessageSquare,
     AlertCircle,
-    X
+    X,
+    Hash
 } from 'lucide-react';
 import DiscordSelector from '../../../components/DiscordSelector';
 
@@ -198,6 +199,57 @@ export default function AutoClearConfig() {
                 ))}
             </div>
         </div>
+
+        {/* Manual Clear Section */}
+        <section className="card animate fade-in" style={{ marginTop: '32px', borderLeft: '4px solid var(--primary)' }}>
+            <div className="section-header">
+                <Zap size={20} color="var(--primary)" />
+                <h3>Pulizia Manuale Rapida</h3>
+            </div>
+            <p className="text-muted" style={{ marginBottom: '20px', fontSize: '0.9rem' }}>Elimina istantaneamente un numero specifico di messaggi in un canale.</p>
+            
+            <div className="manual-clear-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 120px 180px', gap: '16px', alignItems: 'flex-end' }}>
+                <div className="field-box">
+                    <label className="text-label">Canale</label>
+                    <DiscordSelector 
+                        type="channel" 
+                        options={channels.filter(c => c.type === 0 || c.type === 5)} 
+                        value={config.manualChannelId || ''} 
+                        onChange={val => setConfig({...config, manualChannelId: val})} 
+                    />
+                </div>
+                <div className="field-box">
+                    <label className="text-label">Quantità (1-100)</label>
+                    <input 
+                        type="number" 
+                        className="input-p" 
+                        style={{ paddingLeft: '16px' }}
+                        value={config.manualAmount || 50} 
+                        onChange={e => setConfig({...config, manualAmount: parseInt(e.target.value) || 1})}
+                        min="1"
+                        max="100"
+                    />
+                </div>
+                <button 
+                    onClick={async () => {
+                        if (!config.manualChannelId) return showToast('Seleziona un canale!', 'error');
+                        try {
+                            const res = await api.request(`/config/${guildId}/autoclear/manual`, {
+                                method: 'POST',
+                                body: JSON.stringify({ channelId: config.manualChannelId, amount: config.manualAmount || 50 })
+                            });
+                            if (res.success) showToast(`Eliminati ${res.count} messaggi!`);
+                        } catch (e) {
+                            showToast('Errore durante la pulizia.', 'error');
+                        }
+                    }}
+                    className="btn-primary" 
+                    style={{ height: '45px', width: '100%', justifyContent: 'center', background: 'var(--primary)' }}
+                >
+                    <Trash2 size={16} /> Pulisci Ora
+                </button>
+            </div>
+        </section>
 
         {/* Local Page Side-Content (Moved from legacy sidebar) */}
         <section className="card info-premium-v" style={{ marginTop: '24px' }}>
