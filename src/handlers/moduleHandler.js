@@ -147,7 +147,7 @@ export default async (client) => {
                         if (matchesModule) logger.debug(`[HUB] Routing ${target} to module: ${moduleName}`);
                     } else {
                         // For non-interaction events (MessageCreate), check activation
-                        const config = await getModuleConfig(guildId, moduleName);
+                        const config = await getModuleConfig(guildId, moduleName.toLowerCase());
                         if (!config || !config.enabled) continue;
                     }
                 }
