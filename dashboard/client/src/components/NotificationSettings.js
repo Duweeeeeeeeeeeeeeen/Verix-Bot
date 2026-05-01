@@ -26,24 +26,9 @@ const NotificationSettings = ({
 
     return (
         <div className="card section-card" style={{ marginBottom: '24px', maxWidth: '420px' }}>
-            <div className="align-center" style={{ marginBottom: '20px' }}>
-                <div style={{ 
-                    padding: '8px', 
-                    background: 'rgba(129, 140, 248, 0.1)', 
-                    color: 'var(--primary)', 
-                    borderRadius: '10px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                }}>
-                    <svg style={{ width: '20px', height: '20px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                    </svg>
-                </div>
-                <div>
-                    <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700 }}>{title}</h3>
-                    <p className="text-description" style={{ margin: 0, fontSize: '0.8rem' }}>{description}</p>
-                </div>
+            <div style={{ marginBottom: '20px' }}>
+                <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700 }}>{title}</h3>
+                <p className="text-description" style={{ margin: 0, fontSize: '0.8rem' }}>{description}</p>
             </div>
 
             <div className="fields-grid" style={{ display: 'grid', gridTemplateColumns: (value?.mode === 'CHANNEL' || value?.mode === 'BOTH') ? '1fr 1.2fr' : '1fr', gap: '20px' }}>
