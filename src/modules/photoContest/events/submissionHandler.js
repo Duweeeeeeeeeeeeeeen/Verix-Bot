@@ -59,7 +59,7 @@ export default {
                 return;
             }
 
-            const imgName = attachment.name || 'photo.png';
+            const imgName = 'submission.png';
             const file = new AttachmentBuilder(attachment.url, { name: imgName });
 
             const submissionEmbed = await messageService.get(message.guild.id, 'photocontest', 'submission', {
@@ -68,7 +68,6 @@ export default {
                 endTime: `<t:${Math.floor(activeContest.endTime.getTime() / 1000)}:R>`
             });
 
-            submissionEmbed.setImage(`attachment://${imgName}`);
             submissionEmbed.setAuthor({ name: `Inviato da ${message.author.username}`, iconURL: message.author.displayAvatarURL() });
 
             // Check for Modal data
@@ -91,6 +90,9 @@ export default {
             if (finalDesc) {
                 submissionEmbed.setDescription(finalDesc.substring(0, 2048));
             }
+
+            // Set the image AT THE END
+            submissionEmbed.setImage(`attachment://${imgName}`);
 
             const row = new ActionRowBuilder()
                 .addComponents(
