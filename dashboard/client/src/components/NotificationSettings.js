@@ -1,4 +1,5 @@
 import React from 'react';
+import { Bell } from 'lucide-react';
 import CustomSelect from './CustomSelect';
 import DiscordSelector from './DiscordSelector';
 
@@ -27,8 +28,8 @@ const NotificationSettings = ({
     return (
         <div className="card section-card" style={{ marginBottom: '24px', maxWidth: '420px' }}>
             <div style={{ marginBottom: '20px' }}>
-                <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700 }}>{title}</h3>
-                <p className="text-description" style={{ margin: 0, fontSize: '0.8rem' }}>{description}</p>
+                <h3 className="align-center" style={{ margin: 0, fontSize: '1rem', fontWeight: 700 }}><Bell size={16} color="var(--primary)" /> {title}</h3>
+                <p className="text-description" style={{ margin: 0, fontSize: '0.8rem', marginTop: '6px' }}>{description}</p>
             </div>
 
             <div className="fields-grid" style={{ display: 'grid', gridTemplateColumns: (value?.mode === 'CHANNEL' || value?.mode === 'BOTH') ? '1fr 1.2fr' : '1fr', gap: '20px' }}>
