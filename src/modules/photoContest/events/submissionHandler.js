@@ -16,20 +16,32 @@ export default {
             channelId: message.channelId,
             enabled: true 
         });
-        if (!config) return;
+        if (!config) {
+            logger.debug(`[PhotoContest] Message in ${message.channelId} skipped: No matching config found.`);
+            return;
+        }
 
         // Check for active contest
         const activeContest = await PhotoContest.findOne({ 
             guildId: message.guildId, 
             status: 'ACTIVE' 
         });
-        if (!activeContest) return;
+        if (!activeContest) {
+            logger.debug(`[PhotoContest] Message in ${message.channelId} skipped: No active contest.`);
+            return;
+        }
 
         // Check for image attachment
         const attachment = message.attachments.first();
         const isImage = attachment && attachment.contentType?.startsWith('image/');
         
-        if (!isImage) return;
+        if (!isImage) {
+            logger.debug(`[PhotoContest] Message in ${message.channelId} skipped: Not an image.`);
+            return;
+        }
+
+        logger.info(`[PhotoContest] Processing submission from ${message.author.tag} in ${message.channel.name}`);
+
 
         try {
             const existing = await PhotoSubmission.findOne({ 
