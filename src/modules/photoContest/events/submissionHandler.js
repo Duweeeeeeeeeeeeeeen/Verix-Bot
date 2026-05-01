@@ -67,9 +67,12 @@ export default {
                 .addComponents(
                     new ButtonBuilder()
                         .setCustomId(`pc_vote_up_${activeContest._id}`)
-                        .setLabel(config.voteLabel || 'Classifica')
-                        .setEmoji(config.voteEmoji || '🏆')
-                        .setStyle(ButtonStyle.Success)
+                        .setEmoji(config.upvoteEmoji || '👍')
+                        .setStyle(ButtonStyle.Secondary),
+                    new ButtonBuilder()
+                        .setCustomId(`pc_vote_down_${activeContest._id}`)
+                        .setEmoji(config.downvoteEmoji || '👎')
+                        .setStyle(ButtonStyle.Secondary)
                 );
 
             const botMsg = await message.channel.send({ embeds: [submissionEmbed], components: [row], files: [file] });

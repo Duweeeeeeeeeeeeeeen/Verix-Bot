@@ -356,11 +356,19 @@ export default function PhotoContestConfig() {
                                 </div>
                             </div>
                             <div className="field-box">
-                                <label className="text-label">Bottone "Classifica" (Voto)</label>
+                                <label className="text-label">Bottone "Classifica"</label>
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 60px', gap: '8px' }}>
                                     <EmojiInput className="input" value={config.voteLabel || ''} placeholder="Classifica" onChange={e => setConfig({...config, voteLabel: e.target.value})} />
                                     <EmojiInput value={config.voteEmoji || ''} hideInput={true} onChange={e => setConfig({...config, voteEmoji: e.target.value})} />
                                 </div>
+                            </div>
+                            <div className="field-box">
+                                <label className="text-label">Icona Upvote (👍)</label>
+                                <EmojiInput value={config.upvoteEmoji || '👍'} onChange={e => setConfig({...config, upvoteEmoji: e.target.value})} />
+                            </div>
+                            <div className="field-box">
+                                <label className="text-label">Icona Downvote (👎)</label>
+                                <EmojiInput value={config.downvoteEmoji || '👎'} onChange={e => setConfig({...config, downvoteEmoji: e.target.value})} />
                             </div>
                         </div>
                     </section>

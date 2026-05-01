@@ -52,55 +52,41 @@ export default {
         const voterId = interaction.user.id;
 
         try {
-            // Find config for notification settings
+            // Find config
             const config = await PhotoContestConfig.findOne({ guildId: interaction.guildId });
 
             // Fetch submission
             const submission = await PhotoSubmission.findOne({ 
                 messageId: interaction.message.id,
-                contestId: contestId
+                guildId: interaction.guildId
             });
 
-            if (!submission) {
-                const embed = await messageService.get(interaction.guildId, 'photocontest', 'entry_not_found');
-                return interaction.reply({ 
-                    embeds: [embed], 
-                    flags: [MessageFlags.Ephemeral] 
-                });
-            }
+            if (!submission) return interaction.reply({ content: '❌ Errore: Foto non trovata nel registro.', flags: [MessageFlags.Ephemeral] });
 
-            if (submission.userId === voterId) {
-                const embed = await messageService.get(interaction.guildId, 'photocontest', 'self_vote_error');
-                return interaction.reply({ 
-                    embeds: [embed], 
-                    flags: [MessageFlags.Ephemeral] 
-                });
-            }
-
-            // Anti-cheat / Rule check: 1 vote per user per submission handled by logical check
             const upIndex = submission.upvotes.indexOf(voterId);
             const downIndex = submission.downvotes.indexOf(voterId);
 
-            let notifyContent = null;
+            let notifyContent = '';
 
             if (type === 'up') {
                 if (upIndex > -1) {
                     submission.upvotes.splice(upIndex, 1);
-                    await messageService.reply(interaction, 'photocontest', 'vote_removed', {});
+                    await interaction.reply({ content: '✅ Voto rimosso.', flags: [MessageFlags.Ephemeral] });
                 } else {
                     submission.upvotes.push(voterId);
                     if (downIndex > -1) submission.downvotes.splice(downIndex, 1);
-                    await messageService.reply(interaction, 'photocontest', 'vote_up', {});
-                    notifyContent = true;
+                    await interaction.reply({ content: '✅ Hai votato positivamente questa foto!', flags: [MessageFlags.Ephemeral] });
+                    notifyContent = 'up';
                 }
             } else if (type === 'down') {
                 if (downIndex > -1) {
                     submission.downvotes.splice(downIndex, 1);
-                    await messageService.reply(interaction, 'photocontest', 'vote_removed', {});
+                    await interaction.reply({ content: '✅ Voto rimosso.', flags: [MessageFlags.Ephemeral] });
                 } else {
                     submission.downvotes.push(voterId);
                     if (upIndex > -1) submission.upvotes.splice(upIndex, 1);
-                    await messageService.reply(interaction, 'photocontest', 'vote_down', {});
+                    await interaction.reply({ content: '✅ Hai votato negativamente questa foto.', flags: [MessageFlags.Ephemeral] });
+                    notifyContent = 'down';
                 }
             }
 
@@ -123,35 +109,14 @@ export default {
 
             await interaction.message.edit({ embeds: [newEmbed] });
 
-            // Send Leaderboard as reply (as requested: "show all votes")
-            const topSubmissions = await PhotoSubmission.find({ contestId: submission.contestId })
-                .sort({ score: -1 })
-                .limit(10);
-
-            let list = '';
-            for (let i = 0; i < topSubmissions.length; i++) {
-                const sub = topSubmissions[i];
-                list += `${i + 1}. <@${sub.userId}> — **${sub.score} pt**\n`;
-            }
-
-            const leaderboardEmbed = await messageService.get(interaction.guildId, 'photocontest', 'leaderboard_display', {
-                list: list || '*Nessuna foto in classifica.*'
-            });
-
-            // Add a confirmation note
-            leaderboardEmbed.setAuthor({ name: '✅ Voto Registrato / Aggiornato' });
-
-            if (interaction.replied || interaction.deferred) {
-                await interaction.editReply({ embeds: [leaderboardEmbed], flags: [MessageFlags.Ephemeral] });
-            } else {
-                await interaction.reply({ embeds: [leaderboardEmbed], flags: [MessageFlags.Ephemeral] });
-            }
-
             // Send Notification to author
-            if (config?.enableNotifications) {
+            if (notifyContent && config?.notifications?.mode !== 'NONE') {
                 const author = await interaction.guild.members.fetch(submission.userId).catch(() => null);
                 if (author) {
-                    const notifyEmbed = await messageService.get(interaction.guildId, 'photocontest', 'interaction_notify');
+                    const notifyEmbed = await messageService.get(interaction.guildId, 'photocontest', 'interaction_notify', {
+                        voter: interaction.user.username,
+                        action: notifyContent === 'up' ? 'apprezzato' : 'valutato'
+                    });
                     if (notifyEmbed) {
                         notifyEmbed.addFields({ name: 'Contest', value: `[Link al Messaggio](${interaction.message.url})` });
                         await author.send({ embeds: [notifyEmbed] }).catch(() => {});

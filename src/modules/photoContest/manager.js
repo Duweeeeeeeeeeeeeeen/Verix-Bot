@@ -105,8 +105,8 @@ export class PhotoContestManager {
                         .setStyle(ButtonStyle.Primary),
                     new ButtonBuilder()
                         .setCustomId('pc_leaderboard_view')
-                        .setLabel('Classifica')
-                        .setEmoji('🏆')
+                        .setLabel(config.voteLabel || 'Classifica')
+                        .setEmoji(config.voteEmoji || '🏆')
                         .setStyle(ButtonStyle.Secondary)
                 );
 
