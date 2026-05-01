@@ -34,6 +34,7 @@ import { invalidateCache } from '../../../src/core/configCache.js';
 import { invalidateGlobalCache } from '../../../src/core/globalConfigManager.js';
 import { buildButtonRows } from '../../../src/utils/uiBuilder.js';
 import messageService from '../../../src/utils/messageService.js';
+import placeholderHelper from '../../../src/utils/placeholderHelper.js';
 
 // Centralized Utilities
 import { validate } from '../middleware/validate.js';
@@ -262,7 +263,10 @@ router.get('/:guildId/giveaways/active', adminCheck, async (req, res) => {
 router.get('/:guildId/giveaways/logs', adminCheck, async (req, res) => {
     try {
         const { guildId } = req.params;
-        const logs = await Giveaway.find({ guildId, status: 'ENDED' }).sort({ endTime: -1 }).limit(20);
+        const logs = await Giveaway.find({ guildId, status: 'ENDED' })
+            .select('prize winnerCount participants winners endTime status')
+            .sort({ endTime: -1 })
+            .limit(20);
         res.json({ success: true, data: logs });
     } catch (error) {
         res.status(500).json({ success: false, error: 'Impossibile caricare i log dei giveaway' });
@@ -299,10 +303,11 @@ router.post('/:guildId/giveaways/create', adminCheck, async (req, res) => {
             const title = customTitle || `🎉 GIVEAWAY: ${prize}`;
             let description = customDescription || `Clicca il tasto qui sotto per partecipare!\n\n⌛ **Termina:** <t:${Math.floor(endTime.getTime() / 1000)}:R>`;
             
-            // Basic placeholder replacement
-            description = description
-                .replace(/{prize}/g, prize)
-                .replace(/{endtime}/g, `<t:${Math.floor(endTime.getTime() / 1000)}:R>`);
+            // Global placeholder replacement
+            description = placeholderHelper.replace(description, {
+                prize: prize,
+                endtime: `<t:${Math.floor(endTime.getTime() / 1000)}:R>`
+            });
 
             const embed = new EmbedBuilder()
                 .setTitle(title)

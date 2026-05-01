@@ -3,6 +3,7 @@ import SocialConfig from '../../models/SocialConfig.js';
 import { getStreams } from '../../utils/twitchHelper.js';
 import logger from '../../utils/logger.js';
 import messageService from '../../utils/messageService.js';
+import placeholderHelper from '../../utils/placeholderHelper.js';
 import Parser from 'rss-parser';
 
 const rssParser = new Parser();
@@ -156,9 +157,11 @@ export class SocialManager {
                 const customEmbed = platformConfig.embed || {};
                 
                 const formatText = (text) => text
-                    ? text.replace(/{streamer}/g, postData.author)
-                          .replace(/{title}/g, postData.title)
-                          .replace(/{url}/g, postData.url)
+                    ? placeholderHelper.replace(text, {
+                        streamer: postData.author,
+                        title: postData.title,
+                        url: postData.url
+                    })
                     : '';
 
                 const embedData = {

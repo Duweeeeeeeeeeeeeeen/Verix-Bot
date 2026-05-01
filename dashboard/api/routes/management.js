@@ -59,10 +59,10 @@ router.get('/:guildId/search/:userId', adminCheck, async (req, res) => {
 
         // Fetch everything in parallel
         const [user, whitelistApps, backgrounds, voiceEntries] = await Promise.all([
-            User.findOne({ discordId: userId }),
-            WhitelistApp.find({ guildId, userId }).sort({ createdAt: -1 }),
-            Background.find({ guildId, userId }).sort({ createdAt: -1 }),
-            VoiceQueue.find({ guildId, userId }).sort({ joinedAt: -1 })
+            User.findOne({ discordId: userId }).select('-__v'),
+            WhitelistApp.find({ guildId, userId }).select('status createdAt').sort({ createdAt: -1 }),
+            Background.find({ guildId, userId }).select('status createdAt').sort({ createdAt: -1 }),
+            VoiceQueue.find({ guildId, userId }).select('status joinedAt').sort({ joinedAt: -1 })
         ]);
 
         console.log(`[Management_API] Results for ${userId}: WL=${whitelistApps.length}, BG=${backgrounds.length}`);

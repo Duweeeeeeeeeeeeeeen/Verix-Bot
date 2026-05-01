@@ -1,5 +1,6 @@
 import Giveaway from '../../models/Giveaway.js';
 import logger from '../../utils/logger.js';
+import placeholderHelper from '../../utils/placeholderHelper.js';
 import { EmbedBuilder, ButtonBuilder, ActionRowBuilder, ButtonStyle } from 'discord.js';
 
 class GiveawayManager {
@@ -57,10 +58,11 @@ class GiveawayManager {
             const title = giveaway.customTitle || `🎉 GIVEAWAY: ${giveaway.prize}`;
             let description = giveaway.customDescription || `Clicca il tasto qui sotto per partecipare!\n\n⌛ **Termina:** <t:${Math.floor(giveaway.endTime.getTime() / 1000)}:R>`;
             
-            // Basic placeholder replacement
-            description = description
-                .replace(/{prize}/g, giveaway.prize)
-                .replace(/{endtime}/g, `<t:${Math.floor(giveaway.endTime.getTime() / 1000)}:R>`);
+            // Global placeholder replacement
+            description = placeholderHelper.replace(description, {
+                prize: giveaway.prize,
+                endtime: `<t:${Math.floor(giveaway.endTime.getTime() / 1000)}:R>`
+            });
 
             const embed = new EmbedBuilder()
                 .setTitle(title)
