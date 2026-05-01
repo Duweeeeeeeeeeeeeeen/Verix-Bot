@@ -102,7 +102,9 @@ export default async (client) => {
                 'photocontest': 'pc',
                 'fivem': '5m',
                 'verify': 'vr',
-                'tickets': 'tk'
+                'tickets': 'tk',
+                'voice': 'tv',
+                'giveaway': 'gw'
             };
 
             for (const [moduleName, eventFiles] of moduleMap.entries()) {

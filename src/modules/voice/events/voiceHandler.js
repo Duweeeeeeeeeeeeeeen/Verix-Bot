@@ -45,6 +45,30 @@ export default {
                 // Move user
                 await member.voice.setChannel(newChannel).catch(() => null);
 
+                // Send Control Panel
+                const controlEmbed = {
+                    title: '🎙️ Pannello di Controllo Vocale',
+                    description: `Benvenuto <@${member.id}>! Questo è il tuo canale temporaneo.\nUsa i tasti qui sotto per gestirlo rapidamente.`,
+                    color: 0x5865F2,
+                    fields: [
+                        { name: '👑 Proprietario', value: `<@${member.id}>`, inline: true },
+                        { name: '👥 Limite', value: `${config.defaultUserLimit || 'Nessuno'}`, inline: true }
+                    ]
+                };
+
+                const controlRow = {
+                    type: 1,
+                    components: [
+                        { type: 2, style: 2, label: 'Lucchetto', custom_id: 'tv_lock', emoji: { name: '🔒' } },
+                        { type: 2, style: 2, label: 'Sblocca', custom_id: 'tv_unlock', emoji: { name: '🔓' } },
+                        { type: 2, style: 2, label: '+1 Posto', custom_id: 'tv_inc', emoji: { name: '➕' } },
+                        { type: 2, style: 2, label: '-1 Posto', custom_id: 'tv_dec', emoji: { name: '➖' } },
+                        { type: 2, style: 1, label: 'Rinomina', custom_id: 'tv_rename', emoji: { name: '📝' } }
+                    ]
+                };
+
+                await newChannel.send({ embeds: [controlEmbed], components: [controlRow] });
+
                 // Track in DB
                 await TempVoice.create({
                     guildId: guild.id,
