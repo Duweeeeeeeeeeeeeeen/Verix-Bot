@@ -111,7 +111,6 @@ export default {
             const oldEmbed = interaction.message.embeds[0];
             const oldDesc = oldEmbed.description || '';
             
-            // Extract expiry time robustly
             let expiryPart = 'N/A';
             if (oldDesc.includes('Scadenza:')) {
                 expiryPart = oldDesc.split('Scadenza:')[1].trim();
@@ -124,8 +123,32 @@ export default {
 
             await interaction.message.edit({ embeds: [newEmbed] });
 
+            // Send Leaderboard as reply (as requested: "show all votes")
+            const topSubmissions = await PhotoSubmission.find({ contestId: submission.contestId })
+                .sort({ score: -1 })
+                .limit(10);
+
+            let list = '';
+            for (let i = 0; i < topSubmissions.length; i++) {
+                const sub = topSubmissions[i];
+                list += `${i + 1}. <@${sub.userId}> — **${sub.score} pt**\n`;
+            }
+
+            const leaderboardEmbed = await messageService.get(interaction.guildId, 'photocontest', 'leaderboard_display', {
+                list: list || '*Nessuna foto in classifica.*'
+            });
+
+            // Add a confirmation note
+            leaderboardEmbed.setAuthor({ name: '✅ Voto Registrato / Aggiornato' });
+
+            if (interaction.replied || interaction.deferred) {
+                await interaction.editReply({ embeds: [leaderboardEmbed], flags: [MessageFlags.Ephemeral] });
+            } else {
+                await interaction.reply({ embeds: [leaderboardEmbed], flags: [MessageFlags.Ephemeral] });
+            }
+
             // Send Notification to author
-            if (notifyContent && config?.enableNotifications) {
+            if (config?.enableNotifications) {
                 const author = await interaction.guild.members.fetch(submission.userId).catch(() => null);
                 if (author) {
                     const notifyEmbed = await messageService.get(interaction.guildId, 'photocontest', 'interaction_notify');
@@ -138,7 +161,9 @@ export default {
 
         } catch (error) {
             logger.error('[PhotoContest] Vote handling error:', error);
-            if (!interaction.replied) await messageService.reply(interaction, 'photocontest', 'error', { reason: 'Errore durante il voto.' }, { ephemeral: true });
+            if (!interaction.replied && !interaction.deferred) {
+                await interaction.reply({ content: '❌ Errore durante il voto.', flags: [MessageFlags.Ephemeral] });
+            }
         }
     }
 };

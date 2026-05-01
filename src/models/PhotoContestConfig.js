@@ -85,7 +85,7 @@ const photoContestConfigSchema = new mongoose.Schema({
     },
     voteLabel: {
         type: String,
-        default: 'Vota'
+        default: 'Classifica'
     },
     voteEmoji: {
         type: String,
