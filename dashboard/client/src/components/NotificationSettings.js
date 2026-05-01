@@ -25,7 +25,7 @@ const NotificationSettings = ({
     };
 
     return (
-        <div className="card section-card" style={{ marginBottom: '24px' }}>
+        <div className="card section-card" style={{ marginBottom: '24px', maxWidth: '420px' }}>
             <div className="align-center" style={{ marginBottom: '20px' }}>
                 <div style={{ 
                     padding: '8px', 

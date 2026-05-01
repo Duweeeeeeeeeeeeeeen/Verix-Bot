@@ -295,13 +295,7 @@ export default function WhitelistConfig() {
                             </div>
                         </section>
 
-                        <NotificationSettings 
-                            guildId={guildId}
-                            value={config.notifications}
-                            onChange={val => setConfig({...config, notifications: val})}
-                            title="Notifiche Whitelist"
-                            description="Scegli come l'utente riceverà l'esito della sua candidatura (Accettato/Rifiutato/Scritto Superato)."
-                        />
+
 
                         {config.mode !== 'BG_ONLY' && (
                             <>
@@ -349,6 +343,14 @@ export default function WhitelistConfig() {
                             <DiscordSelector type="role" multiple={true} options={roles} value={config.staffRoleIds || []} onChange={val => setConfig({...config, staffRoleIds: val})} />
                             <p className="text-description" style={{ marginTop: '12px' }}>Ruoli che possono vedere i ticket e valutare le pratiche.</p>
                         </section>
+
+                        <NotificationSettings 
+                            guildId={guildId}
+                            value={config.notifications}
+                            onChange={val => setConfig({...config, notifications: val})}
+                            title="Notifiche Whitelist"
+                            description="Scegli come l'utente riceverà l'esito della sua candidatura (Accettato/Rifiutato/Scritto Superato)."
+                        />
                     </div>
                 </div>
             )}
@@ -398,6 +400,9 @@ export default function WhitelistConfig() {
                             </div>
                         </section>
 
+
+                    </div>
+                    <div className="grid-right">
                         <NotificationSettings 
                             guildId={guildId}
                             value={bgConfig.notifications}
