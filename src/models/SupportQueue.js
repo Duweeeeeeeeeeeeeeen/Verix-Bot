@@ -18,5 +18,8 @@ const supportQueueSchema = new mongoose.Schema({
 supportQueueSchema.index({ guildId: 1 });
 supportQueueSchema.index({ userId: 1 });
 supportQueueSchema.index({ status: 1 });
+supportQueueSchema.index({ guildId: 1, status: 1 }); // Used in cleanup ghost sessions
+// Sparse index: only indexes documents where deletionScheduledAt != null
+supportQueueSchema.index({ deletionScheduledAt: 1 }, { sparse: true });
 
 export default mongoose.model('SupportQueue', supportQueueSchema);

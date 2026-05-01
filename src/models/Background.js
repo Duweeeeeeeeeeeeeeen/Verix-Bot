@@ -18,5 +18,11 @@ const backgroundSchema = new mongoose.Schema({
     submittedAt: { type: Date },
     deletionScheduledAt: { type: Date, default: null }
 });
+// Performance Indexes
+backgroundSchema.index({ guildId: 1 });
+backgroundSchema.index({ userId: 1 });
+backgroundSchema.index({ guildId: 1, userId: 1 });
+// Sparse index: only indexes documents where deletionScheduledAt != null
+backgroundSchema.index({ deletionScheduledAt: 1 }, { sparse: true });
 
 export default mongoose.model('Background', backgroundSchema);

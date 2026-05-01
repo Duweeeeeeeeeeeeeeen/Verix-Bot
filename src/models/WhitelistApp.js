@@ -33,5 +33,7 @@ whitelistAppSchema.index({ userId: 1 });
 whitelistAppSchema.index({ status: 1 });
 whitelistAppSchema.index({ guildId: 1, status: 1 });
 whitelistAppSchema.index({ guildId: 1, userId: 1, status: 1 });
+// Sparse index: only indexes documents where deletionScheduledAt != null (avoids Full Collection Scan)
+whitelistAppSchema.index({ deletionScheduledAt: 1 }, { sparse: true });
 
 export default mongoose.model('WhitelistApp', whitelistAppSchema);

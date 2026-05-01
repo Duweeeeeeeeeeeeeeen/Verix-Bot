@@ -49,10 +49,12 @@ class GiveawayManager {
 
     async startGiveaway(giveaway) {
         try {
-            const guild = await this.client.guilds.fetch(giveaway.guildId).catch(() => null);
+            const guild = this.client.guilds.cache.get(giveaway.guildId)
+                || await this.client.guilds.fetch(giveaway.guildId).catch(() => null);
             if (!guild) return;
 
-            const channel = await guild.channels.fetch(giveaway.channelId).catch(() => null);
+            const channel = guild.channels.cache.get(giveaway.channelId)
+                || await guild.channels.fetch(giveaway.channelId).catch(() => null);
             if (!channel) return;
 
             const title = giveaway.customTitle || `🎉 GIVEAWAY: ${giveaway.prize}`;
@@ -105,10 +107,12 @@ class GiveawayManager {
             giveaway.status = 'ENDED';
             await giveaway.save();
 
-            const guild = await this.client.guilds.fetch(giveaway.guildId).catch(() => null);
+            const guild = this.client.guilds.cache.get(giveaway.guildId)
+                || await this.client.guilds.fetch(giveaway.guildId).catch(() => null);
             if (!guild) return;
 
-            const channel = await guild.channels.fetch(giveaway.channelId).catch(() => null);
+            const channel = guild.channels.cache.get(giveaway.channelId)
+                || await guild.channels.fetch(giveaway.channelId).catch(() => null);
             if (!channel) return;
 
             const message = await channel.messages.fetch(giveaway.messageId).catch(() => null);

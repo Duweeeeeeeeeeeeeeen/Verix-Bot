@@ -21,5 +21,8 @@ const voiceQueueSchema = new mongoose.Schema({
 voiceQueueSchema.index({ guildId: 1 });
 voiceQueueSchema.index({ userId: 1 });
 voiceQueueSchema.index({ status: 1 });
+voiceQueueSchema.index({ guildId: 1, status: 1 }); // Used in cleanup ghost sessions
+// Sparse index: only indexes documents where deletionScheduledAt != null
+voiceQueueSchema.index({ deletionScheduledAt: 1 }, { sparse: true });
 
 export default mongoose.model('VoiceQueue', voiceQueueSchema);

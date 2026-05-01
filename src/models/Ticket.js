@@ -30,5 +30,9 @@ ticketSchema.index({ guildId: 1 });
 ticketSchema.index({ userId: 1 });
 ticketSchema.index({ status: 1 });
 ticketSchema.index({ guildId: 1, status: 1 });
+// Sparse index: only indexes documents where deletionScheduledAt != null (avoids Full Collection Scan)
+ticketSchema.index({ deletionScheduledAt: 1 }, { sparse: true });
+// Compound index for autoClose queries (status + lastActivityAt)
+ticketSchema.index({ guildId: 1, status: 1, lastActivityAt: 1 });
 
 export default mongoose.model('Ticket', ticketSchema);

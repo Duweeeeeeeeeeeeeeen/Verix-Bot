@@ -67,4 +67,9 @@ const giveawaySchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
+// Performance Indexes — queried every 60s in the GiveawayManager loop
+giveawaySchema.index({ status: 1, endTime: 1 });   // checkGiveaways: find ACTIVE past endTime
+giveawaySchema.index({ status: 1, startTime: 1 }); // checkGiveaways: find SCHEDULED past startTime
+giveawaySchema.index({ guildId: 1, status: 1 });   // dashboard: filter by guild + status
+
 export default mongoose.model('Giveaway', giveawaySchema);

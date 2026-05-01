@@ -62,32 +62,47 @@ class CleanupManager {
     }
 
     async cleanupAutoClose(now) {
-        const configs = await TicketConfig.find({ 'autoClose.enabled': true });
+        // Fetch all enabled autoClose configs in one query
+        const configs = await TicketConfig.find({ 'autoClose.enabled': true }).select('guildId autoClose closeMode');
+        if (!configs.length) return;
+
+        // Build per-guild thresholds and run a single aggregated query
+        // Group configs by their threshold to minimize queries (most will share the same hour value)
+        const thresholdMap = new Map(); // threshold_ts -> [guildId, ...]
         for (const config of configs) {
             const timeoutMs = (config.autoClose.hours || 24) * 60 * 60 * 1000;
             const threshold = new Date(now.getTime() - timeoutMs);
+            const key = threshold.getTime();
+            if (!thresholdMap.has(key)) thresholdMap.set(key, { threshold, configs: [] });
+            thresholdMap.get(key).configs.push(config);
+        }
 
+        for (const { threshold, configs: group } of thresholdMap.values()) {
+            const guildIds = group.map(c => c.guildId);
+            // Single query for ALL guilds in this group — eliminates N+1
             const inactiveTickets = await Ticket.find({
-                guildId: config.guildId,
+                guildId: { $in: guildIds },
                 status: { $in: ['OPEN', 'PROCESSING', 'WAITING'] },
                 lastActivityAt: { $lte: threshold }
-            });
+            }).select('_id guildId channelId userId status');
 
             for (const ticket of inactiveTickets) {
+                const config = group.find(c => c.guildId === ticket.guildId);
+                if (!config) continue;
+
                 logger.info(`[CleanupManager] Auto-closing inactive ticket ${ticket.channelId} in ${ticket.guildId}`);
-                
                 ticket.status = 'CLOSED';
                 ticket.closedAt = now;
                 ticket.closedBy = this.client.user.id;
-                
+
                 if (config.closeMode === 'DELETE') {
                     ticket.deletionScheduledAt = new Date(now.getTime() + 5000);
                 }
-                
+
                 await ticket.save();
 
-                // Notify in channel if possible
-                const channel = await this.client.channels.fetch(ticket.channelId).catch(() => null);
+                const channel = await this.client.channels.cache.get(ticket.channelId)
+                    || await this.client.channels.fetch(ticket.channelId).catch(() => null);
                 if (channel) {
                     await channel.send({ content: '⚠️ **CHIUSURA AUTOMATICA:** Questo ticket è stato chiuso per inattività.' }).catch(() => {});
                 }
@@ -96,13 +111,15 @@ class CleanupManager {
     }
 
     async cleanupVoice(now) {
-        // Ghost Active Sessions Cleanup
-        const activeSessions = await VoiceQueue.find({ status: 'ACTIVE' });
+        // Ghost Active Sessions Cleanup — use cache first to avoid HTTP to Discord
+        const activeSessions = await VoiceQueue.find({ status: 'ACTIVE' }).select('guildId userId voiceChannelId status');
         for (const session of activeSessions) {
             try {
-                const guild = await this.client.guilds.fetch(session.guildId).catch(() => null);
+                const guild = this.client.guilds.cache.get(session.guildId)
+                    || await this.client.guilds.fetch(session.guildId).catch(() => null);
                 if (guild) {
-                    const channel = await guild.channels.fetch(session.voiceChannelId).catch(() => null);
+                    const channel = guild.channels.cache.get(session.voiceChannelId)
+                        || await guild.channels.fetch(session.voiceChannelId).catch(() => null);
                     if (!channel) {
                         logger.warn(`[CleanupManager] Resolving ghost VoiceQueue session for user ${session.userId}`);
                         session.status = 'CANCELLED';
@@ -131,13 +148,15 @@ class CleanupManager {
     }
 
     async cleanupSupport(now) {
-        // Ghost Active Sessions Cleanup
-        const activeSessions = await SupportQueue.find({ status: 'ACTIVE' });
+        // Ghost Active Sessions Cleanup — use cache first
+        const activeSessions = await SupportQueue.find({ status: 'ACTIVE' }).select('guildId userId voiceChannelId status');
         for (const session of activeSessions) {
             try {
-                const guild = await this.client.guilds.fetch(session.guildId).catch(() => null);
+                const guild = this.client.guilds.cache.get(session.guildId)
+                    || await this.client.guilds.fetch(session.guildId).catch(() => null);
                 if (guild) {
-                    const channel = await guild.channels.fetch(session.voiceChannelId).catch(() => null);
+                    const channel = guild.channels.cache.get(session.voiceChannelId)
+                        || await guild.channels.fetch(session.voiceChannelId).catch(() => null);
                     if (!channel) {
                         session.status = 'CANCELLED';
                         await session.save();
@@ -158,7 +177,9 @@ class CleanupManager {
     async deleteChannel(guildId, channelId, reason) {
         if (!channelId) return;
         try {
-            const guild = await this.client.guilds.fetch(guildId).catch(() => null);
+            // Use cache first to avoid unnecessary HTTP calls to Discord
+            const guild = this.client.guilds.cache.get(guildId)
+                || await this.client.guilds.fetch(guildId).catch(() => null);
             if (!guild) {
                 logger.warn(`[CleanupManager] Guild ${guildId} not found for channel deletion.`);
                 return;

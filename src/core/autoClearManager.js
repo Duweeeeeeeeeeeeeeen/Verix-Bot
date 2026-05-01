@@ -59,10 +59,13 @@ class AutoClearManager {
 
     async clearChannel(guildId, channelId, amount) {
         try {
-            const guild = await this.client.guilds.fetch(guildId).catch(() => null);
+            // Use cache first to avoid unnecessary HTTP calls to Discord
+            const guild = this.client.guilds.cache.get(guildId)
+                || await this.client.guilds.fetch(guildId).catch(() => null);
             if (!guild) return false;
 
-            const channel = await guild.channels.fetch(channelId).catch(() => null);
+            const channel = guild.channels.cache.get(channelId)
+                || await guild.channels.fetch(channelId).catch(() => null);
             if (!channel || channel.type !== 0) return false; // Ensure it's a text channel
 
             // Discord API limits bulkDelete to 14 days old max, and up to 100 per call.
