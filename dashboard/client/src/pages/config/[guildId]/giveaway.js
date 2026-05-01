@@ -130,8 +130,14 @@ export default function GiveawayConfig() {
   };
 
   const handleCreateGiveaway = async (gwData) => {
-    const dataToPost = gwData || newGw;
-    if (!dataToPost.prize || !dataToPost.channelId) return showToast('Compila tutti i campi!', 'error');
+    const rawData = gwData || newGw;
+    if (!rawData.prize || !rawData.channelId) return showToast('Compila tutti i campi!', 'error');
+    
+    // Convert to absolute timestamp to avoid timezone issues
+    const dataToPost = {
+        ...rawData,
+        scheduledStart: rawData.scheduledStart ? new Date(rawData.scheduledStart).getTime() : ''
+    };
     
     setCreating(true);
     try {
@@ -142,17 +148,11 @@ export default function GiveawayConfig() {
       if (res.success) {
         showToast(dataToPost.scheduledStart ? 'Giveaway programmato con successo!' : 'Giveaway avviato con successo!');
         setNewGw({ 
+          ...newGw, // Preserve channelId, customTitle, description, color, buttons
           prize: '', 
           duration: 60, 
           winnerCount: 1, 
-          channelId: '', 
-          scheduledStart: '',
-          customTitle: '🎁 NUOVO GIVEAWAY!',
-          customDescription: 'Partecipa cliccando sul tasto qui sotto!\n\n🏆 **Premio:** {prize}\n⌛ **Termina:** {endtime}',
-          color: '#5865F2',
-          buttonLabel: 'Partecipa',
-          buttonEmoji: '🎉',
-          buttonStyle: 'PRIMARY'
+          scheduledStart: ''
         });
         fetchData();
       }
