@@ -66,10 +66,15 @@ export default {
             const row = new ActionRowBuilder()
                 .addComponents(
                     new ButtonBuilder()
-                        .setCustomId(`photo_vote_up_${activeContest._id}`)
+                        .setCustomId(`pc_vote_up_${activeContest._id}`)
                         .setLabel(config.voteLabel || 'Vota')
                         .setEmoji(config.voteEmoji || '👍')
-                        .setStyle(ButtonStyle.Success)
+                        .setStyle(ButtonStyle.Success),
+                    new ButtonBuilder()
+                        .setCustomId('pc_leaderboard_view')
+                        .setLabel('Classifica')
+                        .setEmoji('🏆')
+                        .setStyle(ButtonStyle.Secondary)
                 );
 
             const botMsg = await message.channel.send({ embeds: [submissionEmbed], components: [row], files: [file] });

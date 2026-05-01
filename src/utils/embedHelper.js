@@ -20,8 +20,8 @@ export function buildEmbed(embedConfig, placeholders = {}, fullConfig = {}) {
     let rawTitle = isPlaceholder(embedConfig.title) ? '' : embedConfig.title;
     let title = replacePlaceholders(rawTitle, placeholders);
     if (title && title.trim().length > 0) {
-        // SECURITY: Embed titles do NOT support mentions (<@ID>). 
-        title = title.replace(/<@!?&?(\d+)>|<#\d+>/g, '').trim();
+        // SECURITY: Embed titles do NOT support mentions or timestamps.
+        title = title.replace(/<@!?&?(\d+)>|<#\d+>|<t:\d+(:[RFTDdtb])?>/g, '').trim();
         if (title.length > 0) embed.setTitle(title);
     }
 

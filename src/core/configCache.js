@@ -34,15 +34,25 @@ export async function getModuleConfig(guildId, moduleName) {
             return data;
         }
 
-        const config = await moduleInfo.model.findOne({ guildId });
-        const data = { enabled: config ? config.enabled : false };
+        // Use a timeout to prevent hanging interactions (max 2s for DB)
+        const dbPromise = moduleInfo.model.findOne({ guildId });
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('DB Timeout')), 2000)
+        );
+
+        const config = await Promise.race([dbPromise, timeoutPromise]).catch(err => {
+            logger.warn(`[Cache] DB Timeout or error for ${moduleName}: ${err.message}`);
+            return { enabled: true }; // Fallback to enabled on timeout
+        });
+
+        const data = { enabled: config ? config.enabled !== false : true };
 
         cache.set(cacheKey, { data, expires: now + TTL });
         return data;
 
     } catch (error) {
         logger.error(`[Cache] Error fetching config for ${moduleName}:`, error);
-        return { enabled: false };
+        return { enabled: true }; // Safe fallback
     }
 }
 

@@ -1,5 +1,6 @@
 import { EmbedBuilder, MessageFlags } from 'discord.js';
 import PhotoSubmission from '../../../models/PhotoSubmission.js';
+import PhotoContest from '../../../models/PhotoContest.js';
 import PhotoContestConfig from '../../../models/PhotoContestConfig.js';
 import ErrorHelper from '../../../utils/errorHelper.js';
 import logger from '../../../utils/logger.js';
@@ -9,16 +10,41 @@ export default {
     name: 'interactionCreate',
     async execute(interaction, client) {
         if (!interaction.isButton()) return;
-        if (!interaction.customId.startsWith('photo_')) return;
+        if (!interaction.customId.startsWith('pc_')) return;
         
-        if (interaction.customId === 'photo_submit_info') {
+        if (interaction.customId === 'pc_submit_info') {
             return interaction.reply({ 
                 content: '📸 **Come partecipare:** Invia una foto (come allegato) in questo canale per partecipare al contest attuale!\n\n*Nota: Puoi inviare una sola foto per contest.*', 
                 flags: [MessageFlags.Ephemeral] 
             });
         }
 
-        if (!interaction.customId.startsWith('photo_vote_')) return;
+        if (interaction.customId === 'pc_leaderboard_view') {
+            try {
+                const activeContest = await PhotoContest.findOne({ guildId: interaction.guildId, status: 'ACTIVE' });
+                const submissions = await PhotoSubmission.find({ contestId: activeContest?._id }).sort({ score: -1 }).limit(10);
+                
+                if (!submissions || submissions.length === 0) {
+                    return interaction.reply({ content: '📊 Al momento non ci sono foto in classifica.', flags: [MessageFlags.Ephemeral] });
+                }
+
+                let list = '';
+                for (let i = 0; i < submissions.length; i++) {
+                    const sub = submissions[i];
+                    list += `${i + 1}. <@${sub.userId}> — **${sub.score} pt**\n`;
+                }
+
+                const embed = await messageService.get(interaction.guildId, 'photocontest', 'leaderboard_display', {
+                    list: list
+                });
+
+                return interaction.reply({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
+            } catch (err) {
+                return interaction.reply({ content: '❌ Errore durante il recupero della classifica.', flags: [MessageFlags.Ephemeral] });
+            }
+        }
+
+        if (!interaction.customId.startsWith('pc_vote_')) return;
 
         const parts = interaction.customId.split('_');
         const type = parts[2]; // 'up' or 'down'
@@ -83,8 +109,18 @@ export default {
 
             // Update Embed with visual score label
             const oldEmbed = interaction.message.embeds[0];
+            const oldDesc = oldEmbed.description || '';
+            
+            // Extract expiry time robustly
+            let expiryPart = 'N/A';
+            if (oldDesc.includes('Scadenza:')) {
+                expiryPart = oldDesc.split('Scadenza:')[1].trim();
+            } else if (oldDesc.includes('🏁')) {
+                expiryPart = oldDesc.split('🏁')[1].trim();
+            }
+
             const newEmbed = EmbedBuilder.from(oldEmbed)
-                .setDescription(`📊 **Punteggio:** \`${submission.score} pt\`\n\n🏁 **Scadenza:** ${oldEmbed.description.split('🏁 **Scadenza:** ')[1]}`);
+                .setDescription(`Questa fotografia è stata sottomessa per il contest cittadino.\n\n**Punteggio:** \`${submission.score} pt\`\n**Scadenza:** ${expiryPart}`);
 
             await interaction.message.edit({ embeds: [newEmbed] });
 

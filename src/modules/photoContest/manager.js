@@ -99,14 +99,14 @@ export class PhotoContestManager {
             const row = new ActionRowBuilder()
                 .addComponents(
                     new ButtonBuilder()
-                        .setCustomId('photo_submit_info')
+                        .setCustomId('pc_submit_info')
                         .setLabel(config.submitLabel || 'Invia Foto')
                         .setEmoji(config.submitEmoji || '📸')
                         .setStyle(ButtonStyle.Primary),
                     new ButtonBuilder()
-                        .setCustomId('photo_leaderboard_view')
-                        .setLabel(config.voteLabel || 'Classifica')
-                        .setEmoji(config.voteEmoji || '🏆')
+                        .setCustomId('pc_leaderboard_view')
+                        .setLabel('Classifica')
+                        .setEmoji('🏆')
                         .setStyle(ButtonStyle.Secondary)
                 );
 

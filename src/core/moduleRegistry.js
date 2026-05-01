@@ -44,7 +44,7 @@ export const registry = {
     },
     photocontest: {
         name: 'PhotoContest',
-        prefixes: ['photo_'], // Used for photo_vote_up, photo_vote_down
+        prefixes: ['pc_'], // Used for pc_vote_up, pc_vote_down
         model: PhotoContestConfig
     },
     moderation: {
