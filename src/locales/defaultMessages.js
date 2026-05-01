@@ -761,5 +761,14 @@ export default {
             description: '{vip_text}Un utente è in attesa di assistenza.\n\n**UTENTE:** {user}\n**ID:** `{user_id}`\n**POSIZIONE:** `{position}`',
             color: '#f1c40f'
         }
+    },
+    tempvoice: {
+        enabled: false,
+        channelNameTemplate: '🔊 Stanza di {user}',
+        defaultUserLimit: 0
+    },
+    giveaway: {
+        enabled: false,
+        managerRoles: []
     }
 };

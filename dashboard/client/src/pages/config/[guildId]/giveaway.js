@@ -41,12 +41,15 @@ export default function GiveawayConfig() {
     try {
       const [configRes, discordRes, activeRes] = await Promise.all([
         api.request(`/config/${guildId}/giveaway`),
-        api.request(`/guilds/${guildId}/roles`),
+        api.request(`/config/${guildId}/discord-data`),
         api.request(`/config/${guildId}/giveaways/active`)
       ]);
       
       if (configRes) setConfig(configRes.data || configRes);
-      if (discordRes) setRoles(discordRes.data || discordRes);
+      if (discordRes) {
+        const discordData = discordRes.data || {};
+        setRoles(discordData.roles || []);
+      }
       if (activeRes) setActiveGiveaways(activeRes.data || []);
     } catch (e) {
       console.error(e);

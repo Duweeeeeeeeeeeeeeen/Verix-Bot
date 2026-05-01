@@ -41,12 +41,13 @@ export default function TempVoiceConfig() {
     try {
       const [configRes, discordRes] = await Promise.all([
         api.request(`/config/${guildId}/tempvoice`),
-        api.request(`/guilds/${guildId}/channels`)
+        api.request(`/config/${guildId}/discord-data`)
       ]);
       
       if (configRes) setConfig(configRes.data || configRes);
       if (discordRes) {
-        const chanData = discordRes.data || discordRes;
+        const discordData = discordRes.data || {};
+        const chanData = discordData.channels || [];
         setChannels(chanData.filter(c => c.type === 2)); // Voice
         setCategories(chanData.filter(c => c.type === 4)); // Category
       }
