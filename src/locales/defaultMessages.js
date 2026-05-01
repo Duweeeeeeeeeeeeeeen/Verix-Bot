@@ -600,8 +600,7 @@ export default {
         leaderboard_display: {
             title: '🏆 Hall of Fame: Grandi Fotografi',
             description: 'Ecco i cittadini che hanno immortalato i momenti più iconici della nostra città:\n\n{list}',
-            color: '#FFD700',
-            thumbnail: 'https://i.imgur.com/89k5I5L.png'
+            color: '#FFD700'
         },
         contest_end_log: {
             title: '🏆 Proclamazione Vincitore',
