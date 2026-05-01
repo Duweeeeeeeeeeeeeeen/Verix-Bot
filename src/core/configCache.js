@@ -46,6 +46,10 @@ export async function getModuleConfig(guildId, moduleName) {
         });
 
         const data = { enabled: config ? config.enabled !== false : true };
+        
+        if (data.enabled === false) {
+            logger.warn(`[Cache] Module ${moduleName} is DISABLED for guild ${guildId} (Record found: ${!!config})`);
+        }
 
         cache.set(cacheKey, { data, expires: now + TTL });
         return data;
