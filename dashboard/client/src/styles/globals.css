@@ -561,8 +561,8 @@ h1, h2, h3, h4 {
 
 .icon-action:hover { color: white; transform: translateY(-1px); }
 
-/* Tooltips */
-[title]:hover::after {
+/* Tooltips - Only for collapsed sidebar */
+.sidebar.collapsed [title]:hover::after {
   content: attr(title);
   position: fixed;
   left: 90px;
@@ -576,10 +576,6 @@ h1, h2, h3, h4 {
   pointer-events: none;
   border: 1px solid var(--border);
   box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-}
-
-.sidebar:not(.collapsed) [title]:hover::after {
-  display: none;
 }
 
 /* Animations */
