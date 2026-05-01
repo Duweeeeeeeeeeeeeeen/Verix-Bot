@@ -14,7 +14,9 @@ import {
     Info,
     MessageSquare,
     Zap,
-    Users
+    Users,
+    ChevronRight,
+    Palette
 } from 'lucide-react';
 import DiscordSelector from '../../../components/DiscordSelector';
 
@@ -26,35 +28,32 @@ export default function TempVoiceConfig() {
   const [config, setConfig] = useState(null);
   const [channels, setChannels] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [activeTab, setActiveTab] = useState('settings');
 
   useEffect(() => {
     if (guildId) {
-      fetchConfig();
-      fetchChannels();
+      fetchData();
     }
   }, [guildId]);
 
-  const fetchConfig = async () => {
+  const fetchData = async () => {
+    setLoading(true);
     try {
-      const res = await api.request(`/config/${guildId}/tempvoice`);
-      if (res) setConfig(res.data || res);
-      setLoading(false);
-    } catch (e) {
-      console.error(e);
-      setLoading(false);
-    }
-  };
-
-  const fetchChannels = async () => {
-    try {
-      const res = await api.request(`/guilds/${guildId}/channels`);
-      if (res) {
-        const chanData = res.data || res;
+      const [configRes, discordRes] = await Promise.all([
+        api.request(`/config/${guildId}/tempvoice`),
+        api.request(`/guilds/${guildId}/channels`)
+      ]);
+      
+      if (configRes) setConfig(configRes.data || configRes);
+      if (discordRes) {
+        const chanData = discordRes.data || discordRes;
         setChannels(chanData.filter(c => c.type === 2)); // Voice
         setCategories(chanData.filter(c => c.type === 4)); // Category
       }
     } catch (e) {
       console.error(e);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -69,145 +68,175 @@ export default function TempVoiceConfig() {
     } catch (e) {
       console.error(e);
       window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Errore nel salvataggio', type: 'error' } }));
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   };
 
-  if (loading || !config) return <Skeleton />;
+  const setNested = (path, value) => {
+    const newConfig = { ...config };
+    const parts = path.split('.');
+    let cur = newConfig;
+    for (let i = 0; i < parts.length - 1; i++) {
+        if (!cur[parts[i]]) cur[parts[i]] = {};
+        cur = cur[parts[i]];
+    }
+    cur[parts[parts.length - 1]] = value;
+    setConfig(newConfig);
+  };
+
+  if (loading || !config) return <Skeleton type="config" />;
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500 pb-10">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/50 p-6 rounded-2xl border border-white/5 backdrop-blur-sm">
-        <div className="flex items-center gap-4">
-          <div className="p-3 bg-blue-500/20 rounded-xl border border-blue-500/20">
-            <Mic2 className="w-8 h-8 text-blue-400" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold text-white tracking-tight">Temp Voice</h1>
-            <p className="text-slate-400">Crea canali vocali temporanei automatici</p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setConfig({ ...config, enabled: !config.enabled })}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all duration-300 border ${
-              config.enabled 
-              ? 'bg-green-500/10 text-green-400 border-green-500/20 hover:bg-green-500/20' 
-              : 'bg-slate-800 text-slate-400 border-white/5 hover:bg-slate-700'
-            }`}
-          >
-            <Power className="w-4 h-4" />
-            {config.enabled ? 'Attivo' : 'Disattivato'}
-          </button>
-
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="flex items-center gap-2 px-6 py-2 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-xl font-bold transition-all duration-300 shadow-lg shadow-blue-600/20"
-          >
-            {saving ? <RefreshCcw className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
-            {saving ? 'Salvataggio...' : 'Salva Modifiche'}
-          </button>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Main Config */}
-        <div className="bg-slate-900/50 p-6 rounded-2xl border border-white/5 space-y-6">
-          <div className="flex items-center gap-2 text-white font-bold text-lg mb-2">
-            <Settings2 className="w-5 h-5 text-blue-400" />
-            Configurazione Base
-          </div>
-
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-400 mb-2">Canale Generatore (Join to Create)</label>
-              <DiscordSelector
-                type="channel"
-                value={config.creatorChannelId}
-                onChange={(val) => setConfig({ ...config, creatorChannelId: val })}
-                options={channels}
-                placeholder="Seleziona un canale vocale..."
-              />
-              <p className="mt-1 text-xs text-slate-500 italic">Quando un utente entra in questo canale, ne verrà creato uno nuovo per lui.</p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-slate-400 mb-2 text-white">Categoria di Destinazione</label>
-              <DiscordSelector
-                type="channel"
-                value={config.categoryId}
-                onChange={(val) => setConfig({ ...config, categoryId: val })}
-                options={categories}
-                placeholder="Default (Stessa del generatore)"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Customization */}
-        <div className="bg-slate-900/50 p-6 rounded-2xl border border-white/5 space-y-6">
-          <div className="flex items-center gap-2 text-white font-bold text-lg mb-2">
-            <Layout className="w-5 h-5 text-purple-400" />
-            Personalizzazione
-          </div>
-
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-400 mb-2 text-white">Template Nome Canale</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <MessageSquare className="h-5 w-5 text-slate-500" />
+    <div className="config-page-layout animate">
+      <div className="config-main-col">
+        {/* Module Header */}
+        <header className="module-header">
+           <div className="header-info">
+              <div className="header-icon">
+                <Mic2 size={24} />
+              </div>
+              <div className="header-text">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <h1>Temp Voice</h1>
+                  <label className="toggle-mini" title={config.enabled ? 'Modulo Attivo' : 'Modulo Disattivato'}>
+                    <input type="checkbox" checked={!!config.enabled} onChange={e => setConfig({...config, enabled: e.target.checked})} />
+                    <span className="slider-mini"></span>
+                  </label>
                 </div>
-                <input
-                  type="text"
-                  value={config.channelNameTemplate}
-                  onChange={(e) => setConfig({ ...config, channelNameTemplate: e.target.value })}
-                  className="block w-full pl-10 pr-3 py-2 bg-slate-800 border border-white/5 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                  placeholder="Es: 🔊 Stanza di {user}"
-                />
+                <p>Crea canali vocali temporanei automatici quando un utente entra in un canale generatore.</p>
               </div>
-              <div className="mt-2 flex gap-2">
-                <span className="text-[10px] bg-slate-800 px-2 py-1 rounded text-slate-400">Placeholders: {"{user}"}, {"{tag}"}</span>
-              </div>
-            </div>
+           </div>
+           <div className="header-buttons">
+              <button onClick={handleSave} className="btn-primary" disabled={saving}>
+                <Save size={16} /> {saving ? 'Salvataggio...' : 'Salva Modifiche'}
+              </button>
+           </div>
+        </header>
 
-            <div>
-              <label className="block text-sm font-medium text-slate-400 mb-2 text-white">Limite Utenti Default</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Users className="h-5 w-5 text-slate-500" />
+        {/* Tab Navigation */}
+        <div className="tab-navigation">
+            <button onClick={() => setActiveTab('settings')} className={`tab-link ${activeTab === 'settings' ? 'active' : ''}`}>
+                <Settings2 size={16} /> <span>Settaggi</span>
+            </button>
+            <button onClick={() => setActiveTab('design')} className={`tab-link ${activeTab === 'design' ? 'active' : ''}`}>
+                <Palette size={16} /> <span>Personalizzazione</span>
+            </button>
+        </div>
+
+        <div className="tab-content">
+            {activeTab === 'settings' && (
+                <div className="config-grid-v animate fade-in">
+                    <div className="grid-main-v">
+                        <section className="card section-card-v">
+                            <div className="align-center" style={{ marginBottom: '20px' }}>
+                                <Zap size={18} color="var(--primary)" />
+                                <h3>Configurazione Canali</h3>
+                            </div>
+                            <div className="fields-grid-v">
+                                <div className="field-box">
+                                    <label className="text-label">Canale Generatore (Join to Create)</label>
+                                    <DiscordSelector 
+                                        type="channel" 
+                                        options={channels} 
+                                        value={config.creatorChannelId || ''} 
+                                        onChange={val => setNested('creatorChannelId', val)} 
+                                        placeholder="Seleziona un canale vocale..."
+                                    />
+                                    <p className="field-help">L'entrata in questo canale creerà una nuova stanza.</p>
+                                </div>
+                                <div className="field-box">
+                                    <label className="text-label">Categoria di Destinazione</label>
+                                    <DiscordSelector 
+                                        type="channel" 
+                                        options={categories} 
+                                        value={config.categoryId || ''} 
+                                        onChange={val => setNested('categoryId', val)} 
+                                        placeholder="Default (Stessa del generatore)"
+                                    />
+                                    <p className="field-help">Dove verranno create le nuove stanze.</p>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div className="grid-side-v">
+                        <section className="card section-card-v">
+                            <div className="align-center" style={{ marginBottom: '16px' }}>
+                                <Info size={16} color="var(--primary)" />
+                                <h3>Informazioni</h3>
+                            </div>
+                            <p className="text-sm text-muted leading-relaxed">
+                                Le stanze create verranno automaticamente eliminate quando l'ultimo utente uscirà dal canale.
+                            </p>
+                        </section>
+                    </div>
                 </div>
-                <input
-                  type="number"
-                  min="0"
-                  max="99"
-                  value={config.defaultUserLimit}
-                  onChange={(e) => setConfig({ ...config, defaultUserLimit: parseInt(e.target.value) })}
-                  className="block w-full pl-10 pr-3 py-2 bg-slate-800 border border-white/5 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
-                />
-              </div>
-              <p className="mt-1 text-xs text-slate-500">0 = Nessun limite</p>
-            </div>
-          </div>
+            )}
+
+            {activeTab === 'design' && (
+                <div className="config-grid-v animate fade-in">
+                    <div className="grid-main-v">
+                        <section className="card section-card-v">
+                            <div className="align-center" style={{ marginBottom: '20px' }}>
+                                <Layout size={18} color="var(--primary)" />
+                                <h3>Aspetto e Limiti</h3>
+                            </div>
+                            <div className="fields-grid-v">
+                                <div className="field-box">
+                                    <label className="text-label">Template Nome Canale</label>
+                                    <input 
+                                        type="text" 
+                                        className="input" 
+                                        value={config.channelNameTemplate || ''} 
+                                        onChange={e => setNested('channelNameTemplate', e.target.value)} 
+                                        placeholder="🔊 Stanza di {user}"
+                                    />
+                                    <p className="field-help">Usa {"{user}"} o {"{tag}"} come segnaposto.</p>
+                                </div>
+                                <div className="field-box">
+                                    <label className="text-label">Limite Utenti Default</label>
+                                    <input 
+                                        type="number" 
+                                        className="input" 
+                                        value={config.defaultUserLimit || 0} 
+                                        onChange={e => setNested('defaultUserLimit', parseInt(e.target.value))} 
+                                    />
+                                    <p className="field-help">0 per nessun limite.</p>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            )}
         </div>
       </div>
 
-      {/* Info Panel */}
-      <div className="bg-blue-500/5 border border-blue-500/10 p-6 rounded-2xl flex gap-4">
-        <div className="p-2 bg-blue-500/20 rounded-lg h-fit">
-          <Info className="w-6 h-6 text-blue-400" />
-        </div>
-        <div>
-          <h3 className="text-white font-bold">Come funziona?</h3>
-          <p className="text-slate-400 text-sm leading-relaxed mt-1">
-            Il modulo Temp Voice permette agli utenti di creare i propri canali vocali semplicemente entrando in un canale "generatore". 
-            Il bot creerà un nuovo canale vocale, sposterà l'utente al suo interno e gli darà i permessi per gestirlo (modificare il nome, limite utenti, ecc.). 
-            Quando l'ultimo utente lascia il canale, questo verrà eliminato automaticamente.
-          </p>
-        </div>
-      </div>
+      <style jsx>{`
+            .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: rgba(255,255,255,0.02); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
+            .header-info { display: flex; align-items: center; gap: 16px; }
+            .header-icon { width: 48px; height: 48px; background: rgba(129, 140, 248, 0.1); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+            .header-text h1 { font-size: 1.5rem; margin-bottom: 2px; }
+            .header-text p { font-size: 0.85rem; color: var(--text-muted); }
+            
+            .tab-navigation { display: flex; gap: 8px; margin-bottom: 32px; padding: 6px; background: #070912; border-radius: 14px; border: 1px solid var(--border); width: fit-content; }
+            .tab-link { display: flex; align-items: center; gap: 10px; padding: 10px 18px; border: none; background: transparent; color: var(--text-muted); font-size: 0.85rem; font-weight: 600; border-radius: 10px; cursor: pointer; transition: 0.2s; }
+            .tab-link:hover { color: white; background: rgba(255,255,255,0.03); }
+            .tab-link.active { color: white; background: var(--bg-card); box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
+
+            .config-grid-v { display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
+            .fields-grid-v { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+            .align-center { display: flex; align-items: center; gap: 10px; }
+            
+            .toggle-mini { position: relative; display: inline-block; width: 34px; height: 18px; }
+            .toggle-mini input { opacity: 0; width: 0; height: 0; }
+            .slider-mini { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #334155; transition: .3s; border-radius: 18px; }
+            .slider-mini:before { position: absolute; content: ""; height: 12px; width: 12px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
+            input:checked + .slider-mini { background-color: var(--primary); }
+            input:checked + .slider-mini:before { transform: translateX(16px); }
+
+            @media (max-width: 1000px) { .config-grid-v { grid-template-columns: 1fr; } .fields-grid-v { grid-template-columns: 1fr; } }
+        `}</style>
     </div>
   );
 }
