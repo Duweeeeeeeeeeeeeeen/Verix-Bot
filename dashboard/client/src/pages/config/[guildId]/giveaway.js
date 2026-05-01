@@ -56,6 +56,12 @@ export default function GiveawayConfig() {
     }
   }, [guildId]);
 
+  useEffect(() => {
+    if (config) {
+      window.dispatchEvent(new CustomEvent('update-guide-context', { detail: config }));
+    }
+  }, [config]);
+
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -394,38 +400,6 @@ export default function GiveawayConfig() {
                 </div>
             </div>
 
-            {/* SHARED SIDEBAR */}
-            <div className="grid-side-v">
-                 <section className="card section-card-v">
-                    <div className="align-center" style={{ marginBottom: '16px' }}>
-                        <Info size={16} color="var(--primary)" />
-                        <h3>Suggerimenti Rapidi</h3>
-                    </div>
-                    <ul className="tips-list">
-                        <li>
-                            <Zap size={14} />
-                            <span>Puoi gestire i partecipanti direttamente dal messaggio Discord.</span>
-                        </li>
-                        <li>
-                            <MessageSquare size={14} />
-                            <span>In futuro potrai visualizzare la lista nomi completa qui in dashboard.</span>
-                        </li>
-                        <li>
-                            <Calendar size={14} />
-                            <span>I giveaway programmati partono automaticamente al minuto esatto.</span>
-                        </li>
-                    </ul>
-                </section>
-
-                <section className="card section-card-v" style={{ marginTop: '20px', border: '1px solid rgba(241, 196, 15, 0.2)' }}>
-                    <div className="align-center" style={{ marginBottom: '12px' }}>
-                        <AlertCircle size={16} color="#f1c40f" />
-                        <h3 style={{ fontSize: '0.85rem' }}>Nota sui Canali</h3>
-                    </div>
-                    <p className="text-xs text-muted">
-                        Vengono mostrati solo i canali Testuali e di Annuncio. Se un canale non appare, verifica che il bot abbia i permessi di lettura.
-                    </p>
-                </section>
             </div>
         </div>
       </div>
@@ -442,7 +416,8 @@ export default function GiveawayConfig() {
             .tab-link:hover { color: white; background: rgba(255,255,255,0.03); }
             .tab-link.active { color: white; background: var(--bg-card); box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
 
-            .config-grid-v { display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
+            .config-grid-v { display: block; }
+            .grid-main-v { display: flex; flex-direction: column; gap: 24px; }
             .fields-grid-v { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
             .align-center { display: flex; align-items: center; gap: 10px; }
             

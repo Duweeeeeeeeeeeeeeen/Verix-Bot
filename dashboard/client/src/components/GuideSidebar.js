@@ -213,6 +213,28 @@ const GUIDE_CONTENT = {
       match: true,
       text: "Da qui puoi controllare lo stato di salute dei processi. Se vedi errori rossi, prova a riavviare il modulo specifico."
     }
+  ],
+  giveaway: (context) => [
+    {
+      title: "Gestione Live",
+      match: true,
+      text: "Puoi gestire i partecipanti direttamente dal messaggio Discord cliccando sui tasti dell'embed."
+    },
+    {
+      title: "Programmazione",
+      match: true,
+      text: "I giveaway programmati partono automaticamente al minuto esatto stabilito. Assicurati che l'ora sia corretta!"
+    },
+    {
+      title: "Visibilità Canali",
+      match: true,
+      text: "Vengono mostrati solo i canali Testuali e di Annuncio. Se un canale non appare, verifica che il bot abbia i permessi di lettura."
+    },
+    {
+      title: "Futuri Aggiornamenti",
+      match: true,
+      text: "Presto potrai visualizzare e gestire la lista nomi dei partecipanti direttamente da questa dashboard."
+    }
   ]
 };
 
