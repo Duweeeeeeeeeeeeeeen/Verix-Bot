@@ -70,13 +70,20 @@ class GiveawayManager {
                 .setTimestamp(giveaway.endTime)
                 .setFooter({ text: 'Termina il' });
 
+            const styleMap = {
+                'PRIMARY': ButtonStyle.Primary,
+                'SUCCESS': ButtonStyle.Success,
+                'DANGER': ButtonStyle.Danger,
+                'SECONDARY': ButtonStyle.Secondary
+            };
+
             const row = new ActionRowBuilder()
                 .addComponents(
                     new ButtonBuilder()
                         .setCustomId(`gw_join_${Date.now()}`)
-                        .setLabel('Partecipa')
-                        .setEmoji('🎉')
-                        .setStyle(ButtonStyle.Primary)
+                        .setLabel(giveaway.buttonLabel || 'Partecipa')
+                        .setEmoji(giveaway.buttonEmoji || '🎉')
+                        .setStyle(styleMap[giveaway.buttonStyle] || ButtonStyle.Primary)
                 );
 
             const msg = await channel.send({ embeds: [embed], components: [row] });

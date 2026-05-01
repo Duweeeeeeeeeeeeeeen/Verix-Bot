@@ -52,6 +52,18 @@ const giveawaySchema = new mongoose.Schema({
     color: {
         type: String,
         default: '#5865F2'
+    },
+    buttonLabel: {
+        type: String,
+        default: 'Partecipa'
+    },
+    buttonEmoji: {
+        type: String,
+        default: '🎉'
+    },
+    buttonStyle: {
+        type: String,
+        default: 'PRIMARY'
     }
 }, { timestamps: true });
 

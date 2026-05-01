@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import DiscordSelector from '../../../components/DiscordSelector';
 import EmbedPreview from '../../../components/EmbedPreview';
+import CustomSelect from '../../../components/CustomSelect';
 
 export default function GiveawayConfig() {
   const router = useRouter();
@@ -51,7 +52,10 @@ export default function GiveawayConfig() {
     scheduledStart: '',
     customTitle: '🎁 NUOVO GIVEAWAY!',
     customDescription: 'Partecipa cliccando sul tasto qui sotto!\n\n🏆 **Premio:** {prize}\n⌛ **Termina:** {endtime}',
-    color: '#5865F2'
+    color: '#5865F2',
+    buttonLabel: 'Partecipa',
+    buttonEmoji: '🎉',
+    buttonStyle: 'PRIMARY'
   });
 
   const previewEmbed = {
@@ -65,7 +69,11 @@ export default function GiveawayConfig() {
     fields: [
         { name: '👥 Partecipanti', value: '0', inline: true }
     ],
-    button: { label: 'Partecipa', emoji: '🎉', style: 'PRIMARY' }
+    button: { 
+        label: newGw.buttonLabel, 
+        emoji: newGw.buttonEmoji, 
+        style: newGw.buttonStyle 
+    }
   };
 
   useEffect(() => {
@@ -141,7 +149,10 @@ export default function GiveawayConfig() {
           scheduledStart: '',
           customTitle: '🎁 NUOVO GIVEAWAY!',
           customDescription: 'Partecipa cliccando sul tasto qui sotto!\n\n🏆 **Premio:** {prize}\n⌛ **Termina:** {endtime}',
-          color: '#5865F2'
+          color: '#5865F2',
+          buttonLabel: 'Partecipa',
+          buttonEmoji: '🎉',
+          buttonStyle: 'PRIMARY'
         });
         fetchData();
       }
@@ -309,6 +320,45 @@ export default function GiveawayConfig() {
                                                     />
                                                 </div>
                                             </div>
+
+                                            <div className="field-divider">Personalizzazione Bottone</div>
+
+                                            <div className="fields-row-v">
+                                                <div className="field-box">
+                                                    <label className="text-label">Testo Bottone</label>
+                                                    <input 
+                                                        type="text" 
+                                                        className="input"
+                                                        value={newGw.buttonLabel}
+                                                        onChange={e => setNewGw({...newGw, buttonLabel: e.target.value})}
+                                                    />
+                                                </div>
+                                                <div className="field-box">
+                                                    <label className="text-label">Emoji Bottone</label>
+                                                    <input 
+                                                        type="text" 
+                                                        className="input"
+                                                        value={newGw.buttonEmoji}
+                                                        onChange={e => setNewGw({...newGw, buttonEmoji: e.target.value})}
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="field-box">
+                                                <label className="text-label">Stile Bottone</label>
+                                                <CustomSelect 
+                                                    options={[
+                                                        { value: 'PRIMARY', label: 'Blu (Primary)' },
+                                                        { value: 'SUCCESS', label: 'Verde (Success)' },
+                                                        { value: 'DANGER', label: 'Rosso (Danger)' },
+                                                        { value: 'SECONDARY', label: 'Grigio (Secondary)' }
+                                                    ]}
+                                                    value={newGw.buttonStyle}
+                                                    onChange={val => setNewGw({...newGw, buttonStyle: val})}
+                                                />
+                                            </div>
+
+                                            <div className="field-divider">Opzioni Avanzate</div>
 
                                             <div className="field-box">
                                                 <label className="text-label">Avvio Programmato (Opzionale)</label>

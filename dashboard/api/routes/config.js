@@ -316,7 +316,7 @@ router.get('/:guildId/giveaways/scheduled', adminCheck, async (req, res) => {
 router.post('/:guildId/giveaways/create', adminCheck, async (req, res) => {
     try {
         const { guildId } = req.params;
-        const { prize, duration, winnerCount, channelId, scheduledStart, customTitle, customDescription, color } = req.body;
+        const { prize, duration, winnerCount, channelId, scheduledStart, customTitle, customDescription, color, buttonLabel, buttonEmoji, buttonStyle } = req.body;
         const client = req.discordClient;
 
         const startTime = scheduledStart ? new Date(scheduledStart) : new Date();
@@ -344,13 +344,20 @@ router.post('/:guildId/giveaways/create', adminCheck, async (req, res) => {
                 .setTimestamp(endTime)
                 .setFooter({ text: 'Termina il' });
 
+            const styleMap = {
+                'PRIMARY': ButtonStyle.Primary,
+                'SUCCESS': ButtonStyle.Success,
+                'DANGER': ButtonStyle.Danger,
+                'SECONDARY': ButtonStyle.Secondary
+            };
+
             const row = new ActionRowBuilder()
                 .addComponents(
                     new ButtonBuilder()
                         .setCustomId(`gw_join_${Date.now()}`)
-                        .setLabel('Partecipa')
-                        .setEmoji('🎉')
-                        .setStyle(ButtonStyle.Primary)
+                        .setLabel(buttonLabel || 'Partecipa')
+                        .setEmoji(buttonEmoji || '🎉')
+                        .setStyle(styleMap[buttonStyle] || ButtonStyle.Primary)
                 );
 
             const msg = await channel.send({ embeds: [embed], components: [row] });
@@ -367,7 +374,10 @@ router.post('/:guildId/giveaways/create', adminCheck, async (req, res) => {
                 status: 'ACTIVE',
                 customTitle,
                 customDescription,
-                color
+                color,
+                buttonLabel,
+                buttonEmoji,
+                buttonStyle
             });
 
             return res.json({ success: true, data: giveaway });
@@ -384,7 +394,10 @@ router.post('/:guildId/giveaways/create', adminCheck, async (req, res) => {
                 status: 'SCHEDULED',
                 customTitle,
                 customDescription,
-                color
+                color,
+                buttonLabel,
+                buttonEmoji,
+                buttonStyle
             });
 
             return res.json({ success: true, data: giveaway, scheduled: true });
