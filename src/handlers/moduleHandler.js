@@ -122,14 +122,14 @@ export default async (client) => {
                         
                         // Check if it belongs to this module
                         matchesModule = target.includes(moduleName.toLowerCase()) || 
-                                        (moduleName === 'tickets' && (target.includes('ticket') || target.startsWith('tk_'))) ||
+                                        (moduleName.toLowerCase() === 'tickets' && (target.includes('ticket') || target.startsWith('tk_'))) ||
                                         (prefix && (target.startsWith(`${prefix}_`) || target.includes(`_${prefix}_`) || target.endsWith(`_${prefix}`)));
 
                         // Skip if not admin and not matching
-                        if (moduleName !== 'admin' && !matchesModule) continue;
+                        if (moduleName.toLowerCase() !== 'admin' && !matchesModule) continue;
 
                         // Module activation check
-                        const config = await getModuleConfig(guildId, moduleName);
+                        const config = await getModuleConfig(guildId, moduleName.toLowerCase());
                         if (!config || !config.enabled) {
                             if (matchesModule) {
                                 logger.warn(`[HUB] Module ${moduleName} is DISABLED for guild ${guildId} but received interaction ${target}`);
