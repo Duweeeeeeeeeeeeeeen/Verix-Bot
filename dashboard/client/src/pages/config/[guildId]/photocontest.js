@@ -203,49 +203,49 @@ export default function PhotoContestConfig() {
 
         <div className="tab-panel animate">
             {activeTab === 'settings' && (
-                <div className="config-single-col-p animate fade-in">
-                    <section className="card section-card-p" style={{ marginBottom: '24px' }}>
-                        <h3 className="align-center"><Target size={18} color="var(--primary)" /> Destinazioni</h3>
-                        <div className="fields-grid-p">
-                            <div className="field-box">
-                                <label className="text-label">Canale Contest</label>
-                                <DiscordSelector type="channel" options={channels.filter(c => c.type === 0 || c.type === 5)} value={config.channelId || ''} onChange={val => setConfig({...config, channelId: val})} />
-                            </div>
-                            <div className="field-box">
-                                <label className="text-label">Hall of Fame</label>
-                                <DiscordSelector type="channel" options={channels.filter(c => c.type === 0 || c.type === 5)} value={config.hallOfFameChannelId || ''} onChange={val => setConfig({...config, hallOfFameChannelId: val})} />
-                            </div>
-                            <div className="field-box">
-                                <label className="text-label">Ruolo Vincitore</label>
-                                <DiscordSelector type="role" options={roles} value={config.prizeRoleId || ''} onChange={val => setConfig({...config, prizeRoleId: val})} />
-                            </div>
+                <div className="config-grid animate fade-in">
+                    <div className="grid-left">
+                        <section className="card section-card-p">
+                            <h3 className="align-center"><Target size={18} color="var(--primary)" /> Destinazioni</h3>
+                            <div className="fields-grid-p">
+                                <div className="field-box">
+                                    <label className="text-label">Canale Contest</label>
+                                    <DiscordSelector type="channel" options={channels.filter(c => c.type === 0 || c.type === 5)} value={config.channelId || ''} onChange={val => setConfig({...config, channelId: val})} />
+                                </div>
+                                <div className="field-box">
+                                    <label className="text-label">Hall of Fame</label>
+                                    <DiscordSelector type="channel" options={channels.filter(c => c.type === 0 || c.type === 5)} value={config.hallOfFameChannelId || ''} onChange={val => setConfig({...config, hallOfFameChannelId: val})} />
+                                </div>
+                                <div className="field-box">
+                                    <label className="text-label">Ruolo Vincitore</label>
+                                    <DiscordSelector type="role" options={roles} value={config.prizeRoleId || ''} onChange={val => setConfig({...config, prizeRoleId: val})} />
+                                </div>
 
-                            <div className="field-box">
-                                <label className="text-label">
-                                    Intervallo (Ore)
-                                    <HelpTooltip text="Il tempo di attesa tra la fine di un contest e l'inizio automatico del prossimo." />
-                                </label>
-                                <input type="number" className="input" value={config.interval || 1} onChange={(e) => setConfig({...config, interval: parseInt(e.target.value) || 1})} />
+                                <div className="field-box">
+                                    <label className="text-label">
+                                        Intervallo (Ore)
+                                        <HelpTooltip text="Il tempo di attesa tra la fine di un contest e l'inizio automatico del prossimo." />
+                                    </label>
+                                    <input type="number" className="input" value={config.interval || 1} onChange={(e) => setConfig({...config, interval: parseInt(e.target.value) || 1})} />
+                                </div>
+                                <div className="field-box">
+                                    <label className="text-label">
+                                        Durata Contest (Ore)
+                                        <HelpTooltip text="Quanto tempo rimane attivo il contest per ricevere foto e voti dopo che è iniziato." />
+                                    </label>
+                                    <input type="number" className="input" value={config.duration || 24} onChange={(e) => setConfig({...config, duration: parseInt(e.target.value) || 24})} />
+                                </div>
                             </div>
-                            <div className="field-box">
-                                <label className="text-label">
-                                    Durata Contest (Ore)
-                                    <HelpTooltip text="Quanto tempo rimane attivo il contest per ricevere foto e voti dopo che è iniziato." />
-                                </label>
-                                <input type="number" className="input" value={config.duration || 24} onChange={(e) => setConfig({...config, duration: parseInt(e.target.value) || 24})} />
-                            </div>
-                        </div>
-                    </section>
+                        </section>
+                    </div>
 
-                    <section className="card section-card-p">
-                        <h3 className="align-center"><Shield size={18} color="var(--primary)" /> Autorizzazioni Staff</h3>
-                        <div className="field-box" style={{ marginTop: '16px' }}>
+                    <div className="grid-right">
+                        <section className="card section-card-p">
+                            <h3 className="sidebar-title align-center" style={{ marginBottom: '16px' }}><Shield size={18} /> Autorizzazioni Staff</h3>
                             <DiscordSelector type="role" multiple={true} options={roles} value={config.staffRoleIds || []} onChange={val => setConfig({...config, staffRoleIds: val})} />
-                            <p className="field-help">I ruoli selezionati potranno forzare l'avvio o il termine del contest.</p>
-                        </div>
-                    </section>
+                            <p className="text-description" style={{ marginTop: '12px' }}>I ruoli selezionati potranno forzare l'avvio o il termine del contest.</p>
+                        </section>
 
-                    <div style={{ marginTop: '24px' }}>
                         <NotificationSettings 
                             guildId={guildId}
                             value={config.notifications}
