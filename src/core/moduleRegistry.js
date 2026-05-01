@@ -4,6 +4,8 @@ import BackgroundConfig from '../models/BackgroundConfig.js';
 import VerifyConfig from '../models/VerifyConfig.js';
 import WelcomeConfig from '../models/WelcomeConfig.js';
 import PhotoContestConfig from '../models/PhotoContestConfig.js';
+import TempVoiceConfig from '../models/TempVoiceConfig.js';
+import GiveawayConfig from '../models/GiveawayConfig.js';
 import ModerationConfig from '../models/ModerationConfig.js';
 import SupportConfig from '../models/SupportConfig.js';
 
@@ -46,6 +48,16 @@ export const registry = {
         name: 'PhotoContest',
         prefixes: ['pc_'], // Used for pc_vote_up, pc_vote_down
         model: PhotoContestConfig
+    },
+    tempvoice: {
+        name: 'Temp Voice',
+        prefixes: [], 
+        model: TempVoiceConfig
+    },
+    giveaway: {
+        name: 'Giveaway',
+        prefixes: ['gw_'],
+        model: GiveawayConfig
     },
     moderation: {
         name: 'Moderazione',

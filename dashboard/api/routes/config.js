@@ -10,6 +10,9 @@ import Ticket from '../../../src/models/Ticket.js';
 import WhitelistApp from '../../../src/models/WhitelistApp.js';
 import VoiceQueue from '../../../src/models/VoiceQueue.js';
 import PhotoContestConfig from '../../../src/models/PhotoContestConfig.js';
+import TempVoiceConfig from '../../../src/models/TempVoiceConfig.js';
+import GiveawayConfig from '../../../src/models/GiveawayConfig.js';
+import Giveaway from '../../../src/models/Giveaway.js';
 import PhotoContest from '../../../src/models/PhotoContest.js';
 import VerifyConfig from '../../../src/models/VerifyConfig.js';
 import GlobalConfig from '../../../src/models/GlobalConfig.js';
@@ -219,6 +222,71 @@ router.post('/:guildId/autoclear', adminCheck, async (req, res) => {
     } catch (error) {
         console.error('Error updating autoclear configuration:', error);
         res.status(500).json({ success: false, error: 'Impossibile salvare la configurazione autoclear' });
+    }
+});
+
+// GET tempvoice config
+router.get('/:guildId/tempvoice', adminCheck, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        let config = await TempVoiceConfig.findOne({ guildId });
+        if (!config) config = await TempVoiceConfig.create({ guildId });
+        res.json({ success: true, data: mergeModuleDefaults('tempvoice', config) });
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione vocale' });
+    }
+});
+
+// POST tempvoice config
+router.post('/:guildId/tempvoice', adminCheck, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const config = await TempVoiceConfig.findOneAndUpdate(
+            { guildId },
+            { $set: req.body },
+            { new: true, upsert: true }
+        );
+        res.json({ success: true, data: config });
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'Impossibile salvare la configurazione vocale' });
+    }
+});
+
+// GET giveaway config
+router.get('/:guildId/giveaway', adminCheck, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        let config = await GiveawayConfig.findOne({ guildId });
+        if (!config) config = await GiveawayConfig.create({ guildId });
+        res.json({ success: true, data: mergeModuleDefaults('giveaway', config) });
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione giveaway' });
+    }
+});
+
+// POST giveaway config
+router.post('/:guildId/giveaway', adminCheck, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const config = await GiveawayConfig.findOneAndUpdate(
+            { guildId },
+            { $set: req.body },
+            { new: true, upsert: true }
+        );
+        res.json({ success: true, data: config });
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'Impossibile salvare la configurazione giveaway' });
+    }
+});
+
+// GET active giveaways
+router.get('/:guildId/giveaways/active', adminCheck, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const active = await Giveaway.find({ guildId, status: 'ACTIVE' }).sort({ endTime: 1 });
+        res.json({ success: true, data: active });
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'Impossibile caricare i giveaway attivi' });
     }
 });
 

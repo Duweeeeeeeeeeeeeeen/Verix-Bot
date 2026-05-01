@@ -11,6 +11,7 @@ import CleanupManager from './src/core/cleanupManager.js';
 import EmbedSchedulerManager from './src/core/EmbedSchedulerManager.js';
 import { SocialManager } from './src/modules/socials/manager.js';
 import AutoClearManager from './src/core/autoClearManager.js';
+import GiveawayManager from './src/modules/giveaway/manager.js';
 
 
 // Initialize Discord Client
@@ -86,6 +87,9 @@ if (global.botInitialized) {
 
             client.socialManager = new SocialManager(client);
             client.socialManager.init();
+
+            client.giveawayManager = new GiveawayManager(client);
+            client.giveawayManager.init();
 
             startDashboard(client);
         });

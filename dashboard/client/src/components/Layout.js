@@ -6,6 +6,7 @@ import {
   ShieldCheck, 
   Mic2, 
   Ticket, 
+  Gift,
   Layout as LayoutIcon, 
   LogOut, 
   Settings, 
@@ -91,6 +92,8 @@ export default function Layout({ children, guildId }) {
     if (pathname.includes('/photocontest')) return 'photocontest';
     if (pathname.includes('/moderation')) return 'moderation_hub';
     if (pathname.includes('/socials')) return 'socials';
+    if (pathname.includes('/giveaway')) return 'giveaway';
+    if (pathname.includes('/tempvoice')) return 'tempvoice';
     if (pathname.includes('/voice')) return 'voice';
     if (pathname.includes('/support')) return 'support';
     if (pathname.includes('/management')) return 'management';
@@ -109,7 +112,9 @@ export default function Layout({ children, guildId }) {
     { name: 'Welcome', icon: UserPlus, path: `/config/${guildId}/welcome` },
     { name: 'Tickets', icon: Ticket, path: `/config/${guildId}/tickets` },
     { name: 'Photo Contest', icon: Camera, path: `/config/${guildId}/photocontest` },
+    { name: 'Giveaway', icon: Gift, path: `/config/${guildId}/giveaway` },
     { name: 'Moderazione', icon: Gavel, path: `/config/${guildId}/moderation` },
+    { name: 'Temp Voice', icon: Mic2, path: `/config/${guildId}/tempvoice` },
     { name: 'Assistenza', icon: Mic2, path: `/config/${guildId}/support` },
     { name: 'FiveM', icon: Globe, path: `/config/${guildId}/fivem` },
     { name: 'Log & Gestione', icon: History, path: `/config/${guildId}/management` },
