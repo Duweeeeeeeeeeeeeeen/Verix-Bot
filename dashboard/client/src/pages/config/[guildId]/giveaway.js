@@ -73,16 +73,15 @@ export default function GiveawayConfig() {
         api.request(`/config/${guildId}/giveaways/logs`)
       ]);
       
-      if (configRes) setConfig(configRes.data || configRes);
+      if (configRes) setConfig(configRes);
       if (discordRes) {
-        const dData = discordRes.data || {};
-        setRoles(dData.roles || []);
+        setRoles(discordRes.roles || []);
         // Allow Text (0) and Announcement (5) channels
-        setChannels(dData.channels?.filter(c => c.type === 0 || c.type === 5) || []);
+        setChannels(discordRes.channels?.filter(c => c.type === 0 || c.type === 5) || []);
       }
-      if (activeRes) setActiveGiveaways(activeRes.data || []);
-      if (scheduledRes) setScheduledGiveaways(scheduledRes.data || []);
-      if (logsRes) setLogs(logsRes.data || []);
+      if (activeRes) setActiveGiveaways(activeRes);
+      if (scheduledRes) setScheduledGiveaways(scheduledRes);
+      if (logsRes) setLogs(logsRes);
     } catch (e) {
       console.error(e);
     } finally {
