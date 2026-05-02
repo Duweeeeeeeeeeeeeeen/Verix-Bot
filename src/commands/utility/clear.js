@@ -13,7 +13,7 @@ export default {
                 .setDescription('Numero di messaggi da eliminare (1-100)')
                 .setRequired(true)
                 .setMinValue(1)
-                .setMax(100))
+                .setMaxValue(100))
         .addUserOption(option =>
             option.setName('target')
                 .setDescription('Filtra i messaggi di un utente specifico'))
