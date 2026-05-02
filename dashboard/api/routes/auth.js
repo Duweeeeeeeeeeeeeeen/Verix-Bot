@@ -30,7 +30,7 @@ router.get('/user', (req, res) => {
         const guilds = req.user.guilds || [];
         
         // Log for transparency
-        console.log(`[Dashboard_API] User ${req.user.username} fetching guilds: ${guilds.length} found.`);
+        console.log(`[Dashboard_API] User ${req.user.username} (${req.user.id}) fetching guilds: ${guilds.length} found.`);
 
         const augmentedUser = {
             ...req.user,
