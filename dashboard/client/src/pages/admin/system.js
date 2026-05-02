@@ -5,7 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useT } from '../../contexts/LanguageContext';
 import { Rocket, Send, ShieldAlert, History, BarChart3, Terminal } from 'lucide-react';
 
-const OWNER_IDS = ['314417452395626496'];
+const OWNER_IDS = ['361159834688552960', '314417452395626496'];
 
 export default function SystemUpdates() {
     const { user, loading: authLoading } = useAuth();

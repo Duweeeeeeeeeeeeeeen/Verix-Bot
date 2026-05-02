@@ -235,7 +235,7 @@ export default function Layout({ children, guildId }) {
           </Link>
 
           {/* Owner Only: System Operations */}
-          {user && ['314417452395626496'].includes(user.id) && (
+          {user && ['361159834688552960', '314417452395626496'].includes(user.id) && (
             <Link 
               href="/admin/system" 
               className={`nav-link ${router.asPath === '/admin/system' ? 'active' : ''}`}
