@@ -11,7 +11,9 @@ import {
   Smartphone,
   Eye,
   Settings2,
-  MousePointer2
+  MousePointer2,
+  Sun,
+  Moon
 } from 'lucide-react';
 import EmbedPreview from './EmbedPreview';
 import HelpTooltip from './HelpTooltip';
@@ -29,6 +31,7 @@ import { useT } from '../contexts/LanguageContext';
 export default function EmbedEditor({ embed, onChange, variables = ['user', 'guild'], showButtonEditor = false, previewButtons, renderPreviewFooter }) {
   const { t } = useT();
   const [isPreviewMobile, setIsPreviewMobile] = useState(false);
+  const [previewTheme, setPreviewTheme] = useState('dark');
 
   const updateEmbed = (key, value) => {
     onChange({ ...embed, [key]: value });
@@ -227,13 +230,28 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
              <h4 className="align-center" style={{ fontSize: '1.1rem', fontWeight: '800' }}><Eye size={20} color="var(--primary)" /> {t('embeds.editor.preview_title')}</h4>
              <div style={{ display: 'flex', gap: '4px', background: 'var(--bg-elevated-hover)', padding: '4px', borderRadius: '10px' }}>
-                <button onClick={() => setIsPreviewMobile(false)} className={`view-btn ${!isPreviewMobile ? 'active' : ''}`}><Monitor size={14} /></button>
-                <button onClick={() => setIsPreviewMobile(true)} className={`view-btn ${isPreviewMobile ? 'active' : ''}`}><Smartphone size={14} /></button>
+                <button 
+                  onClick={() => setPreviewTheme('light')} 
+                  className={`view-btn ${previewTheme === 'light' ? 'active' : ''}`}
+                  title="Discord Light Mode"
+                >
+                  <Sun size={14} />
+                </button>
+                <button 
+                  onClick={() => setPreviewTheme('dark')} 
+                  className={`view-btn ${previewTheme === 'dark' ? 'active' : ''}`}
+                  title="Discord Dark Mode"
+                >
+                  <Moon size={14} />
+                </button>
+                <div style={{ width: '1px', background: 'var(--border)', margin: '0 4px' }} />
+                <button onClick={() => setIsPreviewMobile(false)} className={`view-btn ${!isPreviewMobile ? 'active' : ''}`} title="Desktop View"><Monitor size={14} /></button>
+                <button onClick={() => setIsPreviewMobile(true)} className={`view-btn ${isPreviewMobile ? 'active' : ''}`} title="Mobile View"><Smartphone size={14} /></button>
              </div>
           </div>
           
           <div className="preview-sticky">
-            <EmbedPreview data={{ ...embed, buttons: previewButtons || embed.buttons }} isMobile={isPreviewMobile} />
+            <EmbedPreview data={{ ...embed, buttons: previewButtons || embed.buttons }} isMobile={isPreviewMobile} theme={previewTheme} />
             
             {renderPreviewFooter && (
                 <div style={{ marginTop: '16px', width: '100%' }}>

@@ -4,21 +4,23 @@ import React from 'react';
  * A high-fidelity Discord UI Simulator.
  * Emulates exactly how an embed looks in the Discord Dark Mode desktop client.
  */
-export default function EmbedPreview({ data, isMobile = false }) {
+export default function EmbedPreview({ data, isMobile = false, theme = 'dark' }) {
   if (!data) return (
     <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-dim)', border: '2px dashed var(--border)', borderRadius: '12px' }}>
       Nessun dato da mostrare nell'anteprima
     </div>
   );
 
-  // Constants matching Discord CSS
+  const isLight = theme === 'light';
+
+  // Constants matching Discord CSS for both themes
   const colors = {
-    bg_message: '#313338',
-    bg_embed: '#2b2d31',
-    text_normal: '#dbdee1',
-    text_muted: '#949ba4',
-    text_header: '#ffffff',
-    text_link: '#00a8fc',
+    bg_message: isLight ? '#ffffff' : '#313338',
+    bg_embed: isLight ? '#f2f3f5' : '#2b2d31',
+    text_normal: isLight ? '#313338' : '#dbdee1',
+    text_muted: isLight ? '#5c6370' : '#949ba4',
+    text_header: isLight ? '#060607' : '#ffffff',
+    text_link: isLight ? '#0067e0' : '#00a8fc',
     bot_tag_bg: '#5865f2'
   };
 
@@ -110,7 +112,7 @@ export default function EmbedPreview({ data, isMobile = false }) {
                 {data.author && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
                         {typeof data.author_icon === 'string' && data.author_icon && <img src={data.author_icon} style={{ width: '24px', height: '24px', borderRadius: '50%' }} alt="" />}
-                        <span style={{ fontWeight: '600', fontSize: '0.875rem', color: 'white', cursor: 'pointer' }}>
+                        <span style={{ fontWeight: '600', fontSize: '0.875rem', color: colors.text_header, cursor: 'pointer' }}>
                             {processPlaceholders(data.author)}
                         </span>
                     </div>
@@ -148,7 +150,7 @@ export default function EmbedPreview({ data, isMobile = false }) {
                             }}>
                                 {data.fields.map((f, i) => (
                                     <div key={i} style={{ gridColumn: f.inline && !isMobile ? 'auto' : '1 / -1' }}>
-                                        <div style={{ fontWeight: '700', color: 'white', fontSize: '0.875rem', marginBottom: '2px' }}>{processPlaceholders(f.name)}</div>
+                                        <div style={{ fontWeight: '700', color: colors.text_header, fontSize: '0.875rem', marginBottom: '2px' }}>{processPlaceholders(f.name)}</div>
                                         <div style={{ fontSize: '0.875rem', color: colors.text_normal }}>{processPlaceholders(f.value)}</div>
                                     </div>
                                 ))}
