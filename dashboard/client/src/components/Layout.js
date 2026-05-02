@@ -42,6 +42,7 @@ import {
   Terminal
 } from 'lucide-react';
 import GuideSidebar from './GuideSidebar';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function Layout({ children, guildId, hideGuide = false }) {
   const { user, logout } = useAuth();
@@ -49,10 +50,13 @@ export default function Layout({ children, guildId, hideGuide = false }) {
   const router = useRouter();
   const [toast, setToast] = useState(null);
   const [serverInfo, setServerInfo] = useState({ name: 'Loading...', icon: null });
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [isGuideOpen, setIsGuideOpen] = useState(true);
-  const [isActivity, setIsActivity] = useState(false);
-  const [theme, setTheme] = useState('dark');
+    const [isCollapsed, setIsCollapsed] = useState(false);
+    const [isGuideOpen, setIsGuideOpen] = useState(false);
+    const [guideContext, setGuideContext] = useState({});
+    const { theme, toggleTheme } = useTheme();
+    const [toast, setToast] = useState(null);
+    const [isActivity, setIsActivity] = useState(false);
+    const [serverInfo, setServerInfo] = useState({ name: 'Server', icon: null });
 
   // Persistence for Guide Sidebar
   useEffect(() => {
@@ -66,24 +70,6 @@ export default function Layout({ children, guildId, hideGuide = false }) {
     localStorage.setItem('verix-guide-open', isGuideOpen);
   }, [isGuideOpen]);
 
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('verix-theme') || 'dark';
-    setTheme(savedTheme);
-    if (savedTheme === 'light') {
-        document.body.classList.add('light-theme');
-    }
-  }, []);
-
-  const toggleTheme = () => {
-    const newTheme = theme === 'dark' ? 'light' : 'dark';
-    setTheme(newTheme);
-    localStorage.setItem('verix-theme', newTheme);
-    if (newTheme === 'light') {
-        document.body.classList.add('light-theme');
-    } else {
-        document.body.classList.remove('light-theme');
-    }
-  };
   const [guideContext, setGuideContext] = useState({});
 
   useEffect(() => {
