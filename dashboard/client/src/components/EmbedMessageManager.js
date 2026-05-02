@@ -17,6 +17,8 @@ import {
 } from 'lucide-react';
 import api from '../utils/api';
 import { useT } from '../contexts/LanguageContext';
+import EmbedEditor from './EmbedEditor';
+import defaultMessagesMap from '../locales';
 
 /**
  * Manages multiple configurable messages for a module, grouped by context.
@@ -26,7 +28,8 @@ import { useT } from '../contexts/LanguageContext';
  * @param {Function} extraButtons - Optional function (slug) => [buttons] for preview
  */
 export default function EmbedMessageManager({ guildId, module, slugs = [], extraButtons }) {
-  const { t } = useT();
+  const { t, language } = useT();
+  const defaultMessages = defaultMessagesMap[language] || defaultMessagesMap['it'];
   const [messages, setMessages] = useState({});
   const [activeSlug, setActiveSlug] = useState(slugs[0]?.key || null);
   const [loading, setLoading] = useState(true);
