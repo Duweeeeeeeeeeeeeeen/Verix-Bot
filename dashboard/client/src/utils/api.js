@@ -19,6 +19,11 @@ function _setActivity(active) {
  * @returns {Promise<any>} - The data from the API.
  */
 export async function apiRequest(endpoint, options = {}) {
+  // Prevent requests with 'undefined' in the path (usually due to uninitialized router)
+  if (endpoint.includes('/undefined/')) {
+    console.warn(`[API] Blocked request to ${endpoint} due to undefined parameter.`);
+    return null;
+  }
   const url = `${API_BASE_URL}${endpoint}`;
   
   const defaultOptions = {

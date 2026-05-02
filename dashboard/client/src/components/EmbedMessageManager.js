@@ -46,7 +46,7 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
   }, {});
 
   useEffect(() => {
-    if (guildId && module) {
+    if (guildId && guildId !== 'undefined' && module) {
       fetchMessages();
     }
   }, [guildId, module]);

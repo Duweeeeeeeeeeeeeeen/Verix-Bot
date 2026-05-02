@@ -31,7 +31,7 @@ export default function VerifyConfig() {
   }, []);
 
   const loadData = async () => {
-    if (!guildId || !mounted) return;
+    if (!guildId || guildId === 'undefined' || !mounted) return;
     setLoading(true);
     try {
       const [configRes, discordRes] = await Promise.all([
