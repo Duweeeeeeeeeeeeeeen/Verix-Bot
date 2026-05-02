@@ -280,6 +280,15 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
           grid-template-columns: 1fr 450px;
           gap: 30px;
         }
+
+        @media (max-width: 1400px) {
+          .editor-grid {
+            grid-template-columns: 1fr;
+          }
+          .preview-sticky {
+            position: static;
+          }
+        }
         .preview-sticky {
           position: sticky;
           top: 20px;

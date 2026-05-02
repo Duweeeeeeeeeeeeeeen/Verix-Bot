@@ -507,7 +507,7 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
           margin-bottom: 8px;
         }
 
-        @media (max-width: 1200px) {
+        @media (max-width: 1400px) {
           .manager-layout { grid-template-columns: 1fr; }
           .slug-sidebar { position: static; }
         }

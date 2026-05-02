@@ -249,6 +249,23 @@ export default function SystemUpdates() {
                     gap: 2rem;
                 }
 
+                @media (max-width: 1200px) {
+                    .system-grid {
+                        grid-template-columns: 1fr;
+                    }
+                    .stats-sidebar {
+                        display: grid;
+                        grid-template-columns: 1fr 1fr;
+                        gap: 1.5rem;
+                    }
+                }
+
+                @media (max-width: 768px) {
+                    .stats-sidebar {
+                        grid-template-columns: 1fr;
+                    }
+                }
+
                 .glass-card {
                     background: var(--card-bg);
                     border: 1px solid var(--border-color);

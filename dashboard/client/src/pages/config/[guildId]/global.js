@@ -233,7 +233,7 @@ export default function GlobalConfigPage() {
             .status-row-g { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: var(--bg-badge); border-radius: 10px; border: 1px solid var(--border); font-size: 0.85rem; font-weight: 700; }
 
             .align-center { display: flex; align-items: center; gap: 10px; }
-            @media (max-width: 1000px) { .config-grid-g { grid-template-columns: 1fr; } }
+            @media (max-width: 1300px) { .config-grid-g { grid-template-columns: 1fr; } }
         `}</style>
     </div>
   );

@@ -354,7 +354,7 @@ export default function Layout({ children, guildId }) {
           min-width: 0;
           height: 100vh;
           overflow-y: auto;
-          overflow-x: hidden;
+          overflow-x: auto;
           position: relative;
           background: var(--bg-main);
         }
