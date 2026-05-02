@@ -21,11 +21,6 @@ const GUIDE_CONTENT = {
       title: "Staff Roles",
       match: !context.staffRoleIds?.length,
       text: "Ehi! Non hai messo nessun ruolo staff. Se non lo fai, nessuno potrà accettare o rifiutare le richieste!"
-    },
-    {
-      title: "Comandi Rapidi",
-      match: true,
-      text: "Usa /setup-wl per inviare il pannello, /wl-questions per gestire le domande e /setup-voice per la coda d'attesa."
     }
   ],
   verify: (context) => [
@@ -38,11 +33,6 @@ const GUIDE_CONTENT = {
       title: "Ruolo da dare",
       match: !context.roleId,
       text: "Non hai scelto il ruolo da assegnare! Senza questo, l'utente clicca ma rimane un fantasma senza permessi."
-    },
-    {
-      title: "Comandi Rapidi",
-      match: true,
-      text: "Usa /setup-verify per inviare il messaggio di verifica nel canale desiderato."
     }
   ],
   tickets: (context) => [
@@ -55,11 +45,6 @@ const GUIDE_CONTENT = {
       title: "Naming Ticket",
       match: true,
       text: "Usa nomi chiari come 'ticket-{user}'. Se li chiami tutti uguali lo staff impazzisce a capire di chi è cosa."
-    },
-    {
-      title: "Comandi Rapidi",
-      match: true,
-      text: "Usa /setup-tickets per i pannelli, /ticket-stats per l'attività e /ticket-admin per la gestione avanzata."
     }
   ],
   welcome: (context) => [
@@ -108,11 +93,6 @@ const GUIDE_CONTENT = {
       title: "Logging Fallback",
       match: context.logs?.enabled && !context.logs?.channelId,
       text: "Hai attivato i log ma non hai messo un canale di fallback. Se un modulo non ha un log dedicato, scriverà qui."
-    },
-    {
-      title: "Comandi Rapidi",
-      match: true,
-      text: "Usa /modules per attivare/disattivare i moduli velocemente e /setlogs per impostare i canali di log."
     }
   ],
   autoclear: (context) => [
@@ -149,9 +129,9 @@ const GUIDE_CONTENT = {
       text: "La moderazione automatica è potente, ma controlla sempre i log per assicurarti che non ci siano falsi positivi con gli utenti più attivi."
     },
     {
-      title: "Comandi Rapidi",
+      title: "Gestione Moderazione",
       match: true,
-      text: "Puoi usare /ban o /kick direttamente da Discord. Le notifiche seguiranno i protocolli che hai impostato qui."
+      text: "I comandi /ban e /kick sono disponibili su Discord per azioni rapide. Le punizioni seguiranno i protocolli configurati qui."
     }
   ],
   socials: (context) => [
@@ -176,11 +156,6 @@ const GUIDE_CONTENT = {
       title: "Staff Roles",
       match: !context.staffRoleIds?.length,
       text: "Mancano i ruoli staff. Ricorda che solo chi ha questi ruoli può vedere i comandi per spostare le persone dalle code."
-    },
-    {
-      title: "Comandi Rapidi",
-      match: true,
-      text: "Usa /setup-voice per inviare il pannello di assistenza vocale nel canale che preferisci."
     }
   ],
   management: (context) => [

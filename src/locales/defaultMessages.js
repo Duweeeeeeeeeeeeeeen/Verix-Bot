@@ -531,39 +531,6 @@ export default {
             color: '#e74c3c'
         }
     },
-    economy: {
-        balance: {
-            title: '💰 Estratto Conto Bancario',
-            description: 'Gentile **{user}**, ecco il riepilogo delle tue finanze correnti:\n\n💵 **Contanti:** `${cash}`\n🏦 **Conto in Banca:** `${bank}`\n💳 **Totale Asset:** `${total}`',
-            color: '#2ecc71',
-            footer: 'Banca Centrale | Verix RP'
-        },
-        daily: {
-            title: '🎁 Bonus Fedeltà Erogato',
-            description: 'Il tuo accredito giornaliero di **${amount}** è stato depositato con successo sul tuo conto.\n\nTorna tra 24 ore per il prossimo bonus di cittadinanza!',
-            color: '#f1c40f'
-        },
-        cooldown: {
-            title: '⏳ Protocollo d\'Attesa Bancario',
-            description: 'Hai già ricevuto il tuo accredito quotidiano. I nostri sistemi richiedono un attesa di **{time}** prima di procedere con una nuova erogazione.',
-            color: '#f1c40f'
-        },
-        pay_success: {
-            title: '💸 Transazione Completata',
-            description: 'Hai trasferito correttamente **${amount}** a **{recipient}**.\n\nLa ricevuta è stata archiviata nei tuoi registri personali.',
-            color: '#2ecc71'
-        },
-        user_not_found: {
-            title: '❌ Soggetto Non Censito',
-            description: 'L\'utente specificato non risulta registrato nei database economici della città.',
-            color: '#e74c3c'
-        },
-        generic_error: {
-            title: '❌ Anomalia Transazionale',
-            description: 'Si è verificato un errore critico durante l\'operazione bancaria. La transazione è stata annullata per sicurezza.',
-            color: '#e74c3c'
-        }
-    },
     photocontest: {
         panel: {
             title: '🖼️ Galleria d\'Arte: Esposizione Fotografica',
