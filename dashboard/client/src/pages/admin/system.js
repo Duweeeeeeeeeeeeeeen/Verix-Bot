@@ -3,7 +3,8 @@ import Head from 'next/head';
 import Layout from '../../components/Layout';
 import { useAuth } from '../../contexts/AuthContext';
 import { useT } from '../../contexts/LanguageContext';
-import { Rocket, Send, ShieldAlert, History, BarChart3, Terminal } from 'lucide-react';
+import { Rocket, Send, ShieldAlert, History, BarChart3, Terminal, Eye, EyeOff } from 'lucide-react';
+import EmbedPreview from '../../components/EmbedPreview';
 
 const OWNER_IDS = ['361159834688552960', '314417452395626496'];
 
@@ -20,6 +21,7 @@ export default function SystemUpdates() {
         type: 'standard',
         changes: ''
     });
+    const [previewTheme, setPreviewTheme] = useState('dark');
 
     const isOwner = user && OWNER_IDS.includes(user.id);
 
@@ -84,7 +86,7 @@ export default function SystemUpdates() {
     }
 
     return (
-        <Layout>
+        <Layout hideGuide={true}>
             <Head>
                 <title>Verix System | Updates & Management</title>
             </Head>
@@ -168,6 +170,37 @@ export default function SystemUpdates() {
                                 </button>
                             </div>
                         </form>
+
+                        {/* Real-time Preview */}
+                        <div className="preview-container">
+                            <div className="preview-header">
+                                <div className="preview-title">
+                                    <Eye size={16} />
+                                    <span>{t('embeds.editor.preview')}</span>
+                                </div>
+                                <div className="preview-toggle">
+                                    <button 
+                                        className={`theme-btn ${previewTheme === 'dark' ? 'active' : ''}`}
+                                        onClick={() => setPreviewTheme('dark')}
+                                    >Dark</button>
+                                    <button 
+                                        className={`theme-btn ${previewTheme === 'light' ? 'active' : ''}`}
+                                        onClick={() => setPreviewTheme('light')}
+                                    >Light</button>
+                                </div>
+                            </div>
+                            <div className="preview-wrapper">
+                                <EmbedPreview 
+                                    theme={previewTheme}
+                                    data={{
+                                        title: form.title || 'Titolo Update',
+                                        description: `**Versione ${form.version || '1.0.0'}**\n\n${form.description || 'Descrizione dell\'aggiornamento...'}\n\n**Modifiche:**\n${form.changes || '• Nessuna modifica inserita'}`,
+                                        color: form.type === 'emergency' ? '#ef4444' : '#6366f1',
+                                        footer: { text: `Verix Bot System • ${new Date().toLocaleDateString()}` }
+                                    }} 
+                                />
+                            </div>
+                        </div>
                     </section>
 
                     {/* Stats Sidebar */}
@@ -337,6 +370,62 @@ export default function SystemUpdates() {
                     gap: 0.5rem;
                     cursor: pointer;
                     transition: all 0.2s;
+                }
+
+                .preview-container {
+                    margin-top: 2rem;
+                    border-top: 1px solid var(--border-color);
+                    padding-top: 2rem;
+                }
+
+                .preview-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 1rem;
+                }
+
+                .preview-title {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    font-size: 0.8rem;
+                    font-weight: 800;
+                    color: var(--text-muted);
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                }
+
+                .preview-toggle {
+                    display: flex;
+                    background: rgba(0,0,0,0.2);
+                    padding: 4px;
+                    border-radius: 8px;
+                    gap: 4px;
+                }
+
+                .theme-btn {
+                    padding: 4px 12px;
+                    font-size: 0.7rem;
+                    font-weight: 700;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    transition: 0.2s;
+                    border: none;
+                    background: transparent;
+                    color: var(--text-muted);
+                }
+
+                .theme-btn.active {
+                    background: var(--primary);
+                    color: white;
+                }
+
+                .preview-wrapper {
+                    background: rgba(0,0,0,0.1);
+                    padding: 20px;
+                    border-radius: 12px;
+                    border: 1px dashed var(--border-color);
                 }
 
                 .btn-send:hover:not(:disabled) {

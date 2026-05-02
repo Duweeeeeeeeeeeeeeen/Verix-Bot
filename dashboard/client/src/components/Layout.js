@@ -43,7 +43,7 @@ import {
 } from 'lucide-react';
 import GuideSidebar from './GuideSidebar';
 
-export default function Layout({ children, guildId }) {
+export default function Layout({ children, guildId, hideGuide = false }) {
   const { user, logout } = useAuth();
   const { t, language, setLanguage } = useT();
   const router = useRouter();
@@ -305,7 +305,7 @@ export default function Layout({ children, guildId }) {
                   <button className="icon-action theme-toggle" onClick={toggleTheme} title={theme === 'dark' ? t('theme.light') : t('theme.dark')}>
                     {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
                   </button>
-                 {!isGuideOpen && (
+                 {!hideGuide && !isGuideOpen && (
                    <button className="icon-action help-toggle" onClick={() => setIsGuideOpen(true)} title="Show Guide">
                      <HelpCircle size={18} strokeWidth={2} className="text-amber" />
                      <span className="dot-pulse"></span>
@@ -321,12 +321,14 @@ export default function Layout({ children, guildId }) {
       </main>
 
       {/* Global Right Guide Sidebar */}
-      <GuideSidebar 
-        type={getGuideType(router.pathname)} 
-        context={guideContext} 
-        isOpen={isGuideOpen}
-        onToggle={() => setIsGuideOpen(!isGuideOpen)}
-      />
+      {!hideGuide && (
+        <GuideSidebar 
+          type={getGuideType(router.pathname)} 
+          context={guideContext} 
+          isOpen={isGuideOpen}
+          onToggle={() => setIsGuideOpen(!isGuideOpen)}
+        />
+      )}
 
       {/* Premium Toast */}
       {toast && (
