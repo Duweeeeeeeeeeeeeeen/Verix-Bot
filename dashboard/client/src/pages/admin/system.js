@@ -187,7 +187,7 @@ export default function SystemUpdates() {
                                 </div>
                             </div>
                             <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '16px' }}>
-                                💡 Supportati link diretti (.png, .jpg, .gif). Ideale per loghi server o banner patch.
+                                💡 Supportati link diretti (.png, .jpg, .gif). Caricale su <a href="https://postimages.org/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', textDecoration: 'underline' }}>Postimages</a> per ottenere il link.
                             </p>
 
                             <div className="form-actions">

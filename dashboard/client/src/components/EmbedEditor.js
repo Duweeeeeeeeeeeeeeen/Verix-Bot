@@ -165,7 +165,7 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
                </div>
             </div>
             <p className="field-help" style={{ marginTop: '10px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-              💡 Usa link diretti (es: .png, .jpg, .gif). Link di siti web generici non funzioneranno.
+              💡 Usa link diretti (es: .png, .jpg, .gif). Puoi caricarle su <a href="https://postimages.org/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', textDecoration: 'underline' }}>Postimages</a> per ottenere il link diretto.
             </p>
           </section>
 
