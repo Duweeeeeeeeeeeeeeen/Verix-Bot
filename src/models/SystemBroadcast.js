@@ -6,6 +6,8 @@ const SystemBroadcastSchema = new mongoose.Schema({
     description: { type: String, required: true },
     changes: { type: [String], default: [] },
     type: { type: String, enum: ['standard', 'emergency'], default: 'standard' },
+    thumbnail: { type: String },
+    image: { type: String },
     sentBy: { type: String, required: true }, // User ID
     sentAt: { type: Date, default: Date.now },
     stats: {

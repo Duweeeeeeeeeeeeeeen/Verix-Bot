@@ -20,7 +20,9 @@ export default function SystemUpdates() {
         version: '',
         description: '',
         type: 'standard',
-        changes: ''
+        changes: '',
+        thumbnail: '',
+        image: ''
     });
     const [previewTheme, setPreviewTheme] = useState('dark');
 
@@ -75,7 +77,7 @@ export default function SystemUpdates() {
             const data = await res.json();
             if (data.success) {
                 alert(`Annuncio inviato! Successo: ${data.stats.success}, Falliti: ${data.stats.failed}`);
-                setForm({ title: '', version: '', description: '', type: 'standard', changes: '' });
+                setForm({ title: '', version: '', description: '', type: 'standard', changes: '', thumbnail: '', image: '' });
                 fetchHistory(); // Refresh history
             } else {
                 alert('Errore: ' + data.error);
@@ -158,11 +160,35 @@ export default function SystemUpdates() {
                                 <label>Lista Modifiche (una per riga)</label>
                                 <textarea 
                                     className="changelog-input"
-                                    placeholder="• Correzione bug whitelist\n• Nuovo sistema di log\n• Miglioramento performance"
+                                    placeholder="• Fix bug invio\n• Nuovo comando /help"
                                     value={form.changes}
                                     onChange={e => setForm({ ...form, changes: e.target.value })}
                                 />
                             </div>
+
+                            <div className="form-row">
+                                <div className="form-group">
+                                    <label>URL Miniatura (Thumbnail)</label>
+                                    <input 
+                                        type="text" 
+                                        placeholder="https://...png" 
+                                        value={form.thumbnail}
+                                        onChange={e => setForm({ ...form, thumbnail: e.target.value })}
+                                    />
+                                </div>
+                                <div className="form-group">
+                                    <label>URL Immagine Grande</label>
+                                    <input 
+                                        type="text" 
+                                        placeholder="https://...jpg" 
+                                        value={form.image}
+                                        onChange={e => setForm({ ...form, image: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+                            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '16px' }}>
+                                💡 Supportati link diretti (.png, .jpg, .gif). Ideale per loghi server o banner patch.
+                            </p>
 
                             <div className="form-actions">
                                 <select 
@@ -207,8 +233,11 @@ export default function SystemUpdates() {
                                     theme={previewTheme}
                                     data={{
                                         title: form.title || 'Titolo Update',
-                                        description: `**Versione ${form.version || '1.0.0'}**\n\n${form.description || 'Descrizione dell\'aggiornamento...'}\n\n**Modifiche:**\n${form.changes || '• Nessuna modifica inserita'}`,
-                                        color: form.type === 'emergency' ? '#ef4444' : '#6366f1',
+                                        description: form.description || 'Nessuna descrizione fornita ancora...',
+                                        color: form.type === 'emergency' ? '#ef4444' : '#10b981',
+                                        thumbnail: form.thumbnail,
+                                        image: form.image,
+                                        fields: form.changes ? [{ name: '🛠️ Changelog', value: form.changes.split('\n').map(c => `• ${c}`).join('\n') }] : [],
                                         footer: { text: `Verix Bot System • ${new Date().toLocaleDateString()}` }
                                     }} 
                                 />
@@ -303,7 +332,9 @@ export default function SystemUpdates() {
                                                         version: item.version,
                                                         description: item.description,
                                                         changes: item.changes.join('\n'),
-                                                        type: item.type
+                                                        type: item.type,
+                                                        thumbnail: item.thumbnail || '',
+                                                        image: item.image || ''
                                                     });
                                                     window.scrollTo({ top: 0, behavior: 'smooth' });
                                                 }}

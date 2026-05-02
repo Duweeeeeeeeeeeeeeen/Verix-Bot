@@ -13,7 +13,7 @@ const router = express.Router();
  */
 router.post('/broadcast', ownerCheck, async (req, res) => {
     try {
-        const { title, description, changes, version, type } = req.body;
+        const { title, version, description, changes, type, thumbnail, image } = req.body;
         const client = req.discordClient;
 
         if (!description) {
@@ -38,6 +38,9 @@ router.post('/broadcast', ownerCheck, async (req, res) => {
             .setColor(type === 'emergency' ? 0xFF0000 : 0x00FF00)
             .setTimestamp()
             .setFooter({ text: 'Verix System Updates', iconURL: client.user.displayAvatarURL() });
+
+        if (thumbnail) embed.setThumbnail(thumbnail);
+        if (image) embed.setImage(image);
 
         if (changes && Array.isArray(changes) && changes.length > 0) {
             embed.addFields({ 
@@ -77,6 +80,8 @@ router.post('/broadcast', ownerCheck, async (req, res) => {
                 description,
                 changes: changes || [],
                 type: type || 'standard',
+                thumbnail,
+                image,
                 sentBy: req.user.id,
                 stats: {
                     success: stats.success,

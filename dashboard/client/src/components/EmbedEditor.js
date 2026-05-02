@@ -164,6 +164,9 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
                  <input className="input" value={embed?.image || ''} onChange={(e) => updateEmbed('image', e.target.value)} placeholder="https://..." />
                </div>
             </div>
+            <p className="field-help" style={{ marginTop: '10px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+              💡 Usa link diretti (es: .png, .jpg, .gif). Link di siti web generici non funzioneranno.
+            </p>
           </section>
 
           {/* Button Customization Section */}
