@@ -25,11 +25,17 @@ export function LanguageProvider({ children }) {
 
     const t = useCallback((key, vars = {}) => {
         const locale = locales[language] || locales['it'];
-        const keys = key.split('.');
         
-        let val = locale;
-        for (const k of keys) {
-            val = val?.[k];
+        // Try exact key first (flat)
+        let val = locale[key];
+
+        // Fallback to nested if needed (optional, but keep it simple for now)
+        if (!val && key.includes('.')) {
+            const keys = key.split('.');
+            val = locale;
+            for (const k of keys) {
+                val = val?.[k];
+            }
         }
 
         if (typeof val !== 'string') {
