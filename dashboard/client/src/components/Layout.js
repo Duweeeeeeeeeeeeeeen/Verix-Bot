@@ -48,15 +48,14 @@ export default function Layout({ children, guildId, hideGuide = false }) {
   const { user, logout } = useAuth();
   const { t, language, setLanguage } = useT();
   const router = useRouter();
+  const { theme, toggleTheme } = useTheme();
+  
   const [toast, setToast] = useState(null);
   const [serverInfo, setServerInfo] = useState({ name: 'Loading...', icon: null });
-    const [isCollapsed, setIsCollapsed] = useState(false);
-    const [isGuideOpen, setIsGuideOpen] = useState(false);
-    const [guideContext, setGuideContext] = useState({});
-    const { theme, toggleTheme } = useTheme();
-    const [toast, setToast] = useState(null);
-    const [isActivity, setIsActivity] = useState(false);
-    const [serverInfo, setServerInfo] = useState({ name: 'Server', icon: null });
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
+  const [guideContext, setGuideContext] = useState({});
+  const [isActivity, setIsActivity] = useState(false);
 
   // Persistence for Guide Sidebar
   useEffect(() => {
@@ -69,8 +68,6 @@ export default function Layout({ children, guildId, hideGuide = false }) {
   useEffect(() => {
     localStorage.setItem('verix-guide-open', isGuideOpen);
   }, [isGuideOpen]);
-
-  const [guideContext, setGuideContext] = useState({});
 
   useEffect(() => {
     if (guildId && user?.guilds) {
