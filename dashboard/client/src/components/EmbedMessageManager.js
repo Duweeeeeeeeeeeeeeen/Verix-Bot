@@ -16,8 +16,7 @@ import {
   Layers
 } from 'lucide-react';
 import api from '../utils/api';
-import { defaultMessages } from '../utils/defaults';
-import EmbedEditor from './EmbedEditor';
+import { useT } from '../contexts/LanguageContext';
 
 /**
  * Manages multiple configurable messages for a module, grouped by context.
@@ -27,6 +26,7 @@ import EmbedEditor from './EmbedEditor';
  * @param {Function} extraButtons - Optional function (slug) => [buttons] for preview
  */
 export default function EmbedMessageManager({ guildId, module, slugs = [], extraButtons }) {
+  const { t } = useT();
   const [messages, setMessages] = useState({});
   const [activeSlug, setActiveSlug] = useState(slugs[0]?.key || null);
   const [loading, setLoading] = useState(true);
@@ -36,7 +36,7 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
 
   // Grouping logic
   const groups = slugs.reduce((acc, slug) => {
-    const groupName = slug.group || 'Generali';
+    const groupName = slug.group || t('common.general');
     if (!acc[groupName]) acc[groupName] = { name: groupName, items: [], icon: slug.groupIcon || Layers };
     acc[groupName].items.push(slug);
     return acc;
@@ -71,8 +71,8 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
       slugs.forEach(slug => {
         if (!merged[slug.key]) {
           merged[slug.key] = defaults[slug.key] || {
-            title: '⚠️ Protocollo Titolo Mancante',
-            description: 'Nessun contenuto informativo è stato rilevato per questo modulo. Configura i testi nel pannello di editing.',
+            title: t('embeds.manager.missing_title'),
+            description: t('embeds.manager.missing_desc'),
             color: '#6366f1'
           };
         }
@@ -87,8 +87,8 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
       const fallback = {};
       slugs.forEach(slug => {
         fallback[slug.key] = defaults[slug.key] || {
-          title: '⚠️ Protocollo Titolo Mancante',
-          description: 'Nessun contenuto informativo è stato rilevato per questo modulo. Configura i testi nel pannello di editing.',
+          title: t('embeds.manager.missing_title'),
+          description: t('embeds.manager.missing_desc'),
           color: '#6366f1'
         };
       });
@@ -107,12 +107,12 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
         body: JSON.stringify(messages)
       });
       window.dispatchEvent(new CustomEvent('show-toast', { 
-        detail: { message: 'Tutti i messaggi sono stati salvati!', type: 'success' } 
+        detail: { message: t('common.saved_success'), type: 'success' } 
       }));
     } catch (err) {
       console.error('Error saving messages:', err);
       window.dispatchEvent(new CustomEvent('show-toast', { 
-        detail: { message: 'Errore durante il salvataggio.', type: 'error' } 
+        detail: { message: t('common.error'), type: 'error' } 
       }));
     } finally {
       setSaving(false);
@@ -134,17 +134,23 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
 
   const getGroupStyles = (name) => {
     const n = name.toLowerCase();
-    if (n.includes('avvio') || n.includes('apertura') || n.includes('entrata')) return { color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.1)' };
-    if (n.includes('domande') || n.includes('gestione') || n.includes('coda')) return { color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)' };
-    if (n.includes('esito') || n.includes('successo') || n.includes('colloquio')) return { color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)' };
-    if (n.includes('errore') || n.includes('timeout') || n.includes('chiusura')) return { color: '#ef4444', bg: 'rgba(239, 68, 68, 0.1)' };
+    // Keywords mapping for styles (supporting multiple languages if needed, or just generic tags)
+    const BLUE = ['avvio', 'start', 'apertura', 'open', 'entrata', 'join', 'welcome'];
+    const AMBER = ['domande', 'questions', 'gestione', 'management', 'coda', 'queue', 'pending'];
+    const GREEN = ['esito', 'result', 'successo', 'success', 'colloquio', 'interview', 'accepted'];
+    const RED = ['errore', 'error', 'timeout', 'chiusura', 'close', 'denied', 'rejected'];
+
+    if (BLUE.some(k => n.includes(k))) return { color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.1)' };
+    if (AMBER.some(k => n.includes(k))) return { color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.1)' };
+    if (GREEN.some(k => n.includes(k))) return { color: '#10b981', bg: 'rgba(16, 185, 129, 0.1)' };
+    if (RED.some(k => n.includes(k))) return { color: '#ef4444', bg: 'rgba(239, 68, 68, 0.1)' };
     return { color: 'var(--primary)', bg: 'rgba(99, 102, 241, 0.1)' };
   };
 
   if (loading) return (
     <div className="card glass animate" style={{ padding: '60px', textAlign: 'center' }}>
       <RefreshCw className="spin" size={32} color="var(--primary)" />
-      <p style={{ marginTop: '16px', color: 'var(--text-dim)', fontWeight: 600 }}>Sincronizzazione messaggi...</p>
+      <p style={{ marginTop: '16px', color: 'var(--text-dim)', fontWeight: 600 }}>{t('embeds.manager.syncing')}</p>
     </div>
   );
 
@@ -155,7 +161,7 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
         <aside className="slug-sidebar">
           <div className="sidebar-header">
             <Layers size={18} color="var(--primary)" />
-            <h4>Organizzazione Messaggi</h4>
+            <h4>{t('embeds.manager.sidebar_title')}</h4>
           </div>
           <div className="group-list">
             {Object.values(groups).map(group => {
@@ -206,7 +212,7 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
               <header className="editor-header-v2">
                 <div className="header-text-v2">
                   <div className="badge-context" style={{ backgroundColor: getGroupStyles(activeSlugData?.group || '').bg, color: getGroupStyles(activeSlugData?.group || '').color }}>
-                    {activeSlugData?.group || 'Generale'}
+                    {activeSlugData?.group || t('common.general')}
                   </div>
                   <h3>{activeSlugData?.label}</h3>
                   <p>{activeSlugData?.description}</p>
@@ -217,15 +223,15 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
                   className="btn-save-all"
                 >
                   {saving ? <RefreshCw className="spin" size={18} /> : <Save size={18} />}
-                  <span>{saving ? 'Salvataggio in corso...' : 'Salva Modifiche'}</span>
+                  <span>{saving ? t('embeds.manager.saving') : t('embeds.manager.save_changes')}</span>
                 </button>
               </header>
 
               <div className="editor-card-p">
                 <EmbedEditor
                   embed={messages[activeSlug] || defaultMessages[module]?.[activeSlug] || {
-                    title: '⚠️ Protocollo Titolo Mancante',
-                    description: 'Nessun contenuto informativo è stato rilevato per questo modulo. Configura i testi nel pannello di editing.',
+                    title: t('embeds.manager.missing_title'),
+                    description: t('embeds.manager.missing_desc'),
                     color: '#6366f1'
                   }}
                   onChange={(data) => updateMessage(activeSlug, data)}
@@ -241,8 +247,8 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
               <div className="empty-icon-p">
                 <MessageSquare size={48} />
               </div>
-              <h3>Nessun Messaggio Selezionato</h3>
-              <p>Scegli un messaggio dal menu a sinistra per iniziare la personalizzazione dell'esperienza utente.</p>
+              <h3>{t('embeds.manager.empty_title')}</h3>
+              <p>{t('embeds.manager.empty_desc')}</p>
             </div>
           )}
         </main>

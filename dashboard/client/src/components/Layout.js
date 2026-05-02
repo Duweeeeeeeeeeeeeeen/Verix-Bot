@@ -38,7 +38,8 @@ import {
   Coins,
   Shield,
   Sun,
-  Moon
+  Moon,
+  Terminal
 } from 'lucide-react';
 import GuideSidebar from './GuideSidebar';
 
@@ -225,13 +226,28 @@ export default function Layout({ children, guildId }) {
             href={`/config/${guildId}/system`} 
             className={`nav-link ${router.asPath === `/config/${guildId}/system` ? 'active' : ''}`}
             style={{ marginBottom: '12px' }}
-            title={isCollapsed ? "Sistema" : ""}
+            title={isCollapsed ? t('sidebar.system') : ""}
           >
             <div className="nav-link-icon">
               <Settings size={18} strokeWidth={2.5} />
             </div>
-            {!isCollapsed && <span className="nav-link-text animate fade-in">Sistema</span>}
+            {!isCollapsed && <span className="nav-link-text animate fade-in">{t('sidebar.system')}</span>}
           </Link>
+
+          {/* Owner Only: System Operations */}
+          {user && ['314417452395626496'].includes(user.id) && (
+            <Link 
+              href="/admin/system" 
+              className={`nav-link ${router.asPath === '/admin/system' ? 'active' : ''}`}
+              style={{ marginBottom: '12px', border: '1px solid rgba(99, 102, 241, 0.2)', background: 'rgba(99, 102, 241, 0.05)' }}
+              title={isCollapsed ? "System Ops" : ""}
+            >
+              <div className="nav-link-icon">
+                <Terminal size={18} strokeWidth={2.5} color="var(--primary)" />
+              </div>
+              {!isCollapsed && <span className="nav-link-text animate fade-in" style={{ color: 'var(--primary)', fontWeight: 'bold' }}>System Ops</span>}
+            </Link>
+          )}
           <div className="user-mini-card">
             <img 
               src={user?.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : 'https://cdn.discordapp.com/embed/avatars/0.png'} 
@@ -240,10 +256,10 @@ export default function Layout({ children, guildId }) {
             {!isCollapsed && (
               <div className="user-info animate fade-in">
                 <span className="name">{user?.username || 'User'}</span>
-                <span className="role">Administrator</span>
+                <span className="role">{t('sidebar.administrator')}</span>
               </div>
             )}
-            <button onClick={logout} className="btn-logout" title="Logout">
+            <button onClick={logout} className="btn-logout" title={t('sidebar.logout')}>
               <LogOut size={16} strokeWidth={2.5} />
             </button>
           </div>
@@ -256,7 +272,7 @@ export default function Layout({ children, guildId }) {
           <div className="header-left">
              <Link href="/selector" className="btn-back">
                 <ChevronLeft size={16} strokeWidth={2.5} />
-                <span>Servers</span>
+                <span>{t('sidebar.servers')}</span>
              </Link>
              <div className="header-divider"></div>
              <div className="server-crumb">
@@ -283,7 +299,7 @@ export default function Layout({ children, guildId }) {
               </div>
               <div className="status-badge">
                 <div className="status-dot"></div>
-                <span>Bot Online</span>
+                <span>{t('sidebar.bot_online')}</span>
               </div>
                <div className="header-actions">
                   <button className="icon-action theme-toggle" onClick={toggleTheme} title={theme === 'dark' ? t('theme.light') : t('theme.dark')}>

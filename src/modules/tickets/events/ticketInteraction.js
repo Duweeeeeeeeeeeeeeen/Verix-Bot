@@ -206,7 +206,12 @@ export default {
                         staff: `${interaction.user}`
                     });
 
-                    await interaction.channel.send({ content: responseContent });
+                    // Wrap quick reply in a simple embed for professionalism
+                    const embed = new EmbedBuilder()
+                        .setDescription(responseContent)
+                        .setColor('var(--primary)' || '#5865F2');
+
+                    await interaction.channel.send({ embeds: [embed] });
                     return interaction.editReply({ content: `✅ Risposta rapida inviata: \`${label}\``, components: [] });
                 }
 
@@ -485,7 +490,11 @@ async function createTicket(interaction, type, config, metadata = {}) {
         await messageService.reply(interaction, 'tickets', 'created_success', { channelId: channel.id }, { ephemeral: true });
 
         if (pingRoleId) {
-            await channel.send({ content: `${pingContent} - Nuova istanza di tipo **${typeConfig.label || type}** aperta.` })
+            const embed = new EmbedBuilder()
+                .setDescription(`${pingContent} - Nuova istanza di tipo **${typeConfig.label || type}** aperta.`)
+                .setColor(typeConfig.color || '#3498db');
+
+            await channel.send({ content: pingContent, embeds: [embed] })
                 .then(m => setTimeout(() => m.delete().catch(() => {}), 5000));
         }
 

@@ -16,6 +16,7 @@ import {
 import EmbedPreview from './EmbedPreview';
 import HelpTooltip from './HelpTooltip';
 import CustomSelect from './CustomSelect';
+import { useT } from '../contexts/LanguageContext';
 
 /**
  * Reusable Embed Editor Component
@@ -26,6 +27,7 @@ import CustomSelect from './CustomSelect';
  * @param {Array} previewButtons - Optional buttons to show in the preview
  */
 export default function EmbedEditor({ embed, onChange, variables = ['user', 'guild'], showButtonEditor = false, previewButtons, renderPreviewFooter }) {
+  const { t } = useT();
   const [isPreviewMobile, setIsPreviewMobile] = useState(false);
 
   const updateEmbed = (key, value) => {
@@ -34,7 +36,7 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
 
   const addField = () => {
     const fields = [...(embed?.fields || [])];
-    fields.push({ name: 'Titolo Campo', value: 'Valore', inline: false });
+    fields.push({ name: t('embeds.editor.title_label'), value: t('embeds.editor.field_value'), inline: false });
     updateEmbed('fields', fields);
   };
 
@@ -57,27 +59,27 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
           <section className="card glass" style={{ marginBottom: '24px' }}>
             <div className="align-center" style={{ marginBottom: '20px' }}>
               <Type size={20} color="var(--primary)" />
-              <h3 style={{ fontSize: '1.2rem', fontWeight: '800' }}>Contenuto Messaggio</h3>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: '800' }}>{t('embeds.editor.content_title')}</h3>
             </div>
             
             <div className="input-group">
-              <label className="text-label">Titolo</label>
+              <label className="text-label">{t('embeds.editor.title_label')}</label>
               <input
                 className="input"
                 value={embed?.title || ''}
                 onChange={(e) => updateEmbed('title', e.target.value)}
-                placeholder="Inserisci titolo..."
+                placeholder={t('embeds.editor.title_placeholder')}
               />
             </div>
 
             <div className="input-group" style={{ marginTop: '20px' }}>
-              <label className="text-label">Descrizione</label>
+              <label className="text-label">{t('embeds.editor.desc_label')}</label>
               <textarea
                 className="input"
                 rows="6"
                 value={embed?.description || ''}
                 onChange={(e) => updateEmbed('description', e.target.value)}
-                placeholder="Scrivi il tuo messaggio qui..."
+                placeholder={t('embeds.editor.desc_placeholder')}
                 style={{ resize: 'none' }}
               />
             </div>
@@ -87,7 +89,7 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
           <section className="card glass" style={{ marginBottom: '24px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '30px' }}>
                 <div className="input-group">
-                  <label className="text-label">Colore Laterale</label>
+                  <label className="text-label">{t('embeds.editor.side_color')}</label>
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <input 
                         type="color" 
@@ -103,17 +105,17 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
                         className="input" 
                         value={embed?.color || ''} 
                         onChange={(e) => updateEmbed('color', e.target.value)} 
-                        placeholder="#HEX o primary" 
+                        placeholder={t('embeds.editor.color_placeholder')} 
                     />
                   </div>
                 </div>
                 <div className="input-group">
-                  <label className="text-label">Testo Footer</label>
+                  <label className="text-label">{t('embeds.editor.footer_text')}</label>
                   <input 
                     className="input" 
                     value={embed?.footer || ''} 
                     onChange={(e) => updateEmbed('footer', e.target.value)} 
-                    placeholder="Piede di pagina..." 
+                    placeholder={t('embeds.editor.footer_placeholder')} 
                   />
                 </div>
               </div>
@@ -123,21 +125,21 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                   <div className="align-center">
                     <Code2 size={18} color="var(--primary)" />
-                    <h4 style={{ fontSize: '0.95rem', fontWeight: '800' }}>Campi Dati (Fields)</h4>
+                    <h4 style={{ fontSize: '0.95rem', fontWeight: '800' }}>{t('embeds.editor.fields_title')}</h4>
                   </div>
-                  <button onClick={addField} className="btn-outline" style={{ padding: '6px 14px', fontSize: '0.8rem' }}><Plus size={16} /> Aggiungi</button>
+                  <button onClick={addField} className="btn-outline" style={{ padding: '6px 14px', fontSize: '0.8rem' }}><Plus size={16} /> {t('embeds.editor.add_field')}</button>
                 </div>
                 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   {embed?.fields?.map((f, i) => (
                     <div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 40px', gap: '10px', alignItems: 'center' }}>
-                      <input className="input-small" value={f.name || ''} onChange={(e) => updateFieldEntry(i, 'name', e.target.value)} placeholder="Titolo" />
-                      <input className="input-small" value={f.value || ''} onChange={(e) => updateFieldEntry(i, 'value', e.target.value)} placeholder="Valore" />
+                      <input className="input-small" value={f.name || ''} onChange={(e) => updateFieldEntry(i, 'name', e.target.value)} placeholder={t('embeds.editor.title_label')} />
+                      <input className="input-small" value={f.value || ''} onChange={(e) => updateFieldEntry(i, 'value', e.target.value)} placeholder={t('embeds.editor.field_value')} />
                       <button onClick={() => removeField(i)} className="btn-remove-premium"><Trash2 size={16} /></button>
                     </div>
                   ))}
                   {(!embed?.fields || embed.fields.length === 0) && (
-                    <p style={{ textAlign: 'center', color: 'var(--text-dim)', fontSize: '0.8rem', padding: '10px' }}>Nessun campo configurato.</p>
+                    <p style={{ textAlign: 'center', color: 'var(--text-dim)', fontSize: '0.8rem', padding: '10px' }}>{t('embeds.editor.no_fields')}</p>
                   )}
                 </div>
               </div>
@@ -147,15 +149,15 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
           <section className="card glass">
             <div className="align-center" style={{ marginBottom: '20px' }}>
               <ImageIcon size={20} color="var(--primary)" />
-              <h4 style={{ fontSize: '1rem', fontWeight: '800' }}>Asset Multimediali</h4>
+              <h4 style={{ fontSize: '1rem', fontWeight: '800' }}>{t('embeds.editor.media_title')}</h4>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                <div className="input-group">
-                 <label className="text-label">Miniatura (Thumbnail)</label>
+                 <label className="text-label">{t('embeds.editor.thumbnail')}</label>
                  <input className="input" value={embed?.thumbnail || ''} onChange={(e) => updateEmbed('thumbnail', e.target.value)} placeholder="https://..." />
                </div>
                <div className="input-group">
-                 <label className="text-label">Immagine Principale</label>
+                 <label className="text-label">{t('embeds.editor.image')}</label>
                  <input className="input" value={embed?.image || ''} onChange={(e) => updateEmbed('image', e.target.value)} placeholder="https://..." />
                </div>
             </div>
@@ -166,38 +168,38 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
             <section className="card glass" style={{ marginTop: '24px' }}>
               <div className="align-center" style={{ marginBottom: '20px' }}>
                 <MousePointer2 size={20} color="var(--primary)" />
-                <h4 style={{ fontSize: '1rem', fontWeight: '800' }}>Personalizzazione Bottone</h4>
+                <h4 style={{ fontSize: '1rem', fontWeight: '800' }}>{t('embeds.editor.button_title')}</h4>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                 <div className="input-group">
-                  <label className="text-label">Testo Bottone</label>
+                  <label className="text-label">{t('embeds.editor.button_text')}</label>
                   <input 
                     className="input" 
                     value={embed?.button?.label || ''} 
                     onChange={(e) => onChange({ ...embed, button: { ...(embed.button || {}), label: e.target.value } })} 
-                    placeholder="es: Inizia Whitelist" 
+                    placeholder={t('embeds.editor.button_text_placeholder')} 
                   />
                 </div>
                 <div className="input-group">
-                  <label className="text-label">Emoji Bottone</label>
+                  <label className="text-label">{t('embeds.editor.button_emoji')}</label>
                   <input 
                     className="input" 
                     value={embed?.button?.emoji || ''} 
                     onChange={(e) => onChange({ ...embed, button: { ...(embed.button || {}), emoji: e.target.value } })} 
-                    placeholder="es: 📝" 
+                    placeholder={t('embeds.editor.button_emoji_placeholder')} 
                   />
                 </div>
               </div>
               <div className="input-group" style={{ marginTop: '20px' }}>
-                <label className="text-label">Stile (Colore)</label>
+                <label className="text-label">{t('embeds.editor.button_style')}</label>
                 <div className="stylized-select-wrapper">
                   <CustomSelect 
                     options={[
-                      { value: 'PRIMARY', label: 'Blu (Primary)' },
-                      { value: 'SUCCESS', label: 'Verde (Success)' },
-                      { value: 'DANGER', label: 'Rosso (Danger)' },
-                      { value: 'SECONDARY', label: 'Grigio (Secondary)' },
-                      { value: 'LINK', label: 'Link (Esterno) 🔗' }
+                      { value: 'PRIMARY', label: t('embeds.editor.style_blue') },
+                      { value: 'SUCCESS', label: t('embeds.editor.style_green') },
+                      { value: 'DANGER', label: t('embeds.editor.style_red') },
+                      { value: 'SECONDARY', label: t('embeds.editor.style_gray') },
+                      { value: 'LINK', label: t('embeds.editor.style_link') }
                     ]} 
                     value={embed?.button?.style || 'PRIMARY'} 
                     onChange={val => onChange({ ...embed, button: { ...(embed.button || {}), style: val } })} 
@@ -206,14 +208,14 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
               </div>
               {embed?.button?.style === 'LINK' && (
                 <div className="input-group animate fade-in" style={{ marginTop: '20px' }}>
-                  <label className="text-label">URL del Link</label>
+                  <label className="text-label">{t('embeds.editor.url_label')}</label>
                   <input 
                     className="input" 
                     value={embed?.button?.url || ''} 
                     onChange={(e) => onChange({ ...embed, button: { ...(embed.button || {}), url: e.target.value } })} 
-                    placeholder="https://google.com" 
+                    placeholder={t('embeds.editor.url_placeholder')} 
                   />
-                  <p className="field-help">I bottoni di tipo Link non possono eseguire comandi, servono solo a reindirizzare l'utente.</p>
+                  <p className="field-help">{t('embeds.editor.url_help')}</p>
                 </div>
               )}
             </section>
@@ -223,7 +225,7 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
         {/* Live Preview Sidebar */}
         <aside className="preview-section">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-             <h4 className="align-center" style={{ fontSize: '1.1rem', fontWeight: '800' }}><Eye size={20} color="var(--primary)" /> Anteprima Live</h4>
+             <h4 className="align-center" style={{ fontSize: '1.1rem', fontWeight: '800' }}><Eye size={20} color="var(--primary)" /> {t('embeds.editor.preview_title')}</h4>
              <div style={{ display: 'flex', gap: '4px', background: 'var(--bg-elevated-hover)', padding: '4px', borderRadius: '10px' }}>
                 <button onClick={() => setIsPreviewMobile(false)} className={`view-btn ${!isPreviewMobile ? 'active' : ''}`}><Monitor size={14} /></button>
                 <button onClick={() => setIsPreviewMobile(true)} className={`view-btn ${isPreviewMobile ? 'active' : ''}`}><Smartphone size={14} /></button>
@@ -243,7 +245,7 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
                <div style={{ display: 'flex', gap: '12px' }}>
                   <Info size={18} color="var(--primary)" />
                   <div>
-                    <p style={{ fontSize: '0.8rem', fontWeight: '800', color: 'var(--text-main)', marginBottom: '6px' }}>TAG DISPONIBILI</p>
+                    <p style={{ fontSize: '0.8rem', fontWeight: '800', color: 'var(--text-main)', marginBottom: '6px' }}>{t('embeds.editor.tags_available')}</p>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
                        {variables.map(v => <code key={v} className="variable-tag">{`{${v}}`}</code>)}
                     </div>

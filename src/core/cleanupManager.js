@@ -6,6 +6,7 @@ import SupportQueue from '../models/SupportQueue.js';
 import Background from '../models/Background.js';
 import TicketConfig from '../models/TicketConfig.js';
 import logger from '../utils/logger.js';
+import messageService from '../utils/messageService.js';
 
 class CleanupManager {
     constructor(client) {
@@ -104,7 +105,7 @@ class CleanupManager {
                 const channel = await this.client.channels.cache.get(ticket.channelId)
                     || await this.client.channels.fetch(ticket.channelId).catch(() => null);
                 if (channel) {
-                    await channel.send({ content: '⚠️ **CHIUSURA AUTOMATICA:** Questo ticket è stato chiuso per inattività.' }).catch(() => {});
+                    await messageService.send(channel, 'tickets', 'inactivity_close', {}).catch(() => {});
                 }
             }
         }

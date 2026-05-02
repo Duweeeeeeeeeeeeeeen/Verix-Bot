@@ -34,16 +34,10 @@ export default {
 
         await member.kick(reason);
 
-        const embed = await messageService.get(interaction.guildId, 'moderation', 'command_kick', {
-            user: `${user.tag} (${user.id})`,
-            mod: interaction.user.tag,
-            reason: reason
-        });
-
         await messageService.reply(interaction, 'moderation', 'command_kick', {
             user: `${user.tag} (${user.id})`,
             mod: interaction.user.tag,
             reason: reason
-        }, { embeds: embed ? [embed] : [] });
+        });
     },
 };

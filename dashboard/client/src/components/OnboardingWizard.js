@@ -108,14 +108,14 @@ export default function OnboardingWizard({ config, guildId }) {
       });
       setSuccess(true);
       window.dispatchEvent(new CustomEvent('show-toast', { 
-        detail: { message: 'Setup completato con successo!', type: 'success' } 
+        detail: { message: t('onboarding.success.toast'), type: 'success' } 
       }));
       // Redirect to home or refresh
       setTimeout(() => router.reload(), 2000);
     } catch (error) {
       console.error('Onboarding error:', error);
       window.dispatchEvent(new CustomEvent('show-toast', { 
-        detail: { message: 'Errore durante il salvataggio.', type: 'error' } 
+        detail: { message: t('common.error'), type: 'error' } 
       }));
     } finally {
       setSaving(false);
@@ -202,9 +202,9 @@ export default function OnboardingWizard({ config, guildId }) {
 
       <div className="step-content modules-toggle-grid">
         {[
-          { id: 'whitelist', label: 'Sistema Whitelist', icon: ShieldCheck, desc: 'Candidature e orali per l\'accesso.' },
-          { id: 'tickets', label: 'Sistema Ticket', icon: Ticket, desc: 'Supporto tecnico e burocratico.' },
-          { id: 'verify', label: 'Verifica Entry', icon: UserCheck, desc: 'Controllo identità automatico.' }
+          { id: 'whitelist', label: t('onboarding.step2.whitelist'), icon: ShieldCheck, desc: t('onboarding.step2.whitelist_desc') },
+          { id: 'tickets', label: t('onboarding.step2.tickets'), icon: Ticket, desc: t('onboarding.step2.tickets_desc') },
+          { id: 'verify', label: t('onboarding.step2.verify'), icon: UserCheck, desc: t('onboarding.step2.verify_desc') }
         ].map(mod => (
           <div 
             key={mod.id} 
@@ -246,15 +246,15 @@ export default function OnboardingWizard({ config, guildId }) {
           <div className="config-section-p animate fade-in">
             <div className="section-header-p">
               <ShieldCheck size={20} color="var(--primary)" />
-              <h3>Whitelist</h3>
+              <h3>{t('sidebar.whitelist')}</h3>
             </div>
             <div className="form-grid-p">
               <div className="form-group">
-                <label className="text-label">Categoria Whitelist</label>
+                <label className="text-label">{t('onboarding.step3.category_whitelist')}</label>
                 <div className="stylized-select-wrapper">
                   <CustomSelect 
                     options={[
-                      { value: '', label: 'Seleziona categoria...' },
+                      { value: '', label: t('onboarding.step3.category_whitelist_placeholder') },
                       ...categories.map(c => ({ value: c.id, label: c.name }))
                     ]} 
                     value={formData.config.whitelist.categoryOpenId} 
@@ -266,11 +266,11 @@ export default function OnboardingWizard({ config, guildId }) {
                 </div>
               </div>
               <div className="form-group">
-                <label className="text-label">Ruolo Cittadino (Pass)</label>
+                <label className="text-label">{t('onboarding.step3.whitelist_role')}</label>
                 <div className="stylized-select-wrapper">
                   <CustomSelect 
                     options={[
-                      { value: '', label: 'Seleziona ruolo...' },
+                      { value: '', label: t('onboarding.step3.whitelist_role_placeholder') },
                       ...roles.map(r => ({ value: r.id, label: r.name }))
                     ]} 
                     value={formData.config.whitelist.whitelistRole} 
@@ -289,15 +289,15 @@ export default function OnboardingWizard({ config, guildId }) {
           <div className="config-section-p animate fade-in" style={{ marginTop: '24px' }}>
             <div className="section-header-p">
               <Ticket size={20} color="#3b82f6" />
-              <h3>Support Tickets</h3>
+              <h3>{t('sidebar.tickets')}</h3>
             </div>
             <div className="form-grid-p">
               <div className="form-group">
-                <label className="text-label">Categoria Ticket</label>
+                <label className="text-label">{t('onboarding.step3.category_tickets')}</label>
                 <div className="stylized-select-wrapper">
                   <CustomSelect 
                     options={[
-                      { value: '', label: 'Seleziona categoria...' },
+                      { value: '', label: t('onboarding.step3.category_whitelist_placeholder') },
                       ...categories.map(c => ({ value: c.id, label: c.name }))
                     ]} 
                     value={formData.config.tickets.categoryOpenId} 
@@ -309,7 +309,7 @@ export default function OnboardingWizard({ config, guildId }) {
                 </div>
               </div>
               <div className="form-group">
-                <label className="text-label">Staff Gestione Ticket</label>
+                <label className="text-label">{t('onboarding.step3.staff_tickets')}</label>
                 <div className="roles-selector-p">
                   {roles.filter(r => r.name !== '@everyone').map(role => (
                     <button 
@@ -338,15 +338,15 @@ export default function OnboardingWizard({ config, guildId }) {
           <div className="config-section-p animate fade-in" style={{ marginTop: '24px' }}>
             <div className="section-header-p">
               <UserCheck size={20} color="var(--primary)" />
-              <h3>Verifica Identità</h3>
+              <h3>{t('sidebar.verify')}</h3>
             </div>
             <div className="form-grid-p">
               <div className="form-group">
-                <label className="text-label">Canale Verifica</label>
+                <label className="text-label">{t('onboarding.step3.verify_channel')}</label>
                 <div className="stylized-select-wrapper">
                   <CustomSelect 
                     options={[
-                      { value: '', label: 'Seleziona canale...' },
+                      { value: '', label: t('onboarding.step3.verify_channel_placeholder') },
                       ...textChannels.map(c => ({ value: c.id, label: `# ${c.name}` }))
                     ]} 
                     value={formData.config.verify.channelId} 
@@ -358,11 +358,11 @@ export default function OnboardingWizard({ config, guildId }) {
                 </div>
               </div>
               <div className="form-group">
-                <label className="text-label">Ruolo da Assegnare</label>
+                <label className="text-label">{t('onboarding.step3.verify_role')}</label>
                 <div className="stylized-select-wrapper">
                   <CustomSelect 
                     options={[
-                      { value: '', label: 'Seleziona ruolo...' },
+                      { value: '', label: t('onboarding.step3.whitelist_role_placeholder') },
                       ...roles.map(r => ({ value: r.id, label: r.name }))
                     ]} 
                     value={formData.config.verify.roleId} 
@@ -402,9 +402,9 @@ export default function OnboardingWizard({ config, guildId }) {
           <div className="summary-row-p">
             <span className="summary-label-p">{t('onboarding.step4.modules_label')}</span>
             <div className="summary-tags-p">
-              {formData.modules.whitelist && <span className="tag-p">Whitelist</span>}
-              {formData.modules.tickets && <span className="tag-p">Tickets</span>}
-              {formData.modules.verify && <span className="tag-p">Verifica</span>}
+              {formData.modules.whitelist && <span className="tag-p">{t('sidebar.whitelist')}</span>}
+              {formData.modules.tickets && <span className="tag-p">{t('sidebar.tickets')}</span>}
+              {formData.modules.verify && <span className="tag-p">{t('sidebar.verify')}</span>}
             </div>
           </div>
         </div>

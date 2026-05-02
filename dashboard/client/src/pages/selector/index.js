@@ -14,8 +14,10 @@ import {
 } from 'lucide-react';
 
 import LoadingScreen from '../../components/LoadingScreen';
+import { useT } from '../../contexts/LanguageContext';
 
 export default function Selector() {
+  const { t } = useT();
   const { user, loading, logout } = useAuth();
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
@@ -25,7 +27,7 @@ export default function Selector() {
     if (!loading && !user) router.push('/');
   }, [user, loading]);
 
-  if (loading || !user) return <LoadingScreen message="Caricamento dei tuoi server..." />;
+  if (loading || !user) return <LoadingScreen message={t('selector.loading')} />;
 
   // Filter logic
   const filteredGuilds = user.guilds
@@ -70,7 +72,7 @@ export default function Selector() {
           
           <div className={`bot-status-badge-p ${guild.botInGuild ? 'active' : 'missing'}`}>
             <div className={`status-dot-s ${guild.botInGuild ? 'active' : 'missing'}`}></div>
-            {guild.botInGuild ? 'Attivo' : 'Mancante'}
+            {guild.botInGuild ? t('selector.active') : t('selector.missing')}
           </div>
         </div>
 
@@ -95,7 +97,7 @@ export default function Selector() {
             alignItems: 'center',
             gap: '8px'
           }}>
-            {guild.botInGuild ? 'Gestisci' : 'Configura'}
+            {guild.botInGuild ? t('selector.manage') : t('selector.configure')}
             <Plus size={12} />
           </span>
           <ExternalLink size={14} color="var(--text-muted)" opacity={0.5} />
@@ -112,12 +114,12 @@ export default function Selector() {
             <img src="/logo.png" alt="Verix Logo" className="logo-img-p" />
             <div>
               <span className="portal-subtitle-p">Verix Portal</span>
-              <h1 className="portal-title-p" style={{ color: 'var(--text-main)' }}>Seleziona un Server</h1>
+              <h1 className="portal-title-p" style={{ color: 'var(--text-main)' }}>{t('selector.title')}</h1>
             </div>
           </div>
           
           <button onClick={logout} className="btn-outline-p" style={{ padding: '12px 24px' }}>
-            <LogOut size={18} /> Esci
+            <LogOut size={18} /> {t('sidebar.logout')}
           </button>
         </header>
 
@@ -126,7 +128,7 @@ export default function Selector() {
             <Search className="search-icon-p" size={20} />
             <input 
               type="text" 
-              placeholder="Cerca tra i tuoi server..." 
+              placeholder={t('selector.search_placeholder')} 
               className="search-input-p" 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -135,9 +137,9 @@ export default function Selector() {
 
           <div className="filter-group-p" style={{ marginBottom: 0 }}>
             {[
-              { id: 'all', label: 'Tutti', icon: Filter },
-              { id: 'active', label: 'Attivi', icon: CheckCircle2 },
-              { id: 'missing', label: 'Da Invitare', icon: Plus }
+              { id: 'all', label: t('selector.filter.all'), icon: Filter },
+              { id: 'active', label: t('selector.filter.active'), icon: CheckCircle2 },
+              { id: 'missing', label: t('selector.filter.missing'), icon: Plus }
             ].map((f) => (
               <button 
                 key={f.id}
@@ -159,7 +161,7 @@ export default function Selector() {
                 <div style={{ padding: '8px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '10px', color: 'var(--success)' }}>
                   <Shield size={20} />
                 </div>
-                <h2 style={{ fontSize: '1.4rem', fontWeight: '850', color: 'var(--text-main)' }}>I Tuoi Regni Attivi</h2>
+                <h2 style={{ fontSize: '1.4rem', fontWeight: '850', color: 'var(--text-main)' }}>{t('selector.active_realms')}</h2>
                 <div style={{ flex: 1, height: '1px', background: 'linear-gradient(to right, var(--border), transparent)' }}></div>
               </div>
               <div className="selector-grid-p" style={{ marginTop: 0 }}>
@@ -177,7 +179,7 @@ export default function Selector() {
                 <div style={{ padding: '8px', background: 'var(--bg-badge)', borderRadius: '10px', color: 'var(--text-muted)' }}>
                   <Server size={20} />
                 </div>
-                <h2 style={{ fontSize: '1.4rem', fontWeight: '850', color: 'var(--text-muted)' }}>Configura Nuovi Server</h2>
+                <h2 style={{ fontSize: '1.4rem', fontWeight: '850', color: 'var(--text-muted)' }}>{t('selector.new_servers')}</h2>
                 <div style={{ flex: 1, height: '1px', background: 'linear-gradient(to right, var(--border), transparent)' }}></div>
               </div>
               <div className="selector-grid-p" style={{ marginTop: 0 }}>
@@ -199,8 +201,8 @@ export default function Selector() {
             marginTop: '40px'
           }}>
             <Search size={48} color="var(--text-muted)" style={{ marginBottom: '20px', opacity: 0.3 }} />
-            <h3 style={{ fontSize: '1.2rem', color: 'var(--text-main)', marginBottom: '8px' }}>Nessun server trovato</h3>
-            <p style={{ color: 'var(--text-muted)' }}>Prova a cambiare i filtri o il termine di ricerca.</p>
+            <h3 style={{ fontSize: '1.2rem', color: 'var(--text-main)', marginBottom: '8px' }}>{t('selector.no_servers')}</h3>
+            <p style={{ color: 'var(--text-muted)' }}>{t('selector.no_servers_desc')}</p>
           </div>
         )}
       </div>

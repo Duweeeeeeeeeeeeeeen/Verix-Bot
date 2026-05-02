@@ -34,6 +34,11 @@ const PAGE_TITLES = {
   '/config/[guildId]/tempvoice': 'TempVoice',
 };
 
+function NavLoading() {
+  const { t } = useT();
+  return <LoadingScreen message={t('loading.navigation')} />;
+}
+
 function MyApp({ Component, pageProps }) {
   const router = useRouter();
   const [isNavigating, setIsNavigating] = useState(false);
@@ -68,11 +73,11 @@ function MyApp({ Component, pageProps }) {
         <title>{pageTitle}</title>
         <link rel="icon" href="/favicon.ico" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="description" content="Pannello di amministrazione Verix Bot — gestisci moduli, ticket, whitelist e molto altro." />
+        <meta name="description" content="Verix Bot Administration Panel — manage modules, tickets, whitelist and more." />
       </Head>
       <LanguageProvider>
         <AuthProvider>
-          {isNavigating && <LoadingScreen message="Navigazione..." />}
+          {isNavigating && <NavLoading />}
           {isConfigPage ? (
             <Layout guildId={router.query.guildId}>
               <Component {...pageProps} />

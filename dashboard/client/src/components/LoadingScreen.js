@@ -1,6 +1,10 @@
 import React from 'react';
+import { useT } from '../contexts/LanguageContext';
 
-export default function LoadingScreen({ message = "Caricamento in corso..." }) {
+export default function LoadingScreen({ message }) {
+  const { t } = useT();
+  const displayMessage = message || t('loading.default');
+  
   return (
     <div className="loading-screen-wrapper">
       <div className="loading-content">
@@ -16,7 +20,7 @@ export default function LoadingScreen({ message = "Caricamento in corso..." }) {
           <div className="progress-bar-container">
             <div className="progress-bar-fill"></div>
           </div>
-          <p>{message}</p>
+          <p>{displayMessage}</p>
         </div>
       </div>
 

@@ -24,7 +24,13 @@ export default {
             const winnerCount = interaction.options.getInteger('vincitori') || 1;
 
             const durationMs = ms(durationStr);
-            if (!durationMs) return interaction.reply({ content: '❌ Formato durata non valido (usa es: 1h, 30m, 1d).', ephemeral: true });
+            if (!durationMs) {
+                const errorEmbed = new EmbedBuilder()
+                    .setTitle('❌ Errore Configurazione')
+                    .setDescription('Formato durata non valido (usa es: `1h`, `30m`, `1d`).')
+                    .setColor('#ff4757');
+                return interaction.reply({ embeds: [errorEmbed], flags: [MessageFlags.Ephemeral] });
+            }
 
             const endTime = new Date(Date.now() + durationMs);
 

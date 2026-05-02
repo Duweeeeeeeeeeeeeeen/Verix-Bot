@@ -27,8 +27,10 @@ import {
   MessageSquare
 } from 'lucide-react';
 import CustomSelect from '../../../components/CustomSelect';
+import { useT } from '../../../contexts/LanguageContext';
 
 export default function EmbedBuilder() {
+  const { t } = useT();
   const router = useRouter();
   const { guildId } = router.query;
   const [mounted, setMounted] = useState(false);
@@ -43,8 +45,8 @@ export default function EmbedBuilder() {
 
   // Interaction State
   const [selectedTemplateId, setSelectedTemplateId] = useState('new');
-  const [currentEmbed, setCurrentEmbed] = useState({ title: 'Nuovo Embed', description: 'Testo dell\'embed...', color: '#10b981', fields: [] });
-  const [customName, setCustomName] = useState('Nuovo Template');
+  const [currentEmbed, setCurrentEmbed] = useState({ title: t('embeds.new_project'), description: '...', color: '#10b981', fields: [] });
+  const [customName, setCustomName] = useState(t('embeds.new_project'));
   const [selectedChannel, setSelectedChannel] = useState('');
 
   // UI State
@@ -97,8 +99,8 @@ export default function EmbedBuilder() {
     setSelectedTemplateId(val);
 
     if (val === 'new') {
-      setCurrentEmbed({ title: 'Nuovo Embed', description: 'Testo dell\'embed...', color: '#10b981', fields: [] });
-      setCustomName('Nuovo Template');
+      setCurrentEmbed({ title: t('embeds.new_project'), description: '...', color: '#10b981', fields: [] });
+      setCustomName(t('embeds.new_project'));
     } else {
       const template = customTemplates.find(t => t._id === val);
       if (template) {
@@ -128,7 +130,7 @@ export default function EmbedBuilder() {
         setCustomTemplates(customTemplates.map(t => t._id === saved._id ? saved : t));
       }
 
-      showToast('Template salvato!');
+      showToast(t('embeds.saved'));
     } catch (error) {
     } finally {
       setSaving(false);
@@ -136,7 +138,7 @@ export default function EmbedBuilder() {
   };
 
   const handleSend = async () => {
-    if (!selectedChannel) return showToast('Seleziona un canale!', 'error');
+    if (!selectedChannel) return showToast(t('embeds.select_channel'), 'error');
     setSending(true);
     try {
       const payload = {
@@ -156,7 +158,7 @@ export default function EmbedBuilder() {
         method: 'POST',
         body: JSON.stringify(payload)
       });
-      showToast(res.message || 'Messaggio inviato!');
+      showToast(res.message || t('embeds.sent'));
     } catch (error) {
     } finally {
       setSending(false);
@@ -175,16 +177,16 @@ export default function EmbedBuilder() {
                 <Palette size={24} />
               </div>
               <div className="header-text">
-                <h1>Embed Studio</h1>
-                <p>Progetta e trasmetti messaggi avanzati nei canali del server.</p>
+                <h1>{t('embeds.title')}</h1>
+                <p>{t('embeds.desc')}</p>
               </div>
            </div>
            <div className="header-buttons">
               <div style={{ width: '220px' }}>
-                <DiscordSelector type="channel" options={channels} value={selectedChannel} onChange={setSelectedChannel} placeholder="Seleziona Canale..." />
+                <DiscordSelector type="channel" options={channels} value={selectedChannel} onChange={setSelectedChannel} placeholder={t('embeds.select_channel')} />
               </div>
               <button onClick={handleSend} className="btn-primary" disabled={sending || !selectedChannel}>
-                <Send size={16} className={sending ? 'spin' : ''} /> {sending ? 'Invio...' : 'Trasmetti'}
+                <Send size={16} className={sending ? 'spin' : ''} /> {sending ? t('embeds.sending') : t('embeds.transmit')}
               </button>
            </div>
         </header>
@@ -193,13 +195,13 @@ export default function EmbedBuilder() {
             <div className="studio-left-s">
                 {/* Archive Selector */}
                 <section className="card section-card-s" style={{ marginBottom: '24px' }}>
-                    <div className="align-center"><FolderOpen size={18} color="var(--primary)" /> <h3>Libreria Template</h3></div>
+                    <div className="align-center"><FolderOpen size={18} color="var(--primary)" /> <h3>{t('embeds.library')}</h3></div>
                     <div className="fields-row-s">
                         <div className="field-box" style={{ flex: 1.5 }}>
-                            <label className="text-label">Scegli Sorgente</label>
+                            <label className="text-label">{t('embeds.source')}</label>
                             <CustomSelect 
                                 options={[
-                                    { value: 'new', label: '+ Nuovo Progetto' },
+                                    { value: 'new', label: t('embeds.new_project') },
                                     ...customTemplates.map(t => ({ value: t._id, label: t.name }))
                                 ]} 
                                 value={selectedTemplateId} 
@@ -207,12 +209,12 @@ export default function EmbedBuilder() {
                             />
                         </div>
                         <div className="field-box" style={{ flex: 1 }}>
-                            <label className="text-label">Nome Salvataggio</label>
+                            <label className="text-label">{t('embeds.save_name')}</label>
                             <input className="input" value={customName} onChange={e => setCustomName(e.target.value)} />
                         </div>
                         <div className="field-box" style={{ width: '120px', justifyContent: 'flex-end', display: 'flex' }}>
                                 <button onClick={handleSave} className="btn-outline" style={{ height: '42px', marginTop: 'auto' }} disabled={saving}>
-                                <Save size={16} /> Salva
+                                <Save size={16} /> {t('embeds.save')}
                                 </button>
                         </div>
                     </div>
@@ -231,12 +233,12 @@ export default function EmbedBuilder() {
 
             <div className="studio-right-s">
                 <section className="card section-card-s">
-                    <div className="align-center"><Clock size={18} color="var(--primary)" /> <h3>Scheduling</h3></div>
+                    <div className="align-center"><Clock size={18} color="var(--primary)" /> <h3>{t('embeds.scheduling')}</h3></div>
                     <div className="schedule-stack-s">
                         {[
-                            { id: 'NOW', label: 'Invia Ora', icon: Zap },
-                            { id: 'DELAY', label: 'Ritarda', icon: Clock },
-                            { id: 'TIME', label: 'Calendario', icon: Calendar }
+                            { id: 'NOW', label: t('embeds.now'), icon: Zap },
+                            { id: 'DELAY', label: t('embeds.delay'), icon: Clock },
+                            { id: 'TIME', label: t('embeds.calendar'), icon: Calendar }
                         ].map(type => (
                             <button key={type.id} onClick={() => setScheduleType(type.id)} className={`schedule-btn-s ${scheduleType === type.id ? 'active' : ''}`}>
                                 <type.icon size={14} />
@@ -262,7 +264,7 @@ export default function EmbedBuilder() {
 
                 <div className="card info-box-s">
                     <Info size={18} color="var(--primary)" />
-                    <p>Puoi usare variabili come <b>{'{user}'}</b> per personalizzare il messaggio.</p>
+                    <p>{t('embeds.vars_info')}</p>
                 </div>
             </div>
         </div>

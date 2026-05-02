@@ -4,6 +4,7 @@ import Skeleton from '../../../components/Skeleton';
 import HelpTooltip from '../../../components/HelpTooltip';
 import api from '../../../utils/api';
 import OnboardingWizard from '../../../components/OnboardingWizard';
+import { useT } from '../../../contexts/LanguageContext';
 import { 
   Shield, 
   Ticket, 
@@ -28,6 +29,7 @@ import {
 } from 'lucide-react';
 
 export default function GuildHome() {
+  const { t } = useT();
   const router = useRouter();
   const { guildId } = router.query;
   const [stats, setStats] = useState({ openTickets: 0, pendingWhitelist: 0, activeVoiceSessions: 0 });
@@ -63,7 +65,7 @@ export default function GuildHome() {
       setLoading(false);
     } catch (err) {
       console.error('Fetch error:', err);
-      setError(err.message || 'Errore durante il caricamento dei dati.');
+      setError(err.message || t('common.error'));
       setLoading(false);
     }
   };
@@ -77,8 +79,9 @@ export default function GuildHome() {
       });
       
       await fetchData();
+      const statusKey = !currentStatus ? 'dashboard.module_enabled' : 'dashboard.module_disabled';
       window.dispatchEvent(new CustomEvent('show-toast', { 
-          detail: { message: `Modulo ${moduleName.toUpperCase()} ${!currentStatus ? 'Attivato' : 'Disattivato'}`, type: 'success' } 
+          detail: { message: t(statusKey, { module: moduleName.toUpperCase() }), type: 'success' } 
       }));
     } catch (error) {
     } finally {
@@ -91,9 +94,9 @@ export default function GuildHome() {
   if (error) return (
     <div className="error-container-p animate fade-in">
       <Zap size={48} color="var(--error)" />
-      <h2>Connessione Fallita</h2>
+      <h2>{t('dashboard.connection_failed')}</h2>
       <p>{error}</p>
-      <button onClick={fetchData} className="btn-primary">Riprova</button>
+      <button onClick={fetchData} className="btn-primary">{t('dashboard.retry')}</button>
     </div>
   );
 
@@ -107,13 +110,13 @@ export default function GuildHome() {
               <Box size={24} />
             </div>
             <div className="header-text-p">
-              <h1>Dashboard Operativa</h1>
-              <p>Monitoraggio e gestione in tempo reale del bot per <b>{config.guildName || 'il tuo server'}</b>.</p>
+              <h1>{t('dashboard.title')}</h1>
+              <p>{t('dashboard.subtitle', { guild: config.guildName || t('common.your_server') || 'il tuo server' })}</p>
             </div>
          </div>
          <div className="header-actions-p" style={{ display: 'flex', alignItems: 'center' }}>
             <button onClick={fetchData} className="btn-outline-p">
-              <RefreshCcw size={16} className={loading ? 'spin' : ''} /> Aggiorna
+              <RefreshCcw size={16} className={loading ? 'spin' : ''} /> {t('dashboard.refresh')}
             </button>
          </div>
       </header>
@@ -128,7 +131,7 @@ export default function GuildHome() {
               <Ticket size={20} />
             </div>
             <div className="stat-data-v2">
-              <span className="stat-label-v2">Ticket Aperti</span>
+              <span className="stat-label-v2">{t('dashboard.tickets_open')}</span>
               <span className="stat-value-v2">{stats.openTickets}</span>
             </div>
             <TrendingUp size={16} className="stat-trend-v2" />
@@ -139,7 +142,7 @@ export default function GuildHome() {
               <Shield size={20} />
             </div>
             <div className="stat-data-v2">
-              <span className="stat-label-v2">Whitelist Pending</span>
+              <span className="stat-label-v2">{t('dashboard.whitelist_pending')}</span>
               <span className="stat-value-v2">{stats.pendingWhitelist}</span>
             </div>
          </div>
@@ -152,19 +155,19 @@ export default function GuildHome() {
           <section className="modules-management-p">
               <div className="section-title-p">
                   <Activity size={20} />
-                  <h2>Stato Moduli</h2>
+                  <h2>{t('dashboard.module_status')}</h2>
               </div>
               
               <div className="modules-list-p">
                   {[
-                      { id: 'whitelist', label: 'Sistema Whitelist', desc: 'Gestione cittadini e orali.', icon: ShieldCheck, color: 'var(--primary)', config: config.whitelist },
-                      { id: 'tickets', label: 'Support Tickets', desc: 'Assistenza utenti via canali.', icon: Ticket, color: 'var(--info)', config: config.tickets },
-                      { id: 'verify', label: 'Sistema Verifica', desc: 'Protezione entry e ruoli.', icon: Shield, color: 'var(--primary)', config: config.verify },
+                      { id: 'whitelist', label: t('dashboard.module_whitelist'), desc: t('dashboard.module_whitelist_desc'), icon: ShieldCheck, color: 'var(--primary)', config: config.whitelist },
+                      { id: 'tickets', label: t('dashboard.module_tickets'), desc: t('dashboard.module_tickets_desc'), icon: Ticket, color: 'var(--info)', config: config.tickets },
+                      { id: 'verify', label: t('dashboard.module_verify'), desc: t('dashboard.module_verify_desc'), icon: Shield, color: 'var(--primary)', config: config.verify },
 
-                      { id: 'photocontest', label: 'Photo Contest', desc: 'Eventi e contest community.', icon: Camera, color: 'var(--warning)', config: config.photocontest },
-                      { id: 'support', label: 'Assistenza Vocale', desc: 'Coda assistenza automatica.', icon: Mic2, color: 'var(--warning)', config: config.support },
-                      { id: 'fivem', label: 'FiveM Status', desc: 'Tracking server di gioco.', icon: Globe, color: 'var(--info)', config: config.fivem },
-                      { id: 'welcome', label: 'Welcome & Leave', desc: 'Accoglienza nuovi membri.', icon: UserPlus, color: 'var(--primary)', config: config.welcome }
+                      { id: 'photocontest', label: t('dashboard.module_photocontest'), desc: t('dashboard.module_photocontest_desc'), icon: Camera, color: 'var(--warning)', config: config.photocontest },
+                      { id: 'support', label: t('dashboard.module_support'), desc: t('dashboard.module_support_desc'), icon: Mic2, color: 'var(--warning)', config: config.support },
+                      { id: 'fivem', label: t('dashboard.module_fivem'), desc: t('dashboard.module_fivem_desc'), icon: Globe, color: 'var(--info)', config: config.fivem },
+                      { id: 'welcome', label: t('dashboard.module_welcome'), desc: t('dashboard.module_welcome_desc'), icon: UserPlus, color: 'var(--primary)', config: config.welcome }
                   ].map(module => (
                       <div key={module.id} className="module-toggle-card">
                           <div className="m-card-info">
@@ -197,19 +200,19 @@ export default function GuildHome() {
           <aside className="dashboard-side-p">
               <div className="section-title-p">
                   <Zap size={20} />
-                  <h2>Navigazione</h2>
+                  <h2>{t('dashboard.navigation')}</h2>
               </div>
               <div className="nav-stack-p">
                   {[
-                      { label: 'Whitelist', path: 'whitelist', emoji: '🛡️' },
-                      { label: 'Verifica', path: 'verify', emoji: '✅' },
-                      { label: 'Supporto', path: 'tickets', emoji: '🎫' },
-                      { label: 'Assistenza', path: 'support', emoji: '🎙️' },
-                      { label: 'Contest', path: 'photocontest', emoji: '📸' },
-                      { label: 'Status Server', path: 'fivem', emoji: '🎮' },
-                      { label: 'Embed Suite', path: 'embeds', emoji: '📝' },
-                      { label: 'Accoglienza', path: 'welcome', emoji: '👋' },
-                      { label: 'Config Globali', path: 'global', emoji: '⚙️' }
+                      { label: t('sidebar.whitelist'), path: 'whitelist', emoji: '🛡️' },
+                      { label: t('sidebar.verify'), path: 'verify', emoji: '✅' },
+                      { label: t('sidebar.tickets'), path: 'tickets', emoji: '🎫' },
+                      { label: t('sidebar.support'), path: 'support', emoji: '🎙️' },
+                      { label: t('sidebar.photocontest'), path: 'photocontest', emoji: '📸' },
+                      { label: t('sidebar.fivem'), path: 'fivem', emoji: '🎮' },
+                      { label: t('sidebar.embeds'), path: 'embeds', emoji: '📝' },
+                      { label: t('sidebar.welcome'), path: 'welcome', emoji: '👋' },
+                      { label: t('sidebar.management'), path: 'global', emoji: '⚙️' }
                   ].map(nav => (
                       <button key={nav.path} onClick={() => router.push(`/config/${guildId}/${nav.path}`)} className="nav-item-v2">
                           <span className="nav-label-v2">{nav.emoji} &nbsp; {nav.label}</span>
@@ -220,10 +223,10 @@ export default function GuildHome() {
                   <div className="side-separator-p"></div>
                   
                   <button 
-                      onClick={() => { if(confirm('Tutte le impostazioni verranno azzerate. Confermi?')) alert('Inviato!'); }}
+                      onClick={() => { if(confirm(t('dashboard.reset_confirm'))) alert('Inviato!'); }}
                       className="btn-danger-v2"
                   >
-                      <RefreshCcw size={16} /> Reset Totale
+                      <RefreshCcw size={16} /> {t('dashboard.reset_total')}
                   </button>
               </div>
           </aside>

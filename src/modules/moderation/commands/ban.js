@@ -30,17 +30,11 @@ export default {
 
             await interaction.guild.members.ban(user, { reason });
 
-            const embed = await messageService.get(interaction.guildId, 'moderation', 'command_ban', {
-                user: `${user.tag} (${user.id})`,
-                mod: interaction.user.tag,
-                reason: reason
-            });
-
             await messageService.reply(interaction, 'moderation', 'command_ban', {
                 user: `${user.tag} (${user.id})`,
                 mod: interaction.user.tag,
                 reason: reason
-            }, { embeds: embed ? [embed] : [] });
+            });
         } catch (error) {
             logger.error('Error in ban command:', error);
             await messageService.reply(interaction, 'moderation', 'error', {}, { ephemeral: true });

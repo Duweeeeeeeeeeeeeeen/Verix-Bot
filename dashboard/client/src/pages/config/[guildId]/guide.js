@@ -1,5 +1,6 @@
 import { useRouter } from 'next/router';
 import EmbedPreview from '../../../components/EmbedPreview';
+import { useT } from '../../../contexts/LanguageContext';
 import { 
   Book, 
   Code, 
@@ -15,29 +16,30 @@ import {
   Layout as LayoutIcon,
   CheckCircle,
   AlertCircle,
-  Image as ImageIcon,
+  ImageIcon,
   BookOpen,
   Terminal,
   Layers
 } from 'lucide-react';
 
 export default function GuidePage() {
+  const { t } = useT();
   const router = useRouter();
   const { guildId } = router.query;
 
   const placeholders = [
-    { name: '{user}', desc: 'Menziona l\'utente coinvolto.', example: 'Ciao {user}!' },
-    { name: '{guild}', desc: 'Il nome del server attuale.', example: 'Benvenuto in {guild}' },
-    { name: '{reason}', desc: 'Motivazione dello staff.', example: 'Rifiutato per {reason}' },
-    { name: '{staff}', desc: 'Lo staffer operativo.', example: 'Gestito da {staff}' },
-    { name: '{channel}', desc: 'Canale di riferimento.', example: 'Vai in {channel}' }
+    { name: '{user}', desc: t('guide_page.placeholders.user.desc'), example: t('guide_page.placeholders.user.example') },
+    { name: '{guild}', desc: t('guide_page.placeholders.guild.desc'), example: t('guide_page.placeholders.guild.example') },
+    { name: '{reason}', desc: t('guide_page.placeholders.reason.desc'), example: t('guide_page.placeholders.reason.example') },
+    { name: '{staff}', desc: t('guide_page.placeholders.staff.desc'), example: t('guide_page.placeholders.staff.example') },
+    { name: '{channel}', desc: t('guide_page.placeholders.channel.desc'), example: t('guide_page.placeholders.channel.example') }
   ];
 
   const limits = [
-    { target: 'Titolo Embed', limit: '256 chars' },
-    { target: 'Descrizione', limit: '4096 chars' },
-    { target: 'Footer', limit: '2048 chars' },
-    { target: 'Fields', limit: '25 max' }
+    { target: t('guide_page.limits.embed_title'), limit: '256 chars' },
+    { target: t('guide_page.limits.description'), limit: '4096 chars' },
+    { target: t('guide_page.limits.footer'), limit: '2048 chars' },
+    { target: t('guide_page.limits.fields'), limit: '25 max' }
   ];
 
   return (
@@ -51,8 +53,8 @@ export default function GuidePage() {
                 <BookOpen size={24} />
               </div>
               <div className="header-text">
-                <h1>Documentazione</h1>
-                <p>Guida rapida all'utilizzo di placeholders, formati e limiti di sistema.</p>
+                <h1>{t('guide_page.title')}</h1>
+                <p>{t('guide_page.subtitle')}</p>
               </div>
            </div>
         </header>
@@ -62,7 +64,7 @@ export default function GuidePage() {
            <section className="card section-card-p">
               <div className="align-center" style={{ marginBottom: '24px' }}>
                 <Variable size={20} color="var(--primary)" />
-                <h3>Placeholder Dinamici</h3>
+                <h3>{t('guide_page.placeholders_title')}</h3>
               </div>
               <div className="tags-grid-p">
                 {placeholders.map((p, i) => (
@@ -72,7 +74,7 @@ export default function GuidePage() {
                         </div>
                         <p className="tag-desc-p">{p.desc}</p>
                         <div className="tag-example-p">
-                            <span>Esempio:</span>
+                            <span>{t('common.example') || 'Esempio'}:</span>
                             <code>{p.example}</code>
                         </div>
                     </div>
@@ -85,7 +87,7 @@ export default function GuidePage() {
               <section className="card section-card-p">
                 <div className="align-center" style={{ marginBottom: '20px' }}>
                     <Layers size={18} color="var(--primary)" />
-                    <h3>Limiti Discord</h3>
+                    <h3>{t('guide_page.limits_title')}</h3>
                 </div>
                 <div className="limits-stack-p">
                     {limits.map((l, i) => (
@@ -101,7 +103,7 @@ export default function GuidePage() {
               <section className="card section-card-p" style={{ marginTop: '24px' }}>
                 <div className="align-center" style={{ marginBottom: '20px' }}>
                     <Terminal size={18} color="var(--primary)" />
-                    <h3>Markdown</h3>
+                    <h3>{t('guide_page.markdown_title')}</h3>
                 </div>
                 <div className="markdown-hints-p">
                     <code>**Bold**</code>
@@ -117,23 +119,23 @@ export default function GuidePage() {
         <section className="card section-card-p" style={{ marginTop: '32px' }}>
             <div className="align-center" style={{ marginBottom: '24px' }}>
                 <ImageIcon size={20} color="var(--primary)" />
-                <h3>Anteprima Simulazione</h3>
+                <h3>{t('guide_page.preview_title')}</h3>
             </div>
             <div className="preview-demo-grid">
                 <div className="input-mock-p">
-                    <label className="text-label">Input nel Dashboard</label>
+                    <label className="text-label">{t('guide_page.preview.input_label')}</label>
                     <div className="mock-field-v2">
-                        <span>Benvenuto {'{user}'}!</span>
-                        <p>Sei entrato in **{'{guild}'}**.</p>
+                        <span>{t('guide_page.preview.mock_text1')}</span>
+                        <p>{t('guide_page.preview.mock_text2')}</p>
                     </div>
                 </div>
                 <div className="discord-mock-p">
-                    <label className="text-label">Risultato Discord</label>
+                    <label className="text-label">{t('guide_page.preview.discord_label')}</label>
                     <div className="embed-container-p">
                         <EmbedPreview 
                             data={{
-                                title: 'Benvenuto {user}!',
-                                description: 'Sei entrato in **{guild}**.\nLeggi i canali informativi per iniziare!',
+                                title: t('guide_page.preview.mock_text1'),
+                                description: t('guide_page.preview.mock_desc'),
                                 color: '#6366f1'
                             }} 
                         />
@@ -146,7 +148,7 @@ export default function GuidePage() {
             .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-badge); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
             .header-info { display: flex; align-items: center; gap: 16px; }
             .header-icon { width: 48px; height: 48px; background: rgba(129, 140, 248, 0.1); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-            .header-text h1 { font-size: 1.5rem; margin-bottom: 2px; }
+            .header-text h1 { font-size: 1.5rem; margin-bottom: 2px; color: var(--text-main); }
             .header-text p { font-size: 0.85rem; color: var(--text-muted); }
 
             .guide-grid-p { display: grid; grid-template-columns: 1fr 320px; gap: 24px; }

@@ -113,9 +113,9 @@ export default function GlobalConfigPage() {
         {/* Tabs */}
         <div className="tab-navigation">
             {[
-                { id: 'general', label: 'Generale', icon: Settings2 },
-                { id: 'logs', label: 'Logging System', icon: FileText },
-                { id: 'advanced', label: 'Dati Raw', icon: Layers }
+                { id: 'general', label: t('common.general'), icon: Settings2 },
+                { id: 'logs', label: t('global.logs_title'), icon: FileText },
+                { id: 'advanced', label: t('global.raw_data'), icon: Layers }
             ].map(tab => (
                 <button 
                     key={tab.id} 
@@ -163,10 +163,10 @@ export default function GlobalConfigPage() {
                     </section>
 
                     <section className="card section-card-g">
-                        <div className="align-center"><Palette size={18} color="var(--primary)" /> <h3>Personalizzazione</h3></div>
+                        <div className="align-center"><Palette size={18} color="var(--primary)" /> <h3>{t('global.personalization')}</h3></div>
                         <div className="fields-stack-g">
                             <div className="field-box">
-                                <label className="text-label">Colore Embed Default</label>
+                                <label className="text-label">{t('global.default_embed_color')}</label>
                                 <div style={{ display: 'flex', gap: '12px' }}>
                                     <input type="color" value={config.embedColor || 'var(--primary)'} onChange={e => setNested('embedColor', e.target.value)} style={{ width: '44px', height: '44px', border: 'none', background: 'transparent', cursor: 'pointer' }} />
                                     <input type="text" className="input" value={config.embedColor || 'var(--primary)'} onChange={e => setNested('embedColor', e.target.value)} style={{ flex: 1 }} />
@@ -181,10 +181,10 @@ export default function GlobalConfigPage() {
             {activeTab === 'logs' && (
                 <div className="config-grid-g animate fade-in">
                     <section className="card section-card-g">
-                        <div className="align-center" style={{ marginBottom: '24px' }}><Bell size={20} color="var(--primary)" /> <h3>Logs di Sistema</h3></div>
+                        <div className="align-center" style={{ marginBottom: '24px' }}><Bell size={20} color="var(--primary)" /> <h3>{t('global.system_logs')}</h3></div>
                         <div className="fields-stack-g">
                             <div className="status-row-g">
-                                <span>Attiva Logging Globale</span>
+                                <span>{t('global.enable_logs')}</span>
                                 <label className="toggle">
                                     <input type="checkbox" checked={!!config.logs?.enabled} onChange={e => setNested('logs.enabled', e.target.checked)} />
                                     <span className="slider"></span>
@@ -192,9 +192,9 @@ export default function GlobalConfigPage() {
                             </div>
                             
                             <div className="field-box">
-                                <label className="text-label">Canale di Fallback</label>
+                                <label className="text-label">{t('global.fallback_channel')}</label>
                                 <DiscordSelector type="channel" options={channels} value={config.logs?.channelId || ''} onChange={val => setNested('logs.channelId', val)} />
-                                <p className="text-muted" style={{ fontSize: '0.75rem', marginTop: '8px' }}>Se un modulo non ha un log dedicato, scriverà qui.</p>
+                                <p className="text-muted" style={{ fontSize: '0.75rem', marginTop: '8px' }}>{t('global.fallback_desc')}</p>
                             </div>
                         </div>
                     </section>
@@ -204,7 +204,7 @@ export default function GlobalConfigPage() {
             {/* TAB: Advanced */}
             {activeTab === 'advanced' && (
                 <section className="card section-card-g animate fade-in">
-                    <div className="align-center" style={{ marginBottom: '20px' }}><Layers size={20} color="var(--primary)" /> <h3>Raw Configuration Data</h3></div>
+                    <div className="align-center" style={{ marginBottom: '20px' }}><Layers size={20} color="var(--primary)" /> <h3>{t('global.raw_config_title')}</h3></div>
                     <textarea 
                         className="input" 
                         readOnly 

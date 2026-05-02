@@ -5,211 +5,97 @@ import { useT } from '../contexts/LanguageContext';
 const GUIDE_CONTENT = {
   whitelist: (context) => [
     {
-      title: "Modalità d'ingresso",
+      title: "guide.whitelist.mode.title",
       match: true,
       text: context.mode === 'HYBRID' 
-        ? "Hai messo la modalità Ibrida: è la scelta dei pro. L'utente prima si suda il test scritto e poi lo staff gli fa l'orale per essere sicuri al 100%."
+        ? "guide.whitelist.mode.hybrid"
         : context.mode === 'VOICE'
-        ? "Solo vocale? Preparati a passare le serate a parlare! Chi entra deve solo cliccare un tasto e aspettare che lo staff lo chiami."
-        : "Semplice e pulito: l'utente risponde alle domande e lo staff decide se va bene. Ottimo per server con tanta utenza."
+        ? "guide.whitelist.mode.voice"
+        : "guide.whitelist.mode.text"
     },
     {
-      title: "Cooldown Fallimento",
+      title: "guide.whitelist.cooldown.title",
       match: context.cooldown > 48,
-      text: "Occhio che con " + context.cooldown + " ore di blocco sei cattivissimo! Se uno sbaglia il test se ne va dal server per un bel pezzo."
+      text: "guide.whitelist.cooldown.text",
+      vars: { cooldown: context.cooldown }
     },
     {
-      title: "Staff Roles",
+      title: "guide.whitelist.staff.title",
       match: !context.staffRoleIds?.length,
-      text: "Ehi! Non hai messo nessun ruolo staff. Se non lo fai, nessuno potrà accettare o rifiutare le richieste!"
-    }
-  ],
-  verify: (context) => [
-    {
-      title: "Tipo di Verifica",
-      match: true,
-      text: "La verifica serve a non farti spaccare il server dai bot. Il 'Tasto' è il più veloce, ma il 'Codice' è quello che rompe più le scatole ai bot cattivi."
-    },
-    {
-      title: "Ruolo da dare",
-      match: !context.roleId,
-      text: "Non hai scelto il ruolo da assegnare! Senza questo, l'utente clicca ma rimane un fantasma senza permessi."
-    }
-  ],
-  tickets: (context) => [
-    {
-      title: "Panic Mode",
-      match: context.panicMode,
-      text: "PANICO ATTIVATO! Nessuno può aprire ticket ora. Usalo solo se il server sta andando a fuoco o se lo staff è tutto a nanna."
-    },
-    {
-      title: "Naming Ticket",
-      match: true,
-      text: "Usa nomi chiari come 'ticket-{user}'. Se li chiami tutti uguali lo staff impazzisce a capire di chi è cosa."
+      text: "guide.whitelist.staff.text"
     }
   ],
   welcome: (context) => [
       {
-          title: "Messaggio d'ingresso",
+          title: "guide.welcome.msg.title",
           match: true,
-          text: "Non dimenticare di usare {user} nel messaggio! Se non lo fai, sembrerà un messaggio freddo e automatico."
+          text: "guide.welcome.msg.text"
       },
       {
-          title: "Embed vs Testo",
+          title: "guide.welcome.embed.title",
           match: context.useEmbed,
-          text: "L'embed è molto più figo e professionale, ma ricorda di impostare un bel colore per non farlo apparire spento."
+          text: "guide.welcome.embed.text"
       }
   ],
   fivem: (context) => [
       {
-          title: "Multi-Server",
+          title: "guide.fivem.multi.title",
           match: context.servers?.length > 1,
-          text: "Stai gestendo più server? Grande! Ricorda solo di non mettere lo stesso canale per i log di tutti, o diventerà un macello."
+          text: "guide.fivem.multi.text"
       }
   ],
   photocontest: (context) => [
     {
-      title: "Intervallo Contest",
+      title: "guide.photocontest.interval.title",
       match: context.interval < 12,
-      text: "Uh, contest ogni " + context.interval + " ore? Così li stressi! Magari allunga un po' i tempi per far salire l'attesa."
+      text: "guide.photocontest.interval.text",
+      vars: { interval: context.interval }
     },
     {
-      title: "Hall of Fame",
+      title: "guide.photocontest.hall.title",
       match: !context.hallOfFameChannelId,
-      text: "Non hai messo un canale per la Hall of Fame. È un peccato, le foto dei vincitori andrebbero messe in bacheca!"
+      text: "guide.photocontest.hall.text"
     },
     {
-      title: "Premi Automonici",
+      title: "guide.photocontest.rewards.title",
       match: true,
-      text: "Il Photo Contest è il modo migliore per tenere attivo il server. Ricorda che puoi forzare l'avvio di un contest in qualsiasi momento dal tasto in alto!"
+      text: "guide.photocontest.rewards.text"
+    }
+  ],
+  verify: (context) => [
+    {
+      title: "guide.verify.type.title",
+      match: true,
+      text: "guide.verify.type.text"
+    },
+    {
+      title: "guide.verify.role.title",
+      match: !context.roleId,
+      text: "guide.verify.role.text"
+    }
+  ],
+  tickets: (context) => [
+    {
+      title: "guide.tickets.panic.title",
+      match: context.panicMode,
+      text: "guide.tickets.panic.text"
+    },
+    {
+      title: "guide.tickets.naming.title",
+      match: true,
+      text: "guide.tickets.naming.text"
     }
   ],
   global: (context) => [
     {
-      title: "Permessi Master",
+      title: "guide.global.master.title",
       match: context.adminRoleIds?.length > 1,
-      text: "Hai messo diversi ruoli admin. Ricorda che questi utenti possono cambiare TUTTO, anche rompere il bot se non sanno cosa toccano!"
+      text: "guide.global.master.text"
     },
     {
-      title: "Logging Fallback",
+      title: "guide.global.logs.title",
       match: context.logs?.enabled && !context.logs?.channelId,
-      text: "Hai attivato i log ma non hai messo un canale di fallback. Se un modulo non ha un log dedicato, scriverà qui."
-    }
-  ],
-  autoclear: (context) => [
-    {
-      title: "Senza Slot",
-      match: !context.slots || context.slots.length === 0,
-      text: "Non hai ancora aggiunto nessuno slot! Clicca su 'Aggiungi Slot' per iniziare a ripulire in automatico i tuoi canali."
-    },
-    {
-      title: "Frequenza Molto Alta",
-      match: context.slots?.some(s => s.intervalMinutes < 10),
-      text: "Hai impostato uno slot con una frequenza inferiore a 10 minuti. Il bot ripulirà il canale molto spesso, assicurati che sia davvero ciò che vuoi."
-    }
-  ],
-  moderation_hub: (context) => [
-    {
-      title: "Protezione Attiva",
-      match: context.enabled,
-      text: "Il sistema è attivo! Ricorda di configurare i limiti anti-spam per non essere troppo punitivo con gli utenti normali."
-    },
-    {
-      title: "Cooldown Warning",
-      match: true,
-      text: "Ho impostato un cooldown di 10 secondi per i messaggi di avviso del bot: così evitiamo che il bot stesso faccia spam!"
-    },
-    {
-      title: "Punizioni Progressive",
-      match: !context.punishments || context.punishments.length < 3,
-      text: "Hai poche punizioni configurate. Un buon sistema ha almeno 3 livelli: Warn, Timeout e poi Ban."
-    },
-    {
-      title: "Logs Staff",
-      match: true,
-      text: "La moderazione automatica è potente, ma controlla sempre i log per assicurarti che non ci siano falsi positivi con gli utenti più attivi."
-    },
-    {
-      title: "Gestione Moderazione",
-      match: true,
-      text: "I comandi /ban e /kick sono disponibili su Discord per azioni rapide. Le punizioni seguiranno i protocolli configurati qui."
-    }
-  ],
-  socials: (context) => [
-    {
-      title: "Configurazione Webhook",
-      match: true,
-      text: "Per Instagram, TikTok e Twitter devi usare un servizio come IFTTT. Copia il link che trovi nella tab 'Impostazioni' del social scelto."
-    },
-    {
-      title: "Mention Everyone",
-      match: Object.values(context.platforms || {}).some(p => p.mentionEveryone),
-      text: "Hai attivato il ping @everyone su alcuni social. Occhio che se posti tanto, gli utenti potrebbero arrabbiarsi per le troppe notifiche!"
-    }
-  ],
-  voice: (context) => [
-    {
-      title: "Canale Join",
-      match: !context.joinChannelId,
-      text: "Non hai messo un canale di join! Senza quello, il bot non sa dove 'ascoltare' gli utenti che vogliono fare il colloquio."
-    },
-    {
-      title: "Staff Roles",
-      match: !context.staffRoleIds?.length,
-      text: "Mancano i ruoli staff. Ricorda che solo chi ha questi ruoli può vedere i comandi per spostare le persone dalle code."
-    }
-  ],
-  management: (context) => [
-    {
-      title: "Ricerca Utente",
-      match: true,
-      text: "Inserisci l'ID Discord dell'utente per vedere tutto il suo passato: quante volte ha provato il test e se ha cooldown attivi."
-    },
-    {
-      title: "Reset Totale",
-      match: true,
-      text: "Il tasto rosso 'Resetta Stato' cancella TUTTO. Usalo solo se vuoi dare una seconda possibilità completa a un utente."
-    }
-  ],
-  embed_studio: (context) => [
-    {
-      title: "Variables Guide",
-      match: true,
-      text: "Usa le variabili come {user} o {guild} per rendere i messaggi dinamici. Il bot le sostituirà automaticamente all'invio."
-    },
-    {
-      title: "Colori Premium",
-      match: true,
-      text: "Scegli colori che contrastino bene con il dark mode di Discord. Il verde smeraldo e il blu indigo sono i più eleganti."
-    }
-  ],
-  system: (context) => [
-    {
-      title: "Manutenzione",
-      match: true,
-      text: "Da qui puoi controllare lo stato di salute dei processi. Se vedi errori rossi, prova a riavviare il modulo specifico."
-    }
-  ],
-  giveaway: (context) => [
-    {
-      title: "Gestione Live",
-      match: true,
-      text: "Puoi gestire i partecipanti direttamente dal messaggio Discord cliccando sui tasti dell'embed."
-    },
-    {
-      title: "Programmazione",
-      match: true,
-      text: "I giveaway programmati partono automaticamente al minuto esatto stabilito. Assicurati che l'ora sia corretta!"
-    },
-    {
-      title: "Visibilità Canali",
-      match: true,
-      text: "Vengono mostrati solo i canali Testuali e di Annuncio. Se un canale non appare, verifica che il bot abbia i permessi di lettura."
-    },
-    {
-      title: "Futuri Aggiornamenti",
-      match: true,
-      text: "Presto potrai visualizzare e gestire la lista nomi dei partecipanti direttamente da questa dashboard."
+      text: "guide.global.logs.text"
     }
   ]
 };
@@ -245,9 +131,9 @@ export default function GuideSidebar({ type, context = {}, isOpen, onToggle }) {
               <div key={i} className="guide-card animate fade-in" style={{ animationDelay: `${i * 0.1}s` }}>
                 <div className="guide-card-header">
                   <Lightbulb size={14} className="text-amber" />
-                  <span className="guide-card-title">{hint.title}</span>
+                  <span className="guide-card-title">{t(hint.title)}</span>
                 </div>
-                <p className="guide-card-text">{hint.text}</p>
+                <p className="guide-card-text">{t(hint.text, hint.vars || {})}</p>
               </div>
             ))}
             

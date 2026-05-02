@@ -12,9 +12,10 @@ import logger from '../utils/logger.js';
 import authRoutes from '../../dashboard/api/routes/auth.js';
 import configRoutes from '../../dashboard/api/routes/config.js';
 import embedsRoutes from '../../dashboard/api/routes/embeds.js';
+import webhooksRoutes from '../../dashboard/api/routes/webhooks.js';
 import messageRoutes from '../../dashboard/api/routes/messages.js';
 import managementRoutes from '../../dashboard/api/routes/management.js';
-import webhooksRoutes from '../../dashboard/api/routes/webhooks.js';
+import systemRoutes from '../../dashboard/api/routes/system.js';
 
 /**
  * Initializes and starts the Web Dashboard API hosted by the Bot process.
@@ -132,6 +133,7 @@ export function startDashboard(client) {
     app.use('/api/messages', messageRoutes);
     app.use('/api/management', managementRoutes);
     app.use('/api/webhooks', webhooksRoutes);
+    app.use('/api/system', systemRoutes);
 
     app.get('/api/health', (req, res) => {
         const dbState = mongoose.connection.readyState;
