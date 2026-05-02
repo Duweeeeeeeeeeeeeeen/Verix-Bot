@@ -27,7 +27,7 @@ export default function LoadingScreen({ message = "Caricamento in corso..." }) {
           left: 0;
           width: 100vw;
           height: 100vh;
-          background: #020617;
+          background: var(--bg-main);
           display: flex;
           justify-content: center;
           align-items: center;
