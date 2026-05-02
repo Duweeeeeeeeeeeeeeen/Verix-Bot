@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import config from './config/config.js';
 import logger from './src/utils/logger.js';
 import eventHandler from './src/handlers/eventHandler.js';
+import commandHandler from './src/handlers/commandHandler.js';
 import moduleHandler from './src/handlers/moduleHandler.js';
 import { startDashboard } from './src/core/dashboardManager.js';
 import { PhotoContestManager } from './src/modules/photoContest/manager.js';
@@ -62,6 +63,7 @@ if (global.botInitialized) {
 
         // Load Handlers
         await eventHandler(client);
+        await commandHandler(client);
         await moduleHandler(client);
 
         // Dashboard & Ready Logic
