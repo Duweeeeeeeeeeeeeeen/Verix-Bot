@@ -113,7 +113,7 @@ export default function EmbedPreview({ data, isMobile = false, theme = 'dark' })
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
                         {typeof data.author_icon === 'string' && data.author_icon && <img src={data.author_icon} style={{ width: '24px', height: '24px', borderRadius: '50%' }} alt="" />}
                         <span style={{ fontWeight: '600', fontSize: '0.875rem', color: colors.text_header, cursor: 'pointer' }}>
-                            {processPlaceholders(data.author)}
+                            {processPlaceholders(typeof data.author === 'object' ? data.author.name : data.author)}
                         </span>
                     </div>
                 )}
@@ -176,7 +176,7 @@ export default function EmbedPreview({ data, isMobile = false, theme = 'dark' })
                     <div style={{ marginTop: '8px', fontSize: '0.75rem', color: colors.text_muted, display: 'flex', alignItems: 'center', gap: '8px' }}>
                         {typeof data.footer_icon === 'string' && data.footer_icon && <img src={data.footer_icon} style={{ width: '20px', height: '20px', borderRadius: '50%' }} alt="" />}
                         <div style={{ display: 'flex', alignItems: 'center' }}>
-                            {data.footer && <span>{processPlaceholders(data.footer)}</span>}
+                            {data.footer && <span>{processPlaceholders(typeof data.footer === 'object' ? data.footer.text : data.footer)}</span>}
                             {data.footer && data.timestamp && <span style={{ margin: '0 4px' }}>•</span>}
                             {data.timestamp && <span>{new Date().toLocaleDateString()}</span>}
                         </div>
@@ -248,7 +248,7 @@ export default function EmbedPreview({ data, isMobile = false, theme = 'dark' })
  */
 function processPlaceholders(text) {
     if (!text) return '';
-    if (typeof text !== 'string') return text;
+    if (typeof text !== 'string') return String(text || '');
     
     return text
         .replace(/{user}/g, '@AdminRoleplay')
