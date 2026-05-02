@@ -1,6 +1,6 @@
 import '../styles/globals.css';
 import { AuthProvider } from '../contexts/AuthContext';
-import { LanguageProvider } from '../contexts/LanguageContext';
+import { LanguageProvider, useT } from '../contexts/LanguageContext';
 import ErrorBoundary from '../components/ErrorBoundary';
 import Head from 'next/head';
 import Layout from '../components/Layout';
