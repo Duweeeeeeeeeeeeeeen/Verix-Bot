@@ -298,7 +298,7 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
 
         .message-group.has-active {
           border-color: rgba(99, 102, 241, 0.1);
-          background: rgba(255,255,255,0.01);
+          background: var(--bg-elevated);
         }
 
         .group-header {
@@ -314,7 +314,7 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
         }
 
         .group-header:hover {
-          background: rgba(255,255,255,0.03);
+          background: var(--bg-elevated);
         }
 
         .group-title {
@@ -345,7 +345,7 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
         .count-badge {
           font-size: 0.7rem;
           font-weight: 800;
-          background: rgba(255,255,255,0.05);
+          background: var(--bg-elevated-hover);
           padding: 2px 8px;
           border-radius: 6px;
         }
@@ -374,7 +374,7 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
         }
 
         .slug-item-v2:hover {
-          background: rgba(255,255,255,0.04);
+          background: var(--hover-bg);
           color: var(--text-main);
         }
 
@@ -447,7 +447,7 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
           align-items: center;
           gap: 10px;
           background: var(--primary);
-          color: white;
+          color: var(--text-on-primary);
           border: none;
           padding: 12px 24px;
           border-radius: 12px;
@@ -474,7 +474,7 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
         .empty-manager-state {
           padding: 100px 40px;
           text-align: center;
-          background: rgba(255,255,255,0.01);
+          background: var(--bg-elevated);
           border: 2px dashed var(--border);
           border-radius: 32px;
           color: var(--text-muted);
@@ -483,7 +483,7 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
         .empty-icon-p {
           width: 80px;
           height: 80px;
-          background: rgba(255,255,255,0.02);
+          background: var(--bg-elevated);
           border-radius: 24px;
           display: flex;
           align-items: center;

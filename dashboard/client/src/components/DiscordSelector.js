@@ -198,7 +198,7 @@ export default function DiscordSelector({
 
         .selector-trigger:hover {
           border-color: var(--border-light);
-          background: rgba(255, 255, 255, 0.03);
+          background: var(--bg-elevated);
         }
 
         .selector-trigger.active {
@@ -242,8 +242,8 @@ export default function DiscordSelector({
         }
 
         .selector-tag:hover {
-          background: rgba(255, 255, 255, 0.15);
-          border-color: rgba(255, 255, 255, 0.2);
+          background: var(--bg-elevated-hover);
+          border-color: var(--border-strong);
         }
 
         .tag-dot {
@@ -313,7 +313,7 @@ export default function DiscordSelector({
           align-items: center;
           padding: 12px 16px;
           border-bottom: 1px solid var(--border);
-          background: rgba(255, 255, 255, 0.02);
+          background: var(--bg-elevated);
           gap: 12px;
         }
 
@@ -338,7 +338,7 @@ export default function DiscordSelector({
         }
 
         .clear-search:hover {
-          color: white;
+          color: var(--text-main);
         }
 
         .options-list {
@@ -359,7 +359,7 @@ export default function DiscordSelector({
         }
 
         .option-item:hover:not(.disabled) {
-          background: rgba(255, 255, 255, 0.05);
+          background: var(--bg-elevated-hover);
         }
 
         .option-item.selected {

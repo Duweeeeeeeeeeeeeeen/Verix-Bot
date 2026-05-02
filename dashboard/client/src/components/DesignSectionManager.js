@@ -74,7 +74,7 @@ export default function DesignSectionManager({ groups = [] }) {
         }
 
         .design-group-card {
-          background: #0a0c14;
+          background: var(--bg-card);
           border: 1px solid var(--border);
           border-radius: 20px;
           overflow: hidden;
@@ -99,7 +99,7 @@ export default function DesignSectionManager({ groups = [] }) {
         }
 
         .group-trigger:hover {
-          background: rgba(255,255,255,0.02);
+          background: var(--bg-elevated);
         }
 
         .group-info {
@@ -122,7 +122,7 @@ export default function DesignSectionManager({ groups = [] }) {
         .group-text h4 {
           font-size: 1.1rem;
           font-weight: 800;
-          color: white;
+          color: var(--text-heading);
           margin-bottom: 2px;
         }
 
@@ -138,7 +138,7 @@ export default function DesignSectionManager({ groups = [] }) {
         .group-body {
           padding: 0 24px 24px 24px;
           border-top: 1px solid var(--border);
-          background: rgba(0,0,0,0.1);
+          background: var(--bg-inset);
         }
 
         @keyframes slide-up {

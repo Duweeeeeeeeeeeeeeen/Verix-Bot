@@ -97,7 +97,7 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
                             : (embed?.color === 'primary' ? '#818cf8' : (embed?.color === 'success' ? '#10b981' : (embed?.color === 'error' ? '#f43f5e' : '#5865F2')))
                         } 
                         onChange={(e) => updateEmbed('color', e.target.value)} 
-                        style={{ width: '45px', height: '45px', padding: '4px', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer' }} 
+                        style={{ width: '45px', height: '45px', padding: '4px', background: 'var(--bg-elevated-hover)', border: '1px solid var(--border)', borderRadius: '8px', cursor: 'pointer' }} 
                     />
                     <input 
                         className="input" 
@@ -119,7 +119,7 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
               </div>
 
               {/* Dynamic Fields */}
-              <div style={{ padding: '20px', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px solid var(--border)' }}>
+              <div style={{ padding: '20px', background: 'var(--bg-elevated)', borderRadius: '16px', border: '1px solid var(--border)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                   <div className="align-center">
                     <Code2 size={18} color="var(--primary)" />
@@ -224,7 +224,7 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
         <aside className="preview-section">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
              <h4 className="align-center" style={{ fontSize: '1.1rem', fontWeight: '800' }}><Eye size={20} color="var(--primary)" /> Anteprima Live</h4>
-             <div style={{ display: 'flex', gap: '4px', background: 'rgba(255,255,255,0.05)', padding: '4px', borderRadius: '10px' }}>
+             <div style={{ display: 'flex', gap: '4px', background: 'var(--bg-elevated-hover)', padding: '4px', borderRadius: '10px' }}>
                 <button onClick={() => setIsPreviewMobile(false)} className={`view-btn ${!isPreviewMobile ? 'active' : ''}`}><Monitor size={14} /></button>
                 <button onClick={() => setIsPreviewMobile(true)} className={`view-btn ${isPreviewMobile ? 'active' : ''}`}><Smartphone size={14} /></button>
              </div>
@@ -239,7 +239,7 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
                 </div>
             )}
             
-            <div className="card" style={{ marginTop: '24px', background: 'rgba(255,255,255,0.01)', border: '1px solid var(--border)' }}>
+            <div className="card" style={{ marginTop: '24px', background: 'var(--bg-elevated)', border: '1px solid var(--border)' }}>
                <div style={{ display: 'flex', gap: '12px' }}>
                   <Info size={18} color="var(--primary)" />
                   <div>
@@ -284,7 +284,7 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
         }
         .btn-icon-delete-small:hover {
           background: var(--error);
-          color: white;
+          color: var(--text-on-primary);
         }
         .view-btn {
           background: none;

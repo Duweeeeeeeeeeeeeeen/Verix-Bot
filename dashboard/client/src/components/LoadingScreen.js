@@ -109,7 +109,7 @@ export default function LoadingScreen({ message = "Caricamento in corso..." }) {
           font-size: 2rem;
           font-weight: 900;
           letter-spacing: 8px;
-          color: white;
+          color: var(--text-main);
           position: relative;
           margin: 0;
         }
@@ -117,7 +117,7 @@ export default function LoadingScreen({ message = "Caricamento in corso..." }) {
         .progress-bar-container {
           width: 200px;
           height: 4px;
-          background: rgba(255, 255, 255, 0.05);
+          background: var(--bg-elevated-hover);
           border-radius: 10px;
           overflow: hidden;
         }

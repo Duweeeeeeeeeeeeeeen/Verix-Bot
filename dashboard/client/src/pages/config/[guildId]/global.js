@@ -188,7 +188,7 @@ export default function GlobalConfigPage() {
                         className="input" 
                         readOnly 
                         value={JSON.stringify(config, null, 2)} 
-                        style={{ minHeight: '350px', fontFamily: 'monospace', fontSize: '0.8rem', background: 'rgba(0,0,0,0.1)' }}
+                        style={{ minHeight: '350px', fontFamily: 'monospace', fontSize: '0.8rem', background: 'var(--bg-inset)' }}
                     />
                 </section>
             )}

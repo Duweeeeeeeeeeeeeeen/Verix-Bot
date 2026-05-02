@@ -485,14 +485,14 @@ export default function OnboardingWizard({ config, guildId }) {
 
         .wizard-progress-p {
           padding: 40px 64px;
-          background: linear-gradient(to bottom, rgba(255,255,255,0.02), transparent);
+          background: linear-gradient(to bottom, var(--bg-elevated), transparent);
           border-bottom: 1px solid var(--border);
           position: relative;
         }
 
         .progress-track-p {
           height: 6px;
-          background: rgba(255,255,255,0.05);
+          background: var(--bg-elevated-hover);
           border-radius: 10px;
           margin-bottom: 32px;
           overflow: hidden;
@@ -529,7 +529,7 @@ export default function OnboardingWizard({ config, guildId }) {
 
         .indicator-p.active {
           border-color: var(--primary);
-          color: white;
+          color: var(--text-heading);
           background: rgba(var(--primary-rgb), 0.1);
           box-shadow: 0 0 20px rgba(var(--primary-rgb), 0.3);
           transform: scale(1.15) translateY(-2px);
@@ -538,7 +538,7 @@ export default function OnboardingWizard({ config, guildId }) {
         .indicator-p.completed {
           background: var(--primary);
           border-color: var(--primary);
-          color: white;
+          color: var(--text-heading);
         }
 
         .wizard-body-p {
@@ -608,7 +608,7 @@ export default function OnboardingWizard({ config, guildId }) {
         .role-tag-p.active {
           background: rgba(var(--primary-rgb), 0.15);
           border-color: var(--primary);
-          color: white;
+          color: var(--text-heading);
           box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.2);
         }
 
@@ -626,14 +626,14 @@ export default function OnboardingWizard({ config, guildId }) {
           max-height: 200px;
           overflow-y: auto;
           padding: 20px;
-          background: rgba(0, 0, 0, 0.2);
+          background: var(--bg-inset);
           border-radius: 16px;
           border: 1px solid var(--border);
         }
 
         /* Custom Scrollbar for Roles */
         .roles-selector-p::-webkit-scrollbar { width: 4px; }
-        .roles-selector-p::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        .roles-selector-p::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 10px; }
 
         .select {
           appearance: none;
@@ -642,7 +642,7 @@ export default function OnboardingWizard({ config, guildId }) {
           padding: 16px 20px !important;
           border-radius: 14px !important;
           font-weight: 500;
-          color: white !important;
+          color: var(--text-heading) !important;
           cursor: pointer;
         }
 
@@ -662,7 +662,7 @@ export default function OnboardingWizard({ config, guildId }) {
           align-items: center;
           gap: 20px;
           padding: 24px;
-          background: rgba(255,255,255,0.02);
+          background: var(--bg-elevated);
           border: 1px solid var(--border);
           border-radius: 16px;
           cursor: pointer;
@@ -670,7 +670,7 @@ export default function OnboardingWizard({ config, guildId }) {
         }
 
         .module-select-card:hover {
-          background: rgba(255,255,255,0.04);
+          background: var(--hover-bg);
           border-color: var(--text-muted);
           transform: translateY(-2px);
         }
@@ -684,7 +684,7 @@ export default function OnboardingWizard({ config, guildId }) {
         .mod-icon {
           width: 52px;
           height: 52px;
-          background: rgba(255,255,255,0.03);
+          background: var(--bg-elevated);
           border-radius: 12px;
           display: flex;
           align-items: center;
@@ -695,7 +695,7 @@ export default function OnboardingWizard({ config, guildId }) {
 
         .module-select-card.active .mod-icon {
           background: var(--primary);
-          color: white;
+          color: var(--text-heading);
           box-shadow: 0 4px 15px rgba(var(--primary-rgb), 0.4);
         }
 
@@ -717,12 +717,12 @@ export default function OnboardingWizard({ config, guildId }) {
         .checkbox-custom.checked {
           background: var(--primary);
           border-color: var(--primary);
-          color: white;
+          color: var(--text-heading);
         }
 
         .wizard-footer-p {
           padding: 24px 48px;
-          background: rgba(255,255,255,0.01);
+          background: var(--bg-elevated);
           border-top: 1px solid var(--border);
           display: flex;
           align-items: center;
@@ -730,7 +730,7 @@ export default function OnboardingWizard({ config, guildId }) {
 
         .btn-primary-p {
           background: var(--primary);
-          color: white;
+          color: var(--text-heading);
           border: none;
           padding: 14px 28px;
           border-radius: 12px;
@@ -752,7 +752,7 @@ export default function OnboardingWizard({ config, guildId }) {
 
         .btn-save-p {
           background: var(--success);
-          color: white;
+          color: var(--text-heading);
           border: none;
           padding: 14px 32px;
           border-radius: 12px;
@@ -787,13 +787,13 @@ export default function OnboardingWizard({ config, guildId }) {
         }
 
         .btn-outline-p:hover {
-          background: rgba(255,255,255,0.05);
+          background: var(--bg-elevated-hover);
           border-color: var(--text-muted);
         }
 
         .config-section-p {
           padding: 24px;
-          background: rgba(255,255,255,0.02);
+          background: var(--bg-elevated);
           border: 1px solid var(--border);
           border-radius: 18px;
         }
@@ -836,7 +836,7 @@ export default function OnboardingWizard({ config, guildId }) {
 
         .summary-row-p:last-child { border: none; }
         .summary-label-p { color: var(--text-muted); font-size: 0.9rem; font-weight: 600; }
-        .summary-value-p { font-weight: 750; color: white; }
+        .summary-value-p { font-weight: 750; color: var(--text-heading); }
 
         .summary-tags-p { display: flex; gap: 8px; }
         .tag-p { 
@@ -859,7 +859,7 @@ export default function OnboardingWizard({ config, guildId }) {
           color: var(--primary);
         }
 
-        .final-notice-p h4 { margin-bottom: 4px; color: white; }
+        .final-notice-p h4 { margin-bottom: 4px; color: var(--text-heading); }
         .final-notice-p p { font-size: 0.85rem; color: var(--text-dim); }
 
         .success-state-p {
@@ -891,7 +891,7 @@ export default function OnboardingWizard({ config, guildId }) {
         }
 
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .spinner-s { width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.2); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; }
+        .spinner-s { width: 20px; height: 20px; border: 3px solid var(--border-strong); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
 
         @media (max-width: 768px) {
           .form-grid-p { grid-template-columns: 1fr; }

@@ -93,7 +93,7 @@ class ErrorBoundary extends React.Component {
               margin-bottom: 32px;
             }
             .debug-info {
-              background: rgba(255, 255, 255, 0.03);
+              background: var(--bg-elevated);
               padding: 12px;
               border-radius: 12px;
               margin-bottom: 24px;

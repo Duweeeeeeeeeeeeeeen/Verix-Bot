@@ -33,7 +33,7 @@ export default function ConfirmModal({ isOpen, onClose, onConfirm, title, messag
           left: 0;
           right: 0;
           bottom: 0;
-          background: rgba(0, 0, 0, 0.8);
+          background: var(--bg-overlay);
           backdrop-filter: blur(8px);
           display: flex;
           align-items: center;
@@ -43,8 +43,8 @@ export default function ConfirmModal({ isOpen, onClose, onConfirm, title, messag
         }
 
         .modal-content {
-          background: #0f172a;
-          border: 1px solid rgba(255, 255, 255, 0.1);
+          background: var(--bg-card);
+          border: 1px solid var(--border-strong);
           border-radius: 24px;
           width: 100%;
           max-width: 450px;
@@ -73,7 +73,7 @@ export default function ConfirmModal({ isOpen, onClose, onConfirm, title, messag
         .icon-box.warning { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
         .icon-box.primary { background: rgba(99, 102, 241, 0.1); color: #6366f1; }
 
-        h3 { font-size: 1.25rem; margin: 0; font-weight: 700; color: white; }
+        h3 { font-size: 1.25rem; margin: 0; font-weight: 700; color: var(--text-heading); }
 
         .close-btn {
           position: absolute;
@@ -86,7 +86,7 @@ export default function ConfirmModal({ isOpen, onClose, onConfirm, title, messag
           transition: 0.2s;
         }
 
-        .close-btn:hover { color: white; }
+        .close-btn:hover { color: var(--text-main); }
 
         .modal-body {
           padding: 0 24px 24px 24px;
@@ -100,32 +100,32 @@ export default function ConfirmModal({ isOpen, onClose, onConfirm, title, messag
 
         .modal-footer {
           padding: 20px 24px;
-          background: rgba(0, 0, 0, 0.2);
+          background: var(--bg-inset);
           display: flex;
           justify-content: flex-end;
           gap: 12px;
-          border-top: 1px solid rgba(255, 255, 255, 0.05);
+          border-top: 1px solid var(--glass-border);
         }
 
         .btn-cancel {
           padding: 10px 20px;
           background: transparent;
           border: 1px solid var(--border);
-          color: white;
+          color: var(--text-main);
           border-radius: 12px;
           font-weight: 600;
           cursor: pointer;
           transition: 0.2s;
         }
 
-        .btn-cancel:hover { background: rgba(255, 255, 255, 0.05); }
+        .btn-cancel:hover { background: var(--bg-elevated-hover); }
 
         .btn-confirm {
           padding: 10px 24px;
           border: none;
           border-radius: 12px;
           font-weight: 700;
-          color: white;
+          color: var(--text-on-primary);
           cursor: pointer;
           transition: 0.2s;
         }

@@ -256,7 +256,7 @@ export default function GuildHome() {
 
           .modules-list-p { display: flex; flex-direction: column; gap: 12px; }
           .module-toggle-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
-          .module-toggle-card:hover { border-color: var(--primary); background: rgba(255,255,255,0.01); }
+          .module-toggle-card:hover { border-color: var(--primary); background: var(--bg-elevated); }
           .m-card-info { display: flex; align-items: center; gap: 16px; }
           .m-card-icon { width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
           .m-card-text h3 { font-size: 0.95rem; margin-bottom: 2px; color: var(--text-main); }
@@ -266,7 +266,7 @@ export default function GuildHome() {
 
           .nav-stack-p { display: flex; flex-direction: column; gap: 8px; }
           .nav-item-v2 { display: flex; align-items: center; justify-content: space-between; background: var(--bg-card); border: 1px solid var(--border); color: var(--text-muted); padding: 12px 16px; border-radius: 12px; cursor: pointer; font-size: 0.85rem; font-weight: 700; transition: 0.2s; }
-          .nav-item-v2:hover { background: rgba(255,255,255,0.03); color: var(--text-main); border-color: var(--primary); transform: translateX(4px); }
+          .nav-item-v2:hover { background: var(--bg-elevated); color: var(--text-main); border-color: var(--primary); transform: translateX(4px); }
           .nav-arrow-v2 { opacity: 0.3; transition: 0.2s; }
           .nav-item-v2:hover .nav-arrow-v2 { color: var(--primary); opacity: 1; transform: translateX(2px); }
 

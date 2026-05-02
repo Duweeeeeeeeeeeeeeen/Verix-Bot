@@ -91,7 +91,7 @@ export default function CustomSelect({
 
         .custom-select-trigger:hover {
           border-color: var(--border-strong);
-          background: rgba(255, 255, 255, 0.02);
+          background: var(--bg-elevated);
         }
 
         .custom-select-trigger.active {
@@ -175,7 +175,7 @@ export default function CustomSelect({
 
         /* Custom Scrollbar */
         .options-list::-webkit-scrollbar { width: 4px; }
-        .options-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        .options-list::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 10px; }
       `}</style>
     </div>
   );
