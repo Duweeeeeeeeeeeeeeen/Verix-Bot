@@ -1,12 +1,14 @@
-import defaultMessages from '../../../src/locales/defaultMessages.js';
+import { getDefaultMessages } from '../../../src/locales/t.js';
 
 /**
  * Merges database configuration with professional defaults.
  * @param {string} moduleName - Name of the module (e.g., 'whitelist', 'tickets')
  * @param {Object} dbConfig - Configuration object from the database
+ * @param {string} lang - Language code ('it' or 'en')
  * @returns {Object} - Merged configuration
  */
-export function mergeModuleDefaults(moduleName, dbConfig) {
+export function mergeModuleDefaults(moduleName, dbConfig, lang = 'it') {
+    const defaultMessages = getDefaultMessages(lang);
     if (!dbConfig) return defaultMessages[moduleName] || {};
     
     const defaults = defaultMessages[moduleName] || {};

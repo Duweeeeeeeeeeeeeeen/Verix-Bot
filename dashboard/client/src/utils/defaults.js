@@ -1,4 +1,4 @@
-import defaultMessages from '../locales/defaultMessages';
+import { getMessages } from '../locales/index';
 
 export const defaultDesign = {
     embedColor: '#6366f1',
@@ -13,7 +13,13 @@ export const defaultDesign = {
     }
 };
 
-export function mergeConfig(dbConfig, moduleName) {
+export function mergeConfig(dbConfig, moduleName, lang) {
+    // If no lang is provided, try to get from localStorage (client side only)
+    if (!lang && typeof window !== 'undefined') {
+        lang = localStorage.getItem('verix-language') || 'it';
+    }
+    
+    const defaultMessages = getMessages(lang || 'it');
     const defaults = {
         ...defaultDesign,
         ...(defaultMessages[moduleName] || {})
@@ -63,5 +69,3 @@ export function mergeConfig(dbConfig, moduleName) {
 
     return result;
 }
-
-export { defaultMessages };

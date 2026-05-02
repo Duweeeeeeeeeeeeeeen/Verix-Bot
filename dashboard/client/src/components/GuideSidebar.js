@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { HelpCircle, X, Lightbulb, Zap } from 'lucide-react';
+import { useT } from '../contexts/LanguageContext';
 
 const GUIDE_CONTENT = {
   whitelist: (context) => [
@@ -214,6 +215,7 @@ const GUIDE_CONTENT = {
 };
 
 export default function GuideSidebar({ type, context = {}, isOpen, onToggle }) {
+  const { t, language } = useT();
   const [hints, setHints] = useState([]);
 
   useEffect(() => {
@@ -230,7 +232,7 @@ export default function GuideSidebar({ type, context = {}, isOpen, onToggle }) {
         <div className="guide-header">
           <div className="guide-title">
             <HelpCircle size={18} className="text-primary" />
-            <span>Guida Contestuale</span>
+            <span>{t('guide.title')}</span>
           </div>
           <button onClick={onToggle} className="guide-close-btn">
             <X size={18} />
@@ -239,29 +241,27 @@ export default function GuideSidebar({ type, context = {}, isOpen, onToggle }) {
 
         <div className="guide-scroll-area">
           <div className="guide-content">
-            {hints.length === 0 ? (
-              <div className="guide-empty">
-                 <Zap size={24} opacity={0.3} />
-                 <p>Nulla da segnalare per questo modulo, sembra tutto configurato correttamente!</p>
-              </div>
-            ) : (
-              hints.map((hint, i) => (
-                <div key={i} className="guide-card">
-                  <div className="guide-card-header">
-                    <Lightbulb size={14} className="text-amber" />
-                    <span className="guide-card-title">{hint.title}</span>
-                  </div>
-                  <p className="guide-card-text">{hint.text}</p>
+            {hints.map((hint, i) => (
+              <div key={i} className="guide-card animate fade-in" style={{ animationDelay: `${i * 0.1}s` }}>
+                <div className="guide-card-header">
+                  <Lightbulb size={14} className="text-amber" />
+                  <span className="guide-card-title">{hint.title}</span>
                 </div>
-              ))
-            )}
+                <p className="guide-card-text">{hint.text}</p>
+              </div>
+            ))}
             
             <div className="guide-pro-tip">
                 <div className="pro-tip-header">
                     <Zap size={14} />
-                    <span>Pro Tip</span>
+                    <span>{t('guide.pro_tip')}</span>
                 </div>
-                <p>Configura i log per ogni modulo per avere il pieno controllo su cosa accade nel server.</p>
+                <p>{t('guide.pro_tip_desc')}</p>
+            </div>
+
+            <div className="guide-status-footer">
+                <Zap size={20} opacity={0.3} />
+                <p>{t('guide.empty')}</p>
             </div>
           </div>
         </div>
@@ -413,18 +413,25 @@ export default function GuideSidebar({ type, context = {}, isOpen, onToggle }) {
             line-height: 1.5;
           }
 
-          .guide-empty {
+          .guide-empty p { font-size: 0.85rem; line-height: 1.5; }
+          
+          .guide-status-footer {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 60px 20px;
+            padding: 32px 20px;
             text-align: center;
-            gap: 16px;
+            gap: 12px;
             color: var(--text-muted);
+            opacity: 0.7;
           }
 
-          .guide-empty p { font-size: 0.85rem; line-height: 1.5; }
+          .guide-status-footer p {
+            font-size: 0.8rem;
+            line-height: 1.5;
+            max-width: 200px;
+          }
 
           .guide-footer {
             padding: 24px;

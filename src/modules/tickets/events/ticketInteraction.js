@@ -59,8 +59,7 @@ export default {
         try {
             const config = await TicketConfig.findOne({ guildId: interaction.guild.id });
             if (!config) {
-                const errorContent = '❌ Configurazione ticket non trovata per questo server. Contatta un amministratore.';
-                return interaction.editReply({ content: errorContent });
+                return messageService.reply(interaction, 'tickets', 'config_not_found', {}, { ephemeral: true });
             }
 
             // --- 1. TICKET CATEGORY EXTRACTION ---
@@ -77,7 +76,7 @@ export default {
                     : config.typesConfig?.[type]);
 
                 if (!typeConfig && type !== 'supporto') {
-                    return interaction.editReply({ content: '❌ Questa categoria di ticket non è più disponibile.' });
+                    return messageService.reply(interaction, 'tickets', 'category_not_available', {}, { ephemeral: true });
                 }
 
                 const permCheck = checkBotPermissions(interaction.channel, [PermissionFlagsBits.SendMessages, PermissionFlagsBits.EmbedLinks]);
@@ -170,12 +169,12 @@ export default {
 
                 // 1. Block regular users from staff tools
                 if (isStaffTool && !isStaff) {
-                    return interaction.editReply({ content: '❌ Solo i membri dello staff possono utilizzare questo strumento.' });
+                    return messageService.reply(interaction, 'tickets', 'staff_only', {}, { ephemeral: true });
                 }
 
                 // 2. Block regular users from closing (Strict Staff Only)
                 if (isCloseAction && !isStaff) {
-                    return interaction.editReply({ content: '❌ Solo i membri dello staff possono chiudere questa pratica.' });
+                    return messageService.reply(interaction, 'tickets', 'staff_only', {}, { ephemeral: true });
                 }
 
                 // QUICK REPLIES
@@ -237,7 +236,7 @@ export default {
                 // CLAIM & STATUS
                 if (customId === 'tk_claim') {
                     if (ticket.assignedStaffId) {
-                        return interaction.editReply({ content: `❌ Questo ticket è già stato preso in carico da <@${ticket.assignedStaffId}>.` });
+                        return messageService.reply(interaction, 'tickets', 'claim_already', { staffId: ticket.assignedStaffId }, { ephemeral: true });
                     }
                     ticket.assignedStaffId = interaction.user.id;
                     ticket.status = 'PROCESSING';
@@ -284,7 +283,7 @@ export default {
                         return interaction.editReply({ content: '❌ Errore: Categoria per i ticket chiusi non configurata nella dashboard.' });
                     }
 
-                    await interaction.editReply({ content: '🛡️ **Protocollo di chiusura avviato...**' });
+                    await messageService.reply(interaction, 'tickets', 'close_started', {}, { ephemeral: true });
                     
                     ticket.status = 'CLOSED';
                     ticket.closedAt = new Date();
@@ -372,7 +371,7 @@ export default {
                                    interaction.guild.ownerId === interaction.user.id || 
                                    hasStaffRole;
 
-                if (!isUserStaff) return interaction.editReply({ content: '❌ Solo lo staff può aggiungere note.' });
+                if (!isUserStaff) return messageService.reply(interaction, 'tickets', 'staff_only', {}, { ephemeral: true });
 
                 await interaction.deferReply({ flags: [MessageFlags.Ephemeral] });
                 const content = interaction.fields.getTextInputValue('note_content');
@@ -389,7 +388,7 @@ export default {
                     : config.typesConfig?.[ticket.type]);
                 const staffRoles = (config.staffRoleIds || []).map(id => interaction.guild.roles.cache.get(id)).filter(r => r);
                 await renderTicketDashboard(interaction.channel, ticket, config, typeConfig, interaction.user, staffRoles, true);
-                return interaction.editReply({ content: '✅ Nota interna aggiunta con successo.' });
+                return messageService.reply(interaction, 'tickets', 'note_success', {}, { ephemeral: true });
             }
 
             // If we reached here without a response for a ticket interaction
@@ -416,9 +415,7 @@ async function createTicket(interaction, type, config, metadata = {}) {
 
         // --- BLACKLIST CHECK ---
         if (config.blacklist && config.blacklist.includes(user.id)) {
-            return interaction.editReply({ 
-                content: '❌ **ACCESSO NEGATO:** Ti è stato vietato l\'utilizzo del sistema di assistenza.' 
-            });
+            return messageService.reply(interaction, 'tickets', 'blacklist_error', {}, { ephemeral: true });
         }
 
         logger.debug(`[TICKET_CREATE] Starting creation for ${user.tag} (Type: ${type}, Priority: ${priority})`);
@@ -485,11 +482,7 @@ async function createTicket(interaction, type, config, metadata = {}) {
         const pingRoleId = typeConfig.pingRoleId;
         const pingContent = pingRoleId ? `<@&${pingRoleId}>` : '';
         
-        await interaction.editReply({ 
-            content: `✅ **RICHIESTA PROTOCOLLATA:** Recati allo sportello ${channel}. ${pingContent}`, 
-            embeds: [], 
-            components: [] 
-        });
+        await messageService.reply(interaction, 'tickets', 'created_success', { channelId: channel.id }, { ephemeral: true });
 
         if (pingRoleId) {
             await channel.send({ content: `${pingContent} - Nuova istanza di tipo **${typeConfig.label || type}** aperta.` })

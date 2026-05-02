@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useT } from '../contexts/LanguageContext';
 import { 
   ShieldCheck, 
   Mic2, 
@@ -43,6 +44,7 @@ import GuideSidebar from './GuideSidebar';
 
 export default function Layout({ children, guildId }) {
   const { user, logout } = useAuth();
+  const { t, language, setLanguage } = useT();
   const router = useRouter();
   const [toast, setToast] = useState(null);
   const [serverInfo, setServerInfo] = useState({ name: 'Loading...', icon: null });
@@ -136,21 +138,21 @@ export default function Layout({ children, guildId }) {
   };
 
   const menuItems = [
-    { name: 'Home', icon: Home, path: `/config/${guildId}` },
-    { name: 'Whitelist', icon: ShieldCheck, path: `/config/${guildId}/whitelist` },
-    { name: 'Socials', icon: Tv, path: `/config/${guildId}/socials` },
-    { name: 'Verifica', icon: CheckCircle, path: `/config/${guildId}/verify` },
-    { name: 'Welcome', icon: UserPlus, path: `/config/${guildId}/welcome` },
-    { name: 'Tickets', icon: Ticket, path: `/config/${guildId}/tickets` },
-    { name: 'Photo Contest', icon: Camera, path: `/config/${guildId}/photocontest` },
-    { name: 'Giveaway', icon: Gift, path: `/config/${guildId}/giveaway` },
-    { name: 'Moderazione', icon: Gavel, path: `/config/${guildId}/moderation` },
-    { name: 'Temp Voice', icon: Mic2, path: `/config/${guildId}/tempvoice` },
-    { name: 'Assistenza', icon: Mic2, path: `/config/${guildId}/support` },
-    { name: 'FiveM', icon: Globe, path: `/config/${guildId}/fivem` },
-    { name: 'Log & Gestione', icon: History, path: `/config/${guildId}/management` },
-    { name: 'Embed Suite', icon: LayoutIcon, path: `/config/${guildId}/embeds` },
-    { name: 'Auto Clear', icon: Cpu, path: `/config/${guildId}/autoclear` }
+    { name: t('sidebar.home'), icon: Home, path: `/config/${guildId}`, id: 'home' },
+    { name: t('sidebar.whitelist'), icon: ShieldCheck, path: `/config/${guildId}/whitelist`, id: 'whitelist' },
+    { name: t('sidebar.socials'), icon: Tv, path: `/config/${guildId}/socials`, id: 'socials' },
+    { name: t('sidebar.verify'), icon: CheckCircle, path: `/config/${guildId}/verify`, id: 'verify' },
+    { name: t('sidebar.welcome'), icon: UserPlus, path: `/config/${guildId}/welcome`, id: 'welcome' },
+    { name: t('sidebar.tickets'), icon: Ticket, path: `/config/${guildId}/tickets`, id: 'tickets' },
+    { name: t('sidebar.photocontest'), icon: Camera, path: `/config/${guildId}/photocontest`, id: 'photocontest' },
+    { name: t('sidebar.giveaway'), icon: Gift, path: `/config/${guildId}/giveaway`, id: 'giveaway' },
+    { name: t('sidebar.moderation'), icon: Gavel, path: `/config/${guildId}/moderation`, id: 'moderation' },
+    { name: t('sidebar.tempvoice'), icon: Mic2, path: `/config/${guildId}/tempvoice`, id: 'tempvoice' },
+    { name: t('sidebar.support'), icon: Mic2, path: `/config/${guildId}/support`, id: 'support' },
+    { name: t('sidebar.fivem'), icon: Globe, path: `/config/${guildId}/fivem`, id: 'fivem' },
+    { name: t('sidebar.management'), icon: History, path: `/config/${guildId}/management`, id: 'management' },
+    { name: t('sidebar.embeds'), icon: LayoutIcon, path: `/config/${guildId}/embeds`, id: 'embeds' },
+    { name: t('sidebar.autoclear'), icon: Cpu, path: `/config/${guildId}/autoclear`, id: 'autoclear' }
   ];
 
   const getToastIcon = (type) => {
@@ -172,14 +174,14 @@ export default function Layout({ children, guildId }) {
           </div>
           {!isCollapsed && (
             <div className="brand-text animate fade-in">
-              <h2>Verix</h2>
-              <span>Dashboard</span>
+              <h2>{t('sidebar.brand')}</h2>
+              <span>{t('sidebar.dashboard')}</span>
             </div>
           )}
           <button 
             className="btn-collapse" 
             onClick={() => setIsCollapsed(!isCollapsed)}
-            title={isCollapsed ? "Espandi" : "Contrai"}
+            title={isCollapsed ? t('sidebar.expand') : t('sidebar.collapse')}
           >
             {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
           </button>
@@ -212,12 +214,12 @@ export default function Layout({ children, guildId }) {
             href={`/config/${guildId}/global`} 
             className={`nav-link ${router.asPath === `/config/${guildId}/global` ? 'active' : ''}`}
             style={{ marginBottom: '8px' }}
-            title={isCollapsed ? "Config. Globale" : ""}
+            title={isCollapsed ? t('sidebar.management') : ""}
           >
             <div className="nav-link-icon">
               <Settings2 size={18} strokeWidth={2.5} />
             </div>
-            {!isCollapsed && <span className="nav-link-text animate fade-in">Config. Globale</span>}
+            {!isCollapsed && <span className="nav-link-text animate fade-in">{t('sidebar.management')}</span>}
           </Link>
           <Link 
             href={`/config/${guildId}/system`} 
@@ -269,12 +271,22 @@ export default function Layout({ children, guildId }) {
           </div>
 
           <div className="header-right">
+              <div className="language-selector">
+                  <button 
+                    className={`lang-btn ${language === 'it' ? 'active' : ''}`}
+                    onClick={() => setLanguage('it')}
+                  >IT</button>
+                  <button 
+                    className={`lang-btn ${language === 'en' ? 'active' : ''}`}
+                    onClick={() => setLanguage('en')}
+                  >EN</button>
+              </div>
               <div className="status-badge">
                 <div className="status-dot"></div>
                 <span>Bot Online</span>
               </div>
                <div className="header-actions">
-                  <button className="icon-action theme-toggle" onClick={toggleTheme} title={theme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}>
+                  <button className="icon-action theme-toggle" onClick={toggleTheme} title={theme === 'dark' ? t('theme.light') : t('theme.dark')}>
                     {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
                   </button>
                  {!isGuideOpen && (
@@ -336,6 +348,38 @@ export default function Layout({ children, guildId }) {
           width: 100% !important;
           max-width: none !important;
           margin: 0 !important;
+        }
+
+        .language-selector {
+          display: flex;
+          gap: 4px;
+          background: var(--bg-secondary);
+          padding: 4px;
+          border-radius: 8px;
+          margin-right: 16px;
+        }
+
+        .lang-btn {
+          padding: 4px 8px;
+          font-size: 11px;
+          font-weight: 700;
+          border-radius: 6px;
+          color: var(--text-muted);
+          transition: all 0.2s;
+          background: transparent;
+          border: none;
+          cursor: pointer;
+        }
+
+        .lang-btn:hover {
+          color: var(--text-main);
+          background: var(--hover-bg);
+        }
+
+        .lang-btn.active {
+          background: var(--primary);
+          color: white;
+          box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
         }
 
         .help-toggle {

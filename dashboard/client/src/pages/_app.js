@@ -1,5 +1,6 @@
 import '../styles/globals.css';
 import { AuthProvider } from '../contexts/AuthContext';
+import { LanguageProvider } from '../contexts/LanguageContext';
 import ErrorBoundary from '../components/ErrorBoundary';
 import Head from 'next/head';
 import Layout from '../components/Layout';
@@ -69,16 +70,18 @@ function MyApp({ Component, pageProps }) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="description" content="Pannello di amministrazione Verix Bot — gestisci moduli, ticket, whitelist e molto altro." />
       </Head>
-      <AuthProvider>
-        {isNavigating && <LoadingScreen message="Navigazione..." />}
-        {isConfigPage ? (
-          <Layout guildId={router.query.guildId}>
+      <LanguageProvider>
+        <AuthProvider>
+          {isNavigating && <LoadingScreen message="Navigazione..." />}
+          {isConfigPage ? (
+            <Layout guildId={router.query.guildId}>
+              <Component {...pageProps} />
+            </Layout>
+          ) : (
             <Component {...pageProps} />
-          </Layout>
-        ) : (
-          <Component {...pageProps} />
-        )}
-      </AuthProvider>
+          )}
+        </AuthProvider>
+      </LanguageProvider>
     </ErrorBoundary>
   );
 }

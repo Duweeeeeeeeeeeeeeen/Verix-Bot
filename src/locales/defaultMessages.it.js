@@ -466,6 +466,56 @@ export default {
             segnalazione: { label: 'Segnalazione Utente', emoji: '🚨', color: '#ef4444', staffRoleIds: [] },
             donazione: { label: 'Donazioni', emoji: '💰', color: '#f59e0b', staffRoleIds: [] },
             bug: { label: 'Segnalazione Bug', emoji: '🐛', color: '#10b981', staffRoleIds: [] }
+        },
+        config_not_found: {
+            title: '❌ Configurazione Mancante',
+            description: 'I protocolli di assistenza non sono stati inizializzati correttamente per questo server. Contatta un amministratore.',
+            color: '#e74c3c'
+        },
+        category_not_available: {
+            title: '❌ Settore Inaccessibile',
+            description: 'La categoria di assistenza richiesta non è attualmente disponibile o è stata rimossa dai registri.',
+            color: '#e74c3c'
+        },
+        staff_only: {
+            title: '⚠️ Accesso Negato',
+            description: 'Solo gli ufficiali dello staff autorizzati possono utilizzare questi strumenti amministrativi.',
+            color: '#f1c40f'
+        },
+        claim_success: {
+            title: '✅ Presa in Carico',
+            description: 'Hai assunto correttamente la supervisione di questa pratica. Il cittadino è stato informato.',
+            color: '#2ecc71'
+        },
+        claim_already: {
+            title: '⚠️ Pratica Già Assegnata',
+            description: 'Questa pratica è già sotto la supervisione dell\'operatore <@{staffId}>.',
+            color: '#f1c40f'
+        },
+        status_update_success: {
+            title: '🔄 Stato Aggiornato',
+            description: 'Lo stato della pratica è stato impostato correttamente su: **{status}**.',
+            color: '#3498db'
+        },
+        note_success: {
+            title: '📌 Nota Archiviata',
+            description: 'La tua nota interna è stata aggiunta correttamente al dossier della pratica.',
+            color: '#2ecc71'
+        },
+        close_started: {
+            title: '🛡️ Archiviazione Avviata',
+            description: 'I protocolli di chiusura sono stati attivati. La pratica verrà rimossa o spostata a breve.',
+            color: '#f1c40f'
+        },
+        blacklist_error: {
+            title: '🚫 Accesso Interdetto',
+            description: 'Ti è stato revocato il permesso di utilizzare i servizi di assistenza per violazione dei protocolli.',
+            color: '#000000'
+        },
+        created_success: {
+            title: '✅ Pratica Aperta',
+            description: 'La tua richiesta è stata protocollata. Recati allo sportello <#{channelId}> per procedere.',
+            color: '#2ecc71'
         }
     },
     verify: {
@@ -583,6 +633,41 @@ export default {
             title: '😔 Contest Concluso',
             description: 'Il concorso fotografico è terminato, ma purtroppo non sono state depositate opere valide nei nostri archivi.',
             color: '#e74c3c'
+        },
+        no_contest_active: {
+            title: '❌ Nessun Contest',
+            description: 'Al momento non è in corso alcun concorso fotografico. Resta sintonizzato per il prossimo annuncio!',
+            color: '#e74c3c'
+        },
+        no_submissions_leaderboard: {
+            title: '📊 Classifica Vuota',
+            description: 'Al momento non ci sono fotografie registrate nella classifica di questo contest.',
+            color: '#3498db'
+        },
+        self_vote_error: {
+            title: '⚖️ Conflitto d\'Interesse',
+            description: 'I regolamenti cittadini impediscono di votare la propria opera d\'arte. Lascia che siano gli altri a giudicare il tuo talento!',
+            color: '#f1c40f'
+        },
+        vote_success_up: {
+            title: '👍 Voto Registrato',
+            description: 'Hai espresso il tuo apprezzamento per questa fotografia. Il punteggio è stato aggiornato.',
+            color: '#2ecc71'
+        },
+        vote_success_down: {
+            title: '👎 Voto Registrato',
+            description: 'Hai registrato il tuo dissenso per questa fotografia. Il punteggio è stato aggiornato.',
+            color: '#e67e22'
+        },
+        already_voted_error: {
+            title: '⚠️ Protocollo Voto',
+            description: 'Hai già espresso il tuo verdetto per questa opera. I protocolli non permettono di cambiare o rimuovere il voto una volta registrato.',
+            color: '#f1c40f'
+        },
+        submission_data_saved: {
+            title: '✅ Dati Acquisiti',
+            description: 'Informazioni salvate con successo! Ora invia la tua foto (come allegato) in questo canale entro 5 minuti per completare la procedura.',
+            color: '#3498db'
         },
         leaderboard_error: {
             title: '❌ Errore Registro',
@@ -732,10 +817,55 @@ export default {
     tempvoice: {
         enabled: false,
         channelNameTemplate: '🔊 Stanza di {user}',
-        defaultUserLimit: 0
+        defaultUserLimit: 0,
+        not_manageable: {
+            title: '❌ Canale Ignoto',
+            description: 'Questo canale non risulta censito come stanza temporanea gestibile dai nostri sistemi.',
+            color: '#e74c3c'
+        },
+        not_owner: {
+            title: '⚠️ Accesso Negato',
+            description: 'Solo il creatore originario della stanza può utilizzare questi protocolli di gestione.',
+            color: '#f1c40f'
+        },
+        lock_success: {
+            title: '🔒 Canale Blindato',
+            description: 'La stanza è stata chiusa. Nessun altro cittadino potrà connettersi senza autorizzazione.',
+            color: '#e67e22'
+        },
+        unlock_success: {
+            title: '🔓 Canale Aperto',
+            description: 'Le restrizioni di accesso sono state rimosse. Chiunque può ora unirsi alla conversazione.',
+            color: '#2ecc71'
+        },
+        limit_update: {
+            title: '👥 Limite Aggiornato',
+            description: 'La capacità massima della stanza è stata impostata a **{limit}** cittadini.',
+            color: '#3498db'
+        },
+        rename_success: {
+            title: '✅ Nome Modificato',
+            description: 'Il protocollo di identificazione del canale è stato aggiornato in: **{name}**.',
+            color: '#2ecc71'
+        }
     },
     giveaway: {
         enabled: false,
-        managerRoles: []
+        managerRoles: [],
+        no_participants: {
+            title: '😔 Giveaway Concluso',
+            description: 'Il giveaway per **{prize}** è terminato, ma purtroppo non sono state depositate partecipazioni valide nei nostri archivi.',
+            color: '#e74c3c'
+        },
+        winners: {
+            title: '🎉 Congratulazioni Vincitori!',
+            description: 'I protocolli hanno estratto i vincitori per: **{prize}**!\n\n🏆 **Vincitori:** {winners}',
+            color: '#2ecc71'
+        },
+        already_ended: {
+            title: '⚠️ Giveaway Concluso',
+            description: 'Spiacente, ma questo giveaway è già terminato e non è più possibile partecipare.',
+            color: '#f1c40f'
+        }
     }
 };

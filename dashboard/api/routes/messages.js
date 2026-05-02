@@ -1,7 +1,7 @@
 import express from 'express';
 import MessageConfig from '../../../src/models/MessageConfig.js';
 import messageService from '../../../src/utils/messageService.js';
-import defaultMessages from '../../../src/locales/defaultMessages.js';
+import { getDefaultMessages } from '../../../src/locales/t.js';
 import { adminCheck } from '../middleware/adminCheck.js';
 
 const router = express.Router();
@@ -15,9 +15,12 @@ router.get('/:guildId/:module', adminCheck, async (req, res) => {
         const { guildId, module } = req.params;
         const config = await MessageConfig.findOne({ guildId, module }).lean();
         
+        // Fetch guild language and get localized defaults
+        const lang = await messageService.getGuildLanguage(guildId);
+        const defaults = getDefaultMessages(lang)[module] || {};
+        
         // Convert Map to plain object properly
         const dbMessages = (config && config.messages) ? config.messages : {};
-        const defaults = defaultMessages[module] || {};
 
         // Merge defaults and DB overrides into a single flat object
         const mergedMessages = {};

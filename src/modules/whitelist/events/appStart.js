@@ -141,7 +141,10 @@ export default {
 
                         await channel.send({ content: `${interaction.user} (Fase 1: Background)`, embeds: [bgInstructions], components: [submitButton] });
                         
-                        return interaction.editReply({ content: `✅ Pratica avviata! Dirigiti qui per inviare la tua storia: ${channel}` });
+                        const startMsg = await messageService.get(interaction.guild.id, 'whitelist', 'start_success', {
+                            channelId: channel.id
+                        });
+                        return interaction.editReply({ embeds: [startMsg] });
                     }
 
                     // ELSE (PANEL FLOW): Standard blocking behavior
@@ -252,11 +255,10 @@ export default {
         } catch (error) {
             logger.error('Error starting whitelist application:', error);
             // Since we deferred at the start, we MUST use editReply or followUp
-            const errorMessage = 'Si è verificato un errore critico nell\'avvio della pratica. Riprova tra qualche istante.';
             if (interaction.deferred || interaction.replied) {
-                await interaction.editReply({ content: errorMessage });
+                await messageService.reply(interaction, 'system', 'generic_error', {}, { ephemeral: true });
             } else {
-                await interaction.reply({ content: errorMessage, flags: [MessageFlags.Ephemeral] });
+                await messageService.reply(interaction, 'system', 'generic_error', {}, { ephemeral: true });
             }
         }
     },

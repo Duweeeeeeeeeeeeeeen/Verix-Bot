@@ -18,8 +18,10 @@ import {
 } from 'lucide-react';
 import api from '../utils/api';
 import CustomSelect from './CustomSelect';
+import { useT } from '../contexts/LanguageContext';
 
 export default function OnboardingWizard({ config, guildId }) {
+  const { t, setLanguage } = useT();
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -126,14 +128,14 @@ export default function OnboardingWizard({ config, guildId }) {
   const renderStep1 = () => (
     <div className="wizard-step animate slide-in">
       <div className="step-header">
-        <div className="step-badge">Passo 1 di 4</div>
-        <h2>Setup Iniziale Verix</h2>
-        <p>Imposta le fondamenta del tuo server.</p>
+        <div className="step-badge">{t('onboarding.step1.label', { step: 1, total: 4 }) || `Passo 1 di 4`}</div>
+        <h2>{t('onboarding.step1.title')}</h2>
+        <p>{t('onboarding.step1.desc')}</p>
       </div>
 
       <div className="step-content">
         <div className="form-group">
-          <label className="text-label">Lingua Principale</label>
+          <label className="text-label">{t('onboarding.step1.lang')}</label>
           <div className="stylized-select-wrapper">
             <CustomSelect 
               options={[
@@ -141,14 +143,17 @@ export default function OnboardingWizard({ config, guildId }) {
                 { value: 'en', label: 'English 🇺🇸' }
               ]} 
               value={formData.language} 
-              onChange={val => setFormData({...formData, language: val})} 
+              onChange={val => {
+                setFormData({...formData, language: val});
+                setLanguage(val); // Sync dashboard language too
+              }} 
             />
           </div>
         </div>
 
         <div className="form-group">
-          <label className="text-label">Ruoli Amministratori (Staff)</label>
-          <p className="field-desc">Questi ruoli avranno accesso completo alla gestione del bot.</p>
+          <label className="text-label">{t('onboarding.step1.staff')}</label>
+          <p className="field-desc">{t('onboarding.step1.staff_desc')}</p>
           <div className="roles-selector-p">
             {roles.filter(r => r.name !== '@everyone').map(role => (
               <button 
@@ -169,12 +174,12 @@ export default function OnboardingWizard({ config, guildId }) {
         </div>
 
         <div className="form-group">
-          <label className="text-label">Canale Log Centrale</label>
-          <p className="field-desc">Dove il bot invierà tutte le notifiche amministrative.</p>
+          <label className="text-label">{t('onboarding.step1.logs')}</label>
+          <p className="field-desc">{t('onboarding.step1.logs_desc')}</p>
           <div className="stylized-select-wrapper">
             <CustomSelect 
               options={[
-                { value: '', label: 'Seleziona un canale...' },
+                { value: '', label: t('common.select_channel') },
                 ...textChannels.map(c => ({ value: c.id, label: `# ${c.name}` }))
               ]} 
               value={formData.logChannelId} 
@@ -190,9 +195,9 @@ export default function OnboardingWizard({ config, guildId }) {
   const renderStep2 = () => (
     <div className="wizard-step animate slide-in">
       <div className="step-header">
-        <div className="step-badge">Passo 2 di 4</div>
-        <h2>Moduli Operativi</h2>
-        <p>Scegli quali funzionalità attivare ora.</p>
+        <div className="step-badge">{t('onboarding.step2.label', { step: 2, total: 4 }) || `Passo 2 di 4`}</div>
+        <h2>{t('onboarding.step2.title')}</h2>
+        <p>{t('onboarding.step2.desc')}</p>
       </div>
 
       <div className="step-content modules-toggle-grid">
@@ -231,9 +236,9 @@ export default function OnboardingWizard({ config, guildId }) {
   const renderStep3 = () => (
     <div className="wizard-step animate slide-in">
       <div className="step-header">
-        <div className="step-badge">Passo 3 di 4</div>
-        <h2>Configurazione Rapida</h2>
-        <p>Personalizza i canali chiave per i moduli attivati.</p>
+        <div className="step-badge">{t('onboarding.step3.label', { step: 3, total: 4 }) || `Passo 3 di 4`}</div>
+        <h2>{t('onboarding.step3.title')}</h2>
+        <p>{t('onboarding.step3.desc')}</p>
       </div>
 
       <div className="step-content scrollable-p">
@@ -379,23 +384,23 @@ export default function OnboardingWizard({ config, guildId }) {
   const renderStep4 = () => (
     <div className="wizard-step animate slide-in">
       <div className="step-header">
-        <div className="step-badge">Passo 4 di 4</div>
-        <h2>Riepilogo Finale</h2>
-        <p>Controlla le impostazioni prima di renderle operative.</p>
+        <div className="step-badge">{t('onboarding.step4.label', { step: 4, total: 4 }) || `Passo 4 di 4`}</div>
+        <h2>{t('onboarding.step4.title')}</h2>
+        <p>{t('onboarding.step4.desc')}</p>
       </div>
 
       <div className="step-content summary-p">
         <div className="summary-card-p">
           <div className="summary-row-p">
-            <span className="summary-label-p">Lingua</span>
+            <span className="summary-label-p">{t('onboarding.step4.lang_label')}</span>
             <span className="summary-value-p">{formData.language === 'it' ? 'Italiano 🇮🇹' : 'English 🇺🇸'}</span>
           </div>
           <div className="summary-row-p">
-            <span className="summary-label-p">Staff Configurato</span>
-            <span className="summary-value-p">{formData.adminRoleIds.length} ruoli selezionati</span>
+            <span className="summary-label-p">{t('onboarding.step4.staff_label')}</span>
+            <span className="summary-value-p">{t('onboarding.step4.staff_value', { count: formData.adminRoleIds.length })}</span>
           </div>
           <div className="summary-row-p">
-            <span className="summary-label-p">Moduli Attivati</span>
+            <span className="summary-label-p">{t('onboarding.step4.modules_label')}</span>
             <div className="summary-tags-p">
               {formData.modules.whitelist && <span className="tag-p">Whitelist</span>}
               {formData.modules.tickets && <span className="tag-p">Tickets</span>}
@@ -407,8 +412,8 @@ export default function OnboardingWizard({ config, guildId }) {
         <div className="final-notice-p">
           <Rocket size={24} />
           <div>
-            <h4>Pronto al Lancio!</h4>
-            <p>Cliccando su "Finalizza", il bot aggiornerà i permessi e le configurazioni sul server Discord.</p>
+            <h4>{t('onboarding.step4.ready')}</h4>
+            <p>{t('onboarding.step4.notice')}</p>
           </div>
         </div>
       </div>
@@ -420,9 +425,9 @@ export default function OnboardingWizard({ config, guildId }) {
       <div className="success-icon-p">
         <CheckCircle2 size={64} />
       </div>
-      <h2>Sistema Operativo!</h2>
-      <p>L'onboarding è stato completato correttamente. Ora puoi esplorare le impostazioni avanzate.</p>
-      <button className="btn-primary" onClick={() => router.reload()}>Vai alla Dashboard</button>
+      <h2>{t('onboarding.success.title')}</h2>
+      <p>{t('onboarding.success.desc')}</p>
+      <button className="btn-primary" onClick={() => router.reload()}>{t('onboarding.success.btn')}</button>
     </div>
   );
 
@@ -453,17 +458,17 @@ export default function OnboardingWizard({ config, guildId }) {
           <div className="wizard-footer-p">
             {step > 1 && (
               <button className="btn-outline-p" onClick={prevStep} disabled={saving}>
-                <ChevronLeft size={18} /> Indietro
+                <ChevronLeft size={18} /> {t('common.back')}
               </button>
             )}
             <div style={{ marginLeft: 'auto', display: 'flex', gap: '12px' }}>
               {step < 4 ? (
                 <button className="btn-primary-p" onClick={nextStep}>
-                  Continua <ChevronRight size={18} />
+                  {t('common.continue')} <ChevronRight size={18} />
                 </button>
               ) : (
                 <button className="btn-save-p" onClick={handleSave} disabled={saving}>
-                  {saving ? <div className="spinner-s"></div> : <><Save size={18} /> Finalizza Setup</>}
+                  {saving ? <div className="spinner-s"></div> : <><Save size={18} /> {t('common.finalize')}</>}
                 </button>
               )}
             </div>

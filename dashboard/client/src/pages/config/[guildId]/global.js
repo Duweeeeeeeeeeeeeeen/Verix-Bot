@@ -11,9 +11,11 @@ import {
   Monitor, Mic2, Ticket, Shield, AlertCircle, Check,
   Zap, Info, Globe, ShieldAlert, Layers
 } from 'lucide-react';
+import { useT } from '../../../contexts/LanguageContext';
 import CustomSelect from '../../../components/CustomSelect';
 
 export default function GlobalConfigPage() {
+  const { t, setLanguage: setDashboardLanguage } = useT();
   const router = useRouter();
   const { guildId } = router.query;
 
@@ -59,9 +61,15 @@ export default function GlobalConfigPage() {
         method: 'POST',
         body: JSON.stringify(config)
       });
-      showToast('Configurazione globale salvata!');
+      
+      // Update dashboard language immediately if changed
+      if (config.language) {
+          setDashboardLanguage(config.language);
+      }
+
+      showToast(t('common.saved_success'));
     } catch (error) {
-      showToast('Errore durante il salvataggio', 'error');
+      showToast(t('common.error'), 'error');
     } finally {
       setSaving(false);
     }
@@ -91,13 +99,13 @@ export default function GlobalConfigPage() {
                 <Globe size={24} />
               </div>
               <div className="header-text">
-                <h1>Configurazioni Globali</h1>
-                <p>Gestisci le impostazioni di base e i log di sistema del bot.</p>
+                <h1>{t('sidebar.management')}</h1>
+                <p>{t('onboarding.step1.desc')}</p>
               </div>
            </div>
            <div className="header-buttons">
               <button onClick={handleSave} className="btn-primary" disabled={saving}>
-                <Save size={16} /> {saving ? 'Salvataggio...' : 'Salva Modifiche'}
+                <Save size={16} /> {saving ? t('common.loading') : t('common.save')}
               </button>
            </div>
         </header>
@@ -125,10 +133,23 @@ export default function GlobalConfigPage() {
             {activeTab === 'general' && (
                 <div className="config-grid-g animate fade-in">
                     <section className="card section-card-g">
-                        <div className="align-center"><Shield size={18} color="var(--primary)" /> <h3>Amministrazione</h3></div>
+                        <div className="align-center"><Shield size={18} color="var(--primary)" /> <h3>{t('onboarding.step1.staff')}</h3></div>
                         <div className="fields-stack-g">
                             <div className="field-box">
-                                <label className="text-label">Ruoli Admin Bot</label>
+                                <label className="text-label">{t('onboarding.step1.lang')}</label>
+                                <div className="stylized-select-wrapper">
+                                    <CustomSelect 
+                                        options={[
+                                            { value: 'it', label: 'Italiano 🇮🇹' },
+                                            { value: 'en', label: 'English 🇺🇸' }
+                                        ]} 
+                                        value={config.language || 'it'} 
+                                        onChange={val => setNested('language', val)} 
+                                    />
+                                </div>
+                            </div>
+                            <div className="field-box">
+                                <label className="text-label">{t('onboarding.step1.staff')}</label>
                                 <DiscordSelector 
                                     type="role" 
                                     multiple 
@@ -136,7 +157,7 @@ export default function GlobalConfigPage() {
                                     value={config.adminRoleIds || []} 
                                     onChange={val => setNested('adminRoleIds', val)} 
                                 />
-                                <p className="text-muted" style={{ fontSize: '0.75rem', marginTop: '8px' }}>I membri con questi ruoli possono configurare il bot.</p>
+                                <p className="text-muted" style={{ fontSize: '0.75rem', marginTop: '8px' }}>{t('onboarding.step1.staff_desc')}</p>
                             </div>
                         </div>
                     </section>

@@ -1,6 +1,7 @@
 import Giveaway from '../../models/Giveaway.js';
 import logger from '../../utils/logger.js';
 import placeholderHelper from '../../utils/placeholderHelper.js';
+import messageService from '../../utils/messageService.js';
 import { EmbedBuilder, ButtonBuilder, ActionRowBuilder, ButtonStyle } from 'discord.js';
 
 class GiveawayManager {
@@ -124,7 +125,10 @@ class GiveawayManager {
                         .setColor('#ff4757');
                     await message.edit({ embeds: [endedEmbed], components: [] });
                 }
-                return channel.send(`❌ Il giveaway per **${giveaway.prize}** è terminato, ma non ci sono stati partecipanti.`);
+                
+                return messageService.send(channel, 'giveaway', 'no_participants', {
+                    prize: giveaway.prize
+                });
             }
 
             // Draw winners
@@ -149,7 +153,10 @@ class GiveawayManager {
                 await message.edit({ embeds: [endedEmbed], components: [] });
             }
 
-            channel.send(`🎉 Congratulazioni ${winnersMention}! Avete vinto: **${giveaway.prize}**!`);
+            return messageService.send(channel, 'giveaway', 'winners', {
+                prize: giveaway.prize,
+                winners: winnersMention
+            });
             
             logger.info(`[Giveaway] Ended in ${guild.name}. Winners: ${winners.join(', ')}`);
         } catch (error) {

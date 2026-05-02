@@ -13,13 +13,13 @@ export default {
             // Check if contest is active
             const activeContest = await PhotoContest.findOne({ guildId: interaction.guildId, status: 'ACTIVE' });
             if (!activeContest) {
-                return interaction.reply({ content: '❌ Non c\'è alcun contest attivo al momento.', flags: [MessageFlags.Ephemeral] });
+                return messageService.reply(interaction, 'photocontest', 'no_contest_active', {}, { ephemeral: true });
             }
 
             // Check if user already submitted
             const existing = await PhotoSubmission.findOne({ contestId: activeContest._id, userId: interaction.user.id });
             if (existing) {
-                return interaction.reply({ content: '❌ Hai già inviato una foto per questo contest!', flags: [MessageFlags.Ephemeral] });
+                return messageService.reply(interaction, 'photocontest', 'already_submitted', {}, { ephemeral: true });
             }
 
             const modal = new ModalBuilder()
@@ -63,10 +63,7 @@ export default {
                 });
             }
 
-            return interaction.reply({ 
-                content: '✅ **Dati salvati!** Ora invia la tua foto (come allegato) in questo canale entro 5 minuti per completare la sottomissione.', 
-                flags: [MessageFlags.Ephemeral] 
-            });
+            return messageService.reply(interaction, 'photocontest', 'submission_data_saved', {}, { ephemeral: true });
         }
 
         if (!interaction.isButton()) return;
@@ -80,7 +77,7 @@ export default {
                 const submissions = await PhotoSubmission.find({ contestId: activeContest?._id }).sort({ score: -1 }).limit(10);
                 
                 if (!submissions || submissions.length === 0) {
-                    return interaction.reply({ content: '📊 Al momento non ci sono foto in classifica.', flags: [MessageFlags.Ephemeral] });
+                    return messageService.reply(interaction, 'photocontest', 'no_submissions_leaderboard', {}, { ephemeral: true });
                 }
 
                 let list = '';
@@ -95,7 +92,7 @@ export default {
 
                 return interaction.reply({ embeds: [embed], flags: [MessageFlags.Ephemeral] });
             } catch (err) {
-                return interaction.reply({ content: '❌ Errore durante il recupero della classifica.', flags: [MessageFlags.Ephemeral] });
+                return messageService.reply(interaction, 'photocontest', 'leaderboard_error', {}, { ephemeral: true });
             }
         }
 
@@ -116,11 +113,11 @@ export default {
                 guildId: interaction.guildId
             });
 
-            if (!submission) return interaction.reply({ content: '❌ Errore: Foto non trovata nel registro.', flags: [MessageFlags.Ephemeral] });
+            if (!submission) return messageService.reply(interaction, 'photocontest', 'entry_not_found_error', {}, { ephemeral: true });
             
             // 2. NO SELF-VOTE
             if (submission.userId === voterId) {
-                return interaction.reply({ content: '❌ Non puoi votare la tua stessa opera!', flags: [MessageFlags.Ephemeral] });
+                return messageService.reply(interaction, 'photocontest', 'self_vote_error', {}, { ephemeral: true });
             }
 
             const upIndex = submission.upvotes.indexOf(voterId);
@@ -131,20 +128,20 @@ export default {
             if (type === 'up') {
                 if (upIndex > -1) {
                     // 3. NO UN-VOTE (Voto già presente)
-                    return interaction.reply({ content: '⚠️ Hai già votato positivamente questa foto! Non puoi cambiare o rimuovere il voto.', flags: [MessageFlags.Ephemeral] });
+                    return messageService.reply(interaction, 'photocontest', 'already_voted_error', {}, { ephemeral: true });
                 } else {
                     submission.upvotes.push(voterId);
                     if (downIndex > -1) submission.downvotes.splice(downIndex, 1);
-                    await interaction.reply({ content: '✅ Hai votato positivamente questa foto!', flags: [MessageFlags.Ephemeral] });
+                    await messageService.reply(interaction, 'photocontest', 'vote_success_up', {}, { ephemeral: true });
                     notifyContent = 'up';
                 }
             } else if (type === 'down') {
                 if (downIndex > -1) {
-                    return interaction.reply({ content: '⚠️ Hai già votato negativamente questa foto! Non puoi cambiare o rimuovere il voto.', flags: [MessageFlags.Ephemeral] });
+                    return messageService.reply(interaction, 'photocontest', 'already_voted_error', {}, { ephemeral: true });
                 } else {
                     submission.downvotes.push(voterId);
                     if (upIndex > -1) submission.upvotes.splice(upIndex, 1);
-                    await interaction.reply({ content: '✅ Hai votato negativamente questa foto.', flags: [MessageFlags.Ephemeral] });
+                    await messageService.reply(interaction, 'photocontest', 'vote_success_down', {}, { ephemeral: true });
                     notifyContent = 'down';
                 }
             }
@@ -186,7 +183,7 @@ export default {
         } catch (error) {
             logger.error('[PhotoContest] Vote handling error:', error);
             if (!interaction.replied && !interaction.deferred) {
-                await interaction.reply({ content: '❌ Errore durante il voto.', flags: [MessageFlags.Ephemeral] });
+                await messageService.reply(interaction, 'photocontest', 'error', {}, { ephemeral: true });
             }
         }
     }

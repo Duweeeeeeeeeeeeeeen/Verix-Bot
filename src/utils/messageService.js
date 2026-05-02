@@ -1,6 +1,7 @@
 import { EmbedBuilder } from 'discord.js';
 import MessageConfig from '../models/MessageConfig.js';
-import defaultMessages from '../locales/defaultMessages.js';
+import GlobalConfig from '../models/GlobalConfig.js';
+import { getDefaultMessages } from '../locales/t.js';
 import { buildEmbed } from './embedHelper.js';
 import logger from './logger.js';
 
@@ -9,6 +10,35 @@ class MessageService {
         this.cache = new Map(); // guildId_module -> messages
         this.cacheTTL = 10 * 60 * 1000; // 10 minutes
         this.cacheTimestamps = new Map();
+
+        this.langCache = new Map(); // guildId -> language code
+        this.langTTL = 30 * 60 * 1000; // 30 minutes for language
+        this.langTimestamps = new Map();
+    }
+
+    /**
+     * Internal: Get the preferred language for a guild.
+     * @param {string} guildId 
+     * @returns {string} 'it' or 'en'
+     */
+    async getGuildLanguage(guildId) {
+        if (!guildId) return 'it';
+
+        const cached = this.langCache.get(guildId);
+        if (cached && (Date.now() - (this.langTimestamps.get(guildId) || 0)) < this.langTTL) {
+            return cached;
+        }
+
+        try {
+            const config = await GlobalConfig.findOne({ guildId });
+            const lang = config?.language || 'it';
+            this.langCache.set(guildId, lang);
+            this.langTimestamps.set(guildId, Date.now());
+            return lang;
+        } catch (err) {
+            logger.warn(`[MessageService] Error fetching guild language for ${guildId}:`, err.message);
+            return 'it';
+        }
     }
 
     /**
@@ -75,9 +105,12 @@ class MessageService {
                 moduleMessages = new Map();
             }
         }
+        
+        const lang = await this.getGuildLanguage(guildId);
+        const defaults = getDefaultMessages(lang);
 
         const dbEmbed = moduleMessages instanceof Map ? moduleMessages.get(slug) : moduleMessages[slug];
-        const defaultEmbed = defaultMessages[module]?.[slug];
+        const defaultEmbed = defaults[module]?.[slug];
 
         if (!dbEmbed) return defaultEmbed;
         if (!defaultEmbed) return dbEmbed;

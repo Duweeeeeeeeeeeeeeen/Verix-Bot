@@ -1,4 +1,5 @@
 import Giveaway from '../../../models/Giveaway.js';
+import messageService from '../../../utils/messageService.js';
 import { MessageFlags } from 'discord.js';
 
 export default {
@@ -13,7 +14,7 @@ export default {
         try {
             const giveaway = await Giveaway.findOne({ messageId: interaction.message.id, status: 'ACTIVE' });
             if (!giveaway) {
-                return interaction.reply({ content: '❌ Questo giveaway è già terminato!', flags: [MessageFlags.Ephemeral] });
+                return messageService.reply(interaction, 'giveaway', 'already_ended', {}, { ephemeral: true });
             }
 
             if (giveaway.participants.includes(voterId)) {

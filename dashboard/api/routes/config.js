@@ -95,22 +95,24 @@ router.get('/:guildId', adminCheck, async (req, res) => {
             console.error('Error fetching Discord data for guild:', discordError);
         }
 
+        const lang = globalConfig?.language || 'it';
+
         res.json({
             success: true,
             data: {
-                whitelist: mergeModuleDefaults('whitelist', wlConfig),
-                tickets: mergeModuleDefaults('tickets', tkConfig),
-                photocontest: mergeModuleDefaults('photocontest', photoConfig),
-                verify: mergeModuleDefaults('verify', verifyConfig),
+                whitelist: mergeModuleDefaults('whitelist', wlConfig, lang),
+                tickets: mergeModuleDefaults('tickets', tkConfig, lang),
+                photocontest: mergeModuleDefaults('photocontest', photoConfig, lang),
+                verify: mergeModuleDefaults('verify', verifyConfig, lang),
                 guild: guildData,
                 globalConfig,
-                welcome: mergeModuleDefaults('welcome', wlcmConfig),
-                utility: mergeModuleDefaults('utility', utilConfig),
-                fivem: mergeModuleDefaults('fivem', fmConfig),
+                welcome: mergeModuleDefaults('welcome', wlcmConfig, lang),
+                utility: mergeModuleDefaults('utility', utilConfig, lang),
+                fivem: mergeModuleDefaults('fivem', fmConfig, lang),
                 socials: socConfig,
                 autoclear: autoClearConfig,
-                moderation: mergeModuleDefaults('moderation', modConfig),
-                support: mergeModuleDefaults('support', suppConfig),
+                moderation: mergeModuleDefaults('moderation', modConfig, lang),
+                support: mergeModuleDefaults('support', suppConfig, lang),
                 roles,
                 channels
             }
@@ -132,7 +134,8 @@ router.get('/:guildId/whitelist', adminCheck, async (req, res) => {
             config = await WhitelistConfig.create({ guildId });
         }
         
-        res.json({ success: true, data: mergeModuleDefaults('whitelist', config) });
+        const lang = await messageService.getGuildLanguage(guildId);
+        res.json({ success: true, data: mergeModuleDefaults('whitelist', config, lang) });
     } catch (error) {
         console.error('Error fetching whitelist configuration:', error);
         res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione whitelist' });
@@ -199,7 +202,9 @@ router.get('/:guildId/tempvoice', adminCheck, async (req, res) => {
         const { guildId } = req.params;
         let config = await TempVoiceConfig.findOne({ guildId });
         if (!config) config = await TempVoiceConfig.create({ guildId });
-        res.json({ success: true, data: mergeModuleDefaults('tempvoice', config) });
+        
+        const lang = await messageService.getGuildLanguage(guildId);
+        res.json({ success: true, data: mergeModuleDefaults('tempvoice', config, lang) });
     } catch (error) {
         res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione vocale' });
     }
@@ -226,7 +231,9 @@ router.get('/:guildId/giveaway', adminCheck, async (req, res) => {
         const { guildId } = req.params;
         let config = await GiveawayConfig.findOne({ guildId });
         if (!config) config = await GiveawayConfig.create({ guildId });
-        res.json({ success: true, data: mergeModuleDefaults('giveaway', config) });
+        
+        const lang = await messageService.getGuildLanguage(guildId);
+        res.json({ success: true, data: mergeModuleDefaults('giveaway', config, lang) });
     } catch (error) {
         console.error('[Giveaway] Config GET Error:', error);
         res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione giveaway' });
@@ -480,7 +487,8 @@ router.get('/:guildId/background', adminCheck, async (req, res) => {
             config = await BackgroundConfig.create({ guildId });
         }
         
-        res.json({ success: true, data: mergeModuleDefaults('background', config) }); // Background uses its own defaults now
+        const lang = await messageService.getGuildLanguage(guildId);
+        res.json({ success: true, data: mergeModuleDefaults('background', config, lang) }); // Background uses its own defaults now
     } catch (error) {
         console.error('Error fetching background configuration:', error);
         res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione background' });
@@ -705,7 +713,9 @@ router.get('/:guildId/tickets', adminCheck, async (req, res) => {
         const { guildId } = req.params;
         let config = await TicketConfig.findOne({ guildId });
         if (!config) config = await TicketConfig.create({ guildId });
-        res.json({ success: true, data: mergeModuleDefaults('tickets', config) });
+        
+        const lang = await messageService.getGuildLanguage(guildId);
+        res.json({ success: true, data: mergeModuleDefaults('tickets', config, lang) });
     } catch (error) {
         res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione tickets' });
     }
@@ -860,7 +870,9 @@ router.get('/:guildId/photocontest', adminCheck, async (req, res) => {
         const { guildId } = req.params;
         let config = await PhotoContestConfig.findOne({ guildId });
         if (!config) config = await PhotoContestConfig.create({ guildId });
-        res.json({ success: true, data: mergeModuleDefaults('photocontest', config) });
+        
+        const lang = await messageService.getGuildLanguage(guildId);
+        res.json({ success: true, data: mergeModuleDefaults('photocontest', config, lang) });
     } catch (error) {
         res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione photocontest' });
     }
@@ -891,7 +903,9 @@ router.get('/:guildId/verify', adminCheck, async (req, res) => {
         const { guildId } = req.params;
         let config = await VerifyConfig.findOne({ guildId });
         if (!config) config = await VerifyConfig.create({ guildId });
-        res.json({ success: true, data: mergeModuleDefaults('verify', config) });
+        
+        const lang = await messageService.getGuildLanguage(guildId);
+        res.json({ success: true, data: mergeModuleDefaults('verify', config, lang) });
     } catch (error) {
         res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione verifica' });
     }
@@ -1053,7 +1067,9 @@ router.get('/:guildId/welcome', adminCheck, async (req, res) => {
         const { guildId } = req.params;
         let config = await WelcomeConfig.findOne({ guildId });
         if (!config) config = await WelcomeConfig.create({ guildId });
-        res.json({ success: true, data: mergeModuleDefaults('welcome', config) });
+        
+        const lang = await messageService.getGuildLanguage(guildId);
+        res.json({ success: true, data: mergeModuleDefaults('welcome', config, lang) });
     } catch (error) {
         console.error('Error fetching welcome config:', error);
         res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione welcome' });
@@ -1425,7 +1441,9 @@ router.get('/:guildId/fivem', adminCheck, async (req, res) => {
         if (!config) {
             config = await FiveMConfig.create({ guildId });
         }
-        res.json({ success: true, data: mergeModuleDefaults('fivem', config) });
+        
+        const lang = await messageService.getGuildLanguage(guildId);
+        res.json({ success: true, data: mergeModuleDefaults('fivem', config, lang) });
     } catch (error) {
         console.error('Error fetching fivem configuration:', error);
         res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione FiveM' });
@@ -1699,7 +1717,9 @@ router.get('/:guildId/moderation', adminCheck, async (req, res) => {
         const { guildId } = req.params;
         let config = await ModerationConfig.findOne({ guildId });
         if (!config) config = await ModerationConfig.create({ guildId });
-        res.json({ success: true, data: mergeModuleDefaults('moderation', config) });
+        
+        const lang = await messageService.getGuildLanguage(guildId);
+        res.json({ success: true, data: mergeModuleDefaults('moderation', config, lang) });
     } catch (error) {
         res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione moderazione' });
     }
