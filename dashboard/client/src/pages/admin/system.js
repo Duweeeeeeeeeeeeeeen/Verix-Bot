@@ -14,6 +14,7 @@ export default function SystemUpdates() {
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(false);
     const [sending, setSending] = useState(false);
+    const [history, setHistory] = useState([]);
     const [form, setForm] = useState({
         title: '',
         version: '',
@@ -28,6 +29,7 @@ export default function SystemUpdates() {
     useEffect(() => {
         if (isOwner) {
             fetchStats();
+            fetchHistory();
         }
     }, [isOwner]);
 
@@ -41,6 +43,16 @@ export default function SystemUpdates() {
             console.error('Failed to fetch stats');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchHistory = async () => {
+        try {
+            const res = await fetch('/api/system/history');
+            const data = await res.json();
+            if (data.success) setHistory(data.data);
+        } catch (err) {
+            console.error('Failed to fetch history');
         }
     };
 
@@ -64,6 +76,7 @@ export default function SystemUpdates() {
             if (data.success) {
                 alert(`Annuncio inviato! Successo: ${data.stats.success}, Falliti: ${data.stats.failed}`);
                 setForm({ title: '', version: '', description: '', type: 'standard', changes: '' });
+                fetchHistory(); // Refresh history
             } else {
                 alert('Errore: ' + data.error);
             }
@@ -245,6 +258,69 @@ export default function SystemUpdates() {
                         </section>
                     </div>
                 </div>
+
+                {/* History Section */}
+                <section className="glass-card history-section" style={{ marginTop: '2rem' }}>
+                    <div className="card-header">
+                        <History size={20} />
+                        <h2>Cronologia Broadcast (Stash)</h2>
+                    </div>
+                    <div className="history-table-wrapper">
+                        <table className="history-table">
+                            <thead>
+                                <tr>
+                                    <th>Versione</th>
+                                    <th>Titolo</th>
+                                    <th>Tipo</th>
+                                    <th>Data</th>
+                                    <th>Target</th>
+                                    <th>Azioni</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {history.length > 0 ? history.map(item => (
+                                    <tr key={item._id}>
+                                        <td><code className="version-tag">v{item.version}</code></td>
+                                        <td>{item.title}</td>
+                                        <td>
+                                            <span className={`type-badge ${item.type}`}>
+                                                {item.type.toUpperCase()}
+                                            </span>
+                                        </td>
+                                        <td>{new Date(item.sentAt).toLocaleString()}</td>
+                                        <td>
+                                            <div className="stats-mini">
+                                                <span className="success">✓ {item.stats?.success || 0}</span>
+                                                <span className="failed">✗ {item.stats?.failed || 0}</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <button 
+                                                className="btn-view" 
+                                                onClick={() => {
+                                                    setForm({
+                                                        title: item.title,
+                                                        version: item.version,
+                                                        description: item.description,
+                                                        changes: item.changes.join('\n'),
+                                                        type: item.type
+                                                    });
+                                                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                                                }}
+                                            >Ripristina</button>
+                                        </td>
+                                    </tr>
+                                )) : (
+                                    <tr>
+                                        <td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
+                                            Nessun broadcast inviato finora.
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
             </div>
 
             <style jsx>{`
@@ -481,6 +557,77 @@ export default function SystemUpdates() {
 
                 @media (max-width: 900px) {
                     .system-grid { grid-template-columns: 1fr; }
+                }
+
+                .history-table-wrapper {
+                    overflow-x: auto;
+                    margin-top: 1rem;
+                }
+
+                .history-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    font-size: 0.9rem;
+                }
+
+                .history-table th {
+                    text-align: left;
+                    padding: 12px;
+                    color: var(--text-muted);
+                    font-size: 0.75rem;
+                    text-transform: uppercase;
+                    border-bottom: 1px solid var(--border-color);
+                }
+
+                .history-table td {
+                    padding: 16px 12px;
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+                    color: var(--text-main);
+                }
+
+                .version-tag {
+                    background: var(--bg-badge);
+                    padding: 4px 8px;
+                    border-radius: 6px;
+                    color: var(--primary);
+                    font-weight: 700;
+                }
+
+                .type-badge {
+                    font-size: 0.65rem;
+                    font-weight: 900;
+                    padding: 2px 8px;
+                    border-radius: 4px;
+                }
+
+                .type-badge.standard { background: rgba(99, 102, 241, 0.1); color: var(--primary); }
+                .type-badge.emergency { background: rgba(239, 68, 68, 0.1); color: var(--error); }
+
+                .stats-mini {
+                    display: flex;
+                    gap: 12px;
+                    font-size: 0.8rem;
+                    font-weight: 700;
+                }
+
+                .stats-mini .success { color: var(--success); }
+                .stats-mini .failed { color: var(--error); }
+
+                .btn-view {
+                    background: var(--bg-badge);
+                    border: 1px solid var(--border-color);
+                    color: var(--text-dim);
+                    padding: 6px 12px;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    font-size: 0.8rem;
+                    transition: 0.2s;
+                }
+
+                .btn-view:hover {
+                    background: var(--primary);
+                    color: white;
+                    border-color: var(--primary);
                 }
             `}</style>
         </Layout>

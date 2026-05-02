@@ -3,6 +3,7 @@ import { ownerCheck } from '../middleware/ownerCheck.js';
 import GlobalConfig from '../../../src/models/GlobalConfig.js';
 import { EmbedBuilder } from 'discord.js';
 import logger from '../../../src/utils/logger.js';
+import SystemBroadcast from '../../../src/models/SystemBroadcast.js';
 
 const router = express.Router();
 
@@ -68,6 +69,24 @@ router.post('/broadcast', ownerCheck, async (req, res) => {
             stats
         });
 
+        // Stash the broadcast in the database
+        try {
+            await SystemBroadcast.create({
+                title: title || `Nuova Patch: v${version || '1.0.0'}`,
+                version: version || '1.0.0',
+                description,
+                changes: changes || [],
+                type: type || 'standard',
+                sentBy: req.user.id,
+                stats: {
+                    success: stats.success,
+                    failed: stats.failed
+                }
+            });
+        } catch (dbErr) {
+            logger.error('[System_API] Failed to stash broadcast:', dbErr);
+        }
+
     } catch (error) {
         console.error('[System_API] Broadcast Error:', error);
         res.status(500).json({ success: false, error: 'Errore durante l\'invio del broadcast.' });
@@ -90,6 +109,19 @@ router.get('/status', ownerCheck, async (req, res) => {
             ping: client.ws.ping
         }
     });
+});
+
+/**
+ * GET /api/system/history
+ * Returns the list of past broadcasts (only for owner)
+ */
+router.get('/history', ownerCheck, async (req, res) => {
+    try {
+        const history = await SystemBroadcast.find().sort({ sentAt: -1 }).limit(50);
+        res.json({ success: true, data: history });
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'Errore nel recupero della cronologia.' });
+    }
 });
 
 export default router;
