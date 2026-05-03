@@ -431,6 +431,7 @@ export default function AutomationsConfig() {
             .manual-clear-hero { padding: 24px; border-left: 4px solid var(--primary); }
             .align-center { display: flex; align-items: center; gap: 12px; }
         `}</style>
+      </div>
     </div>
   );
 }
