@@ -127,10 +127,13 @@ class AutomationManager {
                     if (slot.messageCountSinceLast + buffered >= slot.triggerValue) {
                         const success = await this.sendMessage(guildId, channelId, slot);
                         if (success) {
-                            slot.messageCountSinceLast = 0;
-                            slot.lastTriggeredAt = new Date();
+                            // Reset count immediately in DB to avoid race conditions
+                            await AutomationConfig.updateOne(
+                                { guildId, "autoMessage.slots.id": slot.id },
+                                { $set: { "autoMessage.slots.$.messageCountSinceLast": 0, "autoMessage.slots.$.lastTriggeredAt": new Date() } }
+                            );
                             this.messageBuffer.set(key, 0); // Reset buffer
-                            updated = true;
+                            // No need to set updated = true for config.save() later as we updated DB already
                         }
                     }
                 }
@@ -212,7 +215,6 @@ class AutomationManager {
                 }
 
                 messageOptions.embeds = [embed];
-                if (slot.content) messageOptions.content = slot.content; // Optional text with embed
             } else {
                 messageOptions.content = slot.content;
             }
