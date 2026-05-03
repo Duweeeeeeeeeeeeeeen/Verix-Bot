@@ -23,6 +23,7 @@ import UtilityConfig from '../../../src/models/UtilityConfig.js';
 import BackgroundConfig from '../../../src/models/BackgroundConfig.js';
 import SocialConfig from '../../../src/models/SocialConfig.js';
 import AutoClearConfig from '../../../src/models/AutoClearConfig.js';
+import AutomationConfig from '../../../src/models/AutomationConfig.js';
 import ModerationConfig from '../../../src/models/ModerationConfig.js';
 import SupportConfig from '../../../src/models/SupportConfig.js';
 
@@ -142,58 +143,63 @@ router.get('/:guildId/whitelist', adminCheck, async (req, res) => {
     }
 });
 
-// GET autoclear config
-router.get('/:guildId/autoclear', adminCheck, async (req, res) => {
+// GET automation config
+router.get('/:guildId/automations', adminCheck, async (req, res) => {
     try {
         const { guildId } = req.params;
-        let config = await AutoClearConfig.findOne({ guildId });
+        let config = await AutomationConfig.findOne({ guildId });
         
         if (!config) {
-            config = await AutoClearConfig.create({ guildId, slots: [] });
+            // Migration attempt from old AutoClearConfig
+            const oldAutoClear = await AutoClearConfig.findOne({ guildId });
+            if (oldAutoClear) {
+                config = await AutomationConfig.create({
+                    guildId,
+                    autoClear: {
+                        enabled: true,
+                        slots: oldAutoClear.slots
+                    },
+                    autoMessage: { enabled: true, slots: [] }
+                });
+            } else {
+                config = await AutomationConfig.create({ 
+                    guildId, 
+                    autoClear: { enabled: true, slots: [] },
+                    autoMessage: { enabled: true, slots: [] }
+                });
+            }
         }
         
         res.json({ success: true, data: config });
     } catch (error) {
-        console.error('Error fetching autoclear configuration:', error);
-        res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione autoclear' });
+        console.error('Error fetching automations:', error);
+        res.status(500).json({ success: false, error: 'Impossibile caricare le automazioni' });
     }
 });
 
-// POST autoclear config
-router.post('/:guildId/autoclear', adminCheck, async (req, res) => {
+// POST automation config
+router.post('/:guildId/automations', adminCheck, async (req, res) => {
     try {
         const { guildId } = req.params;
-        const { slots } = req.body;
+        const { autoClear, autoMessage } = req.body;
 
-        // Normalize slots: map 'interval' → 'intervalMinutes' for frontend compatibility
-        // and ensure every slot has a stable id
-        const normalizedSlots = (slots || []).map((slot, i) => ({
-            id: slot.id || `slot_${Date.now()}_${i}`,
-            channelId: slot.channelId,
-            intervalMinutes: slot.intervalMinutes ?? slot.interval ?? 60,
-            amount: slot.amount ?? 100,
-            enabled: slot.enabled ?? true,
-        }));
+        const config = await AutomationConfig.findOneAndUpdate(
+            { guildId },
+            { $set: { autoClear, autoMessage } },
+            { new: true, upsert: true }
+        );
 
-        let config = await AutoClearConfig.findOne({ guildId });
-        if (!config) {
-            config = new AutoClearConfig({ guildId, slots: normalizedSlots });
-        } else {
-            config.slots = normalizedSlots.map(newSlot => {
-                const existing = config.slots.find(s => s.id === newSlot.id);
-                return existing
-                    ? { ...newSlot, lastClearedAt: existing.lastClearedAt }
-                    : newSlot;
-            });
-        }
-        await config.save();
-
-        await logAudit(req, guildId, 'autoclear_update', 'AutoClear Config Updated', { slots: normalizedSlots });
+        await logAudit(req, guildId, 'automations_update', 'Automations Config Updated');
         res.json({ success: true, data: config });
     } catch (error) {
-        console.error('Error updating autoclear configuration:', error);
-        res.status(500).json({ success: false, error: 'Impossibile salvare la configurazione autoclear' });
+        console.error('Error updating automations:', error);
+        res.status(500).json({ success: false, error: 'Impossibile salvare le automazioni' });
     }
+});
+
+// Alias for legacy autoclear route
+router.get('/:guildId/autoclear', adminCheck, async (req, res) => {
+    res.redirect(`/api/config/${req.params.guildId}/automations`);
 });
 
 // GET tempvoice config

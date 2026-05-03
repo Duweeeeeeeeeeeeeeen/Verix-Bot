@@ -115,7 +115,7 @@ export default function Layout({ children, guildId, hideGuide = false }) {
     if (pathname.includes('/support')) return 'support';
     if (pathname.includes('/management')) return 'management';
     if (pathname.includes('/embeds')) return 'embed_studio';
-    if (pathname.includes('/autoclear')) return 'autoclear';
+    if (pathname.includes('/automations')) return 'automations';
     if (pathname.includes('/system')) return 'system';
     if (pathname.includes('/global')) return 'global';
     return 'global';
@@ -136,7 +136,7 @@ export default function Layout({ children, guildId, hideGuide = false }) {
     { name: t('sidebar.fivem'), icon: Globe, path: `/config/${guildId}/fivem`, id: 'fivem' },
     { name: t('sidebar.management'), icon: History, path: `/config/${guildId}/management`, id: 'management' },
     { name: t('sidebar.embeds'), icon: LayoutIcon, path: `/config/${guildId}/embeds`, id: 'embeds' },
-    { name: t('sidebar.autoclear'), icon: Cpu, path: `/config/${guildId}/autoclear`, id: 'autoclear' }
+    { name: t('sidebar.automations'), icon: Cpu, path: `/config/${guildId}/automations`, id: 'automations' }
   ];
 
   const getToastIcon = (type) => {

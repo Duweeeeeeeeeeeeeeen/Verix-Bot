@@ -11,7 +11,7 @@ import { FiveMManager } from './src/modules/fivem/manager.js';
 import CleanupManager from './src/core/cleanupManager.js';
 import EmbedSchedulerManager from './src/core/EmbedSchedulerManager.js';
 import { SocialManager } from './src/modules/socials/manager.js';
-import AutoClearManager from './src/core/autoClearManager.js';
+import AutomationManager from './src/core/automationManager.js';
 import GiveawayManager from './src/modules/giveaway/manager.js';
 
 
@@ -84,8 +84,8 @@ if (global.botInitialized) {
             client.embedScheduler = new EmbedSchedulerManager(client);
             client.embedScheduler.start(60000); 
 
-            client.autoClearManager = new AutoClearManager(client);
-            client.autoClearManager.start(60000); 
+            client.automationManager = new AutomationManager(client);
+            client.automationManager.start(60000); 
 
             client.socialManager = new SocialManager(client);
             client.socialManager.init();
@@ -104,6 +104,11 @@ if (global.botInitialized) {
             process.exit(1);
         }
     };
+
+    // Global Message Listener for Automations
+    client.on(Events.MessageCreate, (message) => {
+        if (client.automationManager) client.automationManager.handleMessage(message);
+    });
 
     init();
 }

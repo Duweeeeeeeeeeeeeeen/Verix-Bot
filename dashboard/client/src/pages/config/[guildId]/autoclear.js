@@ -192,7 +192,23 @@ export default function AutoClearConfig() {
                                         min="1"
                                     />
                                 </div>
-                                <p className="field-help">Il bot eliminerà tutti i messaggi ogni {slot.intervalMinutes || 60} minuti.</p>
+                                <p className="field-help">Il bot eliminerà i messaggi ogni {slot.intervalMinutes || 60} minuti.</p>
+                            </div>
+
+                            <div className="field-box" style={{ marginTop: '16px' }}>
+                                <label className="text-label">Quantità Messaggi (1-100)</label>
+                                <div className="input-with-icon">
+                                    <MessageSquare size={16} className="icon-p" />
+                                    <input 
+                                        type="number" 
+                                        className="input-p" 
+                                        value={slot.amount || 100} 
+                                        onChange={e => updateSlot(index, 'amount', parseInt(e.target.value) || 1)} 
+                                        min="1"
+                                        max="100"
+                                    />
+                                </div>
+                                <p className="field-help">Il bot eliminerà fino a {slot.amount || 100} messaggi ogni ciclo.</p>
                             </div>
                         </div>
                     </div>
