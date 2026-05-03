@@ -15,9 +15,14 @@ import {
     MessageSquare,
     Send,
     MousePointer2,
-    Settings2
+    Settings2,
+    Palette,
+    ChevronLeft,
+    Monitor,
+    Smartphone
 } from 'lucide-react';
 import DiscordSelector from '../../../components/DiscordSelector';
+import EmbedEditor from '../../../components/EmbedEditor';
 
 export default function AutomationsConfig() {
   const router = useRouter();
@@ -28,6 +33,7 @@ export default function AutomationsConfig() {
   const [saving, setSaving] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState('autoclear');
+  const [editingEmbedIndex, setEditingEmbedIndex] = useState(null);
 
   useEffect(() => {
     setMounted(true);
@@ -283,6 +289,34 @@ export default function AutomationsConfig() {
                     </div>
                 </section>
             </div>
+        ) : editingEmbedIndex !== null ? (
+            <div className="tab-content animate fade-in">
+                <div className="section-header-row">
+                    <div className="align-center">
+                        <button onClick={() => setEditingEmbedIndex(null)} className="btn-back">
+                            <ChevronLeft size={20} />
+                        </button>
+                        <Palette size={20} color="var(--primary)" />
+                        <h2>Editor Embed: Messaggio #{editingEmbedIndex + 1}</h2>
+                    </div>
+                </div>
+
+                <div className="card editor-container-p">
+                    <EmbedEditor 
+                        embed={config.autoMessage.slots[editingEmbedIndex]?.embed || {}} 
+                        onChange={d => {
+                            const newSlots = [...config.autoMessage.slots];
+                            newSlots[editingEmbedIndex] = { 
+                                ...newSlots[editingEmbedIndex], 
+                                embed: d,
+                                useEmbed: true 
+                            };
+                            setConfig({ ...config, autoMessage: { ...config.autoMessage, slots: newSlots } });
+                        }}
+                        variables={['guild', 'member_count', 'date', 'time']}
+                    />
+                </div>
+            </div>
         ) : (
             <div className="tab-content animate fade-in">
                 <div className="section-header-row">
@@ -311,6 +345,13 @@ export default function AutomationsConfig() {
                                     <span>Messaggio Auto #{index + 1}</span>
                                 </div>
                                 <div className="slot-actions">
+                                    <button 
+                                        className={`btn-icon-p ${slot.useEmbed ? 'active' : ''}`} 
+                                        onClick={() => setEditingEmbedIndex(index)}
+                                        title="Personalizza Embed"
+                                    >
+                                        <Palette size={14} />
+                                    </button>
                                     <label className="toggle-s">
                                         <input type="checkbox" checked={!!slot.enabled} onChange={e => updateMessageSlot(index, 'enabled', e.target.checked)} />
                                         <span className="slider-s"></span>
@@ -331,15 +372,29 @@ export default function AutomationsConfig() {
                                 </div>
 
                                 <div className="field-box" style={{ marginTop: '16px' }}>
-                                    <label className="text-label">Contenuto Messaggio</label>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                        <label className="text-label" style={{ margin: 0 }}>Contenuto {slot.useEmbed ? 'Testuale (Opzionale)' : 'Messaggio'}</label>
+                                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                            <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 700 }}>USA EMBED</span>
+                                            <label className="toggle-mini">
+                                                <input type="checkbox" checked={!!slot.useEmbed} onChange={e => updateMessageSlot(index, 'useEmbed', e.target.checked)} />
+                                                <span className="slider-mini"></span>
+                                            </label>
+                                        </div>
+                                    </div>
                                     <textarea 
                                         className="textarea-p" 
-                                        rows="3"
-                                        placeholder="Inserisci il testo del messaggio..."
+                                        rows={slot.useEmbed ? "2" : "3"}
+                                        placeholder={slot.useEmbed ? "Testo opzionale da inviare sopra l'embed..." : "Inserisci il testo del messaggio..."}
                                         value={slot.content || ''}
                                         onChange={e => updateMessageSlot(index, 'content', e.target.value)}
                                     ></textarea>
                                 </div>
+                                {slot.useEmbed && (
+                                    <button className="btn-embed-quick" onClick={() => setEditingEmbedIndex(index)}>
+                                        <Palette size={14} /> Modifica Design Embed
+                                    </button>
+                                )}
 
                                 <div className="trigger-config" style={{ marginTop: '16px', background: 'var(--bg-badge)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)' }}>
                                     <label className="text-label" style={{ marginBottom: '12px' }}>Trigger Attivazione</label>
@@ -430,6 +485,25 @@ export default function AutomationsConfig() {
 
             .manual-clear-hero { padding: 24px; border-left: 4px solid var(--primary); }
             .align-center { display: flex; align-items: center; gap: 12px; }
+
+            .btn-back { background: var(--bg-badge); border: 1px solid var(--border); color: var(--text-main); width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; margin-right: 8px; }
+            .btn-back:hover { background: var(--bg-elevated); border-color: var(--primary); color: var(--primary); }
+
+            .btn-icon-p { background: var(--bg-badge); border: 1px solid var(--border); color: var(--text-muted); width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
+            .btn-icon-p:hover { background: var(--primary-glow); border-color: var(--primary); color: var(--primary); }
+            .btn-icon-p.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+            .btn-embed-quick { width: 100%; margin-top: 12px; background: var(--primary-glow); color: var(--primary); border: 1px dashed var(--primary); padding: 10px; border-radius: 10px; font-size: 0.8rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
+            .btn-embed-quick:hover { background: var(--primary); color: white; border-style: solid; }
+
+            .editor-container-p { padding: 0 !important; overflow: hidden; background: transparent; border: none; }
+            
+            .toggle-mini { position: relative; width: 30px; height: 16px; }
+            .toggle-mini input { opacity: 0; width: 0; height: 0; }
+            .slider-mini { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--bg-badge); transition: 0.3s; border-radius: 20px; border: 1px solid var(--border); }
+            .slider-mini:before { position: absolute; content: ""; height: 10px; width: 10px; left: 2px; bottom: 2px; background-color: var(--text-muted); transition: 0.3s; border-radius: 50%; }
+            input:checked + .slider-mini { background-color: var(--primary); border-color: var(--primary); }
+            input:checked + .slider-mini:before { transform: translateX(14px); background-color: white; }
         `}</style>
       </div>
     </div>

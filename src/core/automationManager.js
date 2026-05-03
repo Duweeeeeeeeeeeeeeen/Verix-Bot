@@ -69,7 +69,7 @@ class AutomationManager {
                             : new Date(0);
 
                         if (now >= nextMsgAt) {
-                            const success = await this.sendMessage(config.guildId, slot.channelId, slot.content);
+                            const success = await this.sendMessage(config.guildId, slot.channelId, slot);
                             if (success) {
                                 slot.lastTriggeredAt = now;
                                 updated = true;
@@ -125,7 +125,7 @@ class AutomationManager {
                     const buffered = this.messageBuffer.get(key) || 0;
                     
                     if (slot.messageCountSinceLast + buffered >= slot.triggerValue) {
-                        const success = await this.sendMessage(guildId, channelId, slot.content);
+                        const success = await this.sendMessage(guildId, channelId, slot);
                         if (success) {
                             slot.messageCountSinceLast = 0;
                             slot.lastTriggeredAt = new Date();
@@ -184,7 +184,7 @@ class AutomationManager {
         }
     }
 
-    async sendMessage(guildId, channelId, content) {
+    async sendMessage(guildId, channelId, slot) {
         try {
             const guild = this.client.guilds.cache.get(guildId) || await this.client.guilds.fetch(guildId).catch(() => null);
             if (!guild) return false;
@@ -192,8 +192,36 @@ class AutomationManager {
             const channel = guild.channels.cache.get(channelId) || await guild.channels.fetch(channelId).catch(() => null);
             if (!channel || !channel.isTextBased()) return false;
 
-            // Simple text support for now, could be expanded to embeds later
-            await channel.send(content);
+            const messageOptions = {};
+
+            if (slot.useEmbed && slot.embed) {
+                const embed = new EmbedBuilder();
+                if (slot.embed.title) embed.setTitle(slot.embed.title);
+                if (slot.embed.description) embed.setDescription(slot.embed.description);
+                if (slot.embed.color) embed.setColor(slot.embed.color);
+                if (slot.embed.thumbnail) embed.setThumbnail(slot.embed.thumbnail);
+                if (slot.embed.image) embed.setImage(slot.embed.image);
+                if (slot.embed.footerText) embed.setFooter({ text: slot.embed.footerText, iconURL: slot.embed.footerIcon });
+                if (slot.embed.authorName) embed.setAuthor({ name: slot.embed.authorName, iconURL: slot.embed.authorIcon });
+                if (slot.embed.timestamp) embed.setTimestamp();
+                
+                if (slot.embed.fields && Array.isArray(slot.embed.fields)) {
+                    slot.embed.fields.forEach(f => {
+                        if (f.name && f.value) embed.addFields({ name: f.name, value: f.value, inline: !!f.inline });
+                    });
+                }
+
+                messageOptions.embeds = [embed];
+                if (slot.content) messageOptions.content = slot.content; // Optional text with embed
+            } else {
+                messageOptions.content = slot.content;
+            }
+
+            if (!messageOptions.content && (!messageOptions.embeds || messageOptions.embeds.length === 0)) {
+                return false;
+            }
+
+            await channel.send(messageOptions);
             logger.info(`[AutomationManager] Auto-Message: Sent message to ${channel.name} (${guild.name})`);
             return true;
         } catch (error) {

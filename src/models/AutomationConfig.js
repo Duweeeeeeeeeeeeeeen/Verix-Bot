@@ -12,7 +12,9 @@ const autoClearSlotSchema = new mongoose.Schema({
 const autoMessageSlotSchema = new mongoose.Schema({
     id: { type: String, required: true },
     channelId: { type: String, required: true },
-    content: { type: String, required: true },
+    content: { type: String, default: '' },
+    useEmbed: { type: Boolean, default: false },
+    embed: { type: Object, default: null },
     triggerType: { type: String, enum: ['TIME', 'MESSAGES'], default: 'TIME' },
     triggerValue: { type: Number, required: true, min: 1 },
     enabled: { type: Boolean, default: true },
