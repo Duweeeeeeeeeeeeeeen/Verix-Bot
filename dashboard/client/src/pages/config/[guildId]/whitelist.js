@@ -6,6 +6,7 @@ import EmbedEditor from '../../../components/EmbedEditor';
 import EmbedMessageManager from '../../../components/EmbedMessageManager';
 import DiscordSelector from '../../../components/DiscordSelector';
 import api from '../../../utils/api';
+import { useT } from '../../../contexts/LanguageContext';
 import { 
   Save, 
   Send, 
@@ -45,6 +46,7 @@ import NotificationSettings from '../../../components/NotificationSettings';
 import { mergeConfig } from '../../../utils/defaults';
 
 export default function WhitelistConfig() {
+  const { t } = useT();
   const router = useRouter();
   const { guildId } = router.query;
   const [activeTab, setActiveTab] = useState('settings');
@@ -140,16 +142,16 @@ export default function WhitelistConfig() {
           body: JSON.stringify(messages)
         })
       ]);
-      showToast('Configurazioni salvate con successo!');
+      showToast(t('common.save_success'));
     } catch (error) {
-       showToast('Errore durante il salvataggio.', 'error');
+       showToast(t('common.save_error'), 'error');
     } finally {
       setSaving(false);
     }
   };
 
   const handleSendPanel = async () => {
-    if (!config.panelChannelId) return showToast('Seleziona un canale per la Whitelist!', 'error');
+    if (!config.panelChannelId) return showToast(t('whitelist.panel_channel_error'), 'error');
     setSendingPanel(true);
     try {
       await handleSave();
@@ -157,7 +159,7 @@ export default function WhitelistConfig() {
         method: 'POST',
         body: JSON.stringify({ channelId: config.panelChannelId })
       });
-      showToast('Pannello Whitelist inviato!');
+      showToast(t('common.save_success'));
     } catch (error) {
        console.error(error);
     } finally {
@@ -166,7 +168,7 @@ export default function WhitelistConfig() {
   };
 
   const handleSendBgPanel = async () => {
-    if (!bgConfig.panelChannelId) return showToast('Seleziona un canale per il Background!', 'error');
+    if (!bgConfig.panelChannelId) return showToast(t('whitelist.bg_channel_error'), 'error');
     setSendingBgPanel(true);
     try {
       await handleSave();
@@ -174,7 +176,7 @@ export default function WhitelistConfig() {
         method: 'POST',
         body: JSON.stringify({ channelId: bgConfig.panelChannelId })
       });
-      showToast('Pannello Background inviato!');
+      showToast(t('common.save_success'));
     } catch (error) {
        console.error(error);
     } finally {
@@ -185,11 +187,11 @@ export default function WhitelistConfig() {
   if (!mounted || loading || !config) return <Skeleton type="config" />;
 
   const tabs = [
-    { id: 'settings', name: 'Settaggi', icon: Settings2 },
-    { id: 'background', name: 'Background', icon: Command, modes: ['BG_ONLY', 'BG_TEXT', 'BG_VOICE', 'FULL'] },
-    { id: 'questions', name: 'Domande', icon: ListChecks, modes: ['TEXT', 'HYBRID', 'BG_TEXT', 'FULL'] },
-    { id: 'voice', name: 'Vocale', icon: Mic2, modes: ['VOICE', 'HYBRID', 'BG_VOICE', 'FULL'] },
-    { id: 'personalization', name: 'Design & Messaggi', icon: Palette },
+    { id: 'settings', name: t('whitelist.tab_settings'), icon: Settings2 },
+    { id: 'background', name: t('whitelist.tab_background'), icon: Command, modes: ['BG_ONLY', 'BG_TEXT', 'BG_VOICE', 'FULL'] },
+    { id: 'questions', name: t('whitelist.tab_questions'), icon: ListChecks, modes: ['TEXT', 'HYBRID', 'BG_TEXT', 'FULL'] },
+    { id: 'voice', name: t('whitelist.tab_voice'), icon: Mic2, modes: ['VOICE', 'HYBRID', 'BG_VOICE', 'FULL'] },
+    { id: 'personalization', name: t('whitelist.tab_design'), icon: Palette },
   ].filter(tab => !tab.modes || tab.modes.includes(config.mode));
 
   return (
@@ -205,29 +207,29 @@ export default function WhitelistConfig() {
               </div>
               <div className="header-text">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <h1>Sistema Whitelist</h1>
+                  <h1>{t('whitelist.title')}</h1>
                   <label className="toggle-mini" title={config.enabled ? 'Modulo Attivo' : 'Modulo Disattivato'}>
                     <input type="checkbox" checked={!!config.enabled} onChange={e => setConfig({...config, enabled: e.target.checked})} />
                     <span className="slider-mini"></span>
                   </label>
                 </div>
-                <p>Gestisci l'accesso dei cittadini al tuo universo RP.</p>
+                <p>{t('whitelist.desc')}</p>
               </div>
            </div>
            <div className="header-buttons">
               {activeTab === 'background' ? (
                 bgConfig.entryPoint !== 'INTEGRATED' && (
                   <button onClick={handleSendBgPanel} className="btn-outline" disabled={sendingBgPanel}>
-                     <Send size={16} /> Invia Panel BG
+                     <Send size={16} /> {t('whitelist.send_panel_bg')}
                   </button>
                 )
               ) : config.mode !== 'BG_ONLY' && (
                 <button onClick={handleSendPanel} className="btn-outline" disabled={sendingPanel}>
-                   <Send size={16} /> Invia Panel WL
+                   <Send size={16} /> {t('whitelist.send_panel_wl')}
                 </button>
               )}
               <button onClick={handleSave} className="btn-primary" disabled={saving}>
-                <Save size={16} /> {saving ? 'Salvataggio...' : 'Salva'}
+                <Save size={16} /> {saving ? t('common.saving') : t('common.save')}
               </button>
            </div>
         </header>
@@ -263,30 +265,30 @@ export default function WhitelistConfig() {
                                 {config.mode !== 'BG_ONLY' && (
                                     <>
                                         <div className="field-box">
-                                            <label className="text-label">Canale Pannello</label>
+                                            <label className="text-label">{t('whitelist.panel_channel')}</label>
                                             <DiscordSelector type="channel" options={channels.filter(c => c.type === 0 || c.type === 5)} value={config.panelChannelId || ''} onChange={val => setConfig({...config, panelChannelId: val})} />
                                         </div>
                                         <div className="field-box">
-                                            <label className="text-label">Categoria Ticket</label>
+                                            <label className="text-label">{t('whitelist.ticket_category')}</label>
                                             <DiscordSelector type="channel" options={channels.filter(c => c.type === 4)} value={config.categoryOpenId || ''} onChange={val => setConfig({...config, categoryOpenId: val})} />
                                         </div>
                                         <div className="field-box">
-                                            <label className="text-label">Log Channel</label>
+                                            <label className="text-label">{t('whitelist.log_channel')}</label>
                                             <DiscordSelector type="channel" options={channels.filter(c => c.type === 0 || c.type === 5)} value={config.logChannelId || ''} onChange={val => setConfig({...config, logChannelId: val})} />
                                         </div>
                                     </>
                                 )}
                                 <div className="field-box">
-                                    <label className="text-label">Modalità Percorso</label>
+                                    <label className="text-label">{t('whitelist.mode')}</label>
                                     <CustomSelect 
                                         options={[
-                                            { value: 'TEXT', label: '📝 Solo Scritta' },
-                                            { value: 'VOICE', label: '🎤 Solo Vocale' },
-                                            { value: 'HYBRID', label: '⚖️ Ibrida (Scritto + Orale)' },
-                                            { value: 'BG_ONLY', label: '📖 Solo Background' },
-                                            { value: 'BG_TEXT', label: '📚 Background + Scritta' },
-                                            { value: 'BG_VOICE', label: '🗣️ Background + Orale' },
-                                            { value: 'FULL', label: '🏆 Full Suite (BG + Scritto + Orale)' }
+                                            { value: 'TEXT', label: t('whitelist.mode_text') },
+                                            { value: 'VOICE', label: t('whitelist.mode_voice') },
+                                            { value: 'HYBRID', label: t('whitelist.mode_hybrid') },
+                                            { value: 'BG_ONLY', label: t('whitelist.mode_bg_only') },
+                                            { value: 'BG_TEXT', label: t('whitelist.mode_bg_text') },
+                                            { value: 'BG_VOICE', label: t('whitelist.mode_bg_voice') },
+                                            { value: 'FULL', label: t('whitelist.mode_full') }
                                         ]} 
                                         value={config.mode || 'TEXT'} 
                                         onChange={val => setConfig({...config, mode: val})} 
@@ -302,15 +304,15 @@ export default function WhitelistConfig() {
                                 <section className="card section-card" style={{ marginTop: '24px' }}>
                                     <div className="align-center" style={{ marginBottom: '20px' }}>
                                         <Clock size={18} color="var(--primary)" />
-                                        <h3>Limiti & Tempi</h3>
+                                        <h3>{t('whitelist.limits_title')}</h3>
                                     </div>
                                     <div className="fields-grid">
                                         <div className="field-box">
-                                            <label className="text-label">Durata Test (Min)</label>
+                                            <label className="text-label">{t('whitelist.test_duration')}</label>
                                             <input type="number" className="input" value={config.timeLimit || 30} onChange={e => setConfig({...config, timeLimit: parseInt(e.target.value)})} />
                                         </div>
                                         <div className="field-box">
-                                            <label className="text-label">Cooldown Fallimento (Ore)</label>
+                                            <label className="text-label">{t('whitelist.cooldown')}</label>
                                             <input type="number" className="input" value={config.cooldown || 24} onChange={e => setConfig({...config, cooldown: parseInt(e.target.value)})} />
                                         </div>
                                     </div>
@@ -319,16 +321,16 @@ export default function WhitelistConfig() {
                                 <section className="card section-card" style={{ marginTop: '24px' }}>
                                     <div className="align-center" style={{ marginBottom: '20px' }}>
                                         <ShieldCheck size={18} color="var(--primary)" />
-                                        <h3>Automazioni Fase Scritta</h3>
+                                        <h3>{t('whitelist.auto_text_title')}</h3>
                                         <HelpTooltip text="Ruoli assegnati o rimossi al termine della fase testuale." />
                                     </div>
                                     <div className="fields-grid">
                                         <div className="field-box">
-                                            <label className="text-label">Ruoli da Aggiungere</label>
+                                            <label className="text-label">{t('whitelist.roles_to_add')}</label>
                                             <DiscordSelector type="role" multiple={true} options={roles} value={config.rolesToAddOnTextPass || []} onChange={val => setConfig({...config, rolesToAddOnTextPass: val})} />
                                         </div>
                                         <div className="field-box">
-                                            <label className="text-label">Ruoli da Rimuovere</label>
+                                            <label className="text-label">{t('whitelist.roles_to_remove')}</label>
                                             <DiscordSelector type="role" multiple={true} options={roles} value={config.rolesToRemoveOnTextPass || []} onChange={val => setConfig({...config, rolesToRemoveOnTextPass: val})} />
                                         </div>
                                     </div>
@@ -339,17 +341,17 @@ export default function WhitelistConfig() {
 
                     <div className="grid-right">
                         <section className="card section-card">
-                            <h3 className="sidebar-title align-center" style={{ marginBottom: '16px' }}><Users size={18} /> Staff Roles</h3>
+                            <h3 className="sidebar-title align-center" style={{ marginBottom: '16px' }}><Users size={18} /> {t('whitelist.staff_roles')}</h3>
                             <DiscordSelector type="role" multiple={true} options={roles} value={config.staffRoleIds || []} onChange={val => setConfig({...config, staffRoleIds: val})} />
-                            <p className="text-description" style={{ marginTop: '12px' }}>Ruoli che possono vedere i ticket e valutare le pratiche.</p>
+                            <p className="text-description" style={{ marginTop: '12px' }}>{t('whitelist.staff_help')}</p>
                         </section>
 
                         <NotificationSettings 
                             guildId={guildId}
                             value={config.notifications}
                             onChange={val => setConfig({...config, notifications: val})}
-                            title="Notifiche Whitelist"
-                            description="Scegli come l'utente riceverà l'esito della sua candidatura (Accettato/Rifiutato/Scritto Superato)."
+                            title={t('whitelist.notif_title')}
+                            description={t('whitelist.notif_desc')}
                         />
                     </div>
                 </div>
@@ -363,7 +365,7 @@ export default function WhitelistConfig() {
                             <div className="section-header">
                                 <div className="align-center">
                                     <Command size={18} color="var(--primary)" />
-                                    <h3>Configurazione Background</h3>
+                                    <h3>{t('whitelist.bg_title')}</h3>
                                 </div>
                                 <label className="toggle">
                                     <input type="checkbox" checked={!!bgConfig.enabled} onChange={e => setBgConfig({...bgConfig, enabled: e.target.checked})} />
@@ -374,27 +376,27 @@ export default function WhitelistConfig() {
                             <div className="fields-grid" style={{ marginTop: '24px' }}>
                                 {bgConfig.entryPoint !== 'INTEGRATED' && (
                                     <div className="field-box">
-                                        <label className="text-label">Canale Pannello BG</label>
+                                        <label className="text-label">{t('whitelist.bg_channel')}</label>
                                         <DiscordSelector type="channel" options={channels.filter(c => c.type === 0 || c.type === 5)} value={bgConfig.panelChannelId || ''} onChange={val => setBgConfig({...bgConfig, panelChannelId: val})} />
                                     </div>
                                 )}
                                 <div className="field-box">
-                                    <label className="text-label">Canale Log Background</label>
+                                    <label className="text-label">{t('whitelist.bg_log')}</label>
                                     <DiscordSelector type="channel" options={channels.filter(c => c.type === 0 || c.type === 5)} value={bgConfig.logChannelId || ''} onChange={val => setBgConfig({...bgConfig, logChannelId: val})} />
                                 </div>
                                 <div className="field-box">
-                                    <label className="text-label">Punto di Ingresso</label>
+                                    <label className="text-label">{t('whitelist.entry_point')}</label>
                                     <CustomSelect 
                                         options={[
-                                            { value: 'PANEL', label: '📂 Pannello Dedicato' },
-                                            { value: 'INTEGRATED', label: '🔀 Integrato Whitelist' }
+                                            { value: 'PANEL', label: t('whitelist.entry_panel') },
+                                            { value: 'INTEGRATED', label: t('whitelist.entry_integrated') }
                                         ]} 
                                         value={bgConfig.entryPoint || 'PANEL'} 
                                         onChange={val => setBgConfig({...bgConfig, entryPoint: val})} 
                                     />
                                 </div>
                                 <div className="field-box">
-                                    <label className="text-label">Staffer Background</label>
+                                    <label className="text-label">{t('whitelist.bg_staff')}</label>
                                     <DiscordSelector type="role" multiple={true} options={roles} value={bgConfig.staffRoleIds || []} onChange={val => setBgConfig({...bgConfig, staffRoleIds: val})} />
                                 </div>
                             </div>
@@ -407,8 +409,8 @@ export default function WhitelistConfig() {
                             guildId={guildId}
                             value={bgConfig.notifications}
                             onChange={val => setBgConfig({...bgConfig, notifications: val})}
-                            title="Notifiche Background"
-                            description="Scegli come l'utente riceverà l'esito del suo Background."
+                            title={t('whitelist.bg_notif_title')}
+                            description={t('whitelist.bg_notif_desc')}
                         />
                     </div>
                 </div>
@@ -422,7 +424,7 @@ export default function WhitelistConfig() {
                             <div className="section-header">
                                 <div className="align-center">
                                     <Mic2 size={18} color="var(--primary)" />
-                                    <h3>Configurazione Colloquio Orale</h3>
+                                    <h3>{t('whitelist.voice_title')}</h3>
                                 </div>
                                 <label className="toggle">
                                     <input type="checkbox" checked={!config.voiceSettings?.paused} onChange={e => setNested('voiceSettings.paused', !e.target.checked)} />
@@ -432,20 +434,20 @@ export default function WhitelistConfig() {
                             
                             <div className="fields-grid" style={{ marginTop: '24px' }}>
                                 <div className="field-box">
-                                    <label className="text-label">Canale Sala d'Attesa</label>
+                                    <label className="text-label">{t('whitelist.voice_waiting')}</label>
                                     <DiscordSelector type="channel" options={channels.filter(c => c.type === 2)} value={config.voiceSettings?.joinChannelId || ''} onChange={val => setNested('voiceSettings.joinChannelId', val)} />
                                 </div>
                                 <div className="field-box">
-                                    <label className="text-label">Categoria Stanze Private</label>
+                                    <label className="text-label">{t('whitelist.voice_category')}</label>
                                     <DiscordSelector type="channel" options={channels.filter(c => c.type === 4)} value={config.voiceSettings?.categoryId || ''} onChange={val => setNested('voiceSettings.categoryId', val)} />
                                 </div>
                                 <div className="field-box">
-                                    <label className="text-label">Cooldown Rifiuto (Ore)</label>
+                                    <label className="text-label">{t('whitelist.voice_rejection_cooldown')}</label>
                                     <input type="number" className="input" value={config.voiceSettings?.rejectionCooldown || 24} onChange={e => setNested('voiceSettings.rejectionCooldown', parseInt(e.target.value))} />
                                 </div>
                                 <div className="field-box" style={{ gridColumn: 'span 2' }}>
                                     <label className="text-label flex-between">
-                                        Template Nome Canale
+                                        {t('whitelist.voice_name_template')}
                                         <HelpTooltip text="Placeholders: {user}, {id}, {count} (es: whitelist-[#1])" />
                                     </label>
                                     <input 
@@ -461,7 +463,7 @@ export default function WhitelistConfig() {
                                         <div className="flex-between w-full">
                                             <div className="align-center">
                                                 <Hash size={16} color="var(--primary)" />
-                                                <span>Contatore Sessioni: <strong>{config.voiceSettings?.sessionCounter || 0}</strong></span>
+                                                <span>{t('whitelist.voice_counter')}: <strong>{config.voiceSettings?.sessionCounter || 0}</strong></span>
                                             </div>
                                             <button 
                                                 className="btn-outline-sm" 
@@ -471,7 +473,7 @@ export default function WhitelistConfig() {
                                                     }
                                                 }}
                                             >
-                                                <RefreshCcw size={14} /> Reset
+                                                <RefreshCcw size={14} /> {t('dashboard.refresh')}
                                             </button>
                                         </div>
                                     </div>
@@ -481,8 +483,8 @@ export default function WhitelistConfig() {
                             <div className="toggle-list" style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                                 <div className="toggle-box">
                                     <div className="flex-col">
-                                        <span style={{ fontWeight: 600 }}>Cancellazione Automatica</span>
-                                        <p className="text-dim" style={{ fontSize: '0.75rem' }}>Elimina la stanza al termine.</p>
+                                        <span style={{ fontWeight: 600 }}>{t('whitelist.voice_auto_delete')}</span>
+                                        <p className="text-dim" style={{ fontSize: '0.75rem' }}>{t('whitelist.voice_auto_delete_desc')}</p>
                                     </div>
                                     <label className="toggle">
                                         <input type="checkbox" checked={!!config.voiceSettings?.autoDelete} onChange={e => setNested('voiceSettings.autoDelete', e.target.checked)} />
@@ -491,8 +493,8 @@ export default function WhitelistConfig() {
                                 </div>
                                 <div className="toggle-box">
                                     <div className="flex-col">
-                                        <span style={{ fontWeight: 600 }}>Notifica Staff all'Ingresso</span>
-                                        <p className="text-dim" style={{ fontSize: '0.75rem' }}>Invia un alert nel log staff.</p>
+                                        <span style={{ fontWeight: 600 }}>{t('whitelist.voice_ping_staff')}</span>
+                                        <p className="text-dim" style={{ fontSize: '0.75rem' }}>{t('whitelist.voice_ping_staff_desc')}</p>
                                     </div>
                                     <label className="toggle">
                                         <input type="checkbox" checked={!!config.voiceSettings?.pingStaffOnJoin} onChange={e => setNested('voiceSettings.pingStaffOnJoin', e.target.checked)} />
@@ -505,7 +507,7 @@ export default function WhitelistConfig() {
                         <section className="card section-card" style={{ marginTop: '24px' }}>
                             <div className="align-center" style={{ marginBottom: '20px' }}>
                                 <ShieldCheck size={18} color="var(--primary)" />
-                                <h3>Premi & Automazioni (Promosso Orale)</h3>
+                                <h3>{t('whitelist.voice_promo_title')}</h3>
                             </div>
                             <div className="fields-grid">
                                 <div className="field-box">
@@ -522,7 +524,7 @@ export default function WhitelistConfig() {
 
                     <div className="grid-right">
                         <section className="card section-card">
-                            <h3 className="sidebar-title align-center" style={{ marginBottom: '16px' }}><Users size={18} /> Staffers Orale</h3>
+                            <h3 className="sidebar-title align-center" style={{ marginBottom: '16px' }}><Users size={18} /> {t('whitelist.voice_staffers')}</h3>
                             <DiscordSelector type="role" multiple={true} options={roles} value={config.voiceSettings?.staffRoleIds || []} onChange={val => setNested('voiceSettings.staffRoleIds', val)} />
                         </section>
                     </div>
@@ -534,11 +536,11 @@ export default function WhitelistConfig() {
                 <div className="card section-card">
                     <div className="section-header">
                         <div>
-                            <h3>Banca Domande</h3>
-                            <p className="text-muted">Verranno estratte {config.questionsPerSession} domande casuali.</p>
+                            <h3>{t('whitelist.q_bank')}</h3>
+                            <p className="text-muted">{t('whitelist.q_per_session', { count: config.questionsPerSession })}</p>
                         </div>
                         <button onClick={() => setConfig({...config, questions: [{ text: '', minLength: 20 }, ...(config.questions || [])]})} className="btn-primary">
-                            <Plus size={16} /> Aggiungi
+                            <Plus size={16} /> {t('common.add')}
                         </button>
                     </div>
 
@@ -551,7 +553,7 @@ export default function WhitelistConfig() {
                                         const qs = [...config.questions];
                                         qs[idx].text = e.target.value;
                                         setConfig({...config, questions: qs});
-                                    }} placeholder="Inserisci la domanda..." />
+                                    }} placeholder={t('whitelist.q_placeholder')} />
                                 </div>
                                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                                     <input type="number" className="input" style={{ width: '80px' }} value={q.minLength || 0} onChange={e => {
@@ -575,28 +577,28 @@ export default function WhitelistConfig() {
                     <section className="card section-card" style={{ marginBottom: '24px' }}>
                         <div className="align-center" style={{ marginBottom: '20px' }}>
                             <MousePointer2 size={18} color="var(--primary)" />
-                            <h3>Branding Pulsante Avvio</h3>
+                            <h3>{t('whitelist.btn_branding')}</h3>
                         </div>
                         <div className="fields-grid">
                             <div className="field-box">
-                                <label className="label-tiny">Testo Bottone</label>
+                                <label className="label-tiny">{t('whitelist.btn_label')}</label>
                                 <input className="input" value={config.buttons?.start_wl?.label || ''} onChange={e => setNested('buttons.start_wl.label', e.target.value)} placeholder="Inizia Whitelist" />
                             </div>
                             <div className="field-box">
-                                <label className="label-tiny">Emoji</label>
+                                <label className="label-tiny">{t('whitelist.btn_emoji')}</label>
                                 <div style={{ width: '60px' }}>
                                     <EmojiInput value={config.buttons?.start_wl?.emoji || ''} onChange={e => setNested('buttons.start_wl.emoji', e.target.value)} />
                                 </div>
                             </div>
                             <div className="field-box" style={{ gridColumn: 'span 2' }}>
-                                <label className="label-tiny">Stile Pulsante</label>
+                                <label className="label-tiny">{t('whitelist.btn_style')}</label>
                                 <div className="style-selector-v">
                                     {[
-                                        { id: 'SUCCESS', label: 'Verde', color: 'var(--discord-green)' },
-                                        { id: 'PRIMARY', label: 'Blu', color: 'var(--discord-blurple)' },
-                                        { id: 'SECONDARY', label: 'Grigio', color: 'var(--discord-gray)' },
-                                        { id: 'DANGER', label: 'Rosso', color: 'var(--discord-red)' },
-                                        { id: 'LINK', label: 'Link 🔗', color: 'var(--info)' }
+                                        { id: 'SUCCESS', label: t('tickets.btn_style_green'), color: 'var(--discord-green)' },
+                                        { id: 'PRIMARY', label: t('tickets.btn_style_blue'), color: 'var(--discord-blurple)' },
+                                        { id: 'SECONDARY', label: t('tickets.btn_style_gray'), color: 'var(--discord-gray)' },
+                                        { id: 'DANGER', label: t('tickets.btn_style_red'), color: 'var(--discord-red)' },
+                                        { id: 'LINK', label: t('tickets.btn_style_link'), color: 'var(--info)' }
                                     ].map(style => (
                                         <button 
                                             key={style.id}
@@ -611,7 +613,7 @@ export default function WhitelistConfig() {
                             </div>
                             {config.buttons?.start_wl?.style === 'LINK' && (
                                 <div className="field-box animate fade-in" style={{ gridColumn: 'span 2' }}>
-                                    <label className="label-tiny">URL del Link</label>
+                                    <label className="label-tiny">{t('whitelist.btn_url')}</label>
                                     <input className="input" value={config.buttons?.start_wl?.url || ''} onChange={e => setNested('buttons.start_wl.url', e.target.value)} placeholder="https://..." />
                                 </div>
                             )}
@@ -622,16 +624,16 @@ export default function WhitelistConfig() {
                         <div className="section-header">
                             <div className="align-center">
                                 <Palette size={18} color="var(--primary)" />
-                                <h3>Colori Globali</h3>
+                                <h3>{t('whitelist.global_colors')}</h3>
                             </div>
                         </div>
                         <div className="fields-grid" style={{ marginTop: '16px' }}>
                             <div className="field-box">
-                                <label className="text-label">Colore Successo (Accettazione)</label>
+                                <label className="text-label">{t('whitelist.color_success')}</label>
                                 <input type="color" value={config.colors?.success || 'var(--success)'} onChange={e => setNested('colors.success', e.target.value)} />
                             </div>
                             <div className="field-box">
-                                <label className="text-label">Colore Rifiuto</label>
+                                <label className="text-label">{t('whitelist.color_danger')}</label>
                                 <input type="color" value={config.colors?.danger || 'var(--error)'} onChange={e => setNested('colors.danger', e.target.value)} />
                             </div>
                         </div>
@@ -641,27 +643,27 @@ export default function WhitelistConfig() {
                         guildId={guildId}
                         module="whitelist"
                         slugs={[
-                            { key: 'panel', label: 'Pannello Whitelist', description: 'Messaggio nel canale WL.', variables: ['guild'], group: '1. Accesso', groupIcon: Play },
-                            { key: 'start', label: 'Avvio Candidatura', description: 'DM iniziale.', variables: ['user', 'time_limit'], group: '2. Colloquio', groupIcon: Play },
-                            { key: 'question', label: 'Domanda Standard', description: 'Format domande.', variables: ['text', 'count', 'total'], group: '2. Colloquio', groupIcon: Play },
-                            { key: 'review', label: 'Review Finale', description: 'Riepilogo pre-invio.', variables: ['user'], group: '2. Colloquio', groupIcon: Play },
-                            { key: 'session_completed', label: 'Sessione Completata', description: 'DM fine domande.', variables: ['user'], group: '3. Fine', groupIcon: CheckCircle2 },
-                            { key: 'submission_confirmed', label: 'Ricevuta Ufficiale', description: 'Conferma ricezione.', variables: ['user'], group: '3. Fine', groupIcon: CheckCircle2 },
-                            { key: 'staff_received', label: 'Log Staff (Scritto)', description: 'Messaggio per i selezionatori.', variables: ['user', 'age', 'about'], group: '🛡️ Staff', groupIcon: ShieldCheck },
-                            { key: 'queue_log', label: 'Log Staff (Coda)', description: 'Alert ingresso cittadini in attesa.', variables: ['user', 'waiting_count'], group: '🛡️ Staff', groupIcon: ShieldCheck },
-                            { key: 'dm_accepted', label: 'Esito Positivo', description: 'DM accettazione.', variables: ['user'], group: '✅ Esito', groupIcon: CheckCircle2 },
-                            { key: 'dm_rejected', label: 'Esito Negativo', description: 'DM rifiuto scritto.', variables: ['user', 'reason'], group: '🟥 Esito', groupIcon: XCircle },
-                            { key: 'dm_text_pass', label: 'Scritto Superato', description: 'DM idoneo orale.', variables: ['user'], group: '✅ Esito', groupIcon: CheckCircle2 },
-                            { key: 'dm_voice_rejected', label: 'Bocciato Orale', description: 'DM rifiuto orale.', variables: ['user', 'reason'], group: '🟥 Esito', groupIcon: XCircle },
-                            { key: 'promote_vip_success', label: 'Promozione VIP', description: 'Alert quando un utente viene promosso in coda.', variables: ['user'], group: '🎙️ Staff Actions', groupIcon: Mic2 },
-                            { key: 'pause_success', label: 'Sistema Sospeso', description: 'Alert sospensione uffici vocali.', variables: [], group: '🎙️ Staff Actions', groupIcon: Mic2 },
-                            { key: 'resume_success', label: 'Sistema Ripristinato', description: 'Alert riattivazione uffici vocali.', variables: [], group: '🎙️ Staff Actions', groupIcon: Mic2 },
-                            { key: 'skip_success', label: 'Sessione Saltata', description: 'Alert salto sessione corrente.', variables: [], group: '🎙️ Staff Actions', groupIcon: Mic2 },
-                            { key: 'voice_waiting', label: 'Sala d\'Attesa', description: 'DM utente in attesa.', variables: ['user'], group: '🎙️ Voce', groupIcon: Play },
-                            { key: 'voice_guide', label: 'Guida Staff', description: 'Messaggio per lo staffer.', variables: ['user', 'start_time'], group: '🎙️ Voce', groupIcon: Mic2 },
-                            { key: 'voice_procedural_error', label: 'Errore Procedurale', description: 'Alert se l\'utente non deve fare l\'orale.', variables: [], group: '🟥 Errori', groupIcon: XCircle },
-                            { key: 'cooldown', label: 'In Cooldown', description: 'Errore tempo.', variables: ['time'], group: '🟥 Errori', groupIcon: XCircle },
-                            { key: 'app_not_found', label: 'Pratica Inesistente', description: 'Errore ricerca dossier.', variables: [], group: '🟥 Errori', groupIcon: XCircle }
+                            { key: 'panel', label: t('whitelist.msg_panel'), description: 'Messaggio nel canale WL.', variables: ['guild'], group: t('whitelist.group_access'), groupIcon: Play },
+                            { key: 'start', label: t('whitelist.msg_start'), description: 'DM iniziale.', variables: ['user', 'time_limit'], group: t('whitelist.group_interview'), groupIcon: Play },
+                            { key: 'question', label: t('whitelist.msg_question'), description: 'Format domande.', variables: ['text', 'count', 'total'], group: t('whitelist.group_interview'), groupIcon: Play },
+                            { key: 'review', label: t('whitelist.msg_review'), description: 'Riepilogo pre-invio.', variables: ['user'], group: t('whitelist.group_interview'), groupIcon: Play },
+                            { key: 'session_completed', label: t('whitelist.msg_completed'), description: 'DM fine domande.', variables: ['user'], group: t('whitelist.group_end'), groupIcon: CheckCircle2 },
+                            { key: 'submission_confirmed', label: t('whitelist.msg_confirmed'), description: 'Conferma ricezione.', variables: ['user'], group: t('whitelist.group_end'), groupIcon: CheckCircle2 },
+                            { key: 'staff_received', label: t('whitelist.msg_staff_received'), description: 'Messaggio per i selezionatori.', variables: ['user', 'age', 'about'], group: t('whitelist.group_staff'), groupIcon: ShieldCheck },
+                            { key: 'queue_log', label: t('whitelist.msg_queue_log'), description: 'Alert ingresso cittadini in attesa.', variables: ['user', 'waiting_count'], group: t('whitelist.group_staff'), groupIcon: ShieldCheck },
+                            { key: 'dm_accepted', label: t('whitelist.msg_accepted'), description: 'DM accettazione.', variables: ['user'], group: t('whitelist.group_outcome'), groupIcon: CheckCircle2 },
+                            { key: 'dm_rejected', label: t('whitelist.msg_rejected'), description: 'DM rifiuto scritto.', variables: ['user', 'reason'], group: t('whitelist.group_outcome_neg'), groupIcon: XCircle },
+                            { key: 'dm_text_pass', label: t('whitelist.msg_text_pass'), description: 'DM idoneo orale.', variables: ['user'], group: t('whitelist.group_outcome'), groupIcon: CheckCircle2 },
+                            { key: 'dm_voice_rejected', label: t('whitelist.msg_voice_rejected'), description: 'DM rifiuto orale.', variables: ['user', 'reason'], group: t('whitelist.group_outcome_neg'), groupIcon: XCircle },
+                            { key: 'promote_vip_success', label: t('whitelist.msg_promo_vip'), description: 'Alert quando un utente viene promosso in coda.', variables: ['user'], group: t('whitelist.group_staff_actions'), groupIcon: Mic2 },
+                            { key: 'pause_success', label: t('whitelist.msg_pause'), description: 'Alert sospensione uffici vocali.', variables: [], group: t('whitelist.group_staff_actions'), groupIcon: Mic2 },
+                            { key: 'resume_success', label: t('whitelist.msg_resume'), description: 'Alert riattivazione uffici vocali.', variables: [], group: t('whitelist.group_staff_actions'), groupIcon: Mic2 },
+                            { key: 'skip_success', label: t('whitelist.msg_skip'), description: 'Alert salto sessione corrente.', variables: [], group: t('whitelist.group_staff_actions'), groupIcon: Mic2 },
+                            { key: 'voice_waiting', label: t('whitelist.msg_waiting'), description: 'DM utente in attesa.', variables: ['user'], group: t('whitelist.group_voice'), groupIcon: Play },
+                            { key: 'voice_guide', label: t('whitelist.msg_guide'), description: 'Messaggio per lo staffer.', variables: ['user', 'start_time'], group: t('whitelist.group_voice'), groupIcon: Mic2 },
+                            { key: 'voice_procedural_error', label: t('whitelist.msg_procedural_error'), description: 'Alert se l\'utente non deve fare l\'orale.', variables: [], group: t('whitelist.group_errors'), groupIcon: XCircle },
+                            { key: 'cooldown', label: t('whitelist.msg_cooldown'), description: 'Errore tempo.', variables: ['time'], group: t('whitelist.group_errors'), groupIcon: XCircle },
+                            { key: 'app_not_found', label: t('whitelist.msg_app_not_found'), description: 'Errore ricerca dossier.', variables: [], group: t('whitelist.group_errors'), groupIcon: XCircle }
                         ]}
                         extraButtons={(slug) => {
                             if (slug === 'panel') {

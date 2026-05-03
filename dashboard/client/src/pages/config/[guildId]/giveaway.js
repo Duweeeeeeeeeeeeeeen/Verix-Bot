@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Skeleton from '../../../components/Skeleton';
 import api from '../../../utils/api';
+import { useT } from '../../../contexts/LanguageContext';
 import { 
     Save, 
     Gift, 
@@ -30,6 +31,7 @@ import EmbedPreview from '../../../components/EmbedPreview';
 import CustomSelect from '../../../components/CustomSelect';
 
 export default function GiveawayConfig() {
+  const { t } = useT();
   const router = useRouter();
   const { guildId } = router.query;
   const [loading, setLoading] = useState(true);
@@ -64,10 +66,10 @@ export default function GiveawayConfig() {
         .replace(/{prize}/g, newGw.prize || '...')
         .replace(/{endtime}/g, `<t:${Math.floor((Date.now() + newGw.duration * 60000) / 1000)}:R>`),
     color: newGw.color,
-    footer: 'Termina il',
+    footer: t('embeds.wait_minutes'),
     timestamp: true,
     fields: [
-        { name: '👥 Partecipanti', value: '0', inline: true }
+        { name: `👥 ${t('dashboard.stats_users')}`, value: '0', inline: true }
     ],
     button: { 
         label: newGw.buttonLabel, 
@@ -125,9 +127,9 @@ export default function GiveawayConfig() {
         method: 'POST',
         body: JSON.stringify(config)
       });
-      showToast('Configurazione salvata!');
+      showToast(t('common.save_success'));
     } catch (e) {
-      showToast('Errore nel salvataggio', 'error');
+      showToast(t('common.save_error'), 'error');
     } finally {
       setSaving(false);
       window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
@@ -136,7 +138,7 @@ export default function GiveawayConfig() {
 
   const handleCreateGiveaway = async (gwData) => {
     const rawData = gwData || newGw;
-    if (!rawData.prize || !rawData.channelId) return showToast('Compila tutti i campi!', 'error');
+    if (!rawData.prize || !rawData.channelId) return showToast(t('giveaway.error_fields'), 'error');
     
     // Convert to absolute timestamp to avoid timezone issues
     const dataToPost = {
@@ -152,7 +154,7 @@ export default function GiveawayConfig() {
         body: JSON.stringify(dataToPost)
       });
       if (res.success) {
-        showToast(dataToPost.scheduledStart ? 'Giveaway programmato con successo!' : 'Giveaway avviato con successo!');
+        showToast(dataToPost.scheduledStart ? t('giveaway.success_scheduled') : t('giveaway.success_created'));
         setNewGw({ 
           ...newGw, // Preserve channelId, customTitle, description, color, buttons
           prize: '', 
@@ -163,18 +165,18 @@ export default function GiveawayConfig() {
         fetchData();
       }
     } catch (e) {
-      showToast('Errore durante la creazione', 'error');
+      showToast(t('giveaway.error_create'), 'error');
     }
     setCreating(false);
   };
 
   const handleDeleteGiveaway = async (id, isScheduled = false) => {
-    const msg = isScheduled ? 'Sei sicuro di voler eliminare la programmazione?' : 'Sei sicuro di voler annullare questo giveaway? Il messaggio verrà rimosso.';
+    const msg = isScheduled ? t('giveaway.delete_sched_confirm') : t('giveaway.delete_confirm');
     if (!confirm(msg)) return;
     
     try {
       await api.request(`/config/${guildId}/giveaways/${id}`, { method: 'DELETE' });
-      showToast('Operazione completata');
+      showToast(t('common.save_success'));
       // Update state locally to avoid a full 5-API refetch
       if (isScheduled) {
         setScheduledGiveaways(prev => prev.filter(g => (g._id || g.messageId) !== id));
@@ -182,7 +184,7 @@ export default function GiveawayConfig() {
         setActiveGiveaways(prev => prev.filter(g => g.messageId !== id));
       }
     } catch (e) {
-      showToast('Errore durante l\'eliminazione', 'error');
+      showToast(t('common.error_occurred'), 'error');
     }
   };
 
@@ -203,18 +205,18 @@ export default function GiveawayConfig() {
               </div>
               <div className="header-text">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <h1>Giveaway Manager</h1>
+                  <h1>{t('giveaway.title')}</h1>
                   <label className="toggle-mini">
                     <input type="checkbox" checked={!!config.enabled} onChange={e => setConfig({...config, enabled: e.target.checked})} />
                     <span className="slider-mini"></span>
                   </label>
                 </div>
-                <p>Gestisci le estrazioni del tuo server direttamente dalla dashboard.</p>
+                <p>{t('giveaway.desc')}</p>
               </div>
            </div>
            <div className="header-buttons">
               <button onClick={handleSaveConfig} className="btn-primary" disabled={saving}>
-                <Save size={16} /> {saving ? 'Salvataggio...' : 'Salva Impostazioni'}
+                <Save size={16} /> {saving ? t('common.saving') : t('common.save')}
               </button>
            </div>
         </header>
@@ -222,16 +224,16 @@ export default function GiveawayConfig() {
         {/* Navigation */}
         <div className="tab-navigation">
             <button onClick={() => setActiveTab('active')} className={`tab-link ${activeTab === 'active' ? 'active' : ''}`}>
-                <Zap size={16} /> <span>Live & Crea</span>
+                <Zap size={16} /> <span>{t('giveaway.tab_live')}</span>
             </button>
             <button onClick={() => setActiveTab('scheduled')} className={`tab-link ${activeTab === 'scheduled' ? 'active' : ''}`}>
-                <Calendar size={16} /> <span>Programmati</span>
+                <Calendar size={16} /> <span>{t('giveaway.tab_scheduled')}</span>
             </button>
             <button onClick={() => setActiveTab('logs')} className={`tab-link ${activeTab === 'logs' ? 'active' : ''}`}>
-                <Clock size={16} /> <span>Cronologia</span>
+                <Clock size={16} /> <span>{t('giveaway.tab_logs')}</span>
             </button>
             <button onClick={() => setActiveTab('settings')} className={`tab-link ${activeTab === 'settings' ? 'active' : ''}`}>
-                <Settings2 size={16} /> <span>Permessi</span>
+                <Settings2 size={16} /> <span>{t('giveaway.tab_perms')}</span>
             </button>
         </div>
 
@@ -245,24 +247,24 @@ export default function GiveawayConfig() {
                             <section className="card section-card-v" style={{ marginBottom: '24px' }}>
                                 <div className="align-center" style={{ marginBottom: '20px' }}>
                                     <Plus size={18} color="var(--accent-pink)" />
-                                    <h3>Nuovo Giveaway</h3>
+                                    <h3>{t('giveaway.new_title')}</h3>
                                 </div>
                                 
                                 <div className="creation-split-v">
                                     <form className="create-gw-form">
                                         <div className="fields-grid-v" style={{ gridTemplateColumns: '1fr' }}>
                                             <div className="field-box">
-                                                <label className="text-label">Premio in palio</label>
+                                                <label className="text-label">{t('giveaway.prize')}</label>
                                                 <input 
                                                     type="text" 
                                                     className="input" 
-                                                    placeholder="Es: VIP Gold per 1 mese"
+                                                    placeholder={t('giveaway.prize_placeholder')}
                                                     value={newGw.prize}
                                                     onChange={e => setNewGw({...newGw, prize: e.target.value})}
                                                 />
                                             </div>
                                             <div className="field-box">
-                                                <label className="text-label">Canale Discord</label>
+                                                <label className="text-label">{t('tickets.panel_channel')}</label>
                                                 <DiscordSelector 
                                                     type="channel" 
                                                     options={channels} 
@@ -272,7 +274,7 @@ export default function GiveawayConfig() {
                                             </div>
                                             <div className="fields-row-v">
                                                 <div className="field-box">
-                                                    <label className="text-label">Durata (Minuti)</label>
+                                                    <label className="text-label">{t('giveaway.duration')}</label>
                                                     <input 
                                                         type="number" 
                                                         className="input" 
@@ -282,7 +284,7 @@ export default function GiveawayConfig() {
                                                     />
                                                 </div>
                                                 <div className="field-box">
-                                                    <label className="text-label">Numero Vincitori</label>
+                                                    <label className="text-label">{t('giveaway.winners')}</label>
                                                     <input 
                                                         type="number" 
                                                         className="input" 
@@ -294,10 +296,10 @@ export default function GiveawayConfig() {
                                                 </div>
                                             </div>
 
-                                            <div className="field-divider">Personalizzazione Embed</div>
+                                            <div className="field-divider">{t('giveaway.embed_custom')}</div>
 
                                             <div className="field-box">
-                                                <label className="text-label">Titolo Embed</label>
+                                                <label className="text-label">{t('giveaway.embed_title')}</label>
                                                 <input 
                                                     type="text" 
                                                     className="input" 
@@ -306,17 +308,17 @@ export default function GiveawayConfig() {
                                                 />
                                             </div>
                                             <div className="field-box">
-                                                <label className="text-label">Descrizione Embed</label>
+                                                <label className="text-label">{t('giveaway.embed_desc')}</label>
                                                 <textarea 
                                                     className="input" 
                                                     rows="4"
                                                     value={newGw.customDescription}
                                                     onChange={e => setNewGw({...newGw, customDescription: e.target.value})}
                                                 />
-                                                <p className="field-help">Usa {'{prize}'} e {'{endtime}'} come variabili.</p>
+                                                <p className="field-help">{t('giveaway.embed_help')}</p>
                                             </div>
                                             <div className="field-box">
-                                                <label className="text-label">Colore Embed</label>
+                                                <label className="text-label">{t('embeds.editor.side_color')}</label>
                                                 <div className="color-input-wrapper-v">
                                                     <input 
                                                         type="color" 
@@ -332,11 +334,11 @@ export default function GiveawayConfig() {
                                                 </div>
                                             </div>
 
-                                            <div className="field-divider">Personalizzazione Bottone</div>
+                                            <div className="field-divider">{t('giveaway.btn_custom')}</div>
 
                                             <div className="fields-row-v">
                                                 <div className="field-box">
-                                                    <label className="text-label">Testo Bottone</label>
+                                                    <label className="text-label">{t('embeds.editor.button_text')}</label>
                                                     <input 
                                                         type="text" 
                                                         className="input"
@@ -345,7 +347,7 @@ export default function GiveawayConfig() {
                                                     />
                                                 </div>
                                                 <div className="field-box">
-                                                    <label className="text-label">Emoji Bottone</label>
+                                                    <label className="text-label">{t('embeds.editor.button_emoji')}</label>
                                                     <input 
                                                         type="text" 
                                                         className="input"
@@ -356,7 +358,7 @@ export default function GiveawayConfig() {
                                             </div>
 
                                             <div className="field-box">
-                                                <label className="text-label">Stile Bottone</label>
+                                                <label className="text-label">{t('embeds.editor.button_style')}</label>
                                                 <CustomSelect 
                                                     options={[
                                                         { value: 'PRIMARY', label: 'Blu (Primary)' },
@@ -369,10 +371,10 @@ export default function GiveawayConfig() {
                                                 />
                                             </div>
 
-                                            <div className="field-divider">Opzioni Avanzate</div>
+                                            <div className="field-divider">{t('giveaway.advanced_options')}</div>
 
                                             <div className="field-box">
-                                                <label className="text-label">Avvio Programmato (Opzionale)</label>
+                                                <label className="text-label">{t('giveaway.scheduled_start')}</label>
                                                 <input 
                                                     type="datetime-local" 
                                                     className="input" 
@@ -393,25 +395,25 @@ export default function GiveawayConfig() {
                                                 }}
                                             >
                                                 <Zap size={16} />
-                                                Avvia Subito
+                                                {t('giveaway.start_now')}
                                             </button>
                                             <button 
                                                 type="button" 
                                                 className="btn-schedule" 
                                                 disabled={creating}
                                                 onClick={(e) => {
-                                                    if (!newGw.scheduledStart) return showToast('Seleziona una data per programmare!', 'warning');
+                                                    if (!newGw.scheduledStart) return showToast(t('giveaway.schedule_warn'), 'warning');
                                                     handleCreateGiveaway(newGw);
                                                 }}
                                             >
                                                 <Calendar size={16} />
-                                                Programma
+                                                {t('giveaway.schedule_btn')}
                                             </button>
                                         </div>
                                     </form>
 
                                     <div className="preview-container-v">
-                                        <div className="preview-label">Anteprima Live</div>
+                                        <div className="preview-label">{t('embeds.editor.preview')}</div>
                                         <div className="preview-sticky-v">
                                             <EmbedPreview data={previewEmbed} />
                                         </div>
@@ -423,13 +425,13 @@ export default function GiveawayConfig() {
                             <section className="card section-card-v">
                                 <div className="align-center" style={{ marginBottom: '20px' }}>
                                     <Trophy size={18} color="var(--warning)" />
-                                    <h3>Giveaway in Corso</h3>
+                                    <h3>{t('giveaway.active_title')}</h3>
                                 </div>
                                 
                                 {activeGiveaways.length === 0 ? (
                                     <div className="empty-state">
                                         <Gift size={32} opacity="0.2" />
-                                        <p>Nessun giveaway attivo.</p>
+                                        <p>{t('giveaway.active_empty')}</p>
                                     </div>
                                 ) : (
                                     <div className="active-gw-list">
@@ -439,7 +441,7 @@ export default function GiveawayConfig() {
                                                     <h4>{gw.prize}</h4>
                                                     <div className="gw-meta">
                                                         <span><Clock size={12}/> <span className="time-tag">{new Date(gw.endTime).toLocaleString()}</span></span>
-                                                        <span><Users size={12}/> {gw.participants?.length || 0} iscritti</span>
+                                                        <span><Users size={12}/> {gw.participants?.length || 0} {t('dashboard.stats_users')}</span>
                                                     </div>
                                                 </div>
                                                 <div className="gw-actions">
@@ -461,17 +463,17 @@ export default function GiveawayConfig() {
                                 <div className="align-center" style={{ marginBottom: '20px', justifyContent: 'space-between' }}>
                                     <div className="align-center">
                                         <Calendar size={18} color="var(--accent-blue)" />
-                                        <h3>Giveaway Programmati</h3>
+                                        <h3>{t('giveaway.scheduled_title')}</h3>
                                     </div>
                                     <button className="btn-outline-sm" onClick={() => setActiveTab('active')}>
-                                        <Plus size={14} /> Nuovo
+                                        <Plus size={14} /> {t('common.add')}
                                     </button>
                                 </div>
                                 
                                 {scheduledGiveaways.length === 0 ? (
                                     <div className="empty-state">
                                         <Clock size={32} opacity="0.2" />
-                                        <p>Nessun giveaway programmato.</p>
+                                        <p>{t('giveaway.scheduled_empty')}</p>
                                     </div>
                                 ) : (
                                     <div className="active-gw-list">
@@ -480,8 +482,8 @@ export default function GiveawayConfig() {
                                                 <div className="gw-info">
                                                     <h4>{gw.prize}</h4>
                                                     <div className="gw-meta">
-                                                        <span><Calendar size={12}/> Avvio: <span className="time-tag-blue">{new Date(gw.startTime).toLocaleString()}</span></span>
-                                                        <span><Clock size={12}/> Durata: {Math.round((new Date(gw.endTime) - new Date(gw.startTime)) / 60000)}m</span>
+                                                        <span><Calendar size={12}/> {t('giveaway.tab_live')}: <span className="time-tag-blue">{new Date(gw.startTime).toLocaleString()}</span></span>
+                                                        <span><Clock size={12}/> {t('giveaway.duration')}: {Math.round((new Date(gw.endTime) - new Date(gw.startTime)) / 60000)}m</span>
                                                     </div>
                                                 </div>
                                                 <div className="gw-actions">
@@ -502,7 +504,7 @@ export default function GiveawayConfig() {
                             <section className="card section-card-v">
                                 <div className="align-center" style={{ marginBottom: '20px' }}>
                                     <History size={18} color="var(--text-dim)" />
-                                    <h3>Ultimi Giveaway Conclusi</h3>
+                                    <h3>{t('giveaway.history_title')}</h3>
                                 </div>
                                 <div className="logs-table-wrapper">
                                     <table className="logs-table">
@@ -510,8 +512,8 @@ export default function GiveawayConfig() {
                                             <tr>
                                                 <th>Premio</th>
                                                 <th>Data</th>
-                                                <th>Vincitori</th>
-                                                <th>Iscritti</th>
+                                                <th>{t('giveaway.winners')}</th>
+                                                <th>{t('dashboard.stats_users')}</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -521,7 +523,7 @@ export default function GiveawayConfig() {
                                                     <td>{new Date(log.endTime).toLocaleDateString()}</td>
                                                     <td>
                                                         <div className="winners-pill">
-                                                            {log.winners?.length || 0} Estratti
+                                                            {t('giveaway.winners_count', { count: log.winners?.length || 0 })}
                                                         </div>
                                                     </td>
                                                     <td>{log.participants?.length || 0}</td>
@@ -530,7 +532,7 @@ export default function GiveawayConfig() {
                                             {logs.length === 0 && (
                                                 <tr>
                                                     <td colSpan="4" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-dim)' }}>
-                                                        Nessun log disponibile.
+                                                        {t('giveaway.history_empty')}
                                                     </td>
                                                 </tr>
                                             )}
@@ -546,10 +548,10 @@ export default function GiveawayConfig() {
                             <section className="card section-card-v">
                                 <div className="align-center" style={{ marginBottom: '20px' }}>
                                     <Shield size={18} color="var(--primary)" />
-                                    <h3>Autorizzazioni Staff</h3>
+                                    <h3>{t('giveaway.staff_perms')}</h3>
                                 </div>
                                 <div className="field-box">
-                                    <label className="text-label">Ruoli con permessi Giveaway</label>
+                                    <label className="text-label">{t('giveaway.staff_roles')}</label>
                                     <DiscordSelector 
                                         type="role" 
                                         multiple={true} 
@@ -557,7 +559,7 @@ export default function GiveawayConfig() {
                                         value={config.managerRoles || []} 
                                         onChange={val => setConfig({...config, managerRoles: val})} 
                                     />
-                                    <p className="field-help">I ruoli selezionati potranno usare i comandi di gestione giveaway su Discord.</p>
+                                    <p className="field-help">{t('giveaway.staff_help')}</p>
                                 </div>
                             </section>
                         </div>

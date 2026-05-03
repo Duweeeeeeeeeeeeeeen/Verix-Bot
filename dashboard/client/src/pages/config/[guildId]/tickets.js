@@ -84,23 +84,23 @@ export default function TicketConfig() {
         api.request(`/config/${guildId}/tickets`, { method: 'POST', body: JSON.stringify(config) }),
         api.request(`/config/${guildId}/global`, { method: 'POST', body: JSON.stringify(globalConfig) })
       ]);
-      showToast('Configurazione salvata con successo!');
+      showToast(t('common.save_success'));
     } catch (error) {
-      showToast('Errore durante il salvataggio.', 'error');
+      showToast(t('common.save_error'), 'error');
     } finally {
       setSaving(false);
     }
   };
 
   const handleSendPanel = async () => {
-    if (!config.panelChannelId) return showToast('Configura prima un Canale Pannello!', 'error');
+    if (!config.panelChannelId) return showToast(t('tickets.sent_error'), 'error');
     setSendingPanel(true);
     try {
       await handleSave();
       await api.request(`/config/${guildId}/tickets/send-panel`, { method: 'POST' });
-      showToast('Pannello inviato con successo!');
+      showToast(t('tickets.sent_success'));
     } catch (error) {
-      showToast('Errore durante l\'invio del pannello.', 'error');
+      showToast(t('tickets.sent_error'), 'error');
     } finally {
       setSendingPanel(false);
     }
@@ -140,7 +140,7 @@ export default function TicketConfig() {
     setConfig(prev => {
         const id = `cat_${Math.random().toString(36).substr(2, 5)}`;
         const newTypes = { ...(prev.typesConfig || {}) };
-        newTypes[id] = { label: 'Nuova Categoria', emoji: '🎫', color: 'var(--primary)', style: 'PRIMARY', staffRoleIds: [] };
+        newTypes[id] = { label: t('tickets.cat_name_placeholder'), emoji: '🎫', color: 'var(--primary)', style: 'PRIMARY', staffRoleIds: [] };
         return { ...prev, typesConfig: newTypes };
     });
   };
@@ -148,19 +148,19 @@ export default function TicketConfig() {
   if (!mounted || loading || !config) return <Skeleton height="600px" />;
 
   const tabs = [
-    { id: 'settings', name: 'Settaggi', icon: Settings2 },
-    { id: 'categories', name: 'Categorie', icon: Layers },
-    { id: 'automation', name: 'Automazione', icon: Zap },
-    { id: 'responses', name: 'Risposte Rapide', icon: MessageSquare },
-    { id: 'blacklist', name: 'Blacklist', icon: ShieldAlert },
-    { id: 'stats', name: 'Statistiche Staff', icon: BarChart3 },
-    { id: 'personalization', name: 'Design & Messaggi', icon: Palette },
+    { id: 'settings', name: t('tickets.core_channels'), icon: Settings2 },
+    { id: 'categories', name: t('sidebar.categories'), icon: Layers },
+    { id: 'automation', name: t('tickets.auto_close'), icon: Zap },
+    { id: 'responses', name: t('tickets.canned_responses'), icon: MessageSquare },
+    { id: 'blacklist', name: t('tickets.blacklist_title'), icon: ShieldAlert },
+    { id: 'stats', name: t('tickets.stats_title'), icon: BarChart3 },
+    { id: 'personalization', name: t('tickets.button_branding'), icon: Palette },
   ];
 
   const addCannedResponse = () => {
     setConfig(prev => ({
         ...prev,
-        cannedResponses: [...(prev.cannedResponses || []), { label: 'Nuova Risposta', content: 'Messaggio...' }]
+        cannedResponses: [...(prev.cannedResponses || []), { label: t('tickets.cat_name_placeholder'), content: 'Messaggio...' }]
     }));
   };
 
@@ -199,21 +199,21 @@ export default function TicketConfig() {
                     </div>
                     <div className="header-text">
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <h1>Gestione Ticket</h1>
-                            <label className="toggle-mini" title={config.enabled ? 'Modulo Attivo' : 'Modulo Disattivato'}>
+                            <h1>{t('tickets.title')}</h1>
+                            <label className="toggle-mini" title={config.enabled ? t('common.enabled') : t('common.disabled')}>
                                 <input type="checkbox" checked={!!config.enabled} onChange={e => setConfig({...config, enabled: e.target.checked})} />
                                 <span className="slider-mini"></span>
                             </label>
                         </div>
-                        <p>Configura il sistema di supporto, le categorie e l'aspetto dei messaggi.</p>
+                        <p>{t('tickets.desc')}</p>
                     </div>
                 </div>
                 <div className="header-buttons">
                     <button onClick={handleSendPanel} className="btn-outline" disabled={sendingPanel || !config.panelChannelId}>
-                        <Send size={16} /> {sendingPanel ? 'Invio...' : 'Invia Pannello'}
+                        <Send size={16} /> {sendingPanel ? t('tickets.sending') : t('tickets.send_panel')}
                     </button>
                     <button onClick={handleSave} className="btn-primary" disabled={saving}>
-                        <Save size={16} /> {saving ? 'Salvataggio...' : 'Salva Modifiche'}
+                        <Save size={16} /> {saving ? t('common.saving') : t('common.save')}
                     </button>
                 </div>
             </header>
@@ -235,19 +235,19 @@ export default function TicketConfig() {
                             <div className="section-header">
                                 <div className="align-center">
                                     <ShieldAlert size={20} color="var(--error)" />
-                                    <h3>Blacklist Ticket</h3>
+                                    <h3>{t('tickets.blacklist_title')}</h3>
                                 </div>
                             </div>
-                            <p className="text-description" style={{ marginBottom: '24px' }}>Gli utenti in questa lista non potranno aprire ticket.</p>
+                            <p className="text-description" style={{ marginBottom: '24px' }}>{t('tickets.blacklist_desc')}</p>
                             
                             <div className="blacklist-input-group">
                                 <input 
                                     className="input" 
-                                    placeholder="Inserisci ID Utente..." 
+                                    placeholder={t('tickets.blacklist_placeholder')} 
                                     value={blacklistInput}
                                     onChange={e => setBlacklistInput(e.target.value)}
                                 />
-                                <button className="btn-primary" onClick={addToBlacklist}><Plus size={16} /> Blocca Utente</button>
+                                <button className="btn-primary" onClick={addToBlacklist}><Plus size={16} /> {t('tickets.blacklist_block')}</button>
                             </div>
 
                             <div className="blacklist-list">
@@ -266,7 +266,7 @@ export default function TicketConfig() {
                                 ) : (
                                     <div className="empty-state">
                                         <Shield size={48} />
-                                        <p>Nessun utente bloccato.</p>
+                                        <p>{t('tickets.blacklist_empty')}</p>
                                     </div>
                                 )}
                             </div>
@@ -281,10 +281,10 @@ export default function TicketConfig() {
                             <div className="section-header">
                                 <div className="align-center">
                                     <BarChart3 size={20} color="var(--primary)" />
-                                    <h3>Leaderboard Staff</h3>
+                                    <h3>{t('tickets.stats_title')}</h3>
                                 </div>
                             </div>
-                            <p className="text-description" style={{ marginBottom: '24px' }}>Monitora le performance e l'attività del team di supporto.</p>
+                            <p className="text-description" style={{ marginBottom: '24px' }}>{t('tickets.stats_desc')}</p>
                             
                             <div className="stats-table-container">
                                 <table className="stats-table">
@@ -300,7 +300,7 @@ export default function TicketConfig() {
                                         {/* In a real scenario, this would be fetched from the API */}
                                         <tr>
                                             <td colSpan="4" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-dim)' }}>
-                                                Statistiche in fase di raccolta... I dati appariranno qui man mano che i ticket verranno gestiti.
+                                                {t('tickets.stats_empty')}
                                             </td>
                                         </tr>
                                     </tbody>
@@ -316,28 +316,28 @@ export default function TicketConfig() {
                                 <div className="section-header">
                                     <div className="align-center">
                                         <Hash size={18} color="var(--primary)" />
-                                        <h3>Canali Core</h3>
+                                        <h3>{t('tickets.core_channels')}</h3>
                                     </div>
                                 </div>
                                 <div className="fields-grid" style={{ marginTop: '20px' }}>
                                     <div className="field-box">
-                                        <label className="text-label">Canale Pannello</label>
+                                        <label className="text-label">{t('tickets.panel_channel')}</label>
                                         <DiscordSelector type="channel" options={channels.filter(c => c.type === 0 || c.type === 5)} value={config.panelChannelId || ''} onChange={val => setConfig({...config, panelChannelId: val})} />
                                     </div>
                                     <div className="field-box">
-                                        <label className="text-label">Canale Log Archivio</label>
+                                        <label className="text-label">{t('tickets.log_channel')}</label>
                                         <DiscordSelector type="channel" options={channels.filter(c => c.type === 0 || c.type === 5)} value={config.logChannelId || ''} onChange={val => setConfig({...config, logChannelId: val})} />
                                     </div>
                                     <div className="field-box">
-                                        <label className="text-label">Categoria Ticket Aperti</label>
+                                        <label className="text-label">{t('tickets.category_open')}</label>
                                         <DiscordSelector type="channel" options={channels.filter(c => c.type === 4)} value={config.categoryOpenId || ''} onChange={val => setConfig({...config, categoryOpenId: val})} />
                                     </div>
                                     <div className="field-box">
-                                        <label className="text-label">Modalità Chiusura</label>
+                                        <label className="text-label">{t('tickets.close_mode')}</label>
                                         <CustomSelect 
                                             options={[
-                                                { value: 'DELETE', label: '🗑️ Elimina Canale' },
-                                                { value: 'MOVE', label: '📂 Sposta in Categoria' }
+                                                { value: 'DELETE', label: `🗑️ ${t('tickets.close_delete')}` },
+                                                { value: 'MOVE', label: `📂 ${t('tickets.close_move')}` }
                                             ]} 
                                             value={config.closeMode || 'DELETE'} 
                                             onChange={val => setConfig({...config, closeMode: val})} 
@@ -345,7 +345,7 @@ export default function TicketConfig() {
                                     </div>
                                     {config.closeMode === 'MOVE' && (
                                         <div className="field-box" style={{ gridColumn: 'span 2' }}>
-                                            <label className="text-label">Categoria Ticket Chiusi</label>
+                                            <label className="text-label">{t('tickets.category_closed')}</label>
                                             <DiscordSelector type="channel" options={channels.filter(c => c.type === 4)} value={config.categoryClosedId || ''} onChange={val => setConfig({...config, categoryClosedId: val})} />
                                         </div>
                                     )}
@@ -356,7 +356,7 @@ export default function TicketConfig() {
                             <section className="card section-card">
                                 <h3 className="sidebar-title align-center" style={{ marginBottom: '16px' }}><Shield size={18} /> Staff Roles</h3>
                                 <DiscordSelector type="role" multiple={true} options={roles} value={config.staffRoleIds || []} onChange={val => setConfig({...config, staffRoleIds: val})} />
-                                <p className="text-description" style={{ marginTop: '12px' }}>Ruoli che possono vedere e gestire tutti i ticket per impostazione predefinita.</p>
+                                <p className="text-description" style={{ marginTop: '12px' }}>{t('tickets.staff_roles_desc')}</p>
                             </section>
                         </div>
                     </div>
@@ -369,16 +369,16 @@ export default function TicketConfig() {
                             <div className="section-header">
                                 <div className="align-center">
                                     <Zap size={20} color="var(--primary)" />
-                                    <h3>Automazione & Inattività</h3>
+                                    <h3>{t('tickets.auto_close')}</h3>
                                 </div>
                             </div>
-                            <p className="text-description" style={{ marginBottom: '24px' }}>Gestisci il comportamento automatico del sistema.</p>
+                            <p className="text-description" style={{ marginBottom: '24px' }}>{t('tickets.auto_close_desc')}</p>
 
                             <div className="fields-grid">
                                 <div className="field-group">
-                                    <label className="text-label">Chiusura Automatica</label>
+                                    <label className="text-label">{t('tickets.auto_close')}</label>
                                     <div className="flex-between">
-                                        <span className="text-dim">Chiudi ticket dopo inattività</span>
+                                        <span className="text-dim">{t('tickets.auto_close_desc')}</span>
                                         <label className="toggle-mini">
                                             <input 
                                                 type="checkbox"
@@ -390,7 +390,7 @@ export default function TicketConfig() {
                                     </div>
                                 </div>
                                 <div className="field-group">
-                                    <label className="text-label">Soglia Inattività (Ore)</label>
+                                    <label className="text-label">{t('tickets.auto_close_hours')}</label>
                                     <input 
                                         type="number" 
                                         className="input" 
@@ -404,11 +404,11 @@ export default function TicketConfig() {
                             <div className="section-header">
                                 <div className="align-center">
                                     <Layers size={20} color="var(--primary)" />
-                                    <h3>Categorie Ticket</h3>
+                                    <h3>{t('sidebar.categories')}</h3>
                                 </div>
-                                <button className="btn-outline" onClick={addCategory}><Plus size={14} /> Nuova Categoria</button>
+                                <button className="btn-outline" onClick={addCategory}><Plus size={14} /> {t('common.add')}</button>
                             </div>
-                            <p className="text-description" style={{ marginBottom: '24px' }}>Definisci i diversi tipi di ticket che gli utenti possono aprire (es. Supporto, Segnalazioni).</p>
+                            <p className="text-description" style={{ marginBottom: '24px' }}>{t('tickets.desc')}</p>
                             
                             <div className="categories-stack">
                                 {config.typesConfig && Object.entries(config.typesConfig).length > 0 ? (
@@ -434,10 +434,10 @@ export default function TicketConfig() {
                                                         const newTypes = { ...config.typesConfig };
                                                         newTypes[id] = { ...data, label: e.target.value };
                                                         setConfig({ ...config, typesConfig: newTypes });
-                                                    }} placeholder="Nome categoria..." />
+                                                    }} placeholder={t('tickets.cat_name_placeholder')} />
                                                 </div>
-                                                <div className="category-color" title="Colore dell'Embed del Ticket">
-                                                    <label className="label-tiny">Colore Embed</label>
+                                                <div className="category-color" title={t('automations.customize_embed')}>
+                                                    <label className="label-tiny">{t('embeds.editor.side_color')}</label>
                                                     <input type="color" value={data.color || 'var(--primary)'} onChange={e => {
                                                         const newTypes = { ...config.typesConfig };
                                                         newTypes[id] = { ...data, color: e.target.value };
@@ -445,7 +445,7 @@ export default function TicketConfig() {
                                                     }} />
                                                 </div>
                                                 <div className="category-style">
-                                                    <label className="label-tiny">Colore Bottone</label>
+                                                    <label className="label-tiny">{t('embeds.editor.button_style')}</label>
                                                     <div className="style-selector-mini">
                                                         {[
                                                             { id: 'SUCCESS', label: 'V' },
@@ -471,7 +471,7 @@ export default function TicketConfig() {
                                                 </div>
                                                 <div className="category-actions">
                                                     <button className="btn-icon-danger" onClick={() => {
-                                                        if(confirm('Eliminare questa categoria?')) {
+                                                        if(confirm(t('tickets.delete_cat_confirm'))) {
                                                             const newTypes = { ...config.typesConfig };
                                                             delete newTypes[id];
                                                             setConfig({ ...config, typesConfig: newTypes });
@@ -486,7 +486,7 @@ export default function TicketConfig() {
                                                     {/* Staff Specifico rimosso */}
                                                     {data.style === 'LINK' && (
                                                         <div className="detail-field animate fade-in">
-                                                            <label className="label-tiny">URL Destinazione</label>
+                                                            <label className="label-tiny">{t('embeds.editor.url_label')}</label>
                                                             <input 
                                                                 className="input" 
                                                                 value={data.url || ''} 
@@ -507,7 +507,7 @@ export default function TicketConfig() {
                                 ) : (
                                     <div className="empty-state">
                                         <Ticket size={48} />
-                                        <p>Nessuna categoria configurata. Clicca su "Nuova Categoria" per iniziare.</p>
+                                        <p>{t('tickets.no_categories')}</p>
                                     </div>
                                 )}
                             </div>
@@ -526,29 +526,29 @@ export default function TicketConfig() {
                                 </div>
                                 <div className="fields-grid">
                                     <div className="field-box">
-                                        <label className="text-label">Template Nomi Canali</label>
+                                        <label className="text-label">{t('tickets.naming_template')}</label>
                                         <input className="input" value={globalConfig?.naming?.ticket || ''} onChange={e => setGlobalNested('naming.ticket', e.target.value)} placeholder="ticket-{user}" />
-                                        <p className="text-tiny">Usa {`{user}`} per il nome utente.</p>
+                                        <p className="text-tiny">{t('tickets.naming_help')}</p>
                                     </div>
                                     <div className="field-box">
-                                        <label className="text-label">Modalità Input Pannello</label>
+                                        <label className="text-label">{t('tickets.input_mode')}</label>
                                         <CustomSelect 
                                             options={[
-                                                { value: 'BUTTONS', label: '🔘 Pulsanti' },
-                                                { value: 'SELECT', label: '🔽 Menu a Tendina' }
+                                                { value: 'BUTTONS', label: `🔘 ${t('tickets.input_buttons')}` },
+                                                { value: 'SELECT', label: `🔽 ${t('tickets.input_select')}` }
                                             ]} 
                                             value={config.inputType || 'BUTTONS'} 
                                             onChange={val => setConfig({...config, inputType: val})} 
                                         />
                                     </div>
                                     <div className="field-box">
-                                        <label className="text-label">Timeout Inattività (Ore)</label>
+                                        <label className="text-label">{t('tickets.auto_close_hours')}</label>
                                         <input type="number" className="input" value={config.inactivityTimeout || 24} onChange={e => setConfig({...config, inactivityTimeout: parseInt(e.target.value)})} />
                                     </div>
                                     <div className="transcription-box">
                                         <div className="flex-col">
-                                            <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>Trascrizioni HTML</span>
-                                            <p className="text-dim" style={{ fontSize: '0.75rem', margin: 0 }}>Salva la cronologia chat alla chiusura.</p>
+                                            <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{t('tickets.transcriptions')}</span>
+                                            <p className="text-dim" style={{ fontSize: '0.75rem', margin: 0 }}>{t('tickets.transcriptions_desc')}</p>
                                         </div>
                                         <label className="toggle">
                                             <input type="checkbox" checked={!!config.transcriptionEnabled} onChange={e => setConfig({...config, transcriptionEnabled: e.target.checked})} />
@@ -564,25 +564,25 @@ export default function TicketConfig() {
                                     guildId={guildId}
                                     value={config.notifications}
                                     onChange={val => setConfig({...config, notifications: val})}
-                                    title="Notifiche Utente"
-                                    description="Scegli come notificare l'utente per apertura e chiusura ticket."
+                                    title={t('tickets.notif_user_title')}
+                                    description={t('tickets.notif_user_desc')}
                                 />
                                 <div className="events-stack" style={{ marginTop: '16px' }}>
                                     <div className="event-item-v">
                                         <div className="event-info-v">
-                                            <span className="event-name">Log Amministrazione</span>
-                                            <p className="text-tiny" style={{ margin: 0 }}>Invia log nel canale dedicato.</p>
+                                            <span className="event-name">{t('tickets.admin_logs')}</span>
+                                            <p className="text-tiny" style={{ margin: 0 }}>{t('tickets.admin_logs_desc')}</p>
                                         </div>
                                         <div className="event-switches-v">
                                             <div className="switch-with-label">
-                                                <span className="label-tiny">Apertura</span>
+                                                <span className="label-tiny">{t('tickets.log_open')}</span>
                                                 <label className="toggle">
                                                     <input type="checkbox" checked={!!globalConfig?.logs?.log_onOpen} onChange={e => setGlobalNested('logs.log_onOpen', e.target.checked)} /> 
                                                     <span className="slider"></span>
                                                 </label>
                                             </div>
                                             <div className="switch-with-label">
-                                                <span className="label-tiny">Chiusura</span>
+                                                <span className="label-tiny">{t('tickets.log_close')}</span>
                                                 <label className="toggle">
                                                     <input type="checkbox" checked={!!globalConfig?.logs?.log_onClose} onChange={e => setGlobalNested('logs.log_onClose', e.target.checked)} /> 
                                                     <span className="slider"></span>
@@ -603,11 +603,11 @@ export default function TicketConfig() {
                             <div className="section-header">
                                 <div className="align-center">
                                     <MessageSquare size={20} color="var(--primary)" />
-                                    <h3>Template Risposte Rapide</h3>
+                                    <h3>{t('tickets.canned_responses')}</h3>
                                 </div>
-                                <button className="btn-outline" onClick={addCannedResponse}><Plus size={14} /> Aggiungi Template</button>
+                                <button className="btn-outline" onClick={addCannedResponse}><Plus size={14} /> {t('common.add')}</button>
                             </div>
-                            <p className="text-description" style={{ marginBottom: '24px' }}>Crea dei template di risposta che lo staff potrà inviare con un click nel ticket.</p>
+                            <p className="text-description" style={{ marginBottom: '24px' }}>{t('tickets.canned_desc')}</p>
                             
                             <div className="responses-grid">
                                 {config.cannedResponses && config.cannedResponses.length > 0 ? (
@@ -622,7 +622,7 @@ export default function TicketConfig() {
                                                         newResponses[index] = { ...res, label: e.target.value };
                                                         setConfig({ ...config, cannedResponses: newResponses });
                                                     }} 
-                                                    placeholder="Titolo (es. Saluto)" 
+                                                    placeholder={t('tickets.cat_name_placeholder')} 
                                                 />
                                                 <button className="btn-icon-danger" onClick={() => removeCannedResponse(index)}>
                                                     <Trash2 size={16} />
@@ -636,14 +636,14 @@ export default function TicketConfig() {
                                                     newResponses[index] = { ...res, content: e.target.value };
                                                     setConfig({ ...config, cannedResponses: newResponses });
                                                 }} 
-                                                placeholder="Contenuto della risposta..."
+                                                placeholder={t('tickets.canned_placeholder')}
                                             />
                                         </div>
                                     ))
                                 ) : (
                                     <div className="empty-state">
                                         <MessageSquare size={48} />
-                                        <p>Nessuna risposta rapida configurata.</p>
+                                        <p>{t('tickets.canned_placeholder')}</p>
                                     </div>
                                 )}
                             </div>
@@ -655,29 +655,29 @@ export default function TicketConfig() {
                         <section className="card section-card" style={{ marginBottom: '24px' }}>
                              <div className="align-center" style={{ marginBottom: '20px' }}>
                                 <Palette size={18} color="var(--primary)" />
-                                <h3>Branding Bottoni</h3>
+                                <h3>{t('tickets.button_branding')}</h3>
                              </div>
                              <div className="buttons-config-grid">
                                 {[
-                                    { key: 'claim', label: 'Prendi in Carico' },
-                                    { key: 'close', label: 'Chiudi Ticket' },
-                                    { key: 'tag', label: 'Aggiorna Stato' }
+                                    { key: 'claim', label: t('tickets.claim_btn') },
+                                    { key: 'close', label: t('tickets.close_btn') },
+                                    { key: 'tag', label: t('tickets.tag_btn') }
                                 ].map(btn => (
                                     <div key={btn.key} className="btn-config-card">
                                         <label className="label-tiny">{btn.label}</label>
                                         <div className="btn-inputs">
-                                            <input className="input" value={config.buttons?.[btn.key]?.label || ''} onChange={e => setNested(`buttons.${btn.key}.label`, e.target.value)} placeholder="Testo..." />
+                                            <input className="input" value={config.buttons?.[btn.key]?.label || ''} onChange={e => setNested(`buttons.${btn.key}.label`, e.target.value)} placeholder={t('tickets.btn_text')} />
                                             <div style={{ width: '60px' }}>
                                                 <EmojiInput value={config.buttons?.[btn.key]?.emoji || ''} onChange={e => setNested(`buttons.${btn.key}.emoji`, e.target.value)} />
                                             </div>
                                         </div>
                                         <div className="style-selector">
                                             {[
-                                                { id: 'SUCCESS', label: 'Verde' },
-                                                { id: 'DANGER', label: 'Rosso' },
-                                                { id: 'PRIMARY', label: 'Blu' },
-                                                { id: 'SECONDARY', label: 'Grigio' },
-                                                { id: 'LINK', label: 'Link 🔗' }
+                                                { id: 'SUCCESS', label: t('tickets.btn_style_green') },
+                                                { id: 'DANGER', label: t('tickets.btn_style_red') },
+                                                { id: 'PRIMARY', label: t('tickets.btn_style_blue') },
+                                                { id: 'SECONDARY', label: t('tickets.btn_style_gray') },
+                                                { id: 'LINK', label: t('tickets.btn_style_link') }
                                             ].map(style => (
                                                 <button 
                                                     key={style.id}
@@ -690,7 +690,7 @@ export default function TicketConfig() {
                                         </div>
                                         {config.buttons?.[btn.key]?.style === 'LINK' && (
                                             <div className="animate fade-in" style={{ marginTop: '12px' }}>
-                                                <label className="label-tiny">URL del Link</label>
+                                                <label className="label-tiny">{t('embeds.editor.url_label')}</label>
                                                 <input className="input" value={config.buttons?.[btn.key]?.url || ''} onChange={e => setNested(`buttons.${btn.key}.url`, e.target.value)} placeholder="https://..." />
                                             </div>
                                         )}

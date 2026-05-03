@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Skeleton from '../../../components/Skeleton';
 import api from '../../../utils/api';
+import { useT } from '../../../contexts/LanguageContext';
 import { 
     Save, 
     Trash2, 
@@ -25,6 +26,7 @@ import DiscordSelector from '../../../components/DiscordSelector';
 import EmbedEditor from '../../../components/EmbedEditor';
 
 export default function AutomationsConfig() {
+  const { t } = useT();
   const router = useRouter();
   const { guildId } = router.query;
   const [config, setConfig] = useState(null);
@@ -77,9 +79,9 @@ export default function AutomationsConfig() {
         method: 'POST',
         body: JSON.stringify(config)
       });
-      showToast('Automazioni salvate con successo!');
+      showToast(t('common.save_success'));
     } catch (error) {
-      showToast('Errore durante il salvataggio', 'error');
+      showToast(t('common.save_error'), 'error');
     } finally {
       setSaving(false);
     }
@@ -139,18 +141,18 @@ export default function AutomationsConfig() {
               </div>
               <div className="header-text">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <h1>System Automations</h1>
+                  <h1>{t('automations.title')}</h1>
                   <div className="status-badge-inline">
                     <div className="dot"></div>
-                    <span>Moduli Attivi</span>
+                    <span>{t('dashboard.module_status')}</span>
                   </div>
                 </div>
-                <p>Configura pulizie automatiche e messaggi periodici per i tuoi canali.</p>
+                <p>{t('automations.desc')}</p>
               </div>
            </div>
            <div className="header-buttons">
               <button onClick={handleSave} className="btn-primary" disabled={saving}>
-                <Save size={16} strokeWidth={2.5} /> {saving ? 'Salvataggio...' : 'Salva Modifiche'}
+                <Save size={16} strokeWidth={2.5} /> {saving ? t('common.loading') : t('common.save')}
               </button>
            </div>
         </header>
@@ -161,13 +163,13 @@ export default function AutomationsConfig() {
                 className={`tab-btn ${activeTab === 'autoclear' ? 'active' : ''}`}
                 onClick={() => setActiveTab('autoclear')}
             >
-                <Trash2 size={16} /> Auto-Clear
+                <Trash2 size={16} /> {t('automations.tab_autoclear')}
             </button>
             <button 
                 className={`tab-btn ${activeTab === 'automessage' ? 'active' : ''}`}
                 onClick={() => setActiveTab('automessage')}
             >
-                <Send size={16} /> Auto-Message
+                <Send size={16} /> {t('automations.tab_automessage')}
             </button>
         </div>
 
@@ -176,10 +178,10 @@ export default function AutomationsConfig() {
                 <div className="section-header-row">
                     <div className="align-center">
                         <Layout size={20} color="var(--primary)" />
-                        <h2>Canali in Pulizia</h2>
+                        <h2>{t('automations.tab_autoclear')}</h2>
                     </div>
                     <button onClick={addClearSlot} className="btn-add-premium">
-                        <Plus size={16} /> Aggiungi Slot
+                        <Plus size={16} /> {t('automations.add_slot')}
                     </button>
                 </div>
 
@@ -187,7 +189,7 @@ export default function AutomationsConfig() {
                     {config.autoClear?.slots?.length === 0 && (
                         <div className="empty-state-card card">
                             <Trash2 size={32} color="var(--text-muted)" />
-                            <p>Nessuno slot di pulizia configurato.</p>
+                            <p>{t('automations.no_slots')}</p>
                         </div>
                     )}
 
@@ -196,7 +198,7 @@ export default function AutomationsConfig() {
                             <div className="slot-header">
                                 <div className="slot-title">
                                     <Hash size={14} />
-                                    <span>Slot di Pulizia #{index + 1}</span>
+                                    <span>{t('automations.slot_title', { index: index + 1 })}</span>
                                 </div>
                                 <div className="slot-actions">
                                     <label className="toggle-s">
@@ -209,7 +211,7 @@ export default function AutomationsConfig() {
 
                             <div className="slot-body">
                                 <div className="field-box">
-                                    <label className="text-label">Canale Target</label>
+                                    <label className="text-label">{t('automations.channel_label')}</label>
                                     <DiscordSelector 
                                         type="channel" 
                                         options={channels.filter(c => c.type === 0 || c.type === 5)} 
@@ -220,7 +222,7 @@ export default function AutomationsConfig() {
 
                                 <div className="field-row" style={{ marginTop: '16px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                                     <div className="field-box">
-                                        <label className="text-label">Intervallo (Minuti)</label>
+                                        <label className="text-label">{t('automations.freq_label')}</label>
                                         <div className="input-with-icon">
                                             <Clock size={16} className="icon-p" />
                                             <input 
@@ -233,7 +235,7 @@ export default function AutomationsConfig() {
                                         </div>
                                     </div>
                                     <div className="field-box">
-                                        <label className="text-label">Quantità Messaggi</label>
+                                        <label className="text-label">{t('automations.amount_label')}</label>
                                         <div className="input-with-icon">
                                             <MessageSquare size={16} className="icon-p" />
                                             <input 
@@ -255,7 +257,7 @@ export default function AutomationsConfig() {
                 <section className="card manual-clear-hero" style={{ marginTop: '32px' }}>
                     <div className="align-center" style={{ marginBottom: '16px' }}>
                         <Zap size={20} color="var(--primary)" />
-                        <h3>Pulizia Rapida Manuale</h3>
+                        <h3>{t('automations.manual_clear')}</h3>
                     </div>
                     <div style={{ display: 'flex', gap: '16px' }}>
                          <div style={{ flex: 1 }}>
@@ -270,21 +272,21 @@ export default function AutomationsConfig() {
                             type="number" 
                             className="input-p" 
                             style={{ width: '100px', paddingLeft: '16px' }}
-                            placeholder="Q.tà"
+                            placeholder={t('automations.qty_placeholder')}
                             value={config.manualAmount || 50} 
                             onChange={e => setConfig({...config, manualAmount: parseInt(e.target.value) || 1})}
                          />
                          <button className="btn-primary" style={{ background: 'var(--error)' }} onClick={async () => {
-                             if(!config.manualChannelId) return showToast('Seleziona un canale!', 'error');
+                             if(!config.manualChannelId) return showToast(t('common.select_channel'), 'error');
                              try {
                                  const res = await api.request(`/config/${guildId}/autoclear/manual`, {
                                      method: 'POST',
                                      body: JSON.stringify({ channelId: config.manualChannelId, amount: config.manualAmount || 50 })
                                  });
-                                 showToast(`Eliminati ${res.data?.count || 0} messaggi!`);
-                             } catch(e) { showToast('Errore durante la pulizia', 'error'); }
+                                 showToast(t('automations.clear_success', { count: res.data?.count || 0 }));
+                             } catch(e) { showToast(t('automations.clear_error'), 'error'); }
                          }}>
-                            <Trash2 size={16} /> Elimina
+                            <Trash2 size={16} /> {t('automations.clear_now')}
                          </button>
                     </div>
                 </section>
@@ -297,7 +299,7 @@ export default function AutomationsConfig() {
                             <ChevronLeft size={20} />
                         </button>
                         <Palette size={20} color="var(--primary)" />
-                        <h2>Editor Embed: Messaggio #{editingEmbedIndex + 1}</h2>
+                        <h2>{t('automations.editor_title', { index: editingEmbedIndex + 1 })}</h2>
                     </div>
                 </div>
 
@@ -322,10 +324,10 @@ export default function AutomationsConfig() {
                 <div className="section-header-row">
                     <div className="align-center">
                         <MessageSquare size={20} color="var(--primary)" />
-                        <h2>Messaggi Automatici</h2>
+                        <h2>{t('automations.tab_automessage')}</h2>
                     </div>
                     <button onClick={addMessageSlot} className="btn-add-premium">
-                        <Plus size={16} /> Nuovo Messaggio
+                        <Plus size={16} /> {t('automations.add_msg_slot')}
                     </button>
                 </div>
 
@@ -333,7 +335,7 @@ export default function AutomationsConfig() {
                     {config.autoMessage?.slots?.length === 0 && (
                         <div className="empty-state-card card">
                             <Send size={32} color="var(--text-muted)" />
-                            <p>Nessun messaggio automatico configurato.</p>
+                            <p>{t('automations.no_msg_slots')}</p>
                         </div>
                     )}
 
@@ -342,13 +344,13 @@ export default function AutomationsConfig() {
                              <div className="slot-header">
                                 <div className="slot-title">
                                     <Send size={14} />
-                                    <span>Messaggio Auto #{index + 1}</span>
+                                    <span>{t('automations.msg_slot_title', { index: index + 1 })}</span>
                                 </div>
                                 <div className="slot-actions">
                                     <button 
                                         className={`btn-icon-p ${slot.useEmbed ? 'active' : ''}`} 
                                         onClick={() => setEditingEmbedIndex(index)}
-                                        title="Personalizza Embed"
+                                        title={t('automations.customize_embed')}
                                     >
                                         <Palette size={14} />
                                     </button>
@@ -362,7 +364,7 @@ export default function AutomationsConfig() {
 
                             <div className="slot-body">
                                 <div className="field-box">
-                                    <label className="text-label">Canale di Invio</label>
+                                    <label className="text-label">{t('automations.channel_label')}</label>
                                     <DiscordSelector 
                                         type="channel" 
                                         options={channels.filter(c => c.type === 0 || c.type === 5)} 
@@ -373,9 +375,9 @@ export default function AutomationsConfig() {
 
                                 <div className="field-box" style={{ marginTop: '16px' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                                        <label className="text-label" style={{ margin: 0 }}>Contenuto {slot.useEmbed ? 'Testuale (Opzionale)' : 'Messaggio'}</label>
+                                        <label className="text-label" style={{ margin: 0 }}>{slot.useEmbed ? t('automations.content_with_embed') : t('automations.content_text_only')}</label>
                                         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                                            <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 700 }}>USA EMBED</span>
+                                            <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 700 }}>{t('automations.use_embed')}</span>
                                             <label className="toggle-mini">
                                                 <input type="checkbox" checked={!!slot.useEmbed} onChange={e => updateMessageSlot(index, 'useEmbed', e.target.checked)} />
                                                 <span className="slider-mini"></span>
@@ -385,36 +387,36 @@ export default function AutomationsConfig() {
                                     <textarea 
                                         className="textarea-p" 
                                         rows={slot.useEmbed ? "2" : "3"}
-                                        placeholder={slot.useEmbed ? "Testo opzionale da inviare sopra l'embed..." : "Inserisci il testo del messaggio..."}
+                                        placeholder={slot.useEmbed ? t('automations.placeholder_embed_text') : t('automations.placeholder_text')}
                                         value={slot.content || ''}
                                         onChange={e => updateMessageSlot(index, 'content', e.target.value)}
                                     ></textarea>
                                 </div>
                                 {slot.useEmbed && (
                                     <button className="btn-embed-quick" onClick={() => setEditingEmbedIndex(index)}>
-                                        <Palette size={14} /> Modifica Design Embed
+                                        <Palette size={14} /> {t('automations.customize_embed')}
                                     </button>
                                 )}
 
                                 <div className="trigger-config" style={{ marginTop: '16px', background: 'var(--bg-badge)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                                    <label className="text-label" style={{ marginBottom: '12px' }}>Trigger Attivazione</label>
+                                    <label className="text-label" style={{ marginBottom: '12px' }}>{t('automations.trigger_label')}</label>
                                     <div style={{ display: 'flex', gap: '12px' }}>
                                         <button 
                                             className={`trigger-btn ${slot.triggerType === 'TIME' ? 'active' : ''}`}
                                             onClick={() => updateMessageSlot(index, 'triggerType', 'TIME')}
                                         >
-                                            <Clock size={14} /> Ogni X Minuti
+                                            <Clock size={14} /> {t('automations.trigger_time')}
                                         </button>
                                         <button 
                                             className={`trigger-btn ${slot.triggerType === 'MESSAGES' ? 'active' : ''}`}
                                             onClick={() => updateMessageSlot(index, 'triggerType', 'MESSAGES')}
                                         >
-                                            <MousePointer2 size={14} /> Ogni X Messaggi
+                                            <MousePointer2 size={14} /> {t('automations.trigger_messages')}
                                         </button>
                                     </div>
 
                                     <div className="field-box" style={{ marginTop: '16px' }}>
-                                        <label className="text-label">{slot.triggerType === 'TIME' ? 'Intervallo (Minuti)' : 'Numero di Messaggi'}</label>
+                                        <label className="text-label">{slot.triggerType === 'TIME' ? t('automations.trigger_time') : t('automations.trigger_messages')}</label>
                                         <input 
                                             type="number" 
                                             className="input-p" 

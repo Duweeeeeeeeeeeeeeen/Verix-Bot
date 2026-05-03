@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Skeleton from '../../../components/Skeleton';
 import EmbedMessageManager from '../../../components/EmbedMessageManager';
 import api from '../../../utils/api';
+import { useT } from '../../../contexts/LanguageContext';
 import { 
   Settings, 
   ShieldAlert, 
@@ -11,6 +12,7 @@ import {
 } from 'lucide-react';
 
 export default function SystemConfig() {
+  const { t } = useT();
   const router = useRouter();
   const { guildId } = router.query;
   const [mounted, setMounted] = useState(false);
@@ -42,13 +44,13 @@ export default function SystemConfig() {
                 <Settings size={24} />
               </div>
               <div className="header-text">
-                <h1>Configurazione Sistema</h1>
-                <p>Gestisci i messaggi globali, gli errori e le notifiche di rete del bot.</p>
+                <h1>{t('system_config.title')}</h1>
+                <p>{t('system_config.desc')}</p>
               </div>
            </div>
            <div className="header-buttons">
-              <button onClick={() => window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Configurazioni messaggi salvate automaticamente.', type: 'success' } }))} className="btn-primary">
-                 <Settings size={16} /> Salva
+              <button onClick={() => window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('common.saved_success'), type: 'success' } }))} className="btn-primary">
+                 <Settings size={16} /> {t('system_config.save')}
               </button>
            </div>
         </header>
@@ -57,65 +59,65 @@ export default function SystemConfig() {
             <EmbedMessageManager 
                 guildId={guildId}
                 module="system"
-                slugs={[
+                 slugs={[
                     { 
                         key: 'no_permission', 
-                        label: 'Permessi Insufficienti', 
-                        description: 'Messaggio mostrato quando un utente non ha i ruoli necessari per un comando o azione.',
+                        label: t('system_config.no_permission_label'), 
+                        description: t('system_config.no_permission_desc'),
                         variables: ['user', 'guild'] 
                     },
                     { 
                         key: 'module_disabled', 
-                        label: 'Modulo Disattivato', 
-                        description: 'Mostrato quando si tenta di interagire con un modulo (es. Tickets) temporaneamente spento.',
+                        label: t('system_config.module_disabled_label'), 
+                        description: t('system_config.module_disabled_desc'),
                         variables: ['user', 'module'] 
                     },
                     { 
                         key: 'role_hierarchy', 
-                        label: 'Gerarchia Ruoli', 
-                        description: 'Errore mostrato quando il bot non può assegnare un ruolo perché troppo alto nella lista del server.',
+                        label: t('system_config.role_hierarchy_label'), 
+                        description: t('system_config.role_hierarchy_desc'),
                         variables: ['user', 'role'] 
                     },
                     { 
                         key: 'generic_error', 
-                        label: 'Errore Generico', 
-                        description: 'Messaggio di fallback per anomalie impreviste del sistema.',
+                        label: t('system_config.generic_error_label'), 
+                        description: t('system_config.generic_error_desc'),
                         variables: ['user', 'error'] 
                     },
                     { 
                         key: 'setup_success', 
-                        label: 'Setup Completato', 
-                        description: 'Messaggio mostrato al completamento del setup base del bot.',
+                        label: t('system_config.setup_success_label'), 
+                        description: t('system_config.setup_success_desc'),
                         variables: ['user', 'guild'] 
                     },
                     { 
                         key: 'module_list', 
-                        label: 'Lista Moduli', 
-                        description: 'Risposta che elenca lo stato di tutti i moduli (attivo/spento).',
+                        label: t('system_config.module_list_label'), 
+                        description: t('system_config.module_list_desc'),
                         variables: ['user', 'modules'] 
                     },
                     { 
                         key: 'module_enabled', 
-                        label: 'Modulo Attivato', 
-                        description: 'Conferma di attivazione di un modulo specifico.',
+                        label: t('system_config.module_enabled_label'), 
+                        description: t('system_config.module_enabled_desc'),
                         variables: ['user', 'module'] 
                     },
                     { 
                         key: 'module_disabled_success', 
-                        label: 'Modulo Disattivato (Successo)', 
-                        description: 'Conferma di spegnimento manuale di un modulo.',
+                        label: t('system_config.module_disabled_success_label'), 
+                        description: t('system_config.module_disabled_success_desc'),
                         variables: ['user', 'module'] 
                     },
                     { 
                         key: 'module_already_in_state', 
-                        label: 'Modulo Già in Stato', 
-                        description: 'Errore mostrato se il modulo è già acceso/spento come richiesto.',
+                        label: t('system_config.module_already_in_state_label'), 
+                        description: t('system_config.module_already_in_state_desc'),
                         variables: ['user', 'module', 'state'] 
                     },
                     { 
                         key: 'module_not_found', 
-                        label: 'Modulo Non Trovato', 
-                        description: 'Errore mostrato se il modulo specificato non esiste.',
+                        label: t('system_config.module_not_found_label'), 
+                        description: t('system_config.module_not_found_desc'),
                         variables: ['user', 'module'] 
                     }
                 ]}

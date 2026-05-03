@@ -60,7 +60,7 @@ export default function SystemUpdates() {
 
     const handleBroadcast = async (e) => {
         e.preventDefault();
-        if (!window.confirm('Sei sicuro di voler inviare questo aggiornamento a TUTTI i server?')) return;
+        if (!window.confirm(t('system.confirm_broadcast'))) return;
 
         setSending(true);
         try {
@@ -76,26 +76,26 @@ export default function SystemUpdates() {
 
             const data = await res.json();
             if (data.success) {
-                alert(`Annuncio inviato! Successo: ${data.stats.success}, Falliti: ${data.stats.failed}`);
+                alert(t('system.broadcast_sent', { success: data.stats.success, failed: data.stats.failed }));
                 setForm({ title: '', version: '', description: '', type: 'standard', changes: '', thumbnail: '', image: '' });
                 fetchHistory(); // Refresh history
             } else {
-                alert('Errore: ' + data.error);
+                alert(t('common.save_error') + ': ' + data.error);
             }
         } catch (err) {
-            alert('Errore di connessione.');
+            alert(t('system.error_connection'));
         } finally {
             setSending(false);
         }
     };
 
-    if (authLoading) return <div className="loading-screen">Caricamento...</div>;
+    if (authLoading) return <div className="loading-screen">{t('common.loading')}</div>;
     
     if (!isOwner) {
         return (
             <div className="forbidden">
-                <h1>Accesso Negato</h1>
-                <p>Questa area è riservata esclusivamente allo sviluppatore del bot.</p>
+                <h1>{t('sidebar.administrator')}</h1>
+                <p>{t('onboarding.step1.staff_desc')}</p>
             </div>
         );
     }
@@ -111,8 +111,8 @@ export default function SystemUpdates() {
                     <div className="title-group">
                         <Terminal className="header-icon" />
                         <div>
-                            <h1>System Operations</h1>
-                            <p>Gestione globale dei broadcast e monitoraggio infrastruttura.</p>
+                            <h1>{t('system.title')}</h1>
+                            <p>{t('system.desc')}</p>
                         </div>
                     </div>
                 </header>
@@ -122,24 +122,24 @@ export default function SystemUpdates() {
                     <section className="glass-card broadcast-section">
                         <div className="card-header">
                             <Rocket size={20} />
-                            <h2>Invia Aggiornamento Globale</h2>
+                            <h2>{t('system.broadcast_title')}</h2>
                         </div>
                         <form onSubmit={handleBroadcast} className="system-form">
                             <div className="form-row">
                                 <div className="form-group">
-                                    <label>Titolo Patch</label>
+                                    <label>{t('system.patch_title')}</label>
                                     <input 
                                         type="text" 
-                                        placeholder="es: Aggiornamento Primavera" 
+                                        placeholder={t('system.patch_placeholder')}
                                         value={form.title}
                                         onChange={e => setForm({ ...form, title: e.target.value })}
                                     />
                                 </div>
                                 <div className="form-group">
-                                    <label>Versione</label>
+                                    <label>{t('system.version')}</label>
                                     <input 
                                         type="text" 
-                                        placeholder="es: 1.4.2" 
+                                        placeholder={t('system.version_placeholder')}
                                         value={form.version}
                                         onChange={e => setForm({ ...form, version: e.target.value })}
                                     />
@@ -147,9 +147,9 @@ export default function SystemUpdates() {
                             </div>
 
                             <div className="form-group">
-                                <label>Descrizione Breve</label>
+                                <label>{t('system.short_desc')}</label>
                                 <textarea 
-                                    placeholder="Cosa c'è di nuovo in generale?"
+                                    placeholder={t('system.desc_placeholder')}
                                     value={form.description}
                                     onChange={e => setForm({ ...form, description: e.target.value })}
                                     required
@@ -157,10 +157,10 @@ export default function SystemUpdates() {
                             </div>
 
                             <div className="form-group">
-                                <label>Lista Modifiche (una per riga)</label>
+                                <label>{t('system.changes_list')}</label>
                                 <textarea 
                                     className="changelog-input"
-                                    placeholder="• Fix bug invio\n• Nuovo comando /help"
+                                    placeholder={t('system.changes_placeholder')}
                                     value={form.changes}
                                     onChange={e => setForm({ ...form, changes: e.target.value })}
                                 />
@@ -168,7 +168,7 @@ export default function SystemUpdates() {
 
                             <div className="form-row">
                                 <div className="form-group">
-                                    <label>URL Miniatura (Thumbnail)</label>
+                                    <label>{t('system.thumbnail_url')}</label>
                                     <input 
                                         type="text" 
                                         placeholder="https://...png" 
@@ -177,7 +177,7 @@ export default function SystemUpdates() {
                                     />
                                 </div>
                                 <div className="form-group">
-                                    <label>URL Immagine Grande</label>
+                                    <label>{t('system.image_url')}</label>
                                     <input 
                                         type="text" 
                                         placeholder="https://...jpg" 
@@ -196,14 +196,14 @@ export default function SystemUpdates() {
                                     onChange={e => setForm({ ...form, type: e.target.value })}
                                     className="type-select"
                                 >
-                                    <option value="standard">Aggiornamento Standard</option>
-                                    <option value="emergency">Emergency Patch (Rosso)</option>
+                                    <option value="standard">{t('system.type_standard')}</option>
+                                    <option value="emergency">{t('system.type_emergency')}</option>
                                 </select>
                                 <button type="submit" className="btn-send" disabled={sending}>
-                                    {sending ? 'Invio in corso...' : (
+                                    {sending ? t('common.loading') : (
                                         <>
                                             <Send size={18} />
-                                            Pubblica su tutti i server
+                                            {t('system.publish_btn')}
                                         </>
                                     )}
                                 </button>
@@ -232,8 +232,8 @@ export default function SystemUpdates() {
                                 <EmbedPreview 
                                     theme={previewTheme}
                                     data={{
-                                        title: form.title || 'Titolo Update',
-                                        description: form.description || 'Nessuna descrizione fornita ancora...',
+                                        title: form.title || t('system.patch_title'),
+                                        description: form.description || t('system.desc_placeholder'),
                                         color: form.type === 'emergency' ? '#ef4444' : '#10b981',
                                         thumbnail: form.thumbnail,
                                         image: form.image,
@@ -250,40 +250,40 @@ export default function SystemUpdates() {
                         <section className="glass-card status-card">
                             <div className="card-header">
                                 <BarChart3 size={20} />
-                                <h2>Stato Infrastruttura</h2>
+                                <h2>{t('system.stats_title')}</h2>
                             </div>
                             {stats ? (
                                 <div className="stats-list">
                                     <div className="stat-item">
-                                        <span>Server Attivi</span>
+                                        <span>{t('system.stats_servers')}</span>
                                         <strong>{stats.guilds}</strong>
                                     </div>
                                     <div className="stat-item">
-                                        <span>Utenza Totale</span>
+                                        <span>{t('system.stats_users')}</span>
                                         <strong>{stats.users}</strong>
                                     </div>
                                     <div className="stat-item">
-                                        <span>Ping WS</span>
+                                        <span>{t('system.stats_ping')}</span>
                                         <strong>{stats.ping}ms</strong>
                                     </div>
                                     <div className="stat-item">
-                                        <span>Uptime</span>
+                                        <span>{t('system.stats_uptime')}</span>
                                         <strong>{Math.floor(stats.uptime / 3600)}h {Math.floor((stats.uptime % 3600) / 60)}m</strong>
                                     </div>
                                 </div>
                             ) : (
-                                <p className="loading-stats">Recupero dati...</p>
+                                <p className="loading-stats">{t('common.loading')}</p>
                             )}
-                            <button onClick={fetchStats} className="btn-refresh">Aggiorna Dati</button>
+                            <button onClick={fetchStats} className="btn-refresh">{t('system.refresh_stats')}</button>
                         </section>
 
                         <section className="glass-card danger-card">
                             <div className="card-header">
                                 <ShieldAlert size={20} />
-                                <h2>Area Pericolosa</h2>
+                                <h2>{t('system.danger_zone')}</h2>
                             </div>
-                            <p>Queste azioni hanno effetto su ogni singola istanza del bot.</p>
-                            <button className="btn-outline-danger" disabled>Forza Riavvio Moduli</button>
+                            <p>{t('system.danger_desc')}</p>
+                            <button className="btn-outline-danger" disabled>{t('system.restart_modules')}</button>
                         </section>
                     </div>
                 </div>
@@ -292,18 +292,18 @@ export default function SystemUpdates() {
                 <section className="glass-card history-section" style={{ marginTop: '2rem' }}>
                     <div className="card-header">
                         <History size={20} />
-                        <h2>Cronologia Broadcast (Stash)</h2>
+                        <h2>{t('system.history_title')}</h2>
                     </div>
                     <div className="history-table-wrapper">
                         <table className="history-table">
                             <thead>
                                 <tr>
-                                    <th>Versione</th>
-                                    <th>Titolo</th>
-                                    <th>Tipo</th>
-                                    <th>Data</th>
-                                    <th>Target</th>
-                                    <th>Azioni</th>
+                                    <th>{t('system.version')}</th>
+                                    <th>{t('system.patch_title')}</th>
+                                    <th>{t('common.status')}</th>
+                                    <th>{t('common.date')}</th>
+                                    <th>{t('system.stats_users')}</th>
+                                    <th>{t('system.history_actions')}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -338,13 +338,13 @@ export default function SystemUpdates() {
                                                     });
                                                     window.scrollTo({ top: 0, behavior: 'smooth' });
                                                 }}
-                                            >Ripristina</button>
+                                            >{t('system.history_restore')}</button>
                                         </td>
                                     </tr>
                                 )) : (
                                     <tr>
                                         <td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
-                                            Nessun broadcast inviato finora.
+                                            {t('system.history_empty')}
                                         </td>
                                     </tr>
                                 )}
