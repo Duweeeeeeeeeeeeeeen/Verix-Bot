@@ -1411,6 +1411,60 @@ router.post('/:guildId/reset/:module', adminCheck, async (req, res) => {
     }
 });
 
+// GET guild configuration (Premium info and White-label)
+router.get('/:guildId/guild', adminCheck, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const guild = await Guild.findOne({ guildId });
+        
+        if (!guild) {
+            // Create a default entry if it doesn't exist
+            const newGuild = new Guild({ guildId });
+            await newGuild.save();
+            return res.json({ success: true, data: newGuild });
+        }
+
+        res.json({ success: true, data: guild });
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'Errore nel caricamento dei dati del server' });
+    }
+});
+
+// PATCH guild configuration (White-label settings)
+router.patch('/:guildId/guild', adminCheck, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const guild = await Guild.findOne({ guildId });
+
+        if (!guild || !guild.isPremium) {
+            return res.status(403).json({ success: false, error: 'Queste funzioni richiedono un abbonamento Premium attivo.' });
+        }
+
+        const { customBotName, customStatus, hideBranding } = req.body;
+
+        const oldSettings = {
+            customBotName: guild.customBotName,
+            customStatus: guild.customStatus,
+            hideBranding: guild.hideBranding
+        };
+
+        guild.customBotName = customBotName !== undefined ? customBotName : guild.customBotName;
+        guild.customStatus = customStatus !== undefined ? customStatus : guild.customStatus;
+        guild.hideBranding = hideBranding !== undefined ? hideBranding : guild.hideBranding;
+
+        await guild.save();
+
+        await logAudit(req, 'UPDATE_WHITE_LABEL', {
+            old: oldSettings,
+            new: { customBotName, customStatus, hideBranding }
+        });
+
+        res.json({ success: true, message: 'Impostazioni aggiornate con successo' });
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'Impossibile aggiornare le impostazioni' });
+    }
+});
+
 // GET audit logs
 router.get('/:guildId/audit-logs', adminCheck, async (req, res) => {
     try {
