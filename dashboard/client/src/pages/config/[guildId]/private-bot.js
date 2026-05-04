@@ -188,6 +188,22 @@ export default function PrivateBotPage() {
                                     <p>Torna qui, incolla il token e clicca su <strong>"Salva Configurazione"</strong>. Poi usa l'interruttore "Stato Istanza" per accenderlo!</p>
                                 </div>
                             </div>
+
+                            <div className="step-item">
+                                <div className="step-number">5</div>
+                                <div className="step-content">
+                                    <h5>Invita il Bot nel Server</h5>
+                                    <p>Vai su <strong>"OAuth2"</strong> &rarr; <strong>"URL Generator"</strong>. Seleziona <strong>"bot"</strong> e <strong>"applications.commands"</strong>. Sotto, seleziona <strong>"Administrator"</strong>, copia l'URL generato e visitalo per aggiungere il bot al tuo server.</p>
+                                </div>
+                            </div>
+
+                            <div className="step-item success-step">
+                                <div className="step-number">✓</div>
+                                <div className="step-content">
+                                    <h5>Tutto Pronto!</h5>
+                                    <p>Il tuo bot privato è ora configurato e operativo. Ogni comando eseguito tramite lui userà il motore di Verix!</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -303,6 +319,9 @@ export default function PrivateBotPage() {
             .lightbox-content .close-btn:hover { opacity: 1; transform: scale(1.1); }
 
             @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+            .step-item.success-step .step-number { border-color: #4caf50; color: #4caf50; background: rgba(76, 175, 80, 0.1); }
+            .step-item.success-step h5 { color: #4caf50; }
 
             .bot-profile { display: flex; align-items: center; gap: 16px; margin-bottom: 32px; background: var(--bg-badge); padding: 16px; border-radius: 16px; }
             .bot-profile img { width: 64px; height: 64px; border-radius: 50%; border: 2px solid var(--primary); }
