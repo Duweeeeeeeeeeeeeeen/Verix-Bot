@@ -4,7 +4,7 @@ import { useT } from '../../../contexts/LanguageContext';
 import { 
     Bot, Shield, Info, Save, 
     Key, Power, AlertTriangle, 
-    ExternalLink, CheckCircle, XCircle, Zap
+    ExternalLink, CheckCircle, XCircle, Zap, RefreshCcw
 } from 'lucide-react';
 import Skeleton from '../../../components/Skeleton';
 import api from '../../../utils/api';
@@ -18,6 +18,7 @@ export default function PrivateBotPage() {
   const [botData, setBotData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [restarting, setRestarting] = useState(false);
   const [token, setToken] = useState('');
   const [selectedImage, setSelectedImage] = useState(null);
 
@@ -72,6 +73,20 @@ export default function PrivateBotPage() {
         setBotData({ ...botData, enabled: res.enabled });
     } catch (err) {
         console.error('Toggle failed:', err);
+    }
+  };
+
+  const handleRestart = async () => {
+    if (!botData || !botData.enabled) return;
+    setRestarting(true);
+    try {
+        await api.request(`/private-bot/${guildId}/restart`, { method: 'POST' });
+        // Refresh data after a short delay to let the bot login
+        setTimeout(fetchData, 2000);
+    } catch (err) {
+        console.error('Restart failed:', err);
+    } finally {
+        setTimeout(() => setRestarting(false), 2000);
     }
   };
 
@@ -232,6 +247,17 @@ export default function PrivateBotPage() {
                                         </label>
                                     </div>
 
+                                    {botData.enabled && (
+                                        <button 
+                                            className="btn-restart-action" 
+                                            onClick={handleRestart}
+                                            disabled={restarting}
+                                        >
+                                            <RefreshCcw size={16} className={restarting ? 'animate-spin' : ''} />
+                                            {restarting ? 'Riavvio in corso...' : 'Riavvia Istanza'}
+                                        </button>
+                                    )}
+
                                     {botData.status === 'error' && (
                                         <div className="error-log">
                                             <strong>Ultimo errore:</strong>
@@ -355,6 +381,9 @@ export default function PrivateBotPage() {
             .status-offline { background: rgba(158, 158, 158, 0.1); color: #9e9e9e; }
             .status-error { background: rgba(244, 67, 54, 0.1); color: #f44336; }
             .toggle-control { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: var(--bg-badge); border-radius: 12px; }
+            .btn-restart-action { width: 100%; margin-top: 12px; padding: 12px; background: var(--bg-card); border: 1px solid var(--border); color: var(--text-main); border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; }
+            .btn-restart-action:hover:not(:disabled) { background: var(--bg-badge); border-color: var(--primary); color: var(--primary); transform: translateY(-2px); }
+            .btn-restart-action:disabled { opacity: 0.5; cursor: not-allowed; }
             .error-log { margin-top: 24px; padding: 12px; background: rgba(244, 67, 54, 0.05); border-radius: 8px; border: 1px solid rgba(244, 67, 54, 0.2); }
             .error-log p { font-size: 0.8rem; color: #f44336; margin-top: 4px; }
             .empty-status { text-align: center; padding: 40px; color: var(--text-muted); }

@@ -105,4 +105,26 @@ router.post('/:guildId/toggle', async (req, res) => {
     }
 });
 
+// Restart bot
+router.post('/:guildId/restart', async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const bot = await PrivateBot.findOne({ guildId });
+
+        if (!bot) return res.status(404).json({ success: false, error: 'Bot not found' });
+        if (!bot.enabled) return res.status(400).json({ success: false, error: 'Bot is disabled' });
+
+        const multiBotManager = req.discordClient.multiBotManager;
+        
+        // Restart sequence
+        await multiBotManager.stopBot(guildId);
+        await multiBotManager.startBot(bot);
+
+        res.json({ success: true, message: 'Bot riavviato con successo' });
+    } catch (error) {
+        logger.error('[API] Restart failed:', error);
+        res.status(500).json({ success: false, error: 'Restart failed' });
+    }
+});
+
 export default router;
