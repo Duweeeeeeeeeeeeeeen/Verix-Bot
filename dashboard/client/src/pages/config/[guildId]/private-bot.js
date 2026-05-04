@@ -19,6 +19,7 @@ export default function PrivateBotPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [token, setToken] = useState('');
+  const [selectedImage, setSelectedImage] = useState(null);
 
   const fetchData = async () => {
     if (!guildId || guildId === 'undefined') return;
@@ -149,8 +150,9 @@ export default function PrivateBotPage() {
                                 <div className="step-content">
                                     <h5>Crea l'Applicazione</h5>
                                     <p>Vai sul <a href="https://discord.com/developers/applications" target="_blank" rel="noreferrer">Developer Portal</a> e clicca su <strong>"New Application"</strong>. Scegli l'opzione <strong>"Bot"</strong> come mostrato sotto.</p>
-                                    <div className="step-img-container">
+                                    <div className="step-img-container clickable" onClick={() => setSelectedImage({ src: `/img/guide${langPath}/step1.png`, title: t('private_bot.step1_title') || "Crea l'Applicazione" })}>
                                         <img src={`/img/guide${langPath}/step1.png`} alt="Step 1" />
+                                        <div className="zoom-overlay"><Zap size={16} /> Clicca per ingrandire</div>
                                     </div>
                                 </div>
                             </div>
@@ -160,8 +162,9 @@ export default function PrivateBotPage() {
                                 <div className="step-content">
                                     <h5>Prendi il Token</h5>
                                     <p>Nel menu a sinistra seleziona <strong>"Bot"</strong>. Clicca su <strong>"Resetta token"</strong> per visualizzare e copiare la tua chiave segreta.</p>
-                                    <div className="step-img-container">
+                                    <div className="step-img-container clickable" onClick={() => setSelectedImage({ src: `/img/guide${langPath}/step2.png`, title: t('private_bot.step2_title') || "Prendi il Token" })}>
                                         <img src={`/img/guide${langPath}/step2.png`} alt="Step 2" />
+                                        <div className="zoom-overlay"><Zap size={16} /> Clicca per ingrandire</div>
                                     </div>
                                 </div>
                             </div>
@@ -171,8 +174,9 @@ export default function PrivateBotPage() {
                                 <div className="step-content">
                                     <h5>Abilita i Permessi (Cruciale)</h5>
                                     <p>Sempre nella tab <strong>"Bot"</strong>, scendi fino a <strong>"Privileged Gateway Intents"</strong> e attiva tutti e tre gli interruttori come mostrato nella foto sotto. Senza questi, il bot non potrà leggere i messaggi o vedere i membri.</p>
-                                    <div className="step-img-container">
+                                    <div className="step-img-container clickable" onClick={() => setSelectedImage({ src: `/img/guide${langPath}/step3.png`, title: t('private_bot.step3_title') || "Abilita i Permessi" })}>
                                         <img src={`/img/guide${langPath}/step3.png`} alt="Step 3" />
+                                        <div className="zoom-overlay"><Zap size={16} /> Clicca per ingrandire</div>
                                     </div>
                                 </div>
                             </div>
@@ -235,6 +239,16 @@ export default function PrivateBotPage() {
             </div>
         )}
 
+        {selectedImage && (
+            <div className="lightbox-overlay" onClick={() => setSelectedImage(null)}>
+                <div className="lightbox-content" onClick={e => e.stopPropagation()}>
+                    <button className="close-btn" onClick={() => setSelectedImage(null)}><XCircle size={24} /></button>
+                    <img src={selectedImage.src} alt="Zoom" />
+                    <p>{selectedImage.title}</p>
+                </div>
+            </div>
+        )}
+
         <style jsx>{`
             .private-bot-container { padding: 20px; }
             .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
@@ -273,8 +287,22 @@ export default function PrivateBotPage() {
             .intent-list li { font-size: 0.85rem; color: var(--text-main); display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
             .intent-list li:before { content: '✓'; color: #4caf50; font-weight: 900; }
 
-            .step-img-container { width: 100%; max-width: 500px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); margin-top: 12px; background: var(--bg-badge); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+            .step-img-container { width: 100%; max-width: 500px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); margin-top: 12px; background: var(--bg-badge); box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: relative; }
+            .step-img-container.clickable { cursor: pointer; transition: 0.3s; }
+            .step-img-container.clickable:hover { transform: translateY(-4px); border-color: var(--primary); }
             .step-img-container img { width: 100%; height: auto; display: block; }
+            
+            .zoom-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.6); color: white; padding: 8px; font-size: 0.7rem; font-weight: 600; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px; opacity: 0; transition: 0.3s; }
+            .step-img-container.clickable:hover .zoom-overlay { opacity: 1; }
+
+            .lightbox-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 40px; animation: fadeIn 0.3s; }
+            .lightbox-content { position: relative; max-width: 90%; max-height: 90%; display: flex; flex-direction: column; align-items: center; }
+            .lightbox-content img { max-width: 100%; max-height: 80vh; border-radius: 12px; box-shadow: 0 0 40px rgba(0,0,0,0.5); }
+            .lightbox-content p { color: white; margin-top: 16px; font-weight: 600; font-size: 1.1rem; }
+            .lightbox-content .close-btn { position: absolute; top: -40px; right: 0; background: none; border: none; color: white; cursor: pointer; opacity: 0.7; transition: 0.3s; }
+            .lightbox-content .close-btn:hover { opacity: 1; transform: scale(1.1); }
+
+            @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
             .bot-profile { display: flex; align-items: center; gap: 16px; margin-bottom: 32px; background: var(--bg-badge); padding: 16px; border-radius: 16px; }
             .bot-profile img { width: 64px; height: 64px; border-radius: 50%; border: 2px solid var(--primary); }
