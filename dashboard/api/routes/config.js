@@ -1721,32 +1721,49 @@ router.post('/:guildId/welcome/test', adminCheck, async (req, res) => {
         const { guildId } = req.params;
         const config = await WelcomeConfig.findOne({ guildId });
         
-        if (!config || !config.enabled || !config.channelId) {
+        if (!config || !config.enabled || !config.welcome?.enabled || !config.welcome?.channelId) {
             return res.status(400).json({ success: false, error: 'Modulo Welcome disabilitato o canale non impostato.' });
         }
 
         const client = req.discordClient;
         const guild = await client.guilds.fetch(guildId);
-        const member = await guild.members.fetchMe(); // Send test to bot itself or just mock it
+        const member = await guild.members.fetchMe();
 
-        // We can use the welcome handler logic here
-        // Since I don't want to duplicate logic, I'll just send a mock embed to the channel
-        const channel = await guild.channels.fetch(config.channelId);
+        const channel = await guild.channels.fetch(config.welcome.channelId);
         if (!channel) return res.status(404).json({ success: false, error: 'Canale non trovato.' });
 
-        const embedData = config.embed || {};
-        const embed = new EmbedBuilder()
-            .setTitle(embedData.title?.replace(/{user}/g, member.user.username) || 'Benvenuto!')
-            .setDescription(embedData.description?.replace(/{user}/g, `<@${member.id}>`) || 'Grazie per essere entrato.')
-            .setColor(embedData.color || '#5865F2');
-        
-        if (embedData.thumbnail) embed.setThumbnail(member.user.displayAvatarURL());
-        if (embedData.image) embed.setImage(embedData.image);
+        const placeholders = {
+            user: member.user.username,
+            user_mention: member.toString(),
+            user_tag: member.user.tag,
+            user_avatar: member.user.displayAvatarURL({ dynamic: true, size: 512 }),
+            guild: guild.name,
+            member_count: guild.memberCount.toString()
+        };
 
-        await channel.send({ content: config.message?.replace(/{user}/g, `<@${member.id}>`) || `Benvenuto <@${member.id}>!`, embeds: [embed] });
+        const wEmbed = config.welcome.embed || {};
+        const isPlaceholder = (val) => !val || (typeof val === 'string' && (val.trim() === '' || val === 'Senza Titolo' || val === 'Nessun contenuto impostato.'));
+
+        const rawTitle = isPlaceholder(wEmbed.title) ? '✈️ Benvenuto in Città' : wEmbed.title;
+        const rawDesc = isPlaceholder(wEmbed.description) ? 'Un nuovo cittadino, **{user}**, è appena atterrato! Ti auguriamo una permanenza prospera.' : wEmbed.description;
+
+        const embed = new EmbedBuilder()
+            .setTitle(placeholderHelper.replace(rawTitle, placeholders))
+            .setDescription(placeholderHelper.replace(rawDesc, placeholders))
+            .setColor(wEmbed.color && wEmbed.color !== '#000000' ? wEmbed.color : '#2ecc71')
+            .setThumbnail(placeholders.user_avatar)
+            .setTimestamp();
+
+        if (wEmbed.footer) embed.setFooter({ text: placeholderHelper.replace(wEmbed.footer, placeholders), iconURL: guild.iconURL() });
+        if (wEmbed.thumbnail && !isPlaceholder(wEmbed.thumbnail)) {
+            embed.setThumbnail(placeholderHelper.replace(wEmbed.thumbnail, placeholders));
+        }
+        if (wEmbed.image) embed.setImage(placeholderHelper.replace(wEmbed.image, placeholders));
+
+        await channel.send({ embeds: [embed] });
 
         res.json({ success: true, message: 'Messaggio di prova inviato!' });
-        await logAudit(req, 'TEST_WELCOME', { channelId: config.channelId });
+        await logAudit(req, 'TEST_WELCOME', { channelId: config.welcome.channelId });
     } catch (error) {
         console.error('Error testing welcome:', error);
         res.status(500).json({ success: false, error: 'Errore durante l\'invio del test.' });
