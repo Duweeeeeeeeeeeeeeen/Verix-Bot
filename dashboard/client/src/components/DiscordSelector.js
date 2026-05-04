@@ -107,6 +107,15 @@ export default function DiscordSelector({
                 <Hash size={16} className="text-dim" />
               )}
               <span className="selected-text">{selectedOptions.name}</span>
+              <button 
+                className="btn-clear-single" 
+                onClick={(e) => {
+                    e.stopPropagation();
+                    onChange('');
+                }}
+              >
+                <X size={14} />
+              </button>
             </div>
           ) : (
             <span className="placeholder-text">{placeholder}</span>
@@ -262,6 +271,25 @@ export default function DiscordSelector({
         }
 
         .tag-remove:hover {
+          color: var(--error);
+        }
+        
+        .btn-clear-single {
+          background: transparent;
+          border: none;
+          color: var(--text-dim);
+          cursor: pointer;
+          padding: 4px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
+          transition: 0.2s;
+          margin-left: auto;
+        }
+        
+        .btn-clear-single:hover {
+          background: var(--bg-badge);
           color: var(--error);
         }
 
