@@ -114,24 +114,31 @@ export default function SystemUpdates() {
         }
     };
 
-    const togglePremium = async () => {
+    const [updatingTier, setUpdatingTier] = useState(false);
+ 
+    const handleUpdateTier = async (newTier) => {
         if (!foundGuild) return;
-        setUpdatingPremium(true);
-        const newStatus = !foundGuild.isPremium;
+        setUpdatingTier(true);
         try {
-            const res = await fetch(`/api/system/guild/${searchGuildId}/premium`, {
+            const res = await fetch(`/api/system/guild/${searchGuildId}/tier`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ isPremium: newStatus })
+                body: JSON.stringify({ tier: newTier })
             });
             const data = await res.json();
             if (data.success) {
-                setFoundGuild({ ...foundGuild, isPremium: newStatus });
+                setFoundGuild({ 
+                    ...foundGuild, 
+                    premiumTier: newTier, 
+                    isPremium: newTier !== 'none' 
+                });
+            } else {
+                alert("Errore: " + data.error);
             }
         } catch (err) {
             alert("Errore durante l'aggiornamento.");
         } finally {
-            setUpdatingPremium(false);
+            setUpdatingTier(false);
         }
     };
 
@@ -346,19 +353,25 @@ export default function SystemUpdates() {
                                     <div className="guild-info">
                                         <p className="id-tag">ID: {searchGuildId}</p>
                                         <div className="status-badge-row">
-                                            <span className={`status-badge ${foundGuild.isPremium ? 'premium' : 'free'}`}>
-                                                {foundGuild.isPremium ? 'PREMIUM' : 'FREE'}
+                                            <span className={`status-badge ${foundGuild.premiumTier === 'platinum' ? 'platinum' : (foundGuild.isPremium ? 'premium' : 'free')}`}>
+                                                {(foundGuild.premiumTier || (foundGuild.isPremium ? 'premium' : 'none')).toUpperCase()}
                                             </span>
                                         </div>
                                     </div>
-                                    <button 
-                                        className={`btn-toggle-premium ${foundGuild.isPremium ? 'is-premium' : ''}`}
-                                        onClick={togglePremium}
-                                        disabled={updatingPremium}
-                                    >
-                                        {updatingPremium ? '...' : (foundGuild.isPremium ? 'Rimuovi PRO' : 'Attiva PRO')}
-                                    </button>
-                                </div>
+                                    <div className="tier-selector-group">
+                                        <label>Seleziona Piano:</label>
+                                        <select 
+                                            value={foundGuild.premiumTier || (foundGuild.isPremium ? 'premium' : 'none')}
+                                            onChange={(e) => handleUpdateTier(e.target.value)}
+                                            disabled={updatingTier}
+                                            className="tier-select-admin"
+                                        >
+                                            <option value="none">Free (Nessuno)</option>
+                                            <option value="premium">Premium</option>
+                                            <option value="platinum">Platinum</option>
+                                        </select>
+                                    </div>
+                                 </div>
                             )}
                         </section>
 
@@ -715,35 +728,44 @@ export default function SystemUpdates() {
                 }
                 .status-badge.free { background: rgba(255,255,255,0.1); color: white; }
                 .status-badge.premium { background: rgba(234, 179, 8, 0.1); color: #eab308; }
+                .status-badge.platinum { background: rgba(168, 85, 247, 0.1); color: #a855f7; border: 1px solid rgba(168, 85, 247, 0.3); }
 
-                .btn-toggle-premium {
-                    width: 100%;
-                    padding: 8px;
-                    border-radius: 8px;
-                    font-size: 0.8rem;
-                    font-weight: 700;
-                    cursor: pointer;
-                    border: 1px solid #eab308;
-                    background: transparent;
-                    color: #eab308;
-                    transition: 0.2s;
+                .tier-selector-group {
+                    margin-top: 12px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
                 }
 
-                .btn-toggle-premium:hover {
-                    background: #eab308;
-                    color: black;
-                }
-
-                .btn-toggle-premium.is-premium {
-                    border-color: var(--text-muted);
+                .tier-selector-group label {
+                    font-size: 0.7rem;
+                    font-weight: 800;
+                    text-transform: uppercase;
                     color: var(--text-muted);
                 }
 
-                .btn-toggle-premium.is-premium:hover {
-                    background: var(--error);
+                .tier-select-admin {
+                    width: 100%;
+                    padding: 8px;
+                    border-radius: 8px;
+                    background: rgba(0,0,0,0.3);
+                    border: 1px solid var(--border-color);
                     color: white;
-                    border-color: var(--error);
+                    font-size: 0.85rem;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: 0.2s;
                 }
+
+                .tier-select-admin:hover:not(:disabled) {
+                    border-color: var(--primary);
+                }
+
+                .tier-select-admin:focus {
+                    outline: none;
+                    border-color: var(--primary);
+                }
+
 
                 @media (max-width: 900px) {
                     .system-grid { grid-template-columns: 1fr; }
