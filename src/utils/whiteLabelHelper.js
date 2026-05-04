@@ -1,4 +1,5 @@
 import Guild from '../models/Guild.js';
+import FiveMConfig from '../models/FiveMConfig.js';
 import logger from './logger.js';
 import { ActivityType } from 'discord.js';
 
@@ -40,7 +41,6 @@ export const syncGuildIdentity = async (guild) => {
  */
 export const syncGlobalStatus = async (client) => {
     try {
-        // Find premium guilds with a custom status, sorted by last update (we'll use updatedAt if exists, otherwise just pick one)
         const premiumConfigs = await Guild.find({ 
             isPremium: true, 
             customStatus: { $ne: null, $exists: true } 
@@ -48,9 +48,23 @@ export const syncGlobalStatus = async (client) => {
 
         if (premiumConfigs.length > 0) {
             const config = premiumConfigs[0];
-            const status = config.customStatus;
+            let status = config.customStatus;
             const type = config.customStatusType !== undefined ? config.customStatusType : ActivityType.Playing;
             
+            // Handle Placeholders (e.g. FiveM players)
+            if (status.includes('{players}') || status.includes('{max_players}')) {
+                const fivemConfig = await FiveMConfig.findOne({ guildId: config.guildId });
+                if (fivemConfig && fivemConfig.servers && fivemConfig.servers[0] && client.fivemManager) {
+                    const server = fivemConfig.servers[0];
+                    const data = await client.fivemManager.fetchServerData(server.serverIp);
+                    if (data && data.online) {
+                        status = status.replace('{players}', data.players).replace('{max_players}', data.maxPlayers);
+                    } else {
+                        status = status.replace('{players}', '0').replace('{max_players}', '0');
+                    }
+                }
+            }
+
             if (type === ActivityType.Custom) {
                 client.user.setPresence({
                     activities: [{
