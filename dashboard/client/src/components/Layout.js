@@ -121,22 +121,68 @@ export default function Layout({ children, guildId, hideGuide = false }) {
     return 'global';
   };
 
-  const menuItems = [
-    { name: t('sidebar.home'), icon: Home, path: `/config/${guildId}`, id: 'home' },
-    { name: t('sidebar.whitelist'), icon: ShieldCheck, path: `/config/${guildId}/whitelist`, id: 'whitelist' },
-    { name: t('sidebar.socials'), icon: Tv, path: `/config/${guildId}/socials`, id: 'socials' },
-    { name: t('sidebar.verify'), icon: CheckCircle, path: `/config/${guildId}/verify`, id: 'verify' },
-    { name: t('sidebar.welcome'), icon: UserPlus, path: `/config/${guildId}/welcome`, id: 'welcome' },
-    { name: t('sidebar.tickets'), icon: Ticket, path: `/config/${guildId}/tickets`, id: 'tickets' },
-    { name: t('sidebar.photocontest'), icon: Camera, path: `/config/${guildId}/photocontest`, id: 'photocontest' },
-    { name: t('sidebar.giveaway'), icon: Gift, path: `/config/${guildId}/giveaway`, id: 'giveaway' },
-    { name: t('sidebar.moderation'), icon: Gavel, path: `/config/${guildId}/moderation`, id: 'moderation' },
-    { name: t('sidebar.tempvoice'), icon: Mic2, path: `/config/${guildId}/tempvoice`, id: 'tempvoice' },
-    { name: t('sidebar.support'), icon: Mic2, path: `/config/${guildId}/support`, id: 'support' },
-    { name: t('sidebar.fivem'), icon: Globe, path: `/config/${guildId}/fivem`, id: 'fivem' },
-    { name: t('sidebar.management'), icon: History, path: `/config/${guildId}/management`, id: 'management' },
-    { name: t('sidebar.embeds'), icon: LayoutIcon, path: `/config/${guildId}/embeds`, id: 'embeds' },
-    { name: t('sidebar.automations'), icon: Cpu, path: `/config/${guildId}/automations`, id: 'automations' }
+  const navigationGroups = [
+    {
+      items: [
+        { name: t('sidebar.home'), icon: Home, path: `/config/${guildId}`, id: 'home' }
+      ]
+    },
+    {
+      title: 'Setup',
+      items: [
+        { name: t('sidebar.verify'), icon: CheckCircle, path: `/config/${guildId}/verify`, id: 'verify' },
+        { name: t('sidebar.welcome'), icon: UserPlus, path: `/config/${guildId}/welcome`, id: 'welcome' },
+        { name: t('sidebar.whitelist'), icon: ShieldCheck, path: `/config/${guildId}/whitelist`, id: 'whitelist' }
+      ]
+    },
+    {
+      title: 'Community',
+      items: [
+        { name: t('sidebar.socials'), icon: Tv, path: `/config/${guildId}/socials`, id: 'socials' },
+        { name: t('sidebar.giveaway'), icon: Gift, path: `/config/${guildId}/giveaway`, id: 'giveaway' },
+        { name: t('sidebar.photocontest'), icon: Camera, path: `/config/${guildId}/photocontest`, id: 'photocontest' }
+      ]
+    },
+    {
+      title: 'Gestione',
+      items: [
+        { name: t('sidebar.tickets'), icon: Ticket, path: `/config/${guildId}/tickets`, id: 'tickets' },
+        { name: t('sidebar.support'), icon: Mic2, path: `/config/${guildId}/support`, id: 'support' },
+        { name: t('sidebar.tempvoice'), icon: Mic2, path: `/config/${guildId}/tempvoice`, id: 'tempvoice' }
+      ]
+    },
+    {
+      title: 'Moderazione',
+      items: [
+        { name: t('sidebar.moderation'), icon: Gavel, path: `/config/${guildId}/moderation`, id: 'moderation' }
+      ]
+    },
+    {
+      title: 'Tools',
+      items: [
+        { name: t('sidebar.automations'), icon: Cpu, path: `/config/${guildId}/automations`, id: 'automations' },
+        { name: t('sidebar.embeds'), icon: LayoutIcon, path: `/config/${guildId}/embeds`, id: 'embeds' }
+      ]
+    },
+    {
+      title: 'FiveM',
+      items: [
+        { name: t('sidebar.fivem'), icon: Globe, path: `/config/${guildId}/fivem`, id: 'fivem' }
+      ]
+    },
+    {
+      title: 'Log',
+      items: [
+        { name: t('sidebar.management'), icon: History, path: `/config/${guildId}/management`, id: 'management' }
+      ]
+    },
+    {
+      title: 'Sistema',
+      items: [
+        { name: t('sidebar.system'), icon: Settings, path: `/config/${guildId}/system`, id: 'system' },
+        { name: 'System Ops', icon: Terminal, path: '/admin/system', id: 'system_ops', adminOnly: true }
+      ]
+    }
   ];
 
   const getToastIcon = (type) => {
@@ -172,65 +218,45 @@ export default function Layout({ children, guildId, hideGuide = false }) {
         </div>
 
         <nav className="nav-group">
-           {menuItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = router.asPath === item.path;
-            
-            return (
-              <Link 
-                key={item.name} 
-                href={item.path} 
-                className={`nav-link ${isActive ? 'active' : ''}`}
-                title={isCollapsed ? item.name : ''}
-              >
-                <div className="nav-link-icon">
-                  <Icon size={18} strokeWidth={2.5} />
-                </div>
-                {!isCollapsed && <span className="nav-link-text animate fade-in">{item.name}</span>}
-                {isActive && !isCollapsed && <ChevronRight size={14} className="active-arrow" />}
-              </Link>
-            );
-          })}
+           {navigationGroups.map((group, gIdx) => (
+            <div key={gIdx} className="nav-section">
+              {group.title && (
+                !isCollapsed ? (
+                  <div className="nav-group-title animate fade-in">{group.title}</div>
+                ) : (
+                  <div className="nav-divider"></div>
+                )
+              )}
+              
+              {group.items.map((item) => {
+                // Admin Only Check
+                if (item.adminOnly && (!user || !['361159834688552960', '314417452395626496'].includes(user.id))) {
+                  return null;
+                }
+
+                const Icon = item.icon;
+                const isActive = router.asPath === item.path;
+                
+                return (
+                  <Link 
+                    key={item.id} 
+                    href={item.path} 
+                    className={`nav-link ${isActive ? 'active' : ''}`}
+                    title={isCollapsed ? item.name : ''}
+                  >
+                    <div className="nav-link-icon">
+                      <Icon size={18} strokeWidth={2.5} />
+                    </div>
+                    {!isCollapsed && <span className="nav-link-text animate fade-in">{item.name}</span>}
+                    {isActive && !isCollapsed && <ChevronRight size={14} className="active-arrow" />}
+                  </Link>
+                );
+              })}
+            </div>
+          ))}
         </nav>
 
         <div className="sidebar-footer">
-          <Link 
-            href={`/config/${guildId}/global`} 
-            className={`nav-link ${router.asPath === `/config/${guildId}/global` ? 'active' : ''}`}
-            style={{ marginBottom: '8px' }}
-            title={isCollapsed ? t('sidebar.management') : ""}
-          >
-            <div className="nav-link-icon">
-              <Settings2 size={18} strokeWidth={2.5} />
-            </div>
-            {!isCollapsed && <span className="nav-link-text animate fade-in">{t('sidebar.management')}</span>}
-          </Link>
-          <Link 
-            href={`/config/${guildId}/system`} 
-            className={`nav-link ${router.asPath === `/config/${guildId}/system` ? 'active' : ''}`}
-            style={{ marginBottom: '12px' }}
-            title={isCollapsed ? t('sidebar.system') : ""}
-          >
-            <div className="nav-link-icon">
-              <Settings size={18} strokeWidth={2.5} />
-            </div>
-            {!isCollapsed && <span className="nav-link-text animate fade-in">{t('sidebar.system')}</span>}
-          </Link>
-
-          {/* Owner Only: System Operations */}
-          {user && ['361159834688552960', '314417452395626496'].includes(user.id) && (
-            <Link 
-              href="/admin/system" 
-              className={`nav-link ${router.asPath === '/admin/system' ? 'active' : ''}`}
-              style={{ marginBottom: '12px', border: '1px solid rgba(99, 102, 241, 0.2)', background: 'rgba(99, 102, 241, 0.05)' }}
-              title={isCollapsed ? "System Ops" : ""}
-            >
-              <div className="nav-link-icon">
-                <Terminal size={18} strokeWidth={2.5} color="var(--primary)" />
-              </div>
-              {!isCollapsed && <span className="nav-link-text animate fade-in" style={{ color: 'var(--primary)', fontWeight: 'bold' }}>System Ops</span>}
-            </Link>
-          )}
           <div className="user-mini-card">
             <img 
               src={user?.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : 'https://cdn.discordapp.com/embed/avatars/0.png'} 
@@ -343,6 +369,10 @@ export default function Layout({ children, guildId, hideGuide = false }) {
           position: relative;
           background: var(--bg-main);
         }
+
+        .nav-section { margin-bottom: 8px; }
+        .nav-group-title { font-size: 10px; font-weight: 800; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1px; padding: 24px 16px 8px 16px; opacity: 0.6; }
+        .nav-divider { height: 1px; background: var(--border); margin: 12px 16px; opacity: 0.3; }
 
         .content-container {
           padding: 96px 48px 48px 48px;
