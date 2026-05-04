@@ -1762,7 +1762,7 @@ router.post('/:guildId/welcome/test', adminCheck, async (req, res) => {
 
         await channel.send({ embeds: [embed] });
 
-        res.json({ success: true, message: 'Messaggio di prova inviato!' });
+        res.json({ success: true, data: { message: 'Messaggio di prova inviato!' } });
         await logAudit(req, 'TEST_WELCOME', { channelId: config.welcome.channelId });
     } catch (error) {
         console.error('Error testing welcome:', error);
