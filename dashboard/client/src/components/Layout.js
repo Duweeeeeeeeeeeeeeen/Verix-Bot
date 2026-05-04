@@ -175,15 +175,16 @@ export default function Layout({ children, guildId, hideGuide = false }) {
       items: [
         { name: t('sidebar.management'), icon: History, path: `/config/${guildId}/management`, id: 'management' }
       ]
-    },
-    {
-      title: 'Sistema',
-      items: [
-        { name: t('sidebar.system'), icon: Settings, path: `/config/${guildId}/system`, id: 'system' },
-        { name: 'System Ops', icon: Terminal, path: '/admin/system', id: 'system_ops', adminOnly: true }
-      ]
     }
   ];
+
+  const systemGroup = {
+    title: 'Sistema',
+    items: [
+      { name: t('sidebar.system'), icon: Settings, path: `/config/${guildId}/system`, id: 'system' },
+      { name: 'System Ops', icon: Terminal, path: '/admin/system', id: 'system_ops', adminOnly: true }
+    ]
+  };
 
   const getToastIcon = (type) => {
     switch(type) {
@@ -257,6 +258,39 @@ export default function Layout({ children, guildId, hideGuide = false }) {
         </nav>
 
         <div className="sidebar-footer">
+          {/* Fixed System Section */}
+          <div className="nav-section" style={{ padding: '0 12px 12px 12px' }}>
+              {!isCollapsed ? (
+                <div className="nav-group-title animate fade-in" style={{ padding: '0 16px 8px 16px' }}>{systemGroup.title}</div>
+              ) : (
+                <div className="nav-divider" style={{ margin: '0 16px 12px 16px' }}></div>
+              )}
+              
+              {systemGroup.items.map((item) => {
+                if (item.adminOnly && (!user || !['361159834688552960', '314417452395626496'].includes(user.id))) {
+                  return null;
+                }
+
+                const Icon = item.icon;
+                const isActive = router.asPath === item.path;
+                
+                return (
+                  <Link 
+                    key={item.id} 
+                    href={item.path} 
+                    className={`nav-link ${isActive ? 'active' : ''}`}
+                    title={isCollapsed ? item.name : ''}
+                  >
+                    <div className="nav-link-icon">
+                      <Icon size={18} strokeWidth={2.5} />
+                    </div>
+                    {!isCollapsed && <span className="nav-link-text animate fade-in">{item.name}</span>}
+                    {isActive && !isCollapsed && <ChevronRight size={14} className="active-arrow" />}
+                  </Link>
+                );
+              })}
+          </div>
+
           <div className="user-mini-card">
             <img 
               src={user?.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : 'https://cdn.discordapp.com/embed/avatars/0.png'} 
@@ -370,9 +404,9 @@ export default function Layout({ children, guildId, hideGuide = false }) {
           background: var(--bg-main);
         }
 
-        .nav-section { margin-bottom: 8px; }
-        .nav-group-title { font-size: 10px; font-weight: 800; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1px; padding: 24px 16px 8px 16px; opacity: 0.6; }
-        .nav-divider { height: 1px; background: var(--border); margin: 12px 16px; opacity: 0.3; }
+        .nav-section { margin-bottom: 4px; }
+        .nav-group-title { font-size: 10px; font-weight: 800; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1px; padding: 16px 16px 4px 16px; opacity: 0.6; }
+        .nav-divider { height: 1px; background: var(--border); margin: 8px 16px; opacity: 0.3; }
 
         .content-container {
           padding: 96px 48px 48px 48px;
