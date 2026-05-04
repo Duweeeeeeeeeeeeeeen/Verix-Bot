@@ -1217,6 +1217,40 @@ router.post('/:guildId/socials', adminCheck, validate(socialSchema), async (req,
         if (data._id) delete data._id;
         if (data.__v !== undefined) delete data.__v;
 
+        const existing = await SocialConfig.findOne({ guildId });
+        if (existing) {
+            // MERGE LOGIC: Preserve internal state (isLive, lastPostId) for existing accounts
+            for (const platform of ['twitch', 'youtube', 'instagram', 'tiktok', 'twitter']) {
+                if (data.platforms?.[platform]?.accounts) {
+                    const newAccounts = data.platforms[platform].accounts;
+                    const oldAccounts = existing.platforms[platform]?.accounts || [];
+                    
+                    data.platforms[platform].accounts = newAccounts.map(newAcc => {
+                        const oldAcc = oldAccounts.find(oa => oa.username === newAcc.username);
+                        if (oldAcc) {
+                            return {
+                                ...newAcc,
+                                isLive: oldAcc.isLive,
+                                lastPostId: oldAcc.lastPostId,
+                                lastCheckAt: oldAcc.lastCheckAt,
+                                discordUserId: oldAcc.discordUserId || newAcc.discordUserId
+                            };
+                        }
+                        return newAcc;
+                    });
+                }
+
+                // SANITIZE LOGIC: Automatically remove old "Connettiti alla frequenza" text if found
+                if (data.platforms?.[platform]?.embed?.description) {
+                    data.platforms[platform].embed.description = data.platforms[platform].embed.description
+                        .replace(/\[Connettiti alla frequenza\]\(.*\)/g, '')
+                        .replace(/\[Entra in Live\]\(.*\)/g, '') // Also clean this up as we have the button now
+                        .replace(/\[Guarda ora\]\(.*\)/g, '')
+                        .trim();
+                }
+            }
+        }
+
         const config = await SocialConfig.findOneAndUpdate(
             { guildId },
             { $set: data },
