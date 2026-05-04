@@ -200,6 +200,7 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
     title: 'Sistema',
     items: [
       { name: t('sidebar.system'), icon: Settings, path: `/config/${guildId}/system`, id: 'system' },
+      { name: 'White-label', icon: Sparkles, path: `/config/${guildId}/white-label`, id: 'white_label' },
       { name: 'System Ops', icon: Terminal, path: '/admin/system', id: 'system_ops', adminOnly: true }
     ]
   };
