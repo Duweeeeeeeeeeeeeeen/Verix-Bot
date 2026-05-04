@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Skeleton from '../../../components/Skeleton';
 import api from '../../../utils/api';
 import { useAuth } from '../../../contexts/AuthContext';
+import { useT } from '../../../contexts/LanguageContext';
 import { 
   History, 
   Search, 
@@ -29,6 +30,7 @@ import {
 
 export default function ManagementPage() {
   const { user: authUser, login } = useAuth();
+  const { t } = useT();
   const router = useRouter();
   const { guildId } = router.query;
   const [userId, setUserId] = useState('');
@@ -110,7 +112,7 @@ export default function ManagementPage() {
   };
 
   const handleClearLogs = async () => {
-    if (!window.confirm('Cancellare tutta la cronologia?')) return;
+    if (!window.confirm(t('tickets.delete_cat_confirm'))) return;
     try {
       setLogsLoading(true);
       await api.request(`/config/${guildId}/audit-logs`, { method: 'DELETE' });
@@ -122,12 +124,12 @@ export default function ManagementPage() {
   };
 
   const getActionInfo = (action) => {
-    if (action.startsWith('UPDATE')) return { icon: RefreshCcw, color: 'var(--primary)', label: 'Aggiornamento' };
-    if (action.startsWith('CREATE')) return { icon: PlusCircle, color: 'var(--success)', label: 'Creazione' };
-    if (action.startsWith('DELETE')) return { icon: Trash2, color: 'var(--error)', label: 'Eliminazione' };
-    if (action.startsWith('RESET')) return { icon: XCircle, color: 'var(--warning)', label: 'Reset' };
-    if (action.startsWith('SEND')) return { icon: Send, color: 'var(--info)', label: 'Invio' };
-    return { icon: FileText, color: 'var(--text-dim)', label: 'Azione' };
+    if (action.startsWith('UPDATE')) return { icon: RefreshCcw, color: 'var(--primary)', label: t('management.action_update') };
+    if (action.startsWith('CREATE')) return { icon: PlusCircle, color: 'var(--success)', label: t('management.action_create') };
+    if (action.startsWith('DELETE')) return { icon: Trash2, color: 'var(--error)', label: t('management.action_delete') };
+    if (action.startsWith('RESET')) return { icon: XCircle, color: 'var(--warning)', label: t('management.action_reset') };
+    if (action.startsWith('SEND')) return { icon: Send, color: 'var(--info)', label: t('management.action_send') };
+    return { icon: FileText, color: 'var(--text-dim)', label: t('management.details') };
   };
 
   const filteredLogs = logs.filter(log => 
@@ -150,7 +152,7 @@ export default function ManagementPage() {
     const idToSearch = (manualId || userId || '').trim();
     
     if (!idToSearch || idToSearch.length < 15) {
-      if (!manualId) showToast('Inserisci un ID Utente valido (17-19 cifre)', 'error');
+      if (!manualId) showToast(t('management.search_placeholder'), 'error');
       return;
     }
 
@@ -170,7 +172,7 @@ export default function ManagementPage() {
       }
     } catch (err) {
       console.error('Search error:', err);
-      showToast(err.message || 'Errore durante la ricerca', 'error');
+      showToast(err.message || t('common.error'), 'error');
       setUserData(null);
     } finally {
       setSearching(false);
@@ -179,7 +181,7 @@ export default function ManagementPage() {
   };
 
   const handleDelete = async (type, id) => {
-    if (!confirm(`Sei sicuro di voler eliminare questo record? Questa operazione è irreversibile.`)) return;
+    if (!confirm(t('management.delete_confirm'))) return;
 
     try {
       await api.request(`/management/${guildId}/records/${type}/${id}`, {
@@ -195,9 +197,9 @@ export default function ManagementPage() {
 
   const handleResetAll = async () => {
     const targetId = userData?.user?.discordId || userId;
-    if (!targetId) return showToast('Nessun utente selezionato', 'error');
+    if (!targetId) return showToast(t('common.error'), 'error');
     
-    if (!confirm(`ATTENZIONE: Stai per resettare TUTTA la cronologia dell'utente (Whitelist, Background e Cooldown). Vuoi procedere?`)) return;
+    if (!confirm(t('management.reset_confirm'))) return;
 
     try {
       await api.request(`/management/${guildId}/reset-user/${targetId}`, {
@@ -218,10 +220,10 @@ export default function ManagementPage() {
       <div className="management-page animate">
         <div className="empty-state card">
           <Lock size={48} className="text-warning" style={{ marginBottom: '16px' }} />
-          <h3>Accesso Richiesto</h3>
-          <p className="text-muted">La tua sessione è scaduta o non sei autorizzato. Effettua nuovamente il login per gestire i record.</p>
+          <h3>{t('management.login_required')}</h3>
+          <p className="text-muted">{t('management.login_desc')}</p>
           <button onClick={login} className="btn-primary" style={{ marginTop: '20px' }}>
-            Effettua il Login
+            {t('management.login_btn')}
           </button>
         </div>
       </div>
@@ -235,14 +237,14 @@ export default function ManagementPage() {
         <div className="sidebar-header">
           <div className="header-top">
             <User size={20} className="text-primary" />
-            <h3>Lista Cittadini</h3>
+            <h3>{t('management.citizen_list')}</h3>
             <span className="count-badge">{userList.length}</span>
           </div>
           <div className="sidebar-search">
             <Search size={16} />
             <input 
               type="text" 
-              placeholder="Filtra per nome o ID..." 
+              placeholder={t('management.filter_placeholder')} 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -257,7 +259,7 @@ export default function ManagementPage() {
           ) : filteredList.length === 0 ? (
             <div className="no-users">
               <Search size={32} />
-              <p>Nessun utente trovato</p>
+              <p>{t('management.no_users')}</p>
             </div>
           ) : (
             filteredList.map(u => (
@@ -289,8 +291,8 @@ export default function ManagementPage() {
               <History size={24} />
             </div>
             <div>
-              <h1>Log & Gestione Hub</h1>
-              <p className="text-muted">Centro di controllo amministrativo e monitoraggio attività.</p>
+              <h1>{t('management.title')}</h1>
+              <p className="text-muted">{t('management.desc')}</p>
             </div>
           </div>
           
@@ -299,13 +301,13 @@ export default function ManagementPage() {
               className={`tab-btn ${activeTab === 'users' ? 'active' : ''}`}
               onClick={() => setActiveTab('users')}
             >
-              <User size={16} /> <span>Gestione Utenti</span>
+              <User size={16} /> <span>{t('management.tab_users')}</span>
             </button>
             <button 
               className={`tab-btn ${activeTab === 'logs' ? 'active' : ''}`}
               onClick={() => setActiveTab('logs')}
             >
-              <History size={16} /> <span>Audit Logs</span>
+              <History size={16} /> <span>{t('management.tab_logs')}</span>
             </button>
           </div>
         </div>
@@ -317,13 +319,13 @@ export default function ManagementPage() {
                 <Search className="search-icon" size={20} />
                 <input 
                   type="text" 
-                  placeholder="Inserisci ID Discord per ricerca rapida..." 
+                  placeholder={t('management.search_placeholder')} 
                   value={userId}
                   onChange={(e) => setUserId(e.target.value)}
                   className="search-input"
                 />
                 <button type="submit" disabled={searching} className="btn-search-p">
-                  {searching ? '...' : 'Cerca'}
+                  {searching ? '...' : t('management.search_btn')}
                 </button>
               </form>
 
@@ -332,10 +334,9 @@ export default function ManagementPage() {
                   <div className="pulse-icon">
                     <User size={48} />
                   </div>
-                  <h3>Seleziona un Cittadino</h3>
+                  <h3>{t('management.select_citizen')}</h3>
                   <p className="text-muted">
-                    Usa la lista a sinistra per navigare tra i cittadini registrati,<br />
-                    oppure inserisci un ID Discord sopra per una ricerca istantanea.
+                    {t('management.select_citizen_desc')}
                   </p>
                 </div>
               )}
@@ -355,14 +356,14 @@ export default function ManagementPage() {
                 </div>
                 <div className="profile-info">
                   <div className="name-badge-row">
-                    <h2>{userData.user?.username || 'Utente'}</h2>
+                    <h2>{userData.user?.username || t('common.no_results')}</h2>
                     <span className="id-badge">{userData.user?.discordId}</span>
                   </div>
-                  <p className="text-dim">Profilo Amministrativo & Cronologia Attività</p>
+                  <p className="text-dim">{t('management.profile_title')}</p>
                 </div>
                 <button className="btn-reset" onClick={handleResetAll}>
                   <RefreshCcw size={18} />
-                  <span>Reset Totale</span>
+                  <span>{t('management.reset_total')}</span>
                 </button>
               </div>
 
@@ -385,7 +386,7 @@ export default function ManagementPage() {
                 <section className="record-section card">
                   <div className="section-header">
                     <ShieldCheck size={20} style={{ color: 'var(--success)' }} />
-                    <h3>Richieste Whitelist</h3>
+                    <h3>{t('management.whitelist_requests')}</h3>
                     <span className="count">{userData.whitelist?.history?.length || 0}</span>
                   </div>
                   <div className="records-list">
@@ -402,8 +403,8 @@ export default function ManagementPage() {
                         </div>
                       ))
                     ) : (
-                      <div className="no-records">
-                        <p>Nessun record whitelist trovato</p>
+                      <div className="no-users">
+                        <p>{t('management.no_records')}</p>
                       </div>
                     )}
                   </div>
@@ -412,7 +413,7 @@ export default function ManagementPage() {
                 <section className="record-section card">
                   <div className="section-header">
                     <BookOpen size={20} style={{ color: 'var(--info)' }} />
-                    <h3>Background Story</h3>
+                    <h3>{t('management.bg_story')}</h3>
                     <span className="count">{userData.background?.history?.length || 0}</span>
                   </div>
                   <div className="records-list">
@@ -429,8 +430,8 @@ export default function ManagementPage() {
                         </div>
                       ))
                     ) : (
-                      <div className="no-records">
-                        <p>Nessun background trovato</p>
+                      <div className="no-users">
+                        <p>{t('management.no_records')}</p>
                       </div>
                     )}
                   </div>
@@ -446,13 +447,13 @@ export default function ManagementPage() {
                         <Search size={18} className="search-icon-p" />
                         <input 
                             className="transparent-input" 
-                            placeholder="Filtra per amministratore o azione..." 
+                            placeholder={t('management.log_filter')} 
                             value={logSearch}
                             onChange={(e) => setLogSearch(e.target.value)}
                         />
                         <div className="log-actions">
                             <button onClick={handleClearLogs} className="btn-danger-mini">
-                                <Trash2 size={14} /> Pulisci
+                                <Trash2 size={14} /> {t('management.clear_btn')}
                             </button>
                             <button onClick={fetchLogs} className="btn-refresh-p" disabled={logsLoading}>
                                 <RefreshCcw size={14} className={logsLoading ? 'spin' : ''} />
@@ -482,7 +483,7 @@ export default function ManagementPage() {
                                                 <td className="admin-cell">
                                                     <div className="admin-badge-p">
                                                         <User size={10} />
-                                                        <span>{log.username || 'Sistema'}</span>
+                                                        <span>{log.username || t('onboarding.step3.done')}</span>
                                                     </div>
                                                 </td>
                                                 <td className="action-cell-p">
@@ -514,7 +515,7 @@ export default function ManagementPage() {
                         {filteredLogs.length === 0 && (
                             <div className="empty-logs">
                                 <History size={40} />
-                                <p>Nessun log trovato.</p>
+                                <p>{t('management.empty_logs')}</p>
                             </div>
                         )}
                     </div>

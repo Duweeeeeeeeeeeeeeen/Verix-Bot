@@ -4,6 +4,7 @@ import Skeleton from '../../../components/Skeleton';
 import DiscordSelector from '../../../components/DiscordSelector';
 import EmbedMessageManager from '../../../components/EmbedMessageManager';
 import api from '../../../utils/api';
+import { useT } from '../../../contexts/LanguageContext';
 import { 
     Save, ShieldCheck, Settings2, RefreshCcw, Power, 
     Palette, MessageSquare, Bell, Info, MousePointer2, 
@@ -17,6 +18,7 @@ import NotificationSettings from '../../../components/NotificationSettings';
 
 export default function VerifyConfig() {
   const router = useRouter();
+  const { t } = useT();
   const { guildId } = router.query;
   const [config, setConfig] = useState(null);
   const [discordData, setDiscordData] = useState({ roles: [], channels: [], botHighestPosition: 0 });
@@ -74,7 +76,7 @@ export default function VerifyConfig() {
     if (!roleId) return null;
     const role = discordData.roles.find(r => r.id === roleId);
     if (role && role.position >= discordData.botHighestPosition) {
-        return "⚠️ Il ruolo è sopra quello del bot.";
+        return t('system_config.role_hierarchy_desc');
     }
     return null;
   };
@@ -98,23 +100,23 @@ export default function VerifyConfig() {
     setSaving(true);
     try {
       await api.request(`/config/${guildId}/verify`, { method: 'POST', body: JSON.stringify(config) });
-      showToast('Configurazione salvata con successo!');
+      showToast(t('common.saved_success'));
     } catch (error) {
-      showToast('Errore durante il salvataggio.', 'error');
+      showToast(t('common.error'), 'error');
     } finally {
       setSaving(false);
     }
   };
 
   const handleSendPanel = async () => {
-    if (!config.channelId) return showToast('Configura prima un Canale Pannello!', 'error');
+    if (!config.channelId) return showToast(t('common.select_channel'), 'error');
     setSendingPanel(true);
     try {
         await handleSave();
         const res = await api.request(`/config/${guildId}/verify/send-panel`, { method: 'POST' });
-        showToast(res.message || 'Pannello inviato con successo!');
+        showToast(res.message || t('common.saved_success'));
     } catch (error) {
-        showToast('Errore durante l\'invio del pannello.', 'error');
+        showToast(t('common.error'), 'error');
     } finally {
         setSendingPanel(false);
     }
@@ -123,8 +125,8 @@ export default function VerifyConfig() {
   if (!mounted || loading || !config) return <Skeleton height="600px" />;
 
   const tabs = [
-    { id: 'settings', name: 'Settaggi', icon: Settings2 },
-    { id: 'design', name: 'Design & Messaggi', icon: Palette },
+    { id: 'settings', name: t('verify.tab_settings'), icon: Settings2 },
+    { id: 'design', name: t('verify.tab_design'), icon: Palette },
   ];
 
   return (
@@ -138,21 +140,21 @@ export default function VerifyConfig() {
                     </div>
                     <div className="header-text">
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <h1>Sistema Verifica</h1>
-                            <label className="toggle-mini" title={config.enabled ? 'Modulo Attivo' : 'Modulo Disattivato'}>
+                            <h1>{t('verify.title')}</h1>
+                            <label className="toggle-mini" title={config.enabled ? t('common.enabled') : t('common.disabled')}>
                                 <input type="checkbox" checked={!!config.enabled} onChange={e => setConfig({...config, enabled: e.target.checked})} />
                                 <span className="slider-mini"></span>
                             </label>
                         </div>
-                        <p>Configura il processo di verifica automatica per i nuovi membri.</p>
+                        <p>{t('verify.desc')}</p>
                     </div>
                 </div>
                 <div className="header-buttons">
                     <button onClick={handleSendPanel} className="btn-outline" disabled={sendingPanel || !config.channelId}>
-                        <Send size={16} /> {sendingPanel ? 'Invio...' : 'Invia Pannello'}
+                        <Send size={16} /> {sendingPanel ? t('verify.sending_btn') : t('verify.send_panel')}
                     </button>
                     <button onClick={handleSave} className="btn-primary" disabled={saving}>
-                        <Save size={16} /> {saving ? 'Salvataggio...' : 'Salva Modifiche'}
+                        <Save size={16} /> {saving ? t('common.saving') : t('common.save')}
                     </button>
                 </div>
             </header>
@@ -175,25 +177,25 @@ export default function VerifyConfig() {
                                 <div className="section-header">
                                     <div className="align-center">
                                         <Shield size={18} color="var(--primary)" />
-                                        <h3>Core Protocol</h3>
+                                        <h3>{t('verify.core_protocol')}</h3>
                                     </div>
                                 </div>
                                 <div className="fields-grid" style={{ marginTop: '20px' }}>
                                     <div className="field-box">
-                                        <label className="text-label">Ruolo da Assegnare</label>
+                                        <label className="text-label">{t('verify.role_to_assign')}</label>
                                         <DiscordSelector type="role" options={discordData.roles} value={config.roleId} onChange={v => setNested('roleId', v)} error={getRoleError(config.roleId)} />
                                     </div>
                                     <div className="field-box">
-                                        <label className="text-label">Canale Pannello</label>
+                                        <label className="text-label">{t('verify.panel_channel')}</label>
                                         <DiscordSelector type="channel" options={discordData.channels} value={config.channelId} onChange={v => setNested('channelId', v)} />
                                     </div>
                                     <div className="field-box">
-                                        <label className="text-label">Ruolo da Rimuovere</label>
-                                        <DiscordSelector type="role" options={discordData.roles} value={config.removeRoleId} onChange={v => setNested('removeRoleId', v)} placeholder="Nessuno" />
+                                        <label className="text-label">{t('verify.role_to_remove')}</label>
+                                        <DiscordSelector type="role" options={discordData.roles} value={config.removeRoleId} onChange={v => setNested('removeRoleId', v)} placeholder={t('common.no_results')} />
                                     </div>
                                     <div className="field-box">
-                                        <label className="text-label">Canale Audit Log</label>
-                                        <DiscordSelector type="channel" options={discordData.channels} value={config.logChannelId} onChange={v => setNested('logChannelId', v)} placeholder="Nessuno" />
+                                        <label className="text-label">{t('verify.audit_channel')}</label>
+                                        <DiscordSelector type="channel" options={discordData.channels} value={config.logChannelId} onChange={v => setNested('logChannelId', v)} placeholder={t('common.no_results')} />
                                     </div>
                                 </div>
                             </section>
@@ -201,28 +203,28 @@ export default function VerifyConfig() {
                             <section className="card info-warn-v animate slide-up">
                                 <ShieldAlert size={20} />
                                 <div>
-                                    <h4 style={{ margin: 0, fontSize: '0.9rem', fontWeight: 700 }}>Importante Gerarchia Ruoli</h4>
-                                    <p style={{ margin: '4px 0 0 0', opacity: 0.8 }}>Il ruolo del bot deve essere <b>fisicamente sopra</b> i ruoli che desidera assegnare nella lista dei ruoli di Discord.</p>
+                                    <h4 style={{ margin: 0, fontSize: '0.9rem', fontWeight: 700 }}>{t('verify.hierarchy_title')}</h4>
+                                    <p style={{ margin: '4px 0 0 0', opacity: 0.8 }}>{t('verify.hierarchy_desc')}</p>
                                 </div>
                             </section>
                         </div>
                         <div className="grid-right">
                             <section className="card section-card">
-                                <h3 className="sidebar-title align-center" style={{ marginBottom: '16px' }}><Bell size={18} /> Notifiche</h3>
+                                <h3 className="sidebar-title align-center" style={{ marginBottom: '16px' }}><Bell size={18} /> {t('onboarding.step2.whitelist')}</h3>
                                 <NotificationSettings 
                                     guildId={guildId}
                                     value={config.notifications}
                                     onChange={val => setConfig({...config, notifications: val})}
-                                    title="Notifica Utente"
-                                    description="Scegli come notificare l'utente dopo la verifica."
+                                    title={t('verify.notif_user')}
+                                    description={t('verify.notif_desc')}
                                 />
                                 <div className="toggle-list-v">
                                     <div className="toggle-row-v">
-                                        <span>Log Amministrazione</span>
+                                        <span>{t('verify.admin_log_toggle')}</span>
                                         <label className="toggle"><input type="checkbox" checked={!!config.logEnabled} onChange={e => setNested('logEnabled', e.target.checked)} /><span className="slider"></span></label>
                                     </div>
                                 </div>
-                                <p className="text-description" style={{ marginTop: '12px' }}>Scegli se inviare un messaggio privato all'utente e un log nel canale staff dopo la verifica.</p>
+                                <p className="text-description" style={{ marginTop: '12px' }}>{t('verify.notif_desc')}</p>
                             </section>
                         </div>
                     </div>
@@ -234,13 +236,13 @@ export default function VerifyConfig() {
                         <section className="card section-card" style={{ marginBottom: '24px' }}>
                             <div className="align-center" style={{ marginBottom: '20px' }}>
                                 <MousePointer2 size={18} color="var(--primary)" />
-                                <h3>Branding Pulsante</h3>
+                                <h3>{t('verify.button_branding')}</h3>
                             </div>
                             <div className="btn-config-grid">
                                 <div className="btn-config-card-v">
                                     <div className="fields-grid">
                                         <div className="field-box">
-                                            <label className="label-tiny">Testo Bottone</label>
+                                            <label className="label-tiny">{t('verify.button_label')}</label>
                                             <input className="input" value={config.buttons?.verify?.label || ''} onChange={e => setNested('buttons.verify.label', e.target.value)} placeholder="Verificati Ora" />
                                         </div>
                                         <div className="field-box">
@@ -250,14 +252,14 @@ export default function VerifyConfig() {
                                             </div>
                                         </div>
                                         <div className="field-box" style={{ gridColumn: 'span 2' }}>
-                                            <label className="label-tiny">Stile Pulsante</label>
+                                            <label className="label-tiny">{t('verify.style_label')}</label>
                                             <div className="style-selector-v">
                                                 {[
-                                                    { id: 'SUCCESS', label: 'Verde', color: 'var(--discord-green)' },
-                                                    { id: 'PRIMARY', label: 'Blu', color: 'var(--discord-blurple)' },
-                                                    { id: 'SECONDARY', label: 'Grigio', color: 'var(--discord-gray)' },
-                                                    { id: 'DANGER', label: 'Rosso', color: 'var(--discord-red)' },
-                                                    { id: 'LINK', label: 'Link 🔗', color: 'var(--discord-gray)' }
+                                                    { id: 'SUCCESS', label: t('tickets.btn_style_green'), color: 'var(--discord-green)' },
+                                                    { id: 'PRIMARY', label: t('tickets.btn_style_blue'), color: 'var(--discord-blurple)' },
+                                                    { id: 'SECONDARY', label: t('tickets.btn_style_gray'), color: 'var(--discord-gray)' },
+                                                    { id: 'DANGER', label: t('tickets.btn_style_red'), color: 'var(--discord-red)' },
+                                                    { id: 'LINK', label: t('tickets.btn_style_link'), color: 'var(--discord-gray)' }
                                                 ].map(style => (
                                                     <button 
                                                         key={style.id}
@@ -272,9 +274,9 @@ export default function VerifyConfig() {
                                         </div>
                                         {config.buttons?.verify?.style === 'LINK' && (
                                             <div className="field-box animate fade-in" style={{ gridColumn: 'span 2' }}>
-                                                <label className="label-tiny">URL del Link</label>
-                                                <input className="input" value={config.buttons?.verify?.url || ''} onChange={e => setNested('buttons.verify.url', e.target.value)} placeholder="https://google.com" />
-                                                <p className="field-help" style={{ marginTop: '4px', fontSize: '0.7rem' }}>I bottoni Link aprono un sito web esterno e non attivano il sistema di verifica.</p>
+                                                <label className="label-tiny">{t('embeds.editor.url_label')}</label>
+                                                <input className="input" value={config.buttons?.verify?.url || ''} onChange={e => setNested('buttons.verify.url', e.target.value)} placeholder="https://..." />
+                                                <p className="field-help" style={{ marginTop: '4px', fontSize: '0.7rem' }}>{t('verify.link_help')}</p>
                                             </div>
                                         )}
                                     </div>

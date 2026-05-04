@@ -1,93 +1,56 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import { useT } from '../../../contexts/LanguageContext';
 import { 
-    Save, Camera, Clock, Settings2, RefreshCcw, Power, Palette, 
-    Bell, Trophy, Zap, Info, Calendar, Layout as LayoutIcon, ChevronRight,
-    Shield, Target, Image, MousePointer2, Sparkles, FileText, List, Play, CheckCircle2, XCircle,
-    Plus, Trash2
+    Save, Trash2, Plus, X, Settings2, Calendar, Trophy, 
+    Image as ImageIcon, UserCheck, Clock, RefreshCw, 
+    Layout, AlertCircle, Play, Square, List, XCircle
 } from 'lucide-react';
 import Skeleton from '../../../components/Skeleton';
 import HelpTooltip from '../../../components/HelpTooltip';
 import api from '../../../utils/api';
 import DiscordSelector from '../../../components/DiscordSelector';
 import EmbedMessageManager from '../../../components/EmbedMessageManager';
-import EmbedEditor from '../../../components/EmbedEditor';
-import EmojiInput from '../../../components/EmojiInput';
-import CustomSelect from '../../../components/CustomSelect';
-import { mergeConfig } from '../../../utils/defaults';
 import NotificationSettings from '../../../components/NotificationSettings';
 import ConfirmModal from '../../../components/ConfirmModal';
 
 export default function PhotoContestConfig() {
+  const { t } = useT();
   const router = useRouter();
   const { guildId } = router.query;
   const [config, setConfig] = useState(null);
+  const [discordData, setDiscordData] = useState({ roles: [], channels: [] });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [starting, setStarting] = useState(false);
-  const [ending, setEnding] = useState(false);
   const [activeTab, setActiveTab] = useState('settings');
   const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: 'danger', title: '', message: '', onConfirm: null });
 
-   const [roles, setRoles] = useState([]);
-  const [channels, setChannels] = useState([]);
-  const [messages, setMessages] = useState({});
-  const [loadingMessages, setLoadingMessages] = useState(true);
-  const [mounted, setMounted] = useState(false);
-
   useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const fetchMessages = async () => {
-    try {
-      const res = await api.request(`/messages/${guildId}/photocontest`);
-      setMessages(res.data || res || {});
-    } catch (err) {
-      console.error('Error fetching messages:', err);
-    } finally {
-      setLoadingMessages(false);
+    if (guildId) {
+      Promise.all([
+        api.request(`/config/${guildId}/photocontest`),
+        api.request(`/config/${guildId}/discord-data`)
+      ]).then(([conf, disc]) => {
+        setConfig(conf.data || conf);
+        setDiscordData(disc.data || disc);
+        setLoading(false);
+      }).catch(err => {
+        console.error("Error loading photocontest config:", err);
+        setLoading(false);
+      });
     }
-  };
+  }, [guildId]);
 
-  useEffect(() => {
-    if (guildId && mounted) {
-      fetchMessages();
-      api.request(`/config/${guildId}/photocontest`)
-        .then(data => {
-          const moduleConfig = mergeConfig(data.data || data, 'photocontest');
-          setConfig(moduleConfig);
-          setLoading(false);
-        })
-        .catch(() => setLoading(false));
-      
-      api.request(`/config/${guildId}/discord-data`)
-        .then(res => {
-            setRoles(res?.data?.roles || res?.roles || []);
-            setChannels(res?.data?.channels || res?.channels || []);
-        });
+  const updateNested = (path, value) => {
+    const keys = path.split('.');
+    const newConfig = { ...config };
+    let current = newConfig;
+    for (let i = 0; i < keys.length - 1; i++) {
+        current[keys[i]] = { ...current[keys[i]] };
+        current = current[keys[i]];
     }
-  }, [guildId, mounted]);
-
-  useEffect(() => {
-    if (config) {
-      window.dispatchEvent(new CustomEvent('update-guide-context', { detail: config }));
-    }
-  }, [config]);
-
-  const setNested = (path, value) => {
-    setConfig(prev => {
-        const newConfig = { ...prev };
-        const parts = path.split('.');
-        let cur = newConfig;
-        for (let i = 0; i < parts.length - 1; i++) {
-            if (!cur[parts[i]]) cur[parts[i]] = {};
-            else cur[parts[i]] = { ...cur[parts[i]] };
-            cur = cur[parts[i]];
-        }
-        cur[parts[parts.length - 1]] = value;
-        return newConfig;
-    });
+    current[keys[keys.length - 1]] = value;
+    setConfig(newConfig);
   };
 
   const showToast = (message, type = 'success') => {
@@ -97,62 +60,66 @@ export default function PhotoContestConfig() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await Promise.all([
-        api.request(`/config/${guildId}/photocontest`, { method: 'POST', body: JSON.stringify(config) }),
-        api.request(`/messages/${guildId}/photocontest`, { method: 'POST', body: JSON.stringify(messages) })
-      ]);
-      showToast('Configurazione salvata!');
+      await api.request(`/config/${guildId}/photocontest`, {
+        method: 'POST',
+        body: JSON.stringify(config)
+      });
+      showToast(t('photocontest.save_success'));
     } catch (error) {
-      showToast('Errore salvataggio.', 'error');
+        showToast(t('photocontest.save_error'), 'error');
     } finally {
       setSaving(false);
     }
   };
 
-  const handleReset = async () => {
+  const addTheme = (name) => {
+    if (!name.trim()) return;
+    const newThemes = [...(config.themes || []), { name: name.trim(), durationHours: null }];
+    setConfig({ ...config, themes: newThemes });
+  };
+
+  const removeTheme = (index) => {
+    const newThemes = config.themes.filter((_, i) => i !== index);
+    setConfig({ ...config, themes: newThemes });
+  };
+
+  const updateTheme = (index, field, value) => {
+    const newThemes = [...config.themes];
+    newThemes[index] = { ...newThemes[index], [field]: value };
+    setConfig({ ...config, themes: newThemes });
+  };
+
+  const startContest = async () => {
+    setConfirmModal({
+        isOpen: true,
+        type: 'success',
+        title: <div className="align-center"><Play size={24} color="var(--success)" /> <h2>{t('photocontest.terminate_modal_title')}</h2></div>,
+        message: t('photocontest.terminate_modal_msg'),
+        onConfirm: async () => {
+            try {
+                await api.request(`/config/${guildId}/photocontest/start`, { method: 'POST' });
+                showToast(t('photocontest.start_success'));
+            } catch (e) { showToast(t('common.error'), 'error'); }
+        }
+    });
+  };
+
+  const terminateContest = async () => {
     setConfirmModal({
         isOpen: true,
         type: 'danger',
-        title: 'Ripristina Modulo',
-        message: 'Vuoi davvero ripristinare tutte le impostazioni ai valori predefiniti? Questa azione non può essere annullata.',
+        title: <div className="align-center"><Square size={24} color="var(--error)" /> <h2>{t('photocontest.terminate_modal_title')}</h2></div>,
+        message: t('photocontest.terminate_modal_msg'),
         onConfirm: async () => {
             try {
-                await api.request(`/config/${guildId}/reset/photocontest`, { method: 'POST' });
-                window.location.reload();
-            } catch (error) {}
+                await api.request(`/config/${guildId}/photocontest/terminate`, { method: 'POST' });
+                showToast(t('photocontest.terminate_success'));
+            } catch (e) { showToast(t('common.error'), 'error'); }
         }
     });
   };
 
-  const handleForceStart = async () => {
-    setStarting(true);
-    try {
-        const res = await api.request(`/config/${guildId}/photocontest/force-start`, { method: 'POST' });
-        showToast('Contest avviato!');
-    } catch (error) {
-        showToast('Errore avvio.', 'error');
-    } finally { setStarting(false); }
-  };
-
-  const handleForceEnd = async () => {
-    setConfirmModal({
-        isOpen: true,
-        type: 'warning',
-        title: 'Termina Contest',
-        message: 'Vuoi terminare manualmente il contest in corso? Verranno calcolati i voti e proclamato il vincitore.',
-        onConfirm: async () => {
-            setEnding(true);
-            try {
-                await api.request(`/config/${guildId}/photocontest/force-end`, { method: 'POST' });
-                showToast('Contest terminato!');
-            } catch (error) {
-                showToast('Errore termine.', 'error');
-            } finally { setEnding(false); }
-        }
-    });
-  };
-
-  if (!mounted || loading || !config) return <Skeleton type="config" />;
+  if (loading || !config) return <Skeleton type="config" />;
 
   return (
     <div className="config-page-layout animate">
@@ -160,215 +127,204 @@ export default function PhotoContestConfig() {
         <header className="module-header">
            <div className="header-info">
               <div className="header-icon" style={{ background: 'var(--primary-glow)', color: 'var(--primary)' }}>
-                <Camera size={24} />
+                <ImageIcon size={24} />
               </div>
               <div className="header-text">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <h1>Photo Contest</h1>
-                  <label className="toggle-mini" title={config.enabled ? 'Modulo Attivo' : 'Modulo Disattivato'}>
+                  <h1>{t('photocontest.title')}</h1>
+                  <label className="toggle-mini" title={config.enabled ? t('photocontest.active') : t('photocontest.inactive')}>
                     <input type="checkbox" checked={!!config.enabled} onChange={e => setConfig({...config, enabled: e.target.checked})} />
                     <span className="slider-mini"></span>
                   </label>
                 </div>
-                <p>Automatizza sfide fotografiche e premia i migliori cittadini.</p>
+                <p>{t('photocontest.desc')}</p>
               </div>
            </div>
            <div className="header-buttons-grid">
-              <button onClick={handleForceEnd} className="btn-outline" style={{ color: 'var(--error)' }} disabled={ending}>
-                <Clock size={16} /> Termina
-              </button>
-              <button onClick={handleForceStart} className="btn-outline" style={{ color: 'var(--success)' }} disabled={starting}>
-                <Zap size={16} /> Avvia Ora
-              </button>
-              <button onClick={handleSave} className="btn-primary" disabled={saving}>
-                <Save size={16} /> {saving ? 'Salvataggio...' : 'Salva'}
-              </button>
+               <button onClick={terminateContest} className="btn-outline" style={{ borderColor: 'var(--error)', color: 'var(--error)' }}>
+                  <Square size={16} /> {t('photocontest.btn_terminate')}
+               </button>
+               <button onClick={startContest} className="btn-outline" style={{ borderColor: 'var(--success)', color: 'var(--success)' }}>
+                  <Play size={16} /> {t('photocontest.btn_start_now')}
+               </button>
+               <button onClick={handleSave} className="btn-primary" disabled={saving}>
+                  <Save size={16} /> {saving ? t('common.saving') : t('common.save')}
+               </button>
            </div>
         </header>
 
         <div className="tab-navigation">
             <button onClick={() => setActiveTab('settings')} className={`tab-link ${activeTab === 'settings' ? 'active' : ''}`}>
-                <Settings2 size={16} />
-                <span>Configurazione</span>
+                <Settings2 size={16} /> <span>{t('photocontest.tab_settings')}</span>
             </button>
             <button onClick={() => setActiveTab('themes')} className={`tab-link ${activeTab === 'themes' ? 'active' : ''}`}>
-                <Image size={16} />
-                <span>Temi</span>
+                <ImageIcon size={16} /> <span>{t('photocontest.tab_themes')}</span>
             </button>
-            <button onClick={() => setActiveTab('design')} className={`tab-link ${activeTab === 'design' ? 'active' : ''}`}>
-                <Palette size={16} />
-                <span>Design & Messaggi</span>
+            <button onClick={() => setActiveTab('messages')} className={`tab-link ${activeTab === 'messages' ? 'active' : ''}`}>
+                <RefreshCw size={16} /> <span>{t('photocontest.tab_design')}</span>
             </button>
         </div>
 
         <div className="tab-panel animate">
             {activeTab === 'settings' && (
-                <div className="config-grid animate fade-in">
+                <div className="config-grid animate fade-in" style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '24px' }}>
                     <div className="grid-left">
-                        <section className="card section-card-p">
-                            <h3 className="align-center"><Target size={18} color="var(--primary)" /> Destinazioni</h3>
-                            <div className="fields-grid-p">
+                        <section className="card section-card" style={{ padding: '24px' }}>
+                            <div className="align-center">
+                                <Layout size={18} color="var(--primary)" />
+                                <h3>{t('photocontest.destinations_title')}</h3>
+                            </div>
+                            <div className="fields-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '24px' }}>
                                 <div className="field-box">
-                                    <label className="text-label">Canale Contest</label>
-                                    <DiscordSelector type="channel" options={channels.filter(c => c.type === 0 || c.type === 5)} value={config.channelId || ''} onChange={val => setConfig({...config, channelId: val})} />
+                                    <label className="text-label">{t('photocontest.channel_label')}</label>
+                                    <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 0 || c.type === 5)} value={config.channelId || ''} onChange={v => setConfig({...config, channelId: v})} />
                                 </div>
                                 <div className="field-box">
-                                    <label className="text-label">Hall of Fame</label>
-                                    <DiscordSelector type="channel" options={channels.filter(c => c.type === 0 || c.type === 5)} value={config.hallOfFameChannelId || ''} onChange={val => setConfig({...config, hallOfFameChannelId: val})} />
+                                    <label className="text-label">{t('photocontest.hall_of_fame_label')}</label>
+                                    <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 0 || c.type === 5)} value={config.hallOfFameChannelId || ''} onChange={v => setConfig({...config, hallOfFameChannelId: v})} />
                                 </div>
                                 <div className="field-box">
-                                    <label className="text-label">Ruolo Vincitore</label>
-                                    <DiscordSelector type="role" options={roles} value={config.prizeRoleId || ''} onChange={val => setConfig({...config, prizeRoleId: val})} />
-                                </div>
-
-                                <div className="field-box">
-                                    <label className="text-label">
-                                        Intervallo (Ore)
-                                        <HelpTooltip text="Il tempo di attesa tra la fine di un contest e l'inizio automatico del prossimo." />
-                                    </label>
-                                    <input type="number" className="input" value={config.interval || 1} onChange={(e) => setConfig({...config, interval: parseInt(e.target.value) || 1})} />
+                                    <label className="text-label">{t('photocontest.winner_role_label')}</label>
+                                    <DiscordSelector type="role" options={discordData.roles} value={config.winnerRoleId || ''} onChange={v => setConfig({...config, winnerRoleId: v})} />
                                 </div>
                                 <div className="field-box">
                                     <label className="text-label">
-                                        Durata Contest (Ore)
-                                        <HelpTooltip text="Quanto tempo rimane attivo il contest per ricevere foto e voti dopo che è iniziato." />
+                                        {t('photocontest.interval_label')}
+                                        <HelpTooltip text={t('photocontest.interval_help')} />
                                     </label>
-                                    <input type="number" className="input" value={config.duration || 24} onChange={(e) => setConfig({...config, duration: parseInt(e.target.value) || 24})} />
+                                    <input type="number" className="input" value={config.intervalHours || 24} onChange={e => setConfig({...config, intervalHours: parseInt(e.target.value) || 1})} />
+                                </div>
+                                <div className="field-box">
+                                    <label className="text-label">
+                                        {t('photocontest.duration_label')}
+                                        <HelpTooltip text={t('photocontest.duration_help')} />
+                                    </label>
+                                    <input type="number" className="input" value={config.durationHours || 24} onChange={e => setConfig({...config, durationHours: parseInt(e.target.value) || 1})} />
                                 </div>
                             </div>
                         </section>
                     </div>
 
                     <div className="grid-right">
-                        <section className="card section-card-p">
-                            <h3 className="sidebar-title align-center" style={{ marginBottom: '16px' }}><Shield size={18} /> Autorizzazioni Staff</h3>
-                            <DiscordSelector type="role" multiple={true} options={roles} value={config.staffRoleIds || []} onChange={val => setConfig({...config, staffRoleIds: val})} />
-                            <p className="text-description" style={{ marginTop: '12px' }}>I ruoli selezionati potranno forzare l'avvio o il termine del contest.</p>
+                        <section className="card section-card" style={{ padding: '20px' }}>
+                            <div className="align-center" style={{ marginBottom: '16px' }}>
+                                <UserCheck size={18} color="var(--primary)" />
+                                <h3>{t('photocontest.staff_roles_title')}</h3>
+                            </div>
+                            <DiscordSelector type="role" multiple options={discordData.roles} value={config.staffRoles || []} onChange={v => setConfig({...config, staffRoles: v})} />
+                            <p className="field-help" style={{ marginTop: '12px' }}>{t('photocontest.staff_roles_help')}</p>
                         </section>
 
-                        <NotificationSettings 
-                            guildId={guildId}
-                            value={config.notifications}
-                            onChange={val => setNested('notifications', val)}
-                            title="Notifiche Contest"
-                            description="Scegli come notificare l'autore della foto quando riceve voti o vince."
-                        />
+                        <div style={{ marginTop: '24px' }}>
+                            <NotificationSettings 
+                                guildId={guildId}
+                                value={config.notifications}
+                                onChange={val => setConfig({...config, notifications: val})}
+                                title={t('photocontest.notif_title')}
+                                description={t('photocontest.notif_desc')}
+                            />
+                        </div>
                     </div>
                 </div>
             )}
 
             {activeTab === 'themes' && (
                 <div className="animate fade-in">
-                    <section className="card status-card-p" style={{ marginBottom: '24px' }}>
-                         <div className="status-info-p">
-                            <div className={`status-box-p ${config.automaticThemes ? 'on' : ''}`}>
-                                <Zap size={20} />
-                            </div>
-                            <h3>Rotazione Automatica</h3>
-                        </div>
+                    <section className="card status-card-p" style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px' }}>
+                        <div className="align-center"><RefreshCw size={18} color="var(--primary)" /> <h3>{t('photocontest.rotation_title')}</h3></div>
                         <label className="toggle">
                             <input type="checkbox" checked={!!config.automaticThemes} onChange={e => setConfig({...config, automaticThemes: e.target.checked})} />
                             <span className="slider"></span>
                         </label>
                     </section>
 
-                    <section className="card section-card-p">
-                        <div className="section-header-p" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                            <h3 className="align-center" style={{ margin: 0 }}><List size={18} color="var(--primary)" /> Lista Argomenti</h3>
-                            <button className="btn-outline-sm" onClick={() => setConfig({...config, themesList: [...(config.themesList || []), { name: '', duration: null }]})}>
-                                <Plus size={14} /> Aggiungi
+                    <section className="card section-card" style={{ padding: '24px' }}>
+                        <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                            <div className="align-center">
+                                <List size={18} color="var(--primary)" />
+                                <h3>{t('photocontest.themes_list_title')}</h3>
+                            </div>
+                        </div>
+
+                        <div className="add-theme-row" style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
+                            <input 
+                                type="text" 
+                                className="input" 
+                                id="new-theme-input" 
+                                placeholder={t('photocontest.theme_placeholder')}
+                                onKeyDown={e => { if(e.key === 'Enter') { addTheme(e.target.value); e.target.value = ''; } }}
+                            />
+                            <button className="btn-primary" style={{ padding: '0 20px' }} onClick={() => {
+                                const inp = document.getElementById('new-theme-input');
+                                addTheme(inp.value);
+                                inp.value = '';
+                            }}>
+                                <Plus size={18} />
                             </button>
                         </div>
                         
-                        <div className="themes-grid-p">
-                            {config.themesList && config.themesList.length > 0 ? (
-                                config.themesList.map((theme, idx) => {
-                                    const themeName = typeof theme === 'string' ? theme : theme.name;
-                                    const themeDuration = (typeof theme === 'string' ? '' : theme.duration) ?? '';
-
-                                    return (
-                                        <div key={idx} className="theme-item-p animate fade-in">
-                                            <div className="theme-index">{idx + 1}</div>
-                                            <input 
-                                                className="input-transparent-p" 
-                                                value={themeName} 
-                                                onChange={e => {
-                                                    const newThemes = [...config.themesList];
-                                                    if (typeof newThemes[idx] === 'string') {
-                                                        newThemes[idx] = { name: e.target.value, duration: null };
-                                                    } else {
-                                                        newThemes[idx] = { ...newThemes[idx], name: e.target.value };
-                                                    }
-                                                    setConfig({...config, themesList: newThemes});
-                                                }}
-                                                placeholder="Inserisci argomento..."
-                                            />
-                                            <div className="theme-duration-input" title="Durata personalizzata per questo tema (in ore). Lascia vuoto per usare il default.">
-                                                <Clock size={14} />
-                                                <input 
-                                                    type="number" 
-                                                    className="mini-duration-input"
-                                                    value={themeDuration}
-                                                    onChange={e => {
-                                                        const val = e.target.value === '' ? null : parseInt(e.target.value);
-                                                        const newThemes = [...config.themesList];
-                                                        if (typeof newThemes[idx] === 'string') {
-                                                            newThemes[idx] = { name: newThemes[idx], duration: val };
-                                                        } else {
-                                                            newThemes[idx] = { ...newThemes[idx], duration: val };
-                                                        }
-                                                        setConfig({...config, themesList: newThemes});
-                                                    }}
-                                                    placeholder="Def."
-                                                />
-                                                <span className="unit">h</span>
-                                            </div>
-                                            <button className="btn-icon-danger-sm" onClick={() => {
-                                                const newThemes = config.themesList.filter((_, i) => i !== idx);
-                                                setConfig({...config, themesList: newThemes});
-                                            }}>
-                                                <Trash2 size={14} />
-                                            </button>
-                                        </div>
-                                    );
-                                })
-                            ) : (
-                                <div className="empty-themes-p">
-                                    <Camera size={32} />
-                                    <p>Nessun argomento configurato. Aggiungine uno!</p>
+                        <div className="themes-list" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            {(config.themes || []).length === 0 ? (
+                                <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)', opacity: 0.6 }}>
+                                    <ImageIcon size={32} style={{ marginBottom: '12px' }} />
+                                    <p>{t('photocontest.empty_themes')}</p>
                                 </div>
+                            ) : (
+                                (config.themes || []).map((theme, index) => (
+                                    <div key={index} className="theme-item" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px', background: 'var(--bg-badge)', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                                        <div style={{ width: '28px', height: '28px', background: 'var(--primary-glow)', color: 'var(--primary)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                                            {index + 1}
+                                        </div>
+                                        <input 
+                                            type="text" 
+                                            className="input-s" 
+                                            style={{ flex: 1, background: 'transparent', border: 'none', color: 'var(--text-main)', fontWeight: '600' }}
+                                            value={theme.name} 
+                                            onChange={e => updateTheme(index, 'name', e.target.value)} 
+                                        />
+                                        <div className="duration-field" title={t('photocontest.theme_duration_title')} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--bg-card)', padding: '4px 10px', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                                            <Clock size={14} color="var(--text-dim)" />
+                                            <input 
+                                                type="number" 
+                                                className="input-inline" 
+                                                style={{ width: '60px', background: 'transparent', border: 'none', color: 'var(--primary)', fontWeight: '700', fontSize: '0.85rem', textAlign: 'right' }}
+                                                placeholder="Def." 
+                                                value={theme.durationHours || ''} 
+                                                onChange={e => updateTheme(index, 'durationHours', e.target.value ? parseInt(e.target.value) : null)}
+                                            />
+                                            <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)', fontWeight: 'bold' }}>h</span>
+                                        </div>
+                                        <button className="btn-icon-danger-sm" style={{ color: 'var(--error)', background: 'transparent', border: 'none', cursor: 'pointer' }} onClick={() => removeTheme(index)}>
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
+                                ))
                             )}
                         </div>
                     </section>
                 </div>
             )}
 
-            {activeTab === 'design' && (
+            {activeTab === 'messages' && (
                 <div className="animate fade-in">
-                     <section className="card section-card-p" style={{ marginBottom: '24px' }}>
-                        <h4 className="align-center"><MousePointer2 size={18} color="var(--primary)" /> Bottoni di Partecipazione</h4>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '16px' }}>
+                     <section className="card section-card animate fade-in" style={{ marginBottom: '24px', padding: '24px' }}>
+                        <div className="align-center"><Layout size={18} color="var(--primary)" /> <h3>{t('photocontest.buttons_title')}</h3></div>
+                        <div className="fields-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '24px' }}>
                             <div className="field-box">
-                                <label className="text-label">Bottone "Partecipa"</label>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 60px', gap: '8px' }}>
-                                    <EmojiInput className="input" value={config.submitLabel || ''} placeholder="Invia Foto" onChange={e => setConfig({...config, submitLabel: e.target.value})} />
-                                    <EmojiInput value={config.submitEmoji || ''} hideInput={true} onChange={e => setConfig({...config, submitEmoji: e.target.value})} />
-                                </div>
+                                <label className="text-label">{t('photocontest.submit_btn_label')}</label>
+                                <input className="input" value={config.buttons?.participate?.label || ''} onChange={e => updateNested('buttons.participate.label', e.target.value)} placeholder={t('photocontest.submit_placeholder')} />
                             </div>
                             <div className="field-box">
-                                <label className="text-label">Bottone "Classifica"</label>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 60px', gap: '8px' }}>
-                                    <EmojiInput className="input" value={config.voteLabel || ''} placeholder="Classifica" onChange={e => setConfig({...config, voteLabel: e.target.value})} />
-                                    <EmojiInput value={config.voteEmoji || ''} hideInput={true} onChange={e => setConfig({...config, voteEmoji: e.target.value})} />
-                                </div>
+                                <label className="text-label">{t('photocontest.vote_btn_label')}</label>
+                                <input className="input" value={config.buttons?.leaderboard?.label || ''} onChange={e => updateNested('buttons.leaderboard.label', e.target.value)} placeholder={t('photocontest.vote_placeholder')} />
                             </div>
                             <div className="field-box">
-                                <label className="text-label">Icona Upvote (👍)</label>
-                                <EmojiInput value={config.upvoteEmoji || '👍'} onChange={e => setConfig({...config, upvoteEmoji: e.target.value})} />
+                                <label className="text-label">{t('photocontest.upvote_icon')}</label>
+                                <input className="input" value={config.buttons?.upvote?.emoji || ''} onChange={e => updateNested('buttons.upvote.emoji', e.target.value)} placeholder="👍" />
                             </div>
                             <div className="field-box">
-                                <label className="text-label">Icona Downvote (👎)</label>
-                                <EmojiInput value={config.downvoteEmoji || '👎'} onChange={e => setConfig({...config, downvoteEmoji: e.target.value})} />
+                                <label className="text-label">{t('photocontest.downvote_icon')}</label>
+                                <input className="input" value={config.buttons?.downvote?.emoji || ''} onChange={e => updateNested('buttons.downvote.emoji', e.target.value)} placeholder="👎" />
                             </div>
                         </div>
                     </section>
@@ -377,30 +333,20 @@ export default function PhotoContestConfig() {
                         guildId={guildId}
                         module="photocontest"
                         slugs={[
-                            { key: 'panel', label: 'Pannello Contest', description: 'Messaggio principale del concorso nel canale dedicato.', variables: ['themes'], group: '1. Contest', groupIcon: Camera },
-                            { key: 'submission_confirmed', label: 'Conferma Invio', description: 'Risposta effimera mostrata all\'utente quando carica una foto.', variables: [], group: '1. Contest', groupIcon: CheckCircle2 },
-                            { key: 'vote_up', label: 'Voto Aggiunto', description: 'Risposta effimera mostrata al click del voto.', variables: ['user'], group: '2. Voti', groupIcon: Trophy },
-                            { key: 'interaction_notify', label: 'Notifica Autore (DM)', description: 'Messaggio privato per l\'autore quando la sua foto viene votata.', variables: ['voter', 'action'], group: '3. DM', groupIcon: Bell },
-                            { key: 'leaderboard_display', label: 'Classifica (Comando)', description: 'Messaggio mostrato dal comando /leaderboard.', variables: ['ranking'], group: '🏆 Risultati', groupIcon: Trophy },
-                            { key: 'contest_end_log', label: 'Proclamazione Vincitore', description: 'Messaggio finale inviato in Hall of Fame con il vincitore.', variables: ['user', 'votes'], group: '🏆 Risultati', groupIcon: Trophy },
-                            { key: 'staff_log', label: 'Log Nuova Opera', description: 'Alert staff quando viene caricata una foto (se configurato).', variables: ['user'], group: '🛡️ Staff', groupIcon: Shield },
-                            { key: 'already_submitted', label: 'Errore Limite Invio', description: 'Mostrato se l\'utente tenta di inviare più di una foto.', variables: ['user'], group: '🟥 Errori', groupIcon: Zap },
+                            { key: 'contest_started', label: t('photocontest.btn_start_now'), description: 'Embed inviato nel canale contest all\'avvio.', variables: ['theme', 'duration', 'end_time'], group: '🎮 Contest', groupIcon: Play },
+                            { key: 'submission_received', label: 'Conferma Invio', description: 'DM inviato all\'utente dopo l\'invio della foto.', variables: ['user', 'theme'], group: '📥 Partecipazione', groupIcon: UserCheck },
+                            { key: 'vote_received', label: 'Notifica Voto', description: 'DM/Notifica quando una foto riceve un voto (se abilitato).', variables: ['user', 'voter', 'points', 'total_points'], group: '📥 Partecipazione', groupIcon: Trophy },
+                            { key: 'contest_ended', label: 'Annuncio Vincitore', description: 'Embed inviato nel canale contest al termine.', variables: ['theme', 'winner', 'points'], group: '🎮 Contest', groupIcon: Trophy },
+                            { key: 'hof_entry', label: 'Hall of Fame', description: 'Embed inviato nel canale HoF.', variables: ['theme', 'winner', 'points', 'image_url'], group: '🏆 Hall of Fame', groupIcon: Trophy },
+                            { key: 'winner_dm', label: 'DM Vincitore', description: 'DM inviato al vincitore.', variables: ['user', 'theme', 'points'], group: '🏆 Hall of Fame', groupIcon: UserCheck },
                             { key: 'error_no_participants', label: 'Errore Partecipanti', description: 'Mostrato se il contest termina senza partecipanti.', variables: [], group: '🟥 Errori', groupIcon: XCircle },
                             { key: 'leaderboard_error', label: 'Errore Classifica', description: 'Mostrato se il comando classifica fallisce.', variables: [], group: '🟥 Errori', groupIcon: XCircle }
                         ]}
-                        extraButtons={(slug) => {
-                            if (slug === 'panel') {
-                                return [
-                                    { label: config.submitLabel || 'Invia Foto', emoji: config.submitEmoji || '📸', style: 'PRIMARY' },
-                                    { label: config.voteLabel || 'Classifica', emoji: config.voteEmoji || '🏆', style: 'SUCCESS' }
-                                ];
-                            }
-                            return null;
-                        }}
                     />
                 </div>
             )}
         </div>
+
         <ConfirmModal 
             isOpen={confirmModal.isOpen}
             onClose={() => setConfirmModal({...confirmModal, isOpen: false})}
@@ -410,6 +356,7 @@ export default function PhotoContestConfig() {
             type={confirmModal.type}
         />
       </div>
+
       <style jsx>{`
             .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-badge); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
             .header-info { display: flex; align-items: center; gap: 16px; }
@@ -422,33 +369,10 @@ export default function PhotoContestConfig() {
             .tab-link:hover { color: var(--text-main); background: var(--bg-badge); }
             .tab-link.active { color: var(--text-main); background: var(--bg-card); box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
 
-            .config-grid-p { display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
-            .grid-main-p { display: flex; flex-direction: column; gap: 24px; }
-            .status-card-p { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; }
-            .status-info-p { display: flex; align-items: center; gap: 16px; }
-            .status-box-p { width: 40px; height: 40px; background: var(--bg-badge); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--text-dim); border: 1px solid var(--border); transition: 0.3s; }
-            .status-box-p.on { color: var(--primary); background: var(--primary-glow); border-color: var(--primary); }
-            
             .header-buttons-grid { display: flex; gap: 10px; }
-            .fields-grid-p { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 16px; }
-
-            .themes-grid-p { display: flex; flex-direction: column; gap: 10px; }
-            .theme-item-p { display: flex; align-items: center; gap: 12px; padding: 10px 16px; background: var(--bg-badge); border: 1px solid var(--border); border-radius: 12px; transition: 0.2s; }
-            .theme-item-p:hover { background: var(--bg-badge); border-color: var(--primary); }
-            .theme-index { width: 24px; height: 24px; background: var(--primary-glow); color: var(--primary); border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; flex-shrink: 0; }
-            .input-transparent-p { flex: 1; background: transparent; border: none; color: var(--text-main); font-weight: 600; font-size: 0.9rem; padding: 4px 0; }
-            .input-transparent-p:focus { outline: none; }
-            .btn-icon-danger-sm { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: var(--bg-badge); color: var(--error); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; transition: 0.2s; }
-            .btn-icon-danger-sm:hover { background: var(--error); color: var(--text-on-primary); }
-            .empty-themes-p { padding: 40px; text-align: center; color: var(--text-dim); opacity: 0.5; display: flex; flex-direction: column; align-items: center; gap: 12px; }
-
-            .theme-duration-input { display: flex; align-items: center; gap: 4px; padding: 4px 10px; background: var(--bg-badge); border-radius: 8px; color: var(--text-dim); border: 1px solid transparent; transition: 0.2s; }
-            .theme-duration-input:focus-within { border-color: var(--primary); background: var(--bg-badge); }
-            .mini-duration-input { width: 50px; background: transparent; border: none; color: var(--primary); font-weight: 700; font-size: 0.85rem; text-align: right; padding: 0; outline: none; }
-            .theme-duration-input .unit { font-size: 0.75rem; opacity: 0.6; font-weight: 800; color: var(--text-dim); margin-left: 2px; }
-
             .align-center { display: flex; align-items: center; gap: 10px; }
-            @media (max-width: 1000px) { .config-grid-p { grid-template-columns: 1fr; } .header-buttons-grid { flex-direction: column; } }
+            .input-inline:focus { outline: none; }
+            @media (max-width: 1000px) { .header-buttons-grid { flex-direction: column; } }
         `}</style>
     </div>
   );

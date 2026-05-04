@@ -48,7 +48,13 @@ export class SocialManager {
                     logger.debug(`[Socials/Twitch] Checking ${usernames.length} streamers for guild ${guildId}: ${usernames.join(', ')}`);
                     
                     const liveStreams = await getStreams(usernames);
-                    const userData = await getUsers(usernames);
+                    const userData = await getUsers(usernames) || []; // Default to empty if API fails
+
+                    if (liveStreams === null) {
+                        logger.warn(`[Socials/Twitch] API error for guild ${guildId}, skipping this check.`);
+                        continue;
+                    }
+                    
                     logger.debug(`[Socials/Twitch] Found ${liveStreams.length} live streams.`);
 
                     const changed = await this.checkTwitch(guildId, platformConfig, liveStreams, userData);
@@ -72,6 +78,7 @@ export class SocialManager {
     }
 
     async checkTwitch(guildId, platformConfig, liveStreams, userData = []) {
+        if (!liveStreams) return false;
         let changed = false;
         try {
             for (const streamer of platformConfig.accounts) {
@@ -104,8 +111,13 @@ export class SocialManager {
                     // Streamer is OFFLINE
                     if (streamer.isLive) {
                         // NEW OFF detected
+                        logger.info(`[Socials/Twitch] ${streamer.username} went offline in guild ${guildId}.`);
                         streamer.isLive = false;
                         changed = true;
+                    }
+                    
+                    // Self-healing: Always ensure role is removed if streamer is offline
+                    if (platformConfig.liveRoleId && streamer.discordUserId) {
                         await this.removeSocialRole(guildId, platformConfig, streamer);
                     }
                 }
@@ -253,6 +265,7 @@ export class SocialManager {
             if (platformConfig.liveRoleId && account.discordUserId) {
                 const member = await guild.members.fetch(account.discordUserId).catch(() => null);
                 if (member && member.roles.cache.has(platformConfig.liveRoleId)) {
+                    logger.info(`[Socials] Removing live role from ${member.user.tag} (${member.id}) in guild ${guild.name}`);
                     await member.roles.remove(platformConfig.liveRoleId).catch(err => {
                         logger.error(`[Socials] Failed to remove role from ${member.id}:`, err.message);
                     });

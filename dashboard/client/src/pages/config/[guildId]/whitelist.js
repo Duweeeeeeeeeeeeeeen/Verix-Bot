@@ -208,7 +208,7 @@ export default function WhitelistConfig() {
               <div className="header-text">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <h1>{t('whitelist.title')}</h1>
-                  <label className="toggle-mini" title={config.enabled ? 'Modulo Attivo' : 'Modulo Disattivato'}>
+                  <label className="toggle-mini" title={config.enabled ? t('whitelist.active') : t('whitelist.inactive')}>
                     <input type="checkbox" checked={!!config.enabled} onChange={e => setConfig({...config, enabled: e.target.checked})} />
                     <span className="slider-mini"></span>
                   </label>
@@ -257,7 +257,7 @@ export default function WhitelistConfig() {
                             <div className="section-header">
                                 <div className="align-center">
                                     <Power size={18} color="var(--primary)" />
-                                    <h3>Core Configuration</h3>
+                                    <h3>{t('whitelist.core_config')}</h3>
                                 </div>
                             </div>
                             
@@ -322,7 +322,7 @@ export default function WhitelistConfig() {
                                     <div className="align-center" style={{ marginBottom: '20px' }}>
                                         <ShieldCheck size={18} color="var(--primary)" />
                                         <h3>{t('whitelist.auto_text_title')}</h3>
-                                        <HelpTooltip text="Ruoli assegnati o rimossi al termine della fase testuale." />
+                                        <HelpTooltip text={t('whitelist.staff_help')} />
                                     </div>
                                     <div className="fields-grid">
                                         <div className="field-box">
@@ -448,7 +448,7 @@ export default function WhitelistConfig() {
                                 <div className="field-box" style={{ gridColumn: 'span 2' }}>
                                     <label className="text-label flex-between">
                                         {t('whitelist.voice_name_template')}
-                                        <HelpTooltip text="Placeholders: {user}, {id}, {count} (es: whitelist-[#1])" />
+                                        <HelpTooltip text={t('whitelist.voice_help_template')} />
                                     </label>
                                     <input 
                                         type="text" 
@@ -468,7 +468,7 @@ export default function WhitelistConfig() {
                                             <button 
                                                 className="btn-outline-sm" 
                                                 onClick={() => {
-                                                    if(confirm('Sei sicuro di voler resettare il contatore a 0?')) {
+                                                    if(confirm(t('whitelist.voice_reset_confirm'))) {
                                                         setNested('voiceSettings.sessionCounter', 0);
                                                     }
                                                 }}
@@ -511,11 +511,11 @@ export default function WhitelistConfig() {
                             </div>
                             <div className="fields-grid">
                                 <div className="field-box">
-                                    <label className="text-label">Ruoli da Aggiungere</label>
+                                    <label className="text-label">{t('whitelist.roles_to_add')}</label>
                                     <DiscordSelector type="role" multiple={true} options={roles} value={config.voiceSettings?.rolesToAdd || []} onChange={val => setNested('voiceSettings.rolesToAdd', val)} />
                                 </div>
                                 <div className="field-box">
-                                    <label className="text-label">Ruoli da Rimuovere</label>
+                                    <label className="text-label">{t('whitelist.roles_to_remove')}</label>
                                     <DiscordSelector type="role" multiple={true} options={roles} value={config.voiceSettings?.rolesToRemove || []} onChange={val => setNested('voiceSettings.rolesToRemove', val)} />
                                 </div>
                             </div>
@@ -582,7 +582,7 @@ export default function WhitelistConfig() {
                         <div className="fields-grid">
                             <div className="field-box">
                                 <label className="label-tiny">{t('whitelist.btn_label')}</label>
-                                <input className="input" value={config.buttons?.start_wl?.label || ''} onChange={e => setNested('buttons.start_wl.label', e.target.value)} placeholder="Inizia Whitelist" />
+                                <input className="input" value={config.buttons?.start_wl?.label || ''} onChange={e => setNested('buttons.start_wl.label', e.target.value)} placeholder={t('whitelist.msg_start')} />
                             </div>
                             <div className="field-box">
                                 <label className="label-tiny">{t('whitelist.btn_emoji')}</label>
@@ -643,31 +643,31 @@ export default function WhitelistConfig() {
                         guildId={guildId}
                         module="whitelist"
                         slugs={[
-                            { key: 'panel', label: t('whitelist.msg_panel'), description: 'Messaggio nel canale WL.', variables: ['guild'], group: t('whitelist.group_access'), groupIcon: Play },
-                            { key: 'start', label: t('whitelist.msg_start'), description: 'DM iniziale.', variables: ['user', 'time_limit'], group: t('whitelist.group_interview'), groupIcon: Play },
-                            { key: 'question', label: t('whitelist.msg_question'), description: 'Format domande.', variables: ['text', 'count', 'total'], group: t('whitelist.group_interview'), groupIcon: Play },
-                            { key: 'review', label: t('whitelist.msg_review'), description: 'Riepilogo pre-invio.', variables: ['user'], group: t('whitelist.group_interview'), groupIcon: Play },
-                            { key: 'session_completed', label: t('whitelist.msg_completed'), description: 'DM fine domande.', variables: ['user'], group: t('whitelist.group_end'), groupIcon: CheckCircle2 },
-                            { key: 'submission_confirmed', label: t('whitelist.msg_confirmed'), description: 'Conferma ricezione.', variables: ['user'], group: t('whitelist.group_end'), groupIcon: CheckCircle2 },
-                            { key: 'staff_received', label: t('whitelist.msg_staff_received'), description: 'Messaggio per i selezionatori.', variables: ['user', 'age', 'about'], group: t('whitelist.group_staff'), groupIcon: ShieldCheck },
-                            { key: 'queue_log', label: t('whitelist.msg_queue_log'), description: 'Alert ingresso cittadini in attesa.', variables: ['user', 'waiting_count'], group: t('whitelist.group_staff'), groupIcon: ShieldCheck },
-                            { key: 'dm_accepted', label: t('whitelist.msg_accepted'), description: 'DM accettazione.', variables: ['user'], group: t('whitelist.group_outcome'), groupIcon: CheckCircle2 },
-                            { key: 'dm_rejected', label: t('whitelist.msg_rejected'), description: 'DM rifiuto scritto.', variables: ['user', 'reason'], group: t('whitelist.group_outcome_neg'), groupIcon: XCircle },
-                            { key: 'dm_text_pass', label: t('whitelist.msg_text_pass'), description: 'DM idoneo orale.', variables: ['user'], group: t('whitelist.group_outcome'), groupIcon: CheckCircle2 },
-                            { key: 'dm_voice_rejected', label: t('whitelist.msg_voice_rejected'), description: 'DM rifiuto orale.', variables: ['user', 'reason'], group: t('whitelist.group_outcome_neg'), groupIcon: XCircle },
-                            { key: 'promote_vip_success', label: t('whitelist.msg_promo_vip'), description: 'Alert quando un utente viene promosso in coda.', variables: ['user'], group: t('whitelist.group_staff_actions'), groupIcon: Mic2 },
-                            { key: 'pause_success', label: t('whitelist.msg_pause'), description: 'Alert sospensione uffici vocali.', variables: [], group: t('whitelist.group_staff_actions'), groupIcon: Mic2 },
-                            { key: 'resume_success', label: t('whitelist.msg_resume'), description: 'Alert riattivazione uffici vocali.', variables: [], group: t('whitelist.group_staff_actions'), groupIcon: Mic2 },
-                            { key: 'skip_success', label: t('whitelist.msg_skip'), description: 'Alert salto sessione corrente.', variables: [], group: t('whitelist.group_staff_actions'), groupIcon: Mic2 },
-                            { key: 'voice_waiting', label: t('whitelist.msg_waiting'), description: 'DM utente in attesa.', variables: ['user'], group: t('whitelist.group_voice'), groupIcon: Play },
-                            { key: 'voice_guide', label: t('whitelist.msg_guide'), description: 'Messaggio per lo staffer.', variables: ['user', 'start_time'], group: t('whitelist.group_voice'), groupIcon: Mic2 },
-                            { key: 'voice_procedural_error', label: t('whitelist.msg_procedural_error'), description: 'Alert se l\'utente non deve fare l\'orale.', variables: [], group: t('whitelist.group_errors'), groupIcon: XCircle },
-                            { key: 'cooldown', label: t('whitelist.msg_cooldown'), description: 'Errore tempo.', variables: ['time'], group: t('whitelist.group_errors'), groupIcon: XCircle },
-                            { key: 'app_not_found', label: t('whitelist.msg_app_not_found'), description: 'Errore ricerca dossier.', variables: [], group: t('whitelist.group_errors'), groupIcon: XCircle }
+                            { key: 'panel', label: t('whitelist.msg_panel'), description: t('whitelist.msg_panel'), variables: ['guild'], group: t('whitelist.group_access'), groupIcon: Play },
+                            { key: 'start', label: t('whitelist.msg_start'), description: t('whitelist.msg_start'), variables: ['user', 'time_limit'], group: t('whitelist.group_interview'), groupIcon: Play },
+                            { key: 'question', label: t('whitelist.msg_question'), description: t('whitelist.msg_question'), variables: ['text', 'count', 'total'], group: t('whitelist.group_interview'), groupIcon: Play },
+                            { key: 'review', label: t('whitelist.msg_review'), description: t('whitelist.msg_review'), variables: ['user'], group: t('whitelist.group_interview'), groupIcon: Play },
+                            { key: 'session_completed', label: t('whitelist.msg_completed'), description: t('whitelist.msg_completed'), variables: ['user'], group: t('whitelist.group_end'), groupIcon: CheckCircle2 },
+                            { key: 'submission_confirmed', label: t('whitelist.msg_confirmed'), description: t('whitelist.msg_confirmed'), variables: ['user'], group: t('whitelist.group_end'), groupIcon: CheckCircle2 },
+                            { key: 'staff_received', label: t('whitelist.msg_staff_received'), description: t('whitelist.msg_staff_received'), variables: ['user', 'age', 'about'], group: t('whitelist.group_staff'), groupIcon: ShieldCheck },
+                            { key: 'queue_log', label: t('whitelist.msg_queue_log'), description: t('whitelist.msg_queue_log'), variables: ['user', 'waiting_count'], group: t('whitelist.group_staff'), groupIcon: ShieldCheck },
+                            { key: 'dm_accepted', label: t('whitelist.msg_accepted'), description: t('whitelist.msg_accepted'), variables: ['user'], group: t('whitelist.group_outcome'), groupIcon: CheckCircle2 },
+                            { key: 'dm_rejected', label: t('whitelist.msg_rejected'), description: t('whitelist.msg_rejected'), variables: ['user', 'reason'], group: t('whitelist.group_outcome_neg'), groupIcon: XCircle },
+                            { key: 'dm_text_pass', label: t('whitelist.msg_text_pass'), description: t('whitelist.msg_text_pass'), variables: ['user'], group: t('whitelist.group_outcome'), groupIcon: CheckCircle2 },
+                            { key: 'dm_voice_rejected', label: t('whitelist.msg_voice_rejected'), description: t('whitelist.msg_voice_rejected'), variables: ['user', 'reason'], group: t('whitelist.group_outcome_neg'), groupIcon: XCircle },
+                            { key: 'promote_vip_success', label: t('whitelist.msg_promo_vip'), description: t('whitelist.msg_promo_vip'), variables: ['user'], group: t('whitelist.group_staff_actions'), groupIcon: Mic2 },
+                            { key: 'pause_success', label: t('whitelist.msg_pause'), description: t('whitelist.msg_pause'), variables: [], group: t('whitelist.group_staff_actions'), groupIcon: Mic2 },
+                            { key: 'resume_success', label: t('whitelist.msg_resume'), description: t('whitelist.msg_resume'), variables: [], group: t('whitelist.group_staff_actions'), groupIcon: Mic2 },
+                            { key: 'skip_success', label: t('whitelist.msg_skip'), description: t('whitelist.msg_skip'), variables: [], group: t('whitelist.group_staff_actions'), groupIcon: Mic2 },
+                            { key: 'voice_waiting', label: t('whitelist.msg_waiting'), description: t('whitelist.msg_waiting'), variables: ['user'], group: t('whitelist.group_voice'), groupIcon: Play },
+                            { key: 'voice_guide', label: t('whitelist.msg_guide'), description: t('whitelist.msg_guide'), variables: ['user', 'start_time'], group: t('whitelist.group_voice'), groupIcon: Mic2 },
+                            { key: 'voice_procedural_error', label: t('whitelist.msg_procedural_error'), description: t('whitelist.msg_procedural_error'), variables: [], group: t('whitelist.group_errors'), groupIcon: XCircle },
+                            { key: 'cooldown', label: t('whitelist.msg_cooldown'), description: t('whitelist.msg_cooldown'), variables: ['time'], group: t('whitelist.group_errors'), groupIcon: XCircle },
+                            { key: 'app_not_found', label: t('whitelist.msg_app_not_found'), description: t('whitelist.msg_app_not_found'), variables: [], group: t('whitelist.group_errors'), groupIcon: XCircle }
                         ]}
                         extraButtons={(slug) => {
                             if (slug === 'panel') {
-                                return [config.buttons?.start_wl || { label: 'Inizia Whitelist', emoji: '📝', style: 'SUCCESS' }];
+                                return [config.buttons?.start_wl || { label: t('whitelist.msg_start'), emoji: '📝', style: 'SUCCESS' }];
                             }
                             return null;
                         }}

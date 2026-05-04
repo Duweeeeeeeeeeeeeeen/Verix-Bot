@@ -5,6 +5,7 @@ import HelpTooltip from '../../../components/HelpTooltip';
 import EmbedEditor from '../../../components/EmbedEditor';
 import DesignSectionManager from '../../../components/DesignSectionManager';
 import api from '../../../utils/api';
+import { useT } from '../../../contexts/LanguageContext';
 import { 
   Save, Ticket, Clock, Plus, Trash2, RefreshCcw, Power, 
   Settings2, Info, ChevronRight, Bell, Tag, MessageSquare, 
@@ -21,6 +22,7 @@ import NotificationSettings from '../../../components/NotificationSettings';
 
 export default function TicketConfig() {
   const router = useRouter();
+  const { t } = useT();
   const { guildId } = router.query;
   
   const [activeTab, setActiveTab] = useState('settings');

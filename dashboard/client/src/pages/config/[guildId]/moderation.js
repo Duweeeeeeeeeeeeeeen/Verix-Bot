@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Skeleton from '../../../components/Skeleton';
 import DiscordSelector from '../../../components/DiscordSelector';
 import api from '../../../utils/api';
+import { useT } from '../../../contexts/LanguageContext';
 import { 
     Save, ShieldAlert, Settings2, Power, 
     Clock, Trash2, Plus, X, AlertTriangle, 
@@ -15,6 +16,7 @@ import { mergeConfig } from '../../../utils/defaults';
 import NotificationSettings from '../../../components/NotificationSettings';
 
 export default function ModerationConfig() {
+  const { t } = useT();
   const router = useRouter();
   const { guildId } = router.query;
   const [config, setConfig] = useState(null);
@@ -69,9 +71,9 @@ export default function ModerationConfig() {
         method: 'POST',
         body: JSON.stringify(config)
       });
-      showToast('Configurazione moderazione salvata!');
+      showToast(t('moderation.save_success'));
     } catch (error) {
-        showToast('Errore durante il salvataggio', 'error');
+        showToast(t('moderation.save_error'), 'error');
     }
     finally { setSaving(false); }
   };
@@ -134,38 +136,38 @@ export default function ModerationConfig() {
               </div>
               <div className="header-text">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <h1 style={{ color: 'var(--text-main)' }}>Hub Moderazione</h1>
-                  <label className="toggle-mini" title={config.enabled ? 'Modulo Attivo' : 'Modulo Disattivato'}>
+                  <h1 style={{ color: 'var(--text-main)' }}>{t('moderation.title')}</h1>
+                  <label className="toggle-mini" title={config.enabled ? t('moderation.active') : t('moderation.inactive')}>
                     <input type="checkbox" checked={!!config.enabled} onChange={e => setConfig({...config, enabled: e.target.checked})} />
                     <span className="slider-mini"></span>
                   </label>
                 </div>
-                <p>Configura tutti i filtri e le protezioni automatiche del tuo server.</p>
+                <p>{t('moderation.desc')}</p>
               </div>
            </div>
            <div className="header-buttons">
               <button onClick={handleSave} className="btn-primary" disabled={saving}>
-                <Save size={16} /> {saving ? 'Salvataggio...' : 'Salva Modifiche'}
+                <Save size={16} /> {saving ? t('common.saving') : t('common.save')}
               </button>
            </div>
         </header>
 
         {/* Tab Navigation */}
-        <div className="tab-navigation">
+         <div className="tab-navigation">
             <button onClick={() => setActiveTab('antispam')} className={`tab-link ${activeTab === 'antispam' ? 'active' : ''}`}>
-                <MessageSquare size={16} /> <span>Anti-Spam</span>
+                <MessageSquare size={16} /> <span>{t('moderation.tab_antispam')}</span>
             </button>
             <button onClick={() => setActiveTab('filters')} className={`tab-link ${activeTab === 'filters' ? 'active' : ''}`}>
-                <Type size={16} /> <span>Filtri</span>
+                <Type size={16} /> <span>{t('moderation.tab_filters')}</span>
             </button>
             <button onClick={() => setActiveTab('punishments')} className={`tab-link ${activeTab === 'punishments' ? 'active' : ''}`}>
-                <Gavel size={16} /> <span>Punizioni</span>
+                <Gavel size={16} /> <span>{t('moderation.tab_punishments')}</span>
             </button>
             <button onClick={() => setActiveTab('exceptions')} className={`tab-link ${activeTab === 'exceptions' ? 'active' : ''}`}>
-                <Ghost size={16} /> <span>Eccezioni</span>
+                <Ghost size={16} /> <span>{t('moderation.tab_exceptions')}</span>
             </button>
             <button onClick={() => setActiveTab('messages')} className={`tab-link ${activeTab === 'messages' ? 'active' : ''}`}>
-                <RefreshCcw size={16} /> <span>Design & Messaggi</span>
+                <RefreshCcw size={16} /> <span>{t('moderation.tab_design')}</span>
             </button>
         </div>
 
@@ -178,7 +180,7 @@ export default function ModerationConfig() {
                         <div className="section-title-row">
                             <div className="align-center">
                                 <MessageSquare size={18} color="var(--primary)" />
-                                <h3>Protezione Anti-Spam</h3>
+                                <h3>{t('moderation.antispam_title')}</h3>
                             </div>
                             <label className="toggle">
                                 <input type="checkbox" checked={!!config.antispam.enabled} onChange={e => updateNested('antispam.enabled', e.target.checked)} />
@@ -187,14 +189,14 @@ export default function ModerationConfig() {
                         </div>
                         <div className="fields-grid-v" style={{ marginTop: '24px' }}>
                             <div className="field-box">
-                                <label className="text-label">Max Messaggi</label>
+                                <label className="text-label">{t('moderation.max_messages')}</label>
                                 <input type="number" className="input" value={config.antispam.maxMessages} onChange={e => updateNested('antispam.maxMessages', parseInt(e.target.value))} />
-                                <p className="field-help">Soglia messaggi prima della violazione.</p>
+                                <p className="field-help">{t('moderation.max_messages_help')}</p>
                             </div>
                             <div className="field-box">
-                                <label className="text-label">Intervallo (ms)</label>
+                                <label className="text-label">{t('moderation.interval')}</label>
                                 <input type="number" className="input" value={config.antispam.timeWindow} onChange={e => updateNested('antispam.timeWindow', parseInt(e.target.value))} />
-                                <p className="field-help">Finestra temporale di controllo.</p>
+                                <p className="field-help">{t('moderation.interval_help')}</p>
                             </div>
                         </div>
                     </section>
@@ -209,7 +211,7 @@ export default function ModerationConfig() {
                                 <div className="section-title-row">
                                     <div className="align-center">
                                         <Type size={18} color="var(--primary)" />
-                                        <h3>Caps Lock</h3>
+                                        <h3>{t('moderation.caps_title')}</h3>
                                     </div>
                                     <label className="toggle">
                                         <input type="checkbox" checked={!!config.capsLock.enabled} onChange={e => updateNested('capsLock.enabled', e.target.checked)} />
@@ -218,11 +220,11 @@ export default function ModerationConfig() {
                                 </div>
                                 <div className="fields-grid-v" style={{ marginTop: '24px' }}>
                                     <div className="field-box">
-                                        <label className="text-label">Percentuale Max (%)</label>
+                                        <label className="text-label">{t('moderation.caps_percentage')}</label>
                                         <input type="number" className="input" value={config.capsLock.percentage} onChange={e => updateNested('capsLock.percentage', parseInt(e.target.value))} />
                                     </div>
                                     <div className="field-box">
-                                        <label className="text-label">Caratteri Minimi</label>
+                                        <label className="text-label">{t('moderation.caps_min_chars')}</label>
                                         <input type="number" className="input" value={config.capsLock.minCharacters} onChange={e => updateNested('capsLock.minCharacters', parseInt(e.target.value))} />
                                     </div>
                                 </div>
@@ -235,7 +237,7 @@ export default function ModerationConfig() {
                                 <div className="section-title-row">
                                     <div className="align-center">
                                         <AtSign size={18} color="var(--primary)" />
-                                        <h3>Mention Spam</h3>
+                                        <h3>{t('moderation.mention_title')}</h3>
                                     </div>
                                     <label className="toggle">
                                         <input type="checkbox" checked={!!config.mentionSpam.enabled} onChange={e => updateNested('mentionSpam.enabled', e.target.checked)} />
@@ -243,9 +245,9 @@ export default function ModerationConfig() {
                                     </label>
                                 </div>
                                 <div className="field-box" style={{ marginTop: '24px' }}>
-                                    <label className="text-label">Limite Menzioni</label>
+                                    <label className="text-label">{t('moderation.mention_limit')}</label>
                                     <input type="number" className="input" value={config.mentionSpam.limit} onChange={e => updateNested('mentionSpam.limit', parseInt(e.target.value))} />
-                                    <p className="field-help">Numero massimo di menzioni per singolo messaggio.</p>
+                                    <p className="field-help">{t('moderation.mention_limit_help')}</p>
                                 </div>
                             </section>
                         )}
@@ -256,7 +258,7 @@ export default function ModerationConfig() {
                                 <div className="section-title-row">
                                     <div className="align-center">
                                         <List size={18} color="var(--primary)" />
-                                        <h3>Blacklist Parole</h3>
+                                        <h3>{t('moderation.blacklist_title')}</h3>
                                     </div>
                                     <label className="toggle">
                                         <input type="checkbox" checked={!!config.blacklist.enabled} onChange={e => updateNested('blacklist.enabled', e.target.checked)} />
@@ -265,7 +267,7 @@ export default function ModerationConfig() {
                                 </div>
                                 <div style={{ marginTop: '24px' }}>
                                     <div className="add-word-row">
-                                        <input type="text" className="input" id="new-word" placeholder="Aggiungi parola..." onKeyDown={e => e.key === 'Enter' && (addBlacklistWord(e.target.value), e.target.value = '')} />
+                                        <input type="text" className="input" id="new-word" placeholder={t('moderation.blacklist_placeholder')} onKeyDown={e => e.key === 'Enter' && (addBlacklistWord(e.target.value), e.target.value = '')} />
                                         <button className="btn-add-word" onClick={() => {
                                             const inp = document.getElementById('new-word');
                                             addBlacklistWord(inp.value);
@@ -292,34 +294,34 @@ export default function ModerationConfig() {
                         <div className="header-with-action">
                             <div className="align-center">
                                 <Gavel size={18} color="var(--warning)" />
-                                <h3>Sistema Sanzionatorio</h3>
+                                <h3>{t('moderation.punishments_title')}</h3>
                             </div>
                             <button className="btn-add-small" onClick={addPunishment}>
-                                <Plus size={14} /> Aggiungi Livello
+                                <Plus size={14} /> {t('moderation.add_level')}
                             </button>
                         </div>
                         <NotificationSettings 
                             guildId={guildId}
                             value={config.notifications}
                             onChange={val => setConfig({...config, notifications: val})}
-                            title="Notifiche Infrazioni"
-                            description="Scegli come l'utente riceverà l'avviso per i suoi richiami (Ban, Kick, Warn, etc)."
+                            title={t('moderation.notif_title')}
+                            description={t('moderation.notif_desc')}
                         />
 
                         <div className="punishments-list" style={{ marginTop: '24px' }}>
                             {(config.punishments || []).sort((a,b) => a.level - b.level).map((p, index) => (
                                 <div key={index} className="punishment-item card">
                                     <div className="p-item-header">
-                                        <div className="p-level-badge">Soglia {p.level} Infrazioni</div>
+                                        <div className="p-level-badge">{t('moderation.threshold_label', { count: p.level })}</div>
                                         <button className="btn-remove-premium" onClick={() => removePunishment(index)}><X size={14} /></button>
                                     </div>
                                     <div className="p-item-grid">
                                         <div className="field-box">
-                                            <label className="text-label">Soglia</label>
+                                            <label className="text-label">{t('moderation.threshold_label', { count: '' })}</label>
                                             <input type="number" className="input" value={p.level} onChange={e => updatePunishment(index, 'level', parseInt(e.target.value))} />
                                         </div>
                                         <div className="field-box">
-                                            <label className="text-label">Azione</label>
+                                            <label className="text-label">{t('moderation.action_label')}</label>
                                             <CustomSelect 
                                                 options={[
                                                     { value: 'warn', label: 'Warning' },
@@ -334,14 +336,14 @@ export default function ModerationConfig() {
                                         </div>
                                         {(p.action === 'timeout' || p.action === 'mute') && (
                                             <div className="field-box">
-                                                <label className="text-label">Minuti</label>
+                                                <label className="text-label">{t('moderation.duration_label')}</label>
                                                 <input type="number" className="input" value={p.duration} onChange={e => updatePunishment(index, 'duration', parseInt(e.target.value))} />
                                             </div>
                                         )}
                                     </div>
                                     <div className="field-box" style={{ marginTop: '12px' }}>
-                                        <label className="text-label">Messaggio</label>
-                                        <input className="input" value={p.message || ''} onChange={e => updatePunishment(index, 'message', e.target.value)} placeholder="Messaggio opzionale..." />
+                                        <label className="text-label">{t('common.message')}</label>
+                                        <input className="input" value={p.message || ''} onChange={e => updatePunishment(index, 'message', e.target.value)} placeholder={t('moderation.message_placeholder')} />
                                     </div>
                                 </div>
                             ))}
@@ -354,18 +356,18 @@ export default function ModerationConfig() {
                     <section className="card section-card-v animate fade-in">
                         <div className="align-center" style={{ marginBottom: '24px' }}>
                             <Ghost size={18} color="var(--primary)" />
-                            <h3>Canali e Ruoli Ignorati</h3>
+                            <h3>{t('moderation.ignored_title')}</h3>
                         </div>
                         <div className="fields-stack-v">
                             <div className="field-box">
-                                <label className="text-label">Ruoli Esenti</label>
+                                <label className="text-label">{t('moderation.ignored_roles')}</label>
                                 <DiscordSelector type="role" multiple options={discordData.roles} value={config.ignoredRoles || []} onChange={v => setConfig({...config, ignoredRoles: v})} />
-                                <p className="field-help">Gli utenti con questi ruoli non verranno mai puniti.</p>
+                                <p className="field-help">{t('moderation.ignored_roles_help')}</p>
                             </div>
                             <div className="field-box" style={{ marginTop: '24px' }}>
-                                <label className="text-label">Canali Esenti</label>
+                                <label className="text-label">{t('moderation.ignored_channels')}</label>
                                 <DiscordSelector type="channel" multiple options={discordData.channels} value={config.ignoredChannels || []} onChange={v => setConfig({...config, ignoredChannels: v})} />
-                                <p className="field-help">La moderazione automatica è disattivata in questi canali.</p>
+                                <p className="field-help">{t('moderation.ignored_channels_help')}</p>
                             </div>
                         </div>
                     </section>
@@ -376,14 +378,13 @@ export default function ModerationConfig() {
                     <div className="animate fade-in">
                         <EmbedMessageManager 
                             guildId={guildId}
-                            module="moderation"
-                            slugs={[
-                                { key: 'warn', label: 'Richiamo Ufficiale (Warn)', description: 'Inviato in DM all\'utente richiamato.', variables: ['user', 'reason', 'moderator'], group: '🛡️ Azioni', groupIcon: ShieldAlert },
-                                { key: 'timeout', label: 'Isolamento (Timeout)', description: 'Inviato in DM all\'utente messo in isolamento.', variables: ['user', 'duration', 'reason', 'moderator'], group: '🛡️ Azioni', groupIcon: Clock },
-                                { key: 'kick', label: 'Espulsione (Kick)', description: 'Inviato in DM all\'utente espulso.', variables: ['user', 'reason', 'moderator'], group: '🛡️ Azioni', groupIcon: AlertTriangle },
-                                { key: 'ban', label: 'Esilio Definitivo (Ban)', description: 'Inviato in DM all\'utente bannato.', variables: ['user', 'reason', 'moderator'], group: '🛡️ Azioni', groupIcon: Gavel },
-                                { key: 'command_ban', label: 'Risposta Comando Ban', description: 'Risposta effimera/canale al comando /ban.', variables: ['user', 'target', 'reason'], group: '💬 Comandi', groupIcon: MessageSquare },
-                                { key: 'command_kick', label: 'Risposta Comando Kick', description: 'Risposta effimera/canale al comando /kick.', variables: ['user', 'target', 'reason'], group: '💬 Comandi', groupIcon: MessageSquare }
+                            module="moderation"                             slugs={[
+                                { key: 'warn', label: t('moderation.action_label') + ' Warn', description: t('moderation.notif_desc'), variables: ['user', 'reason', 'moderator'], group: '🛡️ Azioni', groupIcon: ShieldAlert },
+                                { key: 'timeout', label: t('moderation.action_label') + ' Timeout', description: t('moderation.notif_desc'), variables: ['user', 'duration', 'reason', 'moderator'], group: '🛡️ Azioni', groupIcon: Clock },
+                                { key: 'kick', label: t('moderation.action_label') + ' Kick', description: t('moderation.notif_desc'), variables: ['user', 'reason', 'moderator'], group: '🛡️ Azioni', groupIcon: AlertTriangle },
+                                { key: 'ban', label: t('moderation.action_label') + ' Ban', description: t('moderation.notif_desc'), variables: ['user', 'reason', 'moderator'], group: '🛡️ Azioni', groupIcon: Gavel },
+                                { key: 'command_ban', label: 'Response /ban', description: t('moderation.notif_desc'), variables: ['user', 'target', 'reason'], group: '💬 Comandi', groupIcon: MessageSquare },
+                                { key: 'command_kick', label: 'Response /kick', description: t('moderation.notif_desc'), variables: ['user', 'target', 'reason'], group: '💬 Comandi', groupIcon: MessageSquare }
                             ]}
                         />
                     </div>
@@ -394,12 +395,12 @@ export default function ModerationConfig() {
                     <section className="card section-card-v" style={{ marginTop: '24px' }}>
                         <div className="align-center" style={{ marginBottom: '16px' }}>
                             <Settings2 size={16} color="var(--primary)" />
-                            <h3>Configurazione Globale</h3>
+                            <h3>{t('moderation.global_config')}</h3>
                         </div>
                         <div className="field-box">
-                            <label className="text-label">Reset Infrazioni (Minuti)</label>
+                            <label className="text-label">{t('moderation.reset_time')}</label>
                             <input type="number" className="input" value={config.resetTime || 0} onChange={e => setConfig({...config, resetTime: parseInt(e.target.value)})} />
-                            <p className="field-help">Tempo dopo il quale le infrazioni di un utente vengono azzerate.</p>
+                            <p className="field-help">{t('moderation.reset_time_help')}</p>
                         </div>
                     </section>
                 )}

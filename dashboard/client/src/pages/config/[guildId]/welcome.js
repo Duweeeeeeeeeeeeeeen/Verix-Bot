@@ -4,6 +4,7 @@ import Skeleton from '../../../components/Skeleton';
 import DiscordSelector from '../../../components/DiscordSelector';
 import EmbedEditor from '../../../components/EmbedEditor';
 import api from '../../../utils/api';
+import { useT } from '../../../contexts/LanguageContext';
 import { 
     Save, UserPlus, UserMinus, Settings2, RefreshCcw, 
     Power, Palette, Info, Bell, Layout as LayoutIcon, ChevronRight, Zap
@@ -12,6 +13,7 @@ import { mergeConfig } from '../../../utils/defaults';
 
 export default function WelcomeConfig() {
   const router = useRouter();
+  const { t } = useT();
   const { guildId } = router.query;
   const [config, setConfig] = useState(null);
   const [discordData, setDiscordData] = useState({ roles: [], channels: [] });
@@ -68,9 +70,9 @@ export default function WelcomeConfig() {
         method: 'POST',
         body: JSON.stringify(config)
       });
-      showToast('Configurazione salvata!');
+      showToast(t('common.saved_success'));
     } catch (error) {
-        showToast('Errore durante il salvataggio.', 'error');
+        showToast(t('common.error'), 'error');
     } finally { setSaving(false); }
   };
 
@@ -78,9 +80,9 @@ export default function WelcomeConfig() {
     setTesting(true);
     try {
         const res = await api.request(`/config/${guildId}/welcome/test`, { method: 'POST' });
-        showToast(res.message || 'Messaggio inviato!');
+        showToast(res.message || t('embeds.sent'));
     } catch (error) {
-        showToast(error.message || 'Errore durante il test', 'error');
+        showToast(error.message || t('common.error'), 'error');
     } finally { setTesting(false); }
   };
 
@@ -116,21 +118,21 @@ export default function WelcomeConfig() {
               </div>
               <div className="header-text">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <h1>Welcome & Leave</h1>
-                  <label className="toggle-mini" title={config.enabled ? 'Modulo Attivo' : 'Modulo Disattivato'}>
+                  <h1>{t('welcome.title')}</h1>
+                  <label className="toggle-mini" title={config.enabled ? t('common.enabled') : t('common.disabled')}>
                     <input type="checkbox" checked={!!config.enabled} onChange={e => setConfig({...config, enabled: e.target.checked})} />
                     <span className="slider-mini"></span>
                   </label>
                 </div>
-                <p>Personalizza l'accoglienza automatica dei nuovi membri.</p>
+                <p>{t('welcome.desc')}</p>
               </div>
            </div>
            <div className="header-buttons">
               <button onClick={handleTest} className="btn-outline" disabled={testing || !config.welcome?.channelId}>
-                <Zap size={16} /> {testing ? 'Invio...' : 'Invia Test'}
+                <Zap size={16} /> {testing ? t('welcome.testing_btn') : t('welcome.test_btn')}
               </button>
               <button onClick={handleSave} className="btn-primary" disabled={saving}>
-                <Save size={16} /> {saving ? 'Salvataggio...' : 'Salva Modifiche'}
+                <Save size={16} /> {saving ? t('common.saving') : t('common.save')}
               </button>
            </div>
         </header>
@@ -139,24 +141,22 @@ export default function WelcomeConfig() {
         <div className="tab-navigation">
             <button onClick={() => setActiveTab('settings')} className={`tab-link ${activeTab === 'settings' ? 'active' : ''}`}>
                 <Settings2 size={16} />
-                <span>Configurazione</span>
+                <span>{t('welcome.tab_config')}</span>
             </button>
             <button onClick={() => setActiveTab('personalization')} className={`tab-link ${activeTab === 'personalization' ? 'active' : ''}`}>
                 <Palette size={16} />
-                <span>Personalizzazione</span>
+                <span>{t('welcome.tab_style')}</span>
             </button>
         </div>
 
         {activeTab === 'settings' && (
             <div className="animate fade-in contents-grid">
-
-
                 <div className="config-columns">
                     <section className="card content-card">
                         <div className="card-header-p">
                             <div className="align-center">
                                 <UserPlus size={18} color="var(--primary)" />
-                                <h3>Canali Welcome</h3>
+                                <h3>{t('welcome.channels_title')}</h3>
                             </div>
                             <label className="toggle">
                                 <input type="checkbox" checked={!!config.welcome?.enabled} onChange={e => updateMessageConfig('welcome', 'enabled', e.target.checked)} />
@@ -164,7 +164,7 @@ export default function WelcomeConfig() {
                             </label>
                         </div>
                         <div className="field-box" style={{ marginTop: '20px' }}>
-                            <label className="text-label">Target Channel</label>
+                            <label className="text-label">{t('automations.channel_label')}</label>
                             <DiscordSelector type="channel" options={discordData.channels} value={config.welcome?.channelId || ''} onChange={v => updateMessageConfig('welcome', 'channelId', v)} />
                         </div>
                     </section>
@@ -173,7 +173,7 @@ export default function WelcomeConfig() {
                         <div className="card-header-p">
                             <div className="align-center">
                                 <UserMinus size={18} color="var(--error)" />
-                                <h3>Canali Leave</h3>
+                                <h3>{t('welcome.leave_title')}</h3>
                             </div>
                             <label className="toggle">
                                 <input type="checkbox" checked={!!config.leave?.enabled} onChange={e => updateMessageConfig('leave', 'enabled', e.target.checked)} />
@@ -181,7 +181,7 @@ export default function WelcomeConfig() {
                             </label>
                         </div>
                         <div className="field-box" style={{ marginTop: '20px' }}>
-                            <label className="text-label">Target Channel</label>
+                            <label className="text-label">{t('automations.channel_label')}</label>
                             <DiscordSelector type="channel" options={discordData.channels} value={config.leave?.channelId || ''} onChange={v => updateMessageConfig('leave', 'channelId', v)} />
                         </div>
                     </section>
@@ -189,7 +189,7 @@ export default function WelcomeConfig() {
 
                 <div className="card info-card-p">
                     <Info size={20} color="var(--primary)" />
-                    <p>Puoi usare variabili come <code>{'{user}'}</code>, <code>{'{guild}'}</code>, e <code>{'{member_count}'}</code> nei tuoi embed.</p>
+                    <p>{t('welcome.variables_info')}</p>
                 </div>
             </div>
         )}
@@ -201,14 +201,14 @@ export default function WelcomeConfig() {
                         onClick={() => setActiveEmbedKey('welcome')} 
                         className={`editor-nav-link ${activeEmbedKey === 'welcome' ? 'active' : ''}`}
                     >
-                        <UserPlus size={14} /> Benvenuto
+                        <UserPlus size={14} /> {t('welcome.welcome_label')}
                         <ChevronRight size={14} className="nav-arrow" />
                     </button>
                     <button 
                         onClick={() => setActiveEmbedKey('leave')} 
                         className={`editor-nav-link ${activeEmbedKey === 'leave' ? 'active' : ''}`}
                     >
-                        <UserMinus size={14} /> Addio
+                        <UserMinus size={14} /> {t('welcome.leave_label')}
                         <ChevronRight size={14} className="nav-arrow" />
                     </button>
                 </div>

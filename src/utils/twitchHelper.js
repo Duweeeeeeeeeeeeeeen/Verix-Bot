@@ -89,7 +89,7 @@ export async function getStreams(usernames) {
         return streamRes.data.data;
     } catch (error) {
         logger.error('[TwitchHelper] Error fetching streams:', error.response?.data || error.message);
-        return [];
+        return null; // Return null to indicate error
     }
 }
 
@@ -118,7 +118,7 @@ export async function getUsers(usernames) {
         return userRes.data?.data || [];
     } catch (error) {
         logger.error('[TwitchHelper] Error fetching users:', error.response?.data || error.message);
-        return [];
+        return null; // Return null to indicate error
     }
 }
 

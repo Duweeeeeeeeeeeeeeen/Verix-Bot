@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import Skeleton from '../../../components/Skeleton';
 import DiscordSelector from '../../../components/DiscordSelector';
 import api from '../../../utils/api';
+import { useT } from '../../../contexts/LanguageContext';
 import { 
     Save, Plus, Trash2, Settings2, Power, 
     RefreshCcw, Server, Activity, Users, 
@@ -14,6 +15,7 @@ import NotificationSettings from '../../../components/NotificationSettings';
 
 export default function FiveMConfig() {
   const router = useRouter();
+  const { t } = useT();
   const { guildId } = router.query;
   const [config, setConfig] = useState(null);
   const [channels, setChannels] = useState([]);
@@ -86,9 +88,9 @@ export default function FiveMConfig() {
         method: 'POST',
         body: JSON.stringify(config)
       });
-      showToast('Configurazione FiveM salvata!');
+      showToast(t('fivem.save_success'));
     } catch (error) {
-        showToast('Errore durante il salvataggio', 'error');
+        showToast(t('fivem.save_error'), 'error');
     } finally { setSaving(false); }
   };
 
@@ -131,18 +133,18 @@ export default function FiveMConfig() {
               </div>
               <div className="header-text">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <h1>Integrazione FiveM</h1>
-                  <label className="toggle-mini" title={config.enabled ? 'Modulo Attivo' : 'Modulo Disattivato'}>
+                  <h1>{t('fivem.title')}</h1>
+                  <label className="toggle-mini" title={config.enabled ? t('common.enabled') : t('common.disabled')}>
                     <input type="checkbox" checked={!!config.enabled} onChange={e => setConfig({...config, enabled: e.target.checked})} />
                     <span className="slider-mini"></span>
                   </label>
                 </div>
-                <p>Monitora lo stato dei tuoi server e fornisci link rapidi ai cittadini.</p>
+                <p>{t('fivem.desc')}</p>
               </div>
            </div>
            <div className="header-buttons">
               <button onClick={handleSave} className="btn-primary" disabled={saving}>
-                <Save size={16} /> {saving ? 'Salvataggio...' : 'Salva Modifiche'}
+                <Save size={16} /> {saving ? t('common.loading') : t('common.save')}
               </button>
            </div>
         </header>
@@ -152,10 +154,10 @@ export default function FiveMConfig() {
         {/* Tab Navigation */}
         <div className="tab-navigation">
             <button onClick={() => setActiveTab('servers')} className={`tab-link ${activeTab === 'servers' ? 'active' : ''}`}>
-                <Server size={16} /> <span>Server Monitorati</span>
+                <Server size={16} /> <span>{t('fivem.tab_servers')}</span>
             </button>
             <button onClick={() => setActiveTab('messages')} className={`tab-link ${activeTab === 'messages' ? 'active' : ''}`}>
-                <MessageSquare size={16} /> <span>Design & Messaggi</span>
+                <MessageSquare size={16} /> <span>{t('fivem.tab_design')}</span>
             </button>
         </div>
 
@@ -164,8 +166,8 @@ export default function FiveMConfig() {
                 {activeTab === 'servers' && (
                     <div className="animate fade-in">
                         <div className="section-header-row">
-                            <h2>Lista Server</h2>
-                            <button onClick={addServer} className="btn-add-premium"><Plus size={16} /> Aggiungi Server</button>
+                            <h2>{t('fivem.list_title')}</h2>
+                            <button onClick={addServer} className="btn-add-premium"><Plus size={16} /> {t('fivem.add_server')}</button>
                         </div>
 
                         <div className="servers-list">
@@ -175,7 +177,7 @@ export default function FiveMConfig() {
                             <div className="server-card-header">
                                 <div className="align-center">
                                     <Server size={18} color="var(--primary)" />
-                                    <input className="input-minimal" value={server.name} onChange={e => updateServer(server.id, 'name', e.target.value)} placeholder="Nome Server..." />
+                                    <input className="input-minimal" value={server.name} onChange={e => updateServer(server.id, 'name', e.target.value)} placeholder={t('fivem.name_placeholder')} />
                                 </div>
                                 <div className="align-center">
                                     <label className="toggle-s">
@@ -189,29 +191,29 @@ export default function FiveMConfig() {
                             <div className="server-card-body">
                                 <div className="fields-grid-v">
                                     <div className="field-box" style={{ gridColumn: 'span 2' }}>
-                                        <label className="text-label">Canale Live Status</label>
+                                        <label className="text-label">{t('fivem.status_channel')}</label>
                                         <DiscordSelector 
                                             type="channel" 
                                             options={channels.filter(c => c.type === 0 || c.type === 5)} 
                                             value={server.statusChannelId || ''} 
                                             onChange={val => updateServer(server.id, 'statusChannelId', val)} 
-                                            placeholder="Seleziona il canale per il monitoraggio..."
+                                            placeholder={t('common.select_channel')}
                                         />
-                                        <p className="field-help">In questo canale verrà inviato l'embed con i player live.</p>
+                                        <p className="field-help">{t('fivem.status_channel_help')}</p>
                                     </div>
                                     <div className="field-box" style={{ gridColumn: 'span 2' }}>
-                                        <label className="text-label">Indirizzo IP (es: 127.0.0.1:30120)</label>
+                                        <label className="text-label">{t('fivem.ip_label')}</label>
                                         <div className="input-wrapper">
                                             <Globe size={16} className="input-icon" />
-                                            <input className="input-v" value={server.serverIp || ''} onChange={e => updateServer(server.id, 'serverIp', e.target.value)} placeholder="IP o cfx.re/join/xxxx" />
+                                            <input className="input-v" value={server.serverIp || ''} onChange={e => updateServer(server.id, 'serverIp', e.target.value)} placeholder={t('fivem.ip_placeholder')} />
                                         </div>
                                     </div>
                                 </div>
 
                                 <div className="buttons-section" style={{ marginTop: '24px' }}>
                                     <div className="section-header-row">
-                                        <h4 className="text-label">Bottoni Rapidi</h4>
-                                        <button onClick={() => addButton(server.id)} className="btn-add-mini"><Plus size={12} /> Aggiungi</button>
+                                        <h4 className="text-label">{t('fivem.buttons_title')}</h4>
+                                        <button onClick={() => addButton(server.id)} className="btn-add-mini"><Plus size={12} /> {t('common.add_field')}</button>
                                     </div>
                                     <div className="buttons-grid">
                                         {server.buttons?.map((btn, idx) => (
@@ -220,12 +222,12 @@ export default function FiveMConfig() {
                                                     const newBtns = [...server.buttons];
                                                     newBtns[idx].label = e.target.value;
                                                     updateServer(server.id, 'buttons', newBtns);
-                                                }} placeholder="Testo" />
+                                                }} placeholder={t('fivem.button_label')} />
                                                 <input className="input-s" value={btn.url || ''} onChange={e => {
                                                     const newBtns = [...server.buttons];
                                                     newBtns[idx].url = e.target.value;
                                                     updateServer(server.id, 'buttons', newBtns);
-                                                }} placeholder="fivem://connect/..." />
+                                                }} placeholder={t('fivem.button_url')} />
                                                 <button className="btn-remove-premium" onClick={() => {
                                                     const newBtns = server.buttons.filter((_, i) => i !== idx);
                                                     updateServer(server.id, 'buttons', newBtns);
@@ -241,7 +243,7 @@ export default function FiveMConfig() {
                         <div className="empty-state-card card animate fade-in">
                             <div className="align-center" style={{ justifyContent: 'center', flexDirection: 'column', padding: '40px', gap: '12px' }}>
                                 <Info size={32} className="text-dim" />
-                                <p className="text-dim">Nessun server configurato. Clicca su "Aggiungi Server" per iniziare.</p>
+                                <p className="text-dim">{t('fivem.empty_state')}</p>
                             </div>
                         </div>
                     )}
@@ -255,8 +257,8 @@ export default function FiveMConfig() {
                             guildId={guildId}
                             module="fivem"
                             slugs={[
-                                { key: 'status_embed', label: 'Stato Server (Online)', description: 'Embed inviato quando il server è online.', variables: ['serverName', 'players', 'maxPlayers'], group: '🟢 Status', groupIcon: Activity },
-                                { key: 'offline_embed', label: 'Stato Server (Offline)', description: 'Embed inviato quando il server non è raggiungibile.', variables: ['serverName'], group: '🔴 Offline', groupIcon: Power }
+                                { key: 'status_embed', label: t('fivem.tab_servers') + ' (Online)', description: 'Embed inviato quando il server è online.', variables: ['serverName', 'players', 'maxPlayers'], group: '🟢 Status', groupIcon: Activity },
+                                { key: 'offline_embed', label: t('fivem.tab_servers') + ' (Offline)', description: 'Embed inviato quando il server non è raggiungibile.', variables: ['serverName'], group: '🔴 Offline', groupIcon: Power }
                             ]}
                         />
                     </div>
@@ -269,7 +271,7 @@ export default function FiveMConfig() {
                         guildId={guildId}
                         value={config.notifications}
                         onChange={val => setNested('notifications', val)}
-                        title="Notifiche Status"
+                        title={t('dashboard.module_fivem')}
                         description="Avvisa lo staff se il server cade."
                     />
                 </div>
