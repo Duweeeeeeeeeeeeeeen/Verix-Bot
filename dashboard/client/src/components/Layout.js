@@ -41,7 +41,8 @@ import {
   Moon,
   Terminal,
   Crown,
-  BarChart3
+  BarChart3,
+  Sparkles
 } from 'lucide-react';
 import GuideSidebar from './GuideSidebar';
 import { useTheme } from '../contexts/ThemeContext';
