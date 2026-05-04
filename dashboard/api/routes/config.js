@@ -125,6 +125,22 @@ router.get('/:guildId', adminCheck, async (req, res) => {
     }
 });
 
+// GET guild info (Premium status, name, etc.)
+router.get('/:guildId/guild', adminCheck, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const guild = await Guild.findOneAndUpdate(
+            { guildId },
+            {},
+            { upsert: true, new: true, setDefaultsOnInsert: true }
+        );
+        res.json({ success: true, data: guild });
+    } catch (error) {
+        console.error('Error fetching guild info:', error);
+        res.status(500).json({ success: false, error: 'Impossibile caricare le info del server' });
+    }
+});
+
 // GET whitelist config
 router.get('/:guildId/whitelist', adminCheck, async (req, res) => {
     try {
