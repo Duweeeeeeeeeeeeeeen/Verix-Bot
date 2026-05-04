@@ -1,3 +1,4 @@
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 import mongoose from 'mongoose';
 import SocialConfig from '../../models/SocialConfig.js';
 import { getStreams } from '../../utils/twitchHelper.js';
@@ -187,14 +188,23 @@ export class SocialManager {
             };
 
             if (postData.thumbnail) {
-                embedData.image = { url: postData.thumbnail };
+                embedData.thumbnail = { url: postData.thumbnail };
             }
+
+            const row = new ActionRowBuilder()
+                .addComponents(
+                    new ButtonBuilder()
+                        .setLabel(platform === 'Twitch' ? 'Guarda la Live' : 'Guarda il Video')
+                        .setStyle(ButtonStyle.Link)
+                        .setURL(postData.url)
+                );
 
             const content = platformConfig.mentionEveryone ? '@everyone' : (platformConfig.roleId ? `<@&${platformConfig.roleId}>` : null);
             
             await channel.send({ 
                 content, 
-                embeds: [embedData] 
+                embeds: [embedData],
+                components: [row]
             }).catch(err => {
                 logger.error(`[Socials] Failed to send notification in ${channel.id}:`, err.message);
             });
