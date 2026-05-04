@@ -4,6 +4,8 @@ import GlobalConfig from '../../../src/models/GlobalConfig.js';
 import { EmbedBuilder } from 'discord.js';
 import logger from '../../../src/utils/logger.js';
 import SystemBroadcast from '../../../src/models/SystemBroadcast.js';
+import Guild from '../../../src/models/Guild.js';
+import { invalidateCache } from '../../../src/core/configCache.js';
 
 const router = express.Router();
 
@@ -126,6 +128,38 @@ router.get('/history', ownerCheck, async (req, res) => {
         res.json({ success: true, data: history });
     } catch (error) {
         res.status(500).json({ success: false, error: 'Errore nel recupero della cronologia.' });
+    }
+});
+
+/**
+ * GET /api/system/guild/:guildId
+ * Returns guild premium status (only for owner)
+ */
+router.get('/guild/:guildId', ownerCheck, async (req, res) => {
+    try {
+        const guild = await Guild.findOne({ guildId: req.params.guildId });
+        res.json({ success: true, data: guild || { isPremium: false } });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+/**
+ * POST /api/system/guild/:guildId/premium
+ * Toggles premium status (only for owner)
+ */
+router.post('/guild/:guildId/premium', ownerCheck, async (req, res) => {
+    try {
+        const { isPremium } = req.body;
+        const guild = await Guild.findOneAndUpdate(
+            { guildId: req.params.guildId },
+            { $set: { isPremium } },
+            { returnDocument: 'after', upsert: true }
+        );
+        invalidateCache(req.params.guildId);
+        res.json({ success: true, data: guild });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 

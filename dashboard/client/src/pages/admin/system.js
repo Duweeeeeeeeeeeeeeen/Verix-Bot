@@ -3,7 +3,7 @@ import Head from 'next/head';
 import Layout from '../../components/Layout';
 import { useAuth } from '../../contexts/AuthContext';
 import { useT } from '../../contexts/LanguageContext';
-import { Rocket, Send, ShieldAlert, History, BarChart3, Terminal, Eye, EyeOff } from 'lucide-react';
+import { Rocket, Send, ShieldAlert, History, BarChart3, Terminal, Eye, EyeOff, Search, Crown } from 'lucide-react';
 import EmbedPreview from '../../components/EmbedPreview';
 
 const OWNER_IDS = ['361159834688552960', '314417452395626496'];
@@ -25,6 +25,12 @@ export default function SystemUpdates() {
         image: ''
     });
     const [previewTheme, setPreviewTheme] = useState('dark');
+
+    // Guild Management State
+    const [searchGuildId, setSearchGuildId] = useState('');
+    const [foundGuild, setFoundGuild] = useState(null);
+    const [searching, setSearching] = useState(false);
+    const [updatingPremium, setUpdatingPremium] = useState(false);
 
     const isOwner = user && OWNER_IDS.includes(user.id);
 
@@ -86,6 +92,46 @@ export default function SystemUpdates() {
             alert(t('system.error_connection'));
         } finally {
             setSending(false);
+        }
+    };
+
+    const handleSearchGuild = async () => {
+        if (!searchGuildId) return;
+        setSearching(true);
+        setFoundGuild(null);
+        try {
+            const res = await fetch(`/api/system/guild/${searchGuildId}`);
+            const data = await res.json();
+            if (data.success) {
+                setFoundGuild(data.data);
+            } else {
+                alert("Server non trovato o errore nel database.");
+            }
+        } catch (err) {
+            alert("Errore di connessione.");
+        } finally {
+            setSearching(false);
+        }
+    };
+
+    const togglePremium = async () => {
+        if (!foundGuild) return;
+        setUpdatingPremium(true);
+        const newStatus = !foundGuild.isPremium;
+        try {
+            const res = await fetch(`/api/system/guild/${searchGuildId}/premium`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isPremium: newStatus })
+            });
+            const data = await res.json();
+            if (data.success) {
+                setFoundGuild({ ...foundGuild, isPremium: newStatus });
+            }
+        } catch (err) {
+            alert("Errore durante l'aggiornamento.");
+        } finally {
+            setUpdatingPremium(false);
         }
     };
 
@@ -275,6 +321,45 @@ export default function SystemUpdates() {
                                 <p className="loading-stats">{t('common.loading')}</p>
                             )}
                             <button onClick={fetchStats} className="btn-refresh">{t('system.refresh_stats')}</button>
+                        </section>
+
+                        {/* Premium Management */}
+                        <section className="glass-card premium-mgmt-card">
+                            <div className="card-header">
+                                <Crown size={20} color="#eab308" />
+                                <h2>Gestione Premium</h2>
+                            </div>
+                            <div className="guild-search-box">
+                                <input 
+                                    type="text" 
+                                    placeholder="Inserisci Guild ID..." 
+                                    value={searchGuildId}
+                                    onChange={e => setSearchGuildId(e.target.value)}
+                                />
+                                <button onClick={handleSearchGuild} disabled={searching} className="btn-search">
+                                    <Search size={16} />
+                                </button>
+                            </div>
+
+                            {foundGuild && (
+                                <div className="guild-result animate fade-in">
+                                    <div className="guild-info">
+                                        <p className="id-tag">ID: {searchGuildId}</p>
+                                        <div className="status-badge-row">
+                                            <span className={`status-badge ${foundGuild.isPremium ? 'premium' : 'free'}`}>
+                                                {foundGuild.isPremium ? 'PREMIUM' : 'FREE'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <button 
+                                        className={`btn-toggle-premium ${foundGuild.isPremium ? 'is-premium' : ''}`}
+                                        onClick={togglePremium}
+                                        disabled={updatingPremium}
+                                    >
+                                        {updatingPremium ? '...' : (foundGuild.isPremium ? 'Rimuovi PRO' : 'Attiva PRO')}
+                                    </button>
+                                </div>
+                            )}
                         </section>
 
                         <section className="glass-card danger-card">
@@ -584,6 +669,80 @@ export default function SystemUpdates() {
                     border-radius: 8px;
                     cursor: not-allowed;
                     opacity: 0.5;
+                }
+
+                .premium-mgmt-card {
+                    margin-top: 1.5rem;
+                    border-color: rgba(234, 179, 8, 0.2);
+                }
+
+                .guild-search-box {
+                    display: flex;
+                    gap: 8px;
+                    margin-bottom: 1rem;
+                }
+
+                .guild-search-box input {
+                    flex: 1;
+                    padding: 8px 12px;
+                    font-size: 0.85rem;
+                }
+
+                .btn-search {
+                    background: var(--bg-badge);
+                    border: 1px solid var(--border-color);
+                    color: white;
+                    padding: 8px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                }
+
+                .guild-result {
+                    background: rgba(0,0,0,0.2);
+                    padding: 12px;
+                    border-radius: 12px;
+                    border: 1px solid var(--border-color);
+                }
+
+                .id-tag { font-size: 0.7rem; font-family: monospace; color: var(--text-muted); margin: 0; }
+                
+                .status-badge-row { margin: 8px 0; }
+                .status-badge {
+                    font-size: 0.65rem;
+                    font-weight: 900;
+                    padding: 2px 8px;
+                    border-radius: 4px;
+                }
+                .status-badge.free { background: rgba(255,255,255,0.1); color: white; }
+                .status-badge.premium { background: rgba(234, 179, 8, 0.1); color: #eab308; }
+
+                .btn-toggle-premium {
+                    width: 100%;
+                    padding: 8px;
+                    border-radius: 8px;
+                    font-size: 0.8rem;
+                    font-weight: 700;
+                    cursor: pointer;
+                    border: 1px solid #eab308;
+                    background: transparent;
+                    color: #eab308;
+                    transition: 0.2s;
+                }
+
+                .btn-toggle-premium:hover {
+                    background: #eab308;
+                    color: black;
+                }
+
+                .btn-toggle-premium.is-premium {
+                    border-color: var(--text-muted);
+                    color: var(--text-muted);
+                }
+
+                .btn-toggle-premium.is-premium:hover {
+                    background: var(--error);
+                    color: white;
+                    border-color: var(--error);
                 }
 
                 @media (max-width: 900px) {
