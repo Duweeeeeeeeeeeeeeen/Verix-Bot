@@ -206,11 +206,57 @@ export default function PhotoContestConfig() {
                                     <input type="number" className="input" value={config.intervalHours || 24} onChange={e => setConfig({...config, intervalHours: parseInt(e.target.value) || 1})} />
                                 </div>
                                 <div className="field-box">
-                                    <label className="text-label">
-                                        {t('photocontest.duration_label')}
-                                        <HelpTooltip text={t('photocontest.duration_help')} />
-                                    </label>
+                                    <label className="text-label">{t('photocontest.duration_label')}</label>
                                     <input type="number" className="input" value={config.durationHours || 24} onChange={e => setConfig({...config, durationHours: parseInt(e.target.value) || 1})} />
+                                </div>
+                                <div className="field-box" style={{ gridColumn: 'span 2' }}>
+                                    <div className="premium-field-card" style={{ 
+                                        padding: '16px', 
+                                        background: guildData?.isPremium ? 'rgba(99, 102, 241, 0.05)' : 'var(--bg-badge)', 
+                                        borderRadius: '12px', 
+                                        border: guildData?.isPremium ? '1px solid var(--primary)' : '1px solid var(--border)',
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center'
+                                    }}>
+                                        <div>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <h4 style={{ margin: 0 }}>Vincitori Multipli (PRO)</h4>
+                                                {!guildData?.isPremium && <Crown size={12} color="var(--gold)" />}
+                                            </div>
+                                            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>Permetti a più utenti di vincere il concorso contemporaneamente.</p>
+                                        </div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                                            {config.multiWinner && (
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Numero:</span>
+                                                    <input 
+                                                        type="number" 
+                                                        className="input-s" 
+                                                        style={{ width: '50px', padding: '4px' }}
+                                                        value={config.winnersCount || 1}
+                                                        disabled={!guildData?.isPremium}
+                                                        onChange={(e) => setConfig({...config, winnersCount: parseInt(e.target.value) || 1})}
+                                                    />
+                                                </div>
+                                            )}
+                                            <label className="switch">
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={!!config.multiWinner} 
+                                                    disabled={!guildData?.isPremium}
+                                                    onChange={(e) => {
+                                                        if (!guildData?.isPremium) {
+                                                            router.push(`/config/${guildId}/premium`);
+                                                            return;
+                                                        }
+                                                        setConfig({...config, multiWinner: e.target.checked});
+                                                    }}
+                                                />
+                                                <span className="slider round"></span>
+                                            </label>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </section>

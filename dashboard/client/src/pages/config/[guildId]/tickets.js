@@ -570,6 +570,64 @@ export default function TicketConfig() {
                                             <span className="slider"></span>
                                         </label>
                                     </div>
+
+                                    {/* Premium Support Features */}
+                                    <div className="premium-field-card" style={{ 
+                                        padding: '16px', 
+                                        background: guildData?.isPremium ? 'rgba(99, 102, 241, 0.05)' : 'var(--bg-badge)', 
+                                        borderRadius: '12px', 
+                                        border: guildData?.isPremium ? '1px solid var(--primary)' : '1px solid var(--border)',
+                                        marginTop: '12px'
+                                    }}>
+                                        <div className="flex-between" style={{ marginBottom: '16px' }}>
+                                            <div className="flex-col">
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>Transcripts HTML (PRO)</span>
+                                                    {!guildData?.isPremium && <Crown size={12} color="var(--gold)" />}
+                                                </div>
+                                                <p className="text-dim" style={{ fontSize: '0.75rem', margin: 0 }}>Genera log grafici interattivi invece di semplici file testo.</p>
+                                            </div>
+                                            <label className="toggle">
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={!!config.htmlTranscripts} 
+                                                    disabled={!guildData?.isPremium}
+                                                    onChange={(e) => {
+                                                        if (!guildData?.isPremium) {
+                                                            router.push(`/config/${guildId}/premium`);
+                                                            return;
+                                                        }
+                                                        setConfig({...config, htmlTranscripts: e.target.checked});
+                                                    }}
+                                                />
+                                                <span className="slider"></span>
+                                            </label>
+                                        </div>
+                                        <div className="flex-between">
+                                            <div className="flex-col">
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>Sistema di Rating (PRO)</span>
+                                                    {!guildData?.isPremium && <Crown size={12} color="var(--gold)" />}
+                                                </div>
+                                                <p className="text-dim" style={{ fontSize: '0.75rem', margin: 0 }}>Chiedi una valutazione 1-5 stelle alla chiusura del ticket.</p>
+                                            </div>
+                                            <label className="toggle">
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={!!config.ratingEnabled} 
+                                                    disabled={!guildData?.isPremium}
+                                                    onChange={(e) => {
+                                                        if (!guildData?.isPremium) {
+                                                            router.push(`/config/${guildId}/premium`);
+                                                            return;
+                                                        }
+                                                        setConfig({...config, ratingEnabled: e.target.checked});
+                                                    }}
+                                                />
+                                                <span className="slider"></span>
+                                            </label>
+                                        </div>
+                                    </div>
                                 </div>
                             </section>
                         </div>
