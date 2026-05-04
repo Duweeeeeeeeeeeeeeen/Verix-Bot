@@ -46,7 +46,8 @@ export default function TempVoiceConfig() {
       
       if (configRes) setConfig(configRes.data || configRes);
       if (discordRes) {
-        const discordData = discordRes.data || {};
+        // api.request already returns result.data
+        const discordData = discordRes || {};
         const chanData = discordData.channels || [];
         setChannels(chanData.filter(c => c.type === 2)); // Voice
         setCategories(chanData.filter(c => c.type === 4)); // Category
@@ -127,51 +128,37 @@ export default function TempVoiceConfig() {
 
         <div className="tab-content">
             {activeTab === 'settings' && (
-                <div className="config-grid-v animate fade-in">
-                    <div className="grid-main-v">
-                        <section className="card section-card-v">
-                            <div className="align-center" style={{ marginBottom: '20px' }}>
-                                <Zap size={18} color="var(--primary)" />
-                                <h3>Configurazione Canali</h3>
+                <div className="animate fade-in">
+                    <section className="card section-card-v">
+                        <div className="align-center" style={{ marginBottom: '20px' }}>
+                            <Zap size={18} color="var(--primary)" />
+                            <h3>Configurazione Canali</h3>
+                        </div>
+                        <div className="fields-grid-v">
+                            <div className="field-box">
+                                <label className="text-label">Canale Generatore (Join to Create)</label>
+                                <DiscordSelector 
+                                    type="channel" 
+                                    options={channels} 
+                                    value={config.creatorChannelId || ''} 
+                                    onChange={val => setNested('creatorChannelId', val)} 
+                                    placeholder="Seleziona un canale vocale..."
+                                />
+                                <p className="field-help">L'entrata in questo canale creerà una nuova stanza.</p>
                             </div>
-                            <div className="fields-grid-v">
-                                <div className="field-box">
-                                    <label className="text-label">Canale Generatore (Join to Create)</label>
-                                    <DiscordSelector 
-                                        type="channel" 
-                                        options={channels} 
-                                        value={config.creatorChannelId || ''} 
-                                        onChange={val => setNested('creatorChannelId', val)} 
-                                        placeholder="Seleziona un canale vocale..."
-                                    />
-                                    <p className="field-help">L'entrata in questo canale creerà una nuova stanza.</p>
-                                </div>
-                                <div className="field-box">
-                                    <label className="text-label">Categoria di Destinazione</label>
-                                    <DiscordSelector 
-                                        type="channel" 
-                                        options={categories} 
-                                        value={config.categoryId || ''} 
-                                        onChange={val => setNested('categoryId', val)} 
-                                        placeholder="Default (Stessa del generatore)"
-                                    />
-                                    <p className="field-help">Dove verranno create le nuove stanze.</p>
-                                </div>
+                            <div className="field-box">
+                                <label className="text-label">Categoria di Destinazione</label>
+                                <DiscordSelector 
+                                    type="channel" 
+                                    options={categories} 
+                                    value={config.categoryId || ''} 
+                                    onChange={val => setNested('categoryId', val)} 
+                                    placeholder="Default (Stessa del generatore)"
+                                />
+                                <p className="field-help">Dove verranno create le nuove stanze.</p>
                             </div>
-                        </section>
-                    </div>
-
-                    <div className="grid-side-v">
-                        <section className="card section-card-v">
-                            <div className="align-center" style={{ marginBottom: '16px' }}>
-                                <Info size={16} color="var(--primary)" />
-                                <h3>Informazioni</h3>
-                            </div>
-                            <p className="text-sm text-muted leading-relaxed">
-                                Le stanze create verranno automaticamente eliminate quando l'ultimo utente uscirà dal canale.
-                            </p>
-                        </section>
-                    </div>
+                        </div>
+                    </section>
                 </div>
             )}
 

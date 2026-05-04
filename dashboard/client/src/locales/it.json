@@ -279,6 +279,11 @@
   "guide.giveaway.sched.text": "I giveaway programmati partono automaticamente al minuto esatto stabilito. Assicurati che l'ora sia corretta!",
   "guide.giveaway.vis.title": "Visibilità Canali",
   "guide.giveaway.vis.text": "Vengono mostrati solo i canali Testuali e di Annuncio. Se un canale non appare, verifica che il bot abbia i permessi di lettura.",
+  
+  "guide.tempvoice.info.title": "Gestione Canali",
+  "guide.tempvoice.info.text": "Le stanze create verranno automaticamente eliminate quando l'ultimo utente uscirà dal canale. È tutto gestito dal bot in tempo reale.",
+  "guide.tempvoice.template.title": "Placeholders Nome",
+  "guide.tempvoice.template.text": "Usa {user} per mettere il nome di chi entra nel canale. Rende il server molto più ordinato!",
 
   "guide_page.title": "Documentazione",
   "guide_page.subtitle": "Guida rapida all'utilizzo di placeholders, formati e limiti di sistema.",

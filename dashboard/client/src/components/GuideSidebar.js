@@ -97,6 +97,18 @@ const GUIDE_CONTENT = {
       match: context.logs?.enabled && !context.logs?.channelId,
       text: "guide.global.logs.text"
     }
+  ],
+  tempvoice: (context) => [
+    {
+      title: "guide.tempvoice.info.title",
+      match: true,
+      text: "guide.tempvoice.info.text"
+    },
+    {
+      title: "guide.tempvoice.template.title",
+      match: true,
+      text: "guide.tempvoice.template.text"
+    }
   ]
 };
 
