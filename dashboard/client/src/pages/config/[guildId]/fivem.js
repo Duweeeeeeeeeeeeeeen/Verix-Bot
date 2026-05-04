@@ -36,9 +36,14 @@ export default function FiveMConfig() {
           ]);
           if (configRes) {
               const data = configRes.data || configRes;
-              setConfig(mergeConfig(data, 'fivem'));
+              const merged = mergeConfig(data, 'fivem');
+              if (!merged.servers) merged.servers = [];
+              setConfig(merged);
           }
-          if (discordRes) setChannels(discordRes.channels || []);
+          if (discordRes) {
+              const channelData = discordRes.data?.channels || discordRes.channels || [];
+              setChannels(channelData);
+          }
           setLoading(false);
         } catch (error) {
           console.error("Error loading FiveM config:", error);
@@ -172,7 +177,8 @@ export default function FiveMConfig() {
                 </div>
 
                 <div className="servers-list">
-            {config.servers?.map(server => (
+            {config.servers?.length > 0 ? (
+                config.servers.map(server => (
                 <div key={server.id} className="server-card card animate fade-in">
                     <div className="server-card-header">
                         <div className="align-center">
@@ -194,25 +200,25 @@ export default function FiveMConfig() {
                                 <label className="text-label">Canale Live Status</label>
                                 <DiscordSelector 
                                     type="channel" 
-                                    options={channels.filter(c => c.type === 0 || c.type === 5)} 
+                                    options={channels.filter(c => c.type === 2)} 
                                     value={server.statusChannelId || ''} 
                                     onChange={val => updateServer(server.id, 'statusChannelId', val)} 
-                                    placeholder="Seleziona il canale dove inviare il monitoraggio live..."
+                                    placeholder="Seleziona il canale per il monitoraggio..."
                                 />
-                                <p className="field-help">Il bot invierà un messaggio in questo canale e lo aggiornerà ogni minuto con i dati live.</p>
+                                <p className="field-help">In questo canale verrà inviato l'embed con i player live.</p>
                             </div>
                             <div className="field-box" style={{ gridColumn: 'span 2' }}>
-                                <label className="text-label">Indirizzo IP / Domain (con porta se non 30120)</label>
+                                <label className="text-label">Indirizzo IP (es: 127.0.0.1:30120)</label>
                                 <div className="input-wrapper">
                                     <Globe size={16} className="input-icon" />
-                                    <input className="input-v" value={server.serverIp || ''} onChange={e => updateServer(server.id, 'serverIp', e.target.value)} placeholder="Es: 127.0.0.1:30120 o cfx.re/join/xxxx" />
+                                    <input className="input-v" value={server.serverIp || ''} onChange={e => updateServer(server.id, 'serverIp', e.target.value)} placeholder="IP o cfx.re/join/xxxx" />
                                 </div>
                             </div>
                         </div>
 
                         <div className="buttons-section" style={{ marginTop: '24px' }}>
                              <div className="section-header-row">
-                                <h4 className="text-label">Bottoni di Collegamento</h4>
+                                <h4 className="text-label">Bottoni Rapidi</h4>
                                 <button onClick={() => addButton(server.id)} className="btn-add-mini"><Plus size={12} /> Aggiungi</button>
                              </div>
                              <div className="buttons-grid">
@@ -222,7 +228,7 @@ export default function FiveMConfig() {
                                             const newBtns = [...server.buttons];
                                             newBtns[idx].label = e.target.value;
                                             updateServer(server.id, 'buttons', newBtns);
-                                        }} placeholder="Etichetta" />
+                                        }} placeholder="Testo" />
                                         <input className="input-s" value={btn.url || ''} onChange={e => {
                                             const newBtns = [...server.buttons];
                                             newBtns[idx].url = e.target.value;
@@ -238,7 +244,15 @@ export default function FiveMConfig() {
                         </div>
                     </div>
                 </div>
-            ))}
+                ))
+            ) : (
+                <div className="empty-state-card card animate fade-in">
+                    <div className="align-center" style={{ justifyContent: 'center', flexDirection: 'column', padding: '40px', gap: '12px' }}>
+                        <Info size={32} className="text-dim" />
+                        <p className="text-dim">Nessun server configurato. Clicca su "Aggiungi Server" per iniziare.</p>
+                    </div>
+                </div>
+            )}
         </div>
         </div>
         )}
