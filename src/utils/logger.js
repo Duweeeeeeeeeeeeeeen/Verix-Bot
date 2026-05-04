@@ -1,9 +1,9 @@
 import chalk from 'chalk';
 
 const logger = {
-    info: (message) => console.log(`${chalk.blue('[INFO]')} ${message}`),
-    success: (message) => console.log(`${chalk.green('[SUCCESS]')} ${message}`),
-    warn: (message) => console.log(`${chalk.yellow('[WARN]')} ${message}`),
+    info: (message, ...args) => console.log(`${chalk.blue('[INFO]')} ${message}`, ...args),
+    success: (message, ...args) => console.log(`${chalk.green('[SUCCESS]')} ${message}`, ...args),
+    warn: (message, ...args) => console.log(`${chalk.yellow('[WARN]')} ${message}`, ...args),
     error: (message, stack) => {
         console.log(`${chalk.red('[ERROR]')} ${message}`);
         if (stack) console.error(stack);
