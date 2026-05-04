@@ -222,13 +222,22 @@ router.post('/:guildId/tempvoice', adminCheck, async (req, res) => {
         const { guildId } = req.params;
         const updateData = req.body;
 
-        // Conflict check: if this channel is used for Whitelist Voice, clear it there
+        // Conflict check: if this channel is used for Whitelist or Support Voice, clear it there
         if (updateData.creatorChannelId) {
+            // Check Whitelist
             const wlConfig = await WhitelistConfig.findOne({ guildId });
             if (wlConfig && wlConfig.voiceSettings?.joinChannelId === updateData.creatorChannelId) {
                 wlConfig.voiceSettings.joinChannelId = null;
                 await wlConfig.save();
                 invalidateCache(guildId, 'whitelist');
+            }
+
+            // Check Support
+            const suppConfig = await SupportConfig.findOne({ guildId });
+            if (suppConfig && suppConfig.voiceSettings?.joinChannelId === updateData.creatorChannelId) {
+                suppConfig.voiceSettings.joinChannelId = null;
+                await suppConfig.save();
+                invalidateCache(guildId, 'support');
             }
         }
 
@@ -620,6 +629,25 @@ router.post('/:guildId/whitelist', adminCheck, validate(whitelistSchema), async 
         // Prevent Mongoose immutable field errors
         if (data._id) delete data._id;
         if (data.__v !== undefined) delete data.__v;
+
+        // Conflict check: if Whitelist Voice joinChannelId is set, clear it in TempVoice and Support
+        const joinChannelId = data.voiceSettings?.joinChannelId;
+        if (joinChannelId) {
+             // Clear TempVoice
+             const tempConfig = await TempVoiceConfig.findOne({ guildId });
+             if (tempConfig && tempConfig.creatorChannelId === joinChannelId) {
+                 tempConfig.creatorChannelId = null;
+                 await tempConfig.save();
+                 invalidateCache(guildId, 'tempvoice');
+             }
+             // Clear Support
+             const suppConfig = await SupportConfig.findOne({ guildId });
+             if (suppConfig && suppConfig.voiceSettings?.joinChannelId === joinChannelId) {
+                 suppConfig.voiceSettings.joinChannelId = null;
+                 await suppConfig.save();
+                 invalidateCache(guildId, 'support');
+             }
+        }
 
         const config = await WhitelistConfig.findOneAndUpdate(
             { guildId },
@@ -1421,7 +1449,7 @@ router.get('/:guildId/discord-data', adminCheck, async (req, res) => {
         }
 
         // 4. Forced Data Fetching (Parallel)
-        const [rolesFetched, channelsFetched, membersFetched] = await Promise.all([
+        const [rolesFetched, channelsFetched, membersFetched, temp, wl, supp] = await Promise.all([
             guild.roles.fetch().catch(err => {
                 console.error(`[ERROR] Failed to fetch roles for ${guildId}:`, err);
                 return guild.roles.cache;
@@ -1433,8 +1461,16 @@ router.get('/:guildId/discord-data', adminCheck, async (req, res) => {
             guild.members.fetch({ limit: 1000 }).catch(err => {
                 console.error(`[ERROR] Failed to fetch members for ${guildId}:`, err);
                 return [];
-            })
+            }),
+            TempVoiceConfig.findOne({ guildId }),
+            WhitelistConfig.findOne({ guildId }),
+            SupportConfig.findOne({ guildId })
         ]);
+
+        const occupiedChannels = {};
+        if (temp?.creatorChannelId) occupiedChannels[temp.creatorChannelId] = 'Temp Voice';
+        if (wl?.voiceSettings?.joinChannelId) occupiedChannels[wl.voiceSettings.joinChannelId] = 'Whitelist';
+        if (supp?.voiceSettings?.joinChannelId) occupiedChannels[supp.voiceSettings.joinChannelId] = 'Assistenza';
 
         const botMember = await guild.members.fetchMe().catch(() => null);
         const botHighestPosition = botMember ? botMember.roles.highest.position : 0;
@@ -1460,7 +1496,8 @@ router.get('/:guildId/discord-data', adminCheck, async (req, res) => {
             .map(c => ({ 
                 id: c.id, 
                 name: c.name, 
-                type: c.type 
+                type: c.type,
+                occupiedBy: occupiedChannels[c.id] || null
             }))
             .sort((a, b) => a.name.localeCompare(b.name));
             
@@ -1830,15 +1867,37 @@ router.get('/:guildId/support', adminCheck, async (req, res) => {
 router.post('/:guildId/support', adminCheck, validate(supportSchema), async (req, res) => {
     try {
         const { guildId } = req.params;
+        const data = req.validatedData;
+
+        // Conflict check: if Support Voice joinChannelId is set, clear it in TempVoice and Whitelist
+        const joinChannelId = data.voiceSettings?.joinChannelId;
+        if (joinChannelId) {
+             // Clear TempVoice
+             const tempConfig = await TempVoiceConfig.findOne({ guildId });
+             if (tempConfig && tempConfig.creatorChannelId === joinChannelId) {
+                 tempConfig.creatorChannelId = null;
+                 await tempConfig.save();
+                 invalidateCache(guildId, 'tempvoice');
+             }
+             // Clear Whitelist
+             const wlConfig = await WhitelistConfig.findOne({ guildId });
+             if (wlConfig && wlConfig.voiceSettings?.joinChannelId === joinChannelId) {
+                 wlConfig.voiceSettings.joinChannelId = null;
+                 await wlConfig.save();
+                 invalidateCache(guildId, 'whitelist');
+             }
+        }
+
         const config = await SupportConfig.findOneAndUpdate(
             { guildId },
-            { $set: req.validatedData },
+            { $set: data },
             { returnDocument: 'after', upsert: true }
         );
         invalidateCache(guildId);
-        await logAudit(req, 'UPDATE_SUPPORT', req.validatedData);
+        await logAudit(req, 'UPDATE_SUPPORT', data);
         res.json({ success: true, data: config });
     } catch (error) {
+        console.error('Error updating support config:', error);
         res.status(500).json({ success: false, error: 'Failed to update support config' });
     }
 });

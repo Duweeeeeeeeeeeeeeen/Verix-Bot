@@ -144,7 +144,7 @@ export default function DiscordSelector({
               filteredOptions.map((opt) => (
                 <div 
                   key={opt.id}
-                  className={`option-item ${isSelected(opt.id) ? 'selected' : ''} ${opt.assignable === false ? 'disabled' : ''}`}
+                  className={`option-item ${isSelected(opt.id) ? 'selected' : ''} ${(opt.assignable === false || (opt.occupiedBy && !isSelected(opt.id))) ? 'disabled' : ''}`}
                   onClick={() => handleSelect(opt)}
                 >
                   <div className="option-info">
@@ -167,6 +167,12 @@ export default function DiscordSelector({
                       <div className="disabled-badge" title="Ruolo superiore nella gerarchia del Bot">
                         <AlertCircle size={14} />
                         <span>non assegnabile</span>
+                      </div>
+                    )}
+                    {opt.occupiedBy && !isSelected(opt.id) && (
+                      <div className="disabled-badge occupied" title={`In uso da: ${opt.occupiedBy}`}>
+                        <AlertCircle size={14} />
+                        <span>In uso ({opt.occupiedBy})</span>
                       </div>
                     )}
                   </div>
