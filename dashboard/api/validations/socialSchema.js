@@ -4,6 +4,7 @@ const platformSchema = z.object({
     enabled: z.boolean().default(false),
     notificationChannelId: z.string().nullable().optional(),
     roleId: z.string().nullable().optional(),
+    liveRoleId: z.string().nullable().optional(),
     mentionEveryone: z.boolean().default(false),
     embed: z.object({
         title: z.string().optional(),

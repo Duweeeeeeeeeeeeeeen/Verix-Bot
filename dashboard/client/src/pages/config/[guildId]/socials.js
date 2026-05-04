@@ -254,8 +254,12 @@ export default function SocialsConfig() {
                                             <DiscordSelector type="channel" options={discordData.channels} value={currentPlatformConfig.notificationChannelId || ''} onChange={val => updatePlatform('notificationChannelId', val)} />
                                         </div>
                                         <div className="field-box">
-                                            <label className="text-label">Ruolo da Menzionare</label>
+                                            <label className="text-label">Ruolo da Menzionare (Notifica)</label>
                                             <DiscordSelector type="role" options={discordData.roles} value={currentPlatformConfig.roleId || ''} onChange={val => updatePlatform('roleId', val)} />
+                                        </div>
+                                        <div className="field-box">
+                                            <label className="text-label">Ruolo Status "Live" (da assegnare)</label>
+                                            <DiscordSelector type="role" options={discordData.roles} value={currentPlatformConfig.liveRoleId || ''} onChange={val => updatePlatform('liveRoleId', val)} />
                                         </div>
                                         <div className="status-row-s">
                                             <span>Menziona @everyone</span>

@@ -218,10 +218,10 @@ export class SocialManager {
             });
 
             // 2. Add Role (if Twitch and user is linked)
-            if (platformConfig.roleId && account.discordUserId) {
+            if (platformConfig.liveRoleId && account.discordUserId) {
                 const member = await guild.members.fetch(account.discordUserId).catch(() => null);
                 if (member) {
-                    await member.roles.add(platformConfig.roleId).catch(err => {
+                    await member.roles.add(platformConfig.liveRoleId).catch(err => {
                         logger.error(`[Socials] Failed to add role to ${member.id}:`, err.message);
                     });
                 }
@@ -236,10 +236,10 @@ export class SocialManager {
             const guild = await this.client.guilds.fetch(guildId).catch(() => null);
             if (!guild) return;
 
-            if (platformConfig.roleId && account.discordUserId) {
+            if (platformConfig.liveRoleId && account.discordUserId) {
                 const member = await guild.members.fetch(account.discordUserId).catch(() => null);
                 if (member) {
-                    await member.roles.remove(platformConfig.roleId).catch(err => {
+                    await member.roles.remove(platformConfig.liveRoleId).catch(err => {
                         logger.error(`[Socials] Failed to remove role from ${member.id}:`, err.message);
                     });
                 }

@@ -42,7 +42,10 @@ export default function DiscordSelector({
   const filteredOptions = useMemo(() => {
     if (!search) return options;
     const s = search.toLowerCase();
-    return options.filter(opt => opt.name.toLowerCase().includes(s));
+    return options.filter(opt => 
+      opt.name.toLowerCase().includes(s) || 
+      opt.id.toLowerCase().includes(s)
+    );
   }, [options, search]);
 
   useEffect(() => {

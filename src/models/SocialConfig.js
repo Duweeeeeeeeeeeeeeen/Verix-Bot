@@ -3,7 +3,8 @@ import mongoose from 'mongoose';
 const socialPlatformSchema = new mongoose.Schema({
     enabled: { type: Boolean, default: false },
     notificationChannelId: { type: String, default: null },
-    roleId: { type: String, default: null },
+    roleId: { type: String, default: null }, // Role to mention
+    liveRoleId: { type: String, default: null }, // Role to give when live
     mentionEveryone: { type: Boolean, default: false },
     embed: {
         title: { type: String, default: 'Nuovo contenuto!' },
