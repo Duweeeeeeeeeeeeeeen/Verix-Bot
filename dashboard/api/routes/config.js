@@ -1464,7 +1464,8 @@ router.patch('/:guildId/guild', adminCheck, async (req, res) => {
                 await whiteLabelHelper.syncGuildIdentity(discordGuild);
             }
             // Reset index on update to show the first new status immediately
-            await whiteLabelHelper.syncGlobalStatus(req.discordClient);
+            // Reset index on update to show the first new status immediately
+            await whiteLabelHelper.syncGlobalStatus(req.discordClient, true);
         } catch (syncError) {
             console.error('[WhiteLabel] Failed immediate sync:', syncError);
         }

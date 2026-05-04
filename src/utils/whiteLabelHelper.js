@@ -42,9 +42,8 @@ export const syncGuildIdentity = async (guild) => {
  * Syncs the global bot status based on premium guild configurations.
  * Picks the most recently updated config and rotates through its statuses.
  */
-export const syncGlobalStatus = async (client) => {
+export const syncGlobalStatus = async (client, force = false) => {
     try {
-        // Find the latest premium config with at least one status
         const premiumConfig = await Guild.findOne({ 
             isPremium: true, 
             'customStatuses.0': { $exists: true } 
@@ -55,8 +54,13 @@ export const syncGlobalStatus = async (client) => {
         const now = Date.now();
         const rotationIntervalMs = (premiumConfig.statusRotationInterval || 60) * 1000;
 
+        if (force) {
+            currentStatusIndex = 0;
+            lastSyncTime = 0;
+        }
+
         // Only rotate if enough time has passed (or if forced on startup/update)
-        if (now - lastSyncTime < rotationIntervalMs && lastSyncTime !== 0) {
+        if (!force && now - lastSyncTime < rotationIntervalMs && lastSyncTime !== 0) {
             return;
         }
 

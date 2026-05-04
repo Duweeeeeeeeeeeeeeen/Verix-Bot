@@ -58,8 +58,8 @@ export default {
         // Cleanup orphaned voice channels (Startup Sanity Check)
         setTimeout(() => initVoiceCleanup(client), 5000); // 5s delay to ensure cache is ready
 
-        // White-label: Sync global status (Rotation check every 15s)
+        // White-label: Sync global status (Rotation check every 5s)
         await whiteLabelHelper.syncGlobalStatus(client);
-        setInterval(() => whiteLabelHelper.syncGlobalStatus(client), 15 * 1000);
+        setInterval(() => whiteLabelHelper.syncGlobalStatus(client), 5 * 1000);
     },
 };
