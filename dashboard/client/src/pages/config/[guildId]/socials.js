@@ -59,7 +59,13 @@ export default function SocialsConfig() {
             if (!moduleConfig.platforms[p.id]) {
                 moduleConfig.platforms[p.id] = { enabled: false, notificationChannelId: null, roleId: null, mentionEveryone: false, accounts: [], embed: {} };
             }
-            if (!moduleConfig.platforms[p.id].accounts) moduleConfig.platforms[p.id].accounts = [];
+            if (moduleConfig.platforms[p.id].accounts) {
+                moduleConfig.platforms[p.id].accounts = moduleConfig.platforms[p.id].accounts.map(acc => 
+                    (acc && typeof acc === 'object') ? (acc.username || '') : acc
+                );
+            } else {
+                moduleConfig.platforms[p.id].accounts = [];
+            }
         });
         
         setConfig(moduleConfig);
