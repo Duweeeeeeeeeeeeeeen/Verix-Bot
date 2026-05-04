@@ -75,6 +75,8 @@ export default function Layout({ children, guildId, hideGuide = false }) {
     if (guildId && user?.guilds) {
       const g = user.guilds.find(g => g.id === guildId);
       if (g) setServerInfo(g);
+    } else if (!guildId) {
+      setServerInfo({ name: 'Verix System', icon: null });
     }
   }, [guildId, user]);
 

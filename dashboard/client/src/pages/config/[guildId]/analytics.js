@@ -21,14 +21,21 @@ export default function AnalyticsPage() {
     if (!guildId) return;
     setLoading(true);
     try {
-        const [gRes, aRes] = await Promise.all([
-            api.request(`/config/${guildId}/guild`),
-            api.request(`/analytics/${guildId}`)
-        ]);
-        setGuildData(gRes.data || gRes);
-        setAnalytics(aRes.data || aRes);
+        // Fetch guild data first to know if we should even try analytics
+        const gRes = await api.request(`/config/${guildId}/guild`);
+        const gData = gRes.data || gRes;
+        setGuildData(gData);
+
+        if (gData.isPremium) {
+            try {
+                const aRes = await api.request(`/analytics/${guildId}`);
+                setAnalytics(aRes.data || aRes);
+            } catch (aErr) {
+                console.error('Failed to fetch analytics data:', aErr);
+            }
+        }
     } catch (err) {
-        console.error('Failed to fetch analytics:', err);
+        console.error('Failed to fetch guild data:', err);
     } finally {
         setLoading(false);
     }
