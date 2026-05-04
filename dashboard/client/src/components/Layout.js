@@ -223,11 +223,17 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
     title: 'Sistema',
     items: [
       { name: t('sidebar.system'), icon: Settings, path: `/config/${guildId}/system`, id: 'system' },
-      { name: t('sidebar.white_label'), icon: Sparkles, path: `/config/${guildId}/white-label`, id: 'white_label' },
-      // Only show Private Bot if Platinum
+      
+      // Show standard white-label ONLY if NOT Platinum
+      ...(premiumTier !== 'platinum' ? [
+        { name: t('sidebar.white_label'), icon: Sparkles, path: `/config/${guildId}/white-label`, id: 'white_label' }
+      ] : []),
+
+      // Show Private Bot ONLY if Platinum
       ...(premiumTier === 'platinum' ? [
         { name: t('sidebar.private_bot'), icon: Bot, path: `/config/${guildId}/private-bot`, id: 'private_bot' }
       ] : []),
+
       { name: 'System Ops', icon: Terminal, path: '/admin/system', id: 'system_ops', adminOnly: true }
     ]
   };
