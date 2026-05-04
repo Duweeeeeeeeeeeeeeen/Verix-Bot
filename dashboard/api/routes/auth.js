@@ -1,5 +1,6 @@
 import express from 'express';
 import passport from 'passport';
+import Guild from '../../../src/models/Guild.js';
 
 const router = express.Router();
 const FRONTEND_URL = process.env.DASHBOARD_FRONTEND_URL;
@@ -15,7 +16,7 @@ router.get('/callback', passport.authenticate('discord', {
 }));
 
 // Get current user session with augmented guild data
-router.get('/user', (req, res) => {
+router.get('/user', async (req, res) => {
     if (req.isAuthenticated()) {
         const client = req.discordClient;
         
@@ -32,13 +33,19 @@ router.get('/user', (req, res) => {
         // Log for transparency
         console.log(`[Dashboard_API] User ${req.user.username} (${req.user.id}) fetching guilds: ${guilds.length} found.`);
 
-        const augmentedUser = {
-            ...req.user,
-            guilds: guilds.map(guild => ({
+        const guildsWithPremium = await Promise.all(guilds.map(async (guild) => {
+            const guildSettings = await Guild.findOne({ guildId: guild.id });
+            return {
                 ...guild,
                 botInGuild: client.guilds.cache.has(guild.id),
-                inviteUrl: `${inviteUrl}&guild_id=${guild.id}`
-            }))
+                inviteUrl: `${inviteUrl}&guild_id=${guild.id}`,
+                isPremium: guildSettings ? !!guildSettings.isPremium : false
+            };
+        }));
+
+        const augmentedUser = {
+            ...req.user,
+            guilds: guildsWithPremium
         };
 
         res.json(augmentedUser);

@@ -798,8 +798,25 @@ option {
 .selector-grid-p {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 24px;
-    margin-top: 40px;
+    gap: 32px;
+    margin-top: 48px;
+}
+
+.premium-badge-s {
+    background: rgba(255, 215, 0, 0.1);
+    padding: 6px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(255, 215, 0, 0.2);
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.1);
+    animation: premium-glow 2s infinite alternate;
+}
+
+@keyframes premium-glow {
+    from { box-shadow: 0 0 5px rgba(255, 215, 0, 0.1); }
+    to { box-shadow: 0 0 15px rgba(255, 215, 0, 0.3); }
 }
 
 .guild-card-p {

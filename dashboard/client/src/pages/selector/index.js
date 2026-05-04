@@ -10,7 +10,8 @@ import {
   Plus,
   LayoutGrid,
   Filter,
-  CheckCircle2
+  CheckCircle2,
+  Crown
 } from 'lucide-react';
 
 import LoadingScreen from '../../components/LoadingScreen';
@@ -70,9 +71,16 @@ export default function Selector() {
             )}
           </div>
           
-          <div className={`bot-status-badge-p ${guild.botInGuild ? 'active' : 'missing'}`}>
-            <div className={`status-dot-s ${guild.botInGuild ? 'active' : 'missing'}`}></div>
-            {guild.botInGuild ? t('selector.active') : t('selector.missing')}
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            {guild.isPremium && (
+              <div className="premium-badge-s" title="Server Premium">
+                <Crown size={14} color="#FFD700" />
+              </div>
+            )}
+            <div className={`bot-status-badge-p ${guild.botInGuild ? 'active' : 'missing'}`}>
+              <div className={`status-dot-s ${guild.botInGuild ? 'active' : 'missing'}`}></div>
+              {guild.botInGuild ? t('selector.active') : t('selector.missing')}
+            </div>
           </div>
         </div>
 
