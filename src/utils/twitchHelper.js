@@ -43,12 +43,12 @@ async function getAccessToken() {
 }
 
 /**
- * Fetches stream data for multiple usernames.
- * @param {string[]} usernames List of Twitch usernames.
+ * Cleans a list of strings (usernames or Twitch URLs) into plain Twitch usernames.
+ * @param {string[]} inputs 
+ * @returns {string[]}
  */
-export async function getStreams(usernames) {
-    // 1. CLEAN USERNAMES (Handle full URLs like https://www.twitch.tv/username)
-    const cleanUsernames = usernames.map(u => {
+function cleanTwitchUsernames(inputs) {
+    return inputs.map(u => {
         if (!u) return '';
         const trimmed = u.trim();
         if (trimmed.includes('twitch.tv/')) {
@@ -57,8 +57,15 @@ export async function getStreams(usernames) {
         }
         return trimmed;
     }).filter(u => u.length > 0);
+}
 
-    if (!cleanUsernames.length) return [];
+/**
+ * Fetches stream data for multiple usernames.
+ * @param {string[]} usernames List of Twitch usernames or URLs.
+ */
+export async function getStreams(usernames) {
+    const cleanNames = cleanTwitchUsernames(usernames);
+    if (!cleanNames.length) return [];
     
     const token = await getAccessToken();
     if (!token) return [];
@@ -70,7 +77,7 @@ export async function getStreams(usernames) {
                 'Authorization': `Bearer ${token}`
             },
             params: {
-                user_login: cleanUsernames
+                user_login: cleanNames
             }
         });
 
@@ -88,10 +95,11 @@ export async function getStreams(usernames) {
 
 /**
  * Fetches user data for multiple usernames (for profile pictures).
- * @param {string[]} usernames 
+ * @param {string[]} usernames List of Twitch usernames or URLs.
  */
 export async function getUsers(usernames) {
-    if (!usernames.length) return [];
+    const cleanNames = cleanTwitchUsernames(usernames);
+    if (!cleanNames.length) return [];
     
     const token = await getAccessToken();
     if (!token) return [];
@@ -103,7 +111,7 @@ export async function getUsers(usernames) {
                 'Authorization': `Bearer ${token}`
             },
             params: {
-                login: usernames
+                login: cleanNames
             }
         });
 
