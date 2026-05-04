@@ -249,7 +249,11 @@ export default function PrivateBotPage() {
                                         <div className="mini-number">5</div>
                                         <div className="mini-content">
                                             <h5>Invita nel Server</h5>
-                                            <p>Vai su <strong>OAuth2 → URL Generator</strong>. Seleziona <code>bot</code> e <code>applications.commands</code>, poi <code>Administrator</code>. Visita l'URL per aggiungere il bot.</p>
+                                            <p>Vai su <strong>OAuth2 → URL Generator</strong>. Seleziona <code>bot</code> e <code>applications.commands</code>, poi <code>Administrator</code>. Visita l'URL generato.</p>
+                                            <div className="step-img-container mini clickable" onClick={() => setSelectedImage({ src: `/img/guide${langPath}/step5.png`, title: "Generatore URL OAuth2" })}>
+                                                <img src={`/img/guide${langPath}/step5.png`} alt="Step 5" />
+                                                <div className="zoom-overlay"><Zap size={14} /> Zoom</div>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -258,6 +262,10 @@ export default function PrivateBotPage() {
                                         <div className="mini-content">
                                             <h5>Tutto Pronto!</h5>
                                             <p>Il bot risponderà ora ai comandi nel tuo server usando il sistema Verix.</p>
+                                            <div className="step-img-container mini clickable" onClick={() => setSelectedImage({ src: `/img/guide${langPath}/step6.png`, title: "URL Generato" })}>
+                                                <img src={`/img/guide${langPath}/step6.png`} alt="Step 6" />
+                                                <div className="zoom-overlay"><Zap size={14} /> Zoom</div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -308,6 +316,7 @@ export default function PrivateBotPage() {
             .intent-list li { font-size: 0.85rem; color: var(--text-main); display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
             .intent-list li:before { content: '✓'; color: #4caf50; font-weight: 900; }
             .step-img-container { width: 100%; max-width: 500px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); margin-top: 12px; background: var(--bg-badge); box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: relative; }
+            .step-img-container.mini { max-width: 100%; margin-top: 8px; }
             .step-img-container.clickable { cursor: pointer; transition: 0.3s; }
             .step-img-container.clickable:hover { transform: translateY(-4px); border-color: var(--primary); }
             .step-img-container img { width: 100%; height: auto; display: block; }
