@@ -28,6 +28,7 @@ import ModerationConfig from '../../../src/models/ModerationConfig.js';
 import SupportConfig from '../../../src/models/SupportConfig.js';
 
 import { getButtonStyle } from '../../../src/utils/uiBuilder.js';
+import multiBotManager from '../../../src/core/multiBotManager.js';
 import { mergeModuleDefaults } from '../utils/mergeDefaults.js';
 import { adminCheck } from '../middleware/adminCheck.js';
 import { checkBotPermissions } from '../../../src/utils/permissionHelper.js';
@@ -61,6 +62,15 @@ import { supportSchema } from '../validations/supportSchema.js';
 
 
 const router = express.Router();
+ 
+// MiddleWare to resolve the correct Discord Client (Main or Private Bot)
+router.use('/:guildId', (req, res, next) => {
+    const { guildId } = req.params;
+    if (guildId && multiBotManager.instances.has(guildId)) {
+        req.discordClient = multiBotManager.instances.get(guildId);
+    }
+    next();
+});
 
 // GET all configs for a guild
 router.get('/:guildId', adminCheck, async (req, res) => {

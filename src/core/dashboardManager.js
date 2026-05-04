@@ -7,6 +7,7 @@ import { Strategy as DiscordStrategy } from 'passport-discord';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import logger from '../utils/logger.js';
+import multiBotManager from './multiBotManager.js';
 
 // Import Routes (Keeping existing paths for now)
 import authRoutes from '../../dashboard/api/routes/auth.js';
@@ -121,7 +122,7 @@ export function startDashboard(client) {
     app.use('/api/config', apiLimiter);
     app.use('/api/messages', apiLimiter);
 
-    // 6. Request context — attach Discord client (no debug logging in production)
+    // 6. Request context — attach Discord client
     app.use((req, res, next) => {
         req.discordClient = client;
         next();
