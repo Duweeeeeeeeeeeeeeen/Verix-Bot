@@ -1388,3 +1388,55 @@ input:checked + .slider-mini:before {
 }
 
 
+
+/* -------------------------------------------------------------------------- */
+/* PREMIUM UI HELPERS */
+/* -------------------------------------------------------------------------- */
+
+.btn-add-premium {
+  background: var(--primary);
+  color: white;
+  padding: 10px 18px;
+  border-radius: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--primary-glow);
+}
+
+.btn-add-premium:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+}
+
+.btn-add-premium.locked {
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  border: 1px dashed var(--border-strong);
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.btn-add-premium.locked:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--primary-glow);
+  transform: translateY(-2px);
+}
+
+.premium-badge-mini {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--primary-glow);
+  color: var(--primary);
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.65rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}

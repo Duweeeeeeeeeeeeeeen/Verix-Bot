@@ -24,6 +24,10 @@
   "sidebar.expand": "Espandi",
   "sidebar.collapse": "Contrai",
   "sidebar.premium": "Premium Hub",
+  "premium.badge": "PREMIUM",
+  "premium.limit_reached": "Limite raggiunto",
+  "premium.upgrade_desc": "Passa a Premium per sbloccare slot illimitati e funzioni avanzate.",
+  "premium.get_premium": "Ottieni Premium",
 
   "common.save": "Salva Modifiche",
   "common.cancel": "Annulla",

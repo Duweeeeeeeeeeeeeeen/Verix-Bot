@@ -7,7 +7,7 @@ import { useT } from '../../../contexts/LanguageContext';
 import { 
     Save, Plus, Trash2, Settings2, Power, 
     RefreshCcw, Server, Activity, Users, 
-    MessageSquare, Globe, Cpu, Info, X
+    MessageSquare, Globe, Cpu, Info, X, Crown, Lock
 } from 'lucide-react';
 import EmbedMessageManager from '../../../components/EmbedMessageManager';
 import { mergeConfig } from '../../../utils/defaults';
@@ -19,6 +19,7 @@ export default function FiveMConfig() {
   const { guildId } = router.query;
   const [config, setConfig] = useState(null);
   const [channels, setChannels] = useState([]);
+  const [guildData, setGuildData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('servers');
@@ -32,9 +33,10 @@ export default function FiveMConfig() {
     if (guildId && mounted) {
       const fetchData = async () => {
         try {
-          const [configRes, discordRes] = await Promise.all([
+          const [configRes, discordRes, guildRes] = await Promise.all([
             api.request(`/config/${guildId}/fivem`),
-            api.request(`/config/${guildId}/discord-data`)
+            api.request(`/config/${guildId}/discord-data`),
+            api.request(`/config/${guildId}/guild`)
           ]);
           if (configRes) {
               const data = configRes.data || configRes;
@@ -45,6 +47,9 @@ export default function FiveMConfig() {
           if (discordRes) {
               const channelData = discordRes.data?.channels || discordRes.channels || [];
               setChannels(channelData);
+          }
+          if (guildRes) {
+              setGuildData(guildRes.data || guildRes);
           }
           setLoading(false);
         } catch (error) {
@@ -167,7 +172,17 @@ export default function FiveMConfig() {
                     <div className="animate fade-in">
                         <div className="section-header-row">
                             <h2>{t('fivem.list_title')}</h2>
-                            <button onClick={addServer} className="btn-add-premium"><Plus size={16} /> {t('fivem.add_server')}</button>
+                            {(!guildData?.isPremium && config.servers?.length >= 1) ? (
+                                <button 
+                                    className="btn-add-premium locked" 
+                                    onClick={() => router.push(`/config/${guildId}/premium`)}
+                                    title={t('premium.limit_reached')}
+                                >
+                                    <Lock size={16} /> <span>{t('premium.get_premium')}</span>
+                                </button>
+                            ) : (
+                                <button onClick={addServer} className="btn-add-premium"><Plus size={16} /> {t('fivem.add_server')}</button>
+                            )}
                         </div>
 
                         <div className="servers-list">
