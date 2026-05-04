@@ -14,15 +14,28 @@ export default function AnalyticsPage() {
   const router = useRouter();
   const { guildId } = router.query;
   const [guildData, setGuildData] = useState(null);
+  const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (guildId) {
-        api.request(`/config/${guildId}/guild`).then(res => {
-            setGuildData(res.data || res);
-            setLoading(false);
-        }).catch(() => setLoading(false));
+  const fetchData = async () => {
+    if (!guildId) return;
+    setLoading(true);
+    try {
+        const [gRes, aRes] = await Promise.all([
+            api.request(`/config/${guildId}/guild`),
+            api.request(`/analytics/${guildId}`)
+        ]);
+        setGuildData(gRes.data || gRes);
+        setAnalytics(aRes.data || aRes);
+    } catch (err) {
+        console.error('Failed to fetch analytics:', err);
+    } finally {
+        setLoading(false);
     }
+  };
+
+  useEffect(() => {
+    fetchData();
   }, [guildId]);
 
   if (loading) return <Skeleton type="config" />;
@@ -85,70 +98,73 @@ export default function AnalyticsPage() {
             </div>
         ) : (
             <div className="analytics-content fade-in">
-                {/* Real Analytics Content (Mock for now) */}
+                {/* Real Analytics Content */}
                 <div className="stats-cards-grid">
                     <div className="stat-card">
-                        <div className="stat-label">Total Members</div>
-                        <div className="stat-value">1,284</div>
-                        <div className="stat-change positive">+12% this week</div>
+                        <div className="stat-label">Ticket Totali</div>
+                        <div className="stat-value">{analytics?.tickets?.total || 0}</div>
+                        <div className="stat-change positive">+{analytics?.tickets?.new7d || 0} questa settimana</div>
                     </div>
                     <div className="stat-card">
-                        <div className="stat-label">Active Users (24h)</div>
-                        <div className="stat-value">412</div>
-                        <div className="stat-change positive">+5% vs yesterday</div>
+                        <div className="stat-label">Ticket Chiusi</div>
+                        <div className="stat-value">{analytics?.tickets?.closed || 0}</div>
+                        <div className="stat-change positive">Operatività 100%</div>
                     </div>
                     <div className="stat-card">
-                        <div className="stat-label">Messages Sent</div>
-                        <div className="stat-value">8,912</div>
-                        <div className="stat-change negative">-2% this week</div>
+                        <div className="stat-label">Infrazioni</div>
+                        <div className="stat-value">{analytics?.moderation?.total || 0}</div>
+                        <div className="stat-change negative">{analytics?.moderation?.activeMutes || 0} mute attivi</div>
                     </div>
                 </div>
 
                 <div className="charts-grid">
                     <div className="chart-box card">
                         <div className="chart-header">
-                            <h3>Member Growth</h3>
+                            <h3>Crescita Membri (30gg)</h3>
                             <Filter size={16} />
                         </div>
                         <div className="chart-placeholder">
-                            <div className="mock-chart-container">
-                                <svg viewBox="0 0 400 100" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
-                                    <path 
-                                        d="M0,80 Q50,70 100,40 T200,50 T300,20 T400,10" 
-                                        fill="none" 
-                                        stroke="var(--primary)" 
-                                        strokeWidth="3" 
-                                        strokeLinecap="round"
-                                        style={{ filter: 'drop-shadow(0 0 8px var(--primary))' }}
-                                    />
-                                    <path 
-                                        d="M0,80 Q50,70 100,40 T200,50 T300,20 T400,10 V100 H0 Z" 
-                                        fill="url(#gradient)" 
-                                        opacity="0.1"
-                                    />
-                                    <defs>
-                                        <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                                            <stop offset="0%" stopColor="var(--primary)" />
-                                            <stop offset="100%" stopColor="transparent" />
-                                        </linearGradient>
-                                    </defs>
-                                </svg>
-                            </div>
+                            {analytics?.growth?.length > 1 ? (
+                                <div className="mock-chart-container">
+                                    <svg viewBox="0 0 400 100" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
+                                        <path 
+                                            d={`M ${analytics.growth.map((s, i) => `${(i / (analytics.growth.length - 1)) * 400},${100 - ((s.count / Math.max(...analytics.growth.map(x => x.count))) * 80 + 10)}`).join(' L ')}`} 
+                                            fill="none" 
+                                            stroke="var(--primary)" 
+                                            strokeWidth="3" 
+                                            strokeLinecap="round"
+                                            style={{ filter: 'drop-shadow(0 0 8px var(--primary))' }}
+                                        />
+                                        <defs>
+                                            <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                                <stop offset="0%" stopColor="var(--primary)" />
+                                                <stop offset="100%" stopColor="transparent" />
+                                            </linearGradient>
+                                        </defs>
+                                    </svg>
+                                </div>
+                            ) : (
+                                <div className="no-data-msg">In attesa di raccogliere abbastanza dati...</div>
+                            )}
                         </div>
                     </div>
                     <div className="chart-box card">
                         <div className="chart-header">
-                            <h3>Command Usage</h3>
-                            <Calendar size={16} />
+                            <h3>Performance Staff</h3>
+                            <Users size={16} />
                         </div>
-                        <div className="chart-placeholder">
-                            <div className="mock-bars">
-                                <div className="bar" style={{ height: '80%' }}></div>
-                                <div className="bar" style={{ height: '60%' }}></div>
-                                <div className="bar" style={{ height: '90%' }}></div>
-                                <div className="bar" style={{ height: '40%' }}></div>
-                                <div className="bar" style={{ height: '70%' }}></div>
-                            </div>
+                        <div className="staff-stats-list">
+                            {analytics?.staff?.length > 0 ? analytics.staff.map(s => (
+                                <div key={s.id} className="staff-row">
+                                    <div className="staff-id">ID: {s.id.substring(0, 8)}...</div>
+                                    <div className="staff-bar-bg">
+                                        <div className="staff-bar-fill" style={{ width: `${(s.closed / Math.max(...analytics.staff.map(x => x.closed))) * 100}%` }}></div>
+                                    </div>
+                                    <div className="staff-count">{s.closed}</div>
+                                </div>
+                            )) : (
+                                <div className="no-data-msg">Nessuna attività staff registrata.</div>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -232,6 +248,14 @@ export default function AnalyticsPage() {
             .mock-bars { display: flex; align-items: flex-end; gap: 12px; height: 100%; width: 100%; justify-content: center; }
             .bar { width: 30px; background: var(--primary); border-radius: 8px 8px 0 0; opacity: 0.6; transition: 0.3s; }
             .bar:hover { opacity: 1; transform: scaleY(1.05); }
+
+            .staff-stats-list { display: flex; flex-direction: column; gap: 16px; margin-top: 12px; }
+            .staff-row { display: flex; align-items: center; gap: 12px; }
+            .staff-id { font-size: 0.75rem; color: var(--text-muted); width: 80px; font-family: monospace; }
+            .staff-bar-bg { flex: 1; height: 8px; background: var(--bg-badge); border-radius: 4px; overflow: hidden; }
+            .staff-bar-fill { height: 100%; background: var(--primary); border-radius: 4px; }
+            .staff-count { font-size: 0.85rem; font-weight: 800; color: var(--text-main); width: 30px; text-align: right; }
+            .no-data-msg { color: var(--text-muted); font-size: 0.85rem; font-style: italic; text-align: center; margin: auto; }
 
             .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-muted); padding: 10px 18px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 600; }
             .btn-primary { background: var(--primary); color: white; border: none; padding: 10px 18px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 600; }

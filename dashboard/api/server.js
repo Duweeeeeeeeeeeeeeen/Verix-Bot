@@ -10,6 +10,7 @@ import rateLimit from 'express-rate-limit';
 import authRoutes from './routes/auth.js';
 import configRoutes from './routes/config.js';
 import messageRoutes from './routes/messages.js';
+import analyticsRoutes from './routes/analytics.js';
 
 // ─── Critical startup guard ─────────────────────────────────────────────────
 if (!process.env.SESSION_SECRET) {
@@ -91,6 +92,7 @@ app.use((req, res, next) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/config', configRoutes);
 app.use('/api/messages', messageRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

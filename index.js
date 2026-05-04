@@ -13,6 +13,7 @@ import EmbedSchedulerManager from './src/core/EmbedSchedulerManager.js';
 import { SocialManager } from './src/modules/socials/manager.js';
 import AutomationManager from './src/core/automationManager.js';
 import GiveawayManager from './src/modules/giveaway/manager.js';
+import AnalyticsManager from './src/core/analyticsManager.js';
 
 
 // Initialize Discord Client
@@ -92,6 +93,9 @@ if (global.botInitialized) {
 
             client.giveawayManager = new GiveawayManager(client);
             client.giveawayManager.init();
+
+            client.analyticsManager = new AnalyticsManager(client);
+            client.analyticsManager.start(1000 * 60 * 60); // Hourly snapshots
 
             startDashboard(client);
         });
