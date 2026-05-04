@@ -140,6 +140,7 @@ export default function WhiteLabelPage() {
                                     <option value="3">Guarda</option>
                                     <option value="2">Ascolta</option>
                                     <option value="5">Competi in</option>
+                                    <option value="4">Stato Personalizzato</option>
                                 </select>
                                 <input 
                                     type="text" 

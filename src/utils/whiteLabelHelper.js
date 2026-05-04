@@ -49,9 +49,20 @@ export const syncGlobalStatus = async (client) => {
         if (premiumConfigs.length > 0) {
             const config = premiumConfigs[0];
             const status = config.customStatus;
-            const type = config.customStatusType || ActivityType.Playing;
+            const type = config.customStatusType !== undefined ? config.customStatusType : ActivityType.Playing;
             
-            client.user.setActivity(status, { type });
+            if (type === ActivityType.Custom) {
+                client.user.setPresence({
+                    activities: [{
+                        name: 'Custom Status',
+                        state: status,
+                        type: ActivityType.Custom
+                    }]
+                });
+            } else {
+                client.user.setActivity(status, { type });
+            }
+            
             logger.info(`[WhiteLabel] Global status updated to: "${status}" (Type: ${type})`);
         }
     } catch (error) {
