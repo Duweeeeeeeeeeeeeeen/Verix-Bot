@@ -46,11 +46,22 @@ import {
 import GuideSidebar from './GuideSidebar';
 import { useTheme } from '../contexts/ThemeContext';
 
-export default function Layout({ children, guildId, hideGuide = false }) {
-  const { user, logout } = useAuth();
+export default function Layout({ children, guildId: propGuildId, hideGuide = false }) {
+  const { user, logout, currentGuildId, updateGuildId } = useAuth();
   const { t, language, setLanguage } = useT();
   const router = useRouter();
   const { theme, toggleTheme } = useTheme();
+
+  // Use prop if available, otherwise fallback to context
+  const guildId = propGuildId || currentGuildId || router.query.guildId;
+
+  useEffect(() => {
+    if (propGuildId) {
+      updateGuildId(propGuildId);
+    } else if (router.query.guildId) {
+      updateGuildId(router.query.guildId);
+    }
+  }, [propGuildId, router.query.guildId]);
   
   const [toast, setToast] = useState(null);
   const [serverInfo, setServerInfo] = useState({ name: 'Loading...', icon: null });

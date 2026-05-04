@@ -18,7 +18,7 @@ export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true);
 
   const fetchData = async () => {
-    if (!guildId) return;
+    if (!guildId || guildId === 'undefined') return;
     setLoading(true);
     try {
         // Fetch guild data first to know if we should even try analytics
@@ -42,6 +42,9 @@ export default function AnalyticsPage() {
   };
 
   useEffect(() => {
+    setGuildData(null);
+    setAnalytics(null);
+    setLoading(true);
     fetchData();
   }, [guildId]);
 

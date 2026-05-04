@@ -9,6 +9,18 @@ const BASE_API_URL = typeof window !== 'undefined'
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [currentGuildId, setCurrentGuildId] = useState(null);
+
+  useEffect(() => {
+    const stored = localStorage.getItem('lastGuildId');
+    if (stored) setCurrentGuildId(stored);
+  }, []);
+
+  const updateGuildId = (id) => {
+    if (!id) return;
+    setCurrentGuildId(id);
+    localStorage.setItem('lastGuildId', id);
+  };
 
   const fetchUser = async () => {
     try {
@@ -44,7 +56,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, currentGuildId, updateGuildId }}>
       {children}
     </AuthContext.Provider>
   );
