@@ -13,14 +13,14 @@ router.get('/:guildId', async (req, res) => {
         const bot = await PrivateBot.findOne({ guildId });
         
         if (!bot) {
-            return res.json({ success: true, bot: null });
+            return res.json({ success: true, data: { bot: null } });
         }
 
         // Don't send the token back
         const botData = bot.toObject();
         delete botData.token;
         
-        res.json({ success: true, bot: botData });
+        res.json({ success: true, data: { bot: botData } });
     } catch (error) {
         res.status(500).json({ success: false, error: 'Failed to fetch private bot config' });
     }
@@ -95,7 +95,7 @@ router.post('/:guildId/toggle', async (req, res) => {
             await multiBotManager.stopBot(guildId);
         }
 
-        res.json({ success: true, enabled: bot.enabled });
+        res.json({ success: true, data: { enabled: bot.enabled } });
     } catch (error) {
         res.status(500).json({ success: false, error: 'Toggle failed' });
     }
