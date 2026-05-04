@@ -1455,12 +1455,15 @@ router.get('/:guildId/stats', adminCheck, async (req, res) => {
         ]);
 
         res.json({
-            openTickets,
-            pendingWhitelist: pendingWL,
-            activeVoiceSessions: activeVoice
+            success: true,
+            data: {
+                openTickets,
+                pendingWhitelist: pendingWL,
+                activeVoiceSessions: activeVoice
+            }
         });
     } catch (error) {
-        res.status(500).json({ error: 'Errore nel recupero delle statistiche: riprova tra qualche secondo.' });
+        res.status(500).json({ success: false, error: 'Errore nel recupero delle statistiche: riprova tra qualche secondo.' });
     }
 });
 

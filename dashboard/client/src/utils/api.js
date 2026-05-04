@@ -55,14 +55,14 @@ export async function apiRequest(endpoint, options = {}) {
 
     const result = await response.json();
 
-    // Standardized check for success: false
-    if (result.success === false) {
+    // Standardized check for success: false or HTTP error status
+    if (!response.ok || result.success === false) {
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('show-toast', { 
           detail: { message: result.error || 'Si è verificato un errore API.', type: 'error' } 
         }));
       }
-      throw new Error(result.error);
+      throw new Error(result.error || `HTTP ${response.status}`);
     }
 
     // Return the data object directly if it follows the success: true, data: ... pattern

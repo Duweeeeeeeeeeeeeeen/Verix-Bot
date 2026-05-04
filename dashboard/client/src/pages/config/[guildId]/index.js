@@ -44,7 +44,7 @@ export default function GuildHome() {
   }, []);
 
   useEffect(() => {
-    if (guildId && mounted) {
+    if (guildId && guildId !== 'undefined' && mounted) {
       fetchData();
     }
   }, [guildId, mounted]);
@@ -61,7 +61,7 @@ export default function GuildHome() {
       const [configData, statsData] = responses;
       
       setConfig(configData);
-      setStats(statsData);
+      setStats(statsData?.data || statsData);
       setLoading(false);
     } catch (err) {
       console.error('Fetch error:', err);
@@ -111,7 +111,7 @@ export default function GuildHome() {
             </div>
             <div className="header-text-p">
               <h1>{t('dashboard.title')}</h1>
-              <p>{t('dashboard.subtitle', { guild: config.guildName || t('common.your_server') || 'il tuo server' })}</p>
+              <p>{t('dashboard.subtitle', { guild: config?.guildName || t('common.your_server') || 'il tuo server' })}</p>
             </div>
          </div>
          <div className="header-actions-p" style={{ display: 'flex', alignItems: 'center' }}>
@@ -132,7 +132,7 @@ export default function GuildHome() {
             </div>
             <div className="stat-data-v2">
               <span className="stat-label-v2">{t('dashboard.tickets_open')}</span>
-              <span className="stat-value-v2">{stats.openTickets}</span>
+              <span className="stat-value-v2">{stats?.openTickets || 0}</span>
             </div>
             <TrendingUp size={16} className="stat-trend-v2" />
          </div>
@@ -143,7 +143,7 @@ export default function GuildHome() {
             </div>
             <div className="stat-data-v2">
               <span className="stat-label-v2">{t('dashboard.whitelist_pending')}</span>
-              <span className="stat-value-v2">{stats.pendingWhitelist}</span>
+              <span className="stat-value-v2">{stats?.pendingWhitelist || 0}</span>
             </div>
          </div>
 
