@@ -47,7 +47,18 @@ async function getAccessToken() {
  * @param {string[]} usernames List of Twitch usernames.
  */
 export async function getStreams(usernames) {
-    if (!usernames.length) return [];
+    // 1. CLEAN USERNAMES (Handle full URLs like https://www.twitch.tv/username)
+    const cleanUsernames = usernames.map(u => {
+        if (!u) return '';
+        const trimmed = u.trim();
+        if (trimmed.includes('twitch.tv/')) {
+            const parts = trimmed.split('/');
+            return parts[parts.length - 1].split('?')[0].trim();
+        }
+        return trimmed;
+    }).filter(u => u.length > 0);
+
+    if (!cleanUsernames.length) return [];
     
     const token = await getAccessToken();
     if (!token) return [];
@@ -59,7 +70,7 @@ export async function getStreams(usernames) {
                 'Authorization': `Bearer ${token}`
             },
             params: {
-                user_login: usernames
+                user_login: cleanUsernames
             }
         });
 

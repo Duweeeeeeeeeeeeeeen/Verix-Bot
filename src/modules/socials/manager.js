@@ -73,7 +73,11 @@ export class SocialManager {
         let changed = false;
         try {
             for (const streamer of platformConfig.accounts) {
-                const stream = liveStreams.find(s => s.user_login.toLowerCase() === streamer.username.toLowerCase());
+                const cleanName = (streamer.username || '').includes('twitch.tv/') 
+                    ? streamer.username.split('/').pop().split('?')[0].toLowerCase()
+                    : (streamer.username || '').toLowerCase();
+
+                const stream = liveStreams.find(s => s.user_login.toLowerCase() === cleanName);
                 
                 if (stream) {
                     // Streamer is LIVE
@@ -109,9 +113,14 @@ export class SocialManager {
         let changed = false;
         try {
             for (const account of platformConfig.accounts) {
-                let feedUrl = account.username.startsWith('@') 
-                    ? `https://www.youtube.com/feeds/videos.xml?user=${account.username.replace('@', '')}`
-                    : `https://www.youtube.com/feeds/videos.xml?channel_id=${account.username}`;
+                let username = account.username || '';
+                if (username.includes('youtube.com/')) {
+                    username = username.split('/').pop().split('?')[0];
+                }
+
+                let feedUrl = username.startsWith('@') 
+                    ? `https://www.youtube.com/feeds/videos.xml?user=${username.replace('@', '')}`
+                    : `https://www.youtube.com/feeds/videos.xml?channel_id=${username}`;
 
                 try {
                     const feed = await rssParser.parseURL(feedUrl);
