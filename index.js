@@ -14,7 +14,7 @@ import { SocialManager } from './src/modules/socials/manager.js';
 import AutomationManager from './src/core/automationManager.js';
 import GiveawayManager from './src/modules/giveaway/manager.js';
 import AnalyticsManager from './src/core/analyticsManager.js';
-
+import multiBotManager from './src/core/multiBotManager.js';
 
 // Initialize Discord Client
 const client = new Client({
@@ -45,21 +45,15 @@ if (global.botInitialized) {
         // Connect to Database
         if (config.mongoUri) {
             try {
-                // Disable buffering to prevent operation timeouts if connection fails
                 mongoose.set('bufferCommands', false);
-                
                 await mongoose.connect(config.mongoUri, {
-                    serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
-                    family: 4, // Force IPv4
+                    serverSelectionTimeoutMS: 5000,
+                    family: 4,
                 });
                 logger.db('Successfully connected to MongoDB.');
             } catch (error) {
-                logger.error('Failed to connect to MongoDB. This is likely an IP Whitelist issue or incorrect credentials.');
-                logger.error('Error details:', error.message);
-                process.env.DB_CONNECTED = 'false';
+                logger.error('Failed to connect to MongoDB:', error.message);
             }
-        } else {
-            logger.warn('No MongoDB URI provided. Database features will be disabled.');
         }
 
         // Load Handlers
@@ -68,7 +62,7 @@ if (global.botInitialized) {
         await moduleHandler(client);
 
         // Dashboard & Ready Logic
-        client.once(Events.ClientReady, () => {
+        client.once(Events.ClientReady, async () => {
             logger.info(`[Bot] Logged in as ${client.user.tag}!`);
             
             // Modules Manager
@@ -78,7 +72,6 @@ if (global.botInitialized) {
             client.fivemManager = new FiveMManager(client);
             client.fivemManager.init();
 
-            // Persistence Manager
             client.cleanupManager = new CleanupManager(client);
             client.cleanupManager.start(60000); 
 
@@ -95,21 +88,24 @@ if (global.botInitialized) {
             client.giveawayManager.init();
 
             client.analyticsManager = new AnalyticsManager(client);
-            client.analyticsManager.start(1000 * 60 * 60); // Hourly snapshots
+            client.analyticsManager.start(1000 * 60 * 60);
 
             startDashboard(client);
+
+            // Initialize Multi-Bot Manager
+            await multiBotManager.init(client);
+            client.multiBotManager = multiBotManager;
         });
 
         // Login
         if (config.token) {
             client.login(config.token);
         } else {
-            logger.error('CRITICAL: DISCORD_TOKEN is missing in .env file!');
+            logger.error('CRITICAL: DISCORD_TOKEN is missing!');
             process.exit(1);
         }
     };
 
-    // Global Message Listener for Automations
     client.on(Events.MessageCreate, (message) => {
         if (client.automationManager) client.automationManager.handleMessage(message);
     });
@@ -117,7 +113,6 @@ if (global.botInitialized) {
     init();
 }
 
-// Handle unhandled rejections
 process.on('unhandledRejection', (error) => {
     logger.error('Unhandled Rejection:', error);
 });

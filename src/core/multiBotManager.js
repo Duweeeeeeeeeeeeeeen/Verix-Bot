@@ -1,0 +1,127 @@
+import { Client, Collection, GatewayIntentBits, Events } from 'discord.js';
+import PrivateBot from '../models/PrivateBot.js';
+import logger from '../utils/logger.js';
+import eventHandler from '../handlers/eventHandler.js';
+import commandHandler from '../handlers/commandHandler.js';
+import moduleHandler from '../handlers/moduleHandler.js';
+import { PhotoContestManager } from '../modules/photoContest/manager.js';
+import { FiveMManager } from '../modules/fivem/manager.js';
+import CleanupManager from './cleanupManager.js';
+import EmbedSchedulerManager from './EmbedSchedulerManager.js';
+import { SocialManager } from '../modules/socials/manager.js';
+import AutomationManager from './automationManager.js';
+import GiveawayManager from '../modules/giveaway/manager.js';
+import AnalyticsManager from './analyticsManager.js';
+import cryptoHelper from '../utils/cryptoHelper.js';
+
+class MultiBotManager {
+    constructor() {
+        this.instances = new Map(); // guildId -> client
+    }
+
+    async init(mainClient) {
+        logger.info('[MultiBot] Initializing private bot instances...');
+        const privateBots = await PrivateBot.find({ enabled: true });
+        
+        for (const botConfig of privateBots) {
+            await this.startBot(botConfig);
+        }
+        
+        logger.success(`[MultiBot] Started ${this.instances.size} private bot instances.`);
+    }
+
+    async startBot(botConfig) {
+        const { token, guildId } = botConfig;
+        
+        if (this.instances.has(guildId)) {
+            logger.warn(`[MultiBot] Bot for guild ${guildId} is already running.`);
+            return;
+        }
+
+        try {
+            const client = new Client({
+                intents: [
+                    GatewayIntentBits.Guilds,
+                    GatewayIntentBits.GuildMessages,
+                    GatewayIntentBits.MessageContent,
+                    GatewayIntentBits.GuildMembers,
+                    GatewayIntentBits.GuildVoiceStates,
+                ]
+            });
+
+            client.commands = new Collection();
+            client.isPrivateBot = true;
+            client.ownerGuildId = guildId;
+
+            // Load Handlers
+            await eventHandler(client);
+            await commandHandler(client);
+            await moduleHandler(client);
+
+            client.once(Events.ClientReady, async () => {
+                logger.info(`[MultiBot] Private Bot logged in as ${client.user.tag} for Guild ${guildId}`);
+                
+                // Initialize Managers for this specific instance
+                client.photocontestManager = new PhotoContestManager(client);
+                client.photocontestManager.init();
+
+                client.fivemManager = new FiveMManager(client);
+                client.fivemManager.init();
+
+                client.cleanupManager = new CleanupManager(client);
+                client.cleanupManager.start(60000); 
+
+                client.embedScheduler = new EmbedSchedulerManager(client);
+                client.embedScheduler.start(60000); 
+
+                client.automationManager = new AutomationManager(client);
+                client.automationManager.start(60000); 
+
+                client.socialManager = new SocialManager(client);
+                client.socialManager.init();
+
+                client.giveawayManager = new GiveawayManager(client);
+                client.giveawayManager.init();
+
+                client.analyticsManager = new AnalyticsManager(client);
+                client.analyticsManager.start(1000 * 60 * 60);
+
+                await PrivateBot.findByIdAndUpdate(botConfig._id, { 
+                    status: 'online', 
+                    lastStartedAt: new Date(),
+                    clientName: client.user.username,
+                    avatarUrl: client.user.displayAvatarURL()
+                });
+            });
+
+            client.on(Events.Error, (error) => {
+                logger.error(`[MultiBot] Error in private bot for guild ${guildId}:`, error);
+            });
+
+            client.on(Events.MessageCreate, (message) => {
+                if (client.automationManager) client.automationManager.handleMessage(message);
+            });
+
+            // Decrypt token before login
+            const decryptedToken = cryptoHelper.decrypt(token);
+            await client.login(decryptedToken);
+            this.instances.set(guildId, client);
+
+        } catch (error) {
+            logger.error(`[MultiBot] Failed to start private bot for guild ${guildId}:`, error);
+            await PrivateBot.findByIdAndUpdate(botConfig._id, { status: 'error', lastError: error.message });
+        }
+    }
+
+    async stopBot(guildId) {
+        const client = this.instances.get(guildId);
+        if (client) {
+            client.destroy();
+            this.instances.delete(guildId);
+            await PrivateBot.findOneAndUpdate({ guildId }, { status: 'offline' });
+            logger.info(`[MultiBot] Stopped private bot for guild ${guildId}`);
+        }
+    }
+}
+
+export default new MultiBotManager();

@@ -18,6 +18,8 @@
   "sidebar.analytics": "Analisi PRO",
   "sidebar.automations": "Automazioni",
   "sidebar.system": "Sistema",
+  "sidebar.white_label": "White-label",
+  "sidebar.private_bot": "True White-label",
   "sidebar.servers": "Server",
   "sidebar.bot_online": "Bot Online",
   "sidebar.administrator": "Amministratore",
