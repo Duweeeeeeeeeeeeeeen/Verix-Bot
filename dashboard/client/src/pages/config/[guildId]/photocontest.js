@@ -20,6 +20,7 @@ export default function PhotoContestConfig() {
   const { guildId } = router.query;
   const [config, setConfig] = useState(null);
   const [discordData, setDiscordData] = useState({ roles: [], channels: [] });
+  const [guildData, setGuildData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('settings');
@@ -29,10 +30,12 @@ export default function PhotoContestConfig() {
     if (guildId) {
       Promise.all([
         api.request(`/config/${guildId}/photocontest`),
-        api.request(`/config/${guildId}/discord-data`)
-      ]).then(([conf, disc]) => {
+        api.request(`/config/${guildId}/discord-data`),
+        api.request(`/config/${guildId}/guild`)
+      ]).then(([conf, disc, guildRes]) => {
         setConfig(conf.data || conf);
         setDiscordData(disc.data || disc);
+        setGuildData(guildRes.data || guildRes);
         setLoading(false);
       }).catch(err => {
         console.error("Error loading photocontest config:", err);
@@ -74,6 +77,14 @@ export default function PhotoContestConfig() {
 
   const addTheme = (name) => {
     if (!name.trim()) return;
+
+    // Check limit for FREE users
+    if (!guildData?.isPremium && (config.themes || []).length >= 5) {
+      showToast(t('premium.limit_reached'), 'error');
+      router.push(`/config/${guildId}/premium`);
+      return;
+    }
+
     const newThemes = [...(config.themes || []), { name: name.trim(), durationHours: null }];
     setConfig({ ...config, themes: newThemes });
   };
@@ -252,15 +263,31 @@ export default function PhotoContestConfig() {
                                 className="input" 
                                 id="new-theme-input" 
                                 placeholder={t('photocontest.theme_placeholder')}
-                                onKeyDown={e => { if(e.key === 'Enter') { addTheme(e.target.value); e.target.value = ''; } }}
+                                disabled={!guildData?.isPremium && (config.themes || []).length >= 5}
+                                onKeyDown={e => { 
+                                    if(e.key === 'Enter') { 
+                                        if (!guildData?.isPremium && (config.themes || []).length >= 5) {
+                                            router.push(`/config/${guildId}/premium`);
+                                        } else {
+                                            addTheme(e.target.value); 
+                                            e.target.value = ''; 
+                                        }
+                                    } 
+                                }}
                             />
-                            <button className="btn-primary" style={{ padding: '0 20px' }} onClick={() => {
-                                const inp = document.getElementById('new-theme-input');
-                                addTheme(inp.value);
-                                inp.value = '';
-                            }}>
-                                <Plus size={18} />
-                            </button>
+                            {!guildData?.isPremium && (config.themes || []).length >= 5 ? (
+                                <button onClick={() => router.push(`/config/${guildId}/premium`)} className="btn-add-premium locked" style={{ padding: '0 20px' }}>
+                                    <Plus size={18} /> <span>PRO</span>
+                                </button>
+                            ) : (
+                                <button className="btn-primary" style={{ padding: '0 20px' }} onClick={() => {
+                                    const inp = document.getElementById('new-theme-input');
+                                    addTheme(inp.value);
+                                    inp.value = '';
+                                }}>
+                                    <Plus size={18} />
+                                </button>
+                            )}
                         </div>
                         
                         <div className="themes-list" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>

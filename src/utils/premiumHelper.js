@@ -10,7 +10,9 @@ export const TIERS = {
             fivem_servers: 1,
             ticket_categories: 2,
             social_platforms: 1,
-            auto_messages: 1,
+            auto_messages: 5,
+            embed_templates: 3,
+            contest_themes: 5,
             auto_clear_slots: 1
         },
         features: {
@@ -18,16 +20,19 @@ export const TIERS = {
             no_branding: false,
             custom_status: false,
             html_transcripts: false,
-            advanced_logs: false
+            advanced_logs: false,
+            advanced_analytics: false
         }
     },
     PREMIUM: {
         name: 'Premium',
         limits: {
-            fivem_servers: 5,
-            ticket_categories: 15,
-            social_platforms: 5,
-            auto_messages: 10,
+            fivem_servers: 10,
+            ticket_categories: 20,
+            social_platforms: 50,
+            auto_messages: 100,
+            embed_templates: 100,
+            contest_themes: 100,
             auto_clear_slots: 10
         },
         features: {
@@ -35,7 +40,8 @@ export const TIERS = {
             no_branding: true,
             custom_status: true,
             html_transcripts: true,
-            advanced_logs: true
+            advanced_logs: true,
+            advanced_analytics: true
         }
     }
 };

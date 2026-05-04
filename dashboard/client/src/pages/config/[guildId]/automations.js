@@ -20,7 +20,8 @@ import {
     Palette,
     ChevronLeft,
     Monitor,
-    Smartphone
+    Smartphone,
+    Lock
 } from 'lucide-react';
 import DiscordSelector from '../../../components/DiscordSelector';
 import EmbedEditor from '../../../components/EmbedEditor';
@@ -35,6 +36,7 @@ export default function AutomationsConfig() {
   const [saving, setSaving] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState('autoclear');
+  const [guildData, setGuildData] = useState(null);
   const [editingEmbedIndex, setEditingEmbedIndex] = useState(null);
 
   useEffect(() => {
@@ -45,9 +47,10 @@ export default function AutomationsConfig() {
     if (guildId && mounted) {
       const fetchData = async () => {
         try {
-          const [configRes, discordRes] = await Promise.all([
+          const [configRes, discordRes, guildRes] = await Promise.all([
             api.request(`/config/${guildId}/automations`),
-            api.request(`/config/${guildId}/discord-data`)
+            api.request(`/config/${guildId}/discord-data`),
+            api.request(`/config/${guildId}/guild`)
           ]);
           
           if (configRes && configRes.data) {
@@ -57,6 +60,9 @@ export default function AutomationsConfig() {
           }
           if (discordRes) {
             setChannels(discordRes.channels || []);
+          }
+          if (guildRes) {
+            setGuildData(guildRes.data || guildRes);
           }
           setLoading(false);
         } catch (error) {
@@ -89,6 +95,11 @@ export default function AutomationsConfig() {
 
   // --- Auto Clear Helpers ---
   const addClearSlot = () => {
+    if (!guildData?.isPremium && (config.autoClear?.slots || []).length >= 5) {
+      showToast(t('premium.limit_reached'), 'error');
+      router.push(`/config/${guildId}/premium`);
+      return;
+    }
     const newSlots = [...(config.autoClear?.slots || []), { id: `slot_${Date.now()}`, channelId: '', intervalMinutes: 60, amount: 100, enabled: true }];
     setConfig({ ...config, autoClear: { ...config.autoClear, slots: newSlots } });
   };
@@ -106,6 +117,11 @@ export default function AutomationsConfig() {
 
   // --- Auto Message Helpers ---
   const addMessageSlot = () => {
+    if (!guildData?.isPremium && (config.autoMessage?.slots || []).length >= 5) {
+      showToast(t('premium.limit_reached'), 'error');
+      router.push(`/config/${guildId}/premium`);
+      return;
+    }
     const newSlots = [...(config.autoMessage?.slots || []), { 
         id: `msg_${Date.now()}`, 
         channelId: '', 
@@ -180,9 +196,15 @@ export default function AutomationsConfig() {
                         <Layout size={20} color="var(--primary)" />
                         <h2>{t('automations.tab_autoclear')}</h2>
                     </div>
-                    <button onClick={addClearSlot} className="btn-add-premium">
-                        <Plus size={16} /> {t('automations.add_slot')}
-                    </button>
+                    {!guildData?.isPremium && (config.autoClear?.slots || []).length >= 5 ? (
+                        <button onClick={() => router.push(`/config/${guildId}/premium`)} className="btn-add-premium locked">
+                            <Lock size={16} /> <span>PRO</span>
+                        </button>
+                    ) : (
+                        <button onClick={addClearSlot} className="btn-add-premium">
+                            <Plus size={16} /> {t('automations.add_slot')}
+                        </button>
+                    )}
                 </div>
 
                 <div className="slots-grid">
@@ -326,9 +348,15 @@ export default function AutomationsConfig() {
                         <MessageSquare size={20} color="var(--primary)" />
                         <h2>{t('automations.tab_automessage')}</h2>
                     </div>
-                    <button onClick={addMessageSlot} className="btn-add-premium">
-                        <Plus size={16} /> {t('automations.add_msg_slot')}
-                    </button>
+                    {!guildData?.isPremium && (config.autoMessage?.slots || []).length >= 5 ? (
+                        <button onClick={() => router.push(`/config/${guildId}/premium`)} className="btn-add-premium locked">
+                            <Lock size={16} /> <span>PRO</span>
+                        </button>
+                    ) : (
+                        <button onClick={addMessageSlot} className="btn-add-premium">
+                            <Plus size={16} /> {t('automations.add_msg_slot')}
+                        </button>
+                    )}
                 </div>
 
                 <div className="slots-grid">

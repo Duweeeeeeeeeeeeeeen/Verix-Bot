@@ -40,7 +40,8 @@ import {
   Sun,
   Moon,
   Terminal,
-  Crown
+  Crown,
+  BarChart3
 } from 'lucide-react';
 import GuideSidebar from './GuideSidebar';
 import { useTheme } from '../contexts/ThemeContext';
@@ -163,7 +164,8 @@ export default function Layout({ children, guildId, hideGuide = false }) {
       title: 'Tools',
       items: [
         { name: t('sidebar.automations'), icon: Cpu, path: `/config/${guildId}/automations`, id: 'automations' },
-        { name: t('sidebar.embeds'), icon: LayoutIcon, path: `/config/${guildId}/embeds`, id: 'embeds' }
+        { name: t('sidebar.embeds'), icon: LayoutIcon, path: `/config/${guildId}/embeds`, id: 'embeds' },
+        { name: t('sidebar.analytics'), icon: BarChart3, path: `/config/${guildId}/analytics`, id: 'analytics' }
       ]
     },
     {

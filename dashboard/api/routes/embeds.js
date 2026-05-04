@@ -1,6 +1,7 @@
 import express from 'express';
 import EmbedTemplate from '../../../src/models/EmbedTemplate.js';
 import ScheduledEmbed from '../../../src/models/ScheduledEmbed.js';
+import Guild from '../../../src/models/Guild.js';
 import DashboardAuditLog from '../../../src/models/DashboardAuditLog.js';
 import { adminCheck } from '../middleware/adminCheck.js';
 import { EmbedBuilder, PermissionFlagsBits } from 'discord.js';
@@ -37,6 +38,13 @@ router.post('/:guildId/templates', adminCheck, validate(templateSchema), async (
             template = await EmbedTemplate.findByIdAndUpdate(id, { name, data }, { new: true });
             await logAudit(req, 'UPDATE_TEMPLATE', { name, id });
         } else {
+            const isPremium = (await Guild.findOne({ guildId }))?.isPremium;
+            const count = await EmbedTemplate.countDocuments({ guildId });
+
+            if (!isPremium && count >= 3) {
+                return res.status(403).json({ success: false, error: 'Free tier limit: 3 Templates. Upgrade to PRO for more.' });
+            }
+
             template = await EmbedTemplate.create({ guildId, name, data });
             await logAudit(req, 'CREATE_TEMPLATE', { name });
         }

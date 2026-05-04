@@ -24,7 +24,9 @@ import {
   Calendar,
   ChevronDown,
   Box,
-  MessageSquare
+  MessageSquare,
+  Lock,
+  Crown
 } from 'lucide-react';
 import CustomSelect from '../../../components/CustomSelect';
 import { useT } from '../../../contexts/LanguageContext';
@@ -42,6 +44,7 @@ export default function EmbedBuilder() {
   // Data State
   const [customTemplates, setCustomTemplates] = useState([]);
   const [channels, setChannels] = useState([]);
+  const [guildData, setGuildData] = useState(null);
 
   // Interaction State
   const [selectedTemplateId, setSelectedTemplateId] = useState('new');
@@ -64,11 +67,15 @@ export default function EmbedBuilder() {
     try {
       const responses = await Promise.all([
         api.request(`/embeds/${guildId}/templates`),
-        api.request(`/embeds/${guildId}/channels`)
+        api.request(`/embeds/${guildId}/channels`),
+        api.request(`/config/${guildId}/guild`)
       ]);
 
-      const [templatesData, channelsData] = responses;
+      const [templatesData, channelsData, guildRes] = responses;
 
+      if (guildRes) {
+        setGuildData(guildRes.data || guildRes);
+      }
       setCustomTemplates(Array.isArray(templatesData) ? templatesData : []);
       setChannels(Array.isArray(channelsData) ? channelsData : []);
       setLoading(false);
@@ -111,6 +118,15 @@ export default function EmbedBuilder() {
   };
 
   const handleSave = async () => {
+    const isNew = selectedTemplateId === 'new';
+    
+    // Check limit for NEW templates for FREE users
+    if (isNew && !guildData?.isPremium && customTemplates.length >= 3) {
+      showToast(t('premium.limit_reached'), 'error');
+      router.push(`/config/${guildId}/premium`);
+      return;
+    }
+
     setSaving(true);
     try {
       const isNew = selectedTemplateId === 'new';
@@ -213,9 +229,15 @@ export default function EmbedBuilder() {
                             <input className="input" value={customName} onChange={e => setCustomName(e.target.value)} />
                         </div>
                         <div className="field-box" style={{ width: '120px', justifyContent: 'flex-end', display: 'flex' }}>
-                                <button onClick={handleSave} className="btn-outline" style={{ height: '42px', marginTop: 'auto' }} disabled={saving}>
-                                <Save size={16} /> {t('embeds.save')}
+                            {selectedTemplateId === 'new' && !guildData?.isPremium && customTemplates.length >= 3 ? (
+                                <button onClick={() => router.push(`/config/${guildId}/premium`)} className="btn-add-premium locked" style={{ height: '42px', marginTop: 'auto' }}>
+                                    <Lock size={16} /> <span>PRO</span>
                                 </button>
+                            ) : (
+                                <button onClick={handleSave} className="btn-outline" style={{ height: '42px', marginTop: 'auto' }} disabled={saving}>
+                                    <Save size={16} /> {t('embeds.save')}
+                                </button>
+                            )}
                         </div>
                     </div>
                 </section>

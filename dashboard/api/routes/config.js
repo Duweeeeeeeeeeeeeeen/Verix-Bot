@@ -199,6 +199,17 @@ router.post('/:guildId/automations', adminCheck, async (req, res) => {
         const { guildId } = req.params;
         const { autoClear, autoMessage } = req.body;
 
+        const isPremium = (await Guild.findOne({ guildId }))?.isPremium;
+
+        if (!isPremium) {
+            if ((autoClear?.slots || []).length > 5) {
+                return res.status(403).json({ success: false, error: 'Free tier limit: 5 Auto-Clear slots. Upgrade to PRO for more.' });
+            }
+            if ((autoMessage?.slots || []).length > 5) {
+                return res.status(403).json({ success: false, error: 'Free tier limit: 5 Auto-Message slots. Upgrade to PRO for more.' });
+            }
+        }
+
         const config = await AutomationConfig.findOneAndUpdate(
             { guildId },
             { $set: { autoClear, autoMessage } },
@@ -949,9 +960,17 @@ router.get('/:guildId/photocontest', adminCheck, async (req, res) => {
 router.post('/:guildId/photocontest', adminCheck, validate(photoContestSchema), async (req, res) => {
     try {
         const { guildId } = req.params;
+        const data = req.validatedData || req.body;
+
+        const isPremium = (await Guild.findOne({ guildId }))?.isPremium;
+
+        if (!isPremium && (data.themes || []).length > 5) {
+            return res.status(403).json({ success: false, error: 'Free tier limit: 5 Contest Themes. Upgrade to PRO for more.' });
+        }
+
         const config = await PhotoContestConfig.findOneAndUpdate(
             { guildId },
-            { $set: req.validatedData },
+            { $set: data },
             { returnDocument: 'after', upsert: true }
         );
         
@@ -1111,9 +1130,21 @@ router.get('/:guildId/global', adminCheck, async (req, res) => {
 router.post('/:guildId/global', adminCheck, validate(globalConfigSchema), async (req, res) => {
     try {
         const { guildId } = req.params;
+        const data = req.validatedData || req.body;
+
+        const isPremium = (await Guild.findOne({ guildId }))?.isPremium;
+
+        if (!isPremium && data.customBot) {
+            // Check if any premium identity fields are being set
+            const cb = data.customBot;
+            if (cb.token || cb.name || cb.status || cb.removeBranding) {
+                return res.status(403).json({ success: false, error: 'Custom Bot Identity is a PRO feature.' });
+            }
+        }
+
         const config = await GlobalConfig.findOneAndUpdate(
             { guildId },
-            { $set: req.validatedData },
+            { $set: data },
             { returnDocument: 'after', upsert: true }
         );
 

@@ -1,0 +1,241 @@
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
+import { useT } from '../../../contexts/LanguageContext';
+import { 
+    BarChart3, TrendingUp, Users, MessageSquare, 
+    Zap, Crown, Lock, ChevronRight, Activity,
+    Calendar, Download, Filter, RefreshCw
+} from 'lucide-react';
+import Skeleton from '../../../components/Skeleton';
+import api from '../../../utils/api';
+
+export default function AnalyticsPage() {
+  const { t } = useT();
+  const router = useRouter();
+  const { guildId } = router.query;
+  const [guildData, setGuildData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (guildId) {
+        api.request(`/config/${guildId}/guild`).then(res => {
+            setGuildData(res.data || res);
+            setLoading(false);
+        }).catch(() => setLoading(false));
+    }
+  }, [guildId]);
+
+  if (loading) return <Skeleton type="config" />;
+
+  return (
+    <div className="analytics-container animate">
+        <header className="page-header">
+            <div className="header-info">
+                <div className="header-icon">
+                    <BarChart3 size={24} />
+                </div>
+                <div className="header-text">
+                    <h1>{t('sidebar.analytics')}</h1>
+                    <p>Statistiche avanzate e monitoraggio attività del server.</p>
+                </div>
+            </div>
+            {guildData?.isPremium && (
+                <div className="header-actions">
+                    <button className="btn-outline">
+                        <Download size={16} /> Export CSV
+                    </button>
+                    <button className="btn-primary">
+                        <RefreshCw size={16} /> Refresh
+                    </button>
+                </div>
+            )}
+        </header>
+
+        {!guildData?.isPremium ? (
+            <div className="premium-upsell card">
+                <div className="upsell-badge">PRO FEATURE</div>
+                <div className="upsell-icon">
+                    <Crown size={48} />
+                </div>
+                <h2>Sblocca Analytics PRO</h2>
+                <p>Monitora la crescita del tuo server, l'attività dei membri e le performance dei comandi con grafici dettagliati e analisi storiche.</p>
+                
+                <div className="feature-grid">
+                    <div className="feat-item">
+                        <TrendingUp size={20} />
+                        <span>Crescita Membri (Storico 90gg)</span>
+                    </div>
+                    <div className="feat-item">
+                        <MessageSquare size={20} />
+                        <span>Attività Messaggi & Canali</span>
+                    </div>
+                    <div className="feat-item">
+                        <Users size={20} />
+                        <span>Statistiche Staff & Performance</span>
+                    </div>
+                    <div className="feat-item">
+                        <Zap size={20} />
+                        <span>Analisi Comandi più Usati</span>
+                    </div>
+                </div>
+
+                <button onClick={() => router.push(`/config/${guildId}/premium`)} className="btn-premium-cta">
+                    Sblocca Ora con Premium Hub
+                </button>
+            </div>
+        ) : (
+            <div className="analytics-content fade-in">
+                {/* Real Analytics Content (Mock for now) */}
+                <div className="stats-cards-grid">
+                    <div className="stat-card">
+                        <div className="stat-label">Total Members</div>
+                        <div className="stat-value">1,284</div>
+                        <div className="stat-change positive">+12% this week</div>
+                    </div>
+                    <div className="stat-card">
+                        <div className="stat-label">Active Users (24h)</div>
+                        <div className="stat-value">412</div>
+                        <div className="stat-change positive">+5% vs yesterday</div>
+                    </div>
+                    <div className="stat-card">
+                        <div className="stat-label">Messages Sent</div>
+                        <div className="stat-value">8,912</div>
+                        <div className="stat-change negative">-2% this week</div>
+                    </div>
+                </div>
+
+                <div className="charts-grid">
+                    <div className="chart-box card">
+                        <div className="chart-header">
+                            <h3>Member Growth</h3>
+                            <Filter size={16} />
+                        </div>
+                        <div className="chart-placeholder">
+                            <div className="mock-chart-container">
+                                <svg viewBox="0 0 400 100" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
+                                    <path 
+                                        d="M0,80 Q50,70 100,40 T200,50 T300,20 T400,10" 
+                                        fill="none" 
+                                        stroke="var(--primary)" 
+                                        strokeWidth="3" 
+                                        strokeLinecap="round"
+                                        style={{ filter: 'drop-shadow(0 0 8px var(--primary))' }}
+                                    />
+                                    <path 
+                                        d="M0,80 Q50,70 100,40 T200,50 T300,20 T400,10 V100 H0 Z" 
+                                        fill="url(#gradient)" 
+                                        opacity="0.1"
+                                    />
+                                    <defs>
+                                        <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                            <stop offset="0%" stopColor="var(--primary)" />
+                                            <stop offset="100%" stopColor="transparent" />
+                                        </linearGradient>
+                                    </defs>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="chart-box card">
+                        <div className="chart-header">
+                            <h3>Command Usage</h3>
+                            <Calendar size={16} />
+                        </div>
+                        <div className="chart-placeholder">
+                            <div className="mock-bars">
+                                <div className="bar" style={{ height: '80%' }}></div>
+                                <div className="bar" style={{ height: '60%' }}></div>
+                                <div className="bar" style={{ height: '90%' }}></div>
+                                <div className="bar" style={{ height: '40%' }}></div>
+                                <div className="bar" style={{ height: '70%' }}></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )}
+
+        <style jsx>{`
+            .analytics-container { padding: 20px; }
+            .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+            .header-info { display: flex; align-items: center; gap: 16px; }
+            .header-icon { width: 48px; height: 48px; background: var(--primary-glow); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+            .header-text h1 { font-size: 1.8rem; font-weight: 800; color: var(--text-main); }
+            .header-text p { color: var(--text-muted); font-size: 0.9rem; }
+            
+            .header-actions { display: flex; gap: 12px; }
+
+            /* Upsell Styles */
+            .premium-upsell { 
+                display: flex; flex-direction: column; align-items: center; justify-content: center; 
+                padding: 80px 40px; text-align: center; max-width: 800px; margin: 40px auto;
+                background: linear-gradient(180deg, var(--bg-card), var(--bg-dark));
+                border: 1px solid var(--gold);
+                position: relative;
+                overflow: hidden;
+                border-radius: 24px;
+            }
+            .upsell-badge { 
+                position: absolute; top: 20px; right: 20px; 
+                background: var(--gold); color: white; padding: 4px 12px; 
+                border-radius: 20px; font-size: 0.7rem; font-weight: 900;
+                box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+            }
+            .upsell-icon { 
+                width: 100px; height: 100px; background: rgba(245, 158, 11, 0.1); 
+                color: var(--gold); border-radius: 50%; display: flex; 
+                align-items: center; justify-content: center; margin-bottom: 24px;
+                animation: float 3s ease-in-out infinite;
+            }
+            @keyframes float {
+                0%, 100% { transform: translateY(0); }
+                50% { transform: translateY(-10px); }
+            }
+            .premium-upsell h2 { font-size: 2rem; font-weight: 900; margin-bottom: 12px; color: var(--text-main); }
+            .premium-upsell p { color: var(--text-muted); font-size: 1.1rem; line-height: 1.6; max-width: 600px; margin-bottom: 40px; }
+            
+            .feature-grid { 
+                display: grid; grid-template-columns: 1fr 1fr; gap: 20px; 
+                text-align: left; margin-bottom: 40px; width: 100%; max-width: 600px;
+            }
+            .feat-item { 
+                display: flex; align-items: center; gap: 12px; padding: 16px; 
+                background: var(--bg-badge); border-radius: 12px; border: 1px solid var(--border);
+                color: var(--text-main); font-weight: 600;
+            }
+            .feat-item svg { color: var(--gold); }
+
+            .btn-premium-cta { 
+                background: linear-gradient(135deg, #f59e0b, #fbbf24); 
+                color: white; border: none; padding: 18px 36px; border-radius: 16px; 
+                font-size: 1.1rem; font-weight: 800; cursor: pointer; transition: 0.3s;
+                box-shadow: 0 10px 30px rgba(245, 158, 11, 0.4);
+            }
+            .btn-premium-cta:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 15px 40px rgba(245, 158, 11, 0.5); }
+
+            /* Content Styles */
+            .stats-cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 24px; }
+            .stat-card { padding: 24px; background: var(--bg-card); border-radius: 20px; border: 1px solid var(--border); }
+            .stat-label { color: var(--text-muted); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; }
+            .stat-value { font-size: 2.2rem; font-weight: 900; color: var(--text-main); margin-bottom: 8px; }
+            .stat-change { font-size: 0.85rem; font-weight: 700; }
+            .stat-change.positive { color: var(--success); }
+            .stat-change.negative { color: var(--error); }
+
+            .charts-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
+            .chart-box { padding: 24px; }
+            .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+            .chart-header h3 { font-size: 1.1rem; font-weight: 800; color: var(--text-main); }
+            .chart-placeholder { height: 300px; background: var(--bg-badge); border-radius: 16px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; padding: 20px; }
+            
+            .mock-chart-container { width: 100%; height: 100%; display: flex; align-items: flex-end; }
+            .mock-bars { display: flex; align-items: flex-end; gap: 12px; height: 100%; width: 100%; justify-content: center; }
+            .bar { width: 30px; background: var(--primary); border-radius: 8px 8px 0 0; opacity: 0.6; transition: 0.3s; }
+            .bar:hover { opacity: 1; transform: scaleY(1.05); }
+
+            .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-muted); padding: 10px 18px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 600; }
+            .btn-primary { background: var(--primary); color: white; border: none; padding: 10px 18px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 600; }
+        `}</style>
+    </div>
+  );
+}
