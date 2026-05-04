@@ -280,8 +280,20 @@ export class FiveMManager {
                  const row = new ActionRowBuilder();
                  for (const btn of serverConfig.buttons.slice(0, 5)) { // Discord limit
                     const btnLabel = replacePlaceholders(btn.label || 'Connettiti', placeholders);
-                    const btnUrl = replacePlaceholders(btn.url || `fivem://connect/${serverConfig.serverIp}`, placeholders);
+                    let btnUrl = replacePlaceholders(btn.url || `https://cfx.re/join/${serverConfig.serverIp}`, placeholders);
                     
+                    // Discord buttons only support http/https/discord protocols
+                    if (btnUrl && !btnUrl.startsWith('http') && !btnUrl.startsWith('discord:')) {
+                        // If it's a fivem:// link, try to convert to a web-friendly one or use cfx.re
+                        if (btnUrl.startsWith('fivem://connect/')) {
+                            const target = btnUrl.replace('fivem://connect/', '');
+                            btnUrl = `https://cfx.re/join/${target}`;
+                        } else {
+                            // Fallback to https if unknown protocol
+                            btnUrl = `https://${btnUrl}`;
+                        }
+                    }
+
                     const button = new ButtonBuilder()
                         .setLabel(btnLabel)
                         .setURL(btnUrl)
@@ -293,12 +305,17 @@ export class FiveMManager {
                  if (row.components.length > 0) payload.components.push(row);
             } else if (isOnline) {
                  // Fallback default button
+                 let fallbackUrl = `https://cfx.re/join/${serverConfig.serverIp}`;
+                 if (serverConfig.serverIp.includes('cfx.re/join/')) {
+                     fallbackUrl = serverConfig.serverIp.startsWith('http') ? serverConfig.serverIp : `https://${serverConfig.serverIp}`;
+                 }
+
                  const row = new ActionRowBuilder()
                     .addComponents(
                          new ButtonBuilder()
                             .setLabel('Entra nel Server')
                             .setStyle(ButtonStyle.Link)
-                            .setURL(`fivem://connect/${serverConfig.serverIp}`)
+                            .setURL(fallbackUrl)
                     );
                  payload.components.push(row);
             }
