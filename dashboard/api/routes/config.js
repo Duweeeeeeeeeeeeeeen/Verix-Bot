@@ -220,13 +220,30 @@ router.get('/:guildId/tempvoice', adminCheck, async (req, res) => {
 router.post('/:guildId/tempvoice', adminCheck, async (req, res) => {
     try {
         const { guildId } = req.params;
+        const updateData = req.body;
+
+        // Conflict check: if this channel is used for Whitelist Voice, clear it there
+        if (updateData.creatorChannelId) {
+            const wlConfig = await WhitelistConfig.findOne({ guildId });
+            if (wlConfig && wlConfig.voiceSettings?.joinChannelId === updateData.creatorChannelId) {
+                wlConfig.voiceSettings.joinChannelId = null;
+                await wlConfig.save();
+                invalidateCache(guildId, 'whitelist');
+            }
+        }
+
         const config = await TempVoiceConfig.findOneAndUpdate(
             { guildId },
-            { $set: req.body },
+            { $set: updateData },
             { new: true, upsert: true }
         );
+
+        invalidateCache(guildId, 'tempvoice');
+        await logAudit(req, 'UPDATE_TEMPVOICE', updateData);
+
         res.json({ success: true, data: config });
     } catch (error) {
+        console.error('Error updating tempvoice config:', error);
         res.status(500).json({ success: false, error: 'Impossibile salvare la configurazione vocale' });
     }
 });
