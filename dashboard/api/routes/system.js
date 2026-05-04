@@ -133,12 +133,38 @@ router.get('/history', ownerCheck, async (req, res) => {
 
 /**
  * GET /api/system/guild/:guildId
- * Returns guild premium status (only for owner)
+ * Returns guild premium status and tier (only for owner)
  */
 router.get('/guild/:guildId', ownerCheck, async (req, res) => {
     try {
         const guild = await Guild.findOne({ guildId: req.params.guildId });
-        res.json({ success: true, data: guild || { isPremium: false } });
+        res.json({ success: true, data: guild || { isPremium: false, premiumTier: 'none' } });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+/**
+ * POST /api/system/guild/:guildId/tier
+ * Sets the premium tier and automatically updates isPremium flag
+ */
+router.post('/guild/:guildId/tier', ownerCheck, async (req, res) => {
+    try {
+        const { tier } = req.body;
+        if (!['none', 'premium', 'platinum'].includes(tier)) {
+            return res.status(400).json({ success: false, error: 'Tier non valido.' });
+        }
+
+        const isPremium = tier !== 'none';
+        
+        const guild = await Guild.findOneAndUpdate(
+            { guildId: req.params.guildId },
+            { $set: { premiumTier: tier, isPremium } },
+            { returnDocument: 'after', upsert: true }
+        );
+
+        invalidateCache(req.params.guildId);
+        res.json({ success: true, data: guild });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
@@ -146,14 +172,15 @@ router.get('/guild/:guildId', ownerCheck, async (req, res) => {
 
 /**
  * POST /api/system/guild/:guildId/premium
- * Toggles premium status (only for owner)
+ * (Legacy) Toggles premium status
  */
 router.post('/guild/:guildId/premium', ownerCheck, async (req, res) => {
     try {
         const { isPremium } = req.body;
+        const tier = isPremium ? 'premium' : 'none';
         const guild = await Guild.findOneAndUpdate(
             { guildId: req.params.guildId },
-            { $set: { isPremium } },
+            { $set: { isPremium, premiumTier: tier } },
             { returnDocument: 'after', upsert: true }
         );
         invalidateCache(req.params.guildId);
