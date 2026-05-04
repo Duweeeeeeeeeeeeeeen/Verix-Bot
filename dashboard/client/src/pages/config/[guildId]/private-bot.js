@@ -188,30 +188,15 @@ export default function PrivateBotPage() {
                                     <p>Torna qui, incolla il token e clicca su <strong>"Salva Configurazione"</strong>. Poi usa l'interruttore "Stato Istanza" per accenderlo!</p>
                                 </div>
                             </div>
-
-                            <div className="step-item">
-                                <div className="step-number">5</div>
-                                <div className="step-content">
-                                    <h5>Invita il Bot nel Server</h5>
-                                    <p>Vai su <strong>"OAuth2"</strong> &rarr; <strong>"URL Generator"</strong>. Seleziona <strong>"bot"</strong> e <strong>"applications.commands"</strong>. Sotto, seleziona <strong>"Administrator"</strong>, copia l'URL generato e visitalo per aggiungere il bot al tuo server.</p>
-                                </div>
-                            </div>
-
-                            <div className="step-item success-step">
-                                <div className="step-number">✓</div>
-                                <div className="step-content">
-                                    <h5>Tutto Pronto!</h5>
-                                    <p>Il tuo bot privato è ora configurato e operativo. Ogni comando eseguito tramite lui userà il motore di Verix!</p>
-                                </div>
-                            </div>
                         </div>
                     </div>
 
-                    <div className="status-card card">
-                        <div className="card-header">
-                            <Power size={20} />
-                            <h3>Stato Istanza</h3>
-                        </div>
+                    <div className="status-section">
+                        <div className="status-card card">
+                            <div className="card-header">
+                                <Power size={20} />
+                                <h3>Stato Istanza</h3>
+                            </div>
 
                         {botData ? (
                             <div className="bot-status-info">
@@ -251,6 +236,33 @@ export default function PrivateBotPage() {
                             </div>
                         )}
                     </div>
+
+                    {botData?.enabled && (
+                        <div className="next-steps-card card fade-in">
+                            <div className="card-header">
+                                <ExternalLink size={20} />
+                                <h3>Prossimi Passi</h3>
+                            </div>
+                            
+                            <div className="mini-stepper">
+                                <div className="mini-step">
+                                    <div className="mini-number">5</div>
+                                    <div className="mini-content">
+                                        <h5>Invita nel Server</h5>
+                                        <p>Vai su <strong>OAuth2 &rarr; URL Generator</strong>. Seleziona <code>bot</code> e <code>applications.commands</code>, poi <code>Administrator</code>. Visita l'URL per aggiungere il bot.</p>
+                                    </div>
+                                </div>
+
+                                <div className="mini-step success">
+                                    <div className="mini-number">✓</div>
+                                    <div className="mini-content">
+                                        <h5>Tutto Pronto!</h5>
+                                        <p>Il bot risponderà ora ai comandi nel tuo server usando il sistema Verix.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         )}
@@ -274,7 +286,8 @@ export default function PrivateBotPage() {
             
             .btn-save { background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 700; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: 0.3s; }
             
-            .grid-layout { display: grid; grid-template-columns: 1.5fr 1fr; gap: 24px; }
+            .grid-layout { display: grid; grid-template-columns: 1.5fr 1fr; gap: 24px; align-items: start; }
+            .status-section { display: flex; flex-direction: column; gap: 24px; }
             .card { padding: 24px; }
             .card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; border-bottom: 1px solid var(--border); padding-bottom: 16px; }
             
@@ -327,6 +340,15 @@ export default function PrivateBotPage() {
             .bot-profile img { width: 64px; height: 64px; border-radius: 50%; border: 2px solid var(--primary); }
             .bot-details h4 { font-size: 1.2rem; margin-bottom: 4px; }
             
+            .next-steps-card { background: var(--bg-badge); border: 1px solid var(--primary-glow); }
+            .mini-stepper { display: flex; flex-direction: column; gap: 20px; margin-top: 10px; }
+            .mini-step { display: flex; gap: 12px; }
+            .mini-number { width: 24px; height: 24px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; flex-shrink: 0; }
+            .mini-step.success .mini-number { border-color: #4caf50; color: #4caf50; background: rgba(76, 175, 80, 0.1); }
+            .mini-content h5 { font-size: 0.9rem; margin-bottom: 4px; }
+            .mini-content p { font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; }
+            .mini-content code { background: rgba(255,255,255,0.05); padding: 2px 4px; border-radius: 4px; font-size: 0.75rem; }
+
             .badge { padding: 4px 10px; border-radius: 8px; font-size: 0.7rem; font-weight: 800; }
             .status-online { background: rgba(76, 175, 80, 0.1); color: #4caf50; }
             .status-offline { background: rgba(158, 158, 158, 0.1); color: #9e9e9e; }
