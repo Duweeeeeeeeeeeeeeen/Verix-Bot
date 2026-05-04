@@ -108,6 +108,7 @@ export class FiveMManager {
                 }
 
                 if (configUpdatedInDb) {
+                    config.markModified('servers');
                     await config.save().catch(e => logger.error('[FiveM] Error saving state:', e));
                 }
             }

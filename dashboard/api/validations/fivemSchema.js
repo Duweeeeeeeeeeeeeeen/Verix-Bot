@@ -14,6 +14,8 @@ const serverTrackerSchema = z.object({
     enabled: z.boolean().optional(),
     serverIp: z.string().optional(),
     statusChannelId: discordId.or(z.literal('')).optional().nullable(),
+    messageId: z.string().optional().nullable(),
+    uptimeStart: z.string().or(z.date()).optional().nullable(),
     onlineEmbed: embedDataSchema.optional(),
     offlineEmbed: embedDataSchema.optional(),
     buttons: z.array(buttonSchema).optional()
