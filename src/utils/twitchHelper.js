@@ -87,6 +87,34 @@ export async function getStreams(usernames) {
 }
 
 /**
+ * Fetches user data for multiple usernames (for profile pictures).
+ * @param {string[]} usernames 
+ */
+export async function getUsers(usernames) {
+    if (!usernames.length) return [];
+    
+    const token = await getAccessToken();
+    if (!token) return [];
+
+    try {
+        const userRes = await axios.get('https://api.twitch.tv/helix/users', {
+            headers: {
+                'Client-ID': process.env.TWITCH_CLIENT_ID,
+                'Authorization': `Bearer ${token}`
+            },
+            params: {
+                login: usernames
+            }
+        });
+
+        return userRes.data?.data || [];
+    } catch (error) {
+        logger.error('[TwitchHelper] Error fetching users:', error.response?.data || error.message);
+        return [];
+    }
+}
+
+/**
  * Gets the static URL for a stream thumbnail with timestamp to bypass Discord cache.
  */
 export function getThumbnailUrl(username) {

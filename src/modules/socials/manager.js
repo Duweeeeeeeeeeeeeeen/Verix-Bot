@@ -1,7 +1,7 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 import mongoose from 'mongoose';
 import SocialConfig from '../../models/SocialConfig.js';
-import { getStreams } from '../../utils/twitchHelper.js';
+import { getStreams, getUsers } from '../../utils/twitchHelper.js';
 import logger from '../../utils/logger.js';
 import messageService from '../../utils/messageService.js';
 import placeholderHelper from '../../utils/placeholderHelper.js';
@@ -48,9 +48,10 @@ export class SocialManager {
                     logger.debug(`[Socials/Twitch] Checking ${usernames.length} streamers for guild ${guildId}: ${usernames.join(', ')}`);
                     
                     const liveStreams = await getStreams(usernames);
+                    const userData = await getUsers(usernames);
                     logger.debug(`[Socials/Twitch] Found ${liveStreams.length} live streams.`);
 
-                    const changed = await this.checkTwitch(guildId, platformConfig, liveStreams);
+                    const changed = await this.checkTwitch(guildId, platformConfig, liveStreams, userData);
                     if (changed) configChanged = true;
                 }
 
@@ -70,7 +71,7 @@ export class SocialManager {
         }
     }
 
-    async checkTwitch(guildId, platformConfig, liveStreams) {
+    async checkTwitch(guildId, platformConfig, liveStreams, userData = []) {
         let changed = false;
         try {
             for (const streamer of platformConfig.accounts) {
@@ -79,6 +80,7 @@ export class SocialManager {
                     : (streamer.username || '').toLowerCase();
 
                 const stream = liveStreams.find(s => s.user_login.toLowerCase() === cleanName);
+                const user = userData.find(u => u.login.toLowerCase() === cleanName);
                 
                 if (stream) {
                     // Streamer is LIVE
@@ -88,7 +90,8 @@ export class SocialManager {
                             title: stream.title,
                             url: `https://twitch.tv/${stream.user_login}`,
                             author: stream.user_name,
-                            thumbnail: stream.thumbnail_url?.replace('{width}', '1280').replace('{height}', '720')
+                            thumbnail: stream.thumbnail_url?.replace('{width}', '1280').replace('{height}', '720'),
+                            profileImage: user?.profile_image_url
                         }, 'Twitch');
                         streamer.isLive = true;
                         streamer.lastPostId = stream.id;
@@ -182,13 +185,18 @@ export class SocialManager {
 
             const embedData = {
                 title: formatText(customEmbed.title) || (platform === 'Twitch' ? `📡 ${postData.author || account.username} è in diretta!` : `🎥 Nuovo video di ${postData.author || account.username}!`),
-                description: formatText(customEmbed.description) || (platform === 'Twitch' ? `### ${postData.title}\n\nEhi! **${postData.author || account.username}** ha appena acceso la camera su Twitch. Non perderti lo show!\n\n[Entra in Live](${postData.url})` : `### ${postData.title}\n\nÈ appena uscito un nuovo video sul canale! Corri a lasciare un like.\n\n[Guarda ora](${postData.url})`),
+                url: postData.url,
+                description: formatText(customEmbed.description) || (platform === 'Twitch' ? `### ${postData.title}\n\nEhi! **${postData.author || account.username}** ha appena acceso la camera su Twitch. Non perderti lo show!` : `### ${postData.title}\n\nÈ appena uscito un nuovo video sul canale! Corri a lasciare un like.`),
                 color: customEmbed.color ? parseInt(customEmbed.color.replace('#', ''), 16) : (platform === 'Twitch' ? 0x6441a5 : 0xff0000),
                 footer: { text: formatText(customEmbed.footer) || 'Social Notifications | Verix' }
             };
 
+            if (postData.profileImage) {
+                embedData.thumbnail = { url: postData.profileImage };
+            }
+
             if (postData.thumbnail) {
-                embedData.thumbnail = { url: postData.thumbnail };
+                embedData.image = { url: postData.thumbnail };
             }
 
             const row = new ActionRowBuilder()
