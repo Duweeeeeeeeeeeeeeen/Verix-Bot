@@ -12,6 +12,18 @@ export default {
         if (!interaction.guild) return;
 
         const guildId = interaction.guild.id;
+        const client = interaction.client;
+
+        // --- 0. PRIVATE BOT PROTECTION: Block interactions in unauthorized guilds ---
+        if (client.isPrivateBot && client.ownerGuildId !== guildId) {
+            logger.warn(`[MultiBot] Blocked interaction in unauthorized guild ${guildId} for private bot ${client.user.tag}. Leaving...`);
+            try {
+                await interaction.guild.leave();
+            } catch (e) {
+                logger.error(`[MultiBot] Failed to leave unauthorized guild ${guildId}:`, e);
+            }
+            return; // Stop execution
+        }
 
         // --- 1. PRE-EXECUTION MIDDLEWARE: MODULE SYNC CHECK (CACHED) ---
         const moduleName = resolveModule(interaction);

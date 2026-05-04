@@ -61,6 +61,21 @@ class MultiBotManager {
             client.once(Events.ClientReady, async () => {
                 logger.info(`[MultiBot] Private Bot logged in as ${client.user.tag} for Guild ${guildId}`);
                 
+                // --- PROTECTION: Leave unauthorized guilds ---
+                const guilds = await client.guilds.fetch();
+                for (const [id, guild] of guilds) {
+                    if (id !== guildId) {
+                        try {
+                            const g = await client.guilds.fetch(id);
+                            logger.warn(`[MultiBot] Private bot for ${guildId} found in unauthorized guild ${id} (${g.name}). Leaving...`);
+                            await g.leave();
+                        } catch (e) {
+                            logger.error(`[MultiBot] Failed to leave unauthorized guild ${id}:`, e);
+                        }
+                    }
+                }
+                // ---------------------------------------------
+
                 // Initialize Managers for this specific instance
                 client.photocontestManager = new PhotoContestManager(client);
                 client.photocontestManager.init();
@@ -92,6 +107,17 @@ class MultiBotManager {
                     clientName: client.user.username,
                     avatarUrl: client.user.displayAvatarURL()
                 });
+            });
+
+            client.on(Events.GuildCreate, async (guild) => {
+                if (guild.id !== guildId) {
+                    logger.warn(`[MultiBot] Private bot for ${guildId} joined unauthorized guild ${guild.id} (${guild.name}). Leaving...`);
+                    try {
+                        await guild.leave();
+                    } catch (e) {
+                        logger.error(`[MultiBot] Failed to leave unauthorized guild ${guild.id}:`, e);
+                    }
+                }
             });
 
             client.on(Events.Error, (error) => {
