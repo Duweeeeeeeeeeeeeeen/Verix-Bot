@@ -77,6 +77,7 @@ export default function PrivateBotPage() {
 
   if (loading) return <Skeleton type="config" />;
 
+  const isPlatinum = config?.premiumTier === 'platinum';
   const isPremium = !!config?.isPremium;
 
   return (
@@ -91,7 +92,7 @@ export default function PrivateBotPage() {
                     <p>Usa il tuo bot personale con foto e banner personalizzati.</p>
                 </div>
             </div>
-            {isPremium && (
+            {isPlatinum && (
                 <button 
                     className="btn-save" 
                     onClick={handleSave} 
@@ -103,15 +104,24 @@ export default function PrivateBotPage() {
             )}
         </header>
 
-        {!isPremium ? (
+        {!isPlatinum ? (
             <div className="premium-upsell card">
-                <div className="upsell-badge">PLATINUM FEATURE</div>
+                <div className="upsell-badge">PLATINUM EXCLUSIVE</div>
                 <div className="upsell-icon">
                     <Bot size={48} />
                 </div>
-                <h2>Il tuo Bot Personale</h2>
-                <p>Vuoi che il bot abbia la tua foto e il tuo nome ovunque? La funzione Private Bot ti permette di collegare il tuo account bot a Verix.</p>
-                <button onClick={() => router.push(`/config/${guildId}/premium`)} className="btn-premium-cta">
+                <h2>Il tuo Bot Personale (White-label)</h2>
+                <p>
+                    {isPremium 
+                        ? "Il tuo piano Premium include molte funzioni, ma il True White-label è un'esclusiva del piano Platinum."
+                        : "Vuoi che il bot abbia la tua foto e il tuo nome ovunque? Passa a Platinum per collegare la tua applicazione bot personalizzata."}
+                </p>
+                <div className="premium-features-mini">
+                    <span>✓ Foto & Nome Custom</span>
+                    <span>✓ Stato Bot Personalizzato</span>
+                    <span>✓ Nessun riferimento a Verix</span>
+                </div>
+                <button onClick={() => router.push(`/config/${guildId}/premium`)} className="btn-platinum-cta">
                     Passa a Platinum
                 </button>
             </div>
@@ -357,8 +367,13 @@ export default function PrivateBotPage() {
             input:checked + .slider:before { transform: translateX(24px); }
             .slider.round { border-radius: 34px; }
             .slider.round:before { border-radius: 50%; }
-            .premium-upsell { text-align: center; padding: 60px; margin-top: 40px; }
-            .btn-premium-cta { background: var(--primary); color: white; padding: 14px 28px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; margin-top: 24px; }
+            .premium-upsell { text-align: center; padding: 60px; margin-top: 40px; display: flex; flex-direction: column; align-items: center; }
+            .upsell-badge { background: linear-gradient(90deg, #6366f1, #a855f7); color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; margin-bottom: 24px; letter-spacing: 1px; }
+            .upsell-icon { color: var(--primary); margin-bottom: 24px; filter: drop-shadow(0 0 15px var(--primary-glow)); }
+            .premium-features-mini { display: flex; gap: 20px; margin: 24px 0; }
+            .premium-features-mini span { font-size: 0.85rem; color: var(--text-main); font-weight: 600; display: flex; align-items: center; gap: 6px; }
+            .btn-platinum-cta { background: linear-gradient(135deg, #6366f1, #a855f7); color: white; padding: 16px 32px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; margin-top: 24px; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3); transition: 0.3s; }
+            .btn-platinum-cta:hover { transform: translateY(-2px); box-shadow: 0 15px 30px rgba(99, 102, 241, 0.4); }
         `}</style>
     </div>
   );

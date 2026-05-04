@@ -29,6 +29,11 @@ const guildSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    premiumTier: {
+        type: String,
+        enum: ['none', 'premium', 'platinum'],
+        default: 'none'
+    },
 
     enabledModules: {
         type: [String],

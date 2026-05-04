@@ -10,16 +10,20 @@ const router = express.Router();
 router.get('/:guildId', async (req, res) => {
     try {
         const { guildId } = req.params;
-        const bot = await PrivateBot.findOne({ guildId });
         
+        // Check tier
+        const guild = await Guild.findOne({ guildId });
+        if (!guild || guild.premiumTier !== 'platinum') {
+            return res.status(403).json({ success: false, error: 'Questa funzione richiede un abbonamento Platinum.' });
+        }
+
+        const bot = await PrivateBot.findOne({ guildId });
         if (!bot) {
             return res.json({ success: true, data: { bot: null } });
         }
 
-        // Don't send the token back
         const botData = bot.toObject();
         delete botData.token;
-        
         res.json({ success: true, data: { bot: botData } });
     } catch (error) {
         res.status(500).json({ success: false, error: 'Failed to fetch private bot config' });
@@ -32,10 +36,10 @@ router.post('/:guildId', async (req, res) => {
         const { guildId } = req.params;
         const { token, enabled } = req.body;
 
-        // Check premium
+        // Check tier
         const guild = await Guild.findOne({ guildId });
-        if (!guild || !guild.isPremium) {
-            return res.status(403).json({ success: false, error: 'True White-label richiede un abbonamento Platinum.' });
+        if (!guild || guild.premiumTier !== 'platinum') {
+            return res.status(403).json({ success: false, error: 'Il True White-label richiede un abbonamento Platinum.' });
         }
 
         let bot = await PrivateBot.findOne({ guildId });
