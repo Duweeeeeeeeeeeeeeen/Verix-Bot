@@ -16,6 +16,7 @@ const embedSchema = new mongoose.Schema({
 
 const serverTrackerSchema = new mongoose.Schema({
     id: { type: String, default: uuidv4 }, // Front-end friendly UUID key
+    name: { type: String, default: 'Nuovo Server' },
     enabled: { type: Boolean, default: true },
     serverIp: { type: String, default: '' },
     statusChannelId: { type: String, default: null, match: discordIdRegex },

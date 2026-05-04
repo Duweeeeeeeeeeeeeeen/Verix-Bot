@@ -10,6 +10,7 @@ const buttonSchema = z.object({
 
 const serverTrackerSchema = z.object({
     id: z.string().optional(),
+    name: z.string().optional(),
     enabled: z.boolean().optional(),
     serverIp: z.string().optional(),
     statusChannelId: discordId.or(z.literal('')).optional().nullable(),
