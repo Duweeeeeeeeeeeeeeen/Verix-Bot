@@ -47,25 +47,26 @@ export class FiveMManager {
                     const currentStatus = isOnline ? 'ONLINE' : 'OFFLINE';
                     const lastStatus = this.statusCache.get(cacheKey);
 
-                    // Primo caricamento dopo avvio bot o dopo prima aggiunta server
+                    // First run or restart
                     if (lastStatus === undefined) {
                         this.statusCache.set(cacheKey, currentStatus);
-                        // Assicuriamo che esista quantomeno il primissimo messaggio live sulla liveboard se messageId è vuoto.
-                        if (!serverConfig.messageId) {
-                            if (isOnline) {
-                                serverConfig.uptimeStart = new Date(); // set uptime
-                            }
+                        
+                        if (isOnline) {
+                             if (!serverConfig.uptimeStart) {
+                                serverConfig.uptimeStart = new Date();
+                                configUpdatedInDb = true;
+                             }
+                        }
+
+                        const newMsgId = await this.sendLog(guild, serverConfig, currentStatus, isOnline, data, serverConfig.messageId);
+                        if (newMsgId && newMsgId !== serverConfig.messageId) {
+                            serverConfig.messageId = newMsgId;
                             configUpdatedInDb = true;
-                            const newMsgId = await this.sendLog(guild, serverConfig, currentStatus, isOnline, data, null);
-                            if (newMsgId) serverConfig.messageId = newMsgId;
-                        } else {
-                            // Aggiorna silente il messaggio vivo se è già vivo.
-                            await this.sendLog(guild, serverConfig, currentStatus, isOnline, data, serverConfig.messageId);
                         }
                         continue;
                     }
 
-                    // Se lo status muta
+                    // Status Change Logic (with debounce)
                     if (currentStatus !== lastStatus) {
                         const debounceData = this.debounceCache.get(cacheKey) || { status: currentStatus, count: 0 };
                         if (debounceData.status === currentStatus) {
@@ -78,33 +79,36 @@ export class FiveMManager {
 
                         if (debounceData.count >= 2) {
                             this.statusCache.set(cacheKey, currentStatus);
-                            this.debounceCache.delete(cacheKey); // Reset
+                            this.debounceCache.delete(cacheKey);
 
                             logger.info(`[FiveM] Server ${serverConfig.serverIp} formally changed to ${currentStatus} in guild: ${guild.name}.`);
                             
-                            // Gestione Uptime
                             if (currentStatus === 'ONLINE') {
                                 serverConfig.uptimeStart = new Date();
                             } else {
-                                serverConfig.uptimeStart = null; // Azzera l'uptime se offline
+                                serverConfig.uptimeStart = null;
                             }
                             configUpdatedInDb = true;
 
-                            // Send/Edit Log
                             const newMsgId = await this.sendLog(guild, serverConfig, currentStatus, isOnline, data, serverConfig.messageId);
                             if (newMsgId && newMsgId !== serverConfig.messageId) {
                                 serverConfig.messageId = newMsgId;
+                                configUpdatedInDb = true;
                             }
                         }
                     } else {
-                        // Lo stato è rimasto stabile: facciamo live Update di player count e variabili sull'embed vivo!
+                        // Status stable: live update (players, etc)
                         this.debounceCache.delete(cacheKey);
-                        await this.sendLog(guild, serverConfig, currentStatus, isOnline, data, serverConfig.messageId);
+                        const newMsgId = await this.sendLog(guild, serverConfig, currentStatus, isOnline, data, serverConfig.messageId);
+                        if (newMsgId && newMsgId !== serverConfig.messageId) {
+                            serverConfig.messageId = newMsgId;
+                            configUpdatedInDb = true;
+                        }
                     }
                 }
 
                 if (configUpdatedInDb) {
-                    await config.save().catch(e => logger.error('[FiveM] Error saving state array:', e));
+                    await config.save().catch(e => logger.error('[FiveM] Error saving state:', e));
                 }
             }
         } catch (error) {
