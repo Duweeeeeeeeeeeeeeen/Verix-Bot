@@ -200,7 +200,7 @@ export default function FiveMConfig() {
                                 <label className="text-label">Canale Live Status</label>
                                 <DiscordSelector 
                                     type="channel" 
-                                    options={channels.filter(c => c.type === 2)} 
+                                    options={channels.filter(c => c.type === 0 || c.type === 5)} 
                                     value={server.statusChannelId || ''} 
                                     onChange={val => updateServer(server.id, 'statusChannelId', val)} 
                                     placeholder="Seleziona il canale per il monitoraggio..."
