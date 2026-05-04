@@ -10,7 +10,8 @@ import Skeleton from '../../../components/Skeleton';
 import api from '../../../utils/api';
 
 export default function PrivateBotPage() {
-  const { t } = useT();
+  const { t, language } = useT();
+  const langPath = language === 'it' ? '' : '/en';
   const router = useRouter();
   const { guildId } = router.query;
   const [config, setConfig] = useState(null);
@@ -149,7 +150,7 @@ export default function PrivateBotPage() {
                                     <h5>Crea l'Applicazione</h5>
                                     <p>Vai sul <a href="https://discord.com/developers/applications" target="_blank" rel="noreferrer">Developer Portal</a> e clicca su <strong>"New Application"</strong>. Scegli l'opzione <strong>"Bot"</strong> come mostrato sotto.</p>
                                     <div className="step-img-container">
-                                        <img src="/img/guide/step1.png" alt="Schermata New Application" />
+                                        <img src={`/img/guide${langPath}/step1.png`} alt="Step 1" />
                                     </div>
                                 </div>
                             </div>
@@ -160,7 +161,7 @@ export default function PrivateBotPage() {
                                     <h5>Prendi il Token</h5>
                                     <p>Nel menu a sinistra seleziona <strong>"Bot"</strong>. Clicca su <strong>"Resetta token"</strong> per visualizzare e copiare la tua chiave segreta.</p>
                                     <div className="step-img-container">
-                                        <img src="/img/guide/step2.png" alt="Sezione Bot & Token" />
+                                        <img src={`/img/guide${langPath}/step2.png`} alt="Step 2" />
                                     </div>
                                 </div>
                             </div>
@@ -171,7 +172,7 @@ export default function PrivateBotPage() {
                                     <h5>Abilita i Permessi (Cruciale)</h5>
                                     <p>Sempre nella tab <strong>"Bot"</strong>, scendi fino a <strong>"Privileged Gateway Intents"</strong> e attiva tutti e tre gli interruttori come mostrato nella foto sotto. Senza questi, il bot non potrà leggere i messaggi o vedere i membri.</p>
                                     <div className="step-img-container">
-                                        <img src="/img/guide/step3.png" alt="Gateway Intents" />
+                                        <img src={`/img/guide${langPath}/step3.png`} alt="Step 3" />
                                     </div>
                                 </div>
                             </div>
