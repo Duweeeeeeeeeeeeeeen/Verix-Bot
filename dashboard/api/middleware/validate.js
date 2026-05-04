@@ -11,7 +11,7 @@ export const validate = (schema) => (req, res, next) => {
         const result = schema.safeParse(req.body);
         if (!result.success) {
             // 2. LOG FULL ZOD ERROR
-            console.error(`[VALIDATION_ERROR] ${req.method} ${req.url}:`, result.error?.errors || 'No error details');
+            console.error(`[VALIDATION_ERROR] ${req.method} ${req.url}:`, JSON.stringify(result.error?.format() || result.error, null, 2));
             
             const errorDetails = result.error?.errors?.map(err => ({
                 path: err.path.join('.'),

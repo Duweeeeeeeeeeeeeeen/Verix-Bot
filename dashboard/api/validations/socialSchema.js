@@ -13,10 +13,13 @@ const platformSchema = z.object({
         image: z.string().optional(),
         footer: z.string().optional()
     }).passthrough().optional(),
-    accounts: z.array(z.object({
-        username: z.string().min(1, 'Username is required'),
-        discordUserId: z.string().nullable().optional()
-    }).passthrough()).default([]),
+    accounts: z.array(z.union([
+        z.string().transform(v => ({ username: v })),
+        z.object({
+            username: z.string().min(1, 'Username is required'),
+            discordUserId: z.string().nullable().optional()
+        }).passthrough()
+    ])).default([]),
     webhookToken: z.string().nullable().optional()
 }).passthrough().optional();
 
