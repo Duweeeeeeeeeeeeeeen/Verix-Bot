@@ -205,9 +205,11 @@ export class FiveMManager {
 
             const placeholders = {
                 guild: guild.name,
-                server: data.server || serverConfig.serverIp,
+                server: data.server || serverConfig.name || serverConfig.serverIp,
+                serverName: data.server || serverConfig.name || serverConfig.serverIp,
                 players: String(data.players || 0),
-                maxPlayers: String(data.maxPlayers || 0)
+                maxPlayers: String(data.maxPlayers || 0),
+                lastCheck: `<t:${Math.floor(Date.now() / 1000)}:R>`
             };
 
             const payload = { embeds: [], components: [] };
@@ -265,12 +267,15 @@ export class FiveMManager {
                 }
             }
 
-            // Process Uptime Append string inside Content
-            if (isOnline && serverConfig.uptimeStart) {
-                 const unixSec = Math.floor(new Date(serverConfig.uptimeStart).getTime() / 1000);
-                 const uptimeString = `\n\n🟢 **Online da:** <t:${unixSec}:R>`;
-                 rawContent += uptimeString;
-            }
+            // Process Uptime - DISABLED per user request
+            // if (isOnline && serverConfig.uptimeStart) {
+            //      const unixSec = Math.floor(new Date(serverConfig.uptimeStart).getTime() / 1000);
+            //      const uptimeString = `\n\n🟢 **Online da:** <t:${unixSec}:R>`;
+            //      rawContent += uptimeString;
+            // }
+
+            // Add Control Counter to content if no embeds, or we can just append it to rawContent
+            rawContent += `\n\n🕒 **Ultimo Controllo:** ${placeholders.lastCheck}`;
 
             // Append Content
             payload.content = rawContent || null;
@@ -280,7 +285,12 @@ export class FiveMManager {
                  const row = new ActionRowBuilder();
                  for (const btn of serverConfig.buttons.slice(0, 5)) { // Discord limit
                     const btnLabel = replacePlaceholders(btn.label || 'Connettiti', placeholders);
-                    let btnUrl = replacePlaceholders(btn.url || `https://cfx.re/join/${serverConfig.serverIp}`, placeholders);
+                    let targetIp = serverConfig.serverIp;
+                    if (targetIp.includes('cfx.re/join/')) {
+                        targetIp = targetIp.split('join/').pop().split('/')[0];
+                    }
+
+                    let btnUrl = replacePlaceholders(btn.url || `https://cfx.re/join/${targetIp}`, placeholders);
                     
                     // Discord buttons only support http/https/discord protocols
                     if (btnUrl && !btnUrl.startsWith('http') && !btnUrl.startsWith('discord:')) {
@@ -305,9 +315,14 @@ export class FiveMManager {
                  if (row.components.length > 0) payload.components.push(row);
             } else if (isOnline) {
                  // Fallback default button
-                 let fallbackUrl = `https://cfx.re/join/${serverConfig.serverIp}`;
-                 if (serverConfig.serverIp.includes('cfx.re/join/')) {
-                     fallbackUrl = serverConfig.serverIp.startsWith('http') ? serverConfig.serverIp : `https://${serverConfig.serverIp}`;
+                 let targetIp = serverConfig.serverIp;
+                 if (targetIp.includes('cfx.re/join/')) {
+                     targetIp = targetIp.split('join/').pop().split('/')[0];
+                 }
+                 
+                 let fallbackUrl = `https://cfx.re/join/${targetIp}`;
+                 if (serverConfig.serverIp.startsWith('http')) {
+                     fallbackUrl = serverConfig.serverIp;
                  }
 
                  const row = new ActionRowBuilder()
