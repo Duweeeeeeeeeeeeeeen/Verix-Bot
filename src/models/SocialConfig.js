@@ -26,11 +26,11 @@ const socialPlatformSchema = new mongoose.Schema({
 const socialConfigSchema = new mongoose.Schema({
     guildId: { type: String, required: true, unique: true },
     platforms: {
-        twitch: { type: socialPlatformSchema, default: () => ({ embed: { color: '#6441a5', title: '📡 {streamer} è in Live!', description: '**{title}**\n\n[Connettiti alla frequenza]({url})' } }) },
-        youtube: { type: socialPlatformSchema, default: () => ({ embed: { color: '#ff0000', title: '🎥 Nuovo Video di {streamer}!', description: '**{title}**\n\n[Guarda il video]({url})' } }) },
-        instagram: { type: socialPlatformSchema, default: () => ({ embed: { color: '#e1306c', title: '📸 Nuovo Post di {streamer}', description: '**{title}**\n\n[Vedi su Instagram]({url})' } }) },
-        tiktok: { type: socialPlatformSchema, default: () => ({ embed: { color: '#000000', title: '🎵 Nuovo TikTok da {streamer}', description: '**{title}**\n\n[Guarda il TikTok]({url})' } }) },
-        twitter: { type: socialPlatformSchema, default: () => ({ embed: { color: '#1da1f2', title: '🐦 Nuovo Tweet da {streamer}', description: '{description}\n\n[Vai al Tweet]({url})' } }) }
+        twitch: { type: socialPlatformSchema, default: () => ({ embed: { color: '#6441a5', title: '📡 {streamer} è in diretta!', description: '### {title}\n\nEhi! **{streamer}** ha appena acceso la camera su Twitch. Non perderti lo show!\n\n[Entra in Live]({url})' } }) },
+        youtube: { type: socialPlatformSchema, default: () => ({ embed: { color: '#ff0000', title: '🎥 Nuovo video di {streamer}!', description: '### {title}\n\nÈ appena uscito un nuovo video sul canale! Corri a lasciare un like.\n\n[Guarda ora]({url})' } }) },
+        instagram: { type: socialPlatformSchema, default: () => ({ embed: { color: '#e1306c', title: '📸 Nuovo post di {streamer}', description: '### {title}\n\nNuovo contenuto caricato su Instagram! Passa a dare un\'occhiata.\n\n[Vedi il Post]({url})' } }) },
+        tiktok: { type: socialPlatformSchema, default: () => ({ embed: { color: '#000000', title: '🎵 Nuovo TikTok di {streamer}', description: '### {title}\n\nÈ appena stato pubblicato un nuovo video su TikTok! Guarda subito.\n\n[Guarda il TikTok]({url})' } }) },
+        twitter: { type: socialPlatformSchema, default: () => ({ embed: { color: '#1da1f2', title: '🐦 Nuovo Tweet di {streamer}', description: '{description}\n\n[Leggi il Tweet]({url})' } }) }
     }
 }, { timestamps: true });
 

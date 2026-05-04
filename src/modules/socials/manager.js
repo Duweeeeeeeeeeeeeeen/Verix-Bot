@@ -181,9 +181,9 @@ export class SocialManager {
                 : '';
 
             const embedData = {
-                title: formatText(customEmbed.title) || `📡 ${postData.author || account.username} è in Live!`,
-                description: formatText(customEmbed.description) || `**${postData.title}**\n\n[Connettiti ora](${postData.url})`,
-                color: customEmbed.color ? parseInt(customEmbed.color.replace('#', ''), 16) : 0x6366f1,
+                title: formatText(customEmbed.title) || (platform === 'Twitch' ? `📡 ${postData.author || account.username} è in diretta!` : `🎥 Nuovo video di ${postData.author || account.username}!`),
+                description: formatText(customEmbed.description) || (platform === 'Twitch' ? `### ${postData.title}\n\nEhi! **${postData.author || account.username}** ha appena acceso la camera su Twitch. Non perderti lo show!\n\n[Entra in Live](${postData.url})` : `### ${postData.title}\n\nÈ appena uscito un nuovo video sul canale! Corri a lasciare un like.\n\n[Guarda ora](${postData.url})`),
+                color: customEmbed.color ? parseInt(customEmbed.color.replace('#', ''), 16) : (platform === 'Twitch' ? 0x6441a5 : 0xff0000),
                 footer: { text: formatText(customEmbed.footer) || 'Social Notifications | Verix' }
             };
 
