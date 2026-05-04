@@ -88,7 +88,13 @@ export default function FiveMConfig() {
   };
 
   const addServer = () => {
-    const newServers = [...(config.servers || []), { id: Date.now().toString(), name: 'Nuovo Server', ip: '', port: '30120', enabled: true }];
+    const newServers = [...(config.servers || []), { 
+        id: Date.now().toString(), 
+        name: 'Nuovo Server', 
+        serverIp: '', 
+        statusChannelId: '',
+        enabled: true 
+    }];
     setConfig({ ...config, servers: newServers });
   };
 
@@ -184,18 +190,22 @@ export default function FiveMConfig() {
 
                     <div className="server-card-body">
                         <div className="fields-grid-v">
-                            <div className="field-box">
-                                <label className="text-label">Indirizzo IP / Domain</label>
+                            <div className="field-box" style={{ gridColumn: 'span 2' }}>
+                                <label className="text-label">Canale Live Status</label>
+                                <DiscordSelector 
+                                    type="channel" 
+                                    options={channels.filter(c => c.type === 0 || c.type === 5)} 
+                                    value={server.statusChannelId || ''} 
+                                    onChange={val => updateServer(server.id, 'statusChannelId', val)} 
+                                    placeholder="Seleziona il canale dove inviare il monitoraggio live..."
+                                />
+                                <p className="field-help">Il bot invierà un messaggio in questo canale e lo aggiornerà ogni minuto con i dati live.</p>
+                            </div>
+                            <div className="field-box" style={{ gridColumn: 'span 2' }}>
+                                <label className="text-label">Indirizzo IP / Domain (con porta se non 30120)</label>
                                 <div className="input-wrapper">
                                     <Globe size={16} className="input-icon" />
-                                    <input className="input-v" value={server.ip || ''} onChange={e => updateServer(server.id, 'ip', e.target.value)} placeholder="Es: cfx.re/join/xxxx" />
-                                </div>
-                            </div>
-                            <div className="field-box">
-                                <label className="text-label">Porta Query</label>
-                                <div className="input-wrapper">
-                                    <Cpu size={16} className="input-icon" />
-                                    <input className="input-v" value={server.port || ''} onChange={e => updateServer(server.id, 'port', e.target.value)} placeholder="30120" />
+                                    <input className="input-v" value={server.serverIp || ''} onChange={e => updateServer(server.id, 'serverIp', e.target.value)} placeholder="Es: 127.0.0.1:30120 o cfx.re/join/xxxx" />
                                 </div>
                             </div>
                         </div>
