@@ -222,17 +222,27 @@ export class FiveMManager {
                 if (serverConfig.onlineMessage && serverConfig.onlineMessage.trim().length > 0) {
                     rawContent = replacePlaceholders(serverConfig.onlineMessage, placeholders);
                 }
+                
                 if (isEffectiveEmbed(serverConfig.onlineEmbed)) {
                     const embed = buildEmbed(serverConfig.onlineEmbed, placeholders);
                     if (embed) payload.embeds.push(embed);
+                } else {
+                    // Fallback to default
+                    const defaultEmbed = await messageService.get(guild.id, 'fivem', 'status_embed', placeholders);
+                    if (defaultEmbed) payload.embeds.push(defaultEmbed);
                 }
             } else {
                 if (serverConfig.offlineMessage && serverConfig.offlineMessage.trim().length > 0) {
                     rawContent = replacePlaceholders(serverConfig.offlineMessage, placeholders);
                 }
+
                 if (isEffectiveEmbed(serverConfig.offlineEmbed)) {
                     const embed = buildEmbed(serverConfig.offlineEmbed, placeholders);
                     if (embed) payload.embeds.push(embed);
+                } else {
+                    // Fallback to default
+                    const defaultEmbed = await messageService.get(guild.id, 'fivem', 'offline_embed', placeholders);
+                    if (defaultEmbed) payload.embeds.push(defaultEmbed);
                 }
             }
 
