@@ -113,12 +113,23 @@ export class FiveMManager {
     }
 
     async fetchServerData(serverIp, isRetry = false) {
-        const baseUrl = serverIp.startsWith('http') ? serverIp : `http://${serverIp}`;
+        // Support for cfx.re join codes
+        if (serverIp.includes('cfx.re/join/')) {
+            const cfxId = serverIp.split('join/').pop().split('/')[0];
+            return this.fetchFromCfx(cfxId);
+        }
+
+        let baseUrl = serverIp.startsWith('http') ? serverIp : `http://${serverIp}`;
+        
+        // If it's a retry and no port was specified, try common FiveM port 30120
+        if (isRetry && !serverIp.includes(':') && !serverIp.startsWith('http')) {
+            baseUrl = `http://${serverIp}:30120`;
+        }
+
         try {
             const infoController = new AbortController();
             const playersController = new AbortController();
             
-            // Timeout explicitly reduced to 5000ms for responsiveness
             const infoTimeout = setTimeout(() => infoController.abort(), 5000);
             const playersTimeout = setTimeout(() => playersController.abort(), 5000);
             
@@ -131,6 +142,7 @@ export class FiveMManager {
             clearTimeout(playersTimeout);
 
             if (!infoRes || !infoRes.ok || !playersRes || !playersRes.ok) {
+                if (!isRetry) return this.fetchServerData(serverIp, true);
                 return { online: false, players: 0, maxPlayers: 0, server: '' };
             }
 
@@ -138,7 +150,7 @@ export class FiveMManager {
             const players = await playersRes.json();
 
             let rawHostname = info.vars?.sv_hostname || info.server || serverIp;
-            rawHostname = rawHostname.replace(/\^[0-9]/g, ''); // Fix default color tags
+            rawHostname = rawHostname.replace(/\^[0-9]/g, '');
 
             return {
                 online: true,
@@ -148,9 +160,33 @@ export class FiveMManager {
             };
         } catch (error) {
             if (!isRetry) {
-                logger.warn(`[FiveM] Error/Timeout fetching ${baseUrl}. Auto-retrying...`);
                 return this.fetchServerData(serverIp, true);
             }
+            logger.warn(`[FiveM] Failed to reach ${baseUrl}: ${error.message}`);
+            return { online: false, players: 0, maxPlayers: 0, server: '' };
+        }
+    }
+
+    async fetchFromCfx(cfxId) {
+        try {
+            const res = await fetch(`https://servers-frontend.fivem.net/api/servers/single/${cfxId}`, {
+                headers: { 'User-Agent': 'Verix-Bot/1.0' }
+            }).catch(() => null);
+
+            if (!res || !res.ok) return { online: false, players: 0, maxPlayers: 0, server: '' };
+
+            const data = await res.json();
+            const server = data.Data;
+            if (!server) return { online: false, players: 0, maxPlayers: 0, server: '' };
+
+            return {
+                online: true,
+                server: (server.vars?.sv_hostname || cfxId).replace(/\^[0-9]/g, ''),
+                players: server.clients || 0,
+                maxPlayers: server.sv_maxclients || 0
+            };
+        } catch (error) {
+            logger.warn(`[FiveM] Cfx API Error for ${cfxId}: ${error.message}`);
             return { online: false, players: 0, maxPlayers: 0, server: '' };
         }
     }
@@ -173,11 +209,16 @@ export class FiveMManager {
             const payload = { embeds: [], components: [] };
             let rawContent = "";
 
+            const isEffectiveEmbed = (e) => e && e.enabled && (
+                (e.title && e.title.trim() !== '' && e.title !== 'Senza Titolo') || 
+                (e.description && e.description.trim() !== '' && e.description !== 'Nessun contenuto impostato.')
+            );
+
             if (isOnline) {
                 if (serverConfig.onlineMessage && serverConfig.onlineMessage.trim().length > 0) {
                     rawContent = replacePlaceholders(serverConfig.onlineMessage, placeholders);
                 }
-                if (serverConfig.onlineEmbed && serverConfig.onlineEmbed.enabled) {
+                if (isEffectiveEmbed(serverConfig.onlineEmbed)) {
                     const embed = buildEmbed(serverConfig.onlineEmbed, placeholders);
                     if (embed) payload.embeds.push(embed);
                 }
@@ -185,7 +226,7 @@ export class FiveMManager {
                 if (serverConfig.offlineMessage && serverConfig.offlineMessage.trim().length > 0) {
                     rawContent = replacePlaceholders(serverConfig.offlineMessage, placeholders);
                 }
-                if (serverConfig.offlineEmbed && serverConfig.offlineEmbed.enabled) {
+                if (isEffectiveEmbed(serverConfig.offlineEmbed)) {
                     const embed = buildEmbed(serverConfig.offlineEmbed, placeholders);
                     if (embed) payload.embeds.push(embed);
                 }
