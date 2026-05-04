@@ -96,6 +96,9 @@ export class SocialManager {
                         streamer.isLive = true;
                         streamer.lastPostId = stream.id;
                         changed = true;
+                    } else if (platformConfig.liveRoleId && streamer.discordUserId) {
+                        // ALREADY LIVE but maybe newly linked or bot restart
+                        await this.ensureSocialRole(guildId, platformConfig.liveRoleId, streamer.discordUserId);
                     }
                 } else {
                     // Streamer is OFFLINE
@@ -219,15 +222,26 @@ export class SocialManager {
 
             // 2. Add Role (if Twitch and user is linked)
             if (platformConfig.liveRoleId && account.discordUserId) {
-                const member = await guild.members.fetch(account.discordUserId).catch(() => null);
-                if (member) {
-                    await member.roles.add(platformConfig.liveRoleId).catch(err => {
-                        logger.error(`[Socials] Failed to add role to ${member.id}:`, err.message);
-                    });
-                }
+                await this.ensureSocialRole(guildId, platformConfig.liveRoleId, account.discordUserId);
             }
         } catch (error) {
             logger.error('[Socials] Error handling social post:', error);
+        }
+    }
+
+    async ensureSocialRole(guildId, roleId, userId) {
+        try {
+            const guild = await this.client.guilds.fetch(guildId).catch(() => null);
+            if (!guild) return;
+
+            const member = await guild.members.fetch(userId).catch(() => null);
+            if (member && !member.roles.cache.has(roleId)) {
+                await member.roles.add(roleId).catch(err => {
+                    logger.error(`[Socials] Failed to add role to ${member.id}:`, err.message);
+                });
+            }
+        } catch (error) {
+            logger.error('[Socials] Error ensuring social role:', error);
         }
     }
 
@@ -238,7 +252,7 @@ export class SocialManager {
 
             if (platformConfig.liveRoleId && account.discordUserId) {
                 const member = await guild.members.fetch(account.discordUserId).catch(() => null);
-                if (member) {
+                if (member && member.roles.cache.has(platformConfig.liveRoleId)) {
                     await member.roles.remove(platformConfig.liveRoleId).catch(err => {
                         logger.error(`[Socials] Failed to remove role from ${member.id}:`, err.message);
                     });
