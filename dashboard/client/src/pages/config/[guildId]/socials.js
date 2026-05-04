@@ -257,10 +257,12 @@ export default function SocialsConfig() {
                                             <label className="text-label">Ruolo da Menzionare (Notifica)</label>
                                             <DiscordSelector type="role" options={discordData.roles} value={currentPlatformConfig.roleId || ''} onChange={val => updatePlatform('roleId', val)} />
                                         </div>
-                                        <div className="field-box">
-                                            <label className="text-label">Ruolo Status "Live" (da assegnare)</label>
-                                            <DiscordSelector type="role" options={discordData.roles} value={currentPlatformConfig.liveRoleId || ''} onChange={val => updatePlatform('liveRoleId', val)} />
-                                        </div>
+                                        {activePlatform === 'twitch' && (
+                                            <div className="field-box">
+                                                <label className="text-label">Ruolo Status "Live" (da assegnare)</label>
+                                                <DiscordSelector type="role" options={discordData.roles} value={currentPlatformConfig.liveRoleId || ''} onChange={val => updatePlatform('liveRoleId', val)} />
+                                            </div>
+                                        )}
                                         <div className="status-row-s">
                                             <span>Menziona @everyone</span>
                                             <label className="toggle-s">
