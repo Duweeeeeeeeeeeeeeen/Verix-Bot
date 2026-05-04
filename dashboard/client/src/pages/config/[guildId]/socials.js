@@ -213,7 +213,7 @@ export default function SocialsConfig() {
                                     <div className="align-center"><LinkIcon size={18} color="var(--primary)" /> <h3>Account da Monitorare</h3></div>
                                     <div className="accounts-list-s">
                                         {currentPlatformConfig.accounts.map((acc, i) => (
-                                            <div key={i} className="account-row-premium animate fade-in">
+                                            <div key={i} className="account-row-premium animate fade-in" style={{ zIndex: 100 - i }}>
                                                 <div className="acc-main-inputs">
                                                     <div className="field-box flex-2">
                                                         <label className="text-label-small">Twitch/YouTube Link o Username</label>
@@ -316,7 +316,7 @@ export default function SocialsConfig() {
             .settings-grid-s { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
             
             .accounts-list-s { display: flex; flex-direction: column; gap: 16px; margin-top: 16px; }
-            .account-row-premium { display: flex; align-items: flex-end; gap: 12px; background: var(--bg-card); border: 1px solid var(--border); padding: 16px; border-radius: 16px; transition: 0.3s; }
+            .account-row-premium { position: relative; display: flex; align-items: flex-end; gap: 12px; background: var(--bg-card); border: 1px solid var(--border); padding: 16px; border-radius: 16px; transition: 0.3s; }
             .account-row-premium:hover { border-color: var(--primary); background: var(--bg-badge); }
             .acc-main-inputs { flex: 1; display: flex; gap: 12px; }
             .flex-1 { flex: 1; }
