@@ -274,15 +274,6 @@ export default function FiveMConfig() {
                     />
                 </div>
 
-                <div className="card glass-dark" style={{ padding: '20px', marginTop: '24px' }}>
-                    <div className="align-center" style={{ gap: '10px', marginBottom: '12px' }}>
-                         <Info size={18} className="text-primary" />
-                         <h4 style={{ margin: 0, fontSize: '0.9rem' }}>Guida Rapida</h4>
-                    </div>
-                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: '1.5' }}>
-                        Il modulo FiveM monitora i tuoi server ogni minuto. Il messaggio nel "Canale Live Status" verrà modificato automaticamente per mostrare i player online.
-                    </p>
-                </div>
             </div>
         </div>
       </div>

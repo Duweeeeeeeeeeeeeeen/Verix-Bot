@@ -42,6 +42,11 @@ const GUIDE_CONTENT = {
           title: "guide.fivem.multi.title",
           match: context.servers?.length > 1,
           text: "guide.fivem.multi.text"
+      },
+      {
+          title: "guide.fivem.monitor.title",
+          match: true,
+          text: "guide.fivem.monitor.text"
       }
   ],
   photocontest: (context) => [

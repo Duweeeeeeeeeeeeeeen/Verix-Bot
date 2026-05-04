@@ -235,6 +235,8 @@
 
   "guide.fivem.multi.title": "Multi-Server",
   "guide.fivem.multi.text": "Managing multiple servers? Great! Just remember not to use the same channel for everyone's logs, or it will become a mess.",
+  "guide.fivem.monitor.title": "Live Monitoring",
+  "guide.fivem.monitor.text": "The FiveM module monitors your servers every minute. The message in the \"Live Status Channel\" will be automatically updated to show online players.",
 
   "guide.photocontest.interval.title": "Contest Interval",
   "guide.photocontest.interval.text": "Uh, contest every {interval} hours? You'll stress them out! Maybe extend the time a bit to build anticipation.",
