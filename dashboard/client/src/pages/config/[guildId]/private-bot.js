@@ -140,14 +140,48 @@ export default function PrivateBotPage() {
                             <p className="hint">Puoi ottenere il token dal <a href="https://discord.com/developers/applications" target="_blank" rel="noreferrer">Discord Developer Portal <ExternalLink size={12} /></a></p>
                         </div>
 
-                        <div className="setup-guide">
-                            <h4>Come configurare il tuo bot:</h4>
-                            <ol>
-                                <li>Crea una nuova Application su Discord Developers.</li>
-                                <li>Vai nella sezione <strong>Bot</strong> e resetta/copia il Token.</li>
-                                <li><strong>Importante:</strong> Abilita "Presence Intent", "Server Members Intent" e "Message Content Intent".</li>
-                                <li>Incolla il token qui sopra e salva.</li>
-                            </ol>
+                        <div className="setup-stepper">
+                            <h4>Guida alla Configurazione Rapida</h4>
+                            
+                            <div className="step-item">
+                                <div className="step-number">1</div>
+                                <div className="step-content">
+                                    <h5>Crea l'Applicazione</h5>
+                                    <p>Vai sul <a href="https://discord.com/developers/applications" target="_blank" rel="noreferrer">Developer Portal</a> e clicca su <strong>"New Application"</strong> in alto a destra. Dai un nome al tuo bot (es: Nome Server Bot).</p>
+                                    <div className="step-img-placeholder">[Immagine: Schermata New Application]</div>
+                                </div>
+                            </div>
+
+                            <div className="step-item">
+                                <div className="step-number">2</div>
+                                <div className="step-content">
+                                    <h5>Prendi il Token</h5>
+                                    <p>Nel menu a sinistra seleziona <strong>"Bot"</strong>. Clicca su <strong>"Reset Token"</strong> (o Copy) per ottenere la chiave segreta. Incollala nel campo qui sopra.</p>
+                                    <div className="step-img-placeholder">[Immagine: Sezione Bot & Token]</div>
+                                </div>
+                            </div>
+
+                            <div className="step-item warning">
+                                <div className="step-number">3</div>
+                                <div className="step-content">
+                                    <h5>Abilita i Permessi (Cruciale)</h5>
+                                    <p>Sempre nella tab <strong>"Bot"</strong>, scendi fino a <strong>"Privileged Gateway Intents"</strong> e attiva tutti e tre gli interruttori:</p>
+                                    <ul className="intent-list">
+                                        <li>Presence Intent</li>
+                                        <li>Server Members Intent</li>
+                                        <li>Message Content Intent</li>
+                                    </ul>
+                                    <div className="step-img-placeholder">[Immagine: Gateway Intents]</div>
+                                </div>
+                            </div>
+
+                            <div className="step-item">
+                                <div className="step-number">4</div>
+                                <div className="step-content">
+                                    <h5>Salva e Avvia</h5>
+                                    <p>Torna qui, incolla il token e clicca su <strong>"Salva Configurazione"</strong>. Poi usa l'interruttore "Stato Istanza" per accenderlo!</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -220,9 +254,24 @@ export default function PrivateBotPage() {
             .input-group input { width: 100%; padding: 12px 16px; background: var(--bg-badge); border: 1px solid var(--border); border-radius: 12px; color: var(--text-main); outline: none; transition: 0.2s; }
             .input-group input:focus { border-color: var(--primary); }
             
-            .setup-guide h4 { font-size: 1rem; margin-bottom: 12px; color: var(--text-main); }
-            .setup-guide ol { padding-left: 20px; color: var(--text-muted); font-size: 0.9rem; }
-            .setup-guide li { margin-bottom: 8px; }
+            .setup-stepper { margin-top: 32px; border-top: 1px solid var(--border); padding-top: 24px; }
+            .setup-stepper h4 { font-size: 1.1rem; margin-bottom: 24px; color: var(--text-main); font-weight: 700; }
+            
+            .step-item { display: flex; gap: 16px; margin-bottom: 32px; position: relative; }
+            .step-item:not(:last-child):after { content: ''; position: absolute; left: 16px; top: 32px; bottom: -32px; width: 2px; background: var(--border); opacity: 0.5; }
+            
+            .step-number { width: 32px; height: 32px; background: var(--bg-badge); border: 2px solid var(--border); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.8rem; flex-shrink: 0; z-index: 2; }
+            .step-item.warning .step-number { border-color: #ff9800; color: #ff9800; background: rgba(255, 152, 0, 0.1); }
+            
+            .step-content h5 { font-size: 1rem; margin-bottom: 6px; color: var(--text-main); }
+            .step-content p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 12px; }
+            .step-content strong { color: var(--text-main); }
+            
+            .intent-list { list-style: none; padding: 0; margin-bottom: 16px; }
+            .intent-list li { font-size: 0.85rem; color: var(--text-main); display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+            .intent-list li:before { content: '✓'; color: #4caf50; font-weight: 900; }
+
+            .step-img-placeholder { width: 100%; height: 180px; background: var(--bg-badge); border: 2px dashed var(--border); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 0.8rem; font-weight: 600; margin-top: 12px; }
 
             .bot-profile { display: flex; align-items: center; gap: 16px; margin-bottom: 32px; background: var(--bg-badge); padding: 16px; border-radius: 16px; }
             .bot-profile img { width: 64px; height: 64px; border-radius: 50%; border: 2px solid var(--primary); }
