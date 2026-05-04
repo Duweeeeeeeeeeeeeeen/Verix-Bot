@@ -138,6 +138,27 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
     return 'global';
   };
 
+  const [premiumTier, setPremiumTier] = useState('none');
+
+  useEffect(() => {
+    if (guildId) {
+      const fetchTier = async () => {
+        try {
+          const res = await fetch(`/api/config/${guildId}/guild`);
+          const data = await res.json();
+          if (data && data.premiumTier) {
+            setPremiumTier(data.premiumTier);
+          } else if (data && data.isPremium) {
+            setPremiumTier('premium');
+          }
+        } catch (err) {
+          console.error("Failed to fetch tier", err);
+        }
+      };
+      fetchTier();
+    }
+  }, [guildId]);
+
   const navigationGroups = [
     {
       items: [
@@ -149,8 +170,7 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
       title: 'Setup',
       items: [
         { name: t('sidebar.verify'), icon: CheckCircle, path: `/config/${guildId}/verify`, id: 'verify' },
-        { name: t('sidebar.welcome'), icon: UserPlus, path: `/config/${guildId}/welcome`, id: 'welcome' },
-        { name: t('sidebar.whitelist'), icon: ShieldCheck, path: `/config/${guildId}/whitelist`, id: 'whitelist' }
+        { name: t('sidebar.welcome'), icon: UserPlus, path: `/config/${guildId}/welcome`, id: 'welcome' }
       ]
     },
     {
@@ -186,7 +206,8 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
     {
       title: 'FiveM',
       items: [
-        { name: t('sidebar.fivem'), icon: Globe, path: `/config/${guildId}/fivem`, id: 'fivem' }
+        { name: t('sidebar.fivem'), icon: Globe, path: `/config/${guildId}/fivem`, id: 'fivem' },
+        { name: t('sidebar.whitelist'), icon: ShieldCheck, path: `/config/${guildId}/whitelist`, id: 'whitelist' }
       ]
     },
     {
@@ -203,7 +224,10 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
     items: [
       { name: t('sidebar.system'), icon: Settings, path: `/config/${guildId}/system`, id: 'system' },
       { name: t('sidebar.white_label'), icon: Sparkles, path: `/config/${guildId}/white-label`, id: 'white_label' },
-      { name: t('sidebar.private_bot'), icon: Bot, path: `/config/${guildId}/private-bot`, id: 'private_bot' },
+      // Only show Private Bot if Platinum
+      ...(premiumTier === 'platinum' ? [
+        { name: t('sidebar.private_bot'), icon: Bot, path: `/config/${guildId}/private-bot`, id: 'private_bot' }
+      ] : []),
       { name: 'System Ops', icon: Terminal, path: '/admin/system', id: 'system_ops', adminOnly: true }
     ]
   };
