@@ -36,6 +36,7 @@ import { invalidateGlobalCache } from '../../../src/core/globalConfigManager.js'
 import { buildButtonRows } from '../../../src/utils/uiBuilder.js';
 import messageService from '../../../src/utils/messageService.js';
 import placeholderHelper from '../../../src/utils/placeholderHelper.js';
+import * as whiteLabelHelper from '../../../src/utils/whiteLabelHelper.js';
 
 // Centralized Utilities
 import { validate } from '../middleware/validate.js';
@@ -1455,6 +1456,17 @@ router.patch('/:guildId/guild', adminCheck, async (req, res) => {
         guild.hideBranding = hideBranding !== undefined ? hideBranding : guild.hideBranding;
 
         await guild.save();
+
+        // Trigger immediate synchronization
+        try {
+            const discordGuild = req.discordClient.guilds.cache.get(guildId);
+            if (discordGuild) {
+                await whiteLabelHelper.syncGuildIdentity(discordGuild);
+            }
+            await whiteLabelHelper.syncGlobalStatus(req.discordClient);
+        } catch (syncError) {
+            console.error('[WhiteLabel] Failed immediate sync:', syncError);
+        }
 
         await logAudit(req, 'UPDATE_WHITE_LABEL', {
             old: oldSettings,
