@@ -33,7 +33,12 @@ const guildSchema = new mongoose.Schema({
     enabledModules: {
         type: [String],
         default: ['whitelist', 'tickets', 'voice', 'verify', 'logs', 'background', 'support']
-    }
+    },
+    
+    // White-label Premium features
+    customBotName: { type: String, default: null },
+    customStatus: { type: String, default: null },
+    hideBranding: { type: Boolean, default: false }
 });
 
 export default mongoose.model('Guild', guildSchema);

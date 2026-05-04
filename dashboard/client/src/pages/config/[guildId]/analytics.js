@@ -127,6 +127,33 @@ export default function AnalyticsPage() {
                     </div>
                 </div>
 
+                <div className="charts-grid" style={{ marginBottom: '24px' }}>
+                    <div className="chart-box card" style={{ gridColumn: 'span 2' }}>
+                        <div className="chart-header">
+                            <h3>Heatmap Attività (24h)</h3>
+                            <Clock size={16} />
+                        </div>
+                        <div className="heatmap-container">
+                            {analytics?.heatmap ? (
+                                <div className="heatmap-grid">
+                                    {analytics.heatmap.map((val, hour) => (
+                                        <div 
+                                            key={hour} 
+                                            className="heatmap-cell" 
+                                            style={{ opacity: Math.max(0.1, (val / Math.max(...analytics.heatmap, 1))) }}
+                                            title={`${hour}:00 - ${val} azioni`}
+                                        >
+                                            <span className="hour-label">{hour}h</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="no-data-msg">Dati heatmap non disponibili.</div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
                 <div className="charts-grid">
                     <div className="chart-box card">
                         <div className="chart-header">
@@ -145,12 +172,6 @@ export default function AnalyticsPage() {
                                             strokeLinecap="round"
                                             style={{ filter: 'drop-shadow(0 0 8px var(--primary))' }}
                                         />
-                                        <defs>
-                                            <linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                                                <stop offset="0%" stopColor="var(--primary)" />
-                                                <stop offset="100%" stopColor="transparent" />
-                                            </linearGradient>
-                                        </defs>
                                     </svg>
                                 </div>
                             ) : (
@@ -252,14 +273,40 @@ export default function AnalyticsPage() {
             .chart-box { padding: 24px; }
             .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
             .chart-header h3 { font-size: 1.1rem; font-weight: 800; color: var(--text-main); }
-            .chart-placeholder { height: 300px; background: var(--bg-badge); border-radius: 16px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; padding: 20px; }
+            .chart-placeholder { height: 180px; display: flex; align-items: center; justify-content: center; position: relative; }
             
             .mock-chart-container { width: 100%; height: 100%; display: flex; align-items: flex-end; }
             .mock-bars { display: flex; align-items: flex-end; gap: 12px; height: 100%; width: 100%; justify-content: center; }
             .bar { width: 30px; background: var(--primary); border-radius: 8px 8px 0 0; opacity: 0.6; transition: 0.3s; }
             .bar:hover { opacity: 1; transform: scaleY(1.05); }
 
-            .staff-stats-list { display: flex; flex-direction: column; gap: 16px; margin-top: 12px; }
+            .heatmap-grid { 
+                display: grid; 
+                grid-template-columns: repeat(24, 1fr); 
+                gap: 4px; 
+                height: 60px; 
+                margin-top: 20px;
+            }
+            .heatmap-cell { 
+                background: var(--primary); 
+                border-radius: 4px; 
+                height: 100%; 
+                display: flex; 
+                align-items: flex-end; 
+                justify-content: center;
+                position: relative;
+                cursor: help;
+            }
+            .hour-label { 
+                font-size: 0.6rem; 
+                color: var(--text-muted); 
+                position: absolute; 
+                bottom: -20px; 
+                white-space: nowrap;
+                transform: rotate(-45deg);
+            }
+
+            .staff-stats-list { display: flex; flex-direction: column; gap: 16px; margin-top: 10px; }
             .staff-row { display: flex; align-items: center; gap: 12px; }
             .staff-id { font-size: 0.75rem; color: var(--text-muted); width: 80px; font-family: monospace; }
             .staff-bar-bg { flex: 1; height: 8px; background: var(--bg-badge); border-radius: 4px; overflow: hidden; }

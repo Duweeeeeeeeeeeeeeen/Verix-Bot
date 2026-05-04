@@ -1414,8 +1414,13 @@ router.post('/:guildId/reset/:module', adminCheck, async (req, res) => {
 // GET audit logs
 router.get('/:guildId/audit-logs', adminCheck, async (req, res) => {
     try {
+        const guild = await Guild.findOne({ guildId: req.params.guildId });
+        if (!guild || !guild.isPremium) {
+            return res.status(403).json({ success: false, error: 'Audit Logs richiedono un abbonamento Premium attivo.' });
+        }
+
         const logs = await DashboardAuditLog.find({ guildId: req.params.guildId })
-            .select('userId username action timestamp changes') // explicit projection
+            .select('userId username action timestamp changes')
             .sort({ timestamp: -1 })
             .limit(100);
         res.json({ success: true, data: logs });

@@ -45,6 +45,18 @@ router.get('/:guildId', adminCheck, async (req, res) => {
             Infraction.countDocuments({ guildId, type: 'MUTE', active: true })
         ]);
 
+        // 5. Activity Heatmap (Last 30 days)
+        const [ticketTimeline, infractionTimeline] = await Promise.all([
+            Ticket.find({ guildId, createdAt: { $gte: thirtyDaysAgo } }).select('createdAt'),
+            Infraction.find({ guildId, createdAt: { $gte: thirtyDaysAgo } }).select('createdAt')
+        ]);
+
+        const heatmap = new Array(24).fill(0);
+        [...ticketTimeline, ...infractionTimeline].forEach(item => {
+            const hour = new Date(item.createdAt).getHours();
+            heatmap[hour]++;
+        });
+
         res.json({
             success: true,
             data: {
@@ -62,7 +74,8 @@ router.get('/:guildId', adminCheck, async (req, res) => {
                 moderation: {
                     total: totalInfractions,
                     activeMutes
-                }
+                },
+                heatmap
             }
         });
 

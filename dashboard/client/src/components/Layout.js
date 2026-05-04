@@ -190,7 +190,8 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
     {
       title: 'Log',
       items: [
-        { name: t('sidebar.management'), icon: History, path: `/config/${guildId}/management`, id: 'management' }
+        { name: t('sidebar.management'), icon: History, path: `/config/${guildId}/management`, id: 'management' },
+        { name: 'Audit Log', icon: Shield, path: `/config/${guildId}/audit`, id: 'audit' }
       ]
     }
   ];

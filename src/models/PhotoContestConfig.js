@@ -98,6 +98,15 @@ const photoContestConfigSchema = new mongoose.Schema({
     downvoteEmoji: {
         type: String,
         default: '👎'
+    },
+    // Premium features
+    multiWinner: {
+        type: Boolean,
+        default: false
+    },
+    winnersCount: {
+        type: Number,
+        default: 1
     }
 });
 
