@@ -1441,18 +1441,18 @@ router.patch('/:guildId/guild', adminCheck, async (req, res) => {
             return res.status(403).json({ success: false, error: 'Queste funzioni richiedono un abbonamento Premium attivo.' });
         }
 
-        const { customBotName, customStatus, customStatusType, hideBranding } = req.body;
+        const { customBotName, customStatuses, statusRotationInterval, hideBranding } = req.body;
 
         const oldSettings = {
             customBotName: guild.customBotName,
-            customStatus: guild.customStatus,
-            customStatusType: guild.customStatusType,
+            customStatuses: guild.customStatuses,
+            statusRotationInterval: guild.statusRotationInterval,
             hideBranding: guild.hideBranding
         };
 
         guild.customBotName = customBotName !== undefined ? customBotName : guild.customBotName;
-        guild.customStatus = customStatus !== undefined ? customStatus : guild.customStatus;
-        guild.customStatusType = customStatusType !== undefined ? customStatusType : guild.customStatusType;
+        guild.customStatuses = customStatuses !== undefined ? customStatuses : guild.customStatuses;
+        guild.statusRotationInterval = statusRotationInterval !== undefined ? statusRotationInterval : guild.statusRotationInterval;
         guild.hideBranding = hideBranding !== undefined ? hideBranding : guild.hideBranding;
 
         await guild.save();
@@ -1463,6 +1463,7 @@ router.patch('/:guildId/guild', adminCheck, async (req, res) => {
             if (discordGuild) {
                 await whiteLabelHelper.syncGuildIdentity(discordGuild);
             }
+            // Reset index on update to show the first new status immediately
             await whiteLabelHelper.syncGlobalStatus(req.discordClient);
         } catch (syncError) {
             console.error('[WhiteLabel] Failed immediate sync:', syncError);
@@ -1470,7 +1471,7 @@ router.patch('/:guildId/guild', adminCheck, async (req, res) => {
 
         await logAudit(req, 'UPDATE_WHITE_LABEL', {
             old: oldSettings,
-            new: { customBotName, customStatus, customStatusType, hideBranding }
+            new: { customBotName, customStatuses, statusRotationInterval, hideBranding }
         });
 
         res.json({ success: true, message: 'Impostazioni aggiornate con successo' });

@@ -3,6 +3,9 @@ import FiveMConfig from '../models/FiveMConfig.js';
 import logger from './logger.js';
 import { ActivityType } from 'discord.js';
 
+let currentStatusIndex = 0;
+let lastSyncTime = 0;
+
 /**
  * Utility to handle White-label features (Identity sync, Branding removal logic).
  */
@@ -37,48 +40,66 @@ export const syncGuildIdentity = async (guild) => {
 
 /**
  * Syncs the global bot status based on premium guild configurations.
- * Picks the most recently updated custom status.
+ * Picks the most recently updated config and rotates through its statuses.
  */
 export const syncGlobalStatus = async (client) => {
     try {
-        const premiumConfigs = await Guild.find({ 
+        // Find the latest premium config with at least one status
+        const premiumConfig = await Guild.findOne({ 
             isPremium: true, 
-            customStatus: { $ne: null, $exists: true } 
-        }).sort({ updatedAt: -1 }).limit(1);
+            'customStatuses.0': { $exists: true } 
+        }).sort({ updatedAt: -1 });
 
-        if (premiumConfigs.length > 0) {
-            const config = premiumConfigs[0];
-            let status = config.customStatus;
-            const type = config.customStatusType !== undefined ? config.customStatusType : ActivityType.Playing;
-            
-            // Handle Placeholders (e.g. FiveM players)
-            if (status.includes('{players}') || status.includes('{max_players}')) {
-                const fivemConfig = await FiveMConfig.findOne({ guildId: config.guildId });
-                if (fivemConfig && fivemConfig.servers && fivemConfig.servers[0] && client.fivemManager) {
-                    const server = fivemConfig.servers[0];
-                    const data = await client.fivemManager.fetchServerData(server.serverIp);
-                    if (data && data.online) {
-                        status = status.replace('{players}', data.players).replace('{max_players}', data.maxPlayers);
-                    } else {
-                        status = status.replace('{players}', '0').replace('{max_players}', '0');
-                    }
+        if (!premiumConfig) return;
+
+        const now = Date.now();
+        const rotationIntervalMs = (premiumConfig.statusRotationInterval || 60) * 1000;
+
+        // Only rotate if enough time has passed (or if forced on startup/update)
+        if (now - lastSyncTime < rotationIntervalMs && lastSyncTime !== 0) {
+            return;
+        }
+
+        const statuses = premiumConfig.customStatuses;
+        if (currentStatusIndex >= statuses.length) currentStatusIndex = 0;
+        
+        const config = statuses[currentStatusIndex];
+        let statusText = config.text;
+        const type = config.type !== undefined ? config.type : ActivityType.Playing;
+
+        // Handle Placeholders
+        if (statusText.includes('{players}') || statusText.includes('{max_players}')) {
+            const fivemConfig = await FiveMConfig.findOne({ guildId: premiumConfig.guildId });
+            if (fivemConfig && fivemConfig.servers && fivemConfig.servers[0] && client.fivemManager) {
+                const server = fivemConfig.servers[0];
+                const data = await client.fivemManager.fetchServerData(server.serverIp);
+                if (data && data.online) {
+                    statusText = statusText.replace('{players}', data.players).replace('{max_players}', data.maxPlayers);
+                } else {
+                    statusText = statusText.replace('{players}', '0').replace('{max_players}', '0');
                 }
             }
-
-            if (type === ActivityType.Custom) {
-                client.user.setPresence({
-                    activities: [{
-                        name: 'Custom Status',
-                        state: status,
-                        type: ActivityType.Custom
-                    }]
-                });
-            } else {
-                client.user.setActivity(status, { type });
-            }
-            
-            logger.info(`[WhiteLabel] Global status updated to: "${status}" (Type: ${type})`);
         }
+
+        // Apply Status
+        if (type === ActivityType.Custom) {
+            client.user.setPresence({
+                activities: [{
+                    name: 'Custom Status',
+                    state: statusText,
+                    type: ActivityType.Custom
+                }]
+            });
+        } else {
+            client.user.setActivity(statusText, { type });
+        }
+
+        logger.info(`[WhiteLabel] Global status rotated to: "${statusText}" (${currentStatusIndex + 1}/${statuses.length})`);
+        
+        // Prepare next index
+        currentStatusIndex = (currentStatusIndex + 1) % statuses.length;
+        lastSyncTime = now;
+
     } catch (error) {
         logger.error('[WhiteLabel] Error syncing global status:', error);
     }

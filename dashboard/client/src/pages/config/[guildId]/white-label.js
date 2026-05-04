@@ -4,7 +4,7 @@ import { useT } from '../../../contexts/LanguageContext';
 import { 
     Bot, Shield, Info, Save, 
     Crown, EyeOff, MessageSquare, 
-    Zap, Sparkles, Check
+    Zap, Sparkles, Check, Plus, Trash2, Clock
 } from 'lucide-react';
 import Skeleton from '../../../components/Skeleton';
 import api from '../../../utils/api';
@@ -17,12 +17,19 @@ export default function WhiteLabelPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
+  // Status management
+  const [statuses, setStatuses] = useState([]);
+  const [rotationInterval, setRotationInterval] = useState(60);
+
   const fetchData = async () => {
     if (!guildId || guildId === 'undefined') return;
     setLoading(true);
     try {
         const res = await api.request(`/config/${guildId}/guild`);
-        setConfig(res.data || res);
+        const data = res.data || res;
+        setConfig(data);
+        setStatuses(data.customStatuses || []);
+        setRotationInterval(data.statusRotationInterval || 60);
     } catch (err) {
         console.error('Failed to fetch config:', err);
     } finally {
@@ -34,6 +41,20 @@ export default function WhiteLabelPage() {
     fetchData();
   }, [guildId]);
 
+  const addStatus = () => {
+    setStatuses([...statuses, { text: '', type: 0 }]);
+  };
+
+  const removeStatus = (index) => {
+    setStatuses(statuses.filter((_, i) => i !== index));
+  };
+
+  const updateStatus = (index, field, value) => {
+    const newStatuses = [...statuses];
+    newStatuses[index] = { ...newStatuses[index], [field]: value };
+    setStatuses(newStatuses);
+  };
+
   const handleSave = async () => {
     setSaving(true);
     try {
@@ -41,12 +62,11 @@ export default function WhiteLabelPage() {
             method: 'PATCH',
             data: {
                 customBotName: config.customBotName,
-                customStatus: config.customStatus,
-                customStatusType: config.customStatusType,
+                customStatuses: statuses,
+                statusRotationInterval: rotationInterval,
                 hideBranding: config.hideBranding
             }
         });
-        // Show success toast? (Assuming Layout handles it)
     } catch (err) {
         console.error('Save failed:', err);
     } finally {
@@ -128,28 +148,59 @@ export default function WhiteLabelPage() {
                             />
                             <p className="hint">Il bot cambierà il suo nickname in questo server.</p>
                         </div>
-                        <div className="input-group">
-                            <label>Status Personalizzato (Attività)</label>
-                            <div className="status-inputs">
-                                <select 
-                                    className="status-type-select"
-                                    value={config.customStatusType || 0}
-                                    onChange={(e) => setConfig({...config, customStatusType: parseInt(e.target.value)})}
-                                >
-                                    <option value="0">Gioca a</option>
-                                    <option value="3">Guarda</option>
-                                    <option value="2">Ascolta</option>
-                                    <option value="5">Competi in</option>
-                                    <option value="4">Stato Personalizzato</option>
-                                </select>
-                                <input 
-                                    type="text" 
-                                    value={config.customStatus || ''} 
-                                    onChange={(e) => setConfig({...config, customStatus: e.target.value})}
-                                    placeholder="Esempio: il server..."
-                                />
+                        
+                        <div className="status-section">
+                            <div className="section-header">
+                                <label>Stati a Rotazione</label>
+                                <button className="btn-add-status" onClick={addStatus}>
+                                    <Plus size={14} /> Aggiungi
+                                </button>
                             </div>
-                            <p className="hint">Lo status verrà aggiornato globalmente (non solo in questo server).</p>
+                            
+                            <div className="statuses-list">
+                                {statuses.map((s, index) => (
+                                    <div key={index} className="status-item animate-slide-in">
+                                        <select 
+                                            className="status-type-select"
+                                            value={s.type || 0}
+                                            onChange={(e) => updateStatus(index, 'type', parseInt(e.target.value))}
+                                        >
+                                            <option value="0">Gioca a</option>
+                                            <option value="3">Guarda</option>
+                                            <option value="2">Ascolta</option>
+                                            <option value="5">Competi in</option>
+                                            <option value="4">Stato Personalizzato</option>
+                                        </select>
+                                        <input 
+                                            type="text" 
+                                            value={s.text || ''} 
+                                            onChange={(e) => updateStatus(index, 'text', e.target.value)}
+                                            placeholder="Testo dello status..."
+                                        />
+                                        <button className="btn-delete-status" onClick={() => removeStatus(index)}>
+                                            <Trash2 size={16} />
+                                        </button>
+                                    </div>
+                                ))}
+                                {statuses.length === 0 && (
+                                    <div className="empty-statuses">
+                                        Nessuno status configurato. Il bot userà quello predefinito.
+                                    </div>
+                                )}
+                            </div>
+
+                            {statuses.length > 1 && (
+                                <div className="input-group rotation-interval">
+                                    <label><Clock size={14} /> Intervallo Rotazione (secondi)</label>
+                                    <input 
+                                        type="number" 
+                                        min="15"
+                                        value={rotationInterval} 
+                                        onChange={(e) => setRotationInterval(parseInt(e.target.value))}
+                                    />
+                                    <p className="hint">Il bot passerà allo status successivo ogni {rotationInterval} secondi.</p>
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -172,6 +223,15 @@ export default function WhiteLabelPage() {
                                 <span className="slider round"></span>
                             </label>
                         </div>
+                        
+                        <div className="placeholder-info card mt-4">
+                            <h4>Placeholder FiveM</h4>
+                            <p>Puoi usare questi tag nei tuoi stati per mostrare i dati in tempo reale:</p>
+                            <ul>
+                                <li><code>{`{players}`}</code> - Giocatori online</li>
+                                <li><code>{`{max_players}`}</code> - Slot totali</li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -188,7 +248,6 @@ export default function WhiteLabelPage() {
             .btn-save { background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 700; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: 0.3s; }
             .btn-save:hover { transform: translateY(-2px); box-shadow: var(--primary-glow); }
 
-            /* Upsell Styles */
             .premium-upsell { 
                 display: flex; flex-direction: column; align-items: center; justify-content: center; 
                 padding: 60px 40px; text-align: center; max-width: 900px; margin: 40px auto;
@@ -199,55 +258,44 @@ export default function WhiteLabelPage() {
             .upsell-badge { background: var(--primary-glow); color: var(--primary); padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 900; margin-bottom: 20px; }
             .upsell-icon { width: 100px; height: 100px; background: var(--primary-glow); color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 24px; }
             .premium-upsell h2 { font-size: 2rem; font-weight: 900; margin-bottom: 12px; }
-            .premium-upsell p { color: var(--text-muted); margin-bottom: 40px; max-width: 500px; }
-
             .preview-comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; width: 100%; max-width: 700px; margin-bottom: 48px; }
             .preview-box { background: var(--bg-badge); padding: 24px; border-radius: 16px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 16px; }
-            .preview-box.premium { border-color: var(--primary); }
-            .p-label { font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; }
-            .mock-embed { background: #2f3136; height: 80px; border-radius: 4px; border-left: 4px solid var(--primary); padding: 12px; display: flex; flex-direction: column; justify-content: flex-end; }
-            .embed-footer { font-size: 0.7rem; color: #b9bbbe; }
-
             .btn-premium-cta { background: var(--primary); color: white; border: none; padding: 18px 36px; border-radius: 16px; font-size: 1.1rem; font-weight: 800; cursor: pointer; transition: 0.3s; box-shadow: var(--primary-glow); }
 
-            /* Content Styles */
             .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
             .settings-card { padding: 24px; }
             .card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
             .card-header h3 { font-size: 1.1rem; font-weight: 700; color: var(--text-main); }
-            .card-header svg { color: var(--primary); }
 
             .input-group { margin-bottom: 20px; }
-            .input-group label { display: block; font-size: 0.9rem; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; }
+            .input-group label { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; }
             .input-group input { width: 100%; background: var(--bg-badge); border: 1px solid var(--border); padding: 12px 16px; border-radius: 12px; color: var(--text-main); outline: none; transition: 0.2s; }
-            .input-group input:focus { border-color: var(--primary); background: var(--bg-card); }
             
-            .status-inputs { display: flex; gap: 10px; }
-            .status-type-select { 
-                background: var(--bg-badge); 
-                border: 1px solid var(--border); 
-                padding: 12px; 
-                border-radius: 12px; 
-                color: var(--text-main); 
-                outline: none;
-                cursor: pointer;
-            }
-            .status-type-select:focus { border-color: var(--primary); }
+            .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; margin-top: 32px; }
+            .section-header label { font-size: 0.9rem; font-weight: 700; color: var(--text-main); }
+            .btn-add-status { background: var(--primary-glow); color: var(--primary); border: none; padding: 6px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: 700; display: flex; align-items: center; gap: 4px; cursor: pointer; transition: 0.2s; }
+            .btn-add-status:hover { background: var(--primary); color: white; }
 
-            .hint { font-size: 0.75rem; color: var(--text-muted); margin-top: 6px; }
+            .statuses-list { display: flex; flex-direction: column; gap: 12px; }
+            .status-item { display: flex; gap: 10px; background: var(--bg-badge); padding: 12px; border-radius: 16px; border: 1px solid var(--border); align-items: center; }
+            .status-type-select { background: var(--bg-card); border: 1px solid var(--border); padding: 8px; border-radius: 8px; color: var(--text-main); outline: none; font-size: 0.85rem; }
+            .status-item input { flex: 1; background: transparent; border: none; color: var(--text-main); outline: none; font-size: 0.9rem; }
+            .btn-delete-status { color: var(--danger); background: transparent; border: none; cursor: pointer; opacity: 0.6; transition: 0.2s; }
+            .btn-delete-status:hover { opacity: 1; transform: scale(1.1); }
+            
+            .empty-statuses { text-align: center; padding: 24px; color: var(--text-muted); font-size: 0.85rem; background: var(--bg-badge); border-radius: 16px; border: 1px dashed var(--border); }
+            .rotation-interval { margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border); }
 
-            .toggle-group { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: var(--bg-badge); border-radius: 16px; }
-            .toggle-info h4 { font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin-bottom: 4px; }
-            .toggle-info p { font-size: 0.8rem; color: var(--text-muted); }
+            .placeholder-info { padding: 16px; background: rgba(var(--primary-rgb), 0.05); border: 1px solid var(--primary-glow); border-radius: 16px; }
+            .placeholder-info h4 { font-size: 0.9rem; font-weight: 700; color: var(--primary); margin-bottom: 12px; }
+            .placeholder-info p { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px; }
+            .placeholder-info ul { list-style: none; padding: 0; }
+            .placeholder-info li { font-size: 0.8rem; color: var(--text-main); margin-bottom: 4px; }
+            .placeholder-info code { background: var(--bg-card); padding: 2px 6px; border-radius: 4px; color: var(--primary); font-weight: 700; }
 
             .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
-            .switch input { opacity: 0; width: 0; height: 0; }
-            .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--bg-card); transition: .4s; border: 1px solid var(--border); }
-            .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; }
-            input:checked + .slider { background-color: var(--primary); border-color: var(--primary); }
-            input:checked + .slider:before { transform: translateX(24px); }
             .slider.round { border-radius: 34px; }
-            .slider.round:before { border-radius: 50%; }
+            .mt-4 { margin-top: 16px; }
         `}</style>
     </div>
   );
