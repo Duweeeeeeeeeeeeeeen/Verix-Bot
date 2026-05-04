@@ -584,7 +584,7 @@ export default {
     photocontest: {
         panel: {
             title: '🖼️ Galleria d\'Arte: Esposizione Fotografica',
-            description: 'La città è alla ricerca di scorci unici. Cattura un momento memorabile e depositalo in questa galleria per partecipare al concorso cittadino.\n\n**Tema Attuale:** `{theme}`\n**Scadenza:** {endTime}',
+            description: 'La città è alla ricerca di scorci unici. Cattura un momento memorabile e depositalo in questa galleria per partecipare al concorso cittadino.\n\n**Tema Attuale:** `{theme}`\n**Durata:** `{duration} ore`\n**Scadenza:** {endTime}',
             color: '#F39C12',
             footer: 'Dipartimento Cultura | Verix RP'
         },

@@ -12,13 +12,13 @@ const platformSchema = z.object({
         thumbnail: z.string().optional(),
         image: z.string().optional(),
         footer: z.string().optional()
-    }).optional(),
+    }).passthrough().optional(),
     accounts: z.array(z.object({
         username: z.string().min(1, 'Username is required'),
         discordUserId: z.string().nullable().optional()
-    })).default([]),
-    webhookToken: z.string().optional()
-}).optional();
+    }).passthrough()).default([]),
+    webhookToken: z.string().nullable().optional()
+}).passthrough().optional();
 
 export const socialSchema = z.object({
     platforms: z.object({
@@ -27,5 +27,5 @@ export const socialSchema = z.object({
         instagram: platformSchema,
         tiktok: platformSchema,
         twitter: platformSchema
-    }).optional()
-});
+    }).passthrough().optional()
+}).passthrough();

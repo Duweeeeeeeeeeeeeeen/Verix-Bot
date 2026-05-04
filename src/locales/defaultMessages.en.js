@@ -609,7 +609,7 @@ export default {
     photocontest: {
         panel: {
             title: '🖼️ Art Gallery: Photo Exhibition',
-            description: 'The city is looking for unique views. Capture a memorable moment and deposit it in this gallery to participate in the city contest.',
+            description: 'The city is looking for unique views. Capture a memorable moment and deposit it in this gallery to participate in the city contest.\n\n**Current Theme:** `{theme}`\n**Duration:** `{duration} hours`\n**Deadline:** {endTime}',
             color: '#F39C12',
             footer: 'Culture Department | Verix RP'
         },

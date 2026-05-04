@@ -37,20 +37,25 @@ export class SocialManager {
             if (!configs.length) return;
 
             for (const config of configs) {
-                const guild = this.client.guilds.cache.get(config.guildId);
-                if (!guild) continue;
-
+                const guildId = config.guildId;
                 let configChanged = false;
 
                 // 1. Check Twitch
                 if (config.platforms?.twitch?.enabled && config.platforms.twitch.accounts?.length > 0) {
-                    const changed = await this.checkTwitch(guild, config.platforms.twitch);
+                    const platformConfig = config.platforms.twitch;
+                    const usernames = platformConfig.accounts.map(s => s.username);
+                    logger.debug(`[Socials/Twitch] Checking ${usernames.length} streamers for guild ${guildId}: ${usernames.join(', ')}`);
+                    
+                    const liveStreams = await getStreams(usernames);
+                    logger.debug(`[Socials/Twitch] Found ${liveStreams.length} live streams.`);
+
+                    const changed = await this.checkTwitch(guildId, platformConfig, liveStreams);
                     if (changed) configChanged = true;
                 }
 
                 // 2. Check YouTube
                 if (config.platforms?.youtube?.enabled && config.platforms.youtube.accounts?.length > 0) {
-                    const changed = await this.checkYouTube(guild, config.platforms.youtube);
+                    const changed = await this.checkYouTube(guildId, config.platforms.youtube);
                     if (changed) configChanged = true;
                 }
 
@@ -64,12 +69,9 @@ export class SocialManager {
         }
     }
 
-    async checkTwitch(guild, platformConfig) {
+    async checkTwitch(guildId, platformConfig, liveStreams) {
         let changed = false;
         try {
-            const usernames = platformConfig.accounts.map(s => s.username);
-            const liveStreams = await getStreams(usernames);
-
             for (const streamer of platformConfig.accounts) {
                 const stream = liveStreams.find(s => s.user_login.toLowerCase() === streamer.username.toLowerCase());
                 
@@ -77,12 +79,12 @@ export class SocialManager {
                     // Streamer is LIVE
                     if (!streamer.isLive || (stream.id !== streamer.lastPostId)) {
                         // NEW LIVE detected
-                        await this.handleSocialPost(guild, platformConfig, streamer, {
+                        await this.handleSocialPost(guildId, platformConfig, streamer, {
                             title: stream.title,
                             url: `https://twitch.tv/${stream.user_login}`,
                             author: stream.user_name,
                             thumbnail: stream.thumbnail_url?.replace('{width}', '1280').replace('{height}', '720')
-                        });
+                        }, 'Twitch');
                         streamer.isLive = true;
                         streamer.lastPostId = stream.id;
                         changed = true;
@@ -93,30 +95,23 @@ export class SocialManager {
                         // NEW OFF detected
                         streamer.isLive = false;
                         changed = true;
-                        await this.removeSocialRole(guild, platformConfig, streamer);
+                        await this.removeSocialRole(guildId, platformConfig, streamer);
                     }
                 }
             }
         } catch (error) {
-            logger.error(`[Socials/Twitch] Error checking guild ${guild.id}:`, error);
+            logger.error(`[Socials/Twitch] Error checking guild ${guildId}:`, error);
         }
         return changed;
     }
 
-    async checkYouTube(guild, platformConfig) {
+    async checkYouTube(guildId, platformConfig) {
         let changed = false;
         try {
             for (const account of platformConfig.accounts) {
-                // Determine if input is a handle (@name) or channel ID
-                let feedUrl = '';
-                if (account.username.startsWith('@')) {
-                    // Requires scraping or YouTube API v3 to get ID from handle. 
-                    // Using a public RSS proxy or simply expecting standard ID format.
-                    // For now, if it's not a standard UC... ID, we'll try standard user feed:
-                    feedUrl = `https://www.youtube.com/feeds/videos.xml?user=${account.username.replace('@', '')}`;
-                } else {
-                    feedUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${account.username}`;
-                }
+                let feedUrl = account.username.startsWith('@') 
+                    ? `https://www.youtube.com/feeds/videos.xml?user=${account.username.replace('@', '')}`
+                    : `https://www.youtube.com/feeds/videos.xml?channel_id=${account.username}`;
 
                 try {
                     const feed = await rssParser.parseURL(feedUrl);
@@ -125,65 +120,75 @@ export class SocialManager {
                         
                         if (latestVideo.id !== account.lastPostId) {
                             // NEW VIDEO detected
-                            await this.handleSocialPost(guild, platformConfig, account, {
+                            await this.handleSocialPost(guildId, platformConfig, account, {
                                 title: latestVideo.title,
                                 url: latestVideo.link,
                                 author: feed.title,
                                 thumbnail: `https://i.ytimg.com/vi/${latestVideo.id.replace('yt:video:', '')}/maxresdefault.jpg`
-                            });
+                            }, 'YouTube');
                             account.lastPostId = latestVideo.id;
                             changed = true;
                         }
                     }
                 } catch (feedErr) {
-                    // If fetching fails for one user, skip to next
                     logger.warn(`[Socials/YouTube] Could not fetch feed for ${account.username}`);
                 }
             }
         } catch (error) {
-            logger.error(`[Socials/YouTube] Error checking guild ${guild.id}:`, error);
+            logger.error(`[Socials/YouTube] Error checking guild ${guildId}:`, error);
         }
         return changed;
     }
 
-    async handleSocialPost(guild, platformConfig, account, postData) {
+    async handleSocialPost(guildId, platformConfig, account, postData, platform) {
         try {
-            logger.info(`[Socials] Sending notification for ${account.username} on guild ${guild.name}`);
-            
-            // 1. Send Notification
-            const channel = guild.channels.cache.get(platformConfig.notificationChannelId);
-            if (channel) {
-                // Dynamically build embed using user's config
-                const customEmbed = platformConfig.embed || {};
-                
-                const formatText = (text) => text
-                    ? placeholderHelper.replace(text, {
-                        streamer: postData.author,
-                        title: postData.title,
-                        url: postData.url
-                    })
-                    : '';
-
-                const embedData = {
-                    title: formatText(customEmbed.title),
-                    description: formatText(customEmbed.description),
-                    color: customEmbed.color ? parseInt(customEmbed.color.replace('#', ''), 16) : 0x6366f1,
-                    footer: { text: formatText(customEmbed.footer) }
-                };
-
-                if (postData.thumbnail) {
-                    embedData.image = { url: postData.thumbnail };
-                }
-
-                const content = platformConfig.mentionEveryone ? '@everyone' : (platformConfig.roleId ? `<@&${platformConfig.roleId}>` : null);
-                
-                await channel.send({ 
-                    content, 
-                    embeds: [embedData] 
-                }).catch(err => {
-                    logger.error(`[Socials] Failed to send notification in ${channel.id}:`, err.message);
-                });
+            const guild = await this.client.guilds.fetch(guildId).catch(() => null);
+            if (!guild) {
+                logger.warn(`[Socials] Guild ${guildId} not found during notification.`);
+                return;
             }
+
+            const channelId = platformConfig.notificationChannelId;
+            if (!channelId) return;
+
+            const channel = await guild.channels.fetch(channelId).catch(() => null);
+            if (!channel) {
+                logger.warn(`[Socials] Notification channel ${channelId} not found in guild ${guildId}.`);
+                return;
+            }
+
+            logger.info(`[Socials] Sending ${platform} notification for ${postData.author || account.username} to #${channel.name}`);
+            
+            // Dynamically build embed using user's config
+            const customEmbed = platformConfig.embed || {};
+            
+            const formatText = (text) => text
+                ? placeholderHelper.replace(text, {
+                    streamer: postData.author || account.username,
+                    title: postData.title,
+                    url: postData.url
+                })
+                : '';
+
+            const embedData = {
+                title: formatText(customEmbed.title) || `📡 ${postData.author || account.username} è in Live!`,
+                description: formatText(customEmbed.description) || `**${postData.title}**\n\n[Connettiti ora](${postData.url})`,
+                color: customEmbed.color ? parseInt(customEmbed.color.replace('#', ''), 16) : 0x6366f1,
+                footer: { text: formatText(customEmbed.footer) || 'Social Notifications | Verix' }
+            };
+
+            if (postData.thumbnail) {
+                embedData.image = { url: postData.thumbnail };
+            }
+
+            const content = platformConfig.mentionEveryone ? '@everyone' : (platformConfig.roleId ? `<@&${platformConfig.roleId}>` : null);
+            
+            await channel.send({ 
+                content, 
+                embeds: [embedData] 
+            }).catch(err => {
+                logger.error(`[Socials] Failed to send notification in ${channel.id}:`, err.message);
+            });
 
             // 2. Add Role (if Twitch and user is linked)
             if (platformConfig.roleId && account.discordUserId) {
@@ -199,8 +204,11 @@ export class SocialManager {
         }
     }
 
-    async removeSocialRole(guild, platformConfig, account) {
+    async removeSocialRole(guildId, platformConfig, account) {
         try {
+            const guild = await this.client.guilds.fetch(guildId).catch(() => null);
+            if (!guild) return;
+
             if (platformConfig.roleId && account.discordUserId) {
                 const member = await guild.members.fetch(account.discordUserId).catch(() => null);
                 if (member) {

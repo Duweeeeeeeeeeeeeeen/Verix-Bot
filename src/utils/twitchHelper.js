@@ -53,19 +53,24 @@ export async function getStreams(usernames) {
     if (!token) return [];
 
     try {
-        const response = await axios.get('https://api.twitch.tv/helix/streams', {
+        const streamRes = await axios.get('https://api.twitch.tv/helix/streams', {
             headers: {
                 'Client-ID': process.env.TWITCH_CLIENT_ID,
                 'Authorization': `Bearer ${token}`
             },
             params: {
-                user_login: usernames // Axios formats arrays as multiple user_login= params
+                user_login: usernames
             }
         });
 
-        return response.data.data;
+        if (!streamRes.data || !streamRes.data.data) {
+            logger.error('[TwitchHelper] Unexpected API response structure:', streamRes.data);
+            return [];
+        }
+
+        return streamRes.data.data;
     } catch (error) {
-        logger.error('[Twitch] Error fetching streams:', error.response?.data || error.message);
+        logger.error('[TwitchHelper] Error fetching streams:', error.response?.data || error.message);
         return [];
     }
 }

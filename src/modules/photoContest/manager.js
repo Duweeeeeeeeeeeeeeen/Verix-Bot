@@ -113,6 +113,7 @@ export class PhotoContestManager {
 
             const embed = await messageService.get(config.guildId, 'photocontest', 'panel', {
                 theme: themeName || 'Libero',
+                duration: duration,
                 endTime: `<t:${Math.floor(endTime.getTime() / 1000)}:R>`
             });
 
