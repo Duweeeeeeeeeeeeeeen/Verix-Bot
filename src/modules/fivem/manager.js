@@ -205,8 +205,8 @@ export class FiveMManager {
 
             const placeholders = {
                 guild: guild.name,
-                server: data.server || serverConfig.name || serverConfig.serverIp,
-                serverName: data.server || serverConfig.name || serverConfig.serverIp,
+                server: serverConfig.name || data.server || serverConfig.serverIp,
+                serverName: serverConfig.name || data.server || serverConfig.serverIp,
                 players: String(data.players || 0),
                 maxPlayers: String(data.maxPlayers || 0),
                 lastCheck: `<t:${Math.floor(Date.now() / 1000)}:R>`
@@ -274,8 +274,18 @@ export class FiveMManager {
             //      rawContent += uptimeString;
             // }
 
-            // Add Control Counter to content if no embeds, or we can just append it to rawContent
-            rawContent += `\n\n🕒 **Ultimo Controllo:** ${placeholders.lastCheck}`;
+            // Add Control Counter to EMBEDS instead of content
+            payload.embeds.forEach(embed => {
+                // Remove existing "Last Check" fields if any (to prevent duplicates during edit)
+                if (embed.data && embed.data.fields) {
+                    embed.data.fields = embed.data.fields.filter(f => !f.name.includes('Controllo'));
+                }
+                embed.addFields({
+                    name: '🕒 Ultimo Controllo',
+                    value: placeholders.lastCheck,
+                    inline: true
+                });
+            });
 
             // Append Content
             payload.content = rawContent || null;
