@@ -4,6 +4,7 @@ import Guild from '../../models/Guild.js';
 import logger from '../../utils/logger.js';
 import { resolveModule } from '../../core/moduleManager.js';
 import { getModuleConfig } from '../../core/configCache.js';
+import whiteLabelHelper from '../../utils/whiteLabelHelper.js';
 
 export default {
     name: Events.InteractionCreate,
@@ -46,6 +47,9 @@ export default {
                     { username: interaction.user.username },
                     { upsert: true }
                 );
+
+                // White-label: Sync bot identity in this guild
+                await whiteLabelHelper.syncGuildIdentity(interaction.guild);
             } catch (error) {
                 logger.error('Background database sync error in InteractionCreate:', error);
             }

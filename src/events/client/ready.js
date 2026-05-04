@@ -3,6 +3,7 @@ import config from '../../../config/config.js';
 import { Events, REST, Routes } from 'discord.js';
 import { recoverWhitelistSessions } from '../../modules/whitelist/utils/recovery.js';
 import { initVoiceCleanup } from '../../modules/whitelist/utils/voiceCleanup.js';
+import whiteLabelHelper from '../../utils/whiteLabelHelper.js';
 
 export default {
     name: Events.ClientReady,
@@ -56,5 +57,9 @@ export default {
 
         // Cleanup orphaned voice channels (Startup Sanity Check)
         setTimeout(() => initVoiceCleanup(client), 5000); // 5s delay to ensure cache is ready
+
+        // White-label: Sync global status
+        await whiteLabelHelper.syncGlobalStatus(client);
+        setInterval(() => whiteLabelHelper.syncGlobalStatus(client), 30 * 60 * 1000); // Every 30 mins
     },
 };

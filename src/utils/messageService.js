@@ -14,6 +14,10 @@ class MessageService {
         this.langCache = new Map(); // guildId -> language code
         this.langTTL = 30 * 60 * 1000; // 30 minutes for language
         this.langTimestamps = new Map();
+
+        this.guildCache = new Map(); // guildId -> { isPremium, hideBranding }
+        this.guildTTL = 5 * 60 * 1000; // 5 minutes for guild settings
+        this.guildTimestamps = new Map();
     }
 
     /**
@@ -38,6 +42,31 @@ class MessageService {
         } catch (err) {
             logger.warn(`[MessageService] Error fetching guild language for ${guildId}:`, err.message);
             return 'it';
+        }
+    }
+
+    /**
+     * Internal: Get guild-wide settings (White-label, Premium)
+     */
+    async getGuildConfig(guildId) {
+        if (!guildId) return { isPremium: false, hideBranding: false };
+
+        const cached = this.guildCache.get(guildId);
+        if (cached && (Date.now() - (this.guildTimestamps.get(guildId) || 0)) < this.guildTTL) {
+            return cached;
+        }
+
+        try {
+            const config = await Guild.findOne({ guildId });
+            const data = {
+                isPremium: config?.isPremium || false,
+                hideBranding: config?.isPremium && config?.hideBranding || false
+            };
+            this.guildCache.set(guildId, data);
+            this.guildTimestamps.set(guildId, Date.now());
+            return data;
+        } catch (err) {
+            return { isPremium: false, hideBranding: false };
         }
     }
 
@@ -72,7 +101,10 @@ class MessageService {
         }
 
         // Build Embed using robust helper
-        const embed = buildEmbed(embedData, placeholders);
+        const guildConfig = await this.getGuildConfig(guildId);
+        const embed = buildEmbed(embedData, finalPlaceholders, { 
+            hideBranding: guildConfig.hideBranding 
+        });
         
         // Ensure description is never empty as Discord API requires it
         if (!embed.data.description && !embed.data.title) {
