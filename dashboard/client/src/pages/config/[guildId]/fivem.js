@@ -159,116 +159,132 @@ export default function FiveMConfig() {
             </button>
         </div>
 
-        {activeTab === 'servers' && (
-            <div className="animate fade-in">
-                <div className="section-header-row">
-                    <h2>Lista Server</h2>
-                    <button onClick={addServer} className="btn-add-premium"><Plus size={16} /> Aggiungi Server</button>
-                </div>
+        <div className="config-grid">
+            <div className="grid-left">
+                {activeTab === 'servers' && (
+                    <div className="animate fade-in">
+                        <div className="section-header-row">
+                            <h2>Lista Server</h2>
+                            <button onClick={addServer} className="btn-add-premium"><Plus size={16} /> Aggiungi Server</button>
+                        </div>
 
-                <div style={{ marginBottom: '24px' }}>
+                        <div className="servers-list">
+                    {config.servers?.length > 0 ? (
+                        config.servers.map(server => (
+                        <div key={server.id} className="server-card card animate fade-in">
+                            <div className="server-card-header">
+                                <div className="align-center">
+                                    <Server size={18} color="var(--primary)" />
+                                    <input className="input-minimal" value={server.name} onChange={e => updateServer(server.id, 'name', e.target.value)} placeholder="Nome Server..." />
+                                </div>
+                                <div className="align-center">
+                                    <label className="toggle-s">
+                                        <input type="checkbox" checked={!!server.enabled} onChange={e => updateServer(server.id, 'enabled', e.target.checked)} />
+                                        <span className="slider-s"></span>
+                                    </label>
+                                    <button className="btn-remove-premium" onClick={() => removeServer(server.id)}><X size={14} /></button>
+                                </div>
+                            </div>
+
+                            <div className="server-card-body">
+                                <div className="fields-grid-v">
+                                    <div className="field-box" style={{ gridColumn: 'span 2' }}>
+                                        <label className="text-label">Canale Live Status</label>
+                                        <DiscordSelector 
+                                            type="channel" 
+                                            options={channels.filter(c => c.type === 0 || c.type === 5)} 
+                                            value={server.statusChannelId || ''} 
+                                            onChange={val => updateServer(server.id, 'statusChannelId', val)} 
+                                            placeholder="Seleziona il canale per il monitoraggio..."
+                                        />
+                                        <p className="field-help">In questo canale verrà inviato l'embed con i player live.</p>
+                                    </div>
+                                    <div className="field-box" style={{ gridColumn: 'span 2' }}>
+                                        <label className="text-label">Indirizzo IP (es: 127.0.0.1:30120)</label>
+                                        <div className="input-wrapper">
+                                            <Globe size={16} className="input-icon" />
+                                            <input className="input-v" value={server.serverIp || ''} onChange={e => updateServer(server.id, 'serverIp', e.target.value)} placeholder="IP o cfx.re/join/xxxx" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="buttons-section" style={{ marginTop: '24px' }}>
+                                    <div className="section-header-row">
+                                        <h4 className="text-label">Bottoni Rapidi</h4>
+                                        <button onClick={() => addButton(server.id)} className="btn-add-mini"><Plus size={12} /> Aggiungi</button>
+                                    </div>
+                                    <div className="buttons-grid">
+                                        {server.buttons?.map((btn, idx) => (
+                                            <div key={idx} className="button-editor-row">
+                                                <input className="input-s" value={btn.label || ''} onChange={e => {
+                                                    const newBtns = [...server.buttons];
+                                                    newBtns[idx].label = e.target.value;
+                                                    updateServer(server.id, 'buttons', newBtns);
+                                                }} placeholder="Testo" />
+                                                <input className="input-s" value={btn.url || ''} onChange={e => {
+                                                    const newBtns = [...server.buttons];
+                                                    newBtns[idx].url = e.target.value;
+                                                    updateServer(server.id, 'buttons', newBtns);
+                                                }} placeholder="fivem://connect/..." />
+                                                <button className="btn-remove-premium" onClick={() => {
+                                                    const newBtns = server.buttons.filter((_, i) => i !== idx);
+                                                    updateServer(server.id, 'buttons', newBtns);
+                                                }}><X size={12} /></button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        ))
+                    ) : (
+                        <div className="empty-state-card card animate fade-in">
+                            <div className="align-center" style={{ justifyContent: 'center', flexDirection: 'column', padding: '40px', gap: '12px' }}>
+                                <Info size={32} className="text-dim" />
+                                <p className="text-dim">Nessun server configurato. Clicca su "Aggiungi Server" per iniziare.</p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+                </div>
+                )}
+
+                {activeTab === 'messages' && (
+                    <div className="animate fade-in card glass-dark" style={{ padding: '32px' }}>
+                        <EmbedMessageManager 
+                            guildId={guildId}
+                            module="fivem"
+                            slugs={[
+                                { key: 'status_embed', label: 'Stato Server (Online)', description: 'Embed inviato quando il server è online.', variables: ['serverName', 'players', 'maxPlayers'], group: '🟢 Status', groupIcon: Activity },
+                                { key: 'offline_embed', label: 'Stato Server (Offline)', description: 'Embed inviato quando il server non è raggiungibile.', variables: ['serverName'], group: '🔴 Offline', groupIcon: Power }
+                            ]}
+                        />
+                    </div>
+                )}
+            </div>
+
+            <div className="grid-right">
+                <div className="sidebar-card">
                     <NotificationSettings 
                         guildId={guildId}
                         value={config.notifications}
                         onChange={val => setNested('notifications', val)}
                         title="Notifiche Status"
-                        description="Scegli come notificare lo staff quando un server cambia stato (Online/Offline)."
+                        description="Avvisa lo staff se il server cade."
                     />
                 </div>
 
-                <div className="servers-list">
-            {config.servers?.length > 0 ? (
-                config.servers.map(server => (
-                <div key={server.id} className="server-card card animate fade-in">
-                    <div className="server-card-header">
-                        <div className="align-center">
-                            <Server size={18} color="var(--primary)" />
-                            <input className="input-minimal" value={server.name} onChange={e => updateServer(server.id, 'name', e.target.value)} placeholder="Nome Server..." />
-                        </div>
-                        <div className="align-center">
-                             <label className="toggle-s">
-                                <input type="checkbox" checked={!!server.enabled} onChange={e => updateServer(server.id, 'enabled', e.target.checked)} />
-                                <span className="slider-s"></span>
-                            </label>
-                            <button className="btn-remove-premium" onClick={() => removeServer(server.id)}><X size={14} /></button>
-                        </div>
+                <div className="card glass-dark" style={{ padding: '20px', marginTop: '24px' }}>
+                    <div className="align-center" style={{ gap: '10px', marginBottom: '12px' }}>
+                         <Info size={18} className="text-primary" />
+                         <h4 style={{ margin: 0, fontSize: '0.9rem' }}>Guida Rapida</h4>
                     </div>
-
-                    <div className="server-card-body">
-                        <div className="fields-grid-v">
-                            <div className="field-box" style={{ gridColumn: 'span 2' }}>
-                                <label className="text-label">Canale Live Status</label>
-                                <DiscordSelector 
-                                    type="channel" 
-                                    options={channels.filter(c => c.type === 0 || c.type === 5)} 
-                                    value={server.statusChannelId || ''} 
-                                    onChange={val => updateServer(server.id, 'statusChannelId', val)} 
-                                    placeholder="Seleziona il canale per il monitoraggio..."
-                                />
-                                <p className="field-help">In questo canale verrà inviato l'embed con i player live.</p>
-                            </div>
-                            <div className="field-box" style={{ gridColumn: 'span 2' }}>
-                                <label className="text-label">Indirizzo IP (es: 127.0.0.1:30120)</label>
-                                <div className="input-wrapper">
-                                    <Globe size={16} className="input-icon" />
-                                    <input className="input-v" value={server.serverIp || ''} onChange={e => updateServer(server.id, 'serverIp', e.target.value)} placeholder="IP o cfx.re/join/xxxx" />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="buttons-section" style={{ marginTop: '24px' }}>
-                             <div className="section-header-row">
-                                <h4 className="text-label">Bottoni Rapidi</h4>
-                                <button onClick={() => addButton(server.id)} className="btn-add-mini"><Plus size={12} /> Aggiungi</button>
-                             </div>
-                             <div className="buttons-grid">
-                                {server.buttons?.map((btn, idx) => (
-                                    <div key={idx} className="button-editor-row">
-                                        <input className="input-s" value={btn.label || ''} onChange={e => {
-                                            const newBtns = [...server.buttons];
-                                            newBtns[idx].label = e.target.value;
-                                            updateServer(server.id, 'buttons', newBtns);
-                                        }} placeholder="Testo" />
-                                        <input className="input-s" value={btn.url || ''} onChange={e => {
-                                            const newBtns = [...server.buttons];
-                                            newBtns[idx].url = e.target.value;
-                                            updateServer(server.id, 'buttons', newBtns);
-                                        }} placeholder="fivem://connect/..." />
-                                        <button className="btn-remove-premium" onClick={() => {
-                                            const newBtns = server.buttons.filter((_, i) => i !== idx);
-                                            updateServer(server.id, 'buttons', newBtns);
-                                        }}><X size={12} /></button>
-                                    </div>
-                                ))}
-                             </div>
-                        </div>
-                    </div>
+                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', lineHeight: '1.5' }}>
+                        Il modulo FiveM monitora i tuoi server ogni minuto. Il messaggio nel "Canale Live Status" verrà modificato automaticamente per mostrare i player online.
+                    </p>
                 </div>
-                ))
-            ) : (
-                <div className="empty-state-card card animate fade-in">
-                    <div className="align-center" style={{ justifyContent: 'center', flexDirection: 'column', padding: '40px', gap: '12px' }}>
-                        <Info size={32} className="text-dim" />
-                        <p className="text-dim">Nessun server configurato. Clicca su "Aggiungi Server" per iniziare.</p>
-                    </div>
-                </div>
-            )}
-        </div>
-        </div>
-        )}
-
-        {activeTab === 'messages' && (
-            <div className="animate fade-in card glass-dark" style={{ padding: '32px' }}>
-                <EmbedMessageManager 
-                    guildId={guildId}
-                    module="fivem"
-                    slugs={[
-                        { key: 'status_embed', label: 'Stato Server (Online)', description: 'Embed inviato quando il server è online.', variables: ['serverName', 'players', 'maxPlayers'], group: '🟢 Status', groupIcon: Activity },
-                        { key: 'offline_embed', label: 'Stato Server (Offline)', description: 'Embed inviato quando il server non è raggiungibile.', variables: ['serverName'], group: '🔴 Offline', groupIcon: Power }
-                    ]}
-                />
             </div>
-        )}
+        </div>
       </div>
 
       <style jsx>{`
@@ -287,9 +303,14 @@ export default function FiveMConfig() {
             .tab-link { display: flex; align-items: center; gap: 10px; padding: 10px 18px; border: none; background: transparent; color: var(--text-muted); font-size: 0.85rem; font-weight: 600; border-radius: 10px; cursor: pointer; transition: 0.2s; }
             .tab-link:hover { color: var(--text-main); background: var(--bg-badge); }
             .tab-link.active { color: var(--text-main); background: var(--bg-card); box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
+            
+            .config-grid { display: grid; grid-template-columns: 1fr 320px; gap: 24px; align-items: start; }
+            .grid-left { display: flex; flex-direction: column; gap: 24px; }
+            .grid-right { display: flex; flex-direction: column; gap: 24px; position: sticky; top: 24px; }
+            .sidebar-card :global(.notification-settings-card) { background: var(--bg-badge) !important; padding: 12px !important; }
 
             .section-header-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-            .btn-add-premium { background: var(--primary); color: var(--text-main); border: none; padding: 10px 18px; border-radius: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: var(--primary-glow); }
+            .btn-add-premium { background: var(--primary); color: #fff; border: none; padding: 10px 18px; border-radius: 10px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: var(--primary-glow); }
             
             .server-card { padding: 0 !important; margin-bottom: 24px; }
             .server-card-header { padding: 16px 20px; background: var(--bg-badge); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
