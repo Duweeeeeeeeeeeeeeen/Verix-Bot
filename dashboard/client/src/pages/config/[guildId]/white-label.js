@@ -42,6 +42,7 @@ export default function WhiteLabelPage() {
             data: {
                 customBotName: config.customBotName,
                 customStatus: config.customStatus,
+                customStatusType: config.customStatusType,
                 hideBranding: config.hideBranding
             }
         });
@@ -129,12 +130,25 @@ export default function WhiteLabelPage() {
                         </div>
                         <div className="input-group">
                             <label>Status Personalizzato (Attività)</label>
-                            <input 
-                                type="text" 
-                                value={config.customStatus || ''} 
-                                onChange={(e) => setConfig({...config, customStatus: e.target.value})}
-                                placeholder="Esempio: Gestendo il server..."
-                            />
+                            <div className="status-inputs">
+                                <select 
+                                    className="status-type-select"
+                                    value={config.customStatusType || 0}
+                                    onChange={(e) => setConfig({...config, customStatusType: parseInt(e.target.value)})}
+                                >
+                                    <option value="0">Gioca a</option>
+                                    <option value="3">Guarda</option>
+                                    <option value="2">Ascolta</option>
+                                    <option value="5">Competi in</option>
+                                </select>
+                                <input 
+                                    type="text" 
+                                    value={config.customStatus || ''} 
+                                    onChange={(e) => setConfig({...config, customStatus: e.target.value})}
+                                    placeholder="Esempio: il server..."
+                                />
+                            </div>
+                            <p className="hint">Lo status verrà aggiornato globalmente (non solo in questo server).</p>
                         </div>
                     </div>
 
@@ -206,6 +220,19 @@ export default function WhiteLabelPage() {
             .input-group label { display: block; font-size: 0.9rem; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; }
             .input-group input { width: 100%; background: var(--bg-badge); border: 1px solid var(--border); padding: 12px 16px; border-radius: 12px; color: var(--text-main); outline: none; transition: 0.2s; }
             .input-group input:focus { border-color: var(--primary); background: var(--bg-card); }
+            
+            .status-inputs { display: flex; gap: 10px; }
+            .status-type-select { 
+                background: var(--bg-badge); 
+                border: 1px solid var(--border); 
+                padding: 12px; 
+                border-radius: 12px; 
+                color: var(--text-main); 
+                outline: none;
+                cursor: pointer;
+            }
+            .status-type-select:focus { border-color: var(--primary); }
+
             .hint { font-size: 0.75rem; color: var(--text-muted); margin-top: 6px; }
 
             .toggle-group { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: var(--bg-badge); border-radius: 16px; }

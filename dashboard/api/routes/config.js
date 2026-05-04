@@ -1440,23 +1440,25 @@ router.patch('/:guildId/guild', adminCheck, async (req, res) => {
             return res.status(403).json({ success: false, error: 'Queste funzioni richiedono un abbonamento Premium attivo.' });
         }
 
-        const { customBotName, customStatus, hideBranding } = req.body;
+        const { customBotName, customStatus, customStatusType, hideBranding } = req.body;
 
         const oldSettings = {
             customBotName: guild.customBotName,
             customStatus: guild.customStatus,
+            customStatusType: guild.customStatusType,
             hideBranding: guild.hideBranding
         };
 
         guild.customBotName = customBotName !== undefined ? customBotName : guild.customBotName;
         guild.customStatus = customStatus !== undefined ? customStatus : guild.customStatus;
+        guild.customStatusType = customStatusType !== undefined ? customStatusType : guild.customStatusType;
         guild.hideBranding = hideBranding !== undefined ? hideBranding : guild.hideBranding;
 
         await guild.save();
 
         await logAudit(req, 'UPDATE_WHITE_LABEL', {
             old: oldSettings,
-            new: { customBotName, customStatus, hideBranding }
+            new: { customBotName, customStatus, customStatusType, hideBranding }
         });
 
         res.json({ success: true, message: 'Impostazioni aggiornate con successo' });

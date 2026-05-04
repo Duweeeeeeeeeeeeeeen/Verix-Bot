@@ -47,9 +47,12 @@ export const syncGlobalStatus = async (client) => {
         }).sort({ updatedAt: -1 }).limit(1);
 
         if (premiumConfigs.length > 0) {
-            const status = premiumConfigs[0].customStatus;
-            client.user.setActivity(status, { type: ActivityType.Playing });
-            logger.info(`[WhiteLabel] Global status updated to: "${status}"`);
+            const config = premiumConfigs[0];
+            const status = config.customStatus;
+            const type = config.customStatusType || ActivityType.Playing;
+            
+            client.user.setActivity(status, { type });
+            logger.info(`[WhiteLabel] Global status updated to: "${status}" (Type: ${type})`);
         }
     } catch (error) {
         logger.error('[WhiteLabel] Error syncing global status:', error);

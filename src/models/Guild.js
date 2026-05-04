@@ -38,6 +38,7 @@ const guildSchema = new mongoose.Schema({
     // White-label Premium features
     customBotName: { type: String, default: null },
     customStatus: { type: String, default: null },
+    customStatusType: { type: Number, default: 0 }, // 0 = Playing, 1 = Streaming, 2 = Listening, 3 = Watching, 5 = Competing
     hideBranding: { type: Boolean, default: false }
 });
 
