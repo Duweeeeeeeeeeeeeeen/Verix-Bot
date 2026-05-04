@@ -20,6 +20,7 @@ export default {
                 user: member.user.username,
                 user_mention: member.toString(),
                 user_tag: member.user.tag,
+                user_avatar: member.user.displayAvatarURL({ dynamic: true, size: 512 }),
                 guild: member.guild.name,
                 member_count: member.guild.memberCount.toString()
             };
@@ -34,10 +35,13 @@ export default {
                 .setTitle(placeholderHelper.replace(rawTitle, placeholders))
                 .setDescription(placeholderHelper.replace(rawDesc, placeholders))
                 .setColor(wEmbed.color && wEmbed.color !== '#000000' ? wEmbed.color : '#2ecc71')
+                .setThumbnail(placeholders.user_avatar) // Set default thumbnail to user avatar
                 .setTimestamp();
 
             if (wEmbed.footer) embed.setFooter({ text: placeholderHelper.replace(wEmbed.footer, placeholders), iconURL: member.guild.iconURL() });
-            if (wEmbed.thumbnail) embed.setThumbnail(placeholderHelper.replace(wEmbed.thumbnail, placeholders));
+            if (wEmbed.thumbnail && !isPlaceholder(wEmbed.thumbnail)) {
+                embed.setThumbnail(placeholderHelper.replace(wEmbed.thumbnail, placeholders));
+            }
             if (wEmbed.image) embed.setImage(placeholderHelper.replace(wEmbed.image, placeholders));
 
             await channel.send({ embeds: [embed] });
