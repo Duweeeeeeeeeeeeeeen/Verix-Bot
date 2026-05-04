@@ -195,35 +195,6 @@ export default function SupportConfig() {
                                 </div>
                             </div>
 
-                            <div className="toggle-list" style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                <div className="toggle-box">
-                                    <div className="flex-col">
-                                        <span style={{ fontWeight: 600 }}>Cancellazione Automatica</span>
-                                        <p className="text-dim" style={{ fontSize: '0.75rem' }}>Elimina la stanza quando tutti escono.</p>
-                                    </div>
-                                    <label className="toggle">
-                                        <input type="checkbox" checked={!!config.voiceSettings?.autoDelete} onChange={e => setNested('voiceSettings.autoDelete', e.target.checked)} />
-                                        <span className="slider"></span>
-                                    </label>
-                                </div>
-                                <NotificationSettings 
-                                    guildId={guildId}
-                                    value={config.voiceSettings?.notifications}
-                                    onChange={val => setNested('voiceSettings.notifications', val)}
-                                    title="Notifiche Utente"
-                                    description="Scegli come l'utente riceverà le notifiche (coda, inizio sessione, etc)."
-                                />
-                                <div className="toggle-box">
-                                    <div className="flex-col">
-                                        <span style={{ fontWeight: 600 }}>Ping Staff all'Ingresso</span>
-                                        <p className="text-dim" style={{ fontSize: '0.75rem' }}>Menziona i ruoli staff nel canale log.</p>
-                                    </div>
-                                    <label className="toggle">
-                                        <input type="checkbox" checked={!!config.voiceSettings?.pingStaffOnJoin} onChange={e => setNested('voiceSettings.pingStaffOnJoin', e.target.checked)} />
-                                        <span className="slider"></span>
-                                    </label>
-                                </div>
-                            </div>
                         </section>
                     </div>
 
@@ -251,6 +222,41 @@ export default function SupportConfig() {
                                 <RefreshCcw size={14} /> Reset Contatore
                             </button>
                         </section>
+
+                        {/* Extra Settings */}
+                        <div style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                            <div className="toggle-box-compact">
+                                <div className="flex-col">
+                                    <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>Cancellazione Automatica</span>
+                                    <p className="text-dim" style={{ fontSize: '0.7rem' }}>Rimuovi stanze vuote.</p>
+                                </div>
+                                <label className="toggle-mini">
+                                    <input type="checkbox" checked={!!config.voiceSettings?.autoDelete} onChange={e => setNested('voiceSettings.autoDelete', e.target.checked)} />
+                                    <span className="slider-mini"></span>
+                                </label>
+                            </div>
+
+                            <div className="toggle-box-compact">
+                                <div className="flex-col">
+                                    <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>Ping Staff all'Ingresso</span>
+                                    <p className="text-dim" style={{ fontSize: '0.7rem' }}>Notifica staff nel log.</p>
+                                </div>
+                                <label className="toggle-mini">
+                                    <input type="checkbox" checked={!!config.voiceSettings?.pingStaffOnJoin} onChange={e => setNested('voiceSettings.pingStaffOnJoin', e.target.checked)} />
+                                    <span className="slider-mini"></span>
+                                </label>
+                            </div>
+
+                            <div className="card-mini-notifications">
+                                <NotificationSettings 
+                                    guildId={guildId}
+                                    value={config.voiceSettings?.notifications}
+                                    onChange={val => setNested('voiceSettings.notifications', val)}
+                                    title="Notifiche Utente"
+                                    description="Metodo di notifica (DM/Canale)."
+                                />
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}
@@ -337,6 +343,9 @@ export default function SupportConfig() {
           .field-box { display: flex; flex-direction: column; gap: 8px; }
           
           .toggle-box { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: var(--bg-badge); border-radius: 12px; border: 1px solid var(--border); }
+          .toggle-box-compact { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: var(--bg-badge); border-radius: 10px; border: 1px solid var(--border); }
+          .card-mini-notifications { background: var(--bg-badge); border-radius: 10px; border: 1px solid var(--border); padding: 4px; }
+          .card-mini-notifications :global(.notification-settings-card) { background: transparent !important; border: none !important; padding: 8px !important; }
           .flex-col { display: flex; flex-direction: column; }
           
           .stat-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
