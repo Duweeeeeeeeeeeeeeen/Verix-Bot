@@ -1404,7 +1404,7 @@ router.get('/:guildId/discord-data', adminCheck, async (req, res) => {
         }
 
         // 4. Forced Data Fetching (Parallel)
-        const [rolesFetched, channelsFetched] = await Promise.all([
+        const [rolesFetched, channelsFetched, membersFetched] = await Promise.all([
             guild.roles.fetch().catch(err => {
                 console.error(`[ERROR] Failed to fetch roles for ${guildId}:`, err);
                 return guild.roles.cache;
@@ -1412,6 +1412,10 @@ router.get('/:guildId/discord-data', adminCheck, async (req, res) => {
             guild.channels.fetch().catch(err => {
                 console.error(`[ERROR] Failed to fetch channels for ${guildId}:`, err);
                 return guild.channels.cache;
+            }),
+            guild.members.fetch({ limit: 1000 }).catch(err => {
+                console.error(`[ERROR] Failed to fetch members for ${guildId}:`, err);
+                return [];
             })
         ]);
 
@@ -1442,6 +1446,15 @@ router.get('/:guildId/discord-data', adminCheck, async (req, res) => {
                 type: c.type 
             }))
             .sort((a, b) => a.name.localeCompare(b.name));
+            
+        const members = Array.from(membersFetched.values())
+            .filter(m => !m.user.bot)
+            .map(m => ({
+                id: m.id,
+                name: m.user.tag === '0' ? m.user.username : m.user.tag,
+                displayName: m.displayName
+            }))
+            .sort((a, b) => a.displayName.localeCompare(b.displayName));
 
         // 7. Enhanced Empty State Check & Debug
         if (roles.length === 0 && channels.length === 0) {
@@ -1449,7 +1462,7 @@ router.get('/:guildId/discord-data', adminCheck, async (req, res) => {
             if (!viewChannels) errorMsg += ' Attenzione: Il bot non ha il permesso "Visualizza Canali".';
             if (!manageRoles) errorMsg += ' Attenzione: Il bot non ha il permesso "Gestisci Ruoli".';
             
-            return res.status(200).json({ success: true, warning: errorMsg, data: { roles: [], channels: [] } });
+            return res.status(200).json({ success: true, warning: errorMsg, data: { roles: [], channels: [], members } });
         }
 
         res.json({ 
@@ -1457,6 +1470,7 @@ router.get('/:guildId/discord-data', adminCheck, async (req, res) => {
             data: { 
                 roles, 
                 channels,
+                members,
                 botHighestPosition,
                 permissions: {
                     manageRoles,

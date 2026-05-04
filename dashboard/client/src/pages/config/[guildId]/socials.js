@@ -60,9 +60,10 @@ export default function SocialsConfig() {
                 moduleConfig.platforms[p.id] = { enabled: false, notificationChannelId: null, roleId: null, mentionEveryone: false, accounts: [], embed: {} };
             }
             if (moduleConfig.platforms[p.id].accounts) {
-                moduleConfig.platforms[p.id].accounts = moduleConfig.platforms[p.id].accounts.map(acc => 
-                    (acc && typeof acc === 'object') ? (acc.username || '') : acc
-                );
+                moduleConfig.platforms[p.id].accounts = moduleConfig.platforms[p.id].accounts.map(acc => {
+                    if (typeof acc === 'string') return { username: acc, discordUserId: null };
+                    return { username: acc.username || '', discordUserId: acc.discordUserId || null };
+                });
             } else {
                 moduleConfig.platforms[p.id].accounts = [];
             }
@@ -118,7 +119,7 @@ export default function SocialsConfig() {
 
   const addAccount = () => {
     const newConfig = { ...config };
-    newConfig.platforms[activePlatform].accounts.push('');
+    newConfig.platforms[activePlatform].accounts.push({ username: '', discordUserId: null });
     setConfig(newConfig);
   };
 
@@ -128,9 +129,9 @@ export default function SocialsConfig() {
     setConfig(newConfig);
   };
 
-  const updateAccount = (index, value) => {
+  const updateAccount = (index, field, value) => {
     const newConfig = { ...config };
-    newConfig.platforms[activePlatform].accounts[index] = value;
+    newConfig.platforms[activePlatform].accounts[index][field] = value;
     setConfig(newConfig);
   };
 
@@ -212,9 +213,33 @@ export default function SocialsConfig() {
                                     <div className="align-center"><LinkIcon size={18} color="var(--primary)" /> <h3>Account da Monitorare</h3></div>
                                     <div className="accounts-list-s">
                                         {currentPlatformConfig.accounts.map((acc, i) => (
-                                            <div key={i} className="account-item-s">
-                                                <input className="input" placeholder="Username o Link..." value={acc} onChange={e => updateAccount(i, e.target.value)} />
-                                                <button onClick={() => removeAccount(i)} className="btn-remove-s"><Trash2 size={16} /></button>
+                                            <div key={i} className="account-row-premium animate fade-in">
+                                                <div className="acc-main-inputs">
+                                                    <div className="field-box flex-2">
+                                                        <label className="text-label-small">Twitch/YouTube Link o Username</label>
+                                                        <input 
+                                                            className="input" 
+                                                            placeholder="Username o Link..." 
+                                                            value={acc.username} 
+                                                            onChange={e => updateAccount(i, 'username', e.target.value)} 
+                                                        />
+                                                    </div>
+                                                    {activePlatform === 'twitch' && (
+                                                        <div className="field-box flex-1">
+                                                            <label className="text-label-small">Utente Discord (per Ruolo Live)</label>
+                                                            <DiscordSelector 
+                                                                type="role" // Using role style for users too, but with user icon if possible
+                                                                placeholder="Collega Utente..."
+                                                                options={(discordData.members || []).map(m => ({ id: m.id, name: m.displayName || m.name }))} 
+                                                                value={acc.discordUserId || ''} 
+                                                                onChange={val => updateAccount(i, 'discordUserId', val)} 
+                                                            />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <button onClick={() => removeAccount(i)} className="btn-remove-s" title="Rimuovi account">
+                                                    <Trash2 size={16} />
+                                                </button>
                                             </div>
                                         ))}
                                         <button onClick={addAccount} className="btn-add-s"><Plus size={16} /> Aggiungi Account</button>
@@ -290,11 +315,17 @@ export default function SocialsConfig() {
             .tab-body-s { padding: 32px; }
             .settings-grid-s { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
             
-            .accounts-list-s { display: flex; flex-direction: column; gap: 12px; margin-top: 16px; }
-            .account-item-s { display: flex; gap: 10px; }
-            .btn-remove-s { background: var(--error-glow); border: 1px solid var(--error); color: var(--error); width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-            .btn-add-s { margin-top: 8px; background: var(--bg-sidebar-alt); border: 1px dashed var(--border); color: var(--text-muted); padding: 12px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 0.8rem; }
-            .btn-add-s:hover { border-color: var(--primary); color: var(--text-main); }
+            .accounts-list-s { display: flex; flex-direction: column; gap: 16px; margin-top: 16px; }
+            .account-row-premium { display: flex; align-items: flex-end; gap: 12px; background: var(--bg-card); border: 1px solid var(--border); padding: 16px; border-radius: 16px; transition: 0.3s; }
+            .account-row-premium:hover { border-color: var(--primary); background: var(--bg-badge); }
+            .acc-main-inputs { flex: 1; display: flex; gap: 12px; }
+            .flex-1 { flex: 1; }
+            .flex-2 { flex: 2; }
+            .text-label-small { font-size: 0.7rem; font-weight: 700; color: var(--text-dim); text-transform: uppercase; margin-bottom: 6px; display: block; }
+            .btn-remove-s { background: var(--error-glow); border: 1px solid var(--error); color: var(--error); width: 42px; height: 42px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
+            .btn-remove-s:hover { background: var(--error); color: white; }
+            .btn-add-s { margin-top: 8px; background: var(--bg-sidebar-alt); border: 1px dashed var(--border); color: var(--text-muted); padding: 14px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 700; font-size: 0.85rem; width: 100%; transition: 0.2s; }
+            .btn-add-s:hover { border-color: var(--primary); color: var(--primary); background: var(--bg-badge); }
 
             .fields-stack-s { display: flex; flex-direction: column; gap: 16px; margin-top: 16px; }
             .status-row-s { display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; background: var(--bg-badge); border-radius: 10px; border: 1px solid var(--border); font-size: 0.85rem; font-weight: 700; }
