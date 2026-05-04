@@ -11,7 +11,8 @@ import {
   LayoutGrid,
   Filter,
   CheckCircle2,
-  Crown
+  Crown,
+  Sparkles
 } from 'lucide-react';
 
 import LoadingScreen from '../../components/LoadingScreen';
@@ -72,7 +73,11 @@ export default function Selector() {
           </div>
           
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-            {guild.isPremium && (
+            {guild.premiumTier === 'platinum' ? (
+              <div className="premium-badge-s platinum" title="Server Platinum">
+                <Sparkles size={14} color="#a855f7" />
+              </div>
+            ) : guild.isPremium && (
               <div className="premium-badge-s" title="Server Premium">
                 <Crown size={14} color="#FFD700" />
               </div>
