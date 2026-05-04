@@ -259,11 +259,11 @@ export default function Layout({ children, guildId, hideGuide = false }) {
 
         <div className="sidebar-footer">
           {/* Fixed System Section */}
-          <div className="nav-section" style={{ padding: '0 12px 12px 12px' }}>
+          <div className="nav-section" style={{ padding: '0 12px 4px 12px' }}>
               {!isCollapsed ? (
-                <div className="nav-group-title animate fade-in" style={{ padding: '0 16px 8px 16px' }}>{systemGroup.title}</div>
+                <div className="nav-group-title animate fade-in" style={{ padding: '0 16px 4px 16px' }}>{systemGroup.title}</div>
               ) : (
-                <div className="nav-divider" style={{ margin: '0 16px 12px 16px' }}></div>
+                <div className="nav-divider" style={{ margin: '0 16px 8px 16px' }}></div>
               )}
               
               {systemGroup.items.map((item) => {
@@ -404,9 +404,22 @@ export default function Layout({ children, guildId, hideGuide = false }) {
           background: var(--bg-main);
         }
 
-        .nav-section { margin-bottom: 4px; }
-        .nav-group-title { font-size: 10px; font-weight: 800; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1px; padding: 16px 16px 4px 16px; opacity: 0.6; }
-        .nav-divider { height: 1px; background: var(--border); margin: 8px 16px; opacity: 0.3; }
+        .nav-section { margin-bottom: 0px; }
+        .nav-group-title { font-size: 10px; font-weight: 800; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1px; padding: 12px 16px 2px 16px; opacity: 0.6; }
+        .nav-divider { height: 1px; background: var(--border); margin: 4px 16px; opacity: 0.3; }
+        .nav-link {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          padding: 10px 16px;
+          border-radius: 12px;
+          color: var(--text-muted);
+          font-weight: 600;
+          text-decoration: none;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          position: relative;
+          white-space: nowrap;
+        }
 
         .content-container {
           padding: 96px 48px 48px 48px;
