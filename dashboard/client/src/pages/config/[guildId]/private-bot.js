@@ -250,8 +250,8 @@ export default function PrivateBotPage() {
                                         <div className="mini-content">
                                             <h5>Invita nel Server</h5>
                                             <p>Vai su <strong>OAuth2 → URL Generator</strong>. Seleziona <code>bot</code> e <code>applications.commands</code>, poi <code>Administrator</code>. Visita l'URL generato.</p>
-                                            <div className="step-img-container mini clickable" onClick={() => setSelectedImage({ src: `/img/guide${langPath}/step5.png`, title: "Generatore URL OAuth2" })}>
-                                                <img src={`/img/guide${langPath}/step5.png`} alt="Step 5" />
+                                            <div className="step-img-container mini clickable" onClick={() => setSelectedImage({ src: `/img/guide${langPath}/step4.png`, title: "Generatore URL OAuth2" })}>
+                                                <img src={`/img/guide${langPath}/step4.png`} alt="Step 5" />
                                                 <div className="zoom-overlay"><Zap size={14} /> Zoom</div>
                                             </div>
                                         </div>
@@ -262,8 +262,8 @@ export default function PrivateBotPage() {
                                         <div className="mini-content">
                                             <h5>Tutto Pronto!</h5>
                                             <p>Il bot risponderà ora ai comandi nel tuo server usando il sistema Verix.</p>
-                                            <div className="step-img-container mini clickable" onClick={() => setSelectedImage({ src: `/img/guide${langPath}/step6.png`, title: "URL Generato" })}>
-                                                <img src={`/img/guide${langPath}/step6.png`} alt="Step 6" />
+                                            <div className="step-img-container mini clickable" onClick={() => setSelectedImage({ src: `/img/guide${langPath}/step5.png`, title: "URL Generato" })}>
+                                                <img src={`/img/guide${langPath}/step5.png`} alt="Step 6" />
                                                 <div className="zoom-overlay"><Zap size={14} /> Zoom</div>
                                             </div>
                                         </div>
