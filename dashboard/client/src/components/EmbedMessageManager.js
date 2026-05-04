@@ -220,14 +220,34 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
                   <h3>{activeSlugData?.label}</h3>
                   <p>{activeSlugData?.description}</p>
                 </div>
-                <button 
-                  onClick={handleSave} 
-                  disabled={saving}
-                  className="btn-save-all"
-                >
-                  {saving ? <RefreshCw className="spin" size={18} /> : <Save size={18} />}
-                  <span>{saving ? t('embeds.manager.saving') : t('embeds.manager.save_changes')}</span>
-                </button>
+                <div className="header-buttons-v2" style={{ display: 'flex', gap: '12px' }}>
+                  <button 
+                    onClick={() => {
+                      if (window.confirm(t('embeds.manager.reset_confirm'))) {
+                        const defaults = defaultMessages[module] || {};
+                        const fallback = defaults[activeSlug] || {
+                          title: t('embeds.manager.missing_title'),
+                          description: t('embeds.manager.missing_desc'),
+                          color: '#6366f1'
+                        };
+                        updateMessage(activeSlug, fallback);
+                      }
+                    }}
+                    className="btn-outline"
+                    style={{ padding: '12px 20px', borderRadius: '12px', fontSize: '0.9rem' }}
+                  >
+                    <RefreshCw size={18} />
+                    <span>{t('embeds.manager.reset_defaults')}</span>
+                  </button>
+                  <button 
+                    onClick={handleSave} 
+                    disabled={saving}
+                    className="btn-save-all"
+                  >
+                    {saving ? <RefreshCw className="spin" size={18} /> : <Save size={18} />}
+                    <span>{saving ? t('embeds.manager.saving') : t('embeds.manager.save_changes')}</span>
+                  </button>
+                </div>
               </header>
 
               <div className="editor-card-p">

@@ -288,12 +288,12 @@ export default function VerifyConfig() {
                             guildId={guildId}
                             module="verify"
                             slugs={[
-                                { key: 'panel', label: 'Pannello Verifica', description: 'Il messaggio principale inviato nel canale di verifica.', variables: ['guild'], group: '✅ Verifica', groupIcon: ShieldCheck },
-                                { key: 'success', label: 'Conferma Identità (DM)', description: 'Messaggio privato inviato all\'utente dopo la verifica riuscita.', variables: ['user', 'guild', 'member_count'], group: '✅ Successo', groupIcon: MessageCircle },
-                                { key: 'success_reply', label: 'Risposta Pulsante', description: 'Risposta effimera mostrata al click del pulsante.', variables: ['user', 'guild'], group: '✅ Successo', groupIcon: Zap },
-                                { key: 'already_verified', label: 'Già Verificato', description: 'Errore mostrato se l\'utente è già verificato.', variables: ['user', 'guild'], group: '🟥 Errori', groupIcon: AlertCircle },
-                                { key: 'error', label: 'Errore Identificazione', description: 'Errore mostrato in caso di problemi tecnici durante la verifica.', variables: [], group: '🟥 Errori', groupIcon: XCircle },
-                                { key: 'staff_log', label: 'Log Staff', description: 'Log inviato al canale staff quando qualcuno si verifica.', variables: ['user', 'role', 'timestamp'], group: '🛡️ Staff', groupIcon: Shield },
+                                { key: 'panel', label: t('verify.msg_panel'), description: t('verify.msg_panel_desc'), variables: ['guild'], group: t('verify.group_verify'), groupIcon: ShieldCheck },
+                                { key: 'success', label: t('verify.msg_success'), description: t('verify.msg_success_desc'), variables: ['user', 'guild', 'member_count'], group: t('verify.group_success'), groupIcon: MessageCircle },
+                                { key: 'success_reply', label: t('verify.msg_success_reply'), description: t('verify.msg_success_reply_desc'), variables: ['user', 'guild'], group: t('verify.group_success'), groupIcon: Zap },
+                                { key: 'already_verified', label: t('verify.msg_already_verified'), description: t('verify.msg_already_verified_desc'), variables: ['user', 'guild'], group: t('verify.group_errors'), groupIcon: AlertCircle },
+                                { key: 'error', label: t('verify.msg_error'), description: t('verify.msg_error_desc'), variables: [], group: t('verify.group_errors'), groupIcon: XCircle },
+                                { key: 'staff_log', label: t('verify.msg_staff_log'), description: t('verify.msg_staff_log_desc'), variables: ['user', 'role', 'timestamp'], group: t('verify.group_staff'), groupIcon: Shield },
                             ]}
                             extraButtons={(slug) => {
                                 if (slug === 'panel') {

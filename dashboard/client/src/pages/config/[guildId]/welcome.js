@@ -10,10 +10,11 @@ import {
     Power, Palette, Info, Bell, Layout as LayoutIcon, ChevronRight, Zap
 } from 'lucide-react';
 import { mergeConfig } from '../../../utils/defaults';
+import defaultMessagesMap from '../../../locales';
 
 export default function WelcomeConfig() {
   const router = useRouter();
-  const { t } = useT();
+  const { t, language } = useT();
   const { guildId } = router.query;
   const [config, setConfig] = useState(null);
   const [discordData, setDiscordData] = useState({ roles: [], channels: [] });
@@ -213,6 +214,26 @@ export default function WelcomeConfig() {
                     </button>
                 </div>
                 <div className="editor-main-p">
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
+                        <button 
+                            onClick={() => {
+                                if (window.confirm(t('embeds.manager.reset_confirm'))) {
+                                    const defaults = defaultMessagesMap[language] || defaultMessagesMap['it'];
+                                    const moduleDefaults = defaults['welcome'] || {};
+                                    const fallback = moduleDefaults[activeEmbedKey] || {
+                                        title: t('embeds.manager.missing_title'),
+                                        description: t('embeds.manager.missing_desc'),
+                                        color: '#6366f1'
+                                    };
+                                    updateEmbed(activeEmbedKey, fallback);
+                                }
+                            }}
+                            className="btn-outline"
+                            style={{ fontSize: '0.8rem', padding: '8px 16px' }}
+                        >
+                            <RefreshCcw size={14} /> {t('embeds.manager.reset_defaults')}
+                        </button>
+                    </div>
                     <EmbedEditor 
                         embed={config[activeEmbedKey]?.embed || {}} 
                         onChange={d => updateEmbed(activeEmbedKey, d)}

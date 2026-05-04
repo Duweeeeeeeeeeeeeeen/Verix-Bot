@@ -324,11 +324,11 @@ export default function ModerationConfig() {
                                             <label className="text-label">{t('moderation.action_label')}</label>
                                             <CustomSelect 
                                                 options={[
-                                                    { value: 'warn', label: 'Warning' },
-                                                    { value: 'timeout', label: 'Timeout' },
-                                                    { value: 'mute', label: 'Mute' },
-                                                    { value: 'kick', label: 'Kick' },
-                                                    { value: 'ban', label: 'Ban' }
+                                                    { value: 'warn', label: t('moderation.action_warn') },
+                                                    { value: 'timeout', label: t('moderation.action_timeout') },
+                                                    { value: 'mute', label: t('moderation.action_mute') },
+                                                    { value: 'kick', label: t('moderation.action_kick') },
+                                                    { value: 'ban', label: t('moderation.action_ban') }
                                                 ]} 
                                                 value={p.action} 
                                                 onChange={val => updatePunishment(index, 'action', val)} 
@@ -379,12 +379,12 @@ export default function ModerationConfig() {
                         <EmbedMessageManager 
                             guildId={guildId}
                             module="moderation"                             slugs={[
-                                { key: 'warn', label: t('moderation.action_label') + ' Warn', description: t('moderation.notif_desc'), variables: ['user', 'reason', 'moderator'], group: '🛡️ Azioni', groupIcon: ShieldAlert },
-                                { key: 'timeout', label: t('moderation.action_label') + ' Timeout', description: t('moderation.notif_desc'), variables: ['user', 'duration', 'reason', 'moderator'], group: '🛡️ Azioni', groupIcon: Clock },
-                                { key: 'kick', label: t('moderation.action_label') + ' Kick', description: t('moderation.notif_desc'), variables: ['user', 'reason', 'moderator'], group: '🛡️ Azioni', groupIcon: AlertTriangle },
-                                { key: 'ban', label: t('moderation.action_label') + ' Ban', description: t('moderation.notif_desc'), variables: ['user', 'reason', 'moderator'], group: '🛡️ Azioni', groupIcon: Gavel },
-                                { key: 'command_ban', label: 'Response /ban', description: t('moderation.notif_desc'), variables: ['user', 'target', 'reason'], group: '💬 Comandi', groupIcon: MessageSquare },
-                                { key: 'command_kick', label: 'Response /kick', description: t('moderation.notif_desc'), variables: ['user', 'target', 'reason'], group: '💬 Comandi', groupIcon: MessageSquare }
+                                { key: 'warn', label: t('moderation.msg_warn'), description: t('moderation.notif_desc'), variables: ['user', 'reason', 'moderator'], group: t('moderation.group_actions'), groupIcon: ShieldAlert },
+                                { key: 'timeout', label: t('moderation.msg_timeout'), description: t('moderation.notif_desc'), variables: ['user', 'duration', 'reason', 'moderator'], group: t('moderation.group_actions'), groupIcon: Clock },
+                                { key: 'kick', label: t('moderation.msg_kick'), description: t('moderation.notif_desc'), variables: ['user', 'reason', 'moderator'], group: t('moderation.group_actions'), groupIcon: AlertTriangle },
+                                { key: 'ban', label: t('moderation.msg_ban'), description: t('moderation.notif_desc'), variables: ['user', 'reason', 'moderator'], group: t('moderation.group_actions'), groupIcon: Gavel },
+                                { key: 'command_ban', label: t('moderation.msg_command_ban'), description: t('moderation.notif_desc'), variables: ['user', 'target', 'reason'], group: t('moderation.group_commands'), groupIcon: MessageSquare },
+                                { key: 'command_kick', label: t('moderation.msg_command_kick'), description: t('moderation.notif_desc'), variables: ['user', 'target', 'reason'], group: t('moderation.group_commands'), groupIcon: MessageSquare }
                             ]}
                         />
                     </div>

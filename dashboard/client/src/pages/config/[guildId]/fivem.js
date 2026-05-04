@@ -257,8 +257,8 @@ export default function FiveMConfig() {
                             guildId={guildId}
                             module="fivem"
                             slugs={[
-                                { key: 'status_embed', label: t('fivem.tab_servers') + ' (Online)', description: 'Embed inviato quando il server è online.', variables: ['serverName', 'players', 'maxPlayers'], group: '🟢 Status', groupIcon: Activity },
-                                { key: 'offline_embed', label: t('fivem.tab_servers') + ' (Offline)', description: 'Embed inviato quando il server non è raggiungibile.', variables: ['serverName'], group: '🔴 Offline', groupIcon: Power }
+                                { key: 'status_embed', label: t('fivem.msg_online'), description: t('fivem.msg_online_desc'), variables: ['serverName', 'players', 'maxPlayers'], group: t('fivem.group_status'), groupIcon: Activity },
+                                { key: 'offline_embed', label: t('fivem.msg_offline'), description: t('fivem.msg_offline_desc'), variables: ['serverName'], group: t('fivem.group_offline'), groupIcon: Power }
                             ]}
                         />
                     </div>
@@ -272,7 +272,7 @@ export default function FiveMConfig() {
                         value={config.notifications}
                         onChange={val => setNested('notifications', val)}
                         title={t('dashboard.module_fivem')}
-                        description="Avvisa lo staff se il server cade."
+                        description={t('fivem.notif_desc')}
                     />
                 </div>
 

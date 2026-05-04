@@ -39,7 +39,8 @@ import {
   Shield,
   Sun,
   Moon,
-  Terminal
+  Terminal,
+  Crown
 } from 'lucide-react';
 import GuideSidebar from './GuideSidebar';
 import { useTheme } from '../contexts/ThemeContext';
@@ -124,7 +125,8 @@ export default function Layout({ children, guildId, hideGuide = false }) {
   const navigationGroups = [
     {
       items: [
-        { name: t('sidebar.home'), icon: Home, path: `/config/${guildId}`, id: 'home' }
+        { name: t('sidebar.home'), icon: Home, path: `/config/${guildId}`, id: 'home' },
+        { name: t('sidebar.premium'), icon: Crown, path: `/config/${guildId}/premium`, id: 'premium' }
       ]
     },
     {

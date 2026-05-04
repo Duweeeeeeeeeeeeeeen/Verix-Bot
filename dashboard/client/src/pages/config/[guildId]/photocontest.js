@@ -333,14 +333,14 @@ export default function PhotoContestConfig() {
                         guildId={guildId}
                         module="photocontest"
                         slugs={[
-                            { key: 'contest_started', label: t('photocontest.btn_start_now'), description: 'Embed inviato nel canale contest all\'avvio.', variables: ['theme', 'duration', 'end_time'], group: '🎮 Contest', groupIcon: Play },
-                            { key: 'submission_received', label: 'Conferma Invio', description: 'DM inviato all\'utente dopo l\'invio della foto.', variables: ['user', 'theme'], group: '📥 Partecipazione', groupIcon: UserCheck },
-                            { key: 'vote_received', label: 'Notifica Voto', description: 'DM/Notifica quando una foto riceve un voto (se abilitato).', variables: ['user', 'voter', 'points', 'total_points'], group: '📥 Partecipazione', groupIcon: Trophy },
-                            { key: 'contest_ended', label: 'Annuncio Vincitore', description: 'Embed inviato nel canale contest al termine.', variables: ['theme', 'winner', 'points'], group: '🎮 Contest', groupIcon: Trophy },
-                            { key: 'hof_entry', label: 'Hall of Fame', description: 'Embed inviato nel canale HoF.', variables: ['theme', 'winner', 'points', 'image_url'], group: '🏆 Hall of Fame', groupIcon: Trophy },
-                            { key: 'winner_dm', label: 'DM Vincitore', description: 'DM inviato al vincitore.', variables: ['user', 'theme', 'points'], group: '🏆 Hall of Fame', groupIcon: UserCheck },
-                            { key: 'error_no_participants', label: 'Errore Partecipanti', description: 'Mostrato se il contest termina senza partecipanti.', variables: [], group: '🟥 Errori', groupIcon: XCircle },
-                            { key: 'leaderboard_error', label: 'Errore Classifica', description: 'Mostrato se il comando classifica fallisce.', variables: [], group: '🟥 Errori', groupIcon: XCircle }
+                            { key: 'contest_started', label: t('photocontest.msg_contest_started'), description: t('photocontest.msg_contest_started'), variables: ['theme', 'duration', 'end_time'], group: t('photocontest.group_contest'), groupIcon: Play },
+                            { key: 'submission_received', label: t('photocontest.msg_submission_received'), description: t('photocontest.msg_submission_received'), variables: ['user', 'theme'], group: t('photocontest.group_participation'), groupIcon: UserCheck },
+                            { key: 'vote_received', label: t('photocontest.msg_vote_received'), description: t('photocontest.msg_vote_received'), variables: ['user', 'voter', 'points', 'total_points'], group: t('photocontest.group_participation'), groupIcon: Trophy },
+                            { key: 'contest_ended', label: t('photocontest.msg_contest_ended'), description: t('photocontest.msg_contest_ended'), variables: ['theme', 'winner', 'points'], group: t('photocontest.group_contest'), groupIcon: Trophy },
+                            { key: 'hof_entry', label: t('photocontest.msg_hof_entry'), description: t('photocontest.msg_hof_entry'), variables: ['theme', 'winner', 'points', 'image_url'], group: t('photocontest.group_hof'), groupIcon: Trophy },
+                            { key: 'winner_dm', label: t('photocontest.msg_winner_dm'), description: t('photocontest.msg_winner_dm'), variables: ['user', 'theme', 'points'], group: t('photocontest.group_hof'), groupIcon: UserCheck },
+                            { key: 'error_no_participants', label: t('photocontest.msg_error_no_participants'), description: t('photocontest.msg_error_no_participants'), variables: [], group: t('photocontest.group_errors'), groupIcon: XCircle },
+                            { key: 'leaderboard_error', label: t('photocontest.msg_leaderboard_error'), description: t('photocontest.msg_leaderboard_error'), variables: [], group: t('photocontest.group_errors'), groupIcon: XCircle }
                         ]}
                     />
                 </div>

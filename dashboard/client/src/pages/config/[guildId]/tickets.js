@@ -705,23 +705,23 @@ export default function TicketConfig() {
                             guildId={guildId}
                             module="tickets"
                             slugs={[
-                                { key: 'panel', label: 'Pannello Apertura Ticket', description: 'Il messaggio principale con i bottoni o il menu per aprire un ticket.', variables: ['guild'], group: '1. Accesso', groupIcon: Play },
-                                { key: 'ticket', label: 'Ticket Benvenuto (Generale)', description: 'Messaggio iniziale mandato dentro the ticket se non c\'è un messaggio specifico per categoria.', variables: ['user'], group: '2. Gestione', groupIcon: Ticket },
-                                { key: 'success_open', label: 'Ticket Aperto', description: 'Risposta effimera al bottone di apertura ticket.', variables: ['user', 'ticketChannel'], group: '2. Gestione', groupIcon: Ticket },
-                                { key: 'priority_select', label: 'Scelta Priorità', description: 'Messaggio che chiede la priorità all\'apertura.', variables: ['type'], group: '2. Gestione', groupIcon: Clock },
-                                { key: 'quick_reply_menu', label: 'Menu Risposte Rapide', description: 'Pannello di selezione template per lo staff.', variables: [], group: '🛡️ Staff Tools', groupIcon: MessageSquare },
-                                { key: 'tag_menu', label: 'Menu Tag/Protocolli', description: 'Pannello di selezione tag per lo staff.', variables: [], group: '🛡️ Staff Tools', groupIcon: Tag },
-                                { key: 'staff_claimed', label: 'Ticket Preso in Carico', description: 'Messaggio inviato quando un membro dello staff clicca "Prendi in carico".', variables: ['staff'], group: '🛡️ Staff', groupIcon: Shield },
-                                { key: 'status_updated', label: 'Stato Aggiornato', description: 'Messaggio che indica il cambio di stato del ticket (es. in attesa utente).', variables: ['user', 'status'], group: '2. Gestione', groupIcon: Tag },
-                                { key: 'inactivity_close', label: 'Chiusura per Inattività', description: 'Messaggio inviato prima di chiudere un ticket inattivo.', variables: ['hours'], group: '🔒 Chiusura', groupIcon: Archive },
-                                { key: 'close', label: 'Ticket Chiuso', description: 'Messaggio di conferma chiusura nel ticket prima dell\'archiviazione.', variables: ['user'], group: '🔒 Chiusura', groupIcon: Archive },
-                                { key: 'close_status', label: 'Trascrizione Ticket', description: 'Messaggio finale inviato in DM all\'utente con il transcript del ticket.', variables: ['user', 'ticketId', 'transcriptUrl'], group: '🔒 Chiusura', groupIcon: FileText },
-                                { key: 'staff_ticket_log', label: 'Log Ticket Staff', description: 'Log inviato nel canale log ticket quando un ticket viene chiuso.', variables: ['user', 'staff', 'ticketId'], group: '🛡️ Staff', groupIcon: Shield },
-                                { key: 'already_exists', label: 'Ticket Esistente', description: 'Errore mostrato quando un utente ha già un ticket aperto.', variables: ['user', 'ticketChannel'], group: '🟥 Errori', groupIcon: XCircle },
-                                { key: 'already_claimed', label: 'Ticket Già Preso', description: 'Errore mostrato quando un membro staff tenta di prendere un ticket già gestito.', variables: ['user'], group: '🟥 Errori', groupIcon: XCircle },
-                                { key: 'cannot_close', label: 'Errore Chiusura (Generico)', description: 'Errore mostrato se il ticket non può essere chiuso.', variables: ['user'], group: '🟥 Errori', groupIcon: XCircle },
-                                { key: 'close_error_logs', label: 'Errore Permessi Log', description: 'Errore mostrato se il bot non può scrivere nel canale log.', variables: ['channel', 'missing'], group: '🟥 Errori', groupIcon: XCircle },
-                                { key: 'close_error_category', label: 'Errore Config Categoria', description: 'Errore mostrato se la categoria chiusi manca.', variables: [], group: '🟥 Errori', groupIcon: XCircle }
+                                { key: 'panel', label: t('tickets.msg_panel'), description: t('tickets.msg_panel_desc'), variables: ['guild'], group: t('tickets.group_access'), groupIcon: Play },
+                                { key: 'ticket', label: t('tickets.msg_ticket'), description: t('tickets.msg_ticket_desc'), variables: ['user'], group: t('tickets.group_management'), groupIcon: Ticket },
+                                { key: 'success_open', label: t('tickets.msg_success_open'), description: t('tickets.msg_success_open_desc'), variables: ['user', 'ticketChannel'], group: t('tickets.group_management'), groupIcon: Ticket },
+                                { key: 'priority_select', label: t('tickets.msg_priority_select'), description: t('tickets.msg_priority_select_desc'), variables: ['type'], group: t('tickets.group_management'), groupIcon: Clock },
+                                { key: 'quick_reply_menu', label: t('tickets.msg_quick_reply_menu'), description: t('tickets.msg_quick_reply_menu_desc'), variables: [], group: t('tickets.group_staff_tools'), groupIcon: MessageSquare },
+                                { key: 'tag_menu', label: t('tickets.msg_tag_menu'), description: t('tickets.msg_tag_menu_desc'), variables: [], group: t('tickets.group_staff_tools'), groupIcon: Tag },
+                                { key: 'staff_claimed', label: t('tickets.msg_staff_claimed'), description: t('tickets.msg_staff_claimed_desc'), variables: ['staff'], group: t('tickets.group_staff'), groupIcon: Shield },
+                                { key: 'status_updated', label: t('tickets.msg_status_updated'), description: t('tickets.msg_status_updated_desc'), variables: ['user', 'status'], group: t('tickets.group_management'), groupIcon: Tag },
+                                { key: 'inactivity_close', label: t('tickets.msg_inactivity_close'), description: t('tickets.msg_inactivity_close_desc'), variables: ['hours'], group: t('tickets.group_closure'), groupIcon: Archive },
+                                { key: 'close', label: t('tickets.msg_close'), description: t('tickets.msg_close_desc'), variables: ['user'], group: t('tickets.group_closure'), groupIcon: Archive },
+                                { key: 'close_status', label: t('tickets.msg_close_status'), description: t('tickets.msg_close_status_desc'), variables: ['user', 'ticketId', 'transcriptUrl'], group: t('tickets.group_closure'), groupIcon: FileText },
+                                { key: 'staff_ticket_log', label: t('tickets.msg_staff_ticket_log'), description: t('tickets.msg_staff_ticket_log_desc'), variables: ['user', 'staff', 'ticketId'], group: t('tickets.group_staff'), groupIcon: Shield },
+                                { key: 'already_exists', label: t('tickets.msg_already_exists'), description: t('tickets.msg_already_exists_desc'), variables: ['user', 'ticketChannel'], group: t('tickets.group_errors'), groupIcon: XCircle },
+                                { key: 'already_claimed', label: t('tickets.msg_already_claimed'), description: t('tickets.msg_already_claimed_desc'), variables: ['user'], group: t('tickets.group_errors'), groupIcon: XCircle },
+                                { key: 'cannot_close', label: t('tickets.msg_cannot_close'), description: t('tickets.msg_cannot_close_desc'), variables: ['user'], group: t('tickets.group_errors'), groupIcon: XCircle },
+                                { key: 'close_error_logs', label: t('tickets.msg_close_error_logs'), description: t('tickets.msg_close_error_logs_desc'), variables: ['channel', 'missing'], group: t('tickets.group_errors'), groupIcon: XCircle },
+                                { key: 'close_error_category', label: t('tickets.msg_close_error_category'), description: t('tickets.msg_close_error_category_desc'), variables: [], group: t('tickets.group_errors'), groupIcon: XCircle }
                             ]}
                             extraButtons={(slug) => {
                                 if (slug === 'panel') {
