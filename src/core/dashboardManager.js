@@ -16,6 +16,7 @@ import webhooksRoutes from '../../dashboard/api/routes/webhooks.js';
 import messageRoutes from '../../dashboard/api/routes/messages.js';
 import managementRoutes from '../../dashboard/api/routes/management.js';
 import systemRoutes from '../../dashboard/api/routes/system.js';
+import privateBotRoutes from '../../dashboard/api/routes/privateBot.js';
 
 /**
  * Initializes and starts the Web Dashboard API hosted by the Bot process.
@@ -134,6 +135,7 @@ export function startDashboard(client) {
     app.use('/api/management', managementRoutes);
     app.use('/api/webhooks', webhooksRoutes);
     app.use('/api/system', systemRoutes);
+    app.use('/api/private-bot', privateBotRoutes);
 
     app.get('/api/health', (req, res) => {
         const dbState = mongoose.connection.readyState;
