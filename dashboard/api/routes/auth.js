@@ -35,14 +35,18 @@ router.get('/user', async (req, res) => {
 
         const guildsWithPremium = await Promise.all(guilds.map(async (guild) => {
             const guildSettings = await Guild.findOne({ guildId: guild.id });
+            const premiumTier = guildSettings?.premiumTier || (guildSettings?.isPremium ? 'premium' : 'none');
             const isPrivateBotActive = guildSettings?.privateBot?.enabled && guildSettings?.privateBot?.token;
             
+            // If Platinum, always allow access to configure private bot
+            const isBotInGuild = client.guilds.cache.has(guild.id) || isPrivateBotActive || premiumTier === 'platinum';
+
             return {
                 ...guild,
-                botInGuild: client.guilds.cache.has(guild.id) || isPrivateBotActive,
+                botInGuild: isBotInGuild,
                 inviteUrl: `${inviteUrl}&guild_id=${guild.id}`,
                 isPremium: guildSettings ? !!guildSettings.isPremium : false,
-                premiumTier: guildSettings?.premiumTier || (guildSettings?.isPremium ? 'premium' : 'none')
+                premiumTier: premiumTier
             };
         }));
 
