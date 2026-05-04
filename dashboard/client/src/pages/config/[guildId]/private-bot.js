@@ -147,8 +147,10 @@ export default function PrivateBotPage() {
                                 <div className="step-number">1</div>
                                 <div className="step-content">
                                     <h5>Crea l'Applicazione</h5>
-                                    <p>Vai sul <a href="https://discord.com/developers/applications" target="_blank" rel="noreferrer">Developer Portal</a> e clicca su <strong>"New Application"</strong> in alto a destra. Dai un nome al tuo bot (es: Nome Server Bot).</p>
-                                    <div className="step-img-placeholder">[Immagine: Schermata New Application]</div>
+                                    <p>Vai sul <a href="https://discord.com/developers/applications" target="_blank" rel="noreferrer">Developer Portal</a> e clicca su <strong>"New Application"</strong>. Scegli l'opzione <strong>"Bot"</strong> come mostrato sotto.</p>
+                                    <div className="step-img-container">
+                                        <img src="/img/guide/step1.png" alt="Schermata New Application" />
+                                    </div>
                                 </div>
                             </div>
 
@@ -156,8 +158,10 @@ export default function PrivateBotPage() {
                                 <div className="step-number">2</div>
                                 <div className="step-content">
                                     <h5>Prendi il Token</h5>
-                                    <p>Nel menu a sinistra seleziona <strong>"Bot"</strong>. Clicca su <strong>"Reset Token"</strong> (o Copy) per ottenere la chiave segreta. Incollala nel campo qui sopra.</p>
-                                    <div className="step-img-placeholder">[Immagine: Sezione Bot & Token]</div>
+                                    <p>Nel menu a sinistra seleziona <strong>"Bot"</strong>. Clicca su <strong>"Resetta token"</strong> per visualizzare e copiare la tua chiave segreta.</p>
+                                    <div className="step-img-container">
+                                        <img src="/img/guide/step2.png" alt="Sezione Bot & Token" />
+                                    </div>
                                 </div>
                             </div>
 
@@ -271,7 +275,8 @@ export default function PrivateBotPage() {
             .intent-list li { font-size: 0.85rem; color: var(--text-main); display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
             .intent-list li:before { content: '✓'; color: #4caf50; font-weight: 900; }
 
-            .step-img-placeholder { width: 100%; height: 180px; background: var(--bg-badge); border: 2px dashed var(--border); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); font-size: 0.8rem; font-weight: 600; margin-top: 12px; }
+            .step-img-container { width: 100%; max-width: 500px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); margin-top: 12px; background: var(--bg-badge); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+            .step-img-container img { width: 100%; height: auto; display: block; }
 
             .bot-profile { display: flex; align-items: center; gap: 16px; margin-bottom: 32px; background: var(--bg-badge); padding: 16px; border-radius: 16px; }
             .bot-profile img { width: 64px; height: 64px; border-radius: 50%; border: 2px solid var(--primary); }
