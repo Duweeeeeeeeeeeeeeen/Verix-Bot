@@ -1421,9 +1421,9 @@ input:checked + .slider-mini:before {
 }
 
 .btn-add-premium.locked:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-  background: var(--primary-glow);
+  border-color: #f59e0b;
+  color: #f59e0b;
+  background: rgba(245, 158, 11, 0.1);
   transform: translateY(-2px);
 }
 
@@ -1431,12 +1431,21 @@ input:checked + .slider-mini:before {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: var(--primary-glow);
-  color: var(--primary);
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
   padding: 2px 8px;
   border-radius: 6px;
   font-size: 0.65rem;
   font-weight: 900;
   text-transform: uppercase;
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.premium-border-gold {
+  border: 1px solid rgba(245, 158, 11, 0.5) !important;
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.1) !important;
+}
+
+.text-premium-gold {
+  color: #fbbf24 !important;
 }

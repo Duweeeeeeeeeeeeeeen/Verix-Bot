@@ -38,6 +38,7 @@ export default function SocialsConfig() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [guildData, setGuildData] = useState(null);
   
   const [activePlatform, setActivePlatform] = useState('twitch');
   const [activeTab, setActiveTab] = useState('settings'); 
@@ -50,8 +51,9 @@ export default function SocialsConfig() {
     if (guildId && mounted) {
       Promise.all([
         api.request(`/config/${guildId}/socials`),
-        api.request(`/config/${guildId}/discord-data`)
-      ]).then(([configRes, discordRes]) => {
+        api.request(`/config/${guildId}/discord-data`),
+        api.request(`/config/${guildId}/guild`)
+      ]).then(([configRes, discordRes, guildRes]) => {
         let moduleConfig = configRes?.data || configRes || { platforms: {} };
         if (!moduleConfig.platforms) moduleConfig.platforms = {};
         
@@ -75,6 +77,10 @@ export default function SocialsConfig() {
           setDiscordData(discordRes.data);
         } else if (discordRes) {
           setDiscordData(discordRes);
+        }
+
+        if (guildRes) {
+          setGuildData(guildRes.data || guildRes);
         }
       }).catch(err => {
         console.error("Failed to load socials config", err);
@@ -162,18 +168,24 @@ export default function SocialsConfig() {
 
         {/* Platform Selector */}
         <div className="platform-grid-s">
-            {PLATFORMS.map(p => (
-                <button 
-                    key={p.id} 
-                    onClick={() => setActivePlatform(p.id)}
-                    className={`platform-card-s ${activePlatform === p.id ? 'active' : ''}`}
-                    style={{ '--platform-color': p.color }}
-                >
-                    <div className="p-icon-s"><p.icon size={20} /></div>
-                    <span>{p.name}</span>
-                    {config.platforms[p.id]?.enabled && <div className="p-active-dot"></div>}
-                </button>
-            ))}
+            {PLATFORMS.map(p => {
+                const isPremiumOnly = ['youtube', 'instagram', 'tiktok', 'twitter'].includes(p.id);
+                return (
+                    <button 
+                        key={p.id} 
+                        onClick={() => setActivePlatform(p.id)}
+                        className={`platform-card-s ${activePlatform === p.id ? 'active' : ''} ${isPremiumOnly && !guildData?.isPremium ? 'premium-locked-platform' : ''}`}
+                        style={{ '--platform-color': p.color }}
+                    >
+                        <div className="p-icon-s">
+                            {isPremiumOnly && !guildData?.isPremium ? <Lock size={14} className="text-premium-gold" /> : <p.icon size={20} />}
+                        </div>
+                        <span>{p.name}</span>
+                        {isPremiumOnly && !guildData?.isPremium && <div className="premium-badge-mini" style={{ position: 'absolute', top: '-10px', right: '-10px' }}>PRO</div>}
+                        {config.platforms[p.id]?.enabled && <div className="p-active-dot"></div>}
+                    </button>
+                );
+            })}
         </div>
 
         {/* Platform Content */}
@@ -242,7 +254,17 @@ export default function SocialsConfig() {
                                                 </button>
                                             </div>
                                         ))}
-                                        <button onClick={addAccount} className="btn-add-s"><Plus size={16} /> Aggiungi Account</button>
+                                        {(!guildData?.isPremium && currentPlatformConfig.accounts.length >= 1) ? (
+                                            <button 
+                                                className="btn-add-s locked" 
+                                                onClick={() => router.push(`/config/${guildId}/premium`)}
+                                                style={{ borderStyle: 'dashed', borderColor: '#f59e0b', color: '#f59e0b' }}
+                                            >
+                                                <Lock size={16} /> <span>{t('premium.get_premium')} (Max 1)</span>
+                                            </button>
+                                        ) : (
+                                            <button onClick={addAccount} className="btn-add-s"><Plus size={16} /> Aggiungi Account</button>
+                                        )}
                                     </div>
                                 </section>
 

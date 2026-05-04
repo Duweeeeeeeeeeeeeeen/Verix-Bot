@@ -11,7 +11,7 @@ import {
   Settings2, Info, ChevronRight, Bell, Tag, MessageSquare, 
   MousePointer2, Type, Hash, Shield, Palette, Layers,
   Archive, FileText, XCircle, CheckCircle2, Zap, Send, Users,
-  GripVertical, Play, ShieldAlert, BarChart3
+  GripVertical, Play, ShieldAlert, BarChart3, Lock, Crown
 } from 'lucide-react';
 import DiscordSelector from '../../../components/DiscordSelector';
 import EmojiInput from '../../../components/EmojiInput';
@@ -34,6 +34,7 @@ export default function TicketConfig() {
   const [saving, setSaving] = useState(false);
   const [sendingPanel, setSendingPanel] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [guildData, setGuildData] = useState(null);
   const [blacklistInput, setBlacklistInput] = useState('');
 
   useEffect(() => {
@@ -44,10 +45,11 @@ export default function TicketConfig() {
     if (!guildId || !mounted) return;
     setLoading(true);
     try {
-      const [data, globalData, discordRes] = await Promise.all([
+      const [data, globalData, discordRes, guildRes] = await Promise.all([
         api.request(`/config/${guildId}/tickets`).catch(() => ({ data: {} })),
         api.request(`/config/${guildId}/global`).catch(() => ({ data: {} })),
-        api.request(`/config/${guildId}/discord-data`).catch(() => ({ roles: [], channels: [] }))
+        api.request(`/config/${guildId}/discord-data`).catch(() => ({ roles: [], channels: [] })),
+        api.request(`/config/${guildId}/guild`).catch(() => ({ data: {} }))
       ]);
 
       const moduleConfig = mergeConfig(data?.data || data || {}, 'tickets');
@@ -57,6 +59,7 @@ export default function TicketConfig() {
       setGlobalConfig(globalConfigData);
       setChannels(discordRes?.data?.channels || discordRes?.channels || []);
       setRoles(discordRes?.data?.roles || discordRes?.roles || []);
+      setGuildData(guildRes?.data || guildRes || {});
     } catch (err) {
       console.error("Error loading ticket data:", err);
       setConfig(mergeConfig({}, 'tickets'));
@@ -408,7 +411,17 @@ export default function TicketConfig() {
                                     <Layers size={20} color="var(--primary)" />
                                     <h3>{t('sidebar.categories')}</h3>
                                 </div>
-                                <button className="btn-outline" onClick={addCategory}><Plus size={14} /> {t('common.add')}</button>
+                                {(!guildData?.isPremium && Object.keys(config.typesConfig || {}).length >= 2) ? (
+                                    <button 
+                                        className="btn-add-premium locked" 
+                                        onClick={() => router.push(`/config/${guildId}/premium`)}
+                                        title={t('premium.limit_reached')}
+                                    >
+                                        <Lock size={14} /> <span>{t('premium.get_premium')}</span>
+                                    </button>
+                                ) : (
+                                    <button className="btn-outline" onClick={addCategory}><Plus size={14} /> {t('common.add')}</button>
+                                )}
                             </div>
                             <p className="text-description" style={{ marginBottom: '24px' }}>{t('tickets.desc')}</p>
                             
