@@ -169,13 +169,10 @@ export default function PrivateBotPage() {
                                 <div className="step-number">3</div>
                                 <div className="step-content">
                                     <h5>Abilita i Permessi (Cruciale)</h5>
-                                    <p>Sempre nella tab <strong>"Bot"</strong>, scendi fino a <strong>"Privileged Gateway Intents"</strong> e attiva tutti e tre gli interruttori:</p>
-                                    <ul className="intent-list">
-                                        <li>Presence Intent</li>
-                                        <li>Server Members Intent</li>
-                                        <li>Message Content Intent</li>
-                                    </ul>
-                                    <div className="step-img-placeholder">[Immagine: Gateway Intents]</div>
+                                    <p>Sempre nella tab <strong>"Bot"</strong>, scendi fino a <strong>"Privileged Gateway Intents"</strong> e attiva tutti e tre gli interruttori come mostrato nella foto sotto. Senza questi, il bot non potrà leggere i messaggi o vedere i membri.</p>
+                                    <div className="step-img-container">
+                                        <img src="/img/guide/step3.png" alt="Gateway Intents" />
+                                    </div>
                                 </div>
                             </div>
 
