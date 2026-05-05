@@ -69,19 +69,19 @@ export class SocialManager {
 
                 // 3. Check Twitter (X)
                 if (config.platforms?.twitter?.enabled && config.platforms.twitter.accounts?.length > 0) {
-                    const changed = await this.checkGenericRSS(guildId, config.platforms.twitter, 'Twitter', 'https://nitter.poast.org/{username}/rss');
+                    const changed = await this.checkGenericRSS(guildId, config.platforms.twitter, 'Twitter', 'http://localhost:3005/?action=display&bridge=Twitter&u={username}&format=Mrss');
                     if (changed) configChanged = true;
                 }
 
                 // 4. Check Instagram
                 if (config.platforms?.instagram?.enabled && config.platforms.instagram.accounts?.length > 0) {
-                    const changed = await this.checkGenericRSS(guildId, config.platforms.instagram, 'Instagram', 'https://rssbridge.io/?action=display&bridge=Instagram&u={username}&format=Mrss');
+                    const changed = await this.checkGenericRSS(guildId, config.platforms.instagram, 'Instagram', 'http://localhost:3005/?action=display&bridge=Instagram&u={username}&format=Mrss');
                     if (changed) configChanged = true;
                 }
 
                 // 5. Check TikTok
                 if (config.platforms?.tiktok?.enabled && config.platforms.tiktok.accounts?.length > 0) {
-                    const changed = await this.checkGenericRSS(guildId, config.platforms.tiktok, 'TikTok', 'https://rssbridge.io/?action=display&bridge=TikTokUser&u={username}&format=Mrss');
+                    const changed = await this.checkGenericRSS(guildId, config.platforms.tiktok, 'TikTok', 'http://localhost:3005/?action=display&bridge=TikTokUser&u={username}&format=Mrss');
                     if (changed) configChanged = true;
                 }
 
