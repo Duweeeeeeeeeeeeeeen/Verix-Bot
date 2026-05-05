@@ -24,8 +24,8 @@ import {
   UserPlus,
   Layout as LayoutIcon,
   ChevronRight,
-  TrendingUp,
-  Box
+  Box,
+  Settings2
 } from 'lucide-react';
 
 export default function GuildHome() {
