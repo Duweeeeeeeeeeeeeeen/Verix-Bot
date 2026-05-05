@@ -4,7 +4,7 @@ import { useT } from '../../../contexts/LanguageContext';
 import { 
     BarChart3, TrendingUp, Users, MessageSquare, 
     Zap, Crown, Lock, ChevronRight, Activity,
-    Calendar, Download, Filter, RefreshCw
+    Calendar, Download, Filter, RefreshCw, Shield
 } from 'lucide-react';
 import Skeleton from '../../../components/Skeleton';
 import api from '../../../utils/api';
