@@ -9,7 +9,7 @@ import {
   Plus, Trash2, ToggleLeft, ToggleRight, Hash,
   RefreshCcw, Eye, ChevronRight, ChevronDown,
   Monitor, Mic2, Ticket, Shield, AlertCircle, Check,
-  Zap, Info, Globe, ShieldAlert, Layers, User, Lock, Crown, Key
+  Zap, Info, Globe, ShieldAlert, Layers, User, Lock, Crown, Key, Bot
 } from 'lucide-react';
 import { useT } from '../../../contexts/LanguageContext';
 import CustomSelect from '../../../components/CustomSelect';
@@ -248,6 +248,24 @@ export default function GlobalConfigPage() {
                                             <span className="slider"></span>
                                         </label>
                                     </div>
+                                </div>
+                            </section>
+
+                            <section className="card section-card-g" style={{ marginTop: '20px' }}>
+                                <div className="align-center"><Bot size={18} color="var(--primary)" /> <h3>Gestione Bot</h3></div>
+                                <div className="fields-stack-g">
+                                    <p className="text-muted" style={{ fontSize: '0.85rem', marginBottom: '15px' }}>
+                                        Hai rimosso il bot principale (Verix) dal server e vuoi reinvitarlo? Clicca il pulsante qui sotto.
+                                    </p>
+                                    <a 
+                                        href={`https://discord.com/oauth2/authorize?client_id=${process.env.NEXT_PUBLIC_CLIENT_ID || '1493270512195862538'}&permissions=8&scope=bot%20applications.commands&guild_id=${guildId}`}
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="btn-primary"
+                                        style={{ width: 'fit-content', display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}
+                                    >
+                                        <Bot size={16} /> Invita Verix nel Server
+                                    </a>
                                 </div>
                             </section>
                         </div>
