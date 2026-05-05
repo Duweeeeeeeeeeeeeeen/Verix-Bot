@@ -335,12 +335,11 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
                     href={item.path} 
                     className={`nav-link ${isActive ? 'active' : ''}`}
                     title={isCollapsed ? item.name : ''}
-                    style={{ marginLeft: '0px', paddingLeft: '16px' }}
                   >
                     <div className="nav-link-icon">
                       <Icon size={18} strokeWidth={2.5} />
                     </div>
-                    {!isCollapsed && <span className="nav-link-text animate fade-in" style={{ marginLeft: '0px' }}>{item.name}</span>}
+                    {!isCollapsed && <span className="nav-link-text animate fade-in">{item.name}</span>}
                     {isActive && !isCollapsed && <ChevronRight size={14} className="active-arrow" />}
                   </Link>
                 );

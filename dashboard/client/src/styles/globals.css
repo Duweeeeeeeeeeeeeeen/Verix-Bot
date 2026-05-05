@@ -454,8 +454,10 @@ h1, h2, h3, h4 {
 }
 
 .sidebar.collapsed .user-mini-card {
-  padding: 10px;
+  padding: 12px 0;
   justify-content: center;
+  background: transparent;
+  border-color: transparent;
 }
 
 .user-mini-card img {
