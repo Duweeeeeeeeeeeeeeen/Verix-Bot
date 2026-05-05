@@ -5,6 +5,7 @@ import HelpTooltip from '../../../components/HelpTooltip';
 import api from '../../../utils/api';
 import OnboardingWizard from '../../../components/OnboardingWizard';
 import { useT } from '../../../contexts/LanguageContext';
+import { useAuth } from '../../../contexts/AuthContext';
 import { 
   Shield, 
   Ticket, 
@@ -31,6 +32,7 @@ import {
 
 export default function GuildHome() {
   const { t } = useT();
+  const { user } = useAuth();
   const router = useRouter();
   const { guildId } = router.query;
   const [stats, setStats] = useState({ openTickets: 0, pendingWhitelist: 0, activeVoiceSessions: 0 });
@@ -123,8 +125,8 @@ export default function GuildHome() {
             </div>
             <div className="hero-text-p">
               <div className="badge-setup animate slide-in">{t('dashboard.setup_active')}</div>
-              <h1 className="hero-title">{t('dashboard.welcome_back')}, <span className="text-gradient">{config?.guildName || 'User'}</span></h1>
-              <p className="hero-subtitle">{t('dashboard.hero_desc', { count: Object.keys(config || {}).length })}</p>
+              <h1 className="hero-title">{t('dashboard.welcome_back')}, <span className="text-gradient">{user?.username || 'User'}</span></h1>
+              <p className="hero-subtitle">{t('dashboard.hero_desc', { count: Object.keys(config || {}).length })} — <span className="server-label">{config?.guildName}</span></p>
             </div>
           </div>
           <div className="hero-actions-p">
@@ -307,6 +309,9 @@ export default function GuildHome() {
         }
 
         .hero-info-p { display: flex; align-items: center; gap: 28px; }
+        .hero-title { font-size: 2.5rem; font-weight: 800; margin: 0; color: var(--text-main); }
+        .hero-subtitle { font-size: 1.1rem; color: var(--text-muted); margin: 0; font-weight: 500; }
+        .server-label { color: var(--primary); font-weight: 700; opacity: 1; }
         
         .server-avatar-container {
           position: relative;
