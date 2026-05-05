@@ -67,6 +67,24 @@ export class SocialManager {
                     if (changed) configChanged = true;
                 }
 
+                // 3. Check Twitter (X)
+                if (config.platforms?.twitter?.enabled && config.platforms.twitter.accounts?.length > 0) {
+                    const changed = await this.checkGenericRSS(guildId, config.platforms.twitter, 'Twitter', 'https://nitter.net/{username}/rss');
+                    if (changed) configChanged = true;
+                }
+
+                // 4. Check Instagram
+                if (config.platforms?.instagram?.enabled && config.platforms.instagram.accounts?.length > 0) {
+                    const changed = await this.checkGenericRSS(guildId, config.platforms.instagram, 'Instagram', 'https://rss.vny.sh/instagram/{username}');
+                    if (changed) configChanged = true;
+                }
+
+                // 5. Check TikTok
+                if (config.platforms?.tiktok?.enabled && config.platforms.tiktok.accounts?.length > 0) {
+                    const changed = await this.checkGenericRSS(guildId, config.platforms.tiktok, 'TikTok', 'https://rss.vny.sh/tiktok/user/{username}');
+                    if (changed) configChanged = true;
+                }
+
                 // Save if any state changed
                 if (configChanged) {
                     await config.save();
@@ -168,6 +186,52 @@ export class SocialManager {
         return changed;
     }
 
+    async checkGenericRSS(guildId, platformConfig, platformName, urlTemplate) {
+        let changed = false;
+        try {
+            for (const account of platformConfig.accounts) {
+                let username = account.username || '';
+                // Extract username if a full URL was provided
+                if (username.includes('.com/')) {
+                    username = username.split('/').filter(p => p && !p.includes('.com')).pop().split('?')[0];
+                }
+
+                const feedUrl = urlTemplate.replace('{username}', username);
+
+                try {
+                    const feed = await rssParser.parseURL(feedUrl);
+                    if (feed && feed.items && feed.items.length > 0) {
+                        const latestItem = feed.items[0];
+                        
+                        // ID comparison to avoid duplicates
+                        const itemId = latestItem.id || latestItem.guid || latestItem.link;
+
+                        if (itemId !== account.lastPostId) {
+                            // NEW POST detected
+                            logger.info(`[Socials/${platformName}] New post detected for ${username} in ${guildId}`);
+                            
+                            await this.handleSocialPost(guildId, platformConfig, account, {
+                                title: latestItem.title || 'Nuovo post!',
+                                url: latestItem.link,
+                                author: feed.title || username,
+                                description: latestItem.contentSnippet || latestItem.content || '',
+                                thumbnail: latestItem.enclosure?.url || ''
+                            }, platformName);
+
+                            account.lastPostId = itemId;
+                            changed = true;
+                        }
+                    }
+                } catch (feedErr) {
+                    logger.debug(`[Socials/${platformName}] Could not fetch feed for ${username} (${feedUrl}): ${feedErr.message}`);
+                }
+            }
+        } catch (error) {
+            logger.error(`[Socials/${platformName}] Error checking guild ${guildId}:`, error);
+        }
+        return changed;
+    }
+
     async handleSocialPost(guildId, platformConfig, account, postData, platform) {
         try {
             const guild = await this.client.guilds.fetch(guildId).catch(() => null);
@@ -194,15 +258,41 @@ export class SocialManager {
                 ? placeholderHelper.replace(text, {
                     streamer: postData.author || account.username,
                     title: postData.title,
-                    url: postData.url
+                    url: postData.url,
+                    description: postData.description || ''
                 })
                 : '';
 
+            // Default titles and descriptions based on platform
+            const defaultTitles = {
+                'Twitch': `📡 ${postData.author || account.username} è in diretta!`,
+                'YouTube': `🎥 Nuovo video di ${postData.author || account.username}!`,
+                'Twitter': `🐦 Nuovo Tweet di ${postData.author || account.username}`,
+                'Instagram': `📸 Nuovo post di ${postData.author || account.username}`,
+                'TikTok': `🎵 Nuovo TikTok di ${postData.author || account.username}`
+            };
+
+            const defaultDescs = {
+                'Twitch': `### ${postData.title}\n\nEhi! **${postData.author || account.username}** ha appena acceso la camera su Twitch. Non perderti lo show!`,
+                'YouTube': `### ${postData.title}\n\nÈ appena uscito un nuovo video sul canale! Corri a lasciare un like.`,
+                'Twitter': `${postData.description || postData.title}`,
+                'Instagram': `### ${postData.title}\n\nNuovo contenuto caricato su Instagram! Passa a dare un'occhiata.`,
+                'TikTok': `### ${postData.title}\n\nÈ appena stato pubblicato un nuovo video su TikTok! Guarda subito.`
+            };
+
+            const defaultColors = {
+                'Twitch': 0x6441a5,
+                'YouTube': 0xff0000,
+                'Twitter': 0x1da1f2,
+                'Instagram': 0xe1306c,
+                'TikTok': 0x000000
+            };
+
             const embedData = {
-                title: formatText(customEmbed.title) || (platform === 'Twitch' ? `📡 ${postData.author || account.username} è in diretta!` : `🎥 Nuovo video di ${postData.author || account.username}!`),
+                title: formatText(customEmbed.title) || defaultTitles[platform] || 'Nuovo post!',
                 url: postData.url,
-                description: formatText(customEmbed.description) || (platform === 'Twitch' ? `### ${postData.title}\n\nEhi! **${postData.author || account.username}** ha appena acceso la camera su Twitch. Non perderti lo show!` : `### ${postData.title}\n\nÈ appena uscito un nuovo video sul canale! Corri a lasciare un like.`),
-                color: customEmbed.color ? parseInt(customEmbed.color.replace('#', ''), 16) : (platform === 'Twitch' ? 0x6441a5 : 0xff0000),
+                description: formatText(customEmbed.description) || defaultDescs[platform] || postData.title,
+                color: customEmbed.color ? parseInt(customEmbed.color.replace('#', ''), 16) : (defaultColors[platform] || 0xffffff),
                 footer: { text: formatText(customEmbed.footer) || 'Social Notifications | Verix' }
             };
 
@@ -214,10 +304,18 @@ export class SocialManager {
                 embedData.image = { url: postData.thumbnail };
             }
 
+            const buttonLabels = {
+                'Twitch': 'Guarda la Live',
+                'YouTube': 'Guarda il Video',
+                'Twitter': 'Leggi il Tweet',
+                'Instagram': 'Vedi il Post',
+                'TikTok': 'Guarda il TikTok'
+            };
+
             const row = new ActionRowBuilder()
                 .addComponents(
                     new ButtonBuilder()
-                        .setLabel(platform === 'Twitch' ? 'Guarda la Live' : 'Guarda il Video')
+                        .setLabel(buttonLabels[platform] || 'Apri Link')
                         .setStyle(ButtonStyle.Link)
                         .setURL(postData.url)
                 );
