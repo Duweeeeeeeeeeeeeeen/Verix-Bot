@@ -19,8 +19,10 @@ import {
     MessageSquare,
     BellRing,
     Copy,
-    Link as LinkIcon
+    Link as LinkIcon,
+    Lock
 } from 'lucide-react';
+import { useT } from '../../../contexts/LanguageContext';
 
 const PLATFORMS = [
     { id: 'twitch', name: 'Twitch', icon: Tv, color: '#6441a5', description: 'socials.platform_twitch_desc' },
