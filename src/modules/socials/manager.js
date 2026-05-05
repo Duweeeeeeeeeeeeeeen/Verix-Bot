@@ -196,6 +196,11 @@ export class SocialManager {
                     username = username.split('/').filter(p => p && !p.includes('.com')).pop().split('?')[0];
                 }
 
+                // Strip leading @ if present (common for TikTok/Instagram)
+                if (username.startsWith('@')) {
+                    username = username.substring(1);
+                }
+
                 const feedUrl = urlTemplate.replace('{username}', username);
 
                 try {
