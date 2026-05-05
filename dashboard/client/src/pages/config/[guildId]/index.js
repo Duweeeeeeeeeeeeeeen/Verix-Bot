@@ -27,7 +27,8 @@ import {
   ChevronRight,
   Box,
   Settings2,
-  TrendingUp
+  TrendingUp,
+  Plus
 } from 'lucide-react';
 
 export default function GuildHome() {
