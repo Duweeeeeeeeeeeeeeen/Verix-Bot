@@ -814,6 +814,13 @@ router.get('/:guildId/tickets', adminCheck, async (req, res) => {
 router.post('/:guildId/tickets', adminCheck, validate(ticketSchema), async (req, res) => {
     try {
         const { guildId } = req.params;
+        const guild = await Guild.findOne({ guildId });
+        const isPremium = guild?.isPremium || guild?.premiumTier === 'platinum' || guild?.premiumTier === 'premium';
+        
+        if (!isPremium && (req.validatedData.categories || []).length > 2) {
+            return res.status(403).json({ success: false, error: 'Free tier limit: 2 Ticket Categories. Upgrade to PRO for more.' });
+        }
+
         const config = await TicketConfig.findOneAndUpdate(
             { guildId },
             { $set: req.validatedData },
@@ -2051,6 +2058,81 @@ router.post('/:guildId/support', adminCheck, validate(supportSchema), async (req
     } catch (error) {
         console.error('Error updating support config:', error);
         res.status(500).json({ success: false, error: 'Failed to update support config' });
+    }
+});
+
+// POST sync config from another guild (Platinum only)
+router.post('/:guildId/sync', adminCheck, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const { sourceGuildId, modules } = req.body;
+
+        if (!sourceGuildId) {
+            return res.status(400).json({ success: false, error: 'Server sorgente non specificato.' });
+        }
+
+        // 1. Check if target is Platinum
+        const targetGuild = await Guild.findOne({ guildId });
+        if (targetGuild?.premiumTier !== 'platinum') {
+            return res.status(403).json({ success: false, error: 'La Sincronizzazione Globale è un\'esclusiva Platinum.' });
+        }
+
+        // 2. Check if user has access to source guild (using session data)
+        const userGuilds = req.user.guilds || [];
+        const sourceInUserGuilds = userGuilds.find(g => g.id === sourceGuildId && (g.permissions & 0x8));
+        if (!sourceInUserGuilds) {
+            return res.status(403).json({ success: false, error: 'Non hai i permessi di Amministratore nel server sorgente.' });
+        }
+
+        // 3. Define modules to sync
+        const moduleModels = {
+            whitelist: WhitelistConfig,
+            tickets: TicketConfig,
+            automations: AutomationConfig,
+            moderation: ModerationConfig,
+            fivem: FiveMConfig,
+            welcome: WelcomeConfig,
+            verify: VerifyConfig,
+            socials: SocialConfig,
+            utility: UtilityConfig
+        };
+
+        const syncedModules = [];
+        const modulesToSync = modules || Object.keys(moduleModels);
+
+        for (const mod of modulesToSync) {
+            const Model = moduleModels[mod];
+            if (!Model) continue;
+
+            const sourceData = await Model.findOne({ guildId: sourceGuildId });
+            if (sourceData) {
+                const cleanData = sourceData.toObject();
+                delete cleanData._id;
+                delete cleanData.guildId;
+                delete cleanData.createdAt;
+                delete cleanData.updatedAt;
+                delete cleanData.__v;
+
+                await Model.findOneAndUpdate(
+                    { guildId: guildId },
+                    { $set: cleanData },
+                    { upsert: true }
+                );
+                syncedModules.push(mod);
+            }
+        }
+
+        invalidateCache(guildId);
+        await logAudit(req, guildId, 'SYNC_CONFIG', { sourceGuildId, modules: syncedModules });
+
+        res.json({ 
+            success: true, 
+            message: `Sincronizzati ${syncedModules.length} moduli con successo.`,
+            syncedModules 
+        });
+    } catch (error) {
+        console.error('Sync error:', error);
+        res.status(500).json({ success: false, error: 'Errore durante la sincronizzazione.' });
     }
 });
 

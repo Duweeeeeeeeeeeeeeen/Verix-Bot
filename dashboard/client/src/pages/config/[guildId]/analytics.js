@@ -21,24 +21,19 @@ export default function AnalyticsPage() {
     if (!guildId || guildId === 'undefined') return;
     setLoading(true);
     try {
-        // Fetch guild data first to know if we should even try analytics
-        const gRes = await api.request(`/config/${guildId}/guild`);
-        const gData = gRes.data || gRes;
-        setGuildData(gData);
-
-        if (gData.isPremium) {
-            try {
-                const aRes = await api.request(`/analytics/${guildId}`);
-                setAnalytics(aRes.data || aRes);
-            } catch (aErr) {
-                console.error('Failed to fetch analytics data:', aErr);
-            }
-        }
+        const [gRes, aRes] = await Promise.all([
+            api.request(`/config/${guildId}/guild`),
+            api.request(`/analytics/${guildId}`).catch(() => ({ success: true, isPro: false, data: {} }))
+        ]);
+        
+        setGuildData(gRes.data || gRes);
+        setAnalytics(aRes.data || aRes);
     } catch (err) {
-        console.error('Failed to fetch guild data:', err);
+        console.error('Failed to fetch analytics data:', err);
     } finally {
         setLoading(false);
     }
+
   };
 
   useEffect(() => {
@@ -73,74 +68,59 @@ export default function AnalyticsPage() {
                 </div>
             )}
         </header>
-
-        {!guildData?.isPremium ? (
-            <div className="premium-upsell card">
-                <div className="upsell-badge">PRO FEATURE</div>
-                <div className="upsell-icon">
-                    <Crown size={48} />
-                </div>
-                <h2>Sblocca Analytics PRO</h2>
-                <p>Monitora la crescita del tuo server, l'attività dei membri e le performance dei comandi con grafici dettagliati e analisi storiche.</p>
-                
-                <div className="feature-grid">
-                    <div className="feat-item">
-                        <TrendingUp size={20} />
-                        <span>Crescita Membri (Storico 90gg)</span>
-                    </div>
-                    <div className="feat-item">
-                        <MessageSquare size={20} />
-                        <span>Attività Messaggi & Canali</span>
-                    </div>
-                    <div className="feat-item">
-                        <Users size={20} />
-                        <span>Statistiche Staff & Performance</span>
-                    </div>
-                    <div className="feat-item">
-                        <Zap size={20} />
-                        <span>Analisi Comandi più Usati</span>
-                    </div>
-                </div>
-
-                <button onClick={() => router.push(`/config/${guildId}/premium`)} className="btn-premium-cta">
-                    Sblocca Ora con Premium Hub
-                </button>
-            </div>
-        ) : (
-            <div className="analytics-content fade-in">
-                {/* Real Analytics Content */}
-                <div className="stats-cards-grid">
-                    <div className="stat-card">
-                        <div className="stat-label">Ticket Totali</div>
-                        <div className="stat-value">{analytics?.tickets?.total || 0}</div>
+        <div className="analytics-content fade-in">
+            {/* Stats Cards - Always visible (Basic data) */}
+            <div className="stats-cards-grid">
+                <div className="stat-card">
+                    <div className="stat-label">Ticket Totali</div>
+                    <div className="stat-value">{analytics?.tickets?.total || 0}</div>
+                    {analytics?.isPro && (
                         <div className="stat-change positive">+{analytics?.tickets?.new7d || 0} questa settimana</div>
-                    </div>
-                    <div className="stat-card">
-                        <div className="stat-label">Ticket Chiusi</div>
-                        <div className="stat-value">{analytics?.tickets?.closed || 0}</div>
-                        <div className="stat-change positive">Operatività 100%</div>
-                    </div>
-                    <div className="stat-card">
-                        <div className="stat-label">Infrazioni</div>
-                        <div className="stat-value">{analytics?.moderation?.total || 0}</div>
-                        <div className="stat-change negative">{analytics?.moderation?.activeMutes || 0} mute attivi</div>
-                    </div>
+                    )}
                 </div>
+                <div className="stat-card">
+                    <div className="stat-label">Infrazioni Totali</div>
+                    <div className="stat-value">{analytics?.moderation?.total || 0}</div>
+                    {analytics?.isPro && (
+                        <div className="stat-change negative">{analytics?.moderation?.activeMutes || 0} mute attivi</div>
+                    )}
+                </div>
+                <div className="stat-card premium-promo-card" onClick={() => !analytics?.isPro && router.push(`/config/${guildId}/premium`)}>
+                    <div className="stat-label">Stato Servizio</div>
+                    <div className="stat-value" style={{ fontSize: '1.5rem', color: analytics?.isPro ? 'var(--success)' : 'var(--gold)' }}>
+                        {analytics?.isPro ? 'PREMIUM ACTIVE' : 'BASIC PLAN'}
+                    </div>
+                    {!analytics?.isPro && <div className="stat-change">Clicca per sbloccare i report</div>}
+                </div>
+            </div>
+
+            {/* Advanced Section - Gated */}
+            <div className={`advanced-analytics-section ${!analytics?.isPro ? 'gated' : ''}`}>
+                {!analytics?.isPro && (
+                    <div className="gate-overlay">
+                        <Lock size={40} />
+                        <h3>Analytics PRO Richieste</h3>
+                        <p>Sblocca heatmap, performance staff e grafici di crescita con il piano Premium.</p>
+                        <button className="btn-premium-cta" onClick={() => router.push(`/config/${guildId}/premium`)}>
+                            Passa a Premium
+                        </button>
+                    </div>
+                )}
 
                 <div className="charts-grid" style={{ marginBottom: '24px' }}>
                     <div className="chart-box card" style={{ gridColumn: 'span 2' }}>
                         <div className="chart-header">
                             <h3>Heatmap Attività (24h)</h3>
-                            <Clock size={16} />
+                            <Activity size={16} />
                         </div>
                         <div className="heatmap-container">
-                            {analytics?.heatmap ? (
+                            {analytics?.data?.heatmap ? (
                                 <div className="heatmap-grid">
-                                    {analytics.heatmap.map((val, hour) => (
+                                    {analytics.data.heatmap.map((val, hour) => (
                                         <div 
                                             key={hour} 
                                             className="heatmap-cell" 
-                                            style={{ opacity: Math.max(0.1, (val / Math.max(...analytics.heatmap, 1))) }}
+                                            style={{ opacity: Math.max(0.1, (val / Math.max(...analytics.data.heatmap, 1))) }}
                                             title={`${hour}:00 - ${val} azioni`}
                                         >
                                             <span className="hour-label">{hour}h</span>
@@ -158,14 +138,14 @@ export default function AnalyticsPage() {
                     <div className="chart-box card">
                         <div className="chart-header">
                             <h3>Crescita Membri (30gg)</h3>
-                            <Filter size={16} />
+                            <Users size={16} />
                         </div>
                         <div className="chart-placeholder">
-                            {analytics?.growth?.length > 1 ? (
+                            {analytics?.data?.growth?.length > 1 ? (
                                 <div className="mock-chart-container">
                                     <svg viewBox="0 0 400 100" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
                                         <path 
-                                            d={`M ${analytics.growth.map((s, i) => `${(i / (analytics.growth.length - 1)) * 400},${100 - ((s.count / Math.max(...analytics.growth.map(x => x.count))) * 80 + 10)}`).join(' L ')}`} 
+                                            d={`M ${analytics.data.growth.map((s, i) => `${(i / (analytics.data.growth.length - 1)) * 400},${100 - ((s.count / Math.max(...analytics.data.growth.map(x => x.count))) * 80 + 10)}`).join(' L ')}`} 
                                             fill="none" 
                                             stroke="var(--primary)" 
                                             strokeWidth="3" 
@@ -182,14 +162,14 @@ export default function AnalyticsPage() {
                     <div className="chart-box card">
                         <div className="chart-header">
                             <h3>Performance Staff</h3>
-                            <Users size={16} />
+                            <Shield size={16} />
                         </div>
                         <div className="staff-stats-list">
-                            {analytics?.staff?.length > 0 ? analytics.staff.map(s => (
+                            {analytics?.data?.staff?.length > 0 ? analytics.data.staff.map(s => (
                                 <div key={s.id} className="staff-row">
                                     <div className="staff-id">ID: {s.id.substring(0, 8)}...</div>
                                     <div className="staff-bar-bg">
-                                        <div className="staff-bar-fill" style={{ width: `${(s.closed / Math.max(...analytics.staff.map(x => x.closed))) * 100}%` }}></div>
+                                        <div className="staff-bar-fill" style={{ width: `${(s.closed / Math.max(...analytics.data.staff.map(x => x.closed))) * 100}%` }}></div>
                                     </div>
                                     <div className="staff-count">{s.closed}</div>
                                 </div>
@@ -200,7 +180,7 @@ export default function AnalyticsPage() {
                     </div>
                 </div>
             </div>
-        )}
+        </div>      )}
 
         <style jsx>{`
             .analytics-container { padding: 20px; }
@@ -259,6 +239,26 @@ export default function AnalyticsPage() {
                 box-shadow: 0 10px 30px rgba(245, 158, 11, 0.4);
             }
             .btn-premium-cta:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 15px 40px rgba(245, 158, 11, 0.5); }
+
+            /* Gated Section Styles */
+            .advanced-analytics-section { position: relative; transition: 0.5s; }
+            .advanced-analytics-section.gated { filter: blur(4px); pointer-events: none; user-select: none; }
+            .gate-overlay { 
+                position: absolute; top: 0; left: 0; right: 0; bottom: 0; 
+                z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center;
+                background: rgba(10, 10, 12, 0.4); backdrop-filter: blur(8px);
+                border-radius: 24px; text-align: center; color: white;
+                padding: 40px;
+            }
+            .gate-overlay h3 { font-size: 1.5rem; font-weight: 800; margin: 16px 0 8px; }
+            .gate-overlay p { font-size: 0.95rem; color: var(--text-muted); max-width: 400px; margin-bottom: 24px; }
+            
+            .premium-promo-card { 
+                background: linear-gradient(135deg, rgba(245, 158, 11, 0.05), rgba(245, 158, 11, 0.15)) !important;
+                border: 1px dashed var(--gold) !important;
+                cursor: pointer; transition: 0.3s;
+            }
+            .premium-promo-card:hover { transform: translateY(-2px); background: rgba(245, 158, 11, 0.2) !important; }
 
             /* Content Styles */
             .stats-cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 24px; }

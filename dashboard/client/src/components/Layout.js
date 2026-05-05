@@ -5,9 +5,17 @@ import { useAuth } from '../contexts/AuthContext';
 import { useT } from '../contexts/LanguageContext';
 import { 
   ShieldCheck, 
-  Mic2, 
-  Ticket, 
   Bot,
+  RefreshCcw,
+  Gavel,
+  Tv,
+  Crown,
+  BarChart3,
+  Sparkles,
+  Terminal,
+  Shield,
+  Ticket,
+  Mic2,
   Gift,
   Layout as LayoutIcon, 
   LogOut, 
@@ -233,7 +241,8 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
 
       // Show Private Bot ONLY if Platinum
       ...(premiumTier === 'platinum' ? [
-        { name: t('sidebar.private_bot'), icon: Bot, path: `/config/${guildId}/private-bot`, id: 'private_bot' }
+        { name: t('sidebar.private_bot'), icon: Bot, path: `/config/${guildId}/private-bot`, id: 'private_bot' },
+        { name: 'Sincronizzazione', icon: RefreshCcw, path: `/config/${guildId}/sync`, id: 'sync' }
       ] : []),
 
       { name: 'System Ops', icon: Terminal, path: '/admin/system', id: 'system_ops', adminOnly: true }

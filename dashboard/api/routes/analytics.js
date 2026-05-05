@@ -12,10 +12,9 @@ router.get('/:guildId', adminCheck, async (req, res) => {
     try {
         const { guildId } = req.params;
         const guild = await Guild.findOne({ guildId });
+        // Allow basic access for all, but gate advanced data
+        const isPremium = guild?.isPremium || guild?.premiumTier === 'platinum' || guild?.premiumTier === 'premium';
 
-        if (!guild || !guild.isPremium) {
-            return res.status(403).json({ success: false, error: 'Analytics PRO richiedono un abbonamento Premium attivo.' });
-        }
 
         const now = new Date();
         const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -57,8 +56,20 @@ router.get('/:guildId', adminCheck, async (req, res) => {
             heatmap[hour]++;
         });
 
+        if (!isPremium) {
+            return res.json({
+                success: true,
+                isPro: false,
+                data: {
+                    tickets: { total: totalTickets },
+                    moderation: { total: totalInfractions }
+                }
+            });
+        }
+
         res.json({
             success: true,
+            isPro: true,
             data: {
                 growth: growth.map(s => ({ t: s.timestamp, count: s.memberCount })),
                 tickets: {
