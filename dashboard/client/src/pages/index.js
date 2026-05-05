@@ -11,7 +11,12 @@ import {
   ChevronRight,
   Shield,
   Zap,
-  Rocket
+  Rocket,
+  PlusCircle,
+  Bell,
+  Settings2,
+  Trash2,
+  ShieldAlert
 } from 'lucide-react';
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
@@ -56,6 +61,45 @@ export default function Home() {
       icon: Tv, 
       title: 'Twitch Live Alerts', 
       desc: 'Notifiche istantanee quando i tuoi streamer preferiti vanno in diretta, con embed eleganti.' 
+    },
+    {
+      icon: Trash2,
+      title: 'AutoClear Advanced',
+      desc: 'Mantieni puliti i tuoi canali eliminando automaticamente i messaggi vecchi o di sistema.',
+      isNew: true
+    },
+    {
+      icon: ShieldAlert,
+      title: 'Sistema Moderazione',
+      desc: 'Proteggi il tuo server con filtri anti-spam, blacklist di parole e log dettagliati.',
+      isNew: true
+    },
+    {
+      icon: Settings2,
+      title: 'Configurazioni Globali',
+      desc: 'Sincronizza le impostazioni tra più server per una gestione centralizzata e veloce.',
+      isNew: true
+    }
+  ];
+
+  const news = [
+    {
+      title: 'Lancio Verix v2.0',
+      date: 'Oggi',
+      desc: 'Nuova interfaccia web, velocità raddoppiata e supporto multi-lingua completo.',
+      tag: 'MAJOR'
+    },
+    {
+      title: 'Modulo Photo Contest',
+      date: 'Ieri',
+      desc: 'Ora puoi gestire concorsi fotografici automatizzati con votazioni dei membri.',
+      tag: 'HOT'
+    },
+    {
+      title: 'White-Label Branding',
+      date: '2 giorni fa',
+      desc: 'Personalizza il bot con il tuo logo e nome (esclusivo Platinum).',
+      tag: 'PREMIUM'
     }
   ];
 
@@ -139,11 +183,48 @@ export default function Home() {
         <div className="features-grid-p">
           {features.map((f, i) => (
             <div key={i} className="feature-card-p animate slide-in" style={{ animationDelay: `${i * 0.1}s` }}>
-              <div className="feature-icon-p">
-                <f.icon size={24} />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div className="feature-icon-p">
+                  <f.icon size={24} />
+                </div>
+                {f.isNew && <span className="badge-new-p">NUOVO</span>}
               </div>
               <h3>{f.title}</h3>
               <p>{f.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* News Section */}
+      <section className="landing-container-p news-section-p">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '40px', flexWrap: 'wrap', gap: '20px' }}>
+          <div>
+            <h2 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '8px' }}>Ultime Novità</h2>
+            <p style={{ color: 'var(--text-dim)' }}>Scopri cosa abbiamo aggiunto di recente al progetto.</p>
+          </div>
+          <div className="step-badge" style={{ background: 'var(--primary-glow)', color: 'var(--primary)' }}>
+            Aggiornato al {new Date().toLocaleDateString()}
+          </div>
+        </div>
+
+        <div className="news-grid-p">
+          {news.map((item, i) => (
+            <div key={i} className="news-card-p animate fadeIn" style={{ animationDelay: `${i * 0.1}s` }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span className="news-date-p">{item.date}</span>
+                <span style={{ 
+                  fontSize: '0.65rem', 
+                  fontWeight: '900', 
+                  padding: '4px 8px', 
+                  borderRadius: '6px',
+                  background: item.tag === 'MAJOR' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(99, 102, 241, 0.1)',
+                  color: item.tag === 'MAJOR' ? '#ef4444' : 'var(--primary)',
+                  border: `1px solid ${item.tag === 'MAJOR' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(99, 102, 241, 0.2)'}`
+                }}>{item.tag}</span>
+              </div>
+              <h3 style={{ fontSize: '1.2rem' }}>{item.title}</h3>
+              <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', margin: 0 }}>{item.desc}</p>
             </div>
           ))}
         </div>
