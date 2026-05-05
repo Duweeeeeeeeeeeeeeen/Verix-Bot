@@ -100,7 +100,6 @@ export default function VoiceConfig() {
             }
         })
       });
-      });
       showToast(t('common.save_success'));
     } catch (error) {
       console.error('Error saving voice config:', error);
