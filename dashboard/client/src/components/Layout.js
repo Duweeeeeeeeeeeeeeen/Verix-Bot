@@ -40,18 +40,10 @@ import {
   BellOff,
   ExternalLink,
   ChevronRight,
-  Tv,
-  RefreshCcw,
-  Gavel,
   HelpCircle,
   Coins,
-  Shield,
   Sun,
-  Moon,
-  Terminal,
-  Crown,
-  BarChart3,
-  Sparkles
+  Moon
 } from 'lucide-react';
 import GuideSidebar from './GuideSidebar';
 import { useTheme } from '../contexts/ThemeContext';

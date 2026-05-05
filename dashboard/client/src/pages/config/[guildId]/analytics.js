@@ -180,7 +180,7 @@ export default function AnalyticsPage() {
                     </div>
                 </div>
             </div>
-        </div>      )}
+        </div>
 
         <style jsx>{`
             .analytics-container { padding: 20px; }
