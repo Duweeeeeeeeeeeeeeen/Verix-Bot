@@ -132,6 +132,7 @@ export default function TermsOfService() {
         .verix-logo {
           width: 120px;
           height: auto;
+          border-radius: 50%;
           margin-bottom: 30px;
           filter: drop-shadow(0 0 20px rgba(88, 101, 242, 0.3));
         }

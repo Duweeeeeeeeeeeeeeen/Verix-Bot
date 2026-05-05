@@ -133,6 +133,7 @@ export default function PrivacyPolicy() {
         .verix-logo {
           width: 120px;
           height: auto;
+          border-radius: 50%;
           margin-bottom: 30px;
           filter: drop-shadow(0 0 20px rgba(16, 185, 129, 0.3));
         }
