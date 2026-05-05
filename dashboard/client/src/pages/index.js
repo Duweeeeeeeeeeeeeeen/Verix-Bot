@@ -16,7 +16,8 @@ import {
   Bell,
   Settings2,
   Trash2,
-  ShieldAlert
+  ShieldAlert,
+  Bot
 } from 'lucide-react';
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
@@ -72,6 +73,12 @@ export default function Home() {
       icon: ShieldAlert,
       title: 'Sistema Moderazione',
       desc: 'Proteggi il tuo server con filtri anti-spam, blacklist di parole e log dettagliati.',
+      isNew: true
+    },
+    {
+      icon: Bot,
+      title: 'True White-Label',
+      desc: 'Gestisci il tuo bot privato con token personalizzato, nome e attività dedicate (Esclusivo Platinum).',
       isNew: true
     },
     {

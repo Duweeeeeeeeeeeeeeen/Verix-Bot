@@ -87,7 +87,10 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
   useEffect(() => {
     if (guildId && user?.guilds) {
       const g = user.guilds.find(g => g.id === guildId);
-      if (g) setServerInfo(g);
+      if (g) {
+        setServerInfo(g);
+        if (g.premiumTier) setPremiumTier(g.premiumTier);
+      }
     } else if (!guildId) {
       setServerInfo({ name: 'Verix System', icon: null });
     }
@@ -145,11 +148,10 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
       const fetchTier = async () => {
         try {
           const res = await fetch(`/api/config/${guildId}/guild`);
-          const data = await res.json();
-          if (data && data.premiumTier) {
-            setPremiumTier(data.premiumTier);
-          } else if (data && data.isPremium) {
-            setPremiumTier('premium');
+          const response = await res.json();
+          if (response.success && response.data) {
+            const guildData = response.data;
+            setPremiumTier(guildData.premiumTier || (guildData.isPremium ? 'premium' : 'none'));
           }
         } catch (err) {
           console.error("Failed to fetch tier", err);
