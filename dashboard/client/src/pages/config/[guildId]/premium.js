@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 import Skeleton from '../../../components/Skeleton';
 import api from '../../../utils/api';
 import { useT } from '../../../contexts/LanguageContext';
@@ -196,8 +197,23 @@ export default function PremiumHub() {
           </div>
       </div>
 
+      <footer className="premium-footer">
+          <div className="legal-links">
+              <Link href="/terms">Termini di Servizio</Link>
+              <span className="separator">•</span>
+              <Link href="/privacy">Privacy Policy</Link>
+          </div>
+          <p>&copy; {new Date().getFullYear()} Verix Bot. Tutti i diritti riservati.</p>
+      </footer>
+
       <style jsx>{`
-        .premium-page { color: var(--text-main); }
+        .premium-page { color: var(--text-main); padding-bottom: 60px; }
+        .premium-footer { margin-top: 80px; text-align: center; border-top: 1px solid var(--border); padding-top: 40px; }
+        .legal-links { display: flex; justify-content: center; gap: 16px; margin-bottom: 12px; }
+        .legal-links :global(a) { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; font-weight: 600; transition: 0.2s; }
+        .legal-links :global(a:hover) { color: var(--primary); }
+        .separator { color: var(--border); }
+        .premium-footer p { color: var(--text-muted); font-size: 0.85rem; }
         
         .premium-hero {
             background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(99, 102, 241, 0.1) 100%);

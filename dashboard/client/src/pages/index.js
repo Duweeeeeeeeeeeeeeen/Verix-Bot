@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 
 import LoadingScreen from '../components/LoadingScreen';
 
@@ -237,15 +238,28 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer / Final CTA */}
       <footer className="landing-container-p" style={{ padding: '80px 0', borderTop: '1px solid var(--border)', textAlign: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '24px' }}>
           <img src="/logo.png" alt="Verix" style={{ width: '40px' }} />
           <span style={{ fontWeight: '800', fontSize: '1.2rem', color: 'var(--text-main)' }}>Verix Bot</span>
         </div>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+        
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', marginBottom: '24px' }}>
+          <Link href="/terms" style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textDecoration: 'none', fontWeight: '600' }} className="footer-link">
+            Termini di Servizio
+          </Link>
+          <Link href="/privacy" style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textDecoration: 'none', fontWeight: '600' }} className="footer-link">
+            Privacy Policy
+          </Link>
+        </div>
+
+        <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
           &copy; {new Date().getFullYear()} Verix Team. Gestisci il tuo server con stile.
         </p>
+
+        <style jsx>{`
+          .footer-link:hover { color: var(--primary) !important; }
+        `}</style>
       </footer>
     </div>
   );
