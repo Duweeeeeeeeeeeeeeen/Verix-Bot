@@ -314,9 +314,9 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
 
         <div className="sidebar-footer">
           {/* Fixed System Section */}
-          <div className="nav-section" style={{ padding: '0 12px 4px 12px' }}>
+          <div className="nav-section">
               {!isCollapsed ? (
-                <div className="nav-group-title animate fade-in" style={{ padding: '0 16px 4px 16px' }}>{systemGroup.title}</div>
+                <div className="nav-group-title animate fade-in">{systemGroup.title}</div>
               ) : (
                 <div className="nav-divider" style={{ margin: '0 16px 8px 16px' }}></div>
               )}
