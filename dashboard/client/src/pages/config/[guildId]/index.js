@@ -130,6 +130,16 @@ export default function GuildHome() {
             </div>
           </div>
           <div className="hero-actions-p">
+            {config?.mainBotMissing && (
+              <button 
+                onClick={() => window.open(config.mainBotInviteUrl, '_blank')} 
+                className="btn-glass-p pulse-primary"
+                style={{ background: 'rgba(99, 102, 241, 0.2)', borderColor: 'var(--primary)' }}
+              >
+                <Plus size={18} />
+                <span>Invita Verix Bot</span>
+              </button>
+            )}
             <button onClick={fetchData} className="btn-glass-p">
               <RefreshCcw size={18} className={loading ? 'spin' : ''} />
               <span>{t('dashboard.refresh_data')}</span>
@@ -521,6 +531,13 @@ export default function GuildHome() {
           width: 100%; display: flex; align-items: center; justify-content: center; gap: 12px; padding: 16px; background: rgba(239, 68, 68, 0.05); color: var(--error); border: 1px solid rgba(239, 68, 68, 0.1); border-radius: 16px; font-weight: 800; font-size: 0.85rem; cursor: pointer; transition: 0.3s;
         }
         .danger-zone-btn:hover { background: var(--error); color: white; box-shadow: 0 10px 20px rgba(239, 68, 68, 0.2); }
+
+        .pulse-primary { animation: pulse-shadow 2s infinite; }
+        @keyframes pulse-shadow {
+          0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
+          70% { box-shadow: 0 0 0 15px rgba(99, 102, 241, 0); }
+          100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+        }
 
         .spin { animation: spin 1s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }

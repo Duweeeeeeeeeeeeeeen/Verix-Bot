@@ -125,6 +125,7 @@ export function startDashboard(client) {
     // 6. Request context — attach Discord client
     app.use((req, res, next) => {
         req.discordClient = client;
+        req.mainClient = client;
         next();
     });
 
