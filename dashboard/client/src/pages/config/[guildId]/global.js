@@ -148,7 +148,7 @@ export default function GlobalConfigPage() {
                                             { value: 'it', label: 'Italiano 🇮🇹' },
                                             { value: 'en', label: 'English 🇺🇸' }
                                         ]} 
-                                        value={config.language || 'it'} 
+                                        value={config.language || 'en'} 
                                         onChange={val => setNested('language', val)} 
                                     />
                                 </div>

@@ -1,143 +1,255 @@
 import Head from 'next/head';
-import Link from 'next/link';
-import { ChevronLeft, Shield, Eye, Lock } from 'lucide-react';
+import { Shield, Eye, Lock, Database, ChevronLeft } from 'lucide-react';
+import { useRouter } from 'next/router';
 
 export default function PrivacyPolicy() {
-    const lastUpdate = "5 Maggio 2026";
+  const router = useRouter();
 
-    return (
-        <div className="policy-container">
-            <Head>
-                <title>Privacy Policy | Verix Bot</title>
-                <meta name="description" content="Informativa sulla privacy di Verix Bot." />
-            </Head>
+  return (
+    <div className="legal-container">
+      <Head>
+        <title>Privacy Policy | Verix Bot</title>
+      </Head>
 
-            <nav className="policy-nav">
-                <Link href="/" className="back-link">
-                    <ChevronLeft size={20} /> Torna alla Home
-                </Link>
-                <div className="brand">Verix</div>
-            </nav>
+      <div className="background-glow"></div>
 
-            <main className="policy-content">
-                <header className="content-header">
-                    <div className="icon-badge">
-                        <Shield size={32} />
-                    </div>
-                    <h1>Informativa sulla Privacy</h1>
-                    <p className="update-date">Ultimo aggiornamento: {lastUpdate}</p>
-                </header>
+      <div className="content-wrapper animate fade-in">
+        <button className="btn-back" onClick={() => router.push('/')}>
+          <ChevronLeft size={18} /> Back to Home
+        </button>
 
-                <section className="policy-section">
-                    <h2>1. Informazioni che Raccogliamo</h2>
-                    <p>
-                        Verix Bot raccoglie solo i dati strettamente necessari per il funzionamento del servizio. Questi includono:
-                    </p>
-                    <ul>
-                        <li><strong>Dati di Discord:</strong> ID utente, ID server, ID canali, ruoli e avatar per gestire permessi e configurazioni.</li>
-                        <li><strong>Log del Bot:</strong> Registrazioni di azioni di moderazione, aperture di ticket e attività della whitelist (IP se forniti volontariamente per whitelist server).</li>
-                        <li><strong>Dati di Pagamento:</strong> Se sottoscrivi un piano Premium, i dati di pagamento sono gestiti interamente da processori terzi (Stripe/PayPal). Verix non memorizza mai i dettagli della tua carta di credito.</li>
-                    </ul>
-                </section>
+        <header className="legal-header">
+          <img src="/logo.png" alt="Verix Logo" className="verix-logo" />
+          <div className="icon-wrapper">
+            <Shield size={40} />
+          </div>
+          <h1>Privacy Policy</h1>
+          <p className="last-updated">Last updated: May 5, 2026</p>
+        </header>
 
-                <section className="policy-section">
-                    <h2>2. Come Utilizziamo i Dati</h2>
-                    <p>
-                        I dati raccolti vengono utilizzati esclusivamente per:
-                    </p>
-                    <ul>
-                        <li>Fornire le funzionalità del bot richieste dai proprietari dei server.</li>
-                        <li>Gestire gli abbonamenti Premium e Platinum.</li>
-                        <li>Fornire supporto tecnico tramite la dashboard o il server Discord.</li>
-                        <li>Prevenire abusi e garantire la sicurezza del bot e dei server.</li>
-                    </ul>
-                </section>
+        <main className="legal-glass-card">
+          <section className="legal-section">
+            <div className="section-title">
+              <Database size={20} />
+              <h2>1. Information We Collect</h2>
+            </div>
+            <p>
+              To provide our services, Verix collects minimal data from Discord:
+            </p>
+            <ul>
+              <li>Server IDs and Role IDs for configuration.</li>
+              <li>User IDs for Whitelist and Ticket management.</li>
+              <li>Message content only when explicitly needed for logs (if enabled by staff).</li>
+            </ul>
+          </section>
 
-                <section className="policy-section">
-                    <h2>3. Conservazione dei Dati</h2>
-                    <p>
-                        I dati vengono conservati finché il bot è presente nel server o finché l'utente non richiede la cancellazione. I log dei ticket e della moderazione possono essere cancellati manualmente dagli amministratori del server in qualsiasi momento tramite la dashboard.
-                    </p>
-                </section>
+          <section className="legal-section">
+            <div className="section-title">
+              <Eye size={20} />
+              <h2>2. How We Use Data</h2>
+            </div>
+            <p>
+              Data is used exclusively for the functioning of the bot's features (Tickets, Whitelist, Social Alerts).
+              We do not sell your data to third parties. Ever.
+            </p>
+          </section>
 
-                <section className="policy-section">
-                    <h2>4. Condivisione dei Dati con Terze Parti</h2>
-                    <p>
-                        Verix non vende né affitta i tuoi dati a terzi. Condividiamo informazioni solo quando necessario per fornire il servizio (es. con Discord per le API o con i processori di pagamento per gli abbonamenti).
-                    </p>
-                </section>
+          <section className="legal-section">
+            <div className="section-title">
+              <Lock size={20} />
+              <h2>3. Data Security</h2>
+            </div>
+            <p>
+              Your data is stored on secure, private servers with limited access. 
+              Sensitive information like Discord tokens for White-label bots is encrypted.
+            </p>
+          </section>
 
-                <section className="policy-section">
-                    <h2>5. I Tuoi Diritti (GDPR)</h2>
-                    <p>
-                        Se sei un utente residente nell'Unione Europea, hai il diritto di accedere, rettificare o cancellare i tuoi dati personali. Puoi richiedere la cancellazione totale dei tuoi dati archiviati da Verix contattando il team di supporto nel server ufficiale.
-                    </p>
-                </section>
+          <section className="legal-section disclaimer">
+            <h2>Data Deletion</h2>
+            <p>
+              When Verix leaves a server, we automatically schedule the deletion of its configuration data. 
+              Users can request manual data deletion via our support channel.
+            </p>
+          </section>
+        </main>
+      </div>
 
-                <section className="policy-section">
-                    <h2>6. Sicurezza</h2>
-                    <p>
-                        Adottiamo misure tecniche avanzate per proteggere i tuoi dati, inclusa la crittografia dei token sensibili e l'accesso limitato al database.
-                    </p>
-                </section>
-            </main>
+      <style jsx>{`
+        .legal-container {
+          min-height: 100vh;
+          background: #0a0a0c;
+          color: #ffffff;
+          padding: 60px 20px;
+          position: relative;
+          overflow: hidden;
+          font-family: 'Inter', sans-serif;
+        }
 
-            <style jsx>{`
-                .policy-container {
-                    min-height: 100vh;
-                    background: var(--bg-dark);
-                    color: var(--text-main);
-                    font-family: 'Inter', sans-serif;
-                }
-                .policy-nav {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    padding: 20px 40px;
-                    background: rgba(0,0,0,0.2);
-                    backdrop-filter: blur(10px);
-                    position: sticky;
-                    top: 0;
-                    z-index: 100;
-                    border-bottom: 1px solid var(--border);
-                }
-                .back-link {
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                    color: var(--text-muted);
-                    text-decoration: none;
-                    font-weight: 600;
-                    transition: 0.2s;
-                }
-                .back-link:hover { color: var(--primary); }
-                .brand { font-weight: 900; font-size: 1.5rem; letter-spacing: -1px; }
+        .background-glow {
+          position: absolute;
+          top: -10%;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 100%;
+          height: 500px;
+          background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, rgba(0,0,0,0) 70%);
+          pointer-events: none;
+        }
 
-                .policy-content {
-                    max-width: 800px;
-                    margin: 60px auto;
-                    padding: 0 20px;
-                }
-                .content-header { text-align: center; margin-bottom: 60px; }
-                .icon-badge {
-                    width: 64px; height: 64px; background: rgba(59, 130, 246, 0.1);
-                    color: #3b82f6; border-radius: 16px; margin: 0 auto 20px;
-                    display: flex; align-items: center; justify-content: center;
-                }
-                h1 { font-size: 2.5rem; font-weight: 900; margin-bottom: 10px; }
-                .update-date { color: var(--text-muted); font-size: 0.9rem; }
+        .content-wrapper {
+          max-width: 900px;
+          margin: 0 auto;
+          position: relative;
+          z-index: 1;
+        }
 
-                .policy-section { margin-bottom: 40px; line-height: 1.6; }
-                h2 { font-size: 1.5rem; font-weight: 800; margin-bottom: 15px; color: #3b82f6; }
-                p { color: var(--text-muted); margin-bottom: 15px; }
-                ul { padding-left: 20px; color: var(--text-muted); }
-                li { margin-bottom: 10px; }
+        .btn-back {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          color: #a0a0a0;
+          padding: 10px 20px;
+          border-radius: 12px;
+          font-weight: 600;
+          cursor: pointer;
+          margin-bottom: 40px;
+          transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
 
-                @media (max-width: 768px) {
-                    .policy-nav { padding: 15px 20px; }
-                    h1 { font-size: 2rem; }
-                }
-            `}</style>
-        </div>
-    );
+        .btn-back:hover {
+          background: rgba(255, 255, 255, 0.1);
+          color: #ffffff;
+          transform: translateX(-5px);
+        }
+
+        .legal-header {
+          text-align: center;
+          margin-bottom: 60px;
+        }
+
+        .verix-logo {
+          width: 120px;
+          height: auto;
+          margin-bottom: 30px;
+          filter: drop-shadow(0 0 20px rgba(16, 185, 129, 0.3));
+        }
+
+        .icon-wrapper {
+          width: 80px;
+          height: 80px;
+          background: linear-gradient(135deg, #10b981, #059669);
+          color: white;
+          border-radius: 24px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto 24px;
+          box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+        }
+
+        h1 {
+          font-size: 3.5rem;
+          font-weight: 900;
+          letter-spacing: -2px;
+          margin-bottom: 12px;
+          background: linear-gradient(to bottom, #ffffff, #a0a0a0);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+
+        .last-updated {
+          color: #666;
+          font-size: 0.9rem;
+          text-transform: uppercase;
+          letter-spacing: 2px;
+        }
+
+        .legal-glass-card {
+          background: rgba(15, 15, 18, 0.6);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 32px;
+          padding: 60px;
+          backdrop-filter: blur(20px);
+          box-shadow: 0 40px 100px rgba(0,0,0,0.5);
+        }
+
+        .legal-section {
+          margin-bottom: 50px;
+        }
+
+        .section-title {
+          display: flex;
+          align-items: center;
+          gap: 15px;
+          margin-bottom: 20px;
+          color: #10b981;
+        }
+
+        .section-title h2 {
+          font-size: 1.6rem;
+          font-weight: 800;
+          margin: 0;
+          color: #ffffff;
+        }
+
+        .legal-section p {
+          line-height: 1.8;
+          color: #b0b0b0;
+          font-size: 1.1rem;
+        }
+
+        ul {
+          list-style: none;
+          padding: 0;
+          margin-top: 20px;
+        }
+
+        li {
+          position: relative;
+          padding-left: 28px;
+          margin-bottom: 15px;
+          color: #d0d0d0;
+          font-weight: 500;
+        }
+
+        li::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 10px;
+          width: 8px;
+          height: 8px;
+          background: #10b981;
+          border-radius: 50%;
+          box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+        }
+
+        .disclaimer {
+          margin-top: 60px;
+          padding-top: 40px;
+          border-top: 1px solid rgba(255, 255, 255, 0.05);
+          text-align: center;
+        }
+
+        .disclaimer h2 {
+          font-size: 1.2rem;
+          color: #666;
+          margin-bottom: 10px;
+        }
+
+        .disclaimer p {
+          font-size: 0.95rem;
+          color: #555;
+        }
+
+        @media (max-width: 768px) {
+          .legal-glass-card { padding: 30px; }
+          h1 { font-size: 2.5rem; }
+        }
+      `}</style>
+    </div>
+  );
 }

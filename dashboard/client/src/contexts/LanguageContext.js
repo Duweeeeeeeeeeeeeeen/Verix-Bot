@@ -7,7 +7,7 @@ const LanguageContext = createContext();
 const locales = { it, en };
 
 export function LanguageProvider({ children }) {
-    const [language, setLanguageState] = useState('it');
+    const [language, setLanguageState] = useState('en');
 
     useEffect(() => {
         const savedLang = localStorage.getItem('verix-language');
@@ -24,7 +24,7 @@ export function LanguageProvider({ children }) {
     };
 
     const t = useCallback((key, vars = {}) => {
-        const locale = locales[language] || locales['it'];
+        const locale = locales[language] || locales['en'];
         
         // Try exact key first (flat)
         let val = locale[key];

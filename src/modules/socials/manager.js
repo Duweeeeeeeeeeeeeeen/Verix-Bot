@@ -1,11 +1,14 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 import mongoose from 'mongoose';
 import SocialConfig from '../../models/SocialConfig.js';
+import GlobalConfig from '../../models/GlobalConfig.js';
 import { getStreams, getUsers } from '../../utils/twitchHelper.js';
 import logger from '../../utils/logger.js';
 import messageService from '../../utils/messageService.js';
 import placeholderHelper from '../../utils/placeholderHelper.js';
 import Parser from 'rss-parser';
+import Guild from '../../models/Guild.js';
+import { t } from '../../locales/t.js';
 
 const rssParser = new Parser();
 
@@ -252,6 +255,9 @@ export class SocialManager {
                 logger.warn(`[Socials] Guild ${guildId} not found during notification.`);
                 return;
             }
+
+            const guildConfig = await GlobalConfig.findOne({ guildId });
+            const lang = guildConfig?.language || 'en';
 
             const channelId = platformConfig.notificationChannelId;
             if (!channelId) return;

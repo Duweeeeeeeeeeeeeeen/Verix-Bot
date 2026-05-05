@@ -1,6 +1,7 @@
 import { EmbedBuilder } from 'discord.js';
 import MessageConfig from '../models/MessageConfig.js';
 import GlobalConfig from '../models/GlobalConfig.js';
+import Guild from '../models/Guild.js';
 import { getDefaultMessages } from '../locales/t.js';
 import { buildEmbed } from './embedHelper.js';
 import logger from './logger.js';
@@ -26,7 +27,7 @@ class MessageService {
      * @returns {string} 'it' or 'en'
      */
     async getGuildLanguage(guildId) {
-        if (!guildId) return 'it';
+        if (!guildId) return 'en';
 
         const cached = this.langCache.get(guildId);
         if (cached && (Date.now() - (this.langTimestamps.get(guildId) || 0)) < this.langTTL) {
@@ -35,13 +36,13 @@ class MessageService {
 
         try {
             const config = await GlobalConfig.findOne({ guildId });
-            const lang = config?.language || 'it';
+            const lang = config?.language || 'en';
             this.langCache.set(guildId, lang);
             this.langTimestamps.set(guildId, Date.now());
             return lang;
         } catch (err) {
             logger.warn(`[MessageService] Error fetching guild language for ${guildId}:`, err.message);
-            return 'it';
+            return 'en';
         }
     }
 

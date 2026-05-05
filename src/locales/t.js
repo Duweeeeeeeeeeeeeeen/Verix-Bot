@@ -10,8 +10,8 @@ const locales = { it, en };
  * @param {object} vars - Variables to replace in the string (e.g., { user: 'Antigravity' })
  * @returns {string} - Translated string or the key if not found
  */
-export function t(key, lang = 'it', vars = {}) {
-    const locale = locales[lang] || locales['it']; // fallback to italian
+export function t(key, lang = 'en', vars = {}) {
+    const locale = locales[lang] || locales['en']; // fallback to english
     const keys = key.split('.');
     
     let val = locale;
@@ -34,8 +34,8 @@ export function t(key, lang = 'it', vars = {}) {
  * @param {string} lang - Language code
  * @returns {object}
  */
-export function getDefaultMessages(lang = 'it') {
-    return locales[lang] || locales['it'];
+export function getDefaultMessages(lang = 'en') {
+    return locales[lang] || locales['en'];
 }
 
 export default t;
