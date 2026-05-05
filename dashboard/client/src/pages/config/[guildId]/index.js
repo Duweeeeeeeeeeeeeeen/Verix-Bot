@@ -25,7 +25,8 @@ import {
   Layout as LayoutIcon,
   ChevronRight,
   Box,
-  Settings2
+  Settings2,
+  TrendingUp
 } from 'lucide-react';
 
 export default function GuildHome() {
