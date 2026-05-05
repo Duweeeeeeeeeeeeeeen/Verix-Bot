@@ -108,6 +108,11 @@ router.get('/:guildId', adminCheck, async (req, res) => {
         }
 
         const lang = globalConfig?.language || 'it';
+        
+        let discordGuild = null;
+        try {
+            discordGuild = await client.guilds.fetch(guildId);
+        } catch (e) {}
 
         res.json({
             success: true,
@@ -117,6 +122,8 @@ router.get('/:guildId', adminCheck, async (req, res) => {
                 photocontest: mergeModuleDefaults('photocontest', photoConfig, lang),
                 verify: mergeModuleDefaults('verify', verifyConfig, lang),
                 guild: guildData,
+                guildName: discordGuild?.name || guildData?.guildName || 'Verix Server',
+                guildIcon: discordGuild?.iconURL({ dynamic: true, size: 256 }) || null,
                 globalConfig,
                 welcome: mergeModuleDefaults('welcome', wlcmConfig, lang),
                 utility: mergeModuleDefaults('utility', utilConfig, lang),
