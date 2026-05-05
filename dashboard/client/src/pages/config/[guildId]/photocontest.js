@@ -221,15 +221,15 @@ export default function PhotoContestConfig() {
                                     }}>
                                         <div>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                <h4 style={{ margin: 0 }}>Vincitori Multipli (PRO)</h4>
+                                                <h4 style={{ margin: 0 }}>{t('photocontest.multi_winner')}</h4>
                                                 {!guildData?.isPremium && <Crown size={12} color="var(--gold)" />}
                                             </div>
-                                            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>Permetti a più utenti di vincere il concorso contemporaneamente.</p>
+                                            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '4px' }}>{t('photocontest.multi_winner_desc')}</p>
                                         </div>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                                             {config.multiWinner && (
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Numero:</span>
+                                                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{t('photocontest.winners_count')}:</span>
                                                     <input 
                                                         type="number" 
                                                         className="input-s" 
@@ -361,7 +361,7 @@ export default function PhotoContestConfig() {
                                                 type="number" 
                                                 className="input-inline" 
                                                 style={{ width: '60px', background: 'transparent', border: 'none', color: 'var(--primary)', fontWeight: '700', fontSize: '0.85rem', textAlign: 'right' }}
-                                                placeholder="Def." 
+                                                placeholder={t('photocontest.default_duration')} 
                                                 value={theme.durationHours || ''} 
                                                 onChange={e => updateTheme(index, 'durationHours', e.target.value ? parseInt(e.target.value) : null)}
                                             />

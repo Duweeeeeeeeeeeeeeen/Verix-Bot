@@ -25,14 +25,14 @@ export default function GlobalSync() {
     ]);
 
     const modules = [
-        { id: 'whitelist', label: 'Whitelist & Applicazioni', icon: Shield },
-        { id: 'tickets', label: 'Sistema Ticket', icon: Layers },
-        { id: 'automations', label: 'Automazioni (Auto-Clear, ecc)', icon: Zap },
-        { id: 'moderation', label: 'Moderazione & Filtri', icon: Shield },
-        { id: 'welcome', label: 'Benvenuto & Addio', icon: MessageSquare },
-        { id: 'verify', label: 'Sistema di Verifica', icon: CheckCircle2 },
-        { id: 'socials', label: 'Notifiche Social', icon: RefreshCcw },
-        { id: 'utility', label: 'Utility & Comandi', icon: Settings2 }
+        { id: 'whitelist', label: t('sidebar.whitelist'), icon: Shield },
+        { id: 'tickets', label: t('sidebar.tickets'), icon: Layers },
+        { id: 'automations', label: t('sidebar.automations'), icon: Zap },
+        { id: 'moderation', label: t('sidebar.moderation'), icon: Shield },
+        { id: 'welcome', label: t('sidebar.welcome'), icon: MessageSquare },
+        { id: 'verify', label: t('sidebar.verify'), icon: CheckCircle2 },
+        { id: 'socials', label: t('sidebar.socials'), icon: RefreshCcw },
+        { id: 'utility', label: t('sidebar.utility'), icon: Settings2 }
     ];
 
     const loadData = async () => {
@@ -69,7 +69,7 @@ export default function GlobalSync() {
 
     const handleSync = async () => {
         if (!sourceGuildId) return;
-        if (!confirm('Sei sicuro? Questa azione sovrascriverà le configurazioni del server attuale con quelle del server sorgente per i moduli selezionati.')) return;
+        if (!confirm(t('sync.confirm_msg'))) return;
 
         setSyncing(true);
         try {
@@ -83,7 +83,7 @@ export default function GlobalSync() {
 
             if (res.success) {
                 window.dispatchEvent(new CustomEvent('show-toast', { 
-                    detail: { message: 'Sincronizzazione completata con successo!', type: 'success' } 
+                    detail: { message: t('sync.success_msg'), type: 'success' } 
                 }));
             } else {
                 throw new Error(res.error || 'Errore durante la sincronizzazione');
@@ -111,10 +111,10 @@ export default function GlobalSync() {
                 <div className="platinum-upsell card">
                     <div className="upsell-badge">PLATINUM EXCLUSIVE</div>
                     <Crown size={64} color="var(--gold)" />
-                    <h2>Sincronizzazione Globale</h2>
-                    <p>La sincronizzazione tra server è una funzionalità esclusiva del piano Platinum. Gestisci decine di server con un solo click clonando le configurazioni istantaneamente.</p>
+                    <h2>{t('sync.title')}</h2>
+                    <p>{t('sync.upsell_desc')}</p>
                     <button className="btn-premium-cta" onClick={() => router.push(`/config/${guildId}/premium`)}>
-                        Ottieni Platinum
+                        {t('sync.get_platinum')}
                     </button>
                 </div>
             </div>
@@ -129,8 +129,8 @@ export default function GlobalSync() {
                         <RefreshCcw size={24} />
                     </div>
                     <div className="header-text">
-                        <h1>Sincronizzazione Globale</h1>
-                        <p>Clona le configurazioni da un altro server per risparmiare tempo.</p>
+                        <h1>{t('sync.title')}</h1>
+                        <p>{t('sync.desc')}</p>
                     </div>
                 </div>
             </header>
@@ -138,8 +138,8 @@ export default function GlobalSync() {
             <div className="sync-grid">
                 <div className="sync-selection card">
                     <div className="step-badge">1</div>
-                    <h3>Seleziona Server Sorgente</h3>
-                    <p className="text-dim">Scegli il server da cui copiare le impostazioni.</p>
+                    <h3>{t('sync.step_1')}</h3>
+                    <p className="text-dim">{t('sync.step_1_desc')}</p>
                     
                     <div className="source-selector">
                         <select 
@@ -147,7 +147,7 @@ export default function GlobalSync() {
                             value={sourceGuildId} 
                             onChange={e => setSourceGuildId(e.target.value)}
                         >
-                            <option value="">Seleziona un server...</option>
+                            <option value="">{t('sync.select_placeholder')}</option>
                             {userGuilds.map(g => (
                                 <option key={g.id} value={g.id}>{g.name}</option>
                             ))}
@@ -157,15 +157,15 @@ export default function GlobalSync() {
                     <div className="sync-warning">
                         <AlertTriangle size={20} />
                         <div>
-                            <strong>Attenzione:</strong> Questa operazione è irreversibile. I dati attuali del server {guildData?.name} verranno sovrascritti.
+                            <strong>{t('sync.warning_title')}</strong> {t('sync.warning_desc', { name: guildData?.name })}
                         </div>
                     </div>
                 </div>
 
                 <div className="sync-modules card">
                     <div className="step-badge">2</div>
-                    <h3>Moduli da Sincronizzare</h3>
-                    <p className="text-dim">Seleziona quali parti della configurazione vuoi clonare.</p>
+                    <h3>{t('sync.step_2')}</h3>
+                    <p className="text-dim">{t('sync.step_2_desc')}</p>
 
                     <div className="modules-list">
                         {modules.map(mod => (
@@ -194,7 +194,7 @@ export default function GlobalSync() {
                             onClick={handleSync}
                         >
                             {syncing ? <RefreshCcw className="spin" size={18} /> : <Copy size={18} />}
-                            {syncing ? 'Sincronizzazione in corso...' : 'Avvia Sincronizzazione'}
+                            {syncing ? t('sync.btn_syncing') : t('sync.btn_start')}
                         </button>
                     </div>
                 </div>

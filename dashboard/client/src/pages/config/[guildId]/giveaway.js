@@ -52,10 +52,10 @@ export default function GiveawayConfig() {
     winnerCount: 1,
     channelId: '',
     scheduledStart: '',
-    customTitle: '🎁 NUOVO GIVEAWAY!',
-    customDescription: 'Partecipa cliccando sul tasto qui sotto!\n\n🏆 **Premio:** {prize}\n⌛ **Termina:** {endtime}',
+    customTitle: t('giveaway.default_title'),
+    customDescription: t('giveaway.default_desc'),
     color: '#5865F2',
-    buttonLabel: 'Partecipa',
+    buttonLabel: t('giveaway.default_btn'),
     buttonEmoji: '🎉',
     buttonStyle: 'PRIMARY'
   });
@@ -361,10 +361,10 @@ export default function GiveawayConfig() {
                                                 <label className="text-label">{t('embeds.editor.button_style')}</label>
                                                 <CustomSelect 
                                                     options={[
-                                                        { value: 'PRIMARY', label: 'Blu (Primary)' },
-                                                        { value: 'SUCCESS', label: 'Verde (Success)' },
-                                                        { value: 'DANGER', label: 'Rosso (Danger)' },
-                                                        { value: 'SECONDARY', label: 'Grigio (Secondary)' }
+                                                        { value: 'PRIMARY', label: t('tickets.btn_style_blue') },
+                                                        { value: 'SUCCESS', label: t('tickets.btn_style_green') },
+                                                        { value: 'DANGER', label: t('tickets.btn_style_red') },
+                                                        { value: 'SECONDARY', label: t('tickets.btn_style_gray') }
                                                     ]}
                                                     value={newGw.buttonStyle}
                                                     onChange={val => setNewGw({...newGw, buttonStyle: val})}
@@ -445,7 +445,7 @@ export default function GiveawayConfig() {
                                                     </div>
                                                 </div>
                                                 <div className="gw-actions">
-                                                    <button onClick={() => handleDeleteGiveaway(gw.messageId)} className="btn-icon-danger" title="Elimina/Annulla">
+                                                    <button onClick={() => handleDeleteGiveaway(gw.messageId)} className="btn-icon-danger" title={t('common.delete')}>
                                                         <Trash2 size={16} />
                                                     </button>
                                                 </div>
@@ -487,7 +487,7 @@ export default function GiveawayConfig() {
                                                     </div>
                                                 </div>
                                                 <div className="gw-actions">
-                                                    <button onClick={() => handleDeleteGiveaway(gw._id, true)} className="btn-icon-danger" title="Elimina Programmazione">
+                                                    <button onClick={() => handleDeleteGiveaway(gw._id, true)} className="btn-icon-danger" title={t('common.delete')}>
                                                         <Trash2 size={16} />
                                                     </button>
                                                 </div>
@@ -510,8 +510,8 @@ export default function GiveawayConfig() {
                                     <table className="logs-table">
                                         <thead>
                                             <tr>
-                                                <th>Premio</th>
-                                                <th>Data</th>
+                                                <th>{t('giveaway.prize')}</th>
+                                                <th>{t('common.date')}</th>
                                                 <th>{t('giveaway.winners')}</th>
                                                 <th>{t('dashboard.stats_users')}</th>
                                             </tr>

@@ -167,7 +167,7 @@ export default function ManagementPage() {
         setUserData(res);
         setUserId(idToSearch); // Always update state to keep it in sync
       } else {
-        showToast('Nessun record trovato per questo ID', 'info');
+        showToast(t('management.search_not_found'), 'info');
         setUserData(null);
       }
     } catch (err) {
@@ -187,11 +187,11 @@ export default function ManagementPage() {
       await api.request(`/management/${guildId}/records/${type}/${id}`, {
         method: 'DELETE'
       });
-      showToast('Record eliminato con successo');
+      showToast(t('management.delete_success'));
       handleSearch(null, userData?.user?.discordId || userId);
     } catch (err) {
       console.error('Delete error:', err);
-      showToast(err.message || 'Errore durante l\'eliminazione', 'error');
+      showToast(err.message || t('management.delete_error'), 'error');
     }
   };
 
@@ -205,11 +205,11 @@ export default function ManagementPage() {
       await api.request(`/management/${guildId}/reset-user/${targetId}`, {
         method: 'POST'
       });
-      showToast('Stato utente resettato con successo');
+      showToast(t('management.reset_success'));
       handleSearch(null, targetId);
     } catch (err) {
       console.error('Reset error:', err);
-      showToast(err.message || 'Errore durante il reset', 'error');
+      showToast(err.message || t('management.reset_error'), 'error');
     }
   };
 
@@ -370,15 +370,15 @@ export default function ManagementPage() {
               <div className="cooldowns-row">
                 <div className="cooldown-item">
                   <ShieldCheck size={18} />
-                  <span>Whitelist: {userData.whitelist?.status || 'Non Registrato'}</span>
+                  <span>{t('management.whitelist_status')}: {userData.whitelist?.status ? t(`management.status_${userData.whitelist.status.toLowerCase()}`) : t('management.status_not_registered')}</span>
                 </div>
                 <div className="cooldown-item">
                   <Mic2 size={18} />
-                  <span>Background: {userData.background?.status || 'Non Presente'}</span>
+                  <span>{t('management.bg_status')}: {userData.background?.status ? t(`management.status_${userData.background.status.toLowerCase()}`) : t('management.status_not_present')}</span>
                 </div>
                 <div className="cooldown-item">
                   <Clock size={18} />
-                  <span>Cooldown: {userData.cooldowns?.some(c => new Date(c.endsAt) > new Date()) ? 'Attivo' : 'Nessuno'}</span>
+                  <span>{t('management.cooldown_status')}: {userData.cooldowns?.some(c => new Date(c.endsAt) > new Date()) ? t('management.status_active') : t('management.status_none')}</span>
                 </div>
               </div>
 
@@ -465,10 +465,10 @@ export default function ManagementPage() {
                         <table className="log-table">
                             <thead>
                                 <tr>
-                                    <th>Time</th>
-                                    <th>Admin</th>
-                                    <th>Action</th>
-                                    <th style={{ textAlign: 'right' }}>Details</th>
+                                    <th>{t('management.log_time')}</th>
+                                    <th>{t('management.log_admin')}</th>
+                                    <th>{t('management.log_action')}</th>
+                                    <th style={{ textAlign: 'right' }}>{t('management.log_details')}</th>
                                 </tr>
                             </thead>
                             <tbody>

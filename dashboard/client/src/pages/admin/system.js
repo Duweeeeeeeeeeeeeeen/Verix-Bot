@@ -105,10 +105,10 @@ export default function SystemUpdates() {
             if (data.success) {
                 setFoundGuild(data.data);
             } else {
-                alert("Server non trovato o errore nel database.");
+                alert(t('admin.guild_not_found'));
             }
         } catch (err) {
-            alert("Errore di connessione.");
+            alert(t('admin.connection_error'));
         } finally {
             setSearching(false);
         }
@@ -133,10 +133,10 @@ export default function SystemUpdates() {
                     isPremium: newTier !== 'none' 
                 });
             } else {
-                alert("Errore: " + data.error);
+                alert(t('common.save_error') + ": " + data.error);
             }
         } catch (err) {
-            alert("Errore durante l'aggiornamento.");
+            alert(t('admin.update_error'));
         } finally {
             setUpdatingTier(false);
         }
@@ -240,7 +240,7 @@ export default function SystemUpdates() {
                                 </div>
                             </div>
                             <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '16px' }}>
-                                💡 Supportati link diretti (.png, .jpg, .gif). Caricale su <a href="https://postimages.org/" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--primary)', textDecoration: 'underline' }}>Postimages</a> per ottenere il link.
+                                {t('admin.tips_postimages')}
                             </p>
 
                             <div className="form-actions">
@@ -334,12 +334,12 @@ export default function SystemUpdates() {
                         <section className="glass-card premium-mgmt-card">
                             <div className="card-header">
                                 <Crown size={20} color="#eab308" />
-                                <h2>Gestione Premium</h2>
+                                <h2>{t('admin.premium_mgmt')}</h2>
                             </div>
                             <div className="guild-search-box">
                                 <input 
                                     type="text" 
-                                    placeholder="Inserisci Guild ID..." 
+                                    placeholder={t('admin.guild_id_placeholder')} 
                                     value={searchGuildId}
                                     onChange={e => setSearchGuildId(e.target.value)}
                                 />
@@ -359,16 +359,16 @@ export default function SystemUpdates() {
                                         </div>
                                     </div>
                                     <div className="tier-selector-group">
-                                        <label>Seleziona Piano:</label>
+                                        <label>{t('admin.select_plan')}</label>
                                         <select 
                                             value={foundGuild.premiumTier || (foundGuild.isPremium ? 'premium' : 'none')}
                                             onChange={(e) => handleUpdateTier(e.target.value)}
                                             disabled={updatingTier}
                                             className="tier-select-admin"
                                         >
-                                            <option value="none">Free (Nessuno)</option>
-                                            <option value="premium">Premium</option>
-                                            <option value="platinum">Platinum</option>
+                                            <option value="none">{t('admin.plan_none')}</option>
+                                            <option value="premium">{t('admin.plan_premium')}</option>
+                                            <option value="platinum">{t('admin.plan_platinum')}</option>
                                         </select>
                                     </div>
                                  </div>

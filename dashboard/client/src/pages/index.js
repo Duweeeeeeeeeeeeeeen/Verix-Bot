@@ -1,4 +1,5 @@
 import { useAuth } from '../contexts/AuthContext';
+import { useT } from '../contexts/LanguageContext';
 import { 
   ShieldCheck, 
   Ticket, 
@@ -27,6 +28,7 @@ import LoadingScreen from '../components/LoadingScreen';
 
 export default function Home() {
   const { user, login, loading } = useAuth();
+  const { t } = useT();
   const router = useRouter();
 
   useEffect(() => {
@@ -36,82 +38,82 @@ export default function Home() {
   const features = [
     { 
       icon: ShieldCheck, 
-      title: 'Whitelist Intelligente', 
-      desc: 'Gestisci gli accessi al tuo server con criteri personalizzati e automazione completa.' 
+      title: t('landing.feat_whitelist_title'), 
+      desc: t('landing.feat_whitelist_desc') 
     },
     { 
       icon: Ticket, 
-      title: 'Ticket System Avanzato', 
-      desc: 'Supporto professionale per i tuoi utenti con categorie, log e trascrizioni automatiche.' 
+      title: t('landing.feat_tickets_title'), 
+      desc: t('landing.feat_tickets_desc') 
     },
     { 
       icon: Mic2, 
-      title: 'Voice Queue Automatica', 
-      desc: 'Crea e gestisci canali vocali temporanei per mantenere il server pulito e organizzato.' 
+      title: t('landing.feat_voice_title'), 
+      desc: t('landing.feat_voice_desc') 
     },
     { 
       icon: Layout, 
-      title: 'Dashboard Web Premium', 
-      desc: 'Controlla ogni aspetto del bot da un\'interfaccia web moderna, veloce e intuitiva.' 
+      title: t('landing.feat_dashboard_title'), 
+      desc: t('landing.feat_dashboard_desc') 
     },
     { 
       icon: Camera, 
-      title: 'Contest System', 
-      desc: 'Organizza concorsi fotografici e contest con votazioni integrate direttamente su Discord.' 
+      title: t('landing.feat_contest_title'), 
+      desc: t('landing.feat_contest_desc') 
     },
     { 
       icon: Tv, 
-      title: 'Social Alerts Pro', 
-      desc: 'Notifiche istantanee in tempo reale per Twitch, TikTok, Instagram e X (Twitter) con grafiche premium.' 
+      title: t('landing.feat_socials_title'), 
+      desc: t('landing.feat_socials_desc') 
     },
     {
       icon: Trash2,
-      title: 'AutoClear Advanced',
-      desc: 'Mantieni puliti i tuoi canali eliminando automaticamente i messaggi vecchi o di sistema.',
+      title: t('landing.feat_autoclear_title'),
+      desc: t('landing.feat_autoclear_desc'),
       isNew: true
     },
     {
       icon: ShieldAlert,
-      title: 'Sistema Moderazione',
-      desc: 'Proteggi il tuo server con filtri anti-spam, blacklist di parole e log dettagliati.',
+      title: t('landing.feat_moderation_title'),
+      desc: t('landing.feat_moderation_desc'),
       isNew: true
     },
     {
       icon: Bot,
-      title: 'True White-Label',
-      desc: 'Gestisci il tuo bot privato con token personalizzato, nome e attività dedicate (Esclusivo Platinum).',
+      title: t('landing.feat_whitelabel_title'),
+      desc: t('landing.feat_whitelabel_desc'),
       isNew: true
     },
     {
       icon: Settings2,
-      title: 'Configurazioni Globali',
-      desc: 'Sincronizza le impostazioni tra più server per una gestione centralizzata e veloce.',
+      title: t('landing.feat_global_title'),
+      desc: t('landing.feat_global_desc'),
       isNew: true
     }
   ];
 
   const news = [
     {
-      title: 'Lancio Verix v2.0',
-      date: 'Oggi',
-      desc: 'Nuova interfaccia web, velocità raddoppiata e supporto multi-lingua completo.',
+      title: t('landing.news_v2_title'),
+      date: t('landing.news_date_today'),
+      desc: t('landing.news_v2_desc'),
       tag: 'MAJOR'
     },
     {
-      title: 'Modulo Photo Contest',
-      date: 'Ieri',
-      desc: 'Ora puoi gestire concorsi fotografici automatizzati con votazioni dei membri.',
+      title: t('landing.news_contest_title'),
+      date: t('landing.news_date_yesterday'),
+      desc: t('landing.news_contest_desc'),
       tag: 'HOT'
     },
     {
-      title: 'White-Label Branding',
-      date: '2 giorni fa',
-      desc: 'Personalizza il bot con il tuo logo e nome (esclusivo Platinum).',
+      title: t('landing.news_premium_title'),
+      date: t('landing.news_date_2days'),
+      desc: t('landing.news_premium_desc'),
       tag: 'PREMIUM'
     }
   ];
 
-  if (loading || user) return <LoadingScreen message="Sincronizzazione account..." />;
+  if (loading || user) return <LoadingScreen message={t('landing.syncing')} />;
 
   return (
     <div className="landing-page-p">
@@ -122,14 +124,14 @@ export default function Home() {
             <div className="step-badge" style={{ marginBottom: '24px' }}>
               <Rocket size={14} style={{ marginRight: '8px' }} /> Verix Bot v2.0
             </div>
-            <h1 style={{ color: 'var(--text-main)' }}>Gestisci il tuo server Discord come un professionista</h1>
+            <h1 style={{ color: 'var(--text-main)' }}>{t('landing.title')}</h1>
             <p>
-              Whitelist, Ticket, Voice, Verify, Contest e Social Notifications — tutto racchiuso in una dashboard moderna e ultra-veloce con tecnologia Private Bridge dedicata.
+              {t('landing.subtitle')}
             </p>
             
             <div className="cta-group-p" style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
               <button onClick={login} className="btn-discord-p">
-                <LogIn size={20} /> Accedi con Discord
+                <LogIn size={20} /> {t('landing.cta_login')}
               </button>
               <a 
                 href={`https://discord.com/oauth2/authorize?client_id=1493270512195862538&permissions=8&scope=bot%20applications.commands`} 
@@ -137,18 +139,18 @@ export default function Home() {
                 rel="noopener noreferrer"
                 className="btn-invite-p"
               >
-                <ExternalLink size={20} /> Invita il Bot
+                <ExternalLink size={20} /> {t('landing.cta_invite')}
               </a>
             </div>
 
             <div style={{ marginTop: '48px', display: 'flex', gap: '32px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <Shield size={20} style={{ color: 'var(--primary)' }} />
-                <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem', fontWeight: '600' }}>Sicurezza Admin</span>
+                <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem', fontWeight: '600' }}>{t('landing.security_admin')}</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <Zap size={20} style={{ color: 'var(--primary)' }} />
-                <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem', fontWeight: '600' }}>Setup Istantaneo</span>
+                <span style={{ color: 'var(--text-muted)', fontSize: '0.9rem', fontWeight: '600' }}>{t('landing.setup_instant')}</span>
               </div>
             </div>
           </div>
@@ -182,9 +184,9 @@ export default function Home() {
       {/* Features Grid */}
       <section className="landing-container-p features-section-p">
         <div style={{ textAlign: 'center', marginBottom: '80px' }}>
-          <h2 style={{ fontSize: '2.5rem', marginBottom: '16px', color: 'var(--text-main)' }}>Tutto quello che ti serve in un unico posto</h2>
+          <h2 style={{ fontSize: '2.5rem', marginBottom: '16px', color: 'var(--text-main)' }}>{t('landing.features_title')}</h2>
           <p style={{ color: 'var(--text-dim)', maxWidth: '600px', margin: '0 auto' }}>
-            Dimentica i bot frammentati. Verix consolida le funzionalità più richieste in un'unica piattaforma potente e facile da usare.
+            {t('landing.features_subtitle')}
           </p>
         </div>
 
@@ -195,7 +197,7 @@ export default function Home() {
                 <div className="feature-icon-p">
                   <f.icon size={24} />
                 </div>
-                {f.isNew && <span className="badge-new-p">NUOVO</span>}
+                {f.isNew && <span className="badge-new-p">{t('landing.new_badge')}</span>}
               </div>
               <h3>{f.title}</h3>
               <p>{f.desc}</p>
@@ -208,11 +210,11 @@ export default function Home() {
       <section className="landing-container-p news-section-p">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '40px', flexWrap: 'wrap', gap: '20px' }}>
           <div>
-            <h2 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '8px' }}>Ultime Novità</h2>
-            <p style={{ color: 'var(--text-dim)' }}>Scopri cosa abbiamo aggiunto di recente al progetto.</p>
+            <h2 style={{ fontSize: '2.5rem', color: 'var(--text-main)', marginBottom: '8px' }}>{t('landing.news_title')}</h2>
+            <p style={{ color: 'var(--text-dim)' }}>{t('landing.news_subtitle')}</p>
           </div>
           <div className="step-badge" style={{ background: 'var(--primary-glow)', color: 'var(--primary)' }}>
-            Aggiornato al {new Date().toLocaleDateString()}
+            {t('landing.updated_at', { date: new Date().toLocaleDateString() })}
           </div>
         </div>
 
@@ -240,21 +242,21 @@ export default function Home() {
 
       <footer className="landing-container-p" style={{ padding: '80px 0', borderTop: '1px solid var(--border)', textAlign: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '24px' }}>
-          <img src="/logo.png" alt="Verix" style={{ width: '40px' }} />
+          <img src="/logo.png" alt="Verix" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} />
           <span style={{ fontWeight: '800', fontSize: '1.2rem', color: 'var(--text-main)' }}>Verix Bot</span>
         </div>
         
         <div style={{ display: 'flex', justifyContent: 'center', gap: '24px', marginBottom: '24px' }}>
           <Link href="/terms" style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textDecoration: 'none', fontWeight: '600' }} className="footer-link">
-            Termini di Servizio
+            {t('landing.terms')}
           </Link>
           <Link href="/privacy" style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textDecoration: 'none', fontWeight: '600' }} className="footer-link">
-            Privacy Policy
+            {t('landing.privacy')}
           </Link>
         </div>
 
         <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-          &copy; {new Date().getFullYear()} Verix Team. Gestisci il tuo server con stile.
+          {t('landing.copyright', { year: new Date().getFullYear() })}
         </p>
 
         <style jsx>{`

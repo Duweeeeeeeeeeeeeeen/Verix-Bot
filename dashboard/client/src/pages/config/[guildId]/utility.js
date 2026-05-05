@@ -6,8 +6,11 @@ import api from '../../../utils/api';
 import { 
     Save, Cpu, Settings2, Power, Info, Shield
 } from 'lucide-react';
+import { useT } from '../../../contexts/LanguageContext';
+import Head from 'next/head';
 
 export default function UtilityConfig() {
+  const { t } = useT();
   const router = useRouter();
   const { guildId } = router.query;
   const [config, setConfig] = useState(null);
@@ -62,18 +65,18 @@ export default function UtilityConfig() {
         method: 'POST',
         body: JSON.stringify(config)
       });
-      showToast('Configurazione salvata!');
+      showToast(t('common.save_success'));
     } catch (error) {
-        showToast('Errore durante il salvataggio', 'error');
+        showToast(t('common.save_error'), 'error');
     }
     finally { setSaving(false); }
   };
 
   const handleQuickClear = async () => {
-    if (!quickClear.channelId) return showToast('Seleziona un canale!', 'error');
-    if (quickClear.amount < 1 || quickClear.amount > 100) return showToast('Quantità non valida!', 'error');
+    if (!quickClear.channelId) return showToast(t('utility.select_channel_err'), 'error');
+    if (quickClear.amount < 1 || quickClear.amount > 100) return showToast(t('utility.invalid_amount_err'), 'error');
 
-    if (!confirm(`Sei sicuro di voler eliminare ${quickClear.amount} messaggi? Questa azione è irreversibile.`)) return;
+    if (!confirm(t('utility.confirm_clear', { amount: quickClear.amount }))) return;
 
     setClearing(true);
     try {
@@ -81,9 +84,9 @@ export default function UtilityConfig() {
         method: 'POST',
         body: JSON.stringify(quickClear)
       });
-      showToast(res.message || 'Messaggi eliminati!');
+      showToast(res.message || t('utility.clear_success'));
     } catch (error) {
-      showToast(error.message || 'Errore durante la pulizia', 'error');
+      showToast(error.message || t('utility.clear_error'), 'error');
     } finally {
       setClearing(false);
     }
@@ -95,6 +98,9 @@ export default function UtilityConfig() {
     <>
       <div className="animate">
         
+        <Head>
+            <title>{t('utility.title')} | Verix</title>
+        </Head>
         {/* Module Header */}
         <header className="module-header">
            <div className="header-info">
@@ -102,13 +108,13 @@ export default function UtilityConfig() {
                 <Cpu size={24} />
               </div>
               <div className="header-text">
-                <h1>Utility Module</h1>
-                <p>Gestisci i comandi di utilità del bot come /clear.</p>
+                <h1>{t('utility.title')}</h1>
+                <p>{t('utility.desc')}</p>
               </div>
            </div>
            <div className="header-buttons">
               <button onClick={handleSave} className="btn-primary" disabled={saving}>
-                <Save size={16} /> {saving ? 'Salvataggio...' : 'Salva Modifiche'}
+                <Save size={16} /> {saving ? t('common.saving') : t('common.save_changes')}
               </button>
            </div>
         </header>
@@ -121,8 +127,8 @@ export default function UtilityConfig() {
                         <Power size={20} />
                     </div>
                     <div>
-                        <h3>Stato Modulo</h3>
-                        <p className="text-muted">Abilita o disabilita le funzioni di utilità (es. /clear).</p>
+                        <h3>{t('utility.status_card_title')}</h3>
+                        <p className="text-muted">{t('utility.status_card_desc')}</p>
                     </div>
                 </div>
                 <label className="toggle">
@@ -136,14 +142,14 @@ export default function UtilityConfig() {
                 <div className="card-header-p">
                     <div className="align-center">
                         <Shield size={18} color="var(--primary)" />
-                        <h3>Permessi Comandi</h3>
+                        <h3>{t('utility.perms_title')}</h3>
                     </div>
                 </div>
                 <p className="text-muted" style={{ fontSize: '0.85rem', marginTop: '4px', marginBottom: '16px' }}>
-                    Oltre agli amministratori, seleziona i ruoli che possono utilizzare i comandi di utilità.
+                    {t('utility.perms_desc')}
                 </p>
                 <div className="field-box">
-                    <label className="text-label">Ruoli Autorizzati</label>
+                    <label className="text-label">{t('utility.allowed_roles')}</label>
                     <DiscordSelector 
                         type="role" 
                         multi={true}
@@ -157,7 +163,7 @@ export default function UtilityConfig() {
             {/* Info Card */}
             <div className="card info-card-p">
                 <Info size={20} color="var(--primary)" />
-                <p>Il comando <code>/clear</code> permette di eliminare fino a 100 messaggi alla volta, filtrandoli opzionalmente per utente.</p>
+                <p dangerouslySetInnerHTML={{ __html: t('utility.info_clear') }}></p>
             </div>
 
             {/* Quick Actions Card */}
@@ -165,16 +171,16 @@ export default function UtilityConfig() {
                 <div className="card-header-p">
                     <div className="align-center">
                         <Settings2 size={18} color="var(--warning)" />
-                        <h3>Azioni Rapide</h3>
+                        <h3>{t('utility.quick_actions_title')}</h3>
                     </div>
                 </div>
                 <p className="text-muted" style={{ fontSize: '0.85rem', marginTop: '4px', marginBottom: '16px' }}>
-                    Esegui operazioni di pulizia direttamente dal dashboard.
+                    {t('utility.quick_actions_desc')}
                 </p>
                 
                 <div className="quick-actions-form">
                     <div className="field-box">
-                        <label className="text-label">Canale</label>
+                        <label className="text-label">{t('utility.channel_label')}</label>
                         <DiscordSelector 
                             type="channel" 
                             options={discordData.channels.filter(c => c.type === 0 || c.type === 5)} 
@@ -183,7 +189,7 @@ export default function UtilityConfig() {
                         />
                     </div>
                     <div className="field-box">
-                        <label className="text-label">Numero Messaggi (1-100)</label>
+                        <label className="text-label">{t('utility.amount_label')}</label>
                         <input 
                             type="number" 
                             className="input" 
@@ -201,7 +207,7 @@ export default function UtilityConfig() {
                     style={{ marginTop: '20px', background: 'var(--error)', width: '100%', justifyContent: 'center' }}
                     disabled={clearing}
                 >
-                    {clearing ? 'Pulizia in corso...' : 'Elimina Messaggi Ora'}
+                    {clearing ? t('utility.clearing') : t('utility.btn_clear_now')}
                 </button>
             </section>
         </div>

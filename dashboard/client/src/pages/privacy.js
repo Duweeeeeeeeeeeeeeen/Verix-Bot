@@ -1,21 +1,23 @@
 import Head from 'next/head';
 import { Shield, Eye, Lock, Database, ChevronLeft } from 'lucide-react';
 import { useRouter } from 'next/router';
+import { useT } from '../contexts/LanguageContext';
 
 export default function PrivacyPolicy() {
   const router = useRouter();
+  const { t } = useT();
 
   return (
     <div className="legal-container">
       <Head>
-        <title>Privacy Policy | Verix Bot</title>
+        <title>{t('legal.privacy_title')} | Verix Bot</title>
       </Head>
 
       <div className="background-glow"></div>
 
       <div className="content-wrapper animate fade-in">
         <button className="btn-back" onClick={() => router.push('/')}>
-          <ChevronLeft size={18} /> Back to Home
+          <ChevronLeft size={18} /> {t('legal.back_home')}
         </button>
 
         <header className="legal-header">
@@ -23,53 +25,50 @@ export default function PrivacyPolicy() {
           <div className="icon-wrapper">
             <Shield size={40} />
           </div>
-          <h1>Privacy Policy</h1>
-          <p className="last-updated">Last updated: May 5, 2026</p>
+          <h1>{t('legal.privacy_title')}</h1>
+          <p className="last-updated">{t('legal.last_updated', { date: 'May 5, 2026' })}</p>
         </header>
 
         <main className="legal-glass-card">
           <section className="legal-section">
             <div className="section-title">
               <Database size={20} />
-              <h2>1. Information We Collect</h2>
+              <h2>{t('legal.privacy_sect1_title')}</h2>
             </div>
             <p>
-              To provide our services, Verix collects minimal data from Discord:
+              {t('legal.privacy_sect1_text')}
             </p>
             <ul>
-              <li>Server IDs and Role IDs for configuration.</li>
-              <li>User IDs for Whitelist and Ticket management.</li>
-              <li>Message content only when explicitly needed for logs (if enabled by staff).</li>
+              <li>{t('legal.privacy_sect1_item1')}</li>
+              <li>{t('legal.privacy_sect1_item2')}</li>
+              <li>{t('legal.privacy_sect1_item3')}</li>
             </ul>
           </section>
 
           <section className="legal-section">
             <div className="section-title">
               <Eye size={20} />
-              <h2>2. How We Use Data</h2>
+              <h2>{t('legal.privacy_sect2_title')}</h2>
             </div>
             <p>
-              Data is used exclusively for the functioning of the bot's features (Tickets, Whitelist, Social Alerts).
-              We do not sell your data to third parties. Ever.
+              {t('legal.privacy_sect2_text')}
             </p>
           </section>
 
           <section className="legal-section">
             <div className="section-title">
               <Lock size={20} />
-              <h2>3. Data Security</h2>
+              <h2>{t('legal.privacy_sect3_title')}</h2>
             </div>
             <p>
-              Your data is stored on secure, private servers with limited access. 
-              Sensitive information like Discord tokens for White-label bots is encrypted.
+              {t('legal.privacy_sect3_text')}
             </p>
           </section>
 
           <section className="legal-section disclaimer">
-            <h2>Data Deletion</h2>
+            <h2>{t('legal.privacy_deletion_title')}</h2>
             <p>
-              When Verix leaves a server, we automatically schedule the deletion of its configuration data. 
-              Users can request manual data deletion via our support channel.
+              {t('legal.privacy_deletion_text')}
             </p>
           </section>
         </main>
@@ -132,7 +131,8 @@ export default function PrivacyPolicy() {
 
         .verix-logo {
           width: 120px;
-          height: auto;
+          height: 120px;
+          object-fit: cover;
           border-radius: 50%;
           margin-bottom: 30px;
           filter: drop-shadow(0 0 20px rgba(16, 185, 129, 0.3));

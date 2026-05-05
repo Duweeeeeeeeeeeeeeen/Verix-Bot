@@ -25,8 +25,11 @@ import CustomSelect from '../../../components/CustomSelect';
 import NotificationSettings from '../../../components/NotificationSettings';
 import EmbedMessageManager from '../../../components/EmbedMessageManager';
 import { MessageSquare as MsgIcon, LogOut, Terminal } from 'lucide-react';
+import { useT } from '../../../contexts/LanguageContext';
+import Head from 'next/head';
 
 export default function SupportConfig() {
+  const { t } = useT();
   const router = useRouter();
   const { guildId } = router.query;
   const [activeTab, setActiveTab] = useState('settings');
@@ -84,9 +87,9 @@ export default function SupportConfig() {
         method: 'POST',
         body: JSON.stringify(config)
       });
-      showToast('Configurazione assistenza salvata!');
+      showToast(t('common.save_success'));
     } catch (error) {
-       showToast('Errore durante il salvataggio.', 'error');
+       showToast(t('common.save_error'), 'error');
     } finally {
       setSaving(false);
     }
@@ -95,8 +98,8 @@ export default function SupportConfig() {
   if (!mounted || loading || !config) return <Skeleton type="config" />;
 
   const tabs = [
-    { id: 'settings', name: 'Impostazioni', icon: Settings2 },
-    { id: 'messages', name: 'Messaggi & Embed', icon: MessageSquare },
+    { id: 'settings', name: t('support.tab_settings'), icon: Settings2 },
+    { id: 'messages', name: t('support.tab_messages'), icon: MessageSquare },
   ];
 
   return (
@@ -104,6 +107,9 @@ export default function SupportConfig() {
       <div className="config-main-col">
         <div className="animate">
         
+        <Head>
+            <title>{t('support.title')} | Verix</title>
+        </Head>
         {/* Header */}
         <header className="module-header">
            <div className="header-info">
@@ -112,18 +118,18 @@ export default function SupportConfig() {
               </div>
               <div className="header-text">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <h1>Assistenza Vocale</h1>
-                  <label className="toggle-mini" title={config.enabled ? 'Modulo Attivo' : 'Modulo Disattivato'}>
+                  <h1>{t('support.title')}</h1>
+                  <label className="toggle-mini" title={config.enabled ? t('common.enabled') : t('common.disabled')}>
                     <input type="checkbox" checked={!!config.enabled} onChange={e => setConfig({...config, enabled: e.target.checked})} />
                     <span className="slider-mini"></span>
                   </label>
                 </div>
-                <p>Gestisci la coda di assistenza vocale e le stanze private automatiche.</p>
+                <p>{t('support.desc')}</p>
               </div>
            </div>
            <div className="header-buttons">
               <button onClick={handleSave} className="btn-primary" disabled={saving}>
-                <Save size={16} /> {saving ? 'Salvando...' : 'Salva'}
+                <Save size={16} /> {saving ? t('common.saving') : t('common.save')}
               </button>
            </div>
         </header>
@@ -151,7 +157,7 @@ export default function SupportConfig() {
                             <div className="section-header">
                                 <div className="align-center">
                                     <Settings2 size={18} color="var(--primary)" />
-                                    <h3>Configurazione Canali</h3>
+                                    <h3>{t('support.config_title')}</h3>
                                 </div>
                                 <label className="toggle">
                                     <input type="checkbox" checked={!config.voiceSettings?.paused} onChange={e => setNested('voiceSettings.paused', !e.target.checked)} />
@@ -161,34 +167,34 @@ export default function SupportConfig() {
                             
                             <div className="fields-grid" style={{ marginTop: '24px' }}>
                                 <div className="field-box">
-                                    <label className="text-label">Canale Join (Sala d'Attesa)</label>
+                                    <label className="text-label">{t('support.join_label')}</label>
                                     <DiscordSelector type="channel" options={channels.filter(c => c.type === 2)} value={config.voiceSettings?.joinChannelId || ''} onChange={val => setNested('voiceSettings.joinChannelId', val)} />
                                 </div>
                                 <div className="field-box">
-                                    <label className="text-label">Categoria Stanze Private</label>
+                                    <label className="text-label">{t('support.category_label')}</label>
                                     <DiscordSelector type="channel" options={channels.filter(c => c.type === 4)} value={config.voiceSettings?.categoryId || ''} onChange={val => setNested('voiceSettings.categoryId', val)} />
                                 </div>
                                 <div className="field-box">
-                                    <label className="text-label">Canale Log Staff</label>
+                                    <label className="text-label">{t('support.log_label')}</label>
                                     <DiscordSelector type="channel" options={channels.filter(c => c.type === 0 || c.type === 5)} value={config.logChannelId || ''} onChange={val => setConfig({...config, logChannelId: val})} />
                                 </div>
                                 <div className="field-box">
-                                    <label className="text-label">Max Sessioni Contemporanee</label>
+                                    <label className="text-label">{t('support.max_concurrent')}</label>
                                     <input type="number" className="input" min="1" max="10" value={config.voiceSettings?.maxConcurrent || 1} onChange={e => setNested('voiceSettings.maxConcurrent', parseInt(e.target.value))} />
                                 </div>
                                 <div className="field-box">
-                                    <label className="text-label">Ruolo Prioritario (VIP / Saltacoda)</label>
+                                    <label className="text-label">{t('support.vip_role')}</label>
                                     <DiscordSelector type="role" options={roles} value={config.voiceSettings?.vipRoleId || ''} onChange={val => setNested('voiceSettings.vipRoleId', val)} />
                                 </div>
                                 <div className="field-box" style={{ gridColumn: 'span 2' }}>
                                     <label className="text-label flex-between">
-                                        Template Nome Canale
-                                        <HelpTooltip text="Placeholders: {user}, {id}, {count}" />
+                                        {t('support.template_label')}
+                                        <HelpTooltip text={t('support.template_help')} />
                                     </label>
                                     <input 
                                         type="text" 
                                         className="input" 
-                                        placeholder="es: assistenza-{user}" 
+                                        placeholder={t('support.template_placeholder')} 
                                         value={config.voiceSettings?.channelNameTemplate || ''} 
                                         onChange={e => setNested('voiceSettings.channelNameTemplate', e.target.value)} 
                                     />
@@ -200,18 +206,18 @@ export default function SupportConfig() {
 
                     <div className="grid-right">
                         <section className="card section-card">
-                            <h3 className="sidebar-title align-center" style={{ marginBottom: '16px' }}><Users size={18} /> Ruoli Assistenti</h3>
+                            <h3 className="sidebar-title align-center" style={{ marginBottom: '16px' }}><Users size={18} /> {t('support.assistants_title')}</h3>
                             <DiscordSelector type="role" multiple={true} options={roles} value={config.staffRoleIds || []} onChange={val => setConfig({...config, staffRoleIds: val})} />
-                            <p className="text-description" style={{ marginTop: '12px' }}>Questi ruoli avranno i permessi nelle stanze create e riceveranno i ping.</p>
+                            <p className="text-description" style={{ marginTop: '12px' }}>{t('support.assistants_help')}</p>
                         </section>
 
                         <section className="card section-card" style={{ marginTop: '24px' }}>
                             <div className="align-center" style={{ marginBottom: '12px' }}>
                                 <Hash size={18} />
-                                <h3>Statistiche</h3>
+                                <h3>{t('support.stats_title')}</h3>
                             </div>
                             <div className="stat-row">
-                                <span>Sessioni Totali</span>
+                                <span>{t('support.total_sessions')}</span>
                                 <strong>{config.voiceSettings?.sessionCounter || 0}</strong>
                             </div>
                             <button 
@@ -219,7 +225,7 @@ export default function SupportConfig() {
                                 style={{ marginTop: '12px' }}
                                 onClick={() => setNested('voiceSettings.sessionCounter', 0)}
                             >
-                                <RefreshCcw size={14} /> Reset Contatore
+                                <RefreshCcw size={14} /> {t('support.reset_counter')}
                             </button>
                         </section>
 
@@ -227,8 +233,8 @@ export default function SupportConfig() {
                         <div style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                             <div className="toggle-box-compact">
                                 <div className="flex-col">
-                                    <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>Cancellazione Automatica</span>
-                                    <p className="text-dim" style={{ fontSize: '0.7rem' }}>Rimuovi stanze vuote.</p>
+                                    <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>{t('support.auto_delete')}</span>
+                                    <p className="text-dim" style={{ fontSize: '0.7rem' }}>{t('support.auto_delete_help')}</p>
                                 </div>
                                 <label className="toggle-mini">
                                     <input type="checkbox" checked={!!config.voiceSettings?.autoDelete} onChange={e => setNested('voiceSettings.autoDelete', e.target.checked)} />
@@ -238,8 +244,8 @@ export default function SupportConfig() {
 
                             <div className="toggle-box-compact">
                                 <div className="flex-col">
-                                    <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>Ping Staff all'Ingresso</span>
-                                    <p className="text-dim" style={{ fontSize: '0.7rem' }}>Notifica staff nel log.</p>
+                                    <span style={{ fontWeight: 600, fontSize: '0.85rem' }}>{t('support.ping_staff')}</span>
+                                    <p className="text-dim" style={{ fontSize: '0.7rem' }}>{t('support.ping_staff_help')}</p>
                                 </div>
                                 <label className="toggle-mini">
                                     <input type="checkbox" checked={!!config.voiceSettings?.pingStaffOnJoin} onChange={e => setNested('voiceSettings.pingStaffOnJoin', e.target.checked)} />
@@ -252,8 +258,8 @@ export default function SupportConfig() {
                                     guildId={guildId}
                                     value={config.voiceSettings?.notifications}
                                     onChange={val => setNested('voiceSettings.notifications', val)}
-                                    title="Notifiche Utente"
-                                    description="Metodo di notifica (DM/Canale)."
+                                    title={t('support.user_notifications')}
+                                    description={t('support.user_notifications_help')}
                                 />
                             </div>
                         </div>
@@ -269,49 +275,49 @@ export default function SupportConfig() {
                         slugs={[
                             { 
                               key: 'paused', 
-                              label: 'Servizio Chiuso', 
-                              description: 'Inviato quando un utente prova a entrare mentre il servizio è disattivato.',
-                              group: 'Stato Servizio',
+                              label: t('support.msg_paused'), 
+                              description: t('support.msg_paused_desc'),
+                              group: t('support.group_status'),
                               groupIcon: Power,
                               variables: ['user', 'guild']
                             },
                             { 
                               key: 'cooldown', 
-                              label: 'Anti-Spam (Cooldown)', 
-                              description: 'Inviato quando l\'utente ha già richiesto assistenza troppo recentemente.',
-                              group: 'Stato Servizio',
+                              label: t('support.msg_cooldown'), 
+                              description: t('support.msg_cooldown_desc'),
+                              group: t('support.group_status'),
                               groupIcon: Clock,
                               variables: ['user', 'guild']
                             },
                             { 
                               key: 'queueFull', 
-                              label: 'Coda Piena', 
-                              description: 'Inviato quando il limite di sessioni contemporanee è raggiunto.',
-                              group: 'Coda Assistenza',
+                              label: t('support.msg_queue_full'), 
+                              description: t('support.msg_queue_full_desc'),
+                              group: t('support.group_queue'),
                               groupIcon: Users,
                               variables: ['user', 'guild', 'position']
                             },
                             { 
                               key: 'sessionStart', 
-                              label: 'Inizio Sessione', 
-                              description: 'Notifica inviata all\'utente quando viene spostato nel canale privato.',
-                              group: 'Sessione',
+                              label: t('support.msg_session_start'), 
+                              description: t('support.msg_session_start_desc'),
+                              group: t('support.group_session'),
                               groupIcon: MsgIcon,
                               variables: ['user', 'guild', 'channel']
                             },
                             { 
                               key: 'staffLog', 
-                              label: 'Log Staff: Inizio', 
-                              description: 'Inviato nel canale log quando una nuova sessione viene avviata.',
-                              group: 'Log & Monitoraggio',
+                              label: t('support.msg_staff_log_start'), 
+                              description: t('support.msg_staff_log_start_desc'),
+                              group: t('support.group_monitoring'),
                               groupIcon: ShieldCheck,
                               variables: ['user', 'voice_channel']
                             },
                             { 
                               key: 'queue_log', 
-                              label: 'Log Staff: Nuova Coda', 
-                              description: 'Inviato nel canale log quando un utente entra in lista d\'attesa.',
-                              group: 'Log & Monitoraggio',
+                              label: t('support.msg_queue_log'), 
+                              description: t('support.msg_queue_log_desc'),
+                              group: t('support.group_monitoring'),
                               groupIcon: Terminal,
                               variables: ['user', 'user_id', 'position', 'vip_text']
                             }

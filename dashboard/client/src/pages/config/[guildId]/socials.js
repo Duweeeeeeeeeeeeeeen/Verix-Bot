@@ -23,14 +23,15 @@ import {
 } from 'lucide-react';
 
 const PLATFORMS = [
-    { id: 'twitch', name: 'Twitch', icon: Tv, color: '#6441a5', description: 'Notifiche in tempo reale quando uno streamer va in live.' },
-    { id: 'youtube', name: 'YouTube', icon: Youtube, color: '#ff0000', description: 'Notifiche automatiche per la pubblicazione di nuovi video.' },
-    { id: 'instagram', name: 'Instagram', icon: Instagram, color: '#e1306c', description: 'Inoltra i nuovi post o reel direttamente su Discord.' },
-    { id: 'tiktok', name: 'TikTok', icon: Share2, color: '#000000', description: 'Annuncia i nuovi TikTok nel server.' },
-    { id: 'twitter', name: 'X (Twitter)', icon: Twitter, color: '#1da1f2', description: 'Invia i nuovi tweet in tempo reale.' }
+    { id: 'twitch', name: 'Twitch', icon: Tv, color: '#6441a5', description: 'socials.platform_twitch_desc' },
+    { id: 'youtube', name: 'YouTube', icon: Youtube, color: '#ff0000', description: 'socials.platform_youtube_desc' },
+    { id: 'instagram', name: 'Instagram', icon: Instagram, color: '#e1306c', description: 'socials.platform_instagram_desc' },
+    { id: 'tiktok', name: 'TikTok', icon: Share2, color: '#000000', description: 'socials.platform_tiktok_desc' },
+    { id: 'twitter', name: 'X (Twitter)', icon: Twitter, color: '#1da1f2', description: 'socials.platform_twitter_desc' }
 ];
 
 export default function SocialsConfig() {
+  const { t } = useT();
   const router = useRouter();
   const { guildId } = router.query;
   const [config, setConfig] = useState(null);
@@ -108,10 +109,10 @@ export default function SocialsConfig() {
         method: 'POST',
         body: JSON.stringify(config)
       });
-      showToast('Configurazione salvata con successo!');
+      showToast(t('common.save_success'));
     } catch (error) {
       console.error('Error saving config:', error);
-      showToast('Errore durante il salvataggio', 'error');
+      showToast(t('common.save_error'), 'error');
     } finally {
       setSaving(false);
     }
@@ -155,13 +156,13 @@ export default function SocialsConfig() {
                 <Share2 size={24} />
               </div>
               <div className="header-text">
-                <h1>Social Notifications</h1>
-                <p>Annuncia automaticamente nuovi contenuti dai tuoi social preferiti.</p>
+                <h1>{t('socials.title')}</h1>
+                <p>{t('socials.desc')}</p>
               </div>
            </div>
            <div className="header-buttons">
               <button onClick={handleSave} className="btn-primary" disabled={saving}>
-                <Save size={16} /> {saving ? 'Salvataggio...' : 'Salva Modifiche'}
+                <Save size={16} /> {saving ? t('common.saving') : t('common.save')}
               </button>
            </div>
         </header>
@@ -200,13 +201,13 @@ export default function SocialsConfig() {
                     </div>
                     <div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <h2>Configurazione {PLATFORMS.find(p => p.id === activePlatform).name}</h2>
+                            <h2>{t('socials.config_for', { platform: PLATFORMS.find(p => p.id === activePlatform).name })}</h2>
                             <label className="toggle-mini">
                                 <input type="checkbox" checked={!!currentPlatformConfig.enabled} onChange={e => updatePlatform('enabled', e.target.checked)} />
                                 <span className="slider-mini"></span>
                             </label>
                         </div>
-                        <p className="text-muted">{PLATFORMS.find(p => p.id === activePlatform).description}</p>
+                        <p className="text-muted">{t(PLATFORMS.find(p => p.id === activePlatform).description)}</p>
                     </div>
                 </div>
             </div>
@@ -214,34 +215,34 @@ export default function SocialsConfig() {
             {currentPlatformConfig.enabled && (
                 <div className="platform-tabs-s">
                     <div className="tab-nav-s">
-                        <button onClick={() => setActiveTab('settings')} className={`tab-btn-s ${activeTab === 'settings' ? 'active' : ''}`}>Impostazioni</button>
-                        <button onClick={() => setActiveTab('embed')} className={`tab-btn-s ${activeTab === 'embed' ? 'active' : ''}`}>Messaggio Personalizzato</button>
+                        <button onClick={() => setActiveTab('settings')} className={`tab-btn-s ${activeTab === 'settings' ? 'active' : ''}`}>{t('socials.tab_settings')}</button>
+                        <button onClick={() => setActiveTab('embed')} className={`tab-btn-s ${activeTab === 'embed' ? 'active' : ''}`}>{t('socials.tab_embed')}</button>
                     </div>
 
                     <div className="tab-body-s">
                         {activeTab === 'settings' && (
                             <div className="settings-grid-s animate fade-in">
                                 <section className="card section-card-s">
-                                    <div className="align-center"><LinkIcon size={18} color="var(--primary)" /> <h3>Account da Monitorare</h3></div>
+                                    <div className="align-center"><LinkIcon size={18} color="var(--primary)" /> <h3>{t('socials.accounts_title')}</h3></div>
                                     <div className="accounts-list-s">
                                         {currentPlatformConfig.accounts.map((acc, i) => (
                                             <div key={i} className="account-row-premium animate fade-in" style={{ zIndex: 100 - i }}>
                                                 <div className="acc-main-inputs">
                                                     <div className="field-box flex-2">
-                                                        <label className="text-label-small">Twitch/YouTube Link o Username</label>
+                                                        <label className="text-label-small">{t('socials.account_label')}</label>
                                                         <input 
                                                             className="input" 
-                                                            placeholder="Username o Link..." 
+                                                            placeholder={t('socials.account_placeholder')} 
                                                             value={acc.username} 
                                                             onChange={e => updateAccount(i, 'username', e.target.value)} 
                                                         />
                                                     </div>
                                                     {activePlatform === 'twitch' && (
                                                         <div className="field-box flex-1">
-                                                            <label className="text-label-small">Utente Discord (per Ruolo Live)</label>
+                                                            <label className="text-label-small">{t('socials.discord_user_label')}</label>
                                                             <DiscordSelector 
                                                                 type="role" // Using role style for users too, but with user icon if possible
-                                                                placeholder="Collega Utente..."
+                                                                placeholder={t('socials.discord_user_placeholder')}
                                                                 options={(discordData.members || []).map(m => ({ id: m.id, name: m.displayName || m.name }))} 
                                                                 value={acc.discordUserId || ''} 
                                                                 onChange={val => updateAccount(i, 'discordUserId', val)} 
@@ -263,30 +264,30 @@ export default function SocialsConfig() {
                                                 <Lock size={16} /> <span>{t('premium.get_premium')} (Max 1)</span>
                                             </button>
                                         ) : (
-                                            <button onClick={addAccount} className="btn-add-s"><Plus size={16} /> Aggiungi Account</button>
+                                            <button onClick={addAccount} className="btn-add-s"><Plus size={16} /> {t('socials.btn_add_account')}</button>
                                         )}
                                     </div>
                                 </section>
 
                                 <section className="card section-card-s">
-                                    <div className="align-center"><BellRing size={18} color="var(--primary)" /> <h3>Destinazione e Ping</h3></div>
+                                    <div className="align-center"><BellRing size={18} color="var(--primary)" /> <h3>{t('socials.dest_ping_title')}</h3></div>
                                     <div className="fields-stack-s">
                                         <div className="field-box">
-                                            <label className="text-label">Canale Notifica</label>
+                                            <label className="text-label">{t('socials.channel_label')}</label>
                                             <DiscordSelector type="channel" options={discordData.channels} value={currentPlatformConfig.notificationChannelId || ''} onChange={val => updatePlatform('notificationChannelId', val)} />
                                         </div>
                                         <div className="field-box">
-                                            <label className="text-label">Ruolo da Menzionare (Notifica)</label>
+                                            <label className="text-label">{t('socials.role_label')}</label>
                                             <DiscordSelector type="role" options={discordData.roles} value={currentPlatformConfig.roleId || ''} onChange={val => updatePlatform('roleId', val)} />
                                         </div>
                                         {activePlatform === 'twitch' && (
                                             <div className="field-box">
-                                                <label className="text-label">Ruolo Status "Live" (da assegnare)</label>
+                                                <label className="text-label">{t('socials.live_role_label')}</label>
                                                 <DiscordSelector type="role" options={discordData.roles} value={currentPlatformConfig.liveRoleId || ''} onChange={val => updatePlatform('liveRoleId', val)} />
                                             </div>
                                         )}
                                         <div className="status-row-s">
-                                            <span>Menziona @everyone</span>
+                                            <span>{t('socials.mention_everyone')}</span>
                                             <label className="toggle-s">
                                                 <input type="checkbox" checked={!!currentPlatformConfig.mentionEveryone} onChange={e => updatePlatform('mentionEveryone', e.target.checked)} />
                                                 <span className="slider-s"></span>
@@ -299,7 +300,7 @@ export default function SocialsConfig() {
 
                         {activeTab === 'embed' && (
                             <div className="embed-tab-s animate fade-in card glass-dark" style={{ padding: '32px' }}>
-                                <h3>Design Annuncio Live</h3>
+                                <h3>{t('socials.embed_title')}</h3>
                                 <EmbedEditor 
                                     embed={currentPlatformConfig.embed || {}} 
                                     onChange={val => updatePlatform('embed', val)}

@@ -7,10 +7,25 @@ import {
 } from 'lucide-react';
 import api from '../../utils/api';
 import Skeleton from '../../components/Skeleton';
+import { useT } from '../../contexts/LanguageContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { useRouter } from 'next/router';
 
 export default function AdminDashboard() {
+    const { t } = useT();
+    const { user, loading: authLoading } = useAuth();
+    const router = useRouter();
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
+
+    const OWNER_IDS = ['361159834688552960', '314417452395626496'];
+    const isOwner = user && OWNER_IDS.includes(user.id);
+
+    useEffect(() => {
+        if (!authLoading && !isOwner) {
+            router.push('/');
+        }
+    }, [user, authLoading, isOwner]);
 
     useEffect(() => {
         const fetchStats = async () => {
@@ -31,14 +46,14 @@ export default function AdminDashboard() {
     return (
         <div className="admin-page animate">
             <Head>
-                <title>Admin Dashboard | Verix</title>
+                <title>{t('admin.title')} | Verix</title>
             </Head>
 
             <header className="admin-header">
                 <div className="header-content">
-                    <div className="badge-admin">GLOBAL OVERVIEW</div>
-                    <h1>Pannello di Controllo</h1>
-                    <p>Statistiche globali e monitoraggio in tempo reale di Verix Bot.</p>
+                    <div className="badge-admin">{t('admin.overview_badge')}</div>
+                    <h1>{t('admin.title')}</h1>
+                    <p>{t('admin.subtitle')}</p>
                 </div>
             </header>
 
@@ -47,28 +62,28 @@ export default function AdminDashboard() {
                     <div className="stat-icon"><Users /></div>
                     <div className="stat-info">
                         <h3>{stats.counts.guilds}</h3>
-                        <p>Server Totali</p>
+                        <p>{t('admin.total_servers')}</p>
                     </div>
                 </div>
                 <div className="stat-card premium">
                     <div className="stat-icon"><Star /></div>
                     <div className="stat-info">
                         <h3>{stats.counts.premium}</h3>
-                        <p>Server Premium</p>
+                        <p>{t('admin.premium_servers')}</p>
                     </div>
                 </div>
                 <div className="stat-card platinum">
                     <div className="stat-icon"><Zap /></div>
                     <div className="stat-info">
                         <h3>{stats.counts.platinum}</h3>
-                        <p>Server Platinum</p>
+                        <p>{t('admin.platinum_servers')}</p>
                     </div>
                 </div>
                 <div className="stat-card ticket">
                     <div className="stat-icon"><Ticket /></div>
                     <div className="stat-info">
                         <h3>{stats.counts.tickets}</h3>
-                        <p>Ticket Totali</p>
+                        <p>{t('admin.total_tickets')}</p>
                     </div>
                 </div>
             </div>
@@ -77,7 +92,7 @@ export default function AdminDashboard() {
                 <div className="recent-guilds card">
                     <div className="card-header">
                         <Calendar size={20} />
-                        <h3>Ultimi Server Entrati</h3>
+                        <h3>{t('admin.recent_guilds')}</h3>
                     </div>
                     <div className="guilds-list">
                         {stats.recentGuilds.map((guild) => (
@@ -102,19 +117,19 @@ export default function AdminDashboard() {
                 <div className="system-health card">
                     <div className="card-header">
                         <ShieldAlert size={20} />
-                        <h3>Stato del Sistema</h3>
+                        <h3>{t('admin.system_status')}</h3>
                     </div>
                     <div className="health-metrics">
                         <div className="metric">
-                            <span>Bot Privati Attivi</span>
+                            <span>{t('admin.private_bots')}</span>
                             <span className="metric-val">{stats.counts.privateBots}</span>
                         </div>
                         <div className="metric">
-                            <span>Versione Sistema</span>
+                            <span>{t('admin.system_version')}</span>
                             <span className="metric-val">v2.1.0-prod</span>
                         </div>
                         <div className="metric">
-                            <span>Node Environment</span>
+                            <span>{t('admin.node_env')}</span>
                             <span className="metric-val text-success">PRODUCTION</span>
                         </div>
                     </div>

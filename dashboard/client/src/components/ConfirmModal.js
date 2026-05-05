@@ -1,6 +1,11 @@
+import { useT } from '../contexts/LanguageContext';
 import { X, AlertTriangle } from 'lucide-react';
 
-export default function ConfirmModal({ isOpen, onClose, onConfirm, title, message, confirmText = 'Conferma', cancelText = 'Annulla', type = 'danger' }) {
+export default function ConfirmModal({ isOpen, onClose, onConfirm, title, message, confirmText, cancelText, type = 'danger' }) {
+  const { t } = useT();
+  const finalConfirmText = confirmText || t('common.confirm');
+  const finalCancelText = cancelText || t('common.cancel');
+
   if (!isOpen) return null;
 
   return (
@@ -19,9 +24,9 @@ export default function ConfirmModal({ isOpen, onClose, onConfirm, title, messag
         </div>
 
         <div className="modal-footer">
-          <button className="btn-cancel" onClick={onClose}>{cancelText}</button>
+          <button className="btn-cancel" onClick={onClose}>{finalCancelText}</button>
           <button className={`btn-confirm ${type}`} onClick={() => { onConfirm(); onClose(); }}>
-            {confirmText}
+            {finalConfirmText}
           </button>
         </div>
       </div>

@@ -50,7 +50,7 @@ export default function PremiumHub() {
   const getTierName = () => {
     if (isPlatinum) return 'PLATINUM';
     if (isPremium) return 'PREMIUM';
-    return 'PIANO FREE';
+    return t('premium_hub.tier_free');
   };
 
   return (
@@ -60,8 +60,8 @@ export default function PremiumHub() {
             <div className="premium-badge-glow">
                 <Crown size={32} />
             </div>
-            <h1>Premium Hub</h1>
-            <p>Porta il tuo server Discord al livello successivo con funzioni professionali e identità personalizzata.</p>
+            <h1>{t('premium_hub.hero_title')}</h1>
+            <p>{t('premium_hub.hero_desc')}</p>
         </div>
       </div>
 
@@ -69,7 +69,7 @@ export default function PremiumHub() {
         {/* Status Card */}
         <div className={`status-card card tier-${premiumTier}`}>
             <div className="status-header">
-                <h3>Stato Attuale</h3>
+                <h3>{t('premium_hub.status_title')}</h3>
                 <span className={`badge-tier-tag tier-${premiumTier}`}>
                     {premiumTier === 'platinum' ? <Zap size={12} /> : (isPremium ? <Star size={12} /> : null)} 
                     {getTierName()}
@@ -80,8 +80,8 @@ export default function PremiumHub() {
                     <div className="status-active-msg">
                         <CheckCircle2 size={40} color={isPlatinum ? "#a855f7" : "var(--primary)"} />
                         <div>
-                            <h4>Il tuo server è {getTierName()}!</h4>
-                            <p>{isPlatinum ? "Hai accesso a tutte le funzioni, incluso il True White-label." : "Tutte le funzioni avanzate sono sbloccate."}</p>
+                            <h4>{t('premium_hub.active_msg', { tier: getTierName() })}</h4>
+                            <p>{isPlatinum ? t('premium_hub.platinum_benefit') : t('premium_hub.premium_benefit')}</p>
                         </div>
                     </div>
                 ) : (
@@ -94,7 +94,7 @@ export default function PremiumHub() {
                             <span>Ticket Categories</span>
                             <span>2 / 2</span>
                         </div>
-                        <button className="btn-upgrade-main">Upgrade Ora <ArrowRight size={16} /></button>
+                        <button className="btn-upgrade-main">{t('premium_hub.upgrade_btn')} <ArrowRight size={16} /></button>
                     </div>
                 )}
             </div>
@@ -103,12 +103,12 @@ export default function PremiumHub() {
         {/* Feature Comparison */}
         <div className="comparison-section">
             <div className="section-title">
-                <h2>Confronta i Piani</h2>
+                <h2>{t('premium_hub.compare_title')}</h2>
             </div>
             
             <div className="comparison-table">
                 <div className="comp-row head">
-                    <div className="feat-col">Funzionalità</div>
+                    <div className="feat-col">{t('premium_hub.feat_col')}</div>
                     <div className="plan-col">Free</div>
                     <div className="plan-col">Premium</div>
                     <div className="plan-col platinum">Platinum</div>
@@ -116,8 +116,8 @@ export default function PremiumHub() {
 
                 <div className="comp-row">
                     <div className="feat-col">
-                        <Bot size={16} /> <span>True White-label (Private Bot)</span>
-                        <Info size={12} className="info-icon" title="Usa il tuo bot personale con nome e icona scelti da te. Nessun riferimento a Verix." />
+                        <Bot size={16} /> <span>{t('premium_hub.feat_whitelabel')}</span>
+                        <Info size={12} className="info-icon" title={t('premium_hub.feat_whitelabel_info')} />
                     </div>
                     <div className="plan-col"><XCircle size={18} className="text-muted" /></div>
                     <div className="plan-col"><XCircle size={18} className="text-muted" /></div>
@@ -126,7 +126,7 @@ export default function PremiumHub() {
 
                 <div className="comp-row">
                     <div className="feat-col">
-                        <Shield size={16} /> <span>Identità Custom (Status & Nome)</span>
+                        <Shield size={16} /> <span>{t('premium_hub.feat_identity')}</span>
                     </div>
                     <div className="plan-col"><XCircle size={18} className="text-muted" /></div>
                     <div className="plan-col"><CheckCircle2 size={18} className="text-primary" /></div>
@@ -135,7 +135,7 @@ export default function PremiumHub() {
 
                 <div className="comp-row">
                     <div className="feat-col">
-                        <Image size={16} /> <span>Rimozione Branding "Powered by"</span>
+                        <Image size={16} /> <span>{t('premium_hub.feat_branding')}</span>
                     </div>
                     <div className="plan-col"><XCircle size={18} className="text-muted" /></div>
                     <div className="plan-col"><CheckCircle2 size={18} className="text-primary" /></div>
@@ -144,66 +144,66 @@ export default function PremiumHub() {
 
                 <div className="comp-row">
                     <div className="feat-col">
-                        <Globe size={16} /> <span>Moduli Avanzati (FiveM, Social, Logs)</span>
+                        <Globe size={16} /> <span>{t('premium_hub.feat_modules')}</span>
                     </div>
-                    <div className="plan-col">Limitati</div>
-                    <div className="plan-col">Illimitati</div>
-                    <div className="plan-col">Illimitati</div>
+                    <div className="plan-col">{t('premium_hub.limited')}</div>
+                    <div className="plan-col">{t('premium_hub.unlimited')}</div>
+                    <div className="plan-col">{t('premium_hub.unlimited')}</div>
                 </div>
 
                 <div className="comp-row">
                     <div className="feat-col">
-                        <Zap size={16} /> <span>Tickets & Supporto Priority</span>
+                        <Zap size={16} /> <span>{t('premium_hub.feat_priority')}</span>
                     </div>
-                    <div className="plan-col">Base</div>
-                    <div className="plan-col">Priority</div>
-                    <div className="plan-col">Dedicated</div>
+                    <div className="plan-col">{t('premium_hub.base')}</div>
+                    <div className="plan-col">{t('premium_hub.priority')}</div>
+                    <div className="plan-col">{t('premium_hub.dedicated')}</div>
                 </div>
             </div>
         </div>
       </div>
 
       <div className="pricing-cta-section">
-          <h2>Scegli il tuo pacchetto</h2>
+          <h2>{t('premium_hub.choose_title')}</h2>
           <div className="pricing-cards">
               <div className="price-card">
                   <div className="card-top">
                     <h4>Premium</h4>
-                    <div className="price">€9.99 <span>/mese</span></div>
+                    <div className="price">€9.99 <span>{t('premium_hub.per_month')}</span></div>
                   </div>
                   <ul className="price-list">
-                      <li><Check size={14} /> Funzioni Pro sbloccate</li>
-                      <li><Check size={14} /> Moduli illimitati</li>
-                      <li><Check size={14} /> Supporto prioritario</li>
+                      <li><Check size={14} /> {t('premium_hub.premium_benefit')}</li>
+                      <li><Check size={14} /> {t('premium_hub.unlimited')}</li>
+                      <li><Check size={14} /> {t('premium_hub.priority')}</li>
                   </ul>
-                  <button className="btn-buy">Scegli Premium</button>
+                  <button className="btn-buy">{t('premium_hub.btn_choose')}</button>
               </div>
 
               <div className="price-card platinum popular">
                   <div className="popular-tag">TOP QUALITY</div>
                   <div className="card-top">
                     <h4>Platinum</h4>
-                    <div className="price">€19.99 <span>/mese</span></div>
-                    <div className="save-tag">Il più completo</div>
+                    <div className="price">€19.99 <span>{t('premium_hub.per_month')}</span></div>
+                    <div className="save-tag">{t('premium_hub.most_complete')}</div>
                   </div>
                   <ul className="price-list">
                       <li><Check size={14} /> <strong>TUTTO</strong> il pacchetto Premium</li>
-                      <li><Check size={14} /> <strong>True White-label (Bot Privato)</strong></li>
-                      <li><Check size={14} /> Rimozione totale branding</li>
+                      <li><Check size={14} /> <strong>{t('premium_hub.feat_whitelabel')}</strong></li>
+                      <li><Check size={14} /> {t('premium_hub.feat_branding')}</li>
                       <li><Check size={14} /> Setup dedicato System Ops</li>
                   </ul>
-                  <button className="btn-buy-platinum">Ottieni Platinum</button>
+                  <button className="btn-buy-platinum">{t('premium_hub.btn_get_platinum')}</button>
               </div>
           </div>
       </div>
 
       <footer className="premium-footer">
           <div className="legal-links">
-              <Link href="/terms">Termini di Servizio</Link>
+              <Link href="/terms">{t('premium_hub.legal_terms')}</Link>
               <span className="separator">•</span>
-              <Link href="/privacy">Privacy Policy</Link>
+              <Link href="/privacy">{t('premium_hub.legal_privacy')}</Link>
           </div>
-          <p>&copy; {new Date().getFullYear()} Verix Bot. Tutti i diritti riservati.</p>
+          <p>&copy; {new Date().getFullYear()} Verix Bot. {t('premium_hub.copyright')}</p>
       </footer>
 
       <style jsx>{`

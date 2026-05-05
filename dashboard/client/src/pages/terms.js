@@ -1,21 +1,23 @@
 import Head from 'next/head';
 import { FileText, Gavel, AlertCircle, CheckCircle, ChevronLeft } from 'lucide-react';
 import { useRouter } from 'next/router';
+import { useT } from '../contexts/LanguageContext';
 
 export default function TermsOfService() {
   const router = useRouter();
+  const { t } = useT();
 
   return (
     <div className="legal-container">
       <Head>
-        <title>Terms of Service | Verix Bot</title>
+        <title>{t('legal.terms_title')} | Verix Bot</title>
       </Head>
 
       <div className="background-glow"></div>
 
       <div className="content-wrapper animate fade-in">
         <button className="btn-back" onClick={() => router.push('/')}>
-          <ChevronLeft size={18} /> Back to Home
+          <ChevronLeft size={18} /> {t('legal.back_home')}
         </button>
 
         <header className="legal-header">
@@ -23,52 +25,50 @@ export default function TermsOfService() {
           <div className="icon-wrapper">
             <Gavel size={40} />
           </div>
-          <h1>Terms of Service</h1>
-          <p className="last-updated">Last updated: May 5, 2026</p>
+          <h1>{t('legal.terms_title')}</h1>
+          <p className="last-updated">{t('legal.last_updated', { date: 'May 5, 2026' })}</p>
         </header>
 
         <main className="legal-glass-card">
           <section className="legal-section">
             <div className="section-title">
               <FileText size={20} />
-              <h2>1. Acceptance of Terms</h2>
+              <h2>{t('legal.terms_sect1_title')}</h2>
             </div>
             <p>
-              By using Verix Bot and its associated services (Dashboard, API), you agree to be bound by these Terms of Service and Discord's Terms of Service. If you do not agree, please remove the bot from your server immediately.
+              {t('legal.terms_sect1_text')}
             </p>
           </section>
 
           <section className="legal-section">
             <div className="section-title">
               <AlertCircle size={20} />
-              <h2>2. Permitted Use</h2>
+              <h2>{t('legal.terms_sect2_title')}</h2>
             </div>
             <p>
-              You may not use Verix for any illegal activities, spamming, or violating Discord Community Guidelines. 
-              Any abuse of the API or attempts to exploit the bot will result in an immediate and permanent ban from our services.
+              {t('legal.terms_sect2_text')}
             </p>
           </section>
 
           <section className="legal-section">
             <div className="section-title">
               <CheckCircle size={20} />
-              <h2>3. Premium & Subscriptions</h2>
+              <h2>{t('legal.terms_sect3_title')}</h2>
             </div>
             <p>
-              Certain features are reserved for Premium or Platinum subscribers.
+              {t('legal.terms_sect3_text')}
             </p>
             <ul>
-              <li>Payments are processed via secure third-party providers (Stripe).</li>
-              <li>Subscriptions are generally non-refundable.</li>
-              <li>We reserve the right to modify pricing with prior notice.</li>
+              <li>{t('legal.terms_sect3_item1')}</li>
+              <li>{t('legal.terms_sect3_item2')}</li>
+              <li>{t('legal.terms_sect3_item3')}</li>
             </ul>
           </section>
 
           <section className="legal-section disclaimer">
-            <h2>Disclaimer</h2>
+            <h2>{t('legal.terms_disclaimer_title')}</h2>
             <p>
-              Verix is provided "as is". We are not responsible for any data loss or server issues. 
-              The bot is constantly evolving and features may change over time.
+              {t('legal.terms_disclaimer_text')}
             </p>
           </section>
         </main>
@@ -131,7 +131,8 @@ export default function TermsOfService() {
 
         .verix-logo {
           width: 120px;
-          height: auto;
+          height: 120px;
+          object-fit: cover;
           border-radius: 50%;
           margin-bottom: 30px;
           filter: drop-shadow(0 0 20px rgba(88, 101, 242, 0.3));

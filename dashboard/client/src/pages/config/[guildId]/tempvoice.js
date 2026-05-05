@@ -19,8 +19,11 @@ import {
     Palette
 } from 'lucide-react';
 import DiscordSelector from '../../../components/DiscordSelector';
+import { useT } from '../../../contexts/LanguageContext';
+import Head from 'next/head';
 
 export default function TempVoiceConfig() {
+  const { t } = useT();
   const router = useRouter();
   const { guildId } = router.query;
   const [loading, setLoading] = useState(true);
@@ -66,10 +69,10 @@ export default function TempVoiceConfig() {
         method: 'POST',
         body: JSON.stringify(config)
       });
-      window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Configurazione salvata!', type: 'success' } }));
+      window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('common.save_success'), type: 'success' } }));
     } catch (e) {
       console.error(e);
-      window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Errore nel salvataggio', type: 'error' } }));
+      window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('common.save_error'), type: 'error' } }));
     } finally {
       setSaving(false);
     }
@@ -92,6 +95,9 @@ export default function TempVoiceConfig() {
   return (
     <div className="config-page-layout animate">
       <div className="config-main-col">
+        <Head>
+            <title>{t('tempvoice.title')} | Verix</title>
+        </Head>
         {/* Module Header */}
         <header className="module-header">
            <div className="header-info">
@@ -100,18 +106,18 @@ export default function TempVoiceConfig() {
               </div>
               <div className="header-text">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <h1>Temp Voice</h1>
-                  <label className="toggle-mini" title={config.enabled ? 'Modulo Attivo' : 'Modulo Disattivato'}>
+                  <h1>{t('tempvoice.title')}</h1>
+                  <label className="toggle-mini" title={config.enabled ? t('common.enabled') : t('common.disabled')}>
                     <input type="checkbox" checked={!!config.enabled} onChange={e => setConfig({...config, enabled: e.target.checked})} />
                     <span className="slider-mini"></span>
                   </label>
                 </div>
-                <p>Crea canali vocali temporanei automatici quando un utente entra in un canale generatore.</p>
+                <p>{t('tempvoice.desc')}</p>
               </div>
            </div>
            <div className="header-buttons">
               <button onClick={handleSave} className="btn-primary" disabled={saving}>
-                <Save size={16} /> {saving ? 'Salvataggio...' : 'Salva Modifiche'}
+                <Save size={16} /> {saving ? t('common.saving') : t('common.save_changes')}
               </button>
            </div>
         </header>
@@ -119,10 +125,10 @@ export default function TempVoiceConfig() {
         {/* Tab Navigation */}
         <div className="tab-navigation">
             <button onClick={() => setActiveTab('settings')} className={`tab-link ${activeTab === 'settings' ? 'active' : ''}`}>
-                <Settings2 size={16} /> <span>Settaggi</span>
+                <Settings2 size={16} /> <span>{t('tempvoice.tab_settings')}</span>
             </button>
             <button onClick={() => setActiveTab('design')} className={`tab-link ${activeTab === 'design' ? 'active' : ''}`}>
-                <Palette size={16} /> <span>Personalizzazione</span>
+                <Palette size={16} /> <span>{t('tempvoice.tab_design')}</span>
             </button>
         </div>
 
@@ -132,30 +138,30 @@ export default function TempVoiceConfig() {
                     <section className="card section-card-v">
                         <div className="align-center" style={{ marginBottom: '20px' }}>
                             <Zap size={18} color="var(--primary)" />
-                            <h3>Configurazione Canali</h3>
+                            <h3>{t('tempvoice.config_title')}</h3>
                         </div>
                         <div className="fields-grid-v">
                             <div className="field-box">
-                                <label className="text-label">Canale Generatore (Join to Create)</label>
+                                <label className="text-label">{t('tempvoice.creator_label')}</label>
                                 <DiscordSelector 
                                     type="channel" 
                                     options={channels} 
                                     value={config.creatorChannelId || ''} 
                                     onChange={val => setNested('creatorChannelId', val)} 
-                                    placeholder="Seleziona un canale vocale..."
+                                    placeholder={t('tempvoice.creator_placeholder')}
                                 />
-                                <p className="field-help">L'entrata in questo canale creerà una nuova stanza.</p>
+                                <p className="field-help">{t('tempvoice.creator_help')}</p>
                             </div>
                             <div className="field-box">
-                                <label className="text-label">Categoria di Destinazione</label>
+                                <label className="text-label">{t('tempvoice.category_label')}</label>
                                 <DiscordSelector 
                                     type="channel" 
                                     options={categories} 
                                     value={config.categoryId || ''} 
                                     onChange={val => setNested('categoryId', val)} 
-                                    placeholder="Default (Stessa del generatore)"
+                                    placeholder={t('tempvoice.category_placeholder')}
                                 />
-                                <p className="field-help">Dove verranno create le nuove stanze.</p>
+                                <p className="field-help">{t('tempvoice.category_help')}</p>
                             </div>
                         </div>
                     </section>
@@ -168,29 +174,29 @@ export default function TempVoiceConfig() {
                         <section className="card section-card-v">
                             <div className="align-center" style={{ marginBottom: '20px' }}>
                                 <Layout size={18} color="var(--primary)" />
-                                <h3>Aspetto e Limiti</h3>
+                                <h3>{t('tempvoice.design_title')}</h3>
                             </div>
                             <div className="fields-grid-v">
                                 <div className="field-box">
-                                    <label className="text-label">Template Nome Canale</label>
+                                    <label className="text-label">{t('tempvoice.template_label')}</label>
                                     <input 
                                         type="text" 
                                         className="input" 
                                         value={config.channelNameTemplate || ''} 
                                         onChange={e => setNested('channelNameTemplate', e.target.value)} 
-                                        placeholder="🔊 Stanza di {user}"
+                                        placeholder={t('tempvoice.template_placeholder')}
                                     />
-                                    <p className="field-help">Usa {"{user}"} o {"{tag}"} come segnaposto.</p>
+                                    <p className="field-help">{t('tempvoice.template_help')}</p>
                                 </div>
                                 <div className="field-box">
-                                    <label className="text-label">Limite Utenti Default</label>
+                                    <label className="text-label">{t('tempvoice.limit_label')}</label>
                                     <input 
                                         type="number" 
                                         className="input" 
                                         value={config.defaultUserLimit || 0} 
                                         onChange={e => setNested('defaultUserLimit', parseInt(e.target.value))} 
                                     />
-                                    <p className="field-help">0 per nessun limite.</p>
+                                    <p className="field-help">{t('tempvoice.limit_help')}</p>
                                 </div>
                             </div>
                         </section>

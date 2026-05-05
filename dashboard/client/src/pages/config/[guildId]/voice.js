@@ -13,8 +13,11 @@ import EmbedMessageManager from '../../../components/EmbedMessageManager';
 import EmbedEditor from '../../../components/EmbedEditor';
 import { mergeConfig } from '../../../utils/defaults';
 import CustomSelect from '../../../components/CustomSelect';
+import { useT } from '../../../contexts/LanguageContext';
+import Head from 'next/head';
 
 export default function VoiceConfig() {
+  const { t } = useT();
   const router = useRouter();
   const { guildId } = router.query;
   const [config, setConfig] = useState(null); // This will be voiceSettings
@@ -97,10 +100,11 @@ export default function VoiceConfig() {
             }
         })
       });
-      showToast('Configurazione salvata!');
+      });
+      showToast(t('common.save_success'));
     } catch (error) {
       console.error('Error saving voice config:', error);
-      showToast('Errore durante il salvataggio', 'error');
+      showToast(t('common.save_error'), 'error');
     } finally {
       setSaving(false);
     }
@@ -111,6 +115,9 @@ export default function VoiceConfig() {
   return (
     <div className="config-page-layout animate">
       <div className="config-main-col">
+        <Head>
+            <title>{t('voice.title')} | Verix</title>
+        </Head>
         {/* Module Header */}
         <header className="module-header">
            <div className="header-info">
@@ -119,18 +126,18 @@ export default function VoiceConfig() {
               </div>
               <div className="header-text">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <h1>Canali Vocali</h1>
-                  <label className="toggle-mini" title={config.enabled ? 'Modulo Attivo' : 'Modulo Disattivato'}>
+                  <h1>{t('voice.title')}</h1>
+                  <label className="toggle-mini" title={config.enabled ? t('common.enabled') : t('common.disabled')}>
                     <input type="checkbox" checked={!!config.enabled} onChange={e => setConfig({...config, enabled: e.target.checked})} />
                     <span className="slider-mini"></span>
                   </label>
                 </div>
-                <p>Gestisci la creazione automatica di canali vocali temporanei.</p>
+                <p>{t('voice.desc')}</p>
               </div>
            </div>
            <div className="header-buttons">
               <button onClick={handleSave} className="btn-primary" disabled={saving}>
-                <Save size={16} /> {saving ? 'Salvataggio...' : 'Salva Modifiche'}
+                <Save size={16} /> {saving ? t('common.saving') : t('common.save_changes')}
               </button>
            </div>
         </header>
@@ -138,13 +145,13 @@ export default function VoiceConfig() {
         {/* Tab Navigation */}
         <div className="tab-navigation">
             <button onClick={() => setActiveTab('settings')} className={`tab-link ${activeTab === 'settings' ? 'active' : ''}`}>
-                <Settings2 size={16} /> <span>Settaggi</span>
+                <Settings2 size={16} /> <span>{t('voice.tab_settings')}</span>
             </button>
             <button onClick={() => setActiveTab('ui')} className={`tab-link ${activeTab === 'ui' ? 'active' : ''}`}>
-                <MousePointer2 size={16} /> <span>Pulsanti</span>
+                <MousePointer2 size={16} /> <span>{t('voice.tab_ui')}</span>
             </button>
             <button onClick={() => setActiveTab('design')} className={`tab-link ${activeTab === 'design' ? 'active' : ''}`}>
-                <Palette size={16} /> <span>Design & Messaggi</span>
+                <Palette size={16} /> <span>{t('voice.tab_design')}</span>
             </button>
         </div>
 
@@ -159,18 +166,18 @@ export default function VoiceConfig() {
                         <section className="card section-card-v">
                             <div className="align-center" style={{ marginBottom: '20px' }}>
                                 <ListFilter size={18} color="var(--primary)" />
-                                <h3>Canali di Sistema</h3>
+                                <h3>{t('voice.system_channels')}</h3>
                             </div>
                             <div className="fields-grid-v">
                                 <div className="field-box">
-                                    <label className="text-label">Canale Sala d'Attesa</label>
+                                    <label className="text-label">{t('voice.join_channel')}</label>
                                     <DiscordSelector type="channel" options={channels.filter(c => c.type === 2)} value={config.joinChannelId || ''} onChange={val => setNested('joinChannelId', val)} />
-                                    <p className="field-help">Dove gli utenti devono entrare per mettersi in coda.</p>
+                                    <p className="field-help">{t('voice.join_channel_help')}</p>
                                 </div>
                                 <div className="field-box">
-                                    <label className="text-label">Categoria Stanze Private</label>
+                                    <label className="text-label">{t('voice.category')}</label>
                                     <DiscordSelector type="channel" options={channels.filter(c => c.type === 4)} value={config.categoryId || ''} onChange={val => setNested('categoryId', val)} />
-                                    <p className="field-help">Dove verranno create le stanze per gli esami.</p>
+                                    <p className="field-help">{t('voice.category_help')}</p>
                                 </div>
                             </div>
                         </section>
@@ -178,15 +185,15 @@ export default function VoiceConfig() {
                         <section className="card section-card-v" style={{ marginTop: '24px' }}>
                             <div className="align-center" style={{ marginBottom: '20px' }}>
                                 <Zap size={18} color="var(--primary)" />
-                                <h3>Automazioni Esito</h3>
+                                <h3>{t('voice.auto_actions')}</h3>
                             </div>
                             <div className="fields-grid-v">
                                 <div className="field-box">
-                                    <label className="text-label">Ruoli da Aggiungere (Promosso)</label>
+                                    <label className="text-label">{t('voice.roles_to_add')}</label>
                                     <DiscordSelector type="role" multiple={true} options={roles} value={config.rolesToAdd || []} onChange={val => setNested('rolesToAdd', val)} />
                                 </div>
                                 <div className="field-box">
-                                    <label className="text-label">Ruoli da Rimuovere (Promosso)</label>
+                                    <label className="text-label">{t('voice.roles_to_remove')}</label>
                                     <DiscordSelector type="role" multiple={true} options={roles} value={config.rolesToRemove || []} onChange={val => setNested('rolesToRemove', val)} />
                                 </div>
                             </div>
@@ -197,23 +204,23 @@ export default function VoiceConfig() {
                          <section className="card section-card-v">
                             <div className="align-center" style={{ marginBottom: '16px' }}>
                                 <Shield size={16} color="var(--primary)" />
-                                <h3>Staffers Abilitati</h3>
+                                <h3>{t('voice.staff_roles')}</h3>
                             </div>
                             <DiscordSelector type="role" multiple={true} options={roles} value={config.staffRoleIds || []} onChange={val => setNested('staffRoleIds', val)} />
-                            <p className="field-help" style={{ marginTop: '12px' }}>Ruoli autorizzati a gestire la coda e gli esiti.</p>
+                            <p className="field-help" style={{ marginTop: '12px' }}>{t('voice.staff_roles_help')}</p>
                         </section>
 
                         <section className="card section-card-v" style={{ marginTop: '24px' }}>
                             <div className="align-center" style={{ marginBottom: '16px' }}>
                                 <Info size={16} color="var(--primary)" />
-                                <h3>Altre Opzioni</h3>
+                                <h3>{t('voice.other_options')}</h3>
                             </div>
                             <div className="field-box">
-                                <label className="text-label">Cooldown Rifiuto (Ore)</label>
+                                <label className="text-label">{t('voice.rejection_cooldown')}</label>
                                 <input type="number" className="input" value={config.rejectionCooldown || 24} onChange={e => setNested('rejectionCooldown', parseInt(e.target.value))} />
                             </div>
                             <div className="toggle-item-v" style={{ marginTop: '16px' }}>
-                                <span>Cancellazione Auto Stanza</span>
+                                <span>{t('voice.auto_delete')}</span>
                                 <label className="toggle">
                                     <input type="checkbox" checked={!!config.autoDelete} onChange={e => setNested('autoDelete', e.target.checked)} />
                                     <span className="slider"></span>
@@ -229,24 +236,24 @@ export default function VoiceConfig() {
                     <section className="card section-card-v">
                         <div className="align-center" style={{ marginBottom: '24px' }}>
                             <MousePointer2 size={18} color="var(--primary)" />
-                            <h3>Configurazione Pulsanti Staff</h3>
+                            <h3>{t('voice.buttons_config')}</h3>
                         </div>
                         <div className="buttons-editor-grid">
                             {['approve', 'deny', 'reset'].map(key => (
                                 <div key={key} className="btn-edit-box">
                                     <div className="btn-label-tag">{key.toUpperCase()}</div>
                                     <div className="field-box">
-                                        <label className="text-label">Etichetta</label>
+                                        <label className="text-label">{t('voice.btn_label')}</label>
                                         <input className="input" value={config.voiceButtons?.[key]?.label || ''} onChange={e => setNested(`voiceButtons.${key}.label`, e.target.value)} />
                                     </div>
                                     <div className="field-box" style={{ marginTop: '12px' }}>
-                                        <label className="text-label">Colore</label>
+                                        <label className="text-label">{t('voice.btn_color')}</label>
                                         <CustomSelect 
                                             options={[
-                                                { value: 'SUCCESS', label: 'Verde (Success)' },
-                                                { value: 'DANGER', label: 'Rosso (Danger)' },
-                                                { value: 'PRIMARY', label: 'Blu (Primary)' },
-                                                { value: 'SECONDARY', label: 'Grigio (Secondary)' }
+                                                { value: 'SUCCESS', label: t('voice.btn_color_green') },
+                                                { value: 'DANGER', label: t('voice.btn_color_red') },
+                                                { value: 'PRIMARY', label: t('voice.btn_color_blue') },
+                                                { value: 'SECONDARY', label: t('voice.btn_color_gray') }
                                             ]} 
                                             value={config.voiceButtons?.[key]?.style || 'PRIMARY'} 
                                             onChange={val => setNested(`voiceButtons.${key}.style`, val)} 
@@ -264,7 +271,7 @@ export default function VoiceConfig() {
                     <section className="card section-card-v" style={{ marginBottom: '24px' }}>
                         <div className="align-center" style={{ marginBottom: '20px' }}>
                             <Palette size={18} color="var(--primary)" />
-                            <h3>Design Pannelli Voce</h3>
+                            <h3>{t('voice.design_title')}</h3>
                         </div>
                         <div className="embed-selector-v">
                             {['voice_waiting', 'voice_guide', 'voice_staff_log', 'voice_error_flow'].map(k => (
@@ -286,10 +293,10 @@ export default function VoiceConfig() {
                         guildId={guildId}
                         module="voice"
                         slugs={[
-                            { key: 'dm_accepted', label: 'Esito Positivo (DM)', description: 'Inviato in DM al promosso.', variables: ['user'], group: '✅ Esiti', groupIcon: CheckCircle },
-                            { key: 'dm_rejected', label: 'Esito Negativo (DM)', description: 'Inviato in DM al bocciato.', variables: ['user', 'reason', 'cooldown'], group: '❌ Esiti', groupIcon: XCircle },
-                            { key: 'staff_approved', label: 'Log Approvazione', description: 'Log mandato nel canale staff.', variables: ['user', 'staff'], group: '🛡️ Staff', groupIcon: Shield },
-                            { key: 'staff_denied', label: 'Log Rifiuto', description: 'Log mandato nel canale staff.', variables: ['user', 'staff', 'reason'], group: '🛡️ Staff', groupIcon: Shield }
+                            { key: 'dm_accepted', label: t('voice.msg_dm_accepted'), description: t('voice.msg_dm_accepted_desc'), variables: ['user'], group: '✅ Outcome', groupIcon: CheckCircle },
+                            { key: 'dm_rejected', label: t('voice.msg_dm_rejected'), description: t('voice.msg_dm_rejected_desc'), variables: ['user', 'reason', 'cooldown'], group: '❌ Outcome', groupIcon: XCircle },
+                            { key: 'staff_approved', label: t('voice.msg_staff_approved'), description: t('voice.msg_staff_approved_desc'), variables: ['user', 'staff'], group: '🛡️ Staff', groupIcon: Shield },
+                            { key: 'staff_denied', label: t('voice.msg_staff_denied'), description: t('voice.msg_staff_denied_desc'), variables: ['user', 'staff', 'reason'], group: '🛡️ Staff', groupIcon: Shield }
                         ]}
                     />
                 </div>

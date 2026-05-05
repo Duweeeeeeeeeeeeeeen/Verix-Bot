@@ -66,7 +66,7 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
   }, [propGuildId, router.query.guildId]);
   
   const [toast, setToast] = useState(null);
-  const [serverInfo, setServerInfo] = useState({ name: 'Loading...', icon: null });
+  const [serverInfo, setServerInfo] = useState({ name: t('common.loading'), icon: null });
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [guideContext, setGuideContext] = useState({});
@@ -169,14 +169,14 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
       ]
     },
     {
-      title: 'Setup',
+      title: t('sidebar.group_setup'),
       items: [
         { name: t('sidebar.verify'), icon: CheckCircle, path: `/config/${guildId}/verify`, id: 'verify' },
         { name: t('sidebar.welcome'), icon: UserPlus, path: `/config/${guildId}/welcome`, id: 'welcome' }
       ]
     },
     {
-      title: 'Community',
+      title: t('sidebar.group_community'),
       items: [
         { name: t('sidebar.socials'), icon: Tv, path: `/config/${guildId}/socials`, id: 'socials' },
         { name: t('sidebar.giveaway'), icon: Gift, path: `/config/${guildId}/giveaway`, id: 'giveaway' },
@@ -184,7 +184,7 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
       ]
     },
     {
-      title: 'Gestione',
+      title: t('sidebar.group_management'),
       items: [
         { name: t('sidebar.tickets'), icon: Ticket, path: `/config/${guildId}/tickets`, id: 'tickets' },
         { name: t('sidebar.support'), icon: Mic2, path: `/config/${guildId}/support`, id: 'support' },
@@ -192,13 +192,13 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
       ]
     },
     {
-      title: 'Moderazione',
+      title: t('sidebar.moderation'),
       items: [
         { name: t('sidebar.moderation'), icon: Gavel, path: `/config/${guildId}/moderation`, id: 'moderation' }
       ]
     },
     {
-      title: 'Tools',
+      title: t('sidebar.group_tools'),
       items: [
         { name: t('sidebar.automations'), icon: Cpu, path: `/config/${guildId}/automations`, id: 'automations' },
         { name: t('sidebar.embeds'), icon: LayoutIcon, path: `/config/${guildId}/embeds`, id: 'embeds' },
@@ -206,23 +206,23 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
       ]
     },
     {
-      title: 'FiveM',
+      title: t('sidebar.fivem'),
       items: [
         { name: t('sidebar.fivem'), icon: Globe, path: `/config/${guildId}/fivem`, id: 'fivem' },
         { name: t('sidebar.whitelist'), icon: ShieldCheck, path: `/config/${guildId}/whitelist`, id: 'whitelist' }
       ]
     },
     {
-      title: 'Log',
+      title: t('sidebar.group_management'),
       items: [
         { name: t('sidebar.management'), icon: History, path: `/config/${guildId}/management`, id: 'management' },
-        { name: 'Audit Log', icon: Shield, path: `/config/${guildId}/audit`, id: 'audit' }
+        { name: t('management.audit_logs_title'), icon: Shield, path: `/config/${guildId}/audit`, id: 'audit' }
       ]
     }
   ];
 
   const systemGroup = {
-    title: 'Sistema',
+    title: t('sidebar.group_system'),
     items: [
       { name: t('sidebar.system'), icon: Settings, path: `/config/${guildId}/system`, id: 'system' },
       
@@ -234,10 +234,10 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
       // Show Private Bot ONLY if Platinum
       ...(premiumTier === 'platinum' ? [
         { name: t('sidebar.private_bot'), icon: Bot, path: `/config/${guildId}/private-bot`, id: 'private_bot' },
-        { name: 'Sincronizzazione', icon: RefreshCcw, path: `/config/${guildId}/sync`, id: 'sync' }
+        { name: t('common.sync') || 'Sync', icon: RefreshCcw, path: `/config/${guildId}/sync`, id: 'sync' }
       ] : []),
 
-      { name: 'System Ops', icon: Terminal, path: '/admin/system', id: 'system_ops', adminOnly: true }
+      { name: t('sidebar.system_ops') || 'System Ops', icon: Terminal, path: '/admin/system', id: 'system_ops', adminOnly: true }
     ]
   };
 
@@ -354,7 +354,7 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
             />
             {!isCollapsed && (
               <div className="user-info animate fade-in">
-                <span className="name">{user?.username || 'User'}</span>
+                <span className="name">{user?.username || t('common.user')}</span>
                 <span className="role">{t('sidebar.administrator')}</span>
               </div>
             )}
@@ -584,7 +584,7 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
         .activity-logo img {
           width: 100%;
           height: 100%;
-          border-radius: 8px;
+          border-radius: 50%;
           box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
 

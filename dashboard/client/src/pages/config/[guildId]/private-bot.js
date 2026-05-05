@@ -103,8 +103,8 @@ export default function PrivateBotPage() {
                     <Key size={24} />
                 </div>
                 <div className="header-text">
-                    <h1>True White-label</h1>
-                    <p>Usa il tuo bot personale con foto e banner personalizzati.</p>
+                    <h1>{t('private_bot.title')}</h1>
+                    <p>{t('private_bot.desc')}</p>
                 </div>
             </div>
             {isPlatinum && (
@@ -114,30 +114,30 @@ export default function PrivateBotPage() {
                     disabled={saving || (!token && !botData)}
                 >
                     {saving ? <Zap size={16} className="animate-spin" /> : <Save size={16} />}
-                    Salva Configurazione
+                    {t('private_bot.save_btn')}
                 </button>
             )}
         </header>
 
         {!isPlatinum ? (
             <div className="premium-upsell card">
-                <div className="upsell-badge">PLATINUM EXCLUSIVE</div>
+                <div className="upsell-badge">{t('private_bot.platinum_exclusive')}</div>
                 <div className="upsell-icon">
                     <Bot size={48} />
                 </div>
-                <h2>Il tuo Bot Personale (White-label)</h2>
+                <h2>{t('private_bot.upsell_title')}</h2>
                 <p>
                     {isPremium 
-                        ? "Il tuo piano Premium include molte funzioni, ma il True White-label è un'esclusiva del piano Platinum."
-                        : "Vuoi che il bot abbia la tua foto e il tuo nome ovunque? Passa a Platinum per collegare la tua applicazione bot personalizzata."}
+                        ? t('private_bot.upsell_desc_premium')
+                        : t('private_bot.upsell_desc_free')}
                 </p>
                 <div className="premium-features-mini">
-                    <span>✓ Foto & Nome Custom</span>
-                    <span>✓ Stato Bot Personalizzato</span>
-                    <span>✓ Nessun riferimento a Verix</span>
+                    <span>{t('private_bot.feat_avatar')}</span>
+                    <span>{t('private_bot.feat_status')}</span>
+                    <span>{t('private_bot.feat_no_brand')}</span>
                 </div>
                 <button onClick={() => router.push(`/config/${guildId}/premium`)} className="btn-platinum-cta">
-                    Passa a Platinum
+                    {t('private_bot.cta_btn')}
                 </button>
             </div>
         ) : (
@@ -146,38 +146,38 @@ export default function PrivateBotPage() {
                     <div className="main-card card">
                         <div className="card-header">
                             <Bot size={20} />
-                            <h3>Configurazione Token</h3>
+                            <h3>{t('private_bot.config_card')}</h3>
                         </div>
                         
                         <div className="alert warning">
                             <AlertTriangle size={20} />
                             <div>
-                                <strong>Attenzione:</strong> Non condividere MAI il tuo token con nessuno. Verix lo salverà in modo criptato e sicuro.
+                                <strong>{t('private_bot.alert_warning')}</strong> {t('private_bot.alert_token_desc')}
                             </div>
                         </div>
 
                         <div className="input-group">
-                            <label>Discord Bot Token</label>
+                            <label>{t('private_bot.token_label')}</label>
                             <input 
                                 type="password" 
                                 value={token} 
                                 onChange={(e) => setToken(e.target.value)}
-                                placeholder={botData ? '••••••••••••••••••••••••••••' : 'Incolla qui il tuo token...'}
+                                placeholder={botData ? t('private_bot.token_placeholder_existing') : t('private_bot.token_placeholder_new')}
                             />
-                            <p className="hint">Puoi ottenere il token dal <a href="https://discord.com/developers/applications" target="_blank" rel="noreferrer">Discord Developer Portal <ExternalLink size={12} /></a></p>
+                            <p className="hint">{t('private_bot.token_hint')} <a href="https://discord.com/developers/applications" target="_blank" rel="noreferrer">Discord Developer Portal <ExternalLink size={12} /></a></p>
                         </div>
 
                         <div className="setup-stepper">
-                            <h4>Guida alla Configurazione Rapida</h4>
+                            <h4>{t('private_bot.guide_title')}</h4>
                             
                             <div className="step-item">
                                 <div className="step-number">1</div>
                                 <div className="step-content">
-                                    <h5>Crea l'Applicazione</h5>
-                                    <p>Vai sul <a href="https://discord.com/developers/applications" target="_blank" rel="noreferrer">Developer Portal</a> e clicca su <strong>"New Application"</strong>. Scegli l'opzione <strong>"Bot"</strong> come mostrato sotto.</p>
-                                    <div className="step-img-container clickable" onClick={() => setSelectedImage({ src: `/img/guide${langPath}/step1.png`, title: t('private_bot.step1_title') || "Crea l'Applicazione" })}>
+                                    <h5>{t('private_bot.step1_title')}</h5>
+                                    <p dangerouslySetInnerHTML={{ __html: t('private_bot.step1_desc').replace('<link>', '<a href="https://discord.com/developers/applications" target="_blank" rel="noreferrer">').replace('</link>', '</a>') }} />
+                                    <div className="step-img-container clickable" onClick={() => setSelectedImage({ src: `/img/guide${langPath}/step1.png`, title: t('private_bot.step1_title') })}>
                                         <img src={`/img/guide${langPath}/step1.png`} alt="Step 1" />
-                                        <div className="zoom-overlay"><Zap size={16} /> Clicca per ingrandire</div>
+                                        <div className="zoom-overlay"><Zap size={16} /> {t('private_bot.zoom_overlay')}</div>
                                     </div>
                                 </div>
                             </div>
@@ -185,11 +185,11 @@ export default function PrivateBotPage() {
                             <div className="step-item">
                                 <div className="step-number">2</div>
                                 <div className="step-content">
-                                    <h5>Prendi il Token</h5>
-                                    <p>Nel menu a sinistra seleziona <strong>"Bot"</strong>. Clicca su <strong>"Resetta token"</strong> per visualizzare e copiare la tua chiave segreta.</p>
-                                    <div className="step-img-container clickable" onClick={() => setSelectedImage({ src: `/img/guide${langPath}/step2.png`, title: t('private_bot.step2_title') || "Prendi il Token" })}>
+                                    <h5>{t('private_bot.step2_title')}</h5>
+                                    <p dangerouslySetInnerHTML={{ __html: t('private_bot.step2_desc') }} />
+                                    <div className="step-img-container clickable" onClick={() => setSelectedImage({ src: `/img/guide${langPath}/step2.png`, title: t('private_bot.step2_title') })}>
                                         <img src={`/img/guide${langPath}/step2.png`} alt="Step 2" />
-                                        <div className="zoom-overlay"><Zap size={16} /> Clicca per ingrandire</div>
+                                        <div className="zoom-overlay"><Zap size={16} /> {t('private_bot.zoom_overlay')}</div>
                                     </div>
                                 </div>
                             </div>
@@ -197,11 +197,11 @@ export default function PrivateBotPage() {
                             <div className="step-item warning">
                                 <div className="step-number">3</div>
                                 <div className="step-content">
-                                    <h5>Abilita i Permessi (Cruciale)</h5>
-                                    <p>Sempre nella tab <strong>"Bot"</strong>, scendi fino a <strong>"Privileged Gateway Intents"</strong> e attiva tutti e tre gli interruttori come mostrato nella foto sotto. Senza questi, il bot non potrà leggere i messaggi o vedere i membri.</p>
-                                    <div className="step-img-container clickable" onClick={() => setSelectedImage({ src: `/img/guide${langPath}/step3.png`, title: t('private_bot.step3_title') || "Abilita i Permessi" })}>
+                                    <h5>{t('private_bot.step3_title')}</h5>
+                                    <p dangerouslySetInnerHTML={{ __html: t('private_bot.step3_desc') }} />
+                                    <div className="step-img-container clickable" onClick={() => setSelectedImage({ src: `/img/guide${langPath}/step3.png`, title: t('private_bot.step3_title') })}>
                                         <img src={`/img/guide${langPath}/step3.png`} alt="Step 3" />
-                                        <div className="zoom-overlay"><Zap size={16} /> Clicca per ingrandire</div>
+                                        <div className="zoom-overlay"><Zap size={16} /> {t('private_bot.zoom_overlay')}</div>
                                     </div>
                                 </div>
                             </div>
@@ -209,8 +209,8 @@ export default function PrivateBotPage() {
                             <div className="step-item">
                                 <div className="step-number">4</div>
                                 <div className="step-content">
-                                    <h5>Salva e Avvia</h5>
-                                    <p>Torna qui, incolla il token e clicca su <strong>"Salva Configurazione"</strong>. Poi usa l'interruttore "Stato Istanza" per accenderlo!</p>
+                                    <h5>{t('private_bot.step4_title')}</h5>
+                                    <p dangerouslySetInnerHTML={{ __html: t('private_bot.step4_desc') }} />
                                 </div>
                             </div>
                         </div>
@@ -220,7 +220,7 @@ export default function PrivateBotPage() {
                         <div className="status-card card">
                             <div className="card-header">
                                 <Power size={20} />
-                                <h3>Stato Istanza</h3>
+                                <h3>{t('private_bot.status_card')}</h3>
                             </div>
 
                             {botData ? (
@@ -228,7 +228,7 @@ export default function PrivateBotPage() {
                                     <div className="bot-profile">
                                         <img src={botData.avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'} alt="Bot Avatar" />
                                         <div className="bot-details">
-                                            <h4>{botData.clientName || 'Private Bot'}</h4>
+                                            <h4>{botData.clientName || t('private_bot.bot_default_name')}</h4>
                                             <span className={`badge status-${botData.status}`}>
                                                 {botData.status.toUpperCase()}
                                             </span>
@@ -236,7 +236,7 @@ export default function PrivateBotPage() {
                                     </div>
 
                                     <div className="toggle-control">
-                                        <span>Accendi / Spegni Bot</span>
+                                        <span>{t('private_bot.toggle_label')}</span>
                                         <label className="switch">
                                             <input 
                                                 type="checkbox" 
@@ -254,13 +254,13 @@ export default function PrivateBotPage() {
                                             disabled={restarting}
                                         >
                                             <RefreshCcw size={16} className={restarting ? 'animate-spin' : ''} />
-                                            {restarting ? 'Riavvio in corso...' : 'Riavvia Istanza'}
+                                            {restarting ? t('private_bot.restarting') : t('private_bot.restart_btn')}
                                         </button>
                                     )}
 
                                     {botData.status === 'error' && (
                                         <div className="error-log">
-                                            <strong>Ultimo errore:</strong>
+                                            <strong>{t('private_bot.last_error')}</strong>
                                             <p>{botData.lastError}</p>
                                         </div>
                                     )}
@@ -268,7 +268,7 @@ export default function PrivateBotPage() {
                             ) : (
                                 <div className="empty-status">
                                     <Info size={40} />
-                                    <p>Nessun bot privato configurato per questo server.</p>
+                                    <p>{t('private_bot.empty_status')}</p>
                                 </div>
                             )}
                         </div>
@@ -277,18 +277,18 @@ export default function PrivateBotPage() {
                             <div className="next-steps-card card fade-in">
                                 <div className="card-header">
                                     <ExternalLink size={20} />
-                                    <h3>Prossimi Passi</h3>
+                                    <h3>{t('private_bot.next_steps')}</h3>
                                 </div>
                                 
                                 <div className="mini-stepper">
                                     <div className="mini-step">
                                         <div className="mini-number">5</div>
                                         <div className="mini-content">
-                                            <h5>Invita nel Server</h5>
-                                            <p>Vai su <strong>OAuth2 → URL Generator</strong>. Seleziona <code>bot</code> e <code>applications.commands</code>, poi <code>Administrator</code>. Visita l'URL generato.</p>
-                                            <div className="step-img-container mini clickable" onClick={() => setSelectedImage({ src: `/img/guide${langPath}/step4.png`, title: "Generatore URL OAuth2" })}>
+                                            <h5>{t('private_bot.step5_title')}</h5>
+                                            <p dangerouslySetInnerHTML={{ __html: t('private_bot.step5_desc') }} />
+                                            <div className="step-img-container mini clickable" onClick={() => setSelectedImage({ src: `/img/guide${langPath}/step4.png`, title: t('private_bot.step5_title') })}>
                                                 <img src={`/img/guide${langPath}/step4.png`} alt="Step 5" />
-                                                <div className="zoom-overlay"><Zap size={14} /> Zoom</div>
+                                                <div className="zoom-overlay"><Zap size={14} /> {t('private_bot.zoom_mini')}</div>
                                             </div>
                                         </div>
                                     </div>
@@ -296,11 +296,11 @@ export default function PrivateBotPage() {
                                     <div className="mini-step success">
                                         <div className="mini-number">✓</div>
                                         <div className="mini-content">
-                                            <h5>Tutto Pronto!</h5>
-                                            <p>Il bot risponderà ora ai comandi nel tuo server usando il sistema Verix.</p>
-                                            <div className="step-img-container mini clickable" onClick={() => setSelectedImage({ src: `/img/guide${langPath}/step5.png`, title: "URL Generato" })}>
+                                            <h5>{t('private_bot.step6_title')}</h5>
+                                            <p dangerouslySetInnerHTML={{ __html: t('private_bot.step6_desc') }} />
+                                            <div className="step-img-container mini clickable" onClick={() => setSelectedImage({ src: `/img/guide${langPath}/step5.png`, title: t('private_bot.step6_title') })}>
                                                 <img src={`/img/guide${langPath}/step5.png`} alt="Step 6" />
-                                                <div className="zoom-overlay"><Zap size={14} /> Zoom</div>
+                                                <div className="zoom-overlay"><Zap size={14} /> {t('private_bot.zoom_mini')}</div>
                                             </div>
                                         </div>
                                     </div>

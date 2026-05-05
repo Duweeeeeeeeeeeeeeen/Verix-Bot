@@ -102,7 +102,7 @@ export default function FiveMConfig() {
   const addServer = () => {
     const newServers = [...(config.servers || []), { 
         id: Date.now().toString(), 
-        name: 'Nuovo Server', 
+        name: t('fivem.default_server_name'), 
         serverIp: '', 
         statusChannelId: '',
         enabled: true 
@@ -121,7 +121,7 @@ export default function FiveMConfig() {
 
   const addButton = (serverId) => {
     const server = config.servers.find(s => s.id === serverId);
-    const newButtons = [...(server.buttons || []), { label: 'Connettiti', url: '', style: 'LINK' }];
+    const newButtons = [...(server.buttons || []), { label: t('fivem.default_button_label'), url: '', style: 'LINK' }];
     updateServer(serverId, 'buttons', newButtons);
   };
 

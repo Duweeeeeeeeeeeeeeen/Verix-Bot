@@ -86,8 +86,8 @@ export default function WhiteLabelPage() {
                     <Sparkles size={24} />
                 </div>
                 <div className="header-text">
-                    <h1>White-label & Identity</h1>
-                    <p>Personalizza l'aspetto del bot nel tuo server per renderlo unico.</p>
+                    <h1>{t('whitelabel.title')}</h1>
+                    <p>{t('whitelabel.desc')}</p>
                 </div>
             </div>
             {isPremium && (
@@ -97,7 +97,7 @@ export default function WhiteLabelPage() {
                     disabled={saving}
                 >
                     {saving ? <Zap size={16} className="animate-spin" /> : <Save size={16} />}
-                    Salva Modifiche
+                    {t('whitelabel.save')}
                 </button>
             )}
         </header>
@@ -108,18 +108,18 @@ export default function WhiteLabelPage() {
                 <div className="upsell-icon">
                     <Bot size={48} />
                 </div>
-                <h2>Rendi il bot "Tuo"</h2>
-                <p>Con il piano Premium, puoi rimuovere ogni riferimento a Verix e personalizzare l'identità del bot nel tuo server.</p>
+                <h2>{t('whitelabel.upsell_title')}</h2>
+                <p>{t('whitelabel.upsell_desc')}</p>
                 
                 <div className="preview-comparison">
                     <div className="preview-box free">
-                        <span className="p-label">VERSIONE FREE</span>
+                        <span className="p-label">{t('whitelabel.free_version')}</span>
                         <div className="mock-embed">
                             <div className="embed-footer">Powered by Verix Bot</div>
                         </div>
                     </div>
                     <div className="preview-box premium">
-                        <span className="p-label">VERSIONE PREMIUM</span>
+                        <span className="p-label">{t('whitelabel.premium_version')}</span>
                         <div className="mock-embed">
                             <div className="embed-footer">© {config?.name || 'Il Tuo Server'}</div>
                         </div>
@@ -127,7 +127,7 @@ export default function WhiteLabelPage() {
                 </div>
 
                 <button onClick={() => router.push(`/config/${guildId}/premium`)} className="btn-premium-cta">
-                    Sblocca Identità Personalizzata
+                    {t('whitelabel.unlock_cta')}
                 </button>
             </div>
         ) : (
@@ -136,24 +136,24 @@ export default function WhiteLabelPage() {
                     <div className="settings-card card">
                         <div className="card-header">
                             <Bot size={20} />
-                            <h3>Profilo Bot</h3>
+                            <h3>{t('whitelabel.profile_title')}</h3>
                         </div>
                         <div className="input-group">
-                            <label>Nickname Personalizzato</label>
+                            <label>{t('whitelabel.nickname_label')}</label>
                             <input 
                                 type="text" 
                                 value={config.customBotName || ''} 
                                 onChange={(e) => setConfig({...config, customBotName: e.target.value})}
-                                placeholder="Esempio: Assistente Verix"
+                                placeholder={t('whitelabel.nickname_placeholder')}
                             />
-                            <p className="hint">Il bot cambierà il suo nickname in questo server.</p>
+                            <p className="hint">{t('whitelabel.nickname_hint')}</p>
                         </div>
                         
                         <div className="status-section">
                             <div className="section-header">
-                                <label>Stati a Rotazione</label>
+                                <label>{t('whitelabel.status_rotation_title')}</label>
                                 <button className="btn-add-status" onClick={addStatus}>
-                                    <Plus size={14} /> Aggiungi
+                                    <Plus size={14} /> {t('whitelabel.add_status')}
                                 </button>
                             </div>
                             
@@ -165,17 +165,17 @@ export default function WhiteLabelPage() {
                                             value={s.type || 0}
                                             onChange={(e) => updateStatus(index, 'type', parseInt(e.target.value))}
                                         >
-                                            <option value="0">Gioca a</option>
-                                            <option value="3">Guarda</option>
-                                            <option value="2">Ascolta</option>
-                                            <option value="5">Competi in</option>
-                                            <option value="4">Stato Personalizzato</option>
+                                            <option value="0">{t('whitelabel.status_play')}</option>
+                                            <option value="3">{t('whitelabel.status_watch')}</option>
+                                            <option value="2">{t('whitelabel.status_listen')}</option>
+                                            <option value="5">{t('whitelabel.status_compete')}</option>
+                                            <option value="4">{t('whitelabel.status_custom')}</option>
                                         </select>
                                         <input 
                                             type="text" 
                                             value={s.text || ''} 
                                             onChange={(e) => updateStatus(index, 'text', e.target.value)}
-                                            placeholder="Testo dello status..."
+                                            placeholder={t('whitelabel.status_placeholder')}
                                         />
                                         <button className="btn-delete-status" onClick={() => removeStatus(index)}>
                                             <Trash2 size={16} />
@@ -184,21 +184,21 @@ export default function WhiteLabelPage() {
                                 ))}
                                 {statuses.length === 0 && (
                                     <div className="empty-statuses">
-                                        Nessuno status configurato. Il bot userà quello predefinito.
+                                        {t('whitelabel.empty_statuses')}
                                     </div>
                                 )}
                             </div>
 
                             {statuses.length > 1 && (
                                 <div className="input-group rotation-interval">
-                                    <label><Clock size={14} /> Intervallo Rotazione (secondi)</label>
+                                    <label><Clock size={14} /> {t('whitelabel.rotation_interval_label')}</label>
                                     <input 
                                         type="number" 
                                         min="15"
                                         value={rotationInterval} 
                                         onChange={(e) => setRotationInterval(parseInt(e.target.value))}
                                     />
-                                    <p className="hint">Il bot passerà allo status successivo ogni {rotationInterval} secondi.</p>
+                                    <p className="hint">{t('whitelabel.rotation_interval_hint', { interval: rotationInterval })}</p>
                                 </div>
                             )}
                         </div>
@@ -207,12 +207,12 @@ export default function WhiteLabelPage() {
                     <div className="settings-card card">
                         <div className="card-header">
                             <EyeOff size={20} />
-                            <h3>Branding & Footer</h3>
+                            <h3>{t('whitelabel.branding_title')}</h3>
                         </div>
                         <div className="toggle-group">
                             <div className="toggle-info">
-                                <h4>Rimuovi "Powered by Verix"</h4>
-                                <p>Nasconde il marchio Verix dal footer di tutti gli embed generati dal bot.</p>
+                                <h4>{t('whitelabel.remove_branding_label')}</h4>
+                                <p>{t('whitelabel.remove_branding_desc')}</p>
                             </div>
                             <label className="switch">
                                 <input 
@@ -225,11 +225,11 @@ export default function WhiteLabelPage() {
                         </div>
                         
                         <div className="placeholder-info card mt-4">
-                            <h4>Placeholder FiveM</h4>
-                            <p>Puoi usare questi tag nei tuoi stati per mostrare i dati in tempo reale:</p>
+                            <h4>{t('whitelabel.placeholders_title')}</h4>
+                            <p>{t('whitelabel.placeholders_desc')}</p>
                             <ul>
-                                <li><code>{`{players}`}</code> - Giocatori online</li>
-                                <li><code>{`{max_players}`}</code> - Slot totali</li>
+                                <li><code>{`{players}`}</code> - {t('whitelabel.placeholder_players')}</li>
+                                <li><code>{`{max_players}`}</code> - {t('whitelabel.placeholder_max_players')}</li>
                             </ul>
                         </div>
                     </div>

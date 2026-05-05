@@ -165,7 +165,7 @@ export default function TicketConfig() {
   const addCannedResponse = () => {
     setConfig(prev => ({
         ...prev,
-        cannedResponses: [...(prev.cannedResponses || []), { label: t('tickets.cat_name_placeholder'), content: 'Messaggio...' }]
+        cannedResponses: [...(prev.cannedResponses || []), { label: t('tickets.cat_name_placeholder'), content: t('tickets.canned_placeholder') }]
     }));
   };
 
@@ -295,10 +295,10 @@ export default function TicketConfig() {
                                 <table className="stats-table">
                                     <thead>
                                         <tr>
-                                            <th>Staff Member</th>
-                                            <th>Ticket Assunti</th>
-                                            <th>Ticket Chiusi</th>
-                                            <th>Tempo Risposta Medio</th>
+                                            <th>{t('tickets.stats_staff')}</th>
+                                            <th>{t('tickets.stats_open')}</th>
+                                            <th>{t('tickets.stats_closed')}</th>
+                                            <th>{t('tickets.stats_avg_time')}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -359,7 +359,7 @@ export default function TicketConfig() {
                         </div>
                         <div className="grid-right">
                             <section className="card section-card">
-                                <h3 className="sidebar-title align-center" style={{ marginBottom: '16px' }}><Shield size={18} /> Staff Roles</h3>
+                                <h3 className="sidebar-title align-center" style={{ marginBottom: '16px' }}><Shield size={18} /> {t('tickets.staff_roles_title')}</h3>
                                 <DiscordSelector type="role" multiple={true} options={roles} value={config.staffRoleIds || []} onChange={val => setConfig({...config, staffRoleIds: val})} />
                                 <p className="text-description" style={{ marginTop: '12px' }}>{t('tickets.staff_roles_desc')}</p>
                             </section>
@@ -537,7 +537,7 @@ export default function TicketConfig() {
                             <section className="card section-card">
                                 <div className="align-center" style={{ marginBottom: '20px' }}>
                                     <Zap size={18} color="var(--primary)" />
-                                    <h3>Impostazioni Avanzate</h3>
+                                    <h3>{t('moderation.global_config')}</h3>
                                 </div>
                                 <div className="fields-grid">
                                     <div className="field-box">
@@ -582,10 +582,10 @@ export default function TicketConfig() {
                                         <div className="flex-between" style={{ marginBottom: '16px' }}>
                                             <div className="flex-col">
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                    <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>Transcripts HTML (PRO)</span>
+                                                    <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{t('tickets.html_transcripts')}</span>
                                                     {!guildData?.isPremium && <Crown size={12} color="var(--gold)" />}
                                                 </div>
-                                                <p className="text-dim" style={{ fontSize: '0.75rem', margin: 0 }}>Genera log grafici interattivi invece di semplici file testo.</p>
+                                                <p className="text-dim" style={{ fontSize: '0.75rem', margin: 0 }}>{t('tickets.html_transcripts_desc')}</p>
                                             </div>
                                             <label className="toggle">
                                                 <input 
@@ -606,10 +606,10 @@ export default function TicketConfig() {
                                         <div className="flex-between">
                                             <div className="flex-col">
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                    <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>Sistema di Rating (PRO)</span>
+                                                    <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{t('tickets.rating_system')}</span>
                                                     {!guildData?.isPremium && <Crown size={12} color="var(--gold)" />}
                                                 </div>
-                                                <p className="text-dim" style={{ fontSize: '0.75rem', margin: 0 }}>Chiedi una valutazione 1-5 stelle alla chiusura del ticket.</p>
+                                                <p className="text-dim" style={{ fontSize: '0.75rem', margin: 0 }}>{t('tickets.rating_system_desc')}</p>
                                             </div>
                                             <label className="toggle">
                                                 <input 

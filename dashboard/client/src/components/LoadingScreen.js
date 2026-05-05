@@ -58,7 +58,7 @@ export default function LoadingScreen({ message }) {
         .pulse-logo {
           width: 80px;
           height: 80px;
-          border-radius: 20px;
+          border-radius: 50%;
           z-index: 10;
           animation: logo-pulse 2s ease-in-out infinite;
           box-shadow: 0 0 30px rgba(99, 102, 241, 0.4);

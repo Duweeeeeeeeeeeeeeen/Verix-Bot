@@ -190,8 +190,8 @@ export default function GlobalConfigPage() {
                              <div className="premium-lock-icon">
                                 <Crown size={48} />
                              </div>
-                             <h2>Custom Bot Identity</h2>
-                             <p>Sblocca la possibilità di usare il tuo bot personale con nome e avatar personalizzati.</p>
+                             <h2>{t('global.identity_title')}</h2>
+                             <p>{t('global.identity_desc')}</p>
                              <button onClick={() => router.push(`/config/${guildId}/premium`)} className="btn-primary-gold">
                                 <Zap size={16} /> Upgrade to Premium Gold
                              </button>
@@ -199,10 +199,10 @@ export default function GlobalConfigPage() {
                     ) : (
                         <div className="config-grid-g">
                             <section className="card section-card-g">
-                                <div className="align-center"><User size={18} color="var(--primary)" /> <h3>Custom Branding</h3></div>
+                                <div className="align-center"><User size={18} color="var(--primary)" /> <h3>{t('global.identity_title')}</h3></div>
                                 <div className="fields-stack-g">
                                     <div className="field-box">
-                                        <label className="text-label">Bot Token</label>
+                                        <label className="text-label">{t('global.identity_token_label')}</label>
                                         <div className="input-with-icon-p">
                                             <Key size={16} className="icon-p" />
                                             <input 
@@ -214,14 +214,14 @@ export default function GlobalConfigPage() {
                                             />
                                         </div>
                                         <p className="text-muted" style={{ fontSize: '0.7rem', marginTop: '8px' }}>
-                                            Inserisci il token del tuo bot dal Discord Developer Portal.
+                                            {t('global.identity_token_help')}
                                         </p>
                                     </div>
                                     <div className="field-box">
-                                        <label className="text-label">Bot Name</label>
+                                        <label className="text-label">{t('global.identity_name_label')}</label>
                                         <input 
                                             className="input" 
-                                            placeholder="Il Mio Bot" 
+                                            placeholder={t('global.identity_name_placeholder')}
                                             value={config.customBot?.name || ''} 
                                             onChange={e => setNested('customBot.name', e.target.value)} 
                                         />
@@ -230,19 +230,19 @@ export default function GlobalConfigPage() {
                             </section>
 
                             <section className="card section-card-g">
-                                <div className="align-center"><Palette size={18} color="var(--primary)" /> <h3>Custom Status</h3></div>
+                                <div className="align-center"><Palette size={18} color="var(--primary)" /> <h3>{t('global.identity_status_title')}</h3></div>
                                 <div className="fields-stack-g">
                                      <div className="field-box">
-                                        <label className="text-label">Status Text</label>
+                                        <label className="text-label">{t('global.identity_status_label')}</label>
                                         <input 
                                             className="input" 
-                                            placeholder="Giocando a..." 
+                                            placeholder={t('global.identity_status_placeholder')}
                                             value={config.customBot?.status || ''} 
                                             onChange={e => setNested('customBot.status', e.target.value)} 
                                         />
                                     </div>
                                     <div className="status-row-g">
-                                        <span>Rimuovi Branding "Powered by Verix"</span>
+                                        <span>{t('global.identity_branding_label')}</span>
                                         <label className="toggle">
                                             <input type="checkbox" checked={!!config.customBot?.noBranding} onChange={e => setNested('customBot.noBranding', e.target.checked)} />
                                             <span className="slider"></span>
@@ -252,10 +252,10 @@ export default function GlobalConfigPage() {
                             </section>
 
                             <section className="card section-card-g" style={{ marginTop: '20px' }}>
-                                <div className="align-center"><Bot size={18} color="var(--primary)" /> <h3>Gestione Bot</h3></div>
+                                <div className="align-center"><Bot size={18} color="var(--primary)" /> <h3>{t('global.bot_management_title')}</h3></div>
                                 <div className="fields-stack-g">
                                     <p className="text-muted" style={{ fontSize: '0.85rem', marginBottom: '15px' }}>
-                                        Hai rimosso il bot principale (Verix) dal server e vuoi reinvitarlo? Clicca il pulsante qui sotto.
+                                        {t('global.bot_management_desc')}
                                     </p>
                                     <a 
                                         href={`https://discord.com/oauth2/authorize?client_id=${process.env.NEXT_PUBLIC_CLIENT_ID || '1493270512195862538'}&permissions=8&scope=bot%20applications.commands&guild_id=${guildId}`}
@@ -264,7 +264,7 @@ export default function GlobalConfigPage() {
                                         className="btn-primary"
                                         style={{ width: 'fit-content', display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}
                                     >
-                                        <Bot size={16} /> Invita Verix nel Server
+                                        <Bot size={16} /> {t('global.bot_invite_btn')}
                                     </a>
                                 </div>
                             </section>

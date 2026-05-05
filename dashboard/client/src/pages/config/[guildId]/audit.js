@@ -66,14 +66,14 @@ export default function AuditPage() {
                     <History size={24} />
                 </div>
                 <div className="header-text">
-                    <h1>Audit Logs Staff</h1>
-                    <p>Registro completo delle azioni effettuate dal team di gestione sul pannello.</p>
+                    <h1>{t('audit.title')}</h1>
+                    <p>{t('audit.desc')}</p>
                 </div>
             </div>
             {guildData?.isPremium && (
                 <div className="header-actions">
                     <button className="btn-outline">
-                        <Download size={16} /> Export JSON
+                        <Download size={16} /> {t('audit.export')}
                     </button>
                 </div>
             )}
@@ -81,34 +81,34 @@ export default function AuditPage() {
 
         {!guildData?.isPremium ? (
             <div className="premium-upsell card">
-                <div className="upsell-badge">PRO FEATURE</div>
+                <div className="upsell-badge">{t('audit.pro_badge')}</div>
                 <div className="upsell-icon">
                     <Crown size={48} />
                 </div>
-                <h2>Controllo Totale con Audit Log</h2>
-                <p>Tieni traccia di ogni modifica effettuata dai tuoi amministratori. Sicurezza, trasparenza e responsabilità per il tuo staff.</p>
+                <h2>{t('audit.upsell_title')}</h2>
+                <p>{t('audit.upsell_desc')}</p>
                 
                 <div className="feature-grid">
                     <div className="feat-item">
                         <User size={20} />
-                        <span>Tracciamento per Singolo Staff</span>
+                        <span>{t('audit.feat_staff')}</span>
                     </div>
                     <div className="feat-item">
                         <Clock size={20} />
-                        <span>Cronologia fino a 90 Giorni</span>
+                        <span>{t('audit.feat_history')}</span>
                     </div>
                     <div className="feat-item">
                         <Shield size={20} />
-                        <span>Prevenzione Abusi Team</span>
+                        <span>{t('audit.feat_prevention')}</span>
                     </div>
                     <div className="feat-item">
                         <Download size={20} />
-                        <span>Esportazione Dati per Audit</span>
+                        <span>{t('audit.feat_export')}</span>
                     </div>
                 </div>
 
                 <button onClick={() => router.push(`/config/${guildId}/premium`)} className="btn-premium-cta">
-                    Sblocca Ora con Premium Hub
+                    {t('audit.unlock_btn')}
                 </button>
             </div>
         ) : (
@@ -118,7 +118,7 @@ export default function AuditPage() {
                         <Search size={18} />
                         <input 
                             type="text" 
-                            placeholder="Cerca per staff o azione..." 
+                            placeholder={t('audit.search_placeholder')}
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
@@ -126,10 +126,10 @@ export default function AuditPage() {
                     <div className="filter-select">
                         <Filter size={18} />
                         <select value={filterAction} onChange={(e) => setFilterAction(e.target.value)}>
-                            <option value="ALL">Tutte le azioni</option>
-                            <option value="UPDATE_CONFIG">Aggiornamento Config</option>
-                            <option value="UPDATE_WHITELIST">Whitelist</option>
-                            <option value="SAVE_TEMPLATE">Template Embed</option>
+                            <option value="ALL">{t('audit.filter_all')}</option>
+                            <option value="UPDATE_CONFIG">{t('audit.filter_update')}</option>
+                            <option value="UPDATE_WHITELIST">{t('audit.filter_whitelist')}</option>
+                            <option value="SAVE_TEMPLATE">{t('audit.filter_template')}</option>
                         </select>
                     </div>
                 </div>
@@ -138,10 +138,10 @@ export default function AuditPage() {
                     <table className="audit-table">
                         <thead>
                             <tr>
-                                <th>Staff</th>
-                                <th>Azione</th>
-                                <th>Data & Ora</th>
-                                <th style={{ textAlign: 'right' }}>Dettagli</th>
+                                <th>{t('audit.table_staff')}</th>
+                                <th>{t('audit.table_action')}</th>
+                                <th>{t('audit.table_date')}</th>
+                                <th style={{ textAlign: 'right' }}>{t('audit.table_details')}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -170,15 +170,15 @@ export default function AuditPage() {
                                         </div>
                                     </td>
                                     <td style={{ textAlign: 'right' }}>
-                                        <button className="btn-details" title="Visualizza Cambiamenti">
-                                            <Shield size={14} /> Dettagli
+                                        <button className="btn-details" title={t('audit.table_details')}>
+                                            <Shield size={14} /> {t('audit.details_btn')}
                                         </button>
                                     </td>
                                 </tr>
                             )) : (
                                 <tr>
                                     <td colSpan="4" className="empty-state">
-                                        Nessun log trovato con i filtri attuali.
+                                        {t('audit.empty_state')}
                                     </td>
                                 </tr>
                             )}
