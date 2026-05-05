@@ -72,6 +72,8 @@
   "automations.trigger_messages": "Message Based",
   "automations.trigger_time": "Time Based",
   "automations.use_embed": "Use Embed",
+  "common.active": "Active",
+  "common.inactive": "Inactive",
   "common.actions": "Actions",
   "common.add": "Add",
   "common.advanced": "Advanced",
