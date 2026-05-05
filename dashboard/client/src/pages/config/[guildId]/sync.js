@@ -41,7 +41,7 @@ export default function GlobalSync() {
         try {
             const [gRes, uRes] = await Promise.all([
                 api.request(`/config/${guildId}/guild`),
-                api.request('/auth/me') // To get user guilds
+                api.request('/auth/user') // To get user guilds
             ]);
 
             const gData = gRes.data || gRes;
