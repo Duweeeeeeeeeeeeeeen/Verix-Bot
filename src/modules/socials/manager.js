@@ -215,12 +215,20 @@ export class SocialManager {
                             // NEW POST detected
                             logger.info(`[Socials/${platformName}] New post detected for ${username} in ${guildId}`);
                             
+                            // Extract thumbnail from content/description if not in enclosure
+                            let thumbnail = latestItem.enclosure?.url || '';
+                            if (!thumbnail) {
+                                const content = latestItem.content || latestItem.contentSnippet || '';
+                                const imgMatch = content.match(/<img[^>]+src="([^">]+)"/);
+                                if (imgMatch) thumbnail = imgMatch[1];
+                            }
+
                             await this.handleSocialPost(guildId, platformConfig, account, {
                                 title: latestItem.title || 'Nuovo post!',
                                 url: latestItem.link,
                                 author: feed.title || username,
-                                description: latestItem.contentSnippet || latestItem.content || '',
-                                thumbnail: latestItem.enclosure?.url || ''
+                                description: latestItem.contentSnippet || latestItem.content?.replace(/<[^>]*>/g, '').substring(0, 500) || '',
+                                thumbnail: thumbnail
                             }, platformName);
 
                             account.lastPostId = itemId;
@@ -285,28 +293,34 @@ export class SocialManager {
                 'TikTok': `### ${postData.title}\n\nÈ appena stato pubblicato un nuovo video su TikTok! Guarda subito.`
             };
 
-            const defaultColors = {
-                'Twitch': 0x6441a5,
-                'YouTube': 0xff0000,
-                'Twitter': 0x1da1f2,
-                'Instagram': 0xe1306c,
-                'TikTok': 0x000000
+            // Default settings based on platform
+            const platformStyles = {
+                'Twitch': { color: 0x6441a5, icon: 'https://cdn3.iconfinder.com/data/icons/social-messaging-ui-color-shapes-2-free/128/social-twitch-circle-512.png', label: 'Twitch Live' },
+                'YouTube': { color: 0xff0000, icon: 'https://cdn3.iconfinder.com/data/icons/social-network-30/512/YouTube-512.png', label: 'YouTube Video' },
+                'Twitter': { color: 0x1da1f2, icon: 'https://cdn3.iconfinder.com/data/icons/social-network-30/512/Twitter-512.png', label: 'Twitter (X)' },
+                'Instagram': { color: 0xe1306c, icon: 'https://cdn3.iconfinder.com/data/icons/social-network-30/512/Instagram-512.png', label: 'Instagram Post' },
+                'TikTok': { color: 0x00f2ea, icon: 'https://cdn3.iconfinder.com/data/icons/social-network-30/512/TikTok-512.png', label: 'TikTok Video' }
             };
 
-            const embedData = {
-                title: formatText(customEmbed.title) || defaultTitles[platform] || 'Nuovo post!',
-                url: postData.url,
-                description: formatText(customEmbed.description) || defaultDescs[platform] || postData.title,
-                color: customEmbed.color ? parseInt(customEmbed.color.replace('#', ''), 16) : (defaultColors[platform] || 0xffffff),
-                footer: { text: formatText(customEmbed.footer) || 'Social Notifications | Verix' }
-            };
+            const style = platformStyles[platform] || { color: 0x7289da, icon: '', label: platform };
 
-            if (postData.profileImage) {
-                embedData.thumbnail = { url: postData.profileImage };
-            }
+            const embedData = new EmbedBuilder()
+                .setAuthor({ 
+                    name: `${style.label} | @${postData.author || account.username}`, 
+                    iconURL: style.icon || guild.iconURL() 
+                })
+                .setTitle(formatText(customEmbed.title) || defaultTitles[platform] || 'Nuovo post!')
+                .setURL(postData.url)
+                .setDescription(formatText(customEmbed.description) || defaultDescs[platform] || postData.description || postData.title)
+                .setColor(customEmbed.color ? parseInt(customEmbed.color.replace('#', ''), 16) : style.color)
+                .setTimestamp()
+                .setFooter({ 
+                    text: formatText(customEmbed.footer) || 'Social Notifications | Verix', 
+                    iconURL: this.client.user.displayAvatarURL() 
+                });
 
             if (postData.thumbnail) {
-                embedData.image = { url: postData.thumbnail };
+                embedData.setImage(postData.thumbnail);
             }
 
             const buttonLabels = {
