@@ -12,6 +12,7 @@ import configRoutes from './routes/config.js';
 import messageRoutes from './routes/messages.js';
 import analyticsRoutes from './routes/analytics.js';
 import privateBotRoutes from './routes/privateBot.js';
+import adminRoutes from './routes/admin.js';
 
 // ─── Critical startup guard ─────────────────────────────────────────────────
 if (!process.env.SESSION_SECRET) {
@@ -95,6 +96,7 @@ app.use('/api/config', configRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/private-bot', privateBotRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

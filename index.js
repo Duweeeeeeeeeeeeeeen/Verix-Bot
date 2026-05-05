@@ -15,6 +15,7 @@ import AutomationManager from './src/core/automationManager.js';
 import GiveawayManager from './src/modules/giveaway/manager.js';
 import AnalyticsManager from './src/core/analyticsManager.js';
 import multiBotManager from './src/core/multiBotManager.js';
+import MonitoringService from './src/services/monitoringService.js';
 
 // Initialize Discord Client
 const client = new Client({
@@ -89,6 +90,9 @@ if (global.botInitialized) {
 
             client.analyticsManager = new AnalyticsManager(client);
             client.analyticsManager.start(1000 * 60 * 60);
+
+            client.monitoring = new MonitoringService(client);
+            await client.monitoring.init();
 
             startDashboard(client);
 

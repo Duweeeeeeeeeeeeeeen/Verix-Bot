@@ -20,6 +20,7 @@ class MultiBotManager {
     }
 
     async init(mainClient) {
+        this.mainClient = mainClient;
         logger.info('[MultiBot] Initializing private bot instances...');
         const privateBots = await PrivateBot.find({ enabled: true });
         
@@ -136,6 +137,11 @@ class MultiBotManager {
         } catch (error) {
             logger.error(`[MultiBot] Failed to start private bot for guild ${guildId}:`, error);
             await PrivateBot.findByIdAndUpdate(botConfig._id, { status: 'error', lastError: error.message });
+            
+            // Notify owner via monitoring service
+            if (this.mainClient && this.mainClient.monitoring) {
+                await this.mainClient.monitoring.notifyPrivateBotError(guildId, error.message);
+            }
         }
     }
 

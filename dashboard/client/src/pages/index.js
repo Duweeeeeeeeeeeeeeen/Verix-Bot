@@ -61,8 +61,8 @@ export default function Home() {
     },
     { 
       icon: Tv, 
-      title: 'Twitch Live Alerts', 
-      desc: 'Notifiche istantanee quando i tuoi streamer preferiti vanno in diretta, con embed eleganti.' 
+      title: 'Social Alerts Pro', 
+      desc: 'Notifiche istantanee in tempo reale per Twitch, TikTok, Instagram e X (Twitter) con grafiche premium.' 
     },
     {
       icon: Trash2,
@@ -124,7 +124,7 @@ export default function Home() {
             </div>
             <h1 style={{ color: 'var(--text-main)' }}>Gestisci il tuo server Discord come un professionista</h1>
             <p>
-              Whitelist, Ticket, Voice, Verify, Contest e molto altro — tutto racchiuso in una dashboard moderna e ultra-veloce.
+              Whitelist, Ticket, Voice, Verify, Contest e Social Notifications — tutto racchiuso in una dashboard moderna e ultra-veloce con tecnologia Private Bridge dedicata.
             </p>
             
             <div className="cta-group-p" style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
