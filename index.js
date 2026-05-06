@@ -1,4 +1,4 @@
-import { Client, Collection, GatewayIntentBits, Events } from 'discord.js';
+import { Client, Collection, GatewayIntentBits, Events, Partials } from 'discord.js';
 import mongoose from 'mongoose';
 import config from './config/config.js';
 import logger from './src/utils/logger.js';
@@ -28,7 +28,8 @@ const client = new Client({
         GatewayIntentBits.GuildMembers,
         GatewayIntentBits.GuildVoiceStates,
         GatewayIntentBits.GuildMessageReactions,
-    ]
+    ],
+    partials: [Partials.Message, Partials.Channel, Partials.Reaction]
 });
 
 // Collections

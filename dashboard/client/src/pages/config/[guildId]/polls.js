@@ -18,7 +18,11 @@ import {
     XCircle,
     Info,
     Calendar,
-    Zap
+    Zap,
+    Monitor,
+    Smartphone,
+    Sun,
+    Moon
 } from 'lucide-react';
 import DiscordSelector from '../../../components/DiscordSelector';
 import EmbedPreview from '../../../components/EmbedPreview';
@@ -35,13 +39,15 @@ export default function PollsConfig() {
   const [channels, setChannels] = useState([]);
   const [activePolls, setActivePolls] = useState([]);
   const [activeTab, setActiveTab] = useState('create');
+  const [previewTheme, setPreviewTheme] = useState('dark');
+  const [previewIsMobile, setPreviewIsMobile] = useState(false);
 
   const [newPoll, setNewPoll] = useState({
       channelId: '',
       question: '',
       options: [
-          { emoji: '1️⃣', label: 'Option 1' },
-          { emoji: '2️⃣', label: 'Option 2' }
+          { emoji: '1️⃣', label: t('polls.option_1') },
+          { emoji: '2️⃣', label: t('polls.option_2') }
       ],
       duration: 60,
       mode: 'SINGLE',
@@ -93,8 +99,8 @@ export default function PollsConfig() {
   };
 
   const handleCreatePoll = async () => {
-    if (!newPoll.question || !newPoll.channelId) return showToast('Please fill all required fields', 'error');
-    if (newPoll.options.some(o => !o.label)) return showToast('All options must have a label', 'error');
+    if (!newPoll.question || !newPoll.channelId) return showToast(t('polls.required_fields'), 'error');
+    if (newPoll.options.some(o => !o.label)) return showToast(t('polls.label_required'), 'error');
 
     setCreating(true);
     try {
@@ -115,7 +121,7 @@ export default function PollsConfig() {
   };
 
   const addOption = () => {
-      if (newPoll.options.length >= 10) return showToast('Max 10 options', 'error');
+      if (newPoll.options.length >= 10) return showToast(t('polls.max_options'), 'error');
       const emojis = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
       const nextEmoji = emojis[newPoll.options.length] || '🔘';
       setNewPoll({ ...newPoll, options: [...newPoll.options, { emoji: nextEmoji, label: `Option ${newPoll.options.length + 1}` }] });
@@ -189,7 +195,7 @@ export default function PollsConfig() {
                         <section className="card section-card">
                             <div className="align-center mb-4">
                                 <Plus size={18} color="var(--primary)" />
-                                <h3>New Poll</h3>
+                                <h3>{t('polls.new_poll')}</h3>
                             </div>
                             
                             <div className="field-box full-width mb-4">
@@ -197,7 +203,7 @@ export default function PollsConfig() {
                                 <input 
                                     type="text" 
                                     className="input large" 
-                                    placeholder="Enter your question here..."
+                                    placeholder={t('polls.question_placeholder')}
                                     value={newPoll.question}
                                     onChange={e => setNewPoll({...newPoll, question: e.target.value})}
                                 />
@@ -205,7 +211,7 @@ export default function PollsConfig() {
 
                             <div className="fields-grid mb-4">
                                 <div className="field-box">
-                                    <label className="text-label">Target Channel</label>
+                                    <label className="text-label">{t('common.target_channel')}</label>
                                     <DiscordSelector 
                                         type="channel" 
                                         options={channels} 
@@ -226,7 +232,7 @@ export default function PollsConfig() {
 
                             <div className="align-center mb-2" style={{ justifyContent: 'space-between' }}>
                                 <label className="text-label">{t('polls.options')}</label>
-                                <button onClick={addOption} className="btn-add-sm"><Plus size={12}/> Add</button>
+                                <button onClick={addOption} className="btn-add-sm"><Plus size={12}/> {t('common.add')}</button>
                             </div>
                             <div className="options-list">
                                 {newPoll.options.map((opt, idx) => (
@@ -275,15 +281,52 @@ export default function PollsConfig() {
                             </div>
 
                             <button onClick={handleCreatePoll} className="btn-create-poll" disabled={creating}>
-                                <Send size={16} /> {creating ? 'Creating...' : t('polls.create_btn')}
+                                <Send size={16} /> {creating ? t('common.creating') : t('polls.create_btn')}
                             </button>
                         </section>
                     </div>
 
                     <div className="creation-preview">
                         <div className="preview-sticky">
-                            <div className="preview-label">Live Preview</div>
-                            <EmbedPreview data={previewPollEmbed} />
+                            <div className="preview-header-actions">
+                                <div className="preview-label">{t('common.live_preview')}</div>
+                                <div className="preview-controls">
+                                    <div className="control-group">
+                                        <button 
+                                            className={`control-btn ${previewTheme === 'light' ? 'active' : ''}`}
+                                            onClick={() => setPreviewTheme('light')}
+                                            title="Light Mode"
+                                        >
+                                            <Sun size={14} />
+                                        </button>
+                                        <button 
+                                            className={`control-btn ${previewTheme === 'dark' ? 'active' : ''}`}
+                                            onClick={() => setPreviewTheme('dark')}
+                                            title="Dark Mode"
+                                        >
+                                            <Moon size={14} />
+                                        </button>
+                                    </div>
+                                    <div className="control-divider" />
+                                    <div className="control-group">
+                                        <button 
+                                            className={`control-btn ${!previewIsMobile ? 'active' : ''}`}
+                                            onClick={() => setPreviewIsMobile(false)}
+                                            title="Desktop View"
+                                        >
+                                            <Monitor size={14} />
+                                        </button>
+                                        <button 
+                                            className={`control-btn ${previewIsMobile ? 'active' : ''}`}
+                                            onClick={() => setPreviewIsMobile(true)}
+                                            title="Mobile View"
+                                        >
+                                            <Smartphone size={14} />
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <EmbedPreview data={previewPollEmbed} theme={previewTheme} isMobile={previewIsMobile} />
                         </div>
                     </div>
                 </div>
@@ -300,7 +343,7 @@ export default function PollsConfig() {
                         {activePolls.length === 0 ? (
                             <div className="empty-state">
                                 <Clock size={32} opacity="0.2" />
-                                <p>No polls currently running</p>
+                                <p>{t('polls.no_active')}</p>
                             </div>
                         ) : (
                             <div className="polls-list">
@@ -327,20 +370,20 @@ export default function PollsConfig() {
                     <section className="card section-card">
                         <div className="align-center mb-4">
                             <Settings2 size={18} color="var(--primary)" />
-                            <h3>Global Settings</h3>
+                            <h3>{t('common.settings')}</h3>
                         </div>
                         <div className="field-box mb-4">
-                            <label className="text-label">Logs Channel</label>
+                            <label className="text-label">{t('common.logs_channel')}</label>
                             <DiscordSelector 
                                 type="channel" 
                                 options={channels} 
                                 value={config.logChannelId} 
                                 onChange={val => setConfig({...config, logChannelId: val})} 
                             />
-                            <p className="field-help">Poll results will be logged here when finished.</p>
+                            <p className="field-help">{t('polls.logs_help')}</p>
                         </div>
                         <div className="field-box">
-                            <label className="text-label">Default Color</label>
+                            <label className="text-label">{t('common.default_color')}</label>
                             <input 
                                 type="color" 
                                 className="input" 
@@ -369,7 +412,15 @@ export default function PollsConfig() {
 
         .creation-grid { display: grid; grid-template-columns: 1fr 400px; gap: 24px; }
         .preview-sticky { position: sticky; top: 0; }
-        .preview-label { font-size: 0.75rem; font-weight: 800; color: var(--text-dim); text-transform: uppercase; margin-bottom: 12px; }
+        .preview-header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .preview-label { font-size: 0.75rem; font-weight: 800; color: var(--text-dim); text-transform: uppercase; }
+        
+        .preview-controls { display: flex; align-items: center; gap: 8px; background: var(--bg-badge); padding: 4px; border-radius: 10px; border: 1px solid var(--border); }
+        .control-group { display: flex; gap: 2px; }
+        .control-btn { width: 28px; height: 28px; border-radius: 6px; border: none; background: transparent; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .control-btn:hover { background: var(--bg-sidebar-alt); color: var(--text-main); }
+        .control-btn.active { background: var(--bg-card); color: var(--primary); box-shadow: var(--shadow-sm); }
+        .control-divider { width: 1px; height: 16px; background: var(--border); margin: 0 2px; }
 
         .fields-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         .input.large { font-size: 1.1rem; font-weight: 600; padding: 14px; }

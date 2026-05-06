@@ -35,6 +35,51 @@ const moderationConfigSchema = new mongoose.Schema({
         words: { type: [String], default: [] },
     },
 
+    // [ ANTI LINK ]
+    antiLink: {
+        enabled: { type: Boolean, default: false },
+        whitelist: { type: [String], default: [] }, // Allowed domains
+        allowRoles: { type: [String], default: [] },
+        allowChannels: { type: [String], default: [] }
+    },
+
+    // [ ANTI INVITE ]
+    antiInvite: {
+        enabled: { type: Boolean, default: false },
+        allowRoles: { type: [String], default: [] },
+        allowChannels: { type: [String], default: [] }
+    },
+
+    // [ ANTI EVERYONE ]
+    antiEveryone: {
+        enabled: { type: Boolean, default: false },
+        action: { type: String, enum: ['delete', 'warn', 'none'], default: 'delete' }
+    },
+
+    // [ GHOST PING ]
+    ghostPing: {
+        enabled: { type: Boolean, default: false },
+        logInChannel: { type: Boolean, default: true }
+    },
+
+    // [ ANTI FLOOD ]
+    antiFlood: {
+        enabled: { type: Boolean, default: false },
+        maxLines: { type: Number, default: 10 },
+        maxCharacters: { type: Number, default: 1000 },
+        maxEmojis: { type: Number, default: 15 }
+    },
+
+    // [ ANTI RAID / AUTO QUARANTINE ]
+    antiRaid: {
+        enabled: { type: Boolean, default: false },
+        joinsThreshold: { type: Number, default: 10 },
+        timeWindow: { type: Number, default: 10000 }, // 10 seconds
+        action: { type: String, enum: ['lockdown', 'notify', 'quarantine'], default: 'notify' },
+        quarantineRoleId: { type: String, default: null },
+        lockdownChannels: { type: [String], default: [] }
+    },
+
     // [ PUNISHMENTS ]
     punishments: {
         type: [{

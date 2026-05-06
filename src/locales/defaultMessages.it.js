@@ -736,17 +736,48 @@ export default {
         timeWindow: 5000,
         deleteSpam: true,
         warnUser: true,
-        warn: {
-            title: '🛡️ Protezione Anti-Spam',
-            description: '{user}, i tuoi invii sono troppo rapidi. Rallenta il ritmo per evitare restrizioni permanenti.',
-            color: '#f1c40f'
-        },
         ignoredRoles: [],
         ignoredChannels: []
     },
     moderation: {
+        antispam: {
+            enabled: false,
+            maxMessages: 5,
+            timeWindow: 5000,
+        },
+        antiFlood: {
+            enabled: false,
+            maxLines: 10,
+            maxCharacters: 500,
+            maxEmojis: 10,
+        },
+        antiLink: {
+            enabled: false,
+            whitelist: [],
+            allowRoles: [],
+            allowChannels: [],
+        },
+        antiInvite: {
+            enabled: false,
+            allowRoles: [],
+            allowChannels: [],
+        },
+        antiEveryone: {
+            enabled: false,
+            action: 'delete',
+        },
+        ghostPing: {
+            enabled: false,
+            logInChannel: true,
+        },
+        antiRaid: {
+            enabled: false,
+            joinsThreshold: 10,
+            timeWindow: 10000,
+            action: 'notify',
+        },
         warn: {
-            title: '⚠️ Protocollo di Richiamo',
+            title: '🛡️ Protocollo di Richiamo',
             description: 'Attenzione **{user}**, hai ricevuto un richiamo ufficiale per violazione dei codici civili.\n\n**MOTIVAZIONE:**\n>>> {reason}',
             color: '#f1c40f',
             footer: 'Ufficio Disciplinare | Verix RP'

@@ -1495,7 +1495,7 @@ router.patch('/:guildId/guild', adminCheck, async (req, res) => {
             hideBranding: guild.hideBranding
         };
 
-        guild.customBotName = customBotName !== undefined ? customBotName : guild.customBotName;
+        guild.customBotName = customBotName !== undefined ? (customBotName === '' ? null : customBotName) : guild.customBotName;
         guild.customStatuses = customStatuses !== undefined ? customStatuses : guild.customStatuses;
         guild.statusRotationInterval = statusRotationInterval !== undefined ? statusRotationInterval : guild.statusRotationInterval;
         guild.hideBranding = hideBranding !== undefined ? hideBranding : guild.hideBranding;
@@ -1504,13 +1504,22 @@ router.patch('/:guildId/guild', adminCheck, async (req, res) => {
 
         // Trigger immediate synchronization
         try {
-            const discordGuild = req.discordClient.guilds.cache.get(guildId);
+            let discordGuild = req.discordClient.guilds.cache.get(guildId);
+            
+            // Fallback to main bot if private bot doesn't see the guild
+            if (!discordGuild && req.discordClient !== req.mainClient) {
+                discordGuild = req.mainClient.guilds.cache.get(guildId);
+            }
+
             if (discordGuild) {
                 await whiteLabelHelper.syncGuildIdentity(discordGuild);
             }
-            // Reset index on update to show the first new status immediately
-            // Reset index on update to show the first new status immediately
+            
+            // Sync global status for the current client (and main client if different)
             await whiteLabelHelper.syncGlobalStatus(req.discordClient, true);
+            if (req.discordClient !== req.mainClient) {
+                await whiteLabelHelper.syncGlobalStatus(req.mainClient, true);
+            }
         } catch (syncError) {
             console.error('[WhiteLabel] Failed immediate sync:', syncError);
         }
@@ -1571,7 +1580,7 @@ router.get('/:guildId/stats', adminCheck, async (req, res) => {
         const [openTickets, pendingWL, activeVoice] = await Promise.all([
             Ticket.countDocuments({ guildId, status: { $ne: 'CLOSED' } }),
             WhitelistApp.countDocuments({ guildId, status: 'SUBMITTED' }),
-            VoiceQueue.countDocuments({ guildId })
+            VoiceQueue.countDocuments({ guildId, status: { $in: ['WAITING', 'ACTIVE'] } })
         ]);
 
         res.json({

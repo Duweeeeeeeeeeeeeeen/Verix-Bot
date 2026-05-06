@@ -17,7 +17,11 @@ import {
     ChevronDown,
     ChevronUp,
     AlertCircle,
-    Settings2
+    Settings2,
+    Sun,
+    Moon,
+    Monitor,
+    Smartphone
 } from 'lucide-react';
 import DiscordSelector from '../../../components/DiscordSelector';
 import EmbedPreview from '../../../components/EmbedPreview';
@@ -33,6 +37,8 @@ export default function ReactionRolesConfig() {
   const [roles, setRoles] = useState([]);
   const [channels, setChannels] = useState([]);
   const [activePanelId, setActivePanelId] = useState(null);
+  const [previewTheme, setPreviewTheme] = useState('dark');
+  const [isPreviewMobile, setIsPreviewMobile] = useState(false);
 
   useEffect(() => {
     if (guildId) fetchData();
@@ -48,7 +54,33 @@ export default function ReactionRolesConfig() {
       ]);
       
       if (configRes) {
-          setConfig(configRes.reactionRoles || { enabled: false, panels: [] });
+          let rrConfig = configRes.reactionRoles || { enabled: false, panels: [] };
+          
+          // Default panel if empty
+          if (!rrConfig.panels || rrConfig.panels.length === 0) {
+              const defaultPanel = {
+                  id: 'default-panel',
+                  name: t('reactionroles.default_panel_name') || 'Reaction Roles Panel',
+                  channelId: '',
+                  messageId: null,
+                  type: 'BUTTON',
+                  roles: [
+                      { roleId: '', emoji: '👋', label: t('reactionroles.example_role'), style: 'PRIMARY' }
+                  ],
+                  embed: {
+                      title: t('reactionroles.default_title'),
+                      description: t('reactionroles.default_desc'),
+                      color: '#5865F2',
+                      footer: t('reactionroles.default_footer')
+                  }
+              };
+              rrConfig.panels = [defaultPanel];
+              setActivePanelId(defaultPanel.id);
+          } else if (!activePanelId) {
+              setActivePanelId(rrConfig.panels[0].id);
+          }
+          
+          setConfig(rrConfig);
       }
       if (discordRes) {
         setRoles(discordRes.roles || []);
@@ -132,9 +164,9 @@ export default function ReactionRolesConfig() {
 
   const addRole = (panelId) => {
       const panel = config.panels.find(p => p.id === panelId);
-      if (panel.roles.length >= 20) return showToast('Max 20 roles per panel', 'error');
+      if (panel.roles.length >= 20) return showToast(t('reactionroles.max_roles'), 'error');
       
-      const newRoles = [...panel.roles, { roleId: '', emoji: '🔘', label: 'Role', style: 'PRIMARY' }];
+      const newRoles = [...panel.roles, { roleId: '', emoji: '🔘', label: t('reactionroles.default_role_label'), style: 'PRIMARY' }];
       updatePanel(panelId, { roles: newRoles });
   };
 
@@ -176,7 +208,7 @@ export default function ReactionRolesConfig() {
             {/* Sidebar Panels List */}
             <aside className="rr-sidebar">
                 <div className="sidebar-header">
-                    <h3>Panels ({config.panels.length})</h3>
+                    <h3>{t('reactionroles.sidebar_title')} ({config.panels.length})</h3>
                     <button onClick={addPanel} className="btn-add-sm">
                         <Plus size={14} />
                     </button>
@@ -190,7 +222,7 @@ export default function ReactionRolesConfig() {
                         >
                             <div className="panel-info">
                                 <span className="panel-name">{p.name}</span>
-                                <span className="panel-meta">{p.type} • {p.roles.length} roles</span>
+                                <span className="panel-meta">{p.type} • {p.roles.length} {t('common.roles') || 'roles'}</span>
                             </div>
                             <button onClick={(e) => { e.stopPropagation(); removePanel(p.id); }} className="btn-delete-sm">
                                 <Trash2 size={14} />
@@ -200,7 +232,7 @@ export default function ReactionRolesConfig() {
                     {config.panels.length === 0 && (
                         <div className="empty-sidebar">
                             <Layers size={24} opacity="0.2" />
-                            <p>No panels created</p>
+                            <p>{t('reactionroles.no_panels')}</p>
                         </div>
                     )}
                 </div>
@@ -226,7 +258,7 @@ export default function ReactionRolesConfig() {
                                 <section className="card section-card">
                                     <div className="align-center mb-4">
                                         <Settings2 size={16} color="var(--text-dim)" />
-                                        <h3>General Settings</h3>
+                                        <h3>{t('common.settings')}</h3>
                                     </div>
                                     <div className="fields-grid">
                                         <div className="field-box">
@@ -250,7 +282,7 @@ export default function ReactionRolesConfig() {
                                             />
                                         </div>
                                         <div className="field-box full-width">
-                                            <label className="text-label">Target Channel</label>
+                                            <label className="text-label">{t('common.target_channel')}</label>
                                             <DiscordSelector 
                                                 type="channel" 
                                                 options={channels} 
@@ -265,11 +297,11 @@ export default function ReactionRolesConfig() {
                                 <section className="card section-card">
                                     <div className="align-center mb-4">
                                         <Palette size={16} color="var(--text-dim)" />
-                                        <h3>Appearance</h3>
+                                        <h3>{t('reactionroles.appearance')}</h3>
                                     </div>
                                     <div className="fields-grid">
                                         <div className="field-box full-width">
-                                            <label className="text-label">Embed Title</label>
+                                            <label className="text-label">{t('reactionroles.embed_title')}</label>
                                             <input 
                                                 type="text" 
                                                 className="input" 
@@ -278,7 +310,7 @@ export default function ReactionRolesConfig() {
                                             />
                                         </div>
                                         <div className="field-box full-width">
-                                            <label className="text-label">Embed Description</label>
+                                            <label className="text-label">{t('reactionroles.embed_desc')}</label>
                                             <textarea 
                                                 className="input" 
                                                 rows="3"
@@ -287,13 +319,16 @@ export default function ReactionRolesConfig() {
                                             />
                                         </div>
                                         <div className="field-box">
-                                            <label className="text-label">Color</label>
-                                            <input 
-                                                type="color" 
-                                                value={activePanel.embed.color}
-                                                onChange={e => updatePanel(activePanel.id, { embed: { ...activePanel.embed, color: e.target.value } })}
-                                                style={{ width: '100%', height: '40px', padding: '0', border: 'none', background: 'none' }}
-                                            />
+                                            <label className="text-label">{t('common.color')}</label>
+                                            <div className="color-picker-container">
+                                                <input 
+                                                    type="color" 
+                                                    value={activePanel.embed.color}
+                                                    onChange={e => updatePanel(activePanel.id, { embed: { ...activePanel.embed, color: e.target.value } })}
+                                                    className="color-input-square"
+                                                />
+                                                <span className="color-hex-text">{activePanel.embed.color}</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </section>
@@ -330,7 +365,7 @@ export default function ReactionRolesConfig() {
                                                         <input 
                                                             type="text" 
                                                             className="input" 
-                                                            placeholder="Emoji"
+                                                            placeholder={t('common.emoji')}
                                                             value={role.emoji}
                                                             onChange={e => {
                                                                 const newRoles = [...activePanel.roles];
@@ -345,7 +380,7 @@ export default function ReactionRolesConfig() {
                                                         <input 
                                                             type="text" 
                                                             className="input" 
-                                                            placeholder="Label"
+                                                            placeholder={t('common.label')}
                                                             value={role.label}
                                                             onChange={e => {
                                                                 const newRoles = [...activePanel.roles];
@@ -355,10 +390,10 @@ export default function ReactionRolesConfig() {
                                                         />
                                                         <CustomSelect 
                                                             options={[
-                                                                { value: 'PRIMARY', label: 'Blue' },
-                                                                { value: 'SECONDARY', label: 'Gray' },
-                                                                { value: 'SUCCESS', label: 'Green' },
-                                                                { value: 'DANGER', label: 'Red' }
+                                                                { value: 'PRIMARY', label: t('common.blue') },
+                                                                { value: 'SECONDARY', label: t('common.gray') },
+                                                                { value: 'SUCCESS', label: t('common.green') },
+                                                                { value: 'DANGER', label: t('common.red') }
                                                             ]}
                                                             value={role.style}
                                                             onChange={val => {
@@ -381,7 +416,7 @@ export default function ReactionRolesConfig() {
                                             </div>
                                         ))}
                                         {activePanel.roles.length === 0 && (
-                                            <p className="empty-roles">No roles added to this panel.</p>
+                                            <p className="empty-roles">{t('common.no_roles')}</p>
                                         )}
                                     </div>
                                 </section>
@@ -389,8 +424,28 @@ export default function ReactionRolesConfig() {
 
                             <div className="editor-preview">
                                 <div className="preview-sticky">
-                                    <div className="preview-label">Live Preview</div>
+                                    <div className="preview-header-actions">
+                                        <div className="preview-label">{t('common.live_preview')}</div>
+                                        <div className="preview-controls">
+                                            <button 
+                                                className={`preview-control-btn ${previewTheme === 'light' ? 'active' : ''}`}
+                                                onClick={() => setPreviewTheme(previewTheme === 'dark' ? 'light' : 'dark')}
+                                                title="Toggle Theme"
+                                            >
+                                                {previewTheme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+                                            </button>
+                                            <button 
+                                                className={`preview-control-btn ${isPreviewMobile ? 'active' : ''}`}
+                                                onClick={() => setIsPreviewMobile(!isPreviewMobile)}
+                                                title="Toggle View"
+                                            >
+                                                {isPreviewMobile ? <Monitor size={14} /> : <Smartphone size={14} />}
+                                            </button>
+                                        </div>
+                                    </div>
                                     <EmbedPreview 
+                                        theme={previewTheme}
+                                        isMobile={isPreviewMobile}
                                         data={{
                                             ...activePanel.embed,
                                             buttons: activePanel.type === 'BUTTON' ? activePanel.roles.map(r => ({
@@ -414,8 +469,8 @@ export default function ReactionRolesConfig() {
                 ) : (
                     <div className="editor-empty">
                         <Layout size={48} opacity="0.1" />
-                        <h3>Select a panel to start editing</h3>
-                        <p>Or create a new one using the button in the sidebar.</p>
+                        <h3>{t('reactionroles.select_panel')}</h3>
+                        <p>{t('reactionroles.sidebar_help')}</p>
                     </div>
                 )}
             </main>
@@ -451,7 +506,17 @@ export default function ReactionRolesConfig() {
         .editor-grid { display: grid; grid-template-columns: 1fr 400px; gap: 24px; }
         .editor-preview { position: relative; }
         .preview-sticky { position: sticky; top: 0; }
-        .preview-label { font-size: 0.75rem; font-weight: 800; color: var(--text-dim); text-transform: uppercase; margin-bottom: 12px; letter-spacing: 1px; }
+        .preview-header-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .preview-label { font-size: 0.75rem; font-weight: 800; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
+        .preview-controls { display: flex; gap: 8px; }
+        .preview-control-btn { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-sidebar); color: var(--text-dim); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
+        .preview-control-btn:hover { background: var(--bg-sidebar-alt); color: var(--text-main); }
+        .preview-control-btn.active { background: var(--primary-glow); border-color: var(--primary); color: var(--primary); }
+
+        .color-picker-container { display: flex; align-items: center; gap: 12px; background: var(--bg-sidebar); border: 1px solid var(--border); border-radius: 8px; padding: 8px; }
+        .color-input-square { width: 40px; height: 40px; border: none; border-radius: 6px; cursor: pointer; background: none; padding: 0; }
+        .color-input-square::-webkit-color-swatch { border: none; border-radius: 4px; }
+        .color-hex-text { font-family: monospace; font-size: 0.9rem; color: var(--text-main); font-weight: 600; }
 
         .fields-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         .field-box.full-width { grid-column: span 2; }

@@ -12,6 +12,45 @@ export const moderationSchema = z.object({
         timeWindow: z.number().min(1000).max(60000).default(5000),
     }).default({}),
 
+    antiFlood: z.object({
+        enabled: z.boolean().default(false),
+        maxLines: z.number().min(1).max(50).default(10),
+        maxCharacters: z.number().min(1).max(2000).default(500),
+        maxEmojis: z.number().min(1).max(50).default(10),
+    }).default({}),
+
+    antiLink: z.object({
+        enabled: z.boolean().default(false),
+        whitelist: z.array(z.string()).default([]),
+        allowRoles: z.array(z.string()).default([]),
+        allowChannels: z.array(z.string()).default([]),
+    }).default({}),
+
+    antiInvite: z.object({
+        enabled: z.boolean().default(false),
+        allowRoles: z.array(z.string()).default([]),
+        allowChannels: z.array(z.string()).default([]),
+    }).default({}),
+
+    antiEveryone: z.object({
+        enabled: z.boolean().default(false),
+        action: z.enum(['delete', 'warn', 'none']).default('delete'),
+    }).default({}),
+
+    ghostPing: z.object({
+        enabled: z.boolean().default(false),
+        logInChannel: z.boolean().default(true),
+    }).default({}),
+
+    antiRaid: z.object({
+        enabled: z.boolean().default(false),
+        joinsThreshold: z.number().min(1).max(100).default(10),
+        timeWindow: z.number().min(1000).max(60000).default(10000),
+        action: z.enum(['notify', 'lockdown', 'quarantine']).default('notify'),
+        quarantineRoleId: z.string().nullable().optional(),
+        lockdownChannels: z.array(z.string()).default([]),
+    }).default({}),
+
     capsLock: z.object({
         enabled: z.boolean().default(false),
         minCharacters: z.number().min(1).max(500).default(10),
@@ -37,5 +76,5 @@ export const moderationSchema = z.object({
 
     ignoredRoles: z.array(z.string()).default([]),
     ignoredChannels: z.array(z.string()).default([]),
-    resetTime: z.number().min(1).max(1440).default(30)
+    resetTime: z.number().min(0).max(365).default(30)
 });

@@ -40,26 +40,74 @@ function NavLoading() {
   return <LoadingScreen message={t('loading.navigation')} />;
 }
 
+function TopProgressBar({ isAnimating }) {
+  const [width, setWidth] = useState(0);
+
+  useEffect(() => {
+    if (isAnimating) {
+      setWidth(30);
+      const timer = setInterval(() => {
+        setWidth(prev => {
+          if (prev >= 90) return prev;
+          return prev + 5;
+        });
+      }, 400);
+      return () => clearInterval(timer);
+    } else {
+      setWidth(100);
+    }
+  }, [isAnimating]);
+
+  return (
+    <div 
+      className="top-progress-bar" 
+      style={{ 
+        width: `${width}%`, 
+        opacity: isAnimating || width < 100 ? 1 : 0,
+        transition: width === 100 ? 'width 0.2s, opacity 0.4s 0.2s' : 'width 0.4s'
+      }} 
+    />
+  );
+}
+
 function MyApp({ Component, pageProps }) {
   const router = useRouter();
   const [isNavigating, setIsNavigating] = useState(false);
 
   useEffect(() => {
+    let timer;
     const handleStart = (url) => {
-      if (url !== router.asPath) setIsNavigating(true);
+      if (url !== router.asPath) {
+        setIsNavigating(true); // Immediate for top bar
+        // Only show full-screen loader if navigation takes more than 1000ms
+        timer = setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('show-full-loader'));
+        }, 1000);
+      }
     };
-    const handleComplete = () => setIsNavigating(false);
+    const handleComplete = () => {
+      clearTimeout(timer);
+      setIsNavigating(false);
+      setShowFullLoader(false);
+    };
+
+    const handleShowFullLoader = () => setShowFullLoader(true);
+    window.addEventListener('show-full-loader', handleShowFullLoader);
 
     router.events.on('routeChangeStart', handleStart);
     router.events.on('routeChangeComplete', handleComplete);
     router.events.on('routeChangeError', handleComplete);
 
     return () => {
+      clearTimeout(timer);
+      window.removeEventListener('show-full-loader', handleShowFullLoader);
       router.events.off('routeChangeStart', handleStart);
       router.events.off('routeChangeComplete', handleComplete);
       router.events.off('routeChangeError', handleComplete);
     };
   }, [router.asPath]);
+
+  const [showFullLoader, setShowFullLoader] = useState(false);
   
   const pageName = PAGE_TITLES[router.pathname];
   const pageTitle = pageName ? `${pageName} — Verix Panel` : 'Verix Panel';
@@ -79,9 +127,10 @@ function MyApp({ Component, pageProps }) {
       <LanguageProvider>
         <ThemeProvider>
           <AuthProvider>
-            {isNavigating && <NavLoading />}
+            <TopProgressBar isAnimating={isNavigating} />
+            {showFullLoader && <NavLoading />}
             {isConfigPage ? (
-              <Layout guildId={router.query.guildId}>
+              <Layout guildId={router.query.guildId} isNavigating={isNavigating}>
                 <Component {...pageProps} />
               </Layout>
             ) : (

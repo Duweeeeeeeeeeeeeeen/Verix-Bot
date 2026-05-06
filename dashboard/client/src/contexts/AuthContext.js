@@ -14,6 +14,17 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const stored = localStorage.getItem('lastGuildId');
     if (stored) setCurrentGuildId(stored);
+    
+    // Load cached user to prevent flickering
+    const cachedUser = localStorage.getItem('verix_user_cache');
+    if (cachedUser) {
+      try {
+        setUser(JSON.parse(cachedUser));
+        setLoading(false); // Can stop loading immediately if we have cache
+      } catch (e) {
+        localStorage.removeItem('verix_user_cache');
+      }
+    }
   }, []);
 
   const updateGuildId = (id) => {
@@ -31,8 +42,11 @@ export function AuthProvider({ children }) {
       if (res.ok) {
         const data = await res.json();
         setUser(data);
+        // Cache for next time
+        localStorage.setItem('verix_user_cache', JSON.stringify(data));
       } else {
         setUser(null);
+        localStorage.removeItem('verix_user_cache');
       }
     } catch (error) {
       console.error('Failed to fetch user:', error);

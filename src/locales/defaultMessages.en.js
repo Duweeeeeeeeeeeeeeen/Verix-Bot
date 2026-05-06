@@ -766,15 +766,46 @@ export default {
         timeWindow: 5000,
         deleteSpam: true,
         warnUser: true,
-        warn: {
-            title: '🛡️ Anti-Spam Protection',
-            description: '{user}, your submissions are too rapid. Slow down your pace to avoid permanent restrictions.',
-            color: '#f1c40f'
-        },
         ignoredRoles: [],
         ignoredChannels: []
     },
     moderation: {
+        antispam: {
+            enabled: false,
+            maxMessages: 5,
+            timeWindow: 5000,
+        },
+        antiFlood: {
+            enabled: false,
+            maxLines: 10,
+            maxCharacters: 500,
+            maxEmojis: 10,
+        },
+        antiLink: {
+            enabled: false,
+            whitelist: [],
+            allowRoles: [],
+            allowChannels: [],
+        },
+        antiInvite: {
+            enabled: false,
+            allowRoles: [],
+            allowChannels: [],
+        },
+        antiEveryone: {
+            enabled: false,
+            action: 'delete',
+        },
+        ghostPing: {
+            enabled: false,
+            logInChannel: true,
+        },
+        antiRaid: {
+            enabled: false,
+            joinsThreshold: 10,
+            timeWindow: 10000,
+            action: 'notify',
+        },
         warn: {
             title: '⚠️ Official Warning',
             description: '{user}, your behavior has violated city protocols.\n\n**REASON:** {reason}',

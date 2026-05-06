@@ -13,7 +13,7 @@ router.get('/:guildId', adminCheck, async (req, res) => {
         const { guildId } = req.params;
         const guild = await Guild.findOne({ guildId });
         // Allow basic access for all, but gate advanced data
-        const isPremium = guild?.isPremium || guild?.premiumTier === 'platinum' || guild?.premiumTier === 'premium';
+        const isPremium = guild?.isPremium === true || ['premium', 'platinum'].includes(guild?.premiumTier);
 
 
         const now = new Date();

@@ -861,15 +861,18 @@ export default function TicketConfig() {
             .btn-config-card { background: var(--bg-badge); border: 1px solid var(--border); border-radius: 14px; padding: 16px; }
             .btn-inputs { display: flex; gap: 10px; margin-bottom: 16px; }
             .style-selector { display: flex; gap: 6px; margin-top: 12px; }
-            .style-pill { flex: 1; padding: 6px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: var(--text-main); opacity: 0.25; transition: 0.2s; }
+            .style-pill { flex: 1; padding: 6px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; color: white !important; opacity: 0.25; transition: 0.2s; }
+            :global(.light-theme) .style-pill { opacity: 0.45; }
             .style-pill.active { opacity: 1; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+            :global(.light-theme) .style-pill.active { box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
             .style-pill.SUCCESS { background: var(--discord-green); }
             .style-pill.DANGER { background: var(--discord-red); }
             .style-pill.PRIMARY { background: var(--discord-blurple); }
             .style-pill.SECONDARY { background: var(--discord-gray); }
             
             .style-selector-mini { display: flex; gap: 4px; }
-            .style-pill-mini { width: 24px; height: 24px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.6rem; font-weight: 800; color: var(--text-main); opacity: 0.3; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
+            .style-pill-mini { width: 24px; height: 24px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.6rem; font-weight: 800; color: white !important; opacity: 0.3; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
+            :global(.light-theme) .style-pill-mini { opacity: 0.5; }
             .style-pill-mini.SUCCESS { background: var(--discord-green); }
             .style-pill-mini.DANGER { background: var(--discord-red); }
             .style-pill-mini.PRIMARY { background: var(--discord-blurple); }

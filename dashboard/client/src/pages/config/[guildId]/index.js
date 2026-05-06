@@ -79,7 +79,12 @@ export default function GuildHome() {
   const toggleModule = async (moduleName, currentStatus) => {
     setUpdating(moduleName);
     try {
-      await api.request(`/config/${guildId}/${moduleName}`, {
+      // Handle special route cases for toggling
+      let endpoint = `/config/${guildId}/${moduleName}`;
+      if (moduleName === 'polls') endpoint = `/config/${guildId}/polls/config`;
+      if (moduleName === 'reactionRoles') endpoint = `/config/${guildId}/reaction-roles`;
+
+      await api.request(endpoint, {
         method: 'POST',
         body: JSON.stringify({ enabled: !currentStatus })
       });
@@ -90,6 +95,7 @@ export default function GuildHome() {
           detail: { message: t(statusKey, { module: moduleName.toUpperCase() }), type: 'success' } 
       }));
     } catch (error) {
+        console.error('Toggle error:', error);
     } finally {
       setUpdating(null);
     }
@@ -130,7 +136,13 @@ export default function GuildHome() {
               <div className="hero-text-p">
                 <div className="badge-setup">{t('dashboard.setup_active')}</div>
                 <h1 className="hero-title">{t('dashboard.welcome_back')}, <span className="text-gradient">{user?.username || 'User'}</span></h1>
-                <p className="hero-subtitle">{t('dashboard.hero_desc', { count: Object.keys(config || {}).length })} — <span className="server-label">{config?.guildName}</span></p>
+                <p className="hero-subtitle">
+                  {t('dashboard.hero_desc', { 
+                    count: [
+                      'whitelist', 'tickets', 'verify', 'photocontest', 'support', 'fivem', 'welcome', 'reactionRoles', 'polls'
+                    ].filter(id => config?.[id]?.enabled).length 
+                  })} — <span className="server-label">{config?.guildName}</span>
+                </p>
               </div>
             </div>
           </header>
@@ -201,16 +213,18 @@ export default function GuildHome() {
                 <LayoutIcon size={20} className="text-primary" />
                 <h2>{t('dashboard.modules_center')}</h2>
               </div>
-              <span className="grid-count-p">{[
-                'whitelist', 'tickets', 'verify', 'photocontest', 'support', 'fivem', 'welcome', 'reactionroles', 'polls'
-              ].length} {t('dashboard.active_modules')}</span>
+              <span className="grid-count-p">
+                {[
+                  'whitelist', 'tickets', 'verify', 'photocontest', 'support', 'fivem', 'welcome', 'reactionRoles', 'polls'
+                ].filter(id => config?.[id]?.enabled).length} {t('dashboard.active_modules')}
+              </span>
             </div>
 
             <div className="features-grid-p">
               {[
                 { id: 'whitelist', label: t('dashboard.module_whitelist'), desc: t('dashboard.module_whitelist_desc'), icon: ShieldCheck, color: '#6366f1', path: 'whitelist' },
                 { id: 'tickets', label: t('dashboard.module_tickets'), desc: t('dashboard.module_tickets_desc'), icon: Ticket, color: '#8b5cf6', path: 'tickets' },
-                { id: 'reactionroles', label: t('dashboard.module_reactionroles') || 'Reaction Roles', desc: t('dashboard.module_reactionroles_desc') || 'Assign roles via buttons or emojis.', icon: MousePointer2, color: '#10b981', path: 'reaction-roles' },
+                { id: 'reactionRoles', label: t('dashboard.module_reactionroles') || 'Reaction Roles', desc: t('dashboard.module_reactionroles_desc') || 'Assign roles via buttons or emojis.', icon: MousePointer2, color: '#10b981', path: 'reaction-roles' },
                 { id: 'polls', label: t('dashboard.module_polls') || 'Polls', desc: t('dashboard.module_polls_desc') || 'Create interactive surveys with duration.', icon: ListChecks, color: '#f59e0b', path: 'polls' },
                 { id: 'verify', label: t('dashboard.module_verify'), desc: t('dashboard.module_verify_desc'), icon: Shield, color: '#06b6d4', path: 'verify' },
                 { id: 'photocontest', label: t('dashboard.module_photocontest'), desc: t('dashboard.module_photocontest_desc'), icon: Camera, color: '#f59e0b', path: 'photocontest' },

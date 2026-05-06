@@ -27,13 +27,12 @@ export default function AnalyticsPage() {
         ]);
         
         setGuildData(gRes.data || gRes);
-        setAnalytics(aRes.data || aRes);
+        setAnalytics(aRes); // Keep the full response to access isPro
     } catch (err) {
         console.error('Failed to fetch analytics data:', err);
     } finally {
         setLoading(false);
     }
-
   };
 
   useEffect(() => {
@@ -45,136 +44,205 @@ export default function AnalyticsPage() {
 
   if (loading) return <Skeleton type="config" />;
 
+  const isPro = analytics?.isPro || guildData?.isPremium || ['premium', 'platinum'].includes(guildData?.premiumTier);
+  const stats = analytics?.data || {};
+
   return (
     <div className="analytics-container animate">
         <header className="page-header">
             <div className="header-info">
-                <div className="header-icon">
+                <div className="header-icon-glow">
                     <BarChart3 size={24} />
                 </div>
                 <div className="header-text">
                     <h1>{t('sidebar.analytics')}</h1>
-                    <p>Statistiche avanzate e monitoraggio attività del server.</p>
+                    <p>Monitoraggio in tempo reale e approfondimenti basati sui dati.</p>
                 </div>
             </div>
-            {guildData?.isPremium && (
+            {isPro && (
                 <div className="header-actions">
-                    <button className="btn-outline">
-                        <Download size={16} /> Export CSV
+                    <button className="btn-glass">
+                        <Download size={16} /> Esporta Report
                     </button>
-                    <button className="btn-primary">
-                        <RefreshCw size={16} /> Refresh
+                    <button className="btn-primary-premium" onClick={fetchData}>
+                        <RefreshCw size={16} /> Sincronizza
                     </button>
                 </div>
             )}
         </header>
+
         <div className="analytics-content fade-in">
-            {/* Stats Cards - Always visible (Basic data) */}
+            {/* Main Stats Grid */}
             <div className="stats-cards-grid">
-                <div className="stat-card">
-                    <div className="stat-label">Ticket Totali</div>
-                    <div className="stat-value">{analytics?.tickets?.total || 0}</div>
-                    {analytics?.isPro && (
-                        <div className="stat-change positive">+{analytics?.tickets?.new7d || 0} questa settimana</div>
-                    )}
-                </div>
-                <div className="stat-card">
-                    <div className="stat-label">Infrazioni Totali</div>
-                    <div className="stat-value">{analytics?.moderation?.total || 0}</div>
-                    {analytics?.isPro && (
-                        <div className="stat-change negative">{analytics?.moderation?.activeMutes || 0} mute attivi</div>
-                    )}
-                </div>
-                <div className="stat-card premium-promo-card" onClick={() => !analytics?.isPro && router.push(`/config/${guildId}/premium`)}>
-                    <div className="stat-label">Stato Servizio</div>
-                    <div className="stat-value" style={{ fontSize: '1.5rem', color: analytics?.isPro ? 'var(--success)' : 'var(--gold)' }}>
-                        {analytics?.isPro ? 'PREMIUM ACTIVE' : 'BASIC PLAN'}
+                <div className="stat-card glass-card">
+                    <div className="stat-label-row">
+                        <MessageSquare size={14} />
+                        <span>Ticket Totali</span>
                     </div>
-                    {!analytics?.isPro && <div className="stat-change">Clicca per sbloccare i report</div>}
+                    <div className="stat-value">{stats?.tickets?.total || 0}</div>
+                    {isPro ? (
+                        <div className="stat-change positive">
+                            <TrendingUp size={12} />
+                            <span>+{stats?.tickets?.new7d || 0} nuovi (7gg)</span>
+                        </div>
+                    ) : (
+                        <div className="stat-locked-label">Sblocca trend con PRO</div>
+                    )}
+                </div>
+
+                <div className="stat-card glass-card">
+                    <div className="stat-label-row">
+                        <Shield size={14} />
+                        <span>Infrazioni</span>
+                    </div>
+                    <div className="stat-value">{stats?.moderation?.total || 0}</div>
+                    {isPro ? (
+                        <div className="stat-change neutral">
+                            <Activity size={12} />
+                            <span>{stats?.moderation?.activeMutes || 0} sanzioni attive</span>
+                        </div>
+                    ) : (
+                        <div className="stat-locked-label">Sblocca monitoraggio PRO</div>
+                    )}
+                </div>
+
+                <div className={`stat-card status-card ${isPro ? 'pro' : 'basic'}`} onClick={() => !isPro && router.push(`/config/${guildId}/premium`)}>
+                    <div className="stat-label-row">
+                        <Crown size={14} />
+                        <span>Piano Attivo</span>
+                    </div>
+                    <div className="stat-value-status">
+                        {isPro ? 'PREMIUM ACTIVE' : 'BASIC PLAN'}
+                    </div>
+                    <div className="stat-status-footer">
+                        {isPro ? 'Tutti i report sbloccati' : 'Fai l\'upgrade per i report PRO'}
+                        <ChevronRight size={14} />
+                    </div>
                 </div>
             </div>
 
-            {/* Advanced Section - Gated */}
-            <div className={`advanced-analytics-section ${!analytics?.isPro ? 'gated' : ''}`}>
-                {!analytics?.isPro && (
-                    <div className="gate-overlay">
-                        <Lock size={40} />
-                        <h3>Analytics PRO Richieste</h3>
-                        <p>Sblocca heatmap, performance staff e grafici di crescita con il piano Premium.</p>
-                        <button className="btn-premium-cta" onClick={() => router.push(`/config/${guildId}/premium`)}>
-                            Passa a Premium
-                        </button>
+            {/* Advanced Insights Section */}
+            <div className={`advanced-section ${!isPro ? 'gated-container' : ''}`}>
+                {!isPro && (
+                    <div className="pro-gate-overlay">
+                        <div className="gate-content">
+                            <div className="lock-icon-container">
+                                <Lock size={32} />
+                            </div>
+                            <h2>Report Avanzati Bloccati</h2>
+                            <p>Accedi a grafici di crescita, heatmap di attività e analisi delle performance del team.</p>
+                            <button className="btn-premium-upgrade" onClick={() => router.push(`/config/${guildId}/premium`)}>
+                                Passa a Premium ora
+                            </button>
+                        </div>
                     </div>
                 )}
 
-                <div className="charts-grid" style={{ marginBottom: '24px' }}>
-                    <div className="chart-box card" style={{ gridColumn: 'span 2' }}>
-                        <div className="chart-header">
-                            <h3>Heatmap Attività (24h)</h3>
-                            <Activity size={16} />
+                <div className="insights-grid">
+                    {/* Activity Heatmap */}
+                    <div className="insight-box glass-card wide">
+                        <div className="insight-header">
+                            <div className="insight-title">
+                                <Activity size={18} />
+                                <h3>Heatmap Attività (24h)</h3>
+                            </div>
+                            <span className="insight-desc">Distribuzione oraria delle interazioni</span>
                         </div>
-                        <div className="heatmap-container">
-                            {analytics?.data?.heatmap ? (
-                                <div className="heatmap-grid">
-                                    {analytics.data.heatmap.map((val, hour) => (
+                        <div className="heatmap-wrapper">
+                            {stats?.heatmap ? (
+                                <div className="heatmap-visual">
+                                    {stats.heatmap.map((val, hour) => (
                                         <div 
                                             key={hour} 
-                                            className="heatmap-cell" 
-                                            style={{ opacity: Math.max(0.1, (val / Math.max(...analytics.data.heatmap, 1))) }}
-                                            title={`${hour}:00 - ${val} azioni`}
+                                            className="heatmap-column" 
+                                            style={{ 
+                                                '--val': val,
+                                                '--max': Math.max(...stats.heatmap, 1),
+                                                opacity: Math.max(0.15, (val / Math.max(...stats.heatmap, 1))) 
+                                            }}
+                                            title={`${hour}:00 - ${val} eventi`}
                                         >
-                                            <span className="hour-label">{hour}h</span>
+                                            <div className="heatmap-bar"></div>
+                                            <span className="heatmap-label">{hour}h</span>
                                         </div>
                                     ))}
                                 </div>
                             ) : (
-                                <div className="no-data-msg">Dati heatmap non disponibili.</div>
+                                <div className="no-data-placeholder">
+                                    <Calendar size={32} />
+                                    <p>Dati non ancora disponibili per questo server.</p>
+                                </div>
                             )}
                         </div>
                     </div>
-                </div>
 
-                <div className="charts-grid">
-                    <div className="chart-box card">
-                        <div className="chart-header">
-                            <h3>Crescita Membri (30gg)</h3>
-                            <Users size={16} />
+                    {/* Growth Chart */}
+                    <div className="insight-box glass-card">
+                        <div className="insight-header">
+                            <div className="insight-title">
+                                <Users size={18} />
+                                <h3>Crescita Community</h3>
+                            </div>
                         </div>
-                        <div className="chart-placeholder">
-                            {analytics?.data?.growth?.length > 1 ? (
-                                <div className="mock-chart-container">
-                                    <svg viewBox="0 0 400 100" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
+                        <div className="growth-chart-container">
+                            {stats?.growth?.length > 1 ? (
+                                <div className="svg-chart-wrapper">
+                                    <svg viewBox="0 0 400 120" preserveAspectRatio="none">
+                                        <defs>
+                                            <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.3" />
+                                                <stop offset="100%" stopColor="var(--primary)" stopOpacity="0" />
+                                            </linearGradient>
+                                        </defs>
                                         <path 
-                                            d={`M ${analytics.data.growth.map((s, i) => `${(i / (analytics.data.growth.length - 1)) * 400},${100 - ((s.count / Math.max(...analytics.data.growth.map(x => x.count))) * 80 + 10)}`).join(' L ')}`} 
+                                            d={`M 0,120 L ${stats.growth.map((s, i) => `${(i / (stats.growth.length - 1)) * 400},${120 - ((s.count / Math.max(...stats.growth.map(x => x.count))) * 90 + 10)}`).join(' L ')} L 400,120 Z`}
+                                            fill="url(#chartGradient)"
+                                        />
+                                        <path 
+                                            d={`M ${stats.growth.map((s, i) => `${(i / (stats.growth.length - 1)) * 400},${120 - ((s.count / Math.max(...stats.growth.map(x => x.count))) * 90 + 10)}`).join(' L ')}`} 
                                             fill="none" 
                                             stroke="var(--primary)" 
-                                            strokeWidth="3" 
+                                            strokeWidth="2.5" 
                                             strokeLinecap="round"
-                                            style={{ filter: 'drop-shadow(0 0 8px var(--primary))' }}
+                                            strokeLinejoin="round"
                                         />
                                     </svg>
                                 </div>
                             ) : (
-                                <div className="no-data-msg">In attesa di raccogliere abbastanza dati...</div>
+                                <div className="no-data-placeholder mini">
+                                    <p>Tracking in corso...</p>
+                                </div>
                             )}
                         </div>
                     </div>
-                    <div className="chart-box card">
-                        <div className="chart-header">
-                            <h3>Performance Staff</h3>
-                            <Shield size={16} />
+
+                    {/* Staff Performance */}
+                    <div className="insight-box glass-card">
+                        <div className="insight-header">
+                            <div className="insight-title">
+                                <Zap size={18} />
+                                <h3>Top Performance Staff</h3>
+                            </div>
                         </div>
-                        <div className="staff-stats-list">
-                            {analytics?.data?.staff?.length > 0 ? analytics.data.staff.map(s => (
-                                <div key={s.id} className="staff-row">
-                                    <div className="staff-id">ID: {s.id.substring(0, 8)}...</div>
-                                    <div className="staff-bar-bg">
-                                        <div className="staff-bar-fill" style={{ width: `${(s.closed / Math.max(...analytics.data.staff.map(x => x.closed))) * 100}%` }}></div>
+                        <div className="staff-leaderboard">
+                            {stats?.staff?.length > 0 ? stats.staff.map((s, idx) => (
+                                <div key={s.id} className="staff-item">
+                                    <div className="staff-rank">{idx + 1}</div>
+                                    <div className="staff-details">
+                                        <div className="staff-name">Staffer {s.id.slice(-4)}</div>
+                                        <div className="staff-progress-bg">
+                                            <div 
+                                                className="staff-progress-fill" 
+                                                style={{ width: `${(s.closed / Math.max(...stats.staff.map(x => x.closed))) * 100}%` }}
+                                            ></div>
+                                        </div>
                                     </div>
-                                    <div className="staff-count">{s.closed}</div>
+                                    <div className="staff-score">{s.closed}</div>
                                 </div>
                             )) : (
-                                <div className="no-data-msg">Nessuna attività staff registrata.</div>
+                                <div className="no-data-placeholder mini">
+                                    <p>Nessun dato staffer.</p>
+                                </div>
                             )}
                         </div>
                     </div>
@@ -183,139 +251,161 @@ export default function AnalyticsPage() {
         </div>
 
         <style jsx>{`
-            .analytics-container { padding: 20px; }
-            .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
-            .header-info { display: flex; align-items: center; gap: 16px; }
-            .header-icon { width: 48px; height: 48px; background: var(--primary-glow); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-            .header-text h1 { font-size: 1.8rem; font-weight: 800; color: var(--text-main); }
-            .header-text p { color: var(--text-muted); font-size: 0.9rem; }
+            .analytics-container { padding: 32px; max-width: 1400px; margin: 0 auto; }
+            .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+            .header-info { display: flex; align-items: center; gap: 20px; }
+            .header-icon-glow { 
+                width: 56px; height: 56px; background: var(--primary-glow); 
+                color: var(--primary); border-radius: 16px; display: flex; 
+                align-items: center; justify-content: center;
+                box-shadow: 0 8px 24px rgba(var(--primary-rgb), 0.2);
+            }
+            .header-text h1 { font-size: 2.2rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.5px; }
+            .header-text p { color: var(--text-muted); font-size: 1rem; margin-top: 4px; }
             
             .header-actions { display: flex; gap: 12px; }
 
-            /* Upsell Styles */
-            .premium-upsell { 
-                display: flex; flex-direction: column; align-items: center; justify-content: center; 
-                padding: 80px 40px; text-align: center; max-width: 800px; margin: 40px auto;
-                background: linear-gradient(180deg, var(--bg-card), var(--bg-dark));
-                border: 1px solid var(--gold);
-                position: relative;
-                overflow: hidden;
+            /* Glass Cards */
+            .glass-card {
+                background: var(--bg-card-glass);
+                backdrop-filter: blur(12px);
+                border: 1px solid var(--border-light);
                 border-radius: 24px;
+                padding: 24px;
+                transition: all 0.3s ease;
             }
-            .upsell-badge { 
-                position: absolute; top: 20px; right: 20px; 
-                background: var(--gold); color: white; padding: 4px 12px; 
-                border-radius: 20px; font-size: 0.7rem; font-weight: 900;
-                box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
-            }
-            .upsell-icon { 
-                width: 100px; height: 100px; background: rgba(245, 158, 11, 0.1); 
-                color: var(--gold); border-radius: 50%; display: flex; 
-                align-items: center; justify-content: center; margin-bottom: 24px;
-                animation: float 3s ease-in-out infinite;
-            }
-            @keyframes float {
-                0%, 100% { transform: translateY(0); }
-                50% { transform: translateY(-10px); }
-            }
-            .premium-upsell h2 { font-size: 2rem; font-weight: 900; margin-bottom: 12px; color: var(--text-main); }
-            .premium-upsell p { color: var(--text-muted); font-size: 1.1rem; line-height: 1.6; max-width: 600px; margin-bottom: 40px; }
-            
-            .feature-grid { 
-                display: grid; grid-template-columns: 1fr 1fr; gap: 20px; 
-                text-align: left; margin-bottom: 40px; width: 100%; max-width: 600px;
-            }
-            .feat-item { 
-                display: flex; align-items: center; gap: 12px; padding: 16px; 
-                background: var(--bg-badge); border-radius: 12px; border: 1px solid var(--border);
-                color: var(--text-main); font-weight: 600;
-            }
-            .feat-item svg { color: var(--gold); }
+            .glass-card:hover { border-color: var(--primary-muted); transform: translateY(-2px); }
 
-            .btn-premium-cta { 
-                background: linear-gradient(135deg, #f59e0b, #fbbf24); 
-                color: white; border: none; padding: 18px 36px; border-radius: 16px; 
+            /* Stats Grid */
+            .stats-cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 32px; }
+            .stat-card { display: flex; flex-direction: column; min-height: 160px; }
+            .stat-label-row { display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; margin-bottom: 16px; }
+            .stat-value { font-size: 2.8rem; font-weight: 900; color: var(--text-main); line-height: 1; }
+            .stat-change { display: flex; align-items: center; gap: 4px; font-size: 0.85rem; font-weight: 700; margin-top: auto; }
+            .stat-change.positive { color: var(--success); }
+            .stat-change.neutral { color: var(--primary); }
+            .stat-locked-label { font-size: 0.8rem; color: var(--text-muted); font-style: italic; margin-top: auto; }
+
+            .status-card { 
+                cursor: pointer; position: relative; overflow: hidden;
+                background: linear-gradient(135deg, var(--bg-card-glass), var(--bg-badge));
+            }
+            .status-card.basic { border: 1px dashed var(--gold); }
+            .status-card.pro { border: 1px solid var(--success-muted); }
+            .stat-value-status { font-size: 1.5rem; font-weight: 900; margin: 8px 0; }
+            .status-card.basic .stat-value-status { color: var(--gold); }
+            .status-card.pro .stat-value-status { color: var(--success); }
+            .stat-status-footer { display: flex; align-items: center; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); margin-top: auto; }
+
+            /* Advanced Section Gate */
+            .advanced-section { position: relative; min-height: 500px; }
+            .gated-container { filter: blur(6px); pointer-events: none; user-select: none; }
+            .pro-gate-overlay {
+                position: absolute; inset: -20px; z-index: 100;
+                display: flex; align-items: center; justify-content: center;
+                background: rgba(var(--bg-rgb), 0.4);
+                backdrop-filter: blur(10px);
+                border-radius: 32px;
+            }
+            .gate-content { text-align: center; max-width: 400px; padding: 40px; }
+            .lock-icon-container { 
+                width: 80px; height: 80px; background: var(--gold-glow); color: var(--gold);
+                border-radius: 50%; display: flex; align-items: center; justify-content: center;
+                margin: 0 auto 24px; box-shadow: 0 0 40px rgba(245, 158, 11, 0.2);
+            }
+            .gate-content h2 { font-size: 1.8rem; font-weight: 800; margin-bottom: 12px; color: var(--text-main); }
+            .gate-content p { color: var(--text-muted); margin-bottom: 32px; line-height: 1.6; }
+
+            /* Insights Grid */
+            .insights-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 24px; }
+            .insight-box.wide { grid-column: span 2; }
+            .insight-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
+            .insight-title { display: flex; align-items: center; gap: 12px; color: var(--primary); }
+            .insight-title h3 { font-size: 1.1rem; font-weight: 800; color: var(--text-main); }
+            .insight-desc { font-size: 0.8rem; color: var(--text-muted); }
+
+            /* Heatmap */
+            .heatmap-wrapper { padding: 10px 0; }
+            .heatmap-visual { display: flex; align-items: flex-end; gap: 6px; height: 100px; width: 100%; }
+            .heatmap-column { 
+                flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; 
+                height: 100%; position: relative;
+            }
+            .heatmap-bar { 
+                width: 100%; background: var(--primary); border-radius: 4px; 
+                height: calc((var(--val) / var(--max)) * 100%);
+                transition: height 1s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            .heatmap-label { font-size: 0.65rem; color: var(--text-muted); font-weight: 600; }
+
+            /* Chart */
+            .growth-chart-container { height: 180px; position: relative; width: 100%; overflow: hidden; border-radius: 12px; }
+            .svg-chart-wrapper { width: 100%; height: 100%; }
+
+            /* Leaderboard */
+            .staff-leaderboard { display: flex; flex-direction: column; gap: 16px; }
+            .staff-item { display: flex; align-items: center; gap: 12px; padding: 8px 0; }
+            .staff-rank { 
+                width: 28px; height: 28px; background: var(--bg-badge); 
+                border-radius: 8px; display: flex; align-items: center; 
+                justify-content: center; font-size: 0.8rem; font-weight: 800; color: var(--primary);
+            }
+            .staff-details { flex: 1; }
+            .staff-name { font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px; }
+            .staff-progress-bg { height: 6px; background: var(--bg-badge); border-radius: 3px; overflow: hidden; }
+            .staff-progress-fill { height: 100%; background: var(--primary); border-radius: 3px; }
+            .staff-score { font-size: 0.9rem; font-weight: 800; color: var(--text-main); }
+
+            /* Placeholders */
+            .no-data-placeholder { 
+                display: flex; flex-direction: column; align-items: center; justify-content: center; 
+                gap: 16px; padding: 40px; color: var(--text-muted); text-align: center;
+            }
+            .no-data-placeholder.mini { padding: 20px; }
+            .no-data-placeholder p { font-size: 0.9rem; font-style: italic; }
+
+            /* Buttons */
+            .btn-glass { 
+                background: var(--bg-badge); color: var(--text-main); border: 1px solid var(--border);
+                padding: 12px 24px; border-radius: 14px; font-weight: 700; cursor: pointer;
+                display: flex; align-items: center; gap: 8px; transition: 0.3s;
+            }
+            .btn-glass:hover { background: var(--bg-card-glass); border-color: var(--primary); }
+            
+            .btn-primary-premium {
+                background: var(--primary); color: white; border: none;
+                padding: 12px 24px; border-radius: 14px; font-weight: 700; cursor: pointer;
+                display: flex; align-items: center; gap: 8px; transition: 0.3s;
+                box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.3);
+            }
+            .btn-primary-premium:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(var(--primary-rgb), 0.4); }
+
+            .btn-premium-upgrade {
+                background: linear-gradient(135deg, #f59e0b, #fbbf24);
+                color: white; border: none; padding: 16px 32px; border-radius: 16px;
                 font-size: 1.1rem; font-weight: 800; cursor: pointer; transition: 0.3s;
                 box-shadow: 0 10px 30px rgba(245, 158, 11, 0.4);
             }
-            .btn-premium-cta:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 15px 40px rgba(245, 158, 11, 0.5); }
+            .btn-premium-upgrade:hover { transform: scale(1.05); box-shadow: 0 15px 40px rgba(245, 158, 11, 0.5); }
 
-            /* Gated Section Styles */
-            .advanced-analytics-section { position: relative; transition: 0.5s; }
-            .advanced-analytics-section.gated { filter: blur(4px); pointer-events: none; user-select: none; }
-            .gate-overlay { 
-                position: absolute; top: 0; left: 0; right: 0; bottom: 0; 
-                z-index: 10; display: flex; flex-direction: column; align-items: center; justify-content: center;
-                background: rgba(10, 10, 12, 0.4); backdrop-filter: blur(8px);
-                border-radius: 24px; text-align: center; color: white;
-                padding: 40px;
-            }
-            .gate-overlay h3 { font-size: 1.5rem; font-weight: 800; margin: 16px 0 8px; }
-            .gate-overlay p { font-size: 0.95rem; color: var(--text-muted); max-width: 400px; margin-bottom: 24px; }
-            
-            .premium-promo-card { 
-                background: linear-gradient(135deg, rgba(245, 158, 11, 0.05), rgba(245, 158, 11, 0.15)) !important;
-                border: 1px dashed var(--gold) !important;
-                cursor: pointer; transition: 0.3s;
-            }
-            .premium-promo-card:hover { transform: translateY(-2px); background: rgba(245, 158, 11, 0.2) !important; }
-
-            /* Content Styles */
-            .stats-cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 24px; }
-            .stat-card { padding: 24px; background: var(--bg-card); border-radius: 20px; border: 1px solid var(--border); }
-            .stat-label { color: var(--text-muted); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; margin-bottom: 8px; }
-            .stat-value { font-size: 2.2rem; font-weight: 900; color: var(--text-main); margin-bottom: 8px; }
-            .stat-change { font-size: 0.85rem; font-weight: 700; }
-            .stat-change.positive { color: var(--success); }
-            .stat-change.negative { color: var(--error); }
-
-            .charts-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
-            .chart-box { padding: 24px; }
-            .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-            .chart-header h3 { font-size: 1.1rem; font-weight: 800; color: var(--text-main); }
-            .chart-placeholder { height: 180px; display: flex; align-items: center; justify-content: center; position: relative; }
-            
-            .mock-chart-container { width: 100%; height: 100%; display: flex; align-items: flex-end; }
-            .mock-bars { display: flex; align-items: flex-end; gap: 12px; height: 100%; width: 100%; justify-content: center; }
-            .bar { width: 30px; background: var(--primary); border-radius: 8px 8px 0 0; opacity: 0.6; transition: 0.3s; }
-            .bar:hover { opacity: 1; transform: scaleY(1.05); }
-
-            .heatmap-grid { 
-                display: grid; 
-                grid-template-columns: repeat(24, 1fr); 
-                gap: 4px; 
-                height: 60px; 
-                margin-top: 20px;
-            }
-            .heatmap-cell { 
-                background: var(--primary); 
-                border-radius: 4px; 
-                height: 100%; 
-                display: flex; 
-                align-items: flex-end; 
-                justify-content: center;
-                position: relative;
-                cursor: help;
-            }
-            .hour-label { 
-                font-size: 0.6rem; 
-                color: var(--text-muted); 
-                position: absolute; 
-                bottom: -20px; 
-                white-space: nowrap;
-                transform: rotate(-45deg);
+            @media (max-width: 1000px) {
+                .insights-grid { grid-template-columns: 1fr; }
+                .stats-cards-grid { grid-template-columns: 1fr; }
             }
 
-            .staff-stats-list { display: flex; flex-direction: column; gap: 16px; margin-top: 10px; }
-            .staff-row { display: flex; align-items: center; gap: 12px; }
-            .staff-id { font-size: 0.75rem; color: var(--text-muted); width: 80px; font-family: monospace; }
-            .staff-bar-bg { flex: 1; height: 8px; background: var(--bg-badge); border-radius: 4px; overflow: hidden; }
-            .staff-bar-fill { height: 100%; background: var(--primary); border-radius: 4px; }
-            .staff-count { font-size: 0.85rem; font-weight: 800; color: var(--text-main); width: 30px; text-align: right; }
-            .no-data-msg { color: var(--text-muted); font-size: 0.85rem; font-style: italic; text-align: center; margin: auto; }
-
-            .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text-muted); padding: 10px 18px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 600; }
-            .btn-primary { background: var(--primary); color: white; border: none; padding: 10px 18px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 600; }
+            /* Force Light Mode Visibility */
+            :global(.light-theme) .stat-glass-card, :global(.light-theme) .insight-glass-card { 
+                background: rgba(255, 255, 255, 0.9) !important; 
+                border-color: rgba(0, 0, 0, 0.1) !important; 
+                box-shadow: 0 4px 15px rgba(0,0,0,0.05) !important;
+            }
+            :global(.light-theme) .page-header-premium { 
+                background: white !important; 
+                box-shadow: 0 4px 20px rgba(0,0,0,0.05) !important; 
+                border-color: rgba(0,0,0,0.08) !important;
+            }
+            :global(.light-theme) .staff-progress-bg { background: #f1f5f9 !important; }
+            :global(.light-theme) .insight-header h3 { color: #0f172a !important; }
         `}</style>
     </div>
   );

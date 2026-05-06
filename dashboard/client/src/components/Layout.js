@@ -50,7 +50,7 @@ import {
 import GuideSidebar from './GuideSidebar';
 import { useTheme } from '../contexts/ThemeContext';
 
-export default function Layout({ children, guildId: propGuildId, hideGuide = false }) {
+export default function Layout({ children, guildId: propGuildId, hideGuide = false, isNavigating = false }) {
   const { user, logout, currentGuildId, updateGuildId } = useAuth();
   const { t, language, setLanguage } = useT();
   const router = useRouter();
@@ -418,7 +418,9 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
         </header>
 
         <div className="content-container">
-          {children}
+          <div className={`content-transition-wrapper ${isNavigating ? 'navigating' : ''}`}>
+            {children}
+          </div>
         </div>
       </main>
 
@@ -476,7 +478,7 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
           font-weight: 600;
           font-size: 11px;
           text-decoration: none;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
           position: relative;
           white-space: nowrap;
         }

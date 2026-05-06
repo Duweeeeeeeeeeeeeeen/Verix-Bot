@@ -29,7 +29,9 @@ export default function Selector() {
     if (!loading && !user) router.push('/');
   }, [user, loading]);
 
-  if (loading || !user) return <LoadingScreen message={t('selector.loading')} />;
+  // Show loading only if we don't have user data yet (first time)
+  if (loading && !user) return <LoadingScreen message={t('selector.loading')} />;
+  if (!user) return null;
 
   // Filter logic
   const filteredGuilds = user.guilds
@@ -66,6 +68,7 @@ export default function Selector() {
                 src={`https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`} 
                 alt={guild.name} 
                 className="guild-icon-p"
+                loading="lazy"
               />
             ) : (
               <div className="guild-icon-fallback-p">{initials}</div>

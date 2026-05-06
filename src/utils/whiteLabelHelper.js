@@ -14,23 +14,34 @@ export const syncGuildIdentity = async (guild) => {
 
     try {
         const config = await Guild.findOne({ guildId: guild.id });
-        if (!config || !config.isPremium || !config.customBotName) {
-            // If bot has a custom nickname but premium is gone or name is cleared, reset it
-            const botMember = guild.members.me;
-            if (botMember && botMember.nickname) {
-                await botMember.setNickname(null).catch(() => null);
+        const botMember = await guild.members.fetchMe().catch(() => null);
+        if (!botMember) {
+            logger.warn(`[WhiteLabel] Could not fetch bot member in guild ${guild.id} (${guild.name})`);
+            return;
+        }
+
+        // Reset condition: Missing config, not premium, or custom name is null/empty
+        if (!config || !config.isPremium || !config.customBotName || config.customBotName.trim() === '') {
+            if (botMember.nickname) {
+                await botMember.setNickname(null).catch(err => logger.error(`[WhiteLabel] Failed to reset nickname in ${guild.name}:`, err));
+                logger.info(`[WhiteLabel] Reset nickname to default in ${guild.name}`);
             }
             return;
         }
 
-        const botMember = guild.members.me;
         if (botMember && botMember.nickname !== config.customBotName) {
             // Check permissions
-            if (botMember.permissions.has('ChangeNickname') || botMember.permissions.has('ManageNicknames')) {
-                await botMember.setNickname(config.customBotName);
-                logger.info(`[WhiteLabel] Updated nickname to "${config.customBotName}" in ${guild.name}`);
+            const canChange = botMember.permissions.has('ChangeNickname') || botMember.permissions.has('ManageNicknames') || botMember.permissions.has('Administrator');
+            
+            logger.info(`[WhiteLabel] Attempting nickname change in ${guild.name}: "${botMember.nickname || 'Default'}" -> "${config.customBotName}"`);
+            
+            if (canChange) {
+                await botMember.setNickname(config.customBotName).catch(err => {
+                    logger.error(`[WhiteLabel] Error setting nickname in ${guild.name}:`, err.message);
+                });
+                logger.info(`[WhiteLabel] Successfully updated nickname in ${guild.name}`);
             } else {
-                logger.warn(`[WhiteLabel] Missing ChangeNickname permission in ${guild.name}`);
+                logger.warn(`[WhiteLabel] Missing ChangeNickname permission in ${guild.name}.`);
             }
         }
     } catch (error) {

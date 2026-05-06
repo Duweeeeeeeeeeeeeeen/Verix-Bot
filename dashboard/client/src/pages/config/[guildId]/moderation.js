@@ -8,7 +8,9 @@ import {
     Save, ShieldAlert, Settings2, Power, 
     Clock, Trash2, Plus, X, AlertTriangle, 
     Shield, Gavel, History, MessageSquare, 
-    Type, AtSign, List, Ghost, RefreshCcw
+    Type, AtSign, List, Ghost, RefreshCcw,
+    Link, UserPlus, Zap, Ban, Trash, Search,
+    Settings, ShieldCheck, Lock
 } from 'lucide-react';
 import CustomSelect from '../../../components/CustomSelect';
 import EmbedMessageManager from '../../../components/EmbedMessageManager';
@@ -157,14 +159,20 @@ export default function ModerationConfig() {
             <button onClick={() => setActiveTab('antispam')} className={`tab-link ${activeTab === 'antispam' ? 'active' : ''}`}>
                 <MessageSquare size={16} /> <span>{t('moderation.tab_antispam')}</span>
             </button>
+            <button onClick={() => setActiveTab('safety')} className={`tab-link ${activeTab === 'safety' ? 'active' : ''}`}>
+                <ShieldCheck size={16} /> <span>{t('moderation.tab_safety')}</span>
+            </button>
+            <button onClick={() => setActiveTab('antiraid')} className={`tab-link ${activeTab === 'antiraid' ? 'active' : ''}`}>
+                <Lock size={16} /> <span>{t('moderation.tab_antiraid')}</span>
+            </button>
             <button onClick={() => setActiveTab('filters')} className={`tab-link ${activeTab === 'filters' ? 'active' : ''}`}>
                 <Type size={16} /> <span>{t('moderation.tab_filters')}</span>
             </button>
             <button onClick={() => setActiveTab('punishments')} className={`tab-link ${activeTab === 'punishments' ? 'active' : ''}`}>
                 <Gavel size={16} /> <span>{t('moderation.tab_punishments')}</span>
             </button>
-            <button onClick={() => setActiveTab('exceptions')} className={`tab-link ${activeTab === 'exceptions' ? 'active' : ''}`}>
-                <Ghost size={16} /> <span>{t('moderation.tab_exceptions')}</span>
+            <button onClick={() => setActiveTab('settings')} className={`tab-link ${activeTab === 'settings' ? 'active' : ''}`}>
+                <Settings size={16} /> <span>{t('moderation.tab_settings')}</span>
             </button>
             <button onClick={() => setActiveTab('messages')} className={`tab-link ${activeTab === 'messages' ? 'active' : ''}`}>
                 <RefreshCcw size={16} /> <span>{t('moderation.tab_design')}</span>
@@ -176,30 +184,244 @@ export default function ModerationConfig() {
                 
                 {/* TAB: ANTI-SPAM */}
                 {activeTab === 'antispam' && config.antispam && (
-                    <section className="card section-card-v animate fade-in">
-                        <div className="section-title-row">
-                            <div className="align-center">
-                                <MessageSquare size={18} color="var(--primary)" />
-                                <h3>{t('moderation.antispam_title')}</h3>
+                    <div className="animate fade-in">
+                        <section className="card section-card-v">
+                            <div className="section-title-row">
+                                <div className="align-center">
+                                    <MessageSquare size={18} color="var(--primary)" />
+                                    <h3>{t('moderation.antispam_title')}</h3>
+                                </div>
+                                <label className="toggle">
+                                    <input type="checkbox" checked={!!config.antispam.enabled} onChange={e => updateNested('antispam.enabled', e.target.checked)} />
+                                    <span className="slider"></span>
+                                </label>
                             </div>
-                            <label className="toggle">
-                                <input type="checkbox" checked={!!config.antispam.enabled} onChange={e => updateNested('antispam.enabled', e.target.checked)} />
-                                <span className="slider"></span>
-                            </label>
-                        </div>
-                        <div className="fields-grid-v" style={{ marginTop: '24px' }}>
-                            <div className="field-box">
-                                <label className="text-label">{t('moderation.max_messages')}</label>
-                                <input type="number" className="input" value={config.antispam.maxMessages} onChange={e => updateNested('antispam.maxMessages', parseInt(e.target.value))} />
-                                <p className="field-help">{t('moderation.max_messages_help')}</p>
+                            <div className="fields-grid-v" style={{ marginTop: '24px' }}>
+                                <div className="field-box">
+                                    <label className="text-label">{t('moderation.max_messages')}</label>
+                                    <input type="number" className="input" value={config.antispam.maxMessages} onChange={e => updateNested('antispam.maxMessages', parseInt(e.target.value))} />
+                                    <p className="field-help">{t('moderation.max_messages_help')}</p>
+                                </div>
+                                <div className="field-box">
+                                    <label className="text-label">{t('moderation.interval')}</label>
+                                    <input type="number" className="input" value={config.antispam.timeWindow} onChange={e => updateNested('antispam.timeWindow', parseInt(e.target.value))} />
+                                    <p className="field-help">{t('moderation.interval_help')}</p>
+                                </div>
                             </div>
-                            <div className="field-box">
-                                <label className="text-label">{t('moderation.interval')}</label>
-                                <input type="number" className="input" value={config.antispam.timeWindow} onChange={e => updateNested('antispam.timeWindow', parseInt(e.target.value))} />
-                                <p className="field-help">{t('moderation.interval_help')}</p>
+                        </section>
+
+                        {config.antiFlood && (
+                            <section className="card section-card-v" style={{ marginTop: '24px' }}>
+                                <div className="section-title-row">
+                                    <div className="align-center">
+                                        <Zap size={18} color="var(--primary)" />
+                                        <h3>{t('moderation.antiflood_title')}</h3>
+                                    </div>
+                                    <label className="toggle">
+                                        <input type="checkbox" checked={!!config.antiFlood.enabled} onChange={e => updateNested('antiFlood.enabled', e.target.checked)} />
+                                        <span className="slider"></span>
+                                    </label>
+                                </div>
+                                <div className="fields-grid-v" style={{ marginTop: '24px' }}>
+                                    <div className="field-box">
+                                        <label className="text-label">{t('moderation.max_lines')}</label>
+                                        <input type="number" className="input" value={config.antiFlood.maxLines} onChange={e => updateNested('antiFlood.maxLines', parseInt(e.target.value))} />
+                                    </div>
+                                    <div className="field-box">
+                                        <label className="text-label">{t('moderation.max_chars')}</label>
+                                        <input type="number" className="input" value={config.antiFlood.maxCharacters} onChange={e => updateNested('antiFlood.maxCharacters', parseInt(e.target.value))} />
+                                    </div>
+                                    <div className="field-box">
+                                        <label className="text-label">{t('moderation.max_emojis')}</label>
+                                        <input type="number" className="input" value={config.antiFlood.maxEmojis} onChange={e => updateNested('antiFlood.maxEmojis', parseInt(e.target.value))} />
+                                    </div>
+                                </div>
+                            </section>
+                        )}
+                    </div>
+                )}
+
+                {/* TAB: SAFETY */}
+                {activeTab === 'safety' && (
+                    <div className="animate fade-in">
+                        {/* Anti-Link */}
+                        <section className="card section-card-v">
+                            <div className="section-title-row">
+                                <div className="align-center">
+                                    <Link size={18} color="var(--primary)" />
+                                    <h3>{t('moderation.antilink_title')}</h3>
+                                </div>
+                                <label className="toggle">
+                                    <input type="checkbox" checked={!!config.antiLink?.enabled} onChange={e => updateNested('antiLink.enabled', e.target.checked)} />
+                                    <span className="slider"></span>
+                                </label>
                             </div>
-                        </div>
-                    </section>
+                            <div className="fields-stack-v" style={{ marginTop: '24px' }}>
+                                <div className="field-box">
+                                    <label className="text-label">{t('moderation.whitelist_domains')}</label>
+                                    <div className="add-word-row">
+                                        <input type="text" className="input" id="new-domain" placeholder="google.com, discord.gg..." onKeyDown={e => {
+                                            if (e.key === 'Enter') {
+                                                const list = [...(config.antiLink?.whitelist || [])];
+                                                if (!list.includes(e.target.value)) list.push(e.target.value);
+                                                updateNested('antiLink.whitelist', list);
+                                                e.target.value = '';
+                                            }
+                                        }} />
+                                        <button className="btn-add-word" onClick={() => {
+                                            const inp = document.getElementById('new-domain');
+                                            const list = [...(config.antiLink?.whitelist || [])];
+                                            if (!list.includes(inp.value)) list.push(inp.value);
+                                            updateNested('antiLink.whitelist', list);
+                                            inp.value = '';
+                                        }}><Plus size={16} /></button>
+                                    </div>
+                                    <div className="words-tags-container">
+                                        {(config.antiLink?.whitelist || []).map(d => (
+                                            <div key={d} className="word-tag">
+                                                <span>{d}</span>
+                                                <button onClick={() => updateNested('antiLink.whitelist', config.antiLink.whitelist.filter(x => x !== d))}><X size={10} /></button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="fields-grid-v" style={{ marginTop: '16px' }}>
+                                    <div className="field-box">
+                                        <label className="text-label">{t('moderation.allow_roles')}</label>
+                                        <DiscordSelector type="role" multiple options={discordData.roles} value={config.antiLink?.allowRoles || []} onChange={v => updateNested('antiLink.allowRoles', v)} />
+                                    </div>
+                                    <div className="field-box">
+                                        <label className="text-label">{t('moderation.allow_channels')}</label>
+                                        <DiscordSelector type="channel" multiple options={discordData.channels} value={config.antiLink?.allowChannels || []} onChange={v => updateNested('antiLink.allowChannels', v)} />
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* Anti-Invite */}
+                        <section className="card section-card-v" style={{ marginTop: '24px' }}>
+                            <div className="section-title-row">
+                                <div className="align-center">
+                                    <UserPlus size={18} color="var(--primary)" />
+                                    <h3>{t('moderation.antiinvite_title')}</h3>
+                                </div>
+                                <label className="toggle">
+                                    <input type="checkbox" checked={!!config.antiInvite?.enabled} onChange={e => updateNested('antiInvite.enabled', e.target.checked)} />
+                                    <span className="slider"></span>
+                                </label>
+                            </div>
+                            <div className="fields-grid-v" style={{ marginTop: '24px' }}>
+                                <div className="field-box">
+                                    <label className="text-label">{t('moderation.allow_roles')}</label>
+                                    <DiscordSelector type="role" multiple options={discordData.roles} value={config.antiInvite?.allowRoles || []} onChange={v => updateNested('antiInvite.allowRoles', v)} />
+                                </div>
+                                <div className="field-box">
+                                    <label className="text-label">{t('moderation.allow_channels')}</label>
+                                    <DiscordSelector type="channel" multiple options={discordData.channels} value={config.antiInvite?.allowChannels || []} onChange={v => updateNested('antiInvite.allowChannels', v)} />
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* Anti-Everyone */}
+                        <section className="card section-card-v" style={{ marginTop: '24px' }}>
+                            <div className="section-title-row">
+                                <div className="align-center">
+                                    <AtSign size={18} color="var(--primary)" />
+                                    <h3>{t('moderation.antieveryone_title')}</h3>
+                                </div>
+                                <label className="toggle">
+                                    <input type="checkbox" checked={!!config.antiEveryone?.enabled} onChange={e => updateNested('antiEveryone.enabled', e.target.checked)} />
+                                    <span className="slider"></span>
+                                </label>
+                            </div>
+                            <div className="field-box" style={{ marginTop: '24px' }}>
+                                <label className="text-label">{t('moderation.action_label')}</label>
+                                <CustomSelect 
+                                    options={[
+                                        { value: 'delete', label: t('moderation.action_delete') },
+                                        { value: 'warn', label: t('moderation.action_warn') },
+                                        { value: 'none', label: t('moderation.action_none') }
+                                    ]} 
+                                    value={config.antiEveryone?.action || 'delete'} 
+                                    onChange={v => updateNested('antiEveryone.action', v)} 
+                                />
+                            </div>
+                        </section>
+
+                        {/* Ghost Ping */}
+                        <section className="card section-card-v" style={{ marginTop: '24px' }}>
+                            <div className="section-title-row">
+                                <div className="align-center">
+                                    <History size={18} color="var(--primary)" />
+                                    <h3>{t('moderation.ghostping_title')}</h3>
+                                </div>
+                                <label className="toggle">
+                                    <input type="checkbox" checked={!!config.ghostPing?.enabled} onChange={e => updateNested('ghostPing.enabled', e.target.checked)} />
+                                    <span className="slider"></span>
+                                </label>
+                            </div>
+                            <div className="field-box" style={{ marginTop: '24px' }}>
+                                <div className="align-center">
+                                    <input type="checkbox" checked={!!config.ghostPing?.logInChannel} onChange={e => updateNested('ghostPing.logInChannel', e.target.checked)} />
+                                    <label className="text-label" style={{ marginBottom: 0 }}>{t('moderation.log_in_channel')}</label>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                )}
+
+                {/* TAB: ANTI-RAID */}
+                {activeTab === 'antiraid' && (
+                    <div className="animate fade-in">
+                        <section className="card section-card-v">
+                            <div className="section-title-row">
+                                <div className="align-center">
+                                    <Lock size={18} color="var(--primary)" />
+                                    <h3>{t('moderation.antiraid_title')}</h3>
+                                </div>
+                                <label className="toggle">
+                                    <input type="checkbox" checked={!!config.antiRaid?.enabled} onChange={e => updateNested('antiRaid.enabled', e.target.checked)} />
+                                    <span className="slider"></span>
+                                </label>
+                            </div>
+                            <div className="fields-grid-v" style={{ marginTop: '24px' }}>
+                                <div className="field-box">
+                                    <label className="text-label">{t('moderation.joins_threshold')}</label>
+                                    <input type="number" className="input" value={config.antiRaid?.joinsThreshold} onChange={e => updateNested('antiRaid.joinsThreshold', parseInt(e.target.value))} />
+                                    <p className="field-help">{t('moderation.joins_threshold_help')}</p>
+                                </div>
+                                <div className="field-box">
+                                    <label className="text-label">{t('moderation.interval_ms')}</label>
+                                    <input type="number" className="input" value={config.antiRaid?.timeWindow} onChange={e => updateNested('antiRaid.timeWindow', parseInt(e.target.value))} />
+                                    <p className="field-help">{t('moderation.interval_ms_help')}</p>
+                                </div>
+                                <div className="field-box">
+                                    <label className="text-label">{t('moderation.raid_action')}</label>
+                                    <CustomSelect 
+                                        options={[
+                                            { value: 'notify', label: t('moderation.action_notify') },
+                                            { value: 'lockdown', label: t('moderation.action_lockdown') },
+                                            { value: 'quarantine', label: t('moderation.action_quarantine') }
+                                        ]} 
+                                        value={config.antiRaid?.action || 'notify'} 
+                                        onChange={v => updateNested('antiRaid.action', v)} 
+                                    />
+                                </div>
+                                {config.antiRaid?.action === 'quarantine' && (
+                                    <div className="field-box">
+                                        <label className="text-label">{t('moderation.quarantine_role')}</label>
+                                        <DiscordSelector type="role" options={discordData.roles} value={config.antiRaid?.quarantineRoleId} onChange={v => updateNested('antiRaid.quarantineRoleId', v)} />
+                                    </div>
+                                )}
+                                {config.antiRaid?.action === 'lockdown' && (
+                                    <div className="field-box">
+                                        <label className="text-label">{t('moderation.lockdown_channels')}</label>
+                                        <DiscordSelector type="channel" multiple options={discordData.channels} value={config.antiRaid?.lockdownChannels || []} onChange={v => updateNested('antiRaid.lockdownChannels', v)} />
+                                    </div>
+                                )}
+                            </div>
+                        </section>
+                    </div>
                 )}
 
                 {/* TAB: FILTERS (Caps, Mentions, Blacklist) */}
@@ -351,26 +573,40 @@ export default function ModerationConfig() {
                     </section>
                 )}
 
-                {/* TAB: EXCEPTIONS */}
-                {activeTab === 'exceptions' && (
-                    <section className="card section-card-v animate fade-in">
-                        <div className="align-center" style={{ marginBottom: '24px' }}>
-                            <Ghost size={18} color="var(--primary)" />
-                            <h3>{t('moderation.ignored_title')}</h3>
-                        </div>
-                        <div className="fields-stack-v">
+                {/* TAB: SETTINGS */}
+                {activeTab === 'settings' && (
+                    <div className="animate fade-in">
+                        <section className="card section-card-v">
+                            <div className="align-center" style={{ marginBottom: '24px' }}>
+                                <Ghost size={18} color="var(--primary)" />
+                                <h3>{t('moderation.ignored_title')}</h3>
+                            </div>
+                            <div className="fields-stack-v">
+                                <div className="field-box">
+                                    <label className="text-label">{t('moderation.ignored_roles')}</label>
+                                    <DiscordSelector type="role" multiple options={discordData.roles} value={config.ignoredRoles || []} onChange={v => setConfig({...config, ignoredRoles: v})} />
+                                    <p className="field-help">{t('moderation.ignored_roles_help')}</p>
+                                </div>
+                                <div className="field-box" style={{ marginTop: '24px' }}>
+                                    <label className="text-label">{t('moderation.ignored_channels')}</label>
+                                    <DiscordSelector type="channel" multiple options={discordData.channels} value={config.ignoredChannels || []} onChange={v => setConfig({...config, ignoredChannels: v})} />
+                                    <p className="field-help">{t('moderation.ignored_channels_help')}</p>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section className="card section-card-v" style={{ marginTop: '24px' }}>
+                            <div className="align-center" style={{ marginBottom: '16px' }}>
+                                <Settings2 size={16} color="var(--primary)" />
+                                <h3>{t('moderation.global_config')}</h3>
+                            </div>
                             <div className="field-box">
-                                <label className="text-label">{t('moderation.ignored_roles')}</label>
-                                <DiscordSelector type="role" multiple options={discordData.roles} value={config.ignoredRoles || []} onChange={v => setConfig({...config, ignoredRoles: v})} />
-                                <p className="field-help">{t('moderation.ignored_roles_help')}</p>
+                                <label className="text-label">{t('moderation.reset_time')}</label>
+                                <input type="number" className="input" value={config.resetTime || 0} onChange={e => setConfig({...config, resetTime: parseInt(e.target.value)})} />
+                                <p className="field-help">{t('moderation.reset_time_help')}</p>
                             </div>
-                            <div className="field-box" style={{ marginTop: '24px' }}>
-                                <label className="text-label">{t('moderation.ignored_channels')}</label>
-                                <DiscordSelector type="channel" multiple options={discordData.channels} value={config.ignoredChannels || []} onChange={v => setConfig({...config, ignoredChannels: v})} />
-                                <p className="field-help">{t('moderation.ignored_channels_help')}</p>
-                            </div>
-                        </div>
-                    </section>
+                        </section>
+                    </div>
                 )}
 
                 {/* TAB: MESSAGES */}
@@ -390,20 +626,6 @@ export default function ModerationConfig() {
                     </div>
                 )}
 
-                {/* Global Config can go into a new tab or at the bottom of Antispam */}
-                {activeTab === 'antispam' && (
-                    <section className="card section-card-v" style={{ marginTop: '24px' }}>
-                        <div className="align-center" style={{ marginBottom: '16px' }}>
-                            <Settings2 size={16} color="var(--primary)" />
-                            <h3>{t('moderation.global_config')}</h3>
-                        </div>
-                        <div className="field-box">
-                            <label className="text-label">{t('moderation.reset_time')}</label>
-                            <input type="number" className="input" value={config.resetTime || 0} onChange={e => setConfig({...config, resetTime: parseInt(e.target.value)})} />
-                            <p className="field-help">{t('moderation.reset_time_help')}</p>
-                        </div>
-                    </section>
-                )}
             </div>
         </div>
 
@@ -441,7 +663,10 @@ export default function ModerationConfig() {
             .p-level-badge { padding: 4px 8px; background: var(--primary-glow); color: var(--primary); border-radius: 6px; font-size: 0.65rem; font-weight: 700; }
             .p-item-grid { display: grid; grid-template-columns: 1fr 1.5fr 1fr; gap: 12px; }
             .fields-grid-v { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+            .fields-stack-v { display: flex; flex-direction: column; gap: 20px; }
             .align-center { display: flex; align-items: center; gap: 10px; }
+            .section-card-v { padding: 32px; border-radius: 20px; }
+            .field-help { font-size: 0.75rem; color: var(--text-muted); margin-top: 6px; }
         `}</style>
       </div>
     </div>

@@ -10,6 +10,8 @@ import Parser from 'rss-parser';
 import Guild from '../../models/Guild.js';
 import { t } from '../../locales/t.js';
 
+import axios from 'axios';
+
 const rssParser = new Parser();
 
 export class SocialManager {
@@ -158,9 +160,22 @@ export class SocialManager {
                     username = username.split('/').pop().split('?')[0];
                 }
 
-                let feedUrl = username.startsWith('@') 
-                    ? `https://www.youtube.com/feeds/videos.xml?user=${username.replace('@', '')}`
-                    : `https://www.youtube.com/feeds/videos.xml?channel_id=${username}`;
+                let feedUrl = '';
+                if (username.startsWith('UC')) {
+                    feedUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${username}`;
+                } else {
+                    // Try to resolve handle (@username) to Channel ID
+                    const channelId = await this.resolveYouTubeHandle(username);
+                    if (channelId) {
+                        feedUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`;
+                        // Optionally update account.username to the resolved ID for faster subsequent checks
+                        // account.username = channelId; 
+                    } else {
+                        // Fallback to legacy username format
+                        const cleanUsername = username.replace('@', '');
+                        feedUrl = `https://www.youtube.com/feeds/videos.xml?user=${cleanUsername}`;
+                    }
+                }
 
                 try {
                     const feed = await rssParser.parseURL(feedUrl);
@@ -236,9 +251,17 @@ export class SocialManager {
 
                             if (!thumbnail) {
                                 const content = latestItem.content || latestItem.contentSnippet || '';
-                                // Support both double and single quotes in img src
-                                const imgMatch = content.match(/<img[^>]+src=["']([^"']+)["']/i);
+                                // Support both double and single quotes in img src, and handle potential data-src
+                                const imgMatch = content.match(/<img[^>]+src=["']([^"']+)["']/i) || content.match(/<img[^>]+data-src=["']([^"']+)["']/i);
                                 if (imgMatch) thumbnail = imgMatch[1];
+                            }
+                            
+                            // Last resort for Instagram: if we have a link, try to use a proxy for the image if it's missing
+                            if (!thumbnail && platformName === 'Instagram' && latestItem.link) {
+                                // Some bridges provide the image URL in the link if optimized
+                                if (latestItem.link.includes('ddinstagram.com')) {
+                                    thumbnail = latestItem.link.replace('ddinstagram.com', 'ddinstagram.com/images'); // Just a guess, but let's stick to extraction
+                                }
                             }
 
                             await this.handleSocialPost(guildId, platformConfig, account, {
@@ -312,19 +335,19 @@ export class SocialManager {
 
             const defaultDescs = {
                 'Twitch': `### {title}\n\nEhi! **{streamer}** ha appena acceso la camera su Twitch. Non perderti lo show!\n\n[Entra in Live]({url})`,
-                'YouTube': `### {title}\n\nÈ appena uscito un nuovo video sul canale! Corri a lasciare un like.\n\n[Guarda ora]({url})`,
+                'YouTube': `### {title}\n\nÈ appena uscito un nuovo video sul canale! Corri a lasciare un like.`,
                 'Twitter': `{description}\n\n[Leggi il Tweet]({url})`,
-                'Instagram': `### {title}\n\nNuovo contenuto caricato su Instagram! Passa a dare un'occhiata.\n\n[Vedi il Post]({url})`,
-                'TikTok': `### {title}\n\nÈ appena stato pubblicato un nuovo video su TikTok! Guarda subito.\n\n[Guarda il TikTok]({url})`
+                'Instagram': `### {title}\n\nNuovo contenuto caricato su Instagram! Passa a dare un'occhiata.`,
+                'TikTok': `### {title}\n\nÈ appena stato pubblicato un nuovo video su TikTok! Guarda subito.`
             };
 
-            // Default settings based on platform
+            // Default settings based on platform (Verified Icons8 CDN)
             const platformStyles = {
-                'Twitch': { color: 0x6441a5, icon: 'https://cdn3.iconfinder.com/data/icons/social-messaging-ui-color-shapes-2-free/128/social-twitch-circle-512.png', label: 'Twitch Live' },
-                'YouTube': { color: 0xff0000, icon: 'https://cdn3.iconfinder.com/data/icons/social-network-30/512/YouTube-512.png', label: 'YouTube Video' },
-                'Twitter': { color: 0x1da1f2, icon: 'https://cdn3.iconfinder.com/data/icons/social-network-30/512/Twitter-512.png', label: 'Twitter (X)' },
-                'Instagram': { color: 0xe1306c, icon: 'https://cdn3.iconfinder.com/data/icons/social-network-30/512/Instagram-512.png', label: 'Instagram Post' },
-                'TikTok': { color: 0x000000, icon: 'https://cdn3.iconfinder.com/data/icons/social-network-30/512/TikTok-512.png', label: 'TikTok Video' }
+                'Twitch': { color: 0x6441a5, icon: 'https://img.icons8.com/color/512/twitch.png', label: 'Twitch Live' },
+                'YouTube': { color: 0xff0000, icon: 'https://img.icons8.com/color/512/youtube-play.png', label: 'YouTube Video' },
+                'Twitter': { color: 0x1da1f2, icon: 'https://img.icons8.com/color/512/twitter--v1.png', label: 'Twitter (X)' },
+                'Instagram': { color: 0xe1306c, icon: 'https://img.icons8.com/color/512/instagram-new--v1.png', label: 'Instagram Post' },
+                'TikTok': { color: 0x000000, icon: 'https://img.icons8.com/color/512/tiktok.png', label: 'TikTok Video' }
             };
 
             const style = platformStyles[platform] || { color: 0x7289da, icon: '', label: platform };
@@ -335,10 +358,6 @@ export class SocialManager {
             if (authorName.includes(' | ')) authorName = authorName.split(' | ')[0];
 
             const embedData = new EmbedBuilder()
-                .setAuthor({ 
-                    name: `${style.label} | @${authorName}`, 
-                    iconURL: style.icon || guild.iconURL() 
-                })
                 .setTitle(formatText(customEmbed.title) || formatText(defaultTitles[platform]) || 'Nuovo post!')
                 .setURL(optimizedUrl)
                 .setDescription(formatText(customEmbed.description) || formatText(defaultDescs[platform]) || postData.description || postData.title)
@@ -348,6 +367,16 @@ export class SocialManager {
                     text: formatText(customEmbed.footer) || 'Social Notifications | Verix', 
                     iconURL: this.client.user.displayAvatarURL() 
                 });
+
+            // Instagram specific: clean look without Author header, logo in thumbnail
+            if (platform === 'Instagram') {
+                embedData.setThumbnail(style.icon);
+            } else {
+                embedData.setAuthor({ 
+                    name: style.label, 
+                    iconURL: style.icon || guild.iconURL() 
+                }).setThumbnail(style.icon);
+            }
 
             if (postData.thumbnail) {
                 embedData.setImage(postData.thumbnail);
@@ -420,6 +449,30 @@ export class SocialManager {
             }
         } catch (error) {
             logger.error('[Socials] Error removing social role:', error);
+        }
+    }
+
+    async resolveYouTubeHandle(handle) {
+        try {
+            const cleanHandle = handle.startsWith('@') ? handle : `@${handle}`;
+            const url = `https://www.youtube.com/${cleanHandle}`;
+            
+            const response = await axios.get(url, {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                }
+            });
+
+            // Regex to find "channelId":"UC..."
+            const match = response.data.match(/\"channelId\":\"(UC[a-zA-Z0-9_-]+)\"/);
+            if (match && match[1]) {
+                logger.info(`[YouTubeResolver] Resolved ${handle} to ${match[1]}`);
+                return match[1];
+            }
+            return null;
+        } catch (error) {
+            logger.debug(`[YouTubeResolver] Failed to resolve handle ${handle}: ${error.message}`);
+            return null;
         }
     }
 }

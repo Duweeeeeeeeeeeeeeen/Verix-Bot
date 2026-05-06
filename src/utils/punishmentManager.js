@@ -27,8 +27,8 @@ export async function handleUserInfraction(member, reason = 'Violazione protocol
         const now = new Date();
 
         if (infraction) {
-            // Check for reset (convert resetTime minutes to ms)
-            const resetMs = config.resetTime * 60 * 1000;
+            // Check for reset (convert resetTime days to ms)
+            const resetMs = config.resetTime * 24 * 60 * 60 * 1000;
             if (now - infraction.lastInfraction > resetMs) {
                 infraction.count = 1;
             } else {

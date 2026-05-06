@@ -27,8 +27,11 @@ export default {
 
         let violation = false;
         let violationReason = '';
+        let shouldDelete = true;
 
-        // --- 2. ANTI SPAM ---
+        const content = message.content;
+
+        // --- 2. ANTI SPAM (Messages Frequency) ---
         if (config.antispam?.enabled) {
             const now = Date.now();
             const userKey = `${guildId}:${userId}`;
@@ -47,10 +50,91 @@ export default {
             }
         }
 
-        // --- 3. CAPS LOCK ---
-        if (!violation && config.capsLock?.enabled && message.content.length >= config.capsLock.minCharacters) {
-            const capsCount = message.content.replace(/[^A-Z]/g, "").length;
-            const percentage = (capsCount / message.content.length) * 100;
+        // --- 3. ANTI FLOOD (Walltext / Lines / Emojis) ---
+        if (!violation && config.antiFlood?.enabled) {
+            // Line count
+            const lineCount = content.split('\n').length;
+            if (lineCount > config.antiFlood.maxLines) {
+                violation = true;
+                violationReason = 'il tuo messaggio contiene troppe righe';
+            }
+
+            // Character count
+            if (!violation && content.length > config.antiFlood.maxCharacters) {
+                violation = true;
+                violationReason = 'il tuo messaggio è troppo lungo';
+            }
+
+            // Emoji count
+            if (!violation) {
+                const emojiRegex = /<a?:[a-zA-Z0-9_]+:[0-9]+>|[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]/gu;
+                const emojiCount = (content.match(emojiRegex) || []).length;
+                if (emojiCount > config.antiFlood.maxEmojis) {
+                    violation = true;
+                    violationReason = 'il tuo messaggio contiene troppe emoji';
+                }
+            }
+        }
+
+        // --- 4. ANTI LINK ---
+        if (!violation && config.antiLink?.enabled) {
+            // Check exemptions for this sub-module
+            const isExempt = config.antiLink.allowRoles?.some(r => member.roles.cache.has(r)) || 
+                           config.antiLink.allowChannels?.includes(message.channel.id);
+            
+            if (!isExempt) {
+                const urlRegex = /(https?:\/\/[^\s]+)/gi;
+                const matches = content.match(urlRegex);
+                
+                if (matches) {
+                    // Check whitelist
+                    const allLinksWhitelisted = matches.every(link => {
+                        try {
+                            const domain = new URL(link).hostname.toLowerCase().replace('www.', '');
+                            return config.antiLink.whitelist?.some(d => domain === d.toLowerCase().replace('www.', ''));
+                        } catch { return false; }
+                    });
+
+                    if (!allLinksWhitelisted) {
+                        violation = true;
+                        violationReason = 'non è consentito inviare link esterni';
+                    }
+                }
+            }
+        }
+
+        // --- 5. ANTI INVITE ---
+        if (!violation && config.antiInvite?.enabled) {
+            const isExempt = config.antiInvite.allowRoles?.some(r => member.roles.cache.has(r)) || 
+                           config.antiInvite.allowChannels?.includes(message.channel.id);
+
+            if (!isExempt) {
+                const inviteRegex = /(discord\.(gg|io|me|li)|discordapp\.com\/invite)\/[a-zA-Z0-9]+/gi;
+                if (inviteRegex.test(content)) {
+                    violation = true;
+                    violationReason = 'non è consentito inviare inviti Discord';
+                }
+            }
+        }
+
+        // --- 6. ANTI EVERYONE ---
+        if (!violation && config.antiEveryone?.enabled) {
+            if (message.mentions.everyone) {
+                if (config.antiEveryone.action === 'delete') {
+                    violation = true;
+                    violationReason = 'non puoi menzionare @everyone o @here';
+                } else if (config.antiEveryone.action === 'warn') {
+                    violation = true;
+                    violationReason = 'richiamo per menzione di massa';
+                }
+                // if 'none', we do nothing
+            }
+        }
+
+        // --- 7. CAPS LOCK ---
+        if (!violation && config.capsLock?.enabled && content.length >= config.capsLock.minCharacters) {
+            const capsCount = content.replace(/[^A-Z]/g, "").length;
+            const percentage = (capsCount / content.length) * 100;
 
             if (percentage >= config.capsLock.percentage) {
                 violation = true;
@@ -58,7 +142,7 @@ export default {
             }
         }
 
-        // --- 4. MENTION SPAM ---
+        // --- 8. MENTION SPAM ---
         if (!violation && config.mentionSpam?.enabled) {
             const mentionCount = message.mentions.users.size + message.mentions.roles.size;
             if (mentionCount > config.mentionSpam.limit) {
@@ -67,10 +151,10 @@ export default {
             }
         }
 
-        // --- 5. BLACKLIST ---
+        // --- 9. BLACKLIST ---
         if (!violation && config.blacklist?.enabled && config.blacklist.words?.length > 0) {
-            const content = message.content.toLowerCase();
-            const blacklisted = config.blacklist.words.some(word => content.includes(word.toLowerCase()));
+            const lowerContent = content.toLowerCase();
+            const blacklisted = config.blacklist.words.some(word => lowerContent.includes(word.toLowerCase()));
             
             if (blacklisted) {
                 violation = true;
@@ -78,11 +162,13 @@ export default {
             }
         }
 
-        // 6. ACTION
+        // 10. ACTION
         if (violation) {
             try {
                 // Delete message
-                if (message.deletable) await message.delete().catch(() => {});
+                if (shouldDelete && message.deletable) {
+                    await message.delete().catch(() => {});
+                }
 
                 // Trigger Progressive Punishment
                 await handleUserInfraction(member, violationReason, message.channel);

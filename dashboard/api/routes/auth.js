@@ -38,11 +38,14 @@ router.get('/user', async (req, res) => {
             const premiumTier = guildSettings?.premiumTier || (guildSettings?.isPremium ? 'premium' : 'none');
             const isPrivateBotActive = guildSettings?.privateBot?.enabled && guildSettings?.privateBot?.token;
             
-            // If Platinum, always allow access to configure private bot
-            const isBotInGuild = client.guilds.cache.has(guild.id) || isPrivateBotActive || premiumTier === 'platinum';
+            // Get live data from client cache if available to avoid stale icons/names
+            const liveGuild = client.guilds.cache.get(guild.id);
+            const isBotInGuild = !!liveGuild || isPrivateBotActive || premiumTier === 'platinum';
 
             return {
                 ...guild,
+                name: liveGuild?.name || guild.name,
+                icon: liveGuild?.icon || guild.icon,
                 botInGuild: isBotInGuild,
                 inviteUrl: `${inviteUrl}&guild_id=${guild.id}`,
                 isPremium: guildSettings ? !!guildSettings.isPremium : false,

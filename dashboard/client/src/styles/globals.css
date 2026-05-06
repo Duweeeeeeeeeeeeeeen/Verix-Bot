@@ -7,9 +7,11 @@
   
   /* Dark Theme (Default) */
   --bg-main: #020617;
+  --bg-rgb: 2, 6, 23;
   --bg-sidebar: #05070a;
   --bg-sidebar-alt: #070912;
   --bg-card: #0a0c14;
+  --bg-card-rgb: 10, 12, 20;
   --bg-header: rgba(15, 23, 42, 0.7);
   --bg-input: #020617;
   --bg-badge: rgba(255, 255, 255, 0.03);
@@ -59,6 +61,13 @@
   /* Option/native select */
   --option-bg: #0f172a;
   --option-text: white;
+  
+  /* Premium Glass tokens */
+  --bg-card-glass: rgba(15, 23, 42, 0.6);
+  --border-light: rgba(255, 255, 255, 0.08);
+  --primary-muted: rgba(99, 102, 241, 0.4);
+  --gold: #f59e0b;
+  --gold-glow: rgba(245, 158, 11, 0.15);
   
   /* Toast */
   --toast-bg: #1e293b;
@@ -115,11 +124,22 @@
   --toast-text: #0f172a;
   
   --tooltip-bg: #1e293b;
+
+  /* Premium Light Tokens */
+  --bg-card-glass: rgba(255, 255, 255, 0.6);
+  --border-light: rgba(0, 0, 0, 0.05);
+  --primary-muted: rgba(99, 102, 241, 0.2);
+  --bg-rgb: 248, 250, 252;
+  --bg-card-rgb: 255, 255, 255;
 }
 
 * {
   box-sizing: border-box;
-  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Specific transitions instead of wildcard */
+button, a, input, select, textarea, .nav-link, .stat-glass-card, .feature-glass-card {
+  transition: background-color 0.12s ease, color 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease, transform 0.12s ease;
 }
 
 body {
@@ -277,7 +297,7 @@ h1, h2, h3, h4 {
   flex-direction: column;
   z-index: 100;
   flex-shrink: 0;
-  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   box-shadow: 10px 0 50px rgba(0,0,0,0.1);
 }
@@ -294,7 +314,7 @@ h1, h2, h3, h4 {
   background: var(--bg-sidebar);
   z-index: 10;
   flex-shrink: 0;
-  transition: padding 0.4s;
+  transition: padding 0.25s;
   height: 108px;
 }
 
@@ -352,7 +372,7 @@ h1, h2, h3, h4 {
   color: var(--text-muted);
   font-weight: 600;
   text-decoration: none;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   white-space: nowrap;
 }
@@ -550,7 +570,7 @@ h1, h2, h3, h4 {
   padding: 0 24px;
   box-shadow: var(--shadow-premium);
   pointer-events: auto; /* Re-enable clicks for the buttons */
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .header-left { gap: 16px; }
@@ -647,11 +667,65 @@ h1, h2, h3, h4 {
 }
 
 /* Animations */
-.animate { animation: fadeIn 0.4s ease-out forwards; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.animate { animation: fadeIn 0.12s ease-out forwards; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
-.fade-in { animation: simpleFade 0.3s forwards; }
+.fade-in { animation: simpleFade 0.08s forwards; }
 @keyframes simpleFade { from { opacity: 0; } to { opacity: 1; } }
+
+/* Skeleton Shimmer */
+.skeleton {
+  background: var(--bg-badge);
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  opacity: 0.8;
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--hover-bg) 50%,
+    transparent 100%
+  );
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Top Progress Bar */
+.top-progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary), #a78bfa);
+  z-index: 100000;
+  box-shadow: 0 0 10px var(--primary-glow);
+  transition: width 0.3s ease;
+}
+
+/* Page Transitions */
+.content-transition-wrapper {
+  transition: opacity 0.15s ease, filter 0.15s ease;
+  min-height: 100%;
+}
+
+.content-transition-wrapper.navigating {
+  opacity: 0.4;
+  filter: blur(2px);
+  pointer-events: none;
+}
 
 /* Utility Classes */
 .btn-primary {
@@ -1451,7 +1525,7 @@ input:checked + .slider-mini:before {
     color: var(--text-dim);
     font-weight: 700;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
     white-space: nowrap;
 }
 
@@ -1544,7 +1618,7 @@ input:checked + .slider-mini:before {
   align-items: center;
   gap: 10px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: var(--primary-glow);
 }
 
