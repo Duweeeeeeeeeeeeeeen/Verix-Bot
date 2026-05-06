@@ -94,7 +94,16 @@ export default {
         }
         
         // --- 4. OTHER INTERACTIONS (Buttons, Menus, Modals) --- 
-        // These are handled by specific module listeners, but our check at Step 1 
-        // has already validated their activation status.
+        if (interaction.isButton()) {
+            if (interaction.customId.startsWith('rr_')) {
+                return client.reactionRoleManager.handleInteraction(interaction);
+            }
+            if (interaction.customId.startsWith('poll_')) {
+                return client.pollManager.handleInteraction(interaction);
+            }
+        }
+
+        // These are handled by specific module listeners (like tickets)
+        // or through the interactionCreate event in other modules
     },
 };

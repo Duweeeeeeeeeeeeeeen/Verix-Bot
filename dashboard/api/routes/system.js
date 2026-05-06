@@ -1,4 +1,6 @@
 import express from 'express';
+import fs from 'fs/promises';
+import path from 'path';
 import { ownerCheck } from '../middleware/ownerCheck.js';
 import GlobalConfig from '../../../src/models/GlobalConfig.js';
 import { EmbedBuilder } from 'discord.js';
@@ -187,6 +189,50 @@ router.post('/guild/:guildId/premium', ownerCheck, async (req, res) => {
         res.json({ success: true, data: guild });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+/**
+ * GET /api/system/logs
+ * Reads the bot log file from the VPS filesystem.
+ */
+router.get('/logs', ownerCheck, async (req, res) => {
+    try {
+        // Absolute path to the log file on the VPS/Local
+        const logPath = 'e:\\BOT Discord\\bot.log';
+        
+        try {
+            const stats = await fs.stat(logPath);
+            const fileSize = stats.size;
+            
+            // Read the last 64KB of the file
+            const readSize = Math.min(fileSize, 64 * 1024);
+            const buffer = Buffer.alloc(readSize);
+            const fileHandle = await fs.open(logPath, 'r');
+            
+            await fileHandle.read(buffer, 0, readSize, fileSize - readSize);
+            await fileHandle.close();
+            
+            let content = buffer.toString('utf8');
+            
+            // If we didn't read from the start, trim the first partial line
+            if (readSize < fileSize) {
+                const firstNewline = content.indexOf('\n');
+                if (firstNewline !== -1) {
+                    content = content.substring(firstNewline + 1);
+                }
+            }
+            
+            res.json({ success: true, data: content });
+        } catch (err) {
+            if (err.code === 'ENOENT') {
+                return res.json({ success: true, data: "Log file not found at: " + logPath });
+            }
+            throw err;
+        }
+    } catch (error) {
+        logger.error('[SystemAPI] Log read error:', error);
+        res.status(500).json({ success: false, error: 'Failed to read logs: ' + error.message });
     }
 });
 

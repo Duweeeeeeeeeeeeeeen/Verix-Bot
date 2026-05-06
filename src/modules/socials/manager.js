@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from 'discord.js';
 import mongoose from 'mongoose';
 import SocialConfig from '../../models/SocialConfig.js';
 import GlobalConfig from '../../models/GlobalConfig.js';
@@ -216,13 +216,28 @@ export class SocialManager {
 
                         if (itemId !== account.lastPostId) {
                             // NEW POST detected
-                            logger.info(`[Socials/${platformName}] New post detected for ${username} in ${guildId}`);
+                            // 1. Filter out RSS-Bridge errors (Twitter/Instagram blocks)
+                            const title = latestItem.title || '';
+                            const errorKeywords = ['404', 'Bridge Error', 'HttpException', 'Not Found', 'Rate limit', 'Details:'];
+                            if (errorKeywords.some(kw => title.includes(kw))) {
+                                logger.debug(`[Socials/${platformName}] Skipping item due to potential error: ${title}`);
+                                continue;
+                            }
+
+                            // 2. Extract thumbnail more aggressively
+                            let thumbnail = latestItem.enclosure?.url || latestItem.thumbnail || '';
                             
-                            // Extract thumbnail from content/description if not in enclosure
-                            let thumbnail = latestItem.enclosure?.url || '';
+                            // Check media fields if available
+                            if (!thumbnail && latestItem['media:content']) {
+                                thumbnail = Array.isArray(latestItem['media:content']) 
+                                    ? latestItem['media:content'][0]?.$.url 
+                                    : latestItem['media:content']?.$.url;
+                            }
+
                             if (!thumbnail) {
                                 const content = latestItem.content || latestItem.contentSnippet || '';
-                                const imgMatch = content.match(/<img[^>]+src="([^">]+)"/);
+                                // Support both double and single quotes in img src
+                                const imgMatch = content.match(/<img[^>]+src=["']([^"']+)["']/i);
                                 if (imgMatch) thumbnail = imgMatch[1];
                             }
 
@@ -268,35 +283,39 @@ export class SocialManager {
                 return;
             }
 
-            logger.info(`[Socials] Sending ${platform} notification for ${postData.author || account.username} to #${channel.name}`);
-            
             // Dynamically build embed using user's config
             const customEmbed = platformConfig.embed || {};
-            
+
+            // Optimize URL for preview/shareability
+            let optimizedUrl = postData.url || '';
+            if (optimizedUrl.includes('twitter.com')) optimizedUrl = optimizedUrl.replace('twitter.com', 'fxtwitter.com');
+            else if (optimizedUrl.includes('x.com')) optimizedUrl = optimizedUrl.replace('x.com', 'fxtwitter.com');
+            else if (optimizedUrl.includes('instagram.com')) optimizedUrl = optimizedUrl.replace('instagram.com', 'ddinstagram.com');
+
             const formatText = (text) => text
                 ? placeholderHelper.replace(text, {
                     streamer: postData.author || account.username,
                     title: postData.title,
-                    url: postData.url,
+                    url: optimizedUrl,
                     description: postData.description || ''
                 })
                 : '';
 
             // Default titles and descriptions based on platform
             const defaultTitles = {
-                'Twitch': `📡 ${postData.author || account.username} è in diretta!`,
-                'YouTube': `🎥 Nuovo video di ${postData.author || account.username}!`,
-                'Twitter': `🐦 Nuovo Tweet di ${postData.author || account.username}`,
-                'Instagram': `📸 Nuovo post di ${postData.author || account.username}`,
-                'TikTok': `🎵 Nuovo TikTok di ${postData.author || account.username}`
+                'Twitch': `📡 {streamer} è in diretta!`,
+                'YouTube': `🎥 Nuovo video di {streamer}!`,
+                'Twitter': `🐦 Nuovo Tweet di {streamer}`,
+                'Instagram': `📸 Nuovo post di {streamer}`,
+                'TikTok': `🎵 Nuovo TikTok di {streamer}`
             };
 
             const defaultDescs = {
-                'Twitch': `### ${postData.title}\n\nEhi! **${postData.author || account.username}** ha appena acceso la camera su Twitch. Non perderti lo show!`,
-                'YouTube': `### ${postData.title}\n\nÈ appena uscito un nuovo video sul canale! Corri a lasciare un like.`,
-                'Twitter': `${postData.description || postData.title}`,
-                'Instagram': `### ${postData.title}\n\nNuovo contenuto caricato su Instagram! Passa a dare un'occhiata.`,
-                'TikTok': `### ${postData.title}\n\nÈ appena stato pubblicato un nuovo video su TikTok! Guarda subito.`
+                'Twitch': `### {title}\n\nEhi! **{streamer}** ha appena acceso la camera su Twitch. Non perderti lo show!\n\n[Entra in Live]({url})`,
+                'YouTube': `### {title}\n\nÈ appena uscito un nuovo video sul canale! Corri a lasciare un like.\n\n[Guarda ora]({url})`,
+                'Twitter': `{description}\n\n[Leggi il Tweet]({url})`,
+                'Instagram': `### {title}\n\nNuovo contenuto caricato su Instagram! Passa a dare un'occhiata.\n\n[Vedi il Post]({url})`,
+                'TikTok': `### {title}\n\nÈ appena stato pubblicato un nuovo video su TikTok! Guarda subito.\n\n[Guarda il TikTok]({url})`
             };
 
             // Default settings based on platform
@@ -305,19 +324,24 @@ export class SocialManager {
                 'YouTube': { color: 0xff0000, icon: 'https://cdn3.iconfinder.com/data/icons/social-network-30/512/YouTube-512.png', label: 'YouTube Video' },
                 'Twitter': { color: 0x1da1f2, icon: 'https://cdn3.iconfinder.com/data/icons/social-network-30/512/Twitter-512.png', label: 'Twitter (X)' },
                 'Instagram': { color: 0xe1306c, icon: 'https://cdn3.iconfinder.com/data/icons/social-network-30/512/Instagram-512.png', label: 'Instagram Post' },
-                'TikTok': { color: 0x00f2ea, icon: 'https://cdn3.iconfinder.com/data/icons/social-network-30/512/TikTok-512.png', label: 'TikTok Video' }
+                'TikTok': { color: 0x000000, icon: 'https://cdn3.iconfinder.com/data/icons/social-network-30/512/TikTok-512.png', label: 'TikTok Video' }
             };
 
             const style = platformStyles[platform] || { color: 0x7289da, icon: '', label: platform };
 
+            // Clean up author name (strip " - Instagram" etc)
+            let authorName = postData.author || account.username;
+            if (authorName.includes(' - ')) authorName = authorName.split(' - ')[0];
+            if (authorName.includes(' | ')) authorName = authorName.split(' | ')[0];
+
             const embedData = new EmbedBuilder()
                 .setAuthor({ 
-                    name: `${style.label} | @${postData.author || account.username}`, 
+                    name: `${style.label} | @${authorName}`, 
                     iconURL: style.icon || guild.iconURL() 
                 })
-                .setTitle(formatText(customEmbed.title) || defaultTitles[platform] || 'Nuovo post!')
-                .setURL(postData.url)
-                .setDescription(formatText(customEmbed.description) || defaultDescs[platform] || postData.description || postData.title)
+                .setTitle(formatText(customEmbed.title) || formatText(defaultTitles[platform]) || 'Nuovo post!')
+                .setURL(optimizedUrl)
+                .setDescription(formatText(customEmbed.description) || formatText(defaultDescs[platform]) || postData.description || postData.title)
                 .setColor(customEmbed.color ? parseInt(customEmbed.color.replace('#', ''), 16) : style.color)
                 .setTimestamp()
                 .setFooter({ 

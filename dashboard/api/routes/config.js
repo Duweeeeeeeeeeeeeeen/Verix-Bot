@@ -13,6 +13,7 @@ import PhotoContestConfig from '../../../src/models/PhotoContestConfig.js';
 import TempVoiceConfig from '../../../src/models/TempVoiceConfig.js';
 import GiveawayConfig from '../../../src/models/GiveawayConfig.js';
 import Giveaway from '../../../src/models/Giveaway.js';
+import Poll from '../../../src/models/Poll.js';
 import PhotoContest from '../../../src/models/PhotoContest.js';
 import VerifyConfig from '../../../src/models/VerifyConfig.js';
 import GlobalConfig from '../../../src/models/GlobalConfig.js';
@@ -26,6 +27,8 @@ import AutoClearConfig from '../../../src/models/AutoClearConfig.js';
 import AutomationConfig from '../../../src/models/AutomationConfig.js';
 import ModerationConfig from '../../../src/models/ModerationConfig.js';
 import SupportConfig from '../../../src/models/SupportConfig.js';
+import ReactionRoleConfig from '../../../src/models/ReactionRoleConfig.js';
+import PollConfig from '../../../src/models/PollConfig.js';
 
 import { getButtonStyle } from '../../../src/utils/uiBuilder.js';
 import multiBotManager from '../../../src/core/multiBotManager.js';
@@ -58,6 +61,8 @@ import { socialSchema } from '../validations/socialSchema.js';
 import { onboardingSchema } from '../validations/onboardingSchema.js';
 import { moderationSchema } from '../validations/moderationSchema.js';
 import { supportSchema } from '../validations/supportSchema.js';
+import { reactionRoleSchema } from '../validations/reactionRoleSchema.js';
+import { pollConfigSchema, pollCreateSchema } from '../validations/pollSchema.js';
 
 
 
@@ -68,6 +73,9 @@ router.use('/:guildId', (req, res, next) => {
     const { guildId } = req.params;
     if (guildId && multiBotManager.instances.has(guildId)) {
         req.discordClient = multiBotManager.instances.get(guildId);
+        // console.log(`[Dashboard_API] Using Private Bot for guild: ${guildId}`);
+    } else {
+        // console.log(`[Dashboard_API] Using Main Bot for guild: ${guildId}`);
     }
     next();
 });
@@ -78,7 +86,7 @@ router.get('/:guildId', adminCheck, async (req, res) => {
         const { guildId } = req.params;
         
         // Fetch or create all configurations atomically in parallel using upsert
-        let [wlConfig, tkConfig, photoConfig, verifyConfig, guildData, globalConfig, wlcmConfig, utilConfig, fmConfig, socConfig, autoClearConfig, modConfig, suppConfig] = await Promise.all([
+        let [wlConfig, tkConfig, photoConfig, verifyConfig, guildData, globalConfig, wlcmConfig, utilConfig, fmConfig, socConfig, autoClearConfig, modConfig, suppConfig, rrConfig, pollConfig] = await Promise.all([
             WhitelistConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, new: true, setDefaultsOnInsert: true }),
             TicketConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, new: true, setDefaultsOnInsert: true }),
             PhotoContestConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, new: true, setDefaultsOnInsert: true }),
@@ -91,28 +99,37 @@ router.get('/:guildId', adminCheck, async (req, res) => {
             SocialConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, new: true, setDefaultsOnInsert: true }),
             AutoClearConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, new: true, setDefaultsOnInsert: true }),
             ModerationConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, new: true, setDefaultsOnInsert: true }),
-            SupportConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, new: true, setDefaultsOnInsert: true })
+            SupportConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, new: true, setDefaultsOnInsert: true }),
+            ReactionRoleConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, new: true, setDefaultsOnInsert: true }),
+            PollConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, new: true, setDefaultsOnInsert: true })
         ]);
 
-        // Fetch roles and channels from Discord Client
-        const client = req.discordClient;
+        // Fetch roles and channels from Discord Client with fallback
+        let client = req.discordClient;
         let roles = [];
         let channels = [];
+        let guild = null;
         
         try {
-            const guild = await client.guilds.fetch(guildId);
-            roles = (await guild.roles.fetch()).map(r => ({ id: r.id, name: r.name, color: r.hexColor }));
-            channels = (await guild.channels.fetch()).map(c => ({ id: c.id, name: c.name, type: c.type }));
+            guild = await client.guilds.fetch(guildId).catch(() => null);
+            
+            // FALLBACK: If Private Bot is not in guild, try Main Bot
+            if (!guild && client !== req.mainClient) {
+                console.log(`[Dashboard_API] Private bot ${client.user?.tag} not in guild ${guildId}. Falling back to Main Bot for overview.`);
+                client = req.mainClient;
+                guild = await client.guilds.fetch(guildId).catch(() => null);
+            }
+
+            if (guild) {
+                roles = (await guild.roles.fetch()).map(r => ({ id: r.id, name: r.name, color: r.hexColor }));
+                channels = (await guild.channels.fetch()).map(c => ({ id: c.id, name: c.name, type: c.type }));
+            }
         } catch (discordError) {
             console.error('Error fetching Discord data for guild:', discordError);
         }
 
         const lang = globalConfig?.language || 'it';
-        
-        let discordGuild = null;
-        try {
-            discordGuild = await client.guilds.fetch(guildId);
-        } catch (e) {}
+        const discordGuild = guild;
 
         res.json({
             success: true,
@@ -134,6 +151,8 @@ router.get('/:guildId', adminCheck, async (req, res) => {
                 autoclear: autoClearConfig,
                 moderation: mergeModuleDefaults('moderation', modConfig, lang),
                 support: mergeModuleDefaults('support', suppConfig, lang),
+                reactionRoles: rrConfig,
+                polls: pollConfig,
                 roles,
                 channels
             }
@@ -1572,8 +1591,7 @@ router.get('/:guildId/stats', adminCheck, async (req, res) => {
 router.get('/:guildId/discord-data', adminCheck, async (req, res) => {
     try {
         const { guildId } = req.params;
-        const client = req.discordClient;
-        
+        let client = req.discordClient;
         // 1. Check if bot is ready
         if (!client.isReady()) {
             return res.status(503).json({ 
@@ -1582,20 +1600,37 @@ router.get('/:guildId/discord-data', adminCheck, async (req, res) => {
             });
         }
 
-        // 2. Check bot presence in guild cache first for immediate feedback
-        if (!client.guilds.cache.has(guildId)) {
-            return res.status(404).json({ 
-                success: false, 
-                error: 'Il bot non è presente in questo server. Assicurati di averlo invitato correttamente.' 
-            });
+        // 2. Robust Presence Check with Fallback
+        let guild = client.guilds.cache.get(guildId);
+        
+        if (!guild) {
+            guild = await client.guilds.fetch(guildId).catch(() => null);
         }
 
-        // 3. Robust Fetch
-        const guild = await client.guilds.fetch(guildId).catch(() => null);
+        // FALLBACK: If current client (Private Bot) doesn't have it, try Main Bot
+        if (!guild && client !== req.mainClient) {
+            console.log(`[Dashboard_API] Private bot ${client.user?.tag} not in guild ${guildId}. Falling back to Main Bot for discord-data.`);
+            client = req.mainClient;
+            guild = client.guilds.cache.get(guildId);
+            if (!guild) {
+                guild = await client.guilds.fetch(guildId).catch(() => null);
+            }
+            if (guild) {
+                console.log(`[Dashboard_API] Successfully switched to Main Bot for guild ${guildId}`);
+            } else {
+                console.error(`[Dashboard_API] Main Bot also failed to find guild ${guildId}`);
+            }
+        }
+
         if (!guild) {
+            console.error(`[Dashboard_API] No bot (Main or Private) found in guild ${guildId}`);
             return res.status(404).json({ 
                 success: false, 
-                error: 'Impossibile recuperare i dettagli del server. Verifica i permessi del bot.' 
+                error: 'Il bot non è presente in questo server. Assicurati di averlo invitato correttamente.',
+                debug: {
+                    mainBotId: req.mainClient.user?.id,
+                    guildId
+                }
             });
         }
 
@@ -1617,6 +1652,8 @@ router.get('/:guildId/discord-data', adminCheck, async (req, res) => {
             WhitelistConfig.findOne({ guildId }),
             SupportConfig.findOne({ guildId })
         ]);
+
+        console.log(`[Dashboard_API] Data Fetch for ${guildId}: ${rolesFetched.size} roles, ${channelsFetched.size} channels.`);
 
         const occupiedChannels = {};
         if (temp?.creatorChannelId) occupiedChannels[temp.creatorChannelId] = 'Temp Voice';
@@ -2103,7 +2140,9 @@ router.post('/:guildId/sync', adminCheck, async (req, res) => {
             welcome: WelcomeConfig,
             verify: VerifyConfig,
             socials: SocialConfig,
-            utility: UtilityConfig
+            utility: UtilityConfig,
+            reactionroles: ReactionRoleConfig,
+            polls: PollConfig
         };
 
         const syncedModules = [];
@@ -2144,5 +2183,122 @@ router.post('/:guildId/sync', adminCheck, async (req, res) => {
         res.status(500).json({ success: false, error: 'Errore durante la sincronizzazione.' });
     }
 });
+
+// --- REACTION ROLES ---
+router.post('/:guildId/reaction-roles', adminCheck, validate(reactionRoleSchema), async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const config = await ReactionRoleConfig.findOneAndUpdate(
+            { guildId },
+            { $set: req.body },
+            { upsert: true, new: true }
+        );
+        invalidateCache(guildId);
+        await logAudit(req, guildId, 'UPDATE_REACTION_ROLES', req.body);
+        res.json({ success: true, data: config });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/:guildId/reaction-roles/deploy/:panelId', adminCheck, async (req, res) => {
+    try {
+        const { guildId, panelId } = req.params;
+        const result = await req.discordClient.reactionRoleManager.deployPanel(guildId, panelId);
+        if (result.success) {
+            res.json({ success: true, messageId: result.messageId });
+        } else {
+            res.status(400).json({ success: false, error: result.error });
+        }
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// --- POLLS ---
+router.post('/:guildId/polls/config', adminCheck, validate(pollConfigSchema), async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const config = await PollConfig.findOneAndUpdate(
+            { guildId },
+            { $set: req.body },
+            { upsert: true, new: true }
+        );
+        invalidateCache(guildId);
+        await logAudit(req, guildId, 'UPDATE_POLL_CONFIG', req.body);
+        res.json({ success: true, data: config });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.get('/:guildId/polls/active', adminCheck, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const polls = await Poll.find({ guildId, ended: false }).sort({ createdAt: -1 });
+        res.json(polls);
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+router.post('/:guildId/polls/create', adminCheck, validate(pollCreateSchema), async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const { channelId, question, options, duration, mode, color } = req.body;
+
+        const guild = req.discordClient.guilds.cache.get(guildId);
+        const channel = await guild.channels.fetch(channelId).catch(() => null);
+        if (!channel) return res.status(400).json({ success: false, error: 'Canale non trovato.' });
+
+        const endTime = new Date(Date.now() + duration * 60000);
+
+        const embed = new EmbedBuilder()
+            .setTitle(`📊 Sondaggio: ${question}`)
+            .setDescription(options.map(o => `${o.emoji} **${o.label}**`).join('\n\n'))
+            .setColor(color)
+            .setFooter({ text: `Termina il` })
+            .setTimestamp(endTime);
+
+        const rows = [];
+        let currentRow = new ActionRowBuilder();
+        options.forEach((opt, idx) => {
+            if (idx > 0 && idx % 5 === 0) {
+                rows.push(currentRow);
+                currentRow = new ActionRowBuilder();
+            }
+            currentRow.addComponents(
+                new ButtonBuilder()
+                    .setCustomId(`poll_vote_${idx}`) // Index used for lookup in manager
+                    .setEmoji(opt.emoji)
+                    .setStyle(ButtonStyle.Secondary)
+            );
+        });
+        if (currentRow.components.length > 0) rows.push(currentRow);
+
+        const message = await channel.send({ embeds: [embed], components: rows });
+
+        const poll = new Poll({
+            guildId,
+            channelId,
+            messageId: message.id,
+            question,
+            options: options.map(o => ({ emoji: o.emoji, label: o.label, votes: [] })),
+            endTime,
+            mode,
+            creatorId: req.user.discordId,
+            color
+        });
+
+        await poll.save();
+        await logAudit(req, guildId, 'CREATE_POLL', { question, channelId });
+
+        res.json({ success: true, pollId: poll._id });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// --- END OF ROUTES ---
 
 export default router;

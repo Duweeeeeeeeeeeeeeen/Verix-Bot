@@ -8,6 +8,8 @@ import TempVoiceConfig from '../models/TempVoiceConfig.js';
 import GiveawayConfig from '../models/GiveawayConfig.js';
 import ModerationConfig from '../models/ModerationConfig.js';
 import SupportConfig from '../models/SupportConfig.js';
+import ReactionRoleConfig from '../models/ReactionRoleConfig.js';
+import PollConfig from '../models/PollConfig.js';
 
 /**
  * Registry of all bot modules with their identifying prefixes and associated models.
@@ -68,6 +70,16 @@ export const registry = {
         name: 'Assistenza',
         prefixes: ['supp_'],
         model: SupportConfig
+    },
+    reactionroles: {
+        name: 'Reaction Roles',
+        prefixes: ['rr_'],
+        model: ReactionRoleConfig
+    },
+    polls: {
+        name: 'Sondaggi',
+        prefixes: ['poll_'],
+        model: PollConfig
     }
 };
 

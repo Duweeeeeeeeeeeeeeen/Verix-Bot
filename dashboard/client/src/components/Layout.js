@@ -24,6 +24,8 @@ import {
   ChevronLeft,
   Home,
   CheckCircle,
+  MousePointer2,
+  ListChecks,
   AlertCircle,
   Bell,
   Cpu,
@@ -172,7 +174,8 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
       title: t('sidebar.group_setup'),
       items: [
         { name: t('sidebar.verify'), icon: CheckCircle, path: `/config/${guildId}/verify`, id: 'verify' },
-        { name: t('sidebar.welcome'), icon: UserPlus, path: `/config/${guildId}/welcome`, id: 'welcome' }
+        { name: t('sidebar.welcome'), icon: UserPlus, path: `/config/${guildId}/welcome`, id: 'welcome' },
+        { name: t('sidebar.reactionroles') || 'Reaction Roles', icon: MousePointer2, path: `/config/${guildId}/reaction-roles`, id: 'reaction-roles' }
       ]
     },
     {
@@ -180,7 +183,8 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
       items: [
         { name: t('sidebar.socials'), icon: Tv, path: `/config/${guildId}/socials`, id: 'socials' },
         { name: t('sidebar.giveaway'), icon: Gift, path: `/config/${guildId}/giveaway`, id: 'giveaway' },
-        { name: t('sidebar.photocontest'), icon: Camera, path: `/config/${guildId}/photocontest`, id: 'photocontest' }
+        { name: t('sidebar.photocontest'), icon: Camera, path: `/config/${guildId}/photocontest`, id: 'photocontest' },
+        { name: t('sidebar.polls') || 'Polls', icon: ListChecks, path: `/config/${guildId}/polls`, id: 'polls' }
       ]
     },
     {
@@ -275,7 +279,7 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
 
         <nav className="nav-group">
            {navigationGroups.map((group, gIdx) => (
-            <div key={gIdx} className="nav-section">
+            <div key={gIdx} className={`nav-section ${!group.title ? 'nav-section-top' : 'nav-section-module'}`}>
               {group.title && (
                 !isCollapsed ? (
                   <div className="nav-group-title animate fade-in">{group.title}</div>
@@ -459,23 +463,25 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
           background: var(--bg-main);
         }
 
-        .nav-section { margin-bottom: 0px; }
-        .nav-group-title { font-size: 10px; font-weight: 800; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1px; padding: 12px 16px 2px 16px; opacity: 0.6; }
+        .nav-section { margin-bottom: 2px; }
+        .nav-group-title { font-size: 8px; font-weight: 800; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1px; padding: 8px 16px 1px 16px; opacity: 0.5; }
         .nav-divider { height: 1px; background: var(--border); margin: 4px 16px; opacity: 0.3; }
         .nav-link {
           display: flex;
           align-items: center;
-          gap: 14px;
-          padding: 10px 16px;
-          border-radius: 12px;
+          gap: 10px;
+          padding: 3px 14px;
+          border-radius: 10px;
           color: var(--text-muted);
           font-weight: 600;
+          font-size: 11px;
           text-decoration: none;
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           position: relative;
           white-space: nowrap;
         }
 
+        /* Content Area */
         .content-container {
           padding: 96px 48px 48px 48px;
           width: 100% !important;

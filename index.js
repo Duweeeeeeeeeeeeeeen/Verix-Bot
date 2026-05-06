@@ -15,6 +15,8 @@ import AutomationManager from './src/core/automationManager.js';
 import GiveawayManager from './src/modules/giveaway/manager.js';
 import AnalyticsManager from './src/core/analyticsManager.js';
 import multiBotManager from './src/core/multiBotManager.js';
+import ReactionRoleManager from './src/modules/reactionRoles/manager.js';
+import PollManager from './src/modules/polls/manager.js';
 import MonitoringService from './src/services/monitoringService.js';
 
 // Initialize Discord Client
@@ -25,6 +27,7 @@ const client = new Client({
         GatewayIntentBits.MessageContent,
         GatewayIntentBits.GuildMembers,
         GatewayIntentBits.GuildVoiceStates,
+        GatewayIntentBits.GuildMessageReactions,
     ]
 });
 
@@ -90,6 +93,12 @@ if (global.botInitialized) {
 
             client.analyticsManager = new AnalyticsManager(client);
             client.analyticsManager.start(1000 * 60 * 60);
+
+            client.reactionRoleManager = new ReactionRoleManager(client);
+            client.reactionRoleManager.init();
+
+            client.pollManager = new PollManager(client);
+            client.pollManager.init();
 
             client.monitoring = new MonitoringService(client);
             await client.monitoring.init();

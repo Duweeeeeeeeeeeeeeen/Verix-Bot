@@ -4,7 +4,7 @@ import WhitelistConfig from './src/models/WhitelistConfig.js';
 import TicketConfig from './src/models/TicketConfig.js';
 import VerifyConfig from './src/models/VerifyConfig.js';
 import PhotoContestConfig from './src/models/PhotoContestConfig.js';
-import TwitchConfig from './src/models/TwitchConfig.js';
+import SocialConfig from './src/models/SocialConfig.js';
 
 dotenv.config();
 
@@ -71,15 +71,15 @@ async function refactorAll() {
         await PhotoContestConfig.updateMany({}, { $set: photoUpdate });
         console.log('PhotoContest refactored for all guilds');
 
-        // Twitch
-        const twitchUpdate = {
-            'embed.title': '📡 Segnale in Entrata: {streamer} è in Live!',
-            'embed.description': '**{title}**\n\nLa rete locale sta catturando delle immagini da: **{game}**.\n\n[Connettiti alla frequenza]({url})',
-            'embed.color': '#6441a5',
-            'embed.footer': 'Notifiche Broadcast Automatiche | Verix RP'
+        // Socials (Twitch)
+        const socialUpdate = {
+            'platforms.twitch.embed.title': '📡 Segnale in Entrata: {streamer} è in Live!',
+            'platforms.twitch.embed.description': '**{title}**\n\nLa rete locale sta catturando delle immagini da: **{game}**.\n\n[Connettiti alla frequenza]({url})',
+            'platforms.twitch.embed.color': '#6441a5',
+            'platforms.twitch.embed.footer': 'Notifiche Broadcast Automatiche | Verix RP'
         };
-        await TwitchConfig.updateMany({}, { $set: twitchUpdate });
-        console.log('Twitch refactored for all guilds');
+        await SocialConfig.updateMany({}, { $set: socialUpdate });
+        console.log('Socials (Twitch) refactored for all guilds');
 
         await mongoose.disconnect();
         console.log('Mission accomplished.');

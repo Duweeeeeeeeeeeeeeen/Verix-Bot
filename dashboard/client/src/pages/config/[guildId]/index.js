@@ -28,7 +28,9 @@ import {
   Box,
   Settings2,
   TrendingUp,
-  Plus
+  Plus,
+  MousePointer2,
+  ListChecks
 } from 'lucide-react';
 
 export default function GuildHome() {
@@ -111,42 +113,47 @@ export default function GuildHome() {
       <div className="glow-blob blob-2"></div>
       
       <div className="dashboard-content-main-p">
-        {/* Modern Hero Header */}
-        <header className="hero-banner-p">
-          <div className="hero-info-p">
-            <div className="server-avatar-container">
-              {config?.guildIcon ? (
-                <img src={config.guildIcon} alt={config.guildName} className="server-avatar-glow" />
-              ) : (
-                <div className="server-avatar-placeholder">{config?.guildName?.charAt(0) || 'V'}</div>
-              )}
-              <div className="premium-badge-mini">
-                <Zap size={10} fill="currentColor" />
+        {/* Modern Hero Header - SPLIT VERSION */}
+        <div className="top-split-container animate slide-up">
+          <header className="hero-banner-p hero-left">
+            <div className="hero-info-p">
+              <div className="server-avatar-container">
+                {config?.guildIcon ? (
+                  <img src={config.guildIcon} alt={config.guildName} className="server-avatar-glow" />
+                ) : (
+                  <img src="/logo.png" alt="Verix" className="server-avatar-glow" />
+                )}
+                <div className="premium-badge-mini">
+                  <Zap size={10} fill="currentColor" />
+                </div>
+              </div>
+              <div className="hero-text-p">
+                <div className="badge-setup">{t('dashboard.setup_active')}</div>
+                <h1 className="hero-title">{t('dashboard.welcome_back')}, <span className="text-gradient">{user?.username || 'User'}</span></h1>
+                <p className="hero-subtitle">{t('dashboard.hero_desc', { count: Object.keys(config || {}).length })} — <span className="server-label">{config?.guildName}</span></p>
               </div>
             </div>
-            <div className="hero-text-p">
-              <div className="badge-setup animate slide-in">{t('dashboard.setup_active')}</div>
-              <h1 className="hero-title">{t('dashboard.welcome_back')}, <span className="text-gradient">{user?.username || 'User'}</span></h1>
-              <p className="hero-subtitle">{t('dashboard.hero_desc', { count: Object.keys(config || {}).length })} — <span className="server-label">{config?.guildName}</span></p>
+          </header>
+
+          <div className="hero-banner-p hero-right">
+            <div className="hero-actions-p">
+              {config?.mainBotMissing && (
+                <button 
+                  onClick={() => window.open(config.mainBotInviteUrl, '_blank')} 
+                  className="btn-glass-p pulse-primary"
+                  style={{ background: 'rgba(99, 102, 241, 0.2)', borderColor: 'var(--primary)' }}
+                >
+                  <Plus size={18} />
+                  <span>Invita Verix Bot</span>
+                </button>
+              )}
+              <button onClick={fetchData} className="btn-glass-p">
+                <RefreshCcw size={18} className={loading ? 'spin' : ''} />
+                <span>{t('dashboard.refresh_data')}</span>
+              </button>
             </div>
           </div>
-          <div className="hero-actions-p">
-            {config?.mainBotMissing && (
-              <button 
-                onClick={() => window.open(config.mainBotInviteUrl, '_blank')} 
-                className="btn-glass-p pulse-primary"
-                style={{ background: 'rgba(99, 102, 241, 0.2)', borderColor: 'var(--primary)' }}
-              >
-                <Plus size={18} />
-                <span>Invita Verix Bot</span>
-              </button>
-            )}
-            <button onClick={fetchData} className="btn-glass-p">
-              <RefreshCcw size={18} className={loading ? 'spin' : ''} />
-              <span>{t('dashboard.refresh_data')}</span>
-            </button>
-          </div>
-        </header>
+        </div>
 
         {/* Stats Grid - Glass Edition */}
         <div className="stats-glass-grid">
@@ -195,7 +202,7 @@ export default function GuildHome() {
                 <h2>{t('dashboard.modules_center')}</h2>
               </div>
               <span className="grid-count-p">{[
-                'whitelist', 'tickets', 'verify', 'photocontest', 'support', 'fivem', 'welcome'
+                'whitelist', 'tickets', 'verify', 'photocontest', 'support', 'fivem', 'welcome', 'reactionroles', 'polls'
               ].length} {t('dashboard.active_modules')}</span>
             </div>
 
@@ -203,6 +210,8 @@ export default function GuildHome() {
               {[
                 { id: 'whitelist', label: t('dashboard.module_whitelist'), desc: t('dashboard.module_whitelist_desc'), icon: ShieldCheck, color: '#6366f1', path: 'whitelist' },
                 { id: 'tickets', label: t('dashboard.module_tickets'), desc: t('dashboard.module_tickets_desc'), icon: Ticket, color: '#8b5cf6', path: 'tickets' },
+                { id: 'reactionroles', label: t('dashboard.module_reactionroles') || 'Reaction Roles', desc: t('dashboard.module_reactionroles_desc') || 'Assign roles via buttons or emojis.', icon: MousePointer2, color: '#10b981', path: 'reaction-roles' },
+                { id: 'polls', label: t('dashboard.module_polls') || 'Polls', desc: t('dashboard.module_polls_desc') || 'Create interactive surveys with duration.', icon: ListChecks, color: '#f59e0b', path: 'polls' },
                 { id: 'verify', label: t('dashboard.module_verify'), desc: t('dashboard.module_verify_desc'), icon: Shield, color: '#06b6d4', path: 'verify' },
                 { id: 'photocontest', label: t('dashboard.module_photocontest'), desc: t('dashboard.module_photocontest_desc'), icon: Camera, color: '#f59e0b', path: 'photocontest' },
                 { id: 'support', label: t('dashboard.module_support'), desc: t('dashboard.module_support_desc'), icon: Mic2, color: '#ec4899', path: 'support' },
@@ -306,17 +315,29 @@ export default function GuildHome() {
         }
 
         /* Hero Banner */
+        .top-split-container {
+          display: flex;
+          gap: 24px;
+          margin-bottom: 48px;
+        }
+
         .hero-banner-p {
+          flex: 1;
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 48px;
           background: rgba(255, 255, 255, 0.03);
           padding: 32px;
           border-radius: 24px;
           border: 1px solid var(--glass-border);
           backdrop-filter: blur(10px);
           box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+        }
+
+        .hero-right {
+          flex: 0 0 auto;
+          min-width: 300px;
+          justify-content: center;
         }
 
         .hero-info-p { display: flex; align-items: center; gap: 28px; }
