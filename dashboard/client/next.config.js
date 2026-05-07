@@ -1,7 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  outputFileTracingRoot: __dirname,
+  devIndicators: {
+    buildActivity: false,
+  },
 };
 
 module.exports = nextConfig;
