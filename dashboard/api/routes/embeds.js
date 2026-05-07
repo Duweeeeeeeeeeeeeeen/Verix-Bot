@@ -35,7 +35,7 @@ router.post('/:guildId/templates', adminCheck, validate(templateSchema), async (
         let template;
 
         if (id) {
-            template = await EmbedTemplate.findByIdAndUpdate(id, { name, data }, { new: true });
+            template = await EmbedTemplate.findByIdAndUpdate(id, { name, data }, { returnDocument: 'after' });
             await logAudit(req, 'UPDATE_TEMPLATE', { name, id });
         } else {
             const isPremium = (await Guild.findOne({ guildId }))?.isPremium;

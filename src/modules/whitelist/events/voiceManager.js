@@ -198,7 +198,7 @@ async function startVoiceSession(member, guild, config, client) {
     const updatedConfig = await WhitelistConfig.findOneAndUpdate(
         { guildId: guild.id },
         { $inc: { 'voiceSettings.sessionCounter': 1 } },
-        { new: true }
+        { returnDocument: 'after' }
     );
     const sessionCount = updatedConfig?.voiceSettings?.sessionCounter || 0;
 

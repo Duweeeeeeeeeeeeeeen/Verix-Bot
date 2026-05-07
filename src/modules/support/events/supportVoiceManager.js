@@ -115,7 +115,7 @@ async function startSupportSession(member, guild, config, client) {
     const updatedConfig = await SupportConfig.findOneAndUpdate(
         { guildId: guild.id },
         { $inc: { 'voiceSettings.sessionCounter': 1 } },
-        { new: true }
+        { returnDocument: 'after' }
     );
     const sessionCount = updatedConfig?.voiceSettings?.sessionCounter || 0;
 

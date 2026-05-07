@@ -87,21 +87,21 @@ router.get('/:guildId', adminCheck, async (req, res) => {
         
         // Fetch or create all configurations atomically in parallel using upsert
         let [wlConfig, tkConfig, photoConfig, verifyConfig, guildData, globalConfig, wlcmConfig, utilConfig, fmConfig, socConfig, autoClearConfig, modConfig, suppConfig, rrConfig, pollConfig] = await Promise.all([
-            WhitelistConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, new: true, setDefaultsOnInsert: true }),
-            TicketConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, new: true, setDefaultsOnInsert: true }),
-            PhotoContestConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, new: true, setDefaultsOnInsert: true }),
-            VerifyConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, new: true, setDefaultsOnInsert: true }),
-            Guild.findOneAndUpdate({ guildId }, {}, { upsert: true, new: true, setDefaultsOnInsert: true }),
-            GlobalConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, new: true, setDefaultsOnInsert: true }),
-            WelcomeConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, new: true, setDefaultsOnInsert: true }),
-            UtilityConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, new: true, setDefaultsOnInsert: true }),
-            FiveMConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, new: true, setDefaultsOnInsert: true }),
-            SocialConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, new: true, setDefaultsOnInsert: true }),
-            AutoClearConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, new: true, setDefaultsOnInsert: true }),
-            ModerationConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, new: true, setDefaultsOnInsert: true }),
-            SupportConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, new: true, setDefaultsOnInsert: true }),
-            ReactionRoleConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, new: true, setDefaultsOnInsert: true }),
-            PollConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, new: true, setDefaultsOnInsert: true })
+            WhitelistConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }),
+            TicketConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }),
+            PhotoContestConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }),
+            VerifyConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }),
+            Guild.findOneAndUpdate({ guildId }, {}, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }),
+            GlobalConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }),
+            WelcomeConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }),
+            UtilityConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }),
+            FiveMConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }),
+            SocialConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }),
+            AutoClearConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }),
+            ModerationConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }),
+            SupportConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }),
+            ReactionRoleConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }),
+            PollConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true })
         ]);
 
         // Fetch roles and channels from Discord Client with fallback
@@ -171,7 +171,7 @@ router.get('/:guildId/guild', adminCheck, async (req, res) => {
         const guild = await Guild.findOneAndUpdate(
             { guildId },
             {},
-            { upsert: true, new: true, setDefaultsOnInsert: true }
+            { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
         );
         res.json({ success: true, data: guild });
     } catch (error) {
@@ -252,7 +252,7 @@ router.post('/:guildId/automations', adminCheck, async (req, res) => {
         const config = await AutomationConfig.findOneAndUpdate(
             { guildId },
             { $set: { autoClear, autoMessage } },
-            { new: true, upsert: true }
+            { returnDocument: 'after', upsert: true }
         );
 
         await logAudit(req, guildId, 'automations_update', 'Automations Config Updated');
@@ -310,7 +310,7 @@ router.post('/:guildId/tempvoice', adminCheck, async (req, res) => {
         const config = await TempVoiceConfig.findOneAndUpdate(
             { guildId },
             { $set: updateData },
-            { new: true, upsert: true }
+            { returnDocument: 'after', upsert: true }
         );
 
         invalidateCache(guildId, 'tempvoice');
@@ -345,7 +345,7 @@ router.post('/:guildId/giveaway', adminCheck, async (req, res) => {
         const config = await GiveawayConfig.findOneAndUpdate(
             { guildId },
             { $set: req.body },
-            { new: true, upsert: true }
+            { returnDocument: 'after', upsert: true }
         );
         res.json({ success: true, data: config });
     } catch (error) {
@@ -1764,7 +1764,7 @@ router.post('/:guildId/fivem', adminCheck, validate(fivemSchema), async (req, re
         const config = await FiveMConfig.findOneAndUpdate(
             { guildId },
             updateData,
-            { new: true, upsert: true }
+            { returnDocument: 'after', upsert: true }
         );
 
         await logAudit(req, 'UPDATE_FIVEM', updateData);
@@ -2200,7 +2200,7 @@ router.post('/:guildId/reaction-roles', adminCheck, validate(reactionRoleSchema)
         const config = await ReactionRoleConfig.findOneAndUpdate(
             { guildId },
             { $set: req.body },
-            { upsert: true, new: true }
+            { upsert: true, returnDocument: 'after' }
         );
         invalidateCache(guildId);
         await logAudit(req, guildId, 'UPDATE_REACTION_ROLES', req.body);
@@ -2231,7 +2231,7 @@ router.post('/:guildId/polls/config', adminCheck, validate(pollConfigSchema), as
         const config = await PollConfig.findOneAndUpdate(
             { guildId },
             { $set: req.body },
-            { upsert: true, new: true }
+            { upsert: true, returnDocument: 'after' }
         );
         invalidateCache(guildId);
         await logAudit(req, guildId, 'UPDATE_POLL_CONFIG', req.body);

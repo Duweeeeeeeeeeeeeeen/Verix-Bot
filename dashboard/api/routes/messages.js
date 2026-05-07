@@ -67,7 +67,7 @@ router.post('/:guildId/:module', adminCheck, async (req, res) => {
         const config = await MessageConfig.findOneAndUpdate(
             { guildId, module },
             { $set: { messages } },
-            { upsert: true, new: true }
+            { upsert: true, returnDocument: 'after' }
         );
 
         // Invalidate Bot Cache

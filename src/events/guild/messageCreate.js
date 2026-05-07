@@ -21,7 +21,7 @@ export default {
                     $inc: { xp: xpToAdd },
                     username: message.author.username
                 },
-                { upsert: true, new: true }
+                { upsert: true, returnDocument: 'after' }
             );
 
             // Level up logic
