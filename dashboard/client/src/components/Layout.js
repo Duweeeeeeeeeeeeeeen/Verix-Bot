@@ -450,12 +450,12 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
       )}
 
       {/* Verix Activity Indicator (Bottom Right) */}
-      <div className={`verix-activity-indicator ${isActivity ? 'visible' : ''}`}>
-          <div className="activity-orbit"></div>
-          <div className="activity-logo">
-              <img src="/logo.png" alt="" />
-          </div>
-          <div className="activity-glow"></div>
+      <div
+        className={`verix-activity-indicator ${isActivity ? 'visible' : ''}`}
+        aria-hidden={!isActivity}
+        aria-label="Caricamento"
+      >
+          <span className="activity-dot"></span>
       </div>
 
       <style jsx>{`
@@ -569,72 +569,38 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
           position: fixed;
           bottom: 32px;
           right: 32px;
-          width: 54px;
-          height: 54px;
+          width: 34px;
+          height: 34px;
           z-index: 10000;
           display: flex;
           align-items: center;
           justify-content: center;
           pointer-events: none;
+          background: var(--bg-elevated);
+          border: 1px solid var(--border-strong);
+          border-radius: 8px;
+          box-shadow: 0 12px 30px rgba(0,0,0,0.18);
           opacity: 0;
-          transform: scale(0.5) rotate(-45deg);
-          transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+          transform: translateY(8px);
+          transition: opacity 0.16s ease, transform 0.16s ease;
         }
 
         .verix-activity-indicator.visible {
           opacity: 1;
-          transform: scale(1) rotate(0deg);
+          transform: translateY(0);
         }
 
-        .activity-logo {
-          width: 32px;
-          height: 32px;
-          z-index: 2;
-          animation: activity-pulse 2s ease-in-out infinite;
-        }
-
-        .activity-logo img {
-          width: 100%;
-          height: 100%;
+        .activity-dot {
+          width: 9px;
+          height: 9px;
           border-radius: 50%;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        }
-
-        .activity-orbit {
-          position: absolute;
-          width: 100%;
-          height: 100%;
-          border: 2px solid transparent;
-          border-top-color: var(--primary);
-          border-right-color: rgba(99, 102, 241, 0.2);
-          border-radius: 50%;
-          animation: activity-spin 1s linear infinite;
-        }
-
-        .activity-glow {
-          position: absolute;
-          width: 40px;
-          height: 40px;
           background: var(--primary);
-          filter: blur(20px);
-          opacity: 0.3;
-          z-index: 1;
-          animation: activity-glow-pulse 2s ease-in-out infinite;
+          animation: activity-dot-pulse 1s ease-in-out infinite;
         }
 
-        @keyframes activity-spin {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-
-        @keyframes activity-pulse {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.1); }
-        }
-
-        @keyframes activity-glow-pulse {
-          0%, 100% { opacity: 0.2; transform: scale(1); }
-          50% { opacity: 0.4; transform: scale(1.2); }
+        @keyframes activity-dot-pulse {
+          0%, 100% { opacity: 0.45; transform: scale(0.8); }
+          50% { opacity: 1; transform: scale(1); }
         }
 
         @media (max-width: 1000px) {
