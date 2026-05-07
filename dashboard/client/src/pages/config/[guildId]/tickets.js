@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Skeleton from '../../../components/Skeleton';
 import HelpTooltip from '../../../components/HelpTooltip';
-import EmbedEditor from '../../../components/EmbedEditor';
-import DesignSectionManager from '../../../components/DesignSectionManager';
+import { EmbedEditor } from '../../../components/LazyConfigComponents';
+import { DesignSectionManager } from '../../../components/LazyConfigComponents';
 import api from '../../../utils/api';
 import { useT } from '../../../contexts/LanguageContext';
 import { 
@@ -13,12 +13,12 @@ import {
   Archive, FileText, XCircle, CheckCircle2, Zap, Send, Users,
   GripVertical, Play, ShieldAlert, BarChart3, Lock, Crown
 } from 'lucide-react';
-import DiscordSelector from '../../../components/DiscordSelector';
+import { DiscordSelector } from '../../../components/LazyConfigComponents';
 import EmojiInput from '../../../components/EmojiInput';
-import EmbedMessageManager from '../../../components/EmbedMessageManager';
+import { EmbedMessageManager } from '../../../components/LazyConfigComponents';
 import CustomSelect from '../../../components/CustomSelect';
 import { mergeConfig } from '../../../utils/defaults';
-import NotificationSettings from '../../../components/NotificationSettings';
+import { NotificationSettings } from '../../../components/LazyConfigComponents';
 
 export default function TicketConfig() {
   const router = useRouter();

@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Skeleton from '../../../components/Skeleton';
-import DiscordSelector from '../../../components/DiscordSelector';
-import EmbedMessageManager from '../../../components/EmbedMessageManager';
+import { DiscordSelector } from '../../../components/LazyConfigComponents';
+import { EmbedMessageManager } from '../../../components/LazyConfigComponents';
 import api from '../../../utils/api';
 import { useT } from '../../../contexts/LanguageContext';
 import { 
@@ -14,7 +14,7 @@ import {
 import CustomSelect from '../../../components/CustomSelect';
 import { mergeConfig } from '../../../utils/defaults';
 import EmojiInput from '../../../components/EmojiInput';
-import NotificationSettings from '../../../components/NotificationSettings';
+import { NotificationSettings } from '../../../components/LazyConfigComponents';
 
 export default function VerifyConfig() {
   const router = useRouter();

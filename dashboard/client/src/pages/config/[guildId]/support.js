@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Skeleton from '../../../components/Skeleton';
 import HelpTooltip from '../../../components/HelpTooltip';
-import DiscordSelector from '../../../components/DiscordSelector';
+import { DiscordSelector } from '../../../components/LazyConfigComponents';
 import api from '../../../utils/api';
 import { 
   Save, 
@@ -22,8 +22,8 @@ import {
   AlertCircle
 } from 'lucide-react';
 import CustomSelect from '../../../components/CustomSelect';
-import NotificationSettings from '../../../components/NotificationSettings';
-import EmbedMessageManager from '../../../components/EmbedMessageManager';
+import { NotificationSettings } from '../../../components/LazyConfigComponents';
+import { EmbedMessageManager } from '../../../components/LazyConfigComponents';
 import { MessageSquare as MsgIcon, LogOut, Terminal } from 'lucide-react';
 import { useT } from '../../../contexts/LanguageContext';
 import Head from 'next/head';

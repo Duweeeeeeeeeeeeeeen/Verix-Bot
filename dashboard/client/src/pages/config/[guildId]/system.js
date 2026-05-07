@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Skeleton from '../../../components/Skeleton';
-import EmbedMessageManager from '../../../components/EmbedMessageManager';
+import { EmbedMessageManager } from '../../../components/LazyConfigComponents';
 import api from '../../../utils/api';
 import { useT } from '../../../contexts/LanguageContext';
 import { 

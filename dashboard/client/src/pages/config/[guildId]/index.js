@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Skeleton from '../../../components/Skeleton';
 import HelpTooltip from '../../../components/HelpTooltip';
 import api from '../../../utils/api';
-import OnboardingWizard from '../../../components/OnboardingWizard';
+import { OnboardingWizard } from '../../../components/LazyConfigComponents';
 import { useT } from '../../../contexts/LanguageContext';
 import { useAuth } from '../../../contexts/AuthContext';
 import { 

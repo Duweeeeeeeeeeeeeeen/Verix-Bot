@@ -18,7 +18,7 @@ import {
     ChevronRight,
     Palette
 } from 'lucide-react';
-import DiscordSelector from '../../../components/DiscordSelector';
+import { DiscordSelector } from '../../../components/LazyConfigComponents';
 import { useT } from '../../../contexts/LanguageContext';
 import Head from 'next/head';
 

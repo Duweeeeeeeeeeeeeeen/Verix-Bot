@@ -23,8 +23,8 @@ import {
     Smartphone,
     Lock
 } from 'lucide-react';
-import DiscordSelector from '../../../components/DiscordSelector';
-import EmbedEditor from '../../../components/EmbedEditor';
+import { DiscordSelector } from '../../../components/LazyConfigComponents';
+import { EmbedEditor } from '../../../components/LazyConfigComponents';
 
 export default function AutomationsConfig() {
   const { t } = useT();

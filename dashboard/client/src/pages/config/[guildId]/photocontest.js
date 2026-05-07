@@ -9,9 +9,9 @@ import {
 import Skeleton from '../../../components/Skeleton';
 import HelpTooltip from '../../../components/HelpTooltip';
 import api from '../../../utils/api';
-import DiscordSelector from '../../../components/DiscordSelector';
-import EmbedMessageManager from '../../../components/EmbedMessageManager';
-import NotificationSettings from '../../../components/NotificationSettings';
+import { DiscordSelector } from '../../../components/LazyConfigComponents';
+import { EmbedMessageManager } from '../../../components/LazyConfigComponents';
+import { NotificationSettings } from '../../../components/LazyConfigComponents';
 import ConfirmModal from '../../../components/ConfirmModal';
 
 export default function PhotoContestConfig() {

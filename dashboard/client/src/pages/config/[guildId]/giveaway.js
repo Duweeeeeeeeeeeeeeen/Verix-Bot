@@ -26,7 +26,7 @@ import {
     ChevronRight,
     AlertCircle
 } from 'lucide-react';
-import DiscordSelector from '../../../components/DiscordSelector';
+import { DiscordSelector } from '../../../components/LazyConfigComponents';
 import EmbedPreview from '../../../components/EmbedPreview';
 import CustomSelect from '../../../components/CustomSelect';
 

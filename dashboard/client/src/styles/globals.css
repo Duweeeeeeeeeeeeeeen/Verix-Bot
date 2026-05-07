@@ -698,6 +698,22 @@ h1, h2, h3, h4 {
   animation: shimmer 1.5s infinite;
 }
 
+.config-component-skeleton {
+  min-height: 112px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background:
+    linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent),
+    var(--bg-elevated);
+  background-size: 220% 100%, 100% 100%;
+  animation: skeleton-panel 1.4s ease-in-out infinite;
+}
+
+@keyframes skeleton-panel {
+  from { background-position: 220% 0, 0 0; }
+  to { background-position: -120% 0, 0 0; }
+}
+
 @keyframes shimmer {
   0% { transform: translateX(-100%); }
   100% { transform: translateX(100%); }

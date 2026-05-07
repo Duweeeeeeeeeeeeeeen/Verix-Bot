@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/router';
 import Skeleton from '../../../components/Skeleton';
 import HelpTooltip from '../../../components/HelpTooltip';
-import DiscordSelector from '../../../components/DiscordSelector';
+import { DiscordSelector } from '../../../components/LazyConfigComponents';
 import api from '../../../utils/api';
 import {
   Save, Settings2, Palette, Bell, FileText, Tag,

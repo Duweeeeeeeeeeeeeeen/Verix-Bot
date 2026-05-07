@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Skeleton from '../../../components/Skeleton';
-import DiscordSelector from '../../../components/DiscordSelector';
-import EmbedEditor from '../../../components/EmbedEditor';
+import { DiscordSelector } from '../../../components/LazyConfigComponents';
+import { EmbedEditor } from '../../../components/LazyConfigComponents';
 import api from '../../../utils/api';
 import { useT } from '../../../contexts/LanguageContext';
 import { 

@@ -8,9 +8,9 @@ import {
     ListFilter, Info, CheckCircle, XCircle, MessageSquare,
     Settings2, Palette, Zap, Power
 } from 'lucide-react';
-import DiscordSelector from '../../../components/DiscordSelector';
-import EmbedMessageManager from '../../../components/EmbedMessageManager';
-import EmbedEditor from '../../../components/EmbedEditor';
+import { DiscordSelector } from '../../../components/LazyConfigComponents';
+import { EmbedMessageManager } from '../../../components/LazyConfigComponents';
+import { EmbedEditor } from '../../../components/LazyConfigComponents';
 import { mergeConfig } from '../../../utils/defaults';
 import CustomSelect from '../../../components/CustomSelect';
 import { useT } from '../../../contexts/LanguageContext';

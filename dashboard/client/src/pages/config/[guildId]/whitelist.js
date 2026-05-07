@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Skeleton from '../../../components/Skeleton';
 import HelpTooltip from '../../../components/HelpTooltip';
-import EmbedEditor from '../../../components/EmbedEditor';
-import EmbedMessageManager from '../../../components/EmbedMessageManager';
-import DiscordSelector from '../../../components/DiscordSelector';
+import { EmbedEditor } from '../../../components/LazyConfigComponents';
+import { EmbedMessageManager } from '../../../components/LazyConfigComponents';
+import { DiscordSelector } from '../../../components/LazyConfigComponents';
 import api from '../../../utils/api';
 import { useT } from '../../../contexts/LanguageContext';
 import { 
@@ -42,7 +42,7 @@ import {
 } from 'lucide-react';
 import EmojiInput from '../../../components/EmojiInput';
 import CustomSelect from '../../../components/CustomSelect';
-import NotificationSettings from '../../../components/NotificationSettings';
+import { NotificationSettings } from '../../../components/LazyConfigComponents';
 import { mergeConfig } from '../../../utils/defaults';
 
 export default function WhitelistConfig() {

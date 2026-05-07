@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { useAuth } from '../contexts/AuthContext';
 import { useT } from '../contexts/LanguageContext';
 import { 
@@ -47,8 +48,12 @@ import {
   Sun,
   Moon
 } from 'lucide-react';
-import GuideSidebar from './GuideSidebar';
 import { useTheme } from '../contexts/ThemeContext';
+
+const GuideSidebar = dynamic(() => import('./GuideSidebar'), {
+  ssr: false,
+  loading: () => <aside className="guide-sidebar loading" />
+});
 
 export default function Layout({ children, guildId: propGuildId, hideGuide = false, isNavigating = false }) {
   const { user, logout, currentGuildId, updateGuildId } = useAuth();

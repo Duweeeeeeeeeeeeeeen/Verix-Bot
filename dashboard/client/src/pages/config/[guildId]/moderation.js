@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Skeleton from '../../../components/Skeleton';
-import DiscordSelector from '../../../components/DiscordSelector';
+import { DiscordSelector } from '../../../components/LazyConfigComponents';
 import api from '../../../utils/api';
 import { useT } from '../../../contexts/LanguageContext';
 import { 
@@ -13,9 +13,9 @@ import {
     Settings, ShieldCheck, Lock
 } from 'lucide-react';
 import CustomSelect from '../../../components/CustomSelect';
-import EmbedMessageManager from '../../../components/EmbedMessageManager';
+import { EmbedMessageManager } from '../../../components/LazyConfigComponents';
 import { mergeConfig } from '../../../utils/defaults';
-import NotificationSettings from '../../../components/NotificationSettings';
+import { NotificationSettings } from '../../../components/LazyConfigComponents';
 
 export default function ModerationConfig() {
   const { t } = useT();
