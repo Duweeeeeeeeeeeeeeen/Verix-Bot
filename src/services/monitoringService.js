@@ -4,13 +4,13 @@ import os from 'os';
 class MonitoringService {
     constructor(client) {
         this.client = client;
-        this.ownerId = process.env.OWNER_ID;
+        this.ownerId = process.env.OWNER_ID || process.env.BOT_OWNER_ID;
         this.checkInterval = 1000 * 60 * 30; // Check every 30 minutes
     }
 
     async init() {
         if (!this.ownerId) {
-            logger.warn('[Monitoring] OWNER_ID not set. Monitoring alerts disabled.');
+            logger.warn('[Monitoring] OWNER_ID/BOT_OWNER_ID not set. Monitoring alerts disabled.');
             return;
         }
 

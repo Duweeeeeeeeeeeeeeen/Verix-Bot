@@ -17,6 +17,7 @@ import cryptoHelper from '../utils/cryptoHelper.js';
 class MultiBotManager {
     constructor() {
         this.instances = new Map(); // guildId -> client
+        this.enabledPrivateBotGuilds = new Set(); // Track guilds that have a private bot ENABLED
     }
 
     async init(mainClient) {
@@ -25,15 +26,36 @@ class MultiBotManager {
         const privateBots = await PrivateBot.find({ enabled: true });
         
         for (const botConfig of privateBots) {
+            this.enabledPrivateBotGuilds.add(botConfig.guildId);
             await this.startBot(botConfig);
         }
         
         logger.success(`[MultiBot] Started ${this.instances.size} private bot instances.`);
     }
 
+    /**
+     * Determines if a specific bot instance should handle a guild.
+     * Used to prevent main bot and private bots from performing duplicate actions.
+     */
+    shouldHandle(guildId, client) {
+        if (!guildId) return true;
+
+        // If a private bot is registered and enabled for this guild
+        if (this.enabledPrivateBotGuilds.has(guildId)) {
+            // Only the specific private bot instance for this guild should handle it
+            const privateInstance = this.instances.get(guildId);
+            return client === privateInstance;
+        }
+
+        // If no private bot is enabled, only the main bot should handle it
+        return client === this.mainClient;
+    }
+
     async startBot(botConfig) {
         const { token, guildId } = botConfig;
         
+        this.enabledPrivateBotGuilds.add(guildId);
+
         if (this.instances.has(guildId)) {
             logger.warn(`[MultiBot] Bot for guild ${guildId} is already running.`);
             return;
@@ -147,6 +169,7 @@ class MultiBotManager {
 
     async stopBot(guildId) {
         const client = this.instances.get(guildId);
+        this.enabledPrivateBotGuilds.delete(guildId);
         if (client) {
             client.destroy();
             this.instances.delete(guildId);

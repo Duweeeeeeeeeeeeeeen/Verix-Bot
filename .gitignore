@@ -5,3 +5,11 @@ dist/
 build/
 .DS_Store
 *.log
+*.tar.gz
+*.bak
+/check_*.js
+/test_*.js
+/scratch_check_*.js
+/dashboard/client/src/locales/update_*.js
+/dashboard/client/public/ChatGPT Image*.png
+/dashboard/client/public/*_old.ico

@@ -32,6 +32,13 @@ export class PhotoContestManager {
             const configs = await PhotoContestConfig.find({ enabled: true });
 
             for (const config of configs) {
+                const guildId = config.guildId;
+
+                // --- MULTI-BOT PROTECTION ---
+                if (this.client.multiBotManager && !this.client.multiBotManager.shouldHandle(guildId, this.client)) {
+                    continue;
+                }
+
                 const activeContest = await PhotoContest.findOne({ guildId: config.guildId, status: 'ACTIVE' });
 
                 if (activeContest) {

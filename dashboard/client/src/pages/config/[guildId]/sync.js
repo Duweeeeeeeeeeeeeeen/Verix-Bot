@@ -32,7 +32,7 @@ export default function GlobalSync() {
         { id: 'welcome', label: t('sidebar.welcome'), icon: MessageSquare },
         { id: 'verify', label: t('sidebar.verify'), icon: CheckCircle2 },
         { id: 'socials', label: t('sidebar.socials'), icon: RefreshCcw },
-        { id: 'utility', label: t('sidebar.utility'), icon: Settings2 }
+        { id: 'utility', label: t('common.utility'), icon: Settings2 }
     ];
 
     const loadData = async () => {
@@ -157,7 +157,7 @@ export default function GlobalSync() {
                     <div className="sync-warning">
                         <AlertTriangle size={20} />
                         <div>
-                            <strong>{t('sync.warning_title')}</strong> {t('sync.warning_desc', { name: guildData?.name })}
+                            <strong>{t('sync.warning_title')}</strong> {t('sync.warning_desc', { name: guildData?.name || t('common.this_server') })}
                         </div>
                     </div>
                 </div>

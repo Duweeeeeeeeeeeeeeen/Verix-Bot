@@ -5,9 +5,9 @@ export const superAdminCheck = (req, res, next) => {
         return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const ownerId = process.env.OWNER_ID;
+    const ownerId = process.env.OWNER_ID || process.env.BOT_OWNER_ID;
     if (!ownerId) {
-        logger.error('[superAdminCheck] OWNER_ID not defined in .env');
+        logger.error('[superAdminCheck] OWNER_ID/BOT_OWNER_ID not defined in .env');
         return res.status(500).json({ error: 'Server configuration error' });
     }
 

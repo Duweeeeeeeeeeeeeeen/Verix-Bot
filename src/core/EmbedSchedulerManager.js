@@ -34,6 +34,7 @@ class EmbedSchedulerManager {
             logger.info(`[EmbedScheduler] Found ${pending.length} pending scheduled embeds.`);
 
             for (const item of pending) {
+                if (this.client.multiBotManager && !this.client.multiBotManager.shouldHandle(item.guildId, this.client)) continue;
                 try {
                     await this.sendEmbed(item);
                     item.sent = true;

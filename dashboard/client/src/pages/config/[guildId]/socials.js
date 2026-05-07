@@ -337,6 +337,10 @@ export default function SocialsConfig() {
         </div>
 
         <style jsx>{`
+            .btn-primary-premium { background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; box-shadow: 0 4px 15px rgba(var(--primary-rgb), 0.3); }
+            .btn-primary-premium:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(var(--primary-rgb), 0.4); }
+            .btn-primary-premium:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+
             .socials-premium-container { padding: 32px; max-width: 1400px; margin: 0 auto; }
             
             /* Modern Header */

@@ -7,7 +7,7 @@ const config = {
     guildId: process.env.GUILD_ID,
     
     // Developer settings
-    devMode: true,
+    devMode: String(process.env.DEV_MODE || '').toLowerCase() === 'true',
     
     // Customizable colors for embeds
     colors: {

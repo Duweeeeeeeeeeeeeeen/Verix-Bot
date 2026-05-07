@@ -45,6 +45,7 @@ class CleanupManager {
     async cleanupWhitelist(now) {
         const apps = await WhitelistApp.find({ deletionScheduledAt: { $lte: now } });
         for (const app of apps) {
+            if (this.client.multiBotManager && !this.client.multiBotManager.shouldHandle(app.guildId, this.client)) continue;
             await this.deleteChannel(app.guildId, app.channelId, `Whitelist Session Expired/Finished (${app.userId})`);
             app.deletionScheduledAt = null;
             await app.save();
@@ -55,6 +56,7 @@ class CleanupManager {
         const tickets = await Ticket.find({ deletionScheduledAt: { $lte: now } });
         if (tickets.length > 0) logger.debug(`[CleanupManager] Found ${tickets.length} tickets scheduled for deletion.`);
         for (const ticket of tickets) {
+            if (this.client.multiBotManager && !this.client.multiBotManager.shouldHandle(ticket.guildId, this.client)) continue;
             logger.info(`[CleanupManager] Executing deletion for ticket ${ticket.channelId} (User: ${ticket.userId})`);
             await this.deleteChannel(ticket.guildId, ticket.channelId, `Ticket Closed Cleanup (${ticket.userId})`);
             ticket.deletionScheduledAt = null;
@@ -115,6 +117,7 @@ class CleanupManager {
         // Ghost Active Sessions Cleanup — use cache first to avoid HTTP to Discord
         const activeSessions = await VoiceQueue.find({ status: 'ACTIVE' }).select('guildId userId voiceChannelId status');
         for (const session of activeSessions) {
+            if (this.client.multiBotManager && !this.client.multiBotManager.shouldHandle(session.guildId, this.client)) continue;
             try {
                 const guild = this.client.guilds.cache.get(session.guildId)
                     || await this.client.guilds.fetch(session.guildId).catch(() => null);
@@ -133,6 +136,7 @@ class CleanupManager {
         // Scheduled Deletion Cleanup
         const sessions = await VoiceQueue.find({ deletionScheduledAt: { $lte: now } });
         for (const session of sessions) {
+            if (this.client.multiBotManager && !this.client.multiBotManager.shouldHandle(session.guildId, this.client)) continue;
             await this.deleteChannel(session.guildId, session.voiceChannelId, `Voice Session Finished Cleanup (${session.userId})`);
             session.deletionScheduledAt = null;
             await session.save();
@@ -142,6 +146,7 @@ class CleanupManager {
     async cleanupBackground(now) {
         const bgs = await Background.find({ deletionScheduledAt: { $lte: now } });
         for (const bg of bgs) {
+            if (this.client.multiBotManager && !this.client.multiBotManager.shouldHandle(bg.guildId, this.client)) continue;
             await this.deleteChannel(bg.guildId, bg.channelId, `Background Process Finished Cleanup (${bg.userId})`);
             bg.deletionScheduledAt = null;
             await bg.save();

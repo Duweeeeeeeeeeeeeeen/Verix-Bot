@@ -4,6 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import logger from '../utils/logger.js';
 import { getModuleConfig } from '../core/configCache.js';
+import multiBotManager from '../core/multiBotManager.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -90,6 +91,13 @@ export default async (client) => {
         const hubExecutor = async (...args) => {
             const interaction = args[0];
             const guildId = interaction?.guildId || interaction?.guild?.id;
+
+            // --- MULTI-BOT PROTECTION ---
+            // If a private bot is active for this guild, only that bot should handle events.
+            // Main bot should ignore guilds with active private bots.
+            if (guildId && !multiBotManager.shouldHandle(guildId, client)) {
+                return;
+            }
 
             if (interaction && (interaction.customId || interaction.commandName)) {
                 logger.debug(`[HUB] Interaction: ${interaction.customId || interaction.commandName} | Guild: ${guildId}`);

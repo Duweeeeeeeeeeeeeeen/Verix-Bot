@@ -55,12 +55,31 @@ export const syncGuildIdentity = async (guild) => {
  */
 export const syncGlobalStatus = async (client, force = false) => {
     try {
-        const premiumConfig = await Guild.findOne({ 
-            isPremium: true, 
-            'customStatuses.0': { $exists: true } 
-        }).sort({ updatedAt: -1 });
+        let premiumConfig;
 
-        if (!premiumConfig) return;
+        if (client.isPrivateBot) {
+            // Private bots (Platinum) only follow their specific guild's status
+            premiumConfig = await Guild.findOne({ 
+                guildId: client.ownerGuildId,
+                'customStatuses.0': { $exists: true } 
+            });
+        } else {
+            // Main bot (Verix) picks the most recently updated global premium config
+            premiumConfig = await Guild.findOne({ 
+                isPremium: true, 
+                'customStatuses.0': { $exists: true } 
+            }).sort({ updatedAt: -1 });
+        }
+
+        // --- RESET TO DEFAULT IF NO PREMIUM CONFIG ---
+        if (!premiumConfig) {
+            const defaultType = ActivityType.Watching;
+            const defaultText = client.isPrivateBot ? 'Private Bot | /help' : 'verixbot.com | /help';
+            
+            // Apply default status
+            client.user.setActivity(defaultText, { type: defaultType });
+            return;
+        }
 
         const now = Date.now();
         const rotationIntervalMs = (premiumConfig.statusRotationInterval || 60) * 1000;
@@ -109,18 +128,37 @@ export const syncGlobalStatus = async (client, force = false) => {
             client.user.setActivity(statusText, { type });
         }
 
-        logger.info(`[WhiteLabel] Global status rotated to: "${statusText}" (${currentStatusIndex + 1}/${statuses.length})`);
+        logger.info(`[WhiteLabel] status rotated to: "${statusText}" (${currentStatusIndex + 1}/${statuses.length}) for bot ${client.user.tag}`);
         
         // Prepare next index
         currentStatusIndex = (currentStatusIndex + 1) % statuses.length;
         lastSyncTime = now;
 
     } catch (error) {
-        logger.error('[WhiteLabel] Error syncing global status:', error);
+        logger.error('[WhiteLabel] Error syncing status:', error);
+    }
+};
+
+/**
+ * Iterates through all guilds the bot is in and ensures identity is synced (or reset).
+ */
+export const syncAllGuildsIdentity = async (client) => {
+    try {
+        const guilds = client.guilds.cache;
+        logger.info(`[WhiteLabel] Starting background identity sync for ${guilds.size} guilds...`);
+        
+        for (const [id, guild] of guilds) {
+            await syncGuildIdentity(guild);
+        }
+        
+        logger.info('[WhiteLabel] Identity sync complete.');
+    } catch (error) {
+        logger.error('[WhiteLabel] Error in syncAllGuildsIdentity:', error);
     }
 };
 
 export default {
     syncGuildIdentity,
-    syncGlobalStatus
+    syncGlobalStatus,
+    syncAllGuildsIdentity
 };

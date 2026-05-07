@@ -36,6 +36,13 @@ class AutomationManager {
             });
 
             for (const config of configs) {
+                const guildId = config.guildId;
+
+                // --- MULTI-BOT PROTECTION ---
+                if (this.client.multiBotManager && !this.client.multiBotManager.shouldHandle(guildId, this.client)) {
+                    continue;
+                }
+
                 let updated = false;
 
                 // 1. Handle Auto Clear
@@ -92,6 +99,11 @@ class AutomationManager {
      */
     async handleMessage(message) {
         if (!message.guild || message.author.bot) return;
+
+        // --- MULTI-BOT PROTECTION ---
+        if (this.client.multiBotManager && !this.client.multiBotManager.shouldHandle(message.guild.id, this.client)) {
+            return;
+        }
 
         const key = `${message.guild.id}:${message.channel.id}`;
         const current = this.messageBuffer.get(key) || 0;

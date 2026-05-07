@@ -31,6 +31,7 @@ class GiveawayManager {
             });
 
             for (const giveaway of giveawaysToEnd) {
+                if (this.client.multiBotManager && !this.client.multiBotManager.shouldHandle(giveaway.guildId, this.client)) continue;
                 await this.endGiveaway(giveaway);
             }
 
@@ -41,6 +42,7 @@ class GiveawayManager {
             });
 
             for (const giveaway of giveawaysToStart) {
+                if (this.client.multiBotManager && !this.client.multiBotManager.shouldHandle(giveaway.guildId, this.client)) continue;
                 await this.startGiveaway(giveaway);
             }
         } catch (error) {

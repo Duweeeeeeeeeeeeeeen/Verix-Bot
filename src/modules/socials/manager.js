@@ -44,6 +44,12 @@ export class SocialManager {
 
             for (const config of configs) {
                 const guildId = config.guildId;
+
+                // --- MULTI-BOT PROTECTION ---
+                if (this.client.multiBotManager && !this.client.multiBotManager.shouldHandle(guildId, this.client)) {
+                    continue;
+                }
+
                 let configChanged = false;
 
                 // 1. Check Twitch
@@ -320,7 +326,11 @@ export class SocialManager {
                     streamer: postData.author || account.username,
                     title: postData.title,
                     url: optimizedUrl,
-                    description: postData.description || ''
+                    description: (postData.description || '')
+                        .replace(/Vedi su Instagram/gi, '')
+                        .replace(/Guarda il TikTok/gi, '')
+                        .replace(/Guarda ora/gi, '')
+                        .trim()
                 })
                 : '';
 
@@ -336,7 +346,7 @@ export class SocialManager {
             const defaultDescs = {
                 'Twitch': `### {title}\n\nEhi! **{streamer}** ha appena acceso la camera su Twitch. Non perderti lo show!\n\n[Entra in Live]({url})`,
                 'YouTube': `### {title}\n\nÈ appena uscito un nuovo video sul canale! Corri a lasciare un like.`,
-                'Twitter': `{description}\n\n[Leggi il Tweet]({url})`,
+                'Twitter': `{description}`,
                 'Instagram': `### {title}\n\nNuovo contenuto caricato su Instagram! Passa a dare un'occhiata.`,
                 'TikTok': `### {title}\n\nÈ appena stato pubblicato un nuovo video su TikTok! Guarda subito.`
             };
@@ -346,8 +356,8 @@ export class SocialManager {
                 'Twitch': { color: 0x6441a5, icon: 'https://img.icons8.com/color/512/twitch.png', label: 'Twitch Live' },
                 'YouTube': { color: 0xff0000, icon: 'https://img.icons8.com/color/512/youtube-play.png', label: 'YouTube Video' },
                 'Twitter': { color: 0x1da1f2, icon: 'https://img.icons8.com/color/512/twitter--v1.png', label: 'Twitter (X)' },
-                'Instagram': { color: 0xe1306c, icon: 'https://img.icons8.com/color/512/instagram-new--v1.png', label: 'Instagram Post' },
-                'TikTok': { color: 0x000000, icon: 'https://img.icons8.com/color/512/tiktok.png', label: 'TikTok Video' }
+                'Instagram': { color: 0xe1306c, icon: 'https://img.icons8.com/color/512/instagram-new--v1.png', label: 'Instagram' },
+                'TikTok': { color: 0x000000, icon: 'https://img.icons8.com/color/512/tiktok.png', label: 'TikTok' }
             };
 
             const style = platformStyles[platform] || { color: 0x7289da, icon: '', label: platform };
@@ -368,14 +378,14 @@ export class SocialManager {
                     iconURL: this.client.user.displayAvatarURL() 
                 });
 
-            // Instagram specific: clean look without Author header, logo in thumbnail
-            if (platform === 'Instagram') {
+            embedData.setAuthor({ 
+                name: style.label, 
+                iconURL: style.icon || guild.iconURL() 
+            });
+
+            // For Instagram, we keep the icon in thumbnail as well as it looks premium
+            if (style.icon) {
                 embedData.setThumbnail(style.icon);
-            } else {
-                embedData.setAuthor({ 
-                    name: style.label, 
-                    iconURL: style.icon || guild.iconURL() 
-                }).setThumbnail(style.icon);
             }
 
             if (postData.thumbnail) {

@@ -427,8 +427,8 @@ export default function PollsConfig() {
 
         .options-list { display: flex; flex-direction: column; gap: 10px; }
         .option-item { display: grid; grid-template-columns: 50px 1fr 40px; gap: 10px; }
-        .input-emoji { background: var(--bg-sidebar-alt); border: 1px solid var(--border); border-radius: 8px; color: white; text-align: center; font-size: 1.2rem; }
-        .input-label { background: var(--bg-sidebar-alt); border: 1px solid var(--border); border-radius: 8px; color: white; padding: 10px; }
+        .input-emoji { background: var(--bg-sidebar-alt); border: 1px solid var(--border); border-radius: 8px; color: var(--text-main); text-align: center; font-size: 1.2rem; }
+        .input-label { background: var(--bg-sidebar-alt); border: 1px solid var(--border); border-radius: 8px; color: var(--text-main); padding: 10px; }
         .btn-remove { border: none; background: transparent; color: var(--error); cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0.6; }
         .btn-remove:hover { opacity: 1; }
 

@@ -61,5 +61,9 @@ export default {
         // White-label: Sync global status (Rotation check every 5s)
         await whiteLabelHelper.syncGlobalStatus(client);
         setInterval(() => whiteLabelHelper.syncGlobalStatus(client), 5 * 1000);
+
+        // White-label: Identity Sync (Startup + every 30 mins)
+        setTimeout(() => whiteLabelHelper.syncAllGuildsIdentity(client), 10000);
+        setInterval(() => whiteLabelHelper.syncAllGuildsIdentity(client), 30 * 60 * 1000);
     },
 };
