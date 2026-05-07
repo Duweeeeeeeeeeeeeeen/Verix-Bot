@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { 
   Type, 
   Palette, 
@@ -15,10 +16,14 @@ import {
   Sun,
   Moon
 } from 'lucide-react';
-import EmbedPreview from './EmbedPreview';
 import HelpTooltip from './HelpTooltip';
 import CustomSelect from './CustomSelect';
 import { useT } from '../contexts/LanguageContext';
+
+const EmbedPreview = dynamic(() => import('./EmbedPreview'), {
+  ssr: false,
+  loading: () => <div className="embed-preview-skeleton" />
+});
 
 /**
  * Reusable Embed Editor Component
@@ -295,6 +300,21 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
         .preview-sticky {
           position: sticky;
           top: 20px;
+        }
+        .embed-preview-skeleton {
+          width: 100%;
+          min-height: 260px;
+          border-radius: 8px;
+          border: 1px solid var(--border);
+          background:
+            linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent),
+            var(--bg-elevated);
+          background-size: 220% 100%, 100% 100%;
+          animation: preview-skeleton 1.4s ease-in-out infinite;
+        }
+        @keyframes preview-skeleton {
+          from { background-position: 220% 0, 0 0; }
+          to { background-position: -120% 0, 0 0; }
         }
         .input-small {
           background: var(--bg-input);

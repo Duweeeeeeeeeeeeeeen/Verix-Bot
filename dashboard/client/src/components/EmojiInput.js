@@ -1,6 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
-import EmojiPicker, { Theme } from 'emoji-picker-react';
+import dynamic from 'next/dynamic';
 import { Smile, X } from 'lucide-react';
+
+const EmojiPicker = dynamic(() => import('emoji-picker-react'), {
+    ssr: false,
+    loading: () => (
+        <div className="emoji-picker-loading">
+            <Smile size={18} />
+        </div>
+    )
+});
 
 export default function EmojiInput({ value, onChange, placeholder, className, style, alignPicker = 'right', hideInput = false }) {
     const [showPicker, setShowPicker] = useState(false);
@@ -129,14 +138,25 @@ export default function EmojiInput({ value, onChange, placeholder, className, st
                     overflow: 'hidden',
                     border: '1px solid var(--border-strong)'
                 }}>
-                    <EmojiPicker 
-                        theme={typeof document !== 'undefined' && document.body.classList.contains('light-theme') ? Theme.LIGHT : Theme.DARK} 
+                    <EmojiPicker
+                        theme={typeof document !== 'undefined' && document.body.classList.contains('light-theme') ? 'light' : 'dark'}
                         onEmojiClick={handleEmojiClick}
                         autoFocusSearch={false}
                         lazyLoadEmojis={true}
                         width={320}
                         height={400}
                     />
+                    <style jsx>{`
+                        .emoji-picker-loading {
+                            width: 320px;
+                            height: 240px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            color: var(--text-muted);
+                            background: var(--bg-card);
+                        }
+                    `}</style>
                 </div>
             )}
         </div>

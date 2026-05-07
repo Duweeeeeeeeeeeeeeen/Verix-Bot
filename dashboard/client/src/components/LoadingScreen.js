@@ -10,13 +10,9 @@ export default function LoadingScreen({ message }) {
       <div className="loading-content">
         <div className="logo-container">
           <img src="/logo.png" alt="Verix Logo" className="pulse-logo" />
-          <div className="orbit-container">
-            <div className="orbit-ring"></div>
-            <div className="orbit-planet"></div>
-          </div>
         </div>
         <div className="loading-text">
-          <h2 className="glitch-text" data-text="VERIX">VERIX</h2>
+          <h2>VERIX</h2>
           <div className="progress-bar-container">
             <div className="progress-bar-fill"></div>
           </div>
@@ -37,67 +33,36 @@ export default function LoadingScreen({ message }) {
           align-items: center;
           z-index: 99999;
           overflow: hidden;
+          backdrop-filter: blur(8px);
         }
 
         .loading-content {
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 40px;
+          gap: 28px;
+          width: min(320px, calc(100vw - 48px));
+          padding: 32px;
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          background: color-mix(in srgb, var(--bg-card) 88%, transparent);
+          box-shadow: var(--shadow-xl);
         }
 
         .logo-container {
           position: relative;
-          width: 120px;
-          height: 120px;
+          width: 72px;
+          height: 72px;
           display: flex;
           justify-content: center;
           align-items: center;
         }
 
         .pulse-logo {
-          width: 80px;
-          height: 80px;
+          width: 64px;
+          height: 64px;
           border-radius: 50%;
-          z-index: 10;
-          animation: logo-pulse 2s ease-in-out infinite;
-          box-shadow: 0 0 30px rgba(99, 102, 241, 0.4);
-        }
-
-        @keyframes logo-pulse {
-          0%, 100% { transform: scale(1); filter: brightness(1); }
-          50% { transform: scale(1.05); filter: brightness(1.2); }
-        }
-
-        .orbit-container {
-          position: absolute;
-          width: 140px;
-          height: 140px;
-          animation: rotate 3s linear infinite;
-        }
-
-        .orbit-ring {
-          position: absolute;
-          width: 100%;
-          height: 100%;
-          border: 2px solid rgba(99, 102, 241, 0.1);
-          border-radius: 50%;
-        }
-
-        .orbit-planet {
-          position: absolute;
-          top: -5px;
-          left: 50%;
-          width: 10px;
-          height: 10px;
-          background: var(--primary, #6366f1);
-          border-radius: 50%;
-          box-shadow: 0 0 15px var(--primary, #6366f1);
-        }
-
-        @keyframes rotate {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
         }
 
         .loading-text {
@@ -108,21 +73,20 @@ export default function LoadingScreen({ message }) {
           gap: 16px;
         }
 
-        .glitch-text {
+        h2 {
           font-family: 'Outfit', sans-serif;
-          font-size: 2rem;
+          font-size: 1.45rem;
           font-weight: 900;
-          letter-spacing: 8px;
+          letter-spacing: 0;
           color: var(--text-main);
-          position: relative;
           margin: 0;
         }
 
         .progress-bar-container {
-          width: 200px;
+          width: 100%;
           height: 4px;
           background: var(--bg-elevated-hover);
-          border-radius: 10px;
+          border-radius: 999px;
           overflow: hidden;
         }
 

@@ -41,31 +41,10 @@ function NavLoading() {
 }
 
 function TopProgressBar({ isAnimating }) {
-  const [width, setWidth] = useState(0);
-
-  useEffect(() => {
-    if (isAnimating) {
-      setWidth(30);
-      const timer = setInterval(() => {
-        setWidth(prev => {
-          if (prev >= 90) return prev;
-          return prev + 5;
-        });
-      }, 400);
-      return () => clearInterval(timer);
-    } else {
-      setWidth(100);
-    }
-  }, [isAnimating]);
-
   return (
-    <div 
-      className="top-progress-bar" 
-      style={{ 
-        width: `${width}%`, 
-        opacity: isAnimating || width < 100 ? 1 : 0,
-        transition: width === 100 ? 'width 0.2s, opacity 0.4s 0.2s' : 'width 0.4s'
-      }} 
+    <div
+      className={`top-progress-bar ${isAnimating ? 'active' : ''}`}
+      aria-hidden="true"
     />
   );
 }
@@ -110,7 +89,7 @@ function MyApp({ Component, pageProps }) {
   const [showFullLoader, setShowFullLoader] = useState(false);
   
   const pageName = PAGE_TITLES[router.pathname];
-  const pageTitle = pageName ? `${pageName} — Verix Panel` : 'Verix Panel';
+  const pageTitle = pageName ? `${pageName} - Verix Panel` : 'Verix Panel';
 
   // Decide if we should wrap with Layout
   // Generally, any page under /config/[guildId] needs the layout
@@ -122,7 +101,7 @@ function MyApp({ Component, pageProps }) {
         <title>{pageTitle}</title>
         <link rel="icon" href="/favicon.ico" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="description" content="Verix Bot Administration Panel — manage modules, tickets, whitelist and more." />
+        <meta name="description" content="Verix Bot Administration Panel - manage modules, tickets, whitelist and more." />
       </Head>
       <LanguageProvider>
         <ThemeProvider>
