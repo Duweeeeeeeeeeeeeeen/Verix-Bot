@@ -270,12 +270,18 @@ export class SocialManager {
                                 }
                             }
 
+                            const isVideo = latestItem.enclosure?.type?.includes('video') || 
+                                          latestItem.content?.includes('<video') || 
+                                          latestItem.link?.includes('/video/') ||
+                                          latestItem.title?.toLowerCase().includes('video');
+
                             await this.handleSocialPost(guildId, platformConfig, account, {
                                 title: latestItem.title || 'Nuovo post!',
                                 url: latestItem.link,
                                 author: feed.title || username,
                                 description: latestItem.contentSnippet || latestItem.content?.replace(/<[^>]*>/g, '').substring(0, 500) || '',
-                                thumbnail: thumbnail
+                                thumbnail: thumbnail,
+                                isVideo: isVideo
                             }, platformName);
 
                             account.lastPostId = itemId;
@@ -321,26 +327,39 @@ export class SocialManager {
             else if (optimizedUrl.includes('x.com')) optimizedUrl = optimizedUrl.replace('x.com', 'fxtwitter.com');
             else if (optimizedUrl.includes('instagram.com')) optimizedUrl = optimizedUrl.replace('instagram.com', 'ddinstagram.com');
 
-            const formatText = (text) => text
-                ? placeholderHelper.replace(text, {
+            const formatText = (text) => {
+                if (!text) return '';
+                
+                // If it's a video on X/Twitter, the user requested to put nothing instead of the post content/description
+                if (postData.isVideo && (platform === 'Twitter' || platform === 'X')) {
+                    return '';
+                }
+
+                return placeholderHelper.replace(text, {
                     streamer: postData.author || account.username,
                     title: postData.title,
                     url: optimizedUrl,
                     description: (postData.description || '')
-                        .replace(/Vedi su Instagram/gi, '')
-                        .replace(/Guarda il TikTok/gi, '')
-                        .replace(/Guarda ora/gi, '')
+                        .replace(/Vedi su (Instagram|TikTok|X|Twitter)/gi, '')
+                        .replace(/View on (Instagram|TikTok|X|Twitter)/gi, '')
+                        .replace(/Guarda (il TikTok|ora)/gi, '')
+                        .replace(/Watch (on TikTok|now)/gi, '')
+                        .replace(/Vai al (Tweet|tweet)/gi, '')
+                        .replace(/Go to (Tweet|tweet)/gi, '')
+                        .replace(/Vedi (il Post|il post)/gi, '')
+                        .replace(/View (Post|post)/gi, '')
+                        .replace(/A post shared by .*/gi, '')
                         .trim()
-                })
-                : '';
+                });
+            };
 
             // Default titles and descriptions based on platform
             const defaultTitles = {
-                'Twitch': `📡 {streamer} è in diretta!`,
-                'YouTube': `🎥 Nuovo video di {streamer}!`,
-                'Twitter': `🐦 Nuovo Tweet di {streamer}`,
-                'Instagram': `📸 Nuovo post di {streamer}`,
-                'TikTok': `🎵 Nuovo TikTok di {streamer}`
+                'Twitch': `📡 **{streamer}** è in diretta!`,
+                'YouTube': `🎥 Nuovo video di **{streamer}**!`,
+                'Twitter': `𝕏 (Twitter) Nuovo post di **{streamer}**`,
+                'Instagram': `📸 Nuovo post di **{streamer}**`,
+                'TikTok': `🎵 Nuovo TikTok di **{streamer}**`
             };
 
             const defaultDescs = {
@@ -355,7 +374,7 @@ export class SocialManager {
             const platformStyles = {
                 'Twitch': { color: 0x6441a5, icon: 'https://img.icons8.com/color/512/twitch.png', label: 'Twitch Live' },
                 'YouTube': { color: 0xff0000, icon: 'https://img.icons8.com/color/512/youtube-play.png', label: 'YouTube Video' },
-                'Twitter': { color: 0x1da1f2, icon: 'https://img.icons8.com/color/512/twitter--v1.png', label: 'Twitter (X)' },
+                'Twitter': { color: 0x000000, icon: 'https://img.icons8.com/color/512/twitterx--v2.png', label: 'X (Twitter)' },
                 'Instagram': { color: 0xe1306c, icon: 'https://img.icons8.com/color/512/instagram-new--v1.png', label: 'Instagram' },
                 'TikTok': { color: 0x000000, icon: 'https://img.icons8.com/color/512/tiktok.png', label: 'TikTok' }
             };
@@ -367,10 +386,14 @@ export class SocialManager {
             if (authorName.includes(' - ')) authorName = authorName.split(' - ')[0];
             if (authorName.includes(' | ')) authorName = authorName.split(' | ')[0];
 
+            // Suppress description if video on Twitter
+            const isTwitterVideo = platform === 'Twitter' && postData.isVideo;
+            const finalDescription = isTwitterVideo ? '' : (formatText(customEmbed.description) || formatText(defaultDescs[platform]) || postData.description || postData.title);
+
             const embedData = new EmbedBuilder()
                 .setTitle(formatText(customEmbed.title) || formatText(defaultTitles[platform]) || 'Nuovo post!')
                 .setURL(optimizedUrl)
-                .setDescription(formatText(customEmbed.description) || formatText(defaultDescs[platform]) || postData.description || postData.title)
+                .setDescription(finalDescription)
                 .setColor(customEmbed.color ? parseInt(customEmbed.color.replace('#', ''), 16) : style.color)
                 .setTimestamp()
                 .setFooter({ 

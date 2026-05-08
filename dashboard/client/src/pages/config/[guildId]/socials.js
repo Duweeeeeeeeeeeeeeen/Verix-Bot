@@ -12,12 +12,19 @@ import {
 import { useT } from '../../../contexts/LanguageContext';
 import Head from 'next/head';
 
+const XLogo = ({ size = 24, color = "currentColor" }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M4 4l11.733 16H20L8.267 4H4z" fill={color} stroke="none" />
+        <path d="M4 20l6.768-6.768m2.464-2.464L20 4" />
+    </svg>
+);
+
 const PLATFORMS = [
     { id: 'twitch', name: 'Twitch Live', icon: Tv, color: '#9146ff', description: 'Monitora gli streaming live e avvisa i tuoi utenti quando sei online.' },
     { id: 'youtube', name: 'YouTube Channel', icon: Youtube, color: '#ff0000', description: 'Notifica i nuovi video e i live streaming del tuo canale.' },
     { id: 'instagram', name: 'Instagram Studio', icon: Instagram, color: '#e1306c', description: 'Condividi i nuovi post e storie direttamente su Discord.' },
     { id: 'tiktok', name: 'TikTok Feed', icon: Share2, color: '#000000', description: 'Avvisa la tua community per ogni nuovo video caricato.' },
-    { id: 'twitter', name: 'X / Twitter Hub', icon: Twitter, color: '#1da1f2', description: 'Sincronizza i tuoi tweet in tempo reale in un canale Discord.' }
+    { id: 'twitter', name: '𝕏 (Twitter) Hub', icon: XLogo, color: '#000000', description: 'Sincronizza i tuoi tweet in tempo reale in un canale Discord.' }
 ];
 
 export default function SocialsConfig() {
@@ -153,8 +160,8 @@ export default function SocialsConfig() {
         <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '380px 1fr', gap: '40px' }}>
             {/* V2 Platform Navigator Sidebar */}
             <aside className="v-stack animate slide-up" style={{ gap: '32px' }}>
-                <div className="pc-sidebar-card-v2" style={{ background: 'white', padding: '32px', borderRadius: '32px', boxShadow: 'var(--shadow-premium)', border: '1px solid var(--border-light)' }}>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 950, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '24px', display: 'block' }}>Platform Repository</span>
+                <div className="pc-sidebar-card-v2" style={{ background: 'var(--bg-card)', padding: '32px', borderRadius: '32px', boxShadow: 'var(--shadow-premium)', border: '1px solid var(--border)' }}>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 950, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '24px', display: 'block' }}>Platform Repository</span>
                     <nav className="pc-nav-stack-v2" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         {PLATFORMS.map(p => {
                             const locked = !guildData?.isPremium && p.id !== 'twitch' && !['premium', 'platinum'].includes(guildData?.premiumTier);
@@ -165,16 +172,16 @@ export default function SocialsConfig() {
                                     key={p.id} 
                                     className={`pc-nav-item-v2 ${active ? 'active' : ''} ${locked ? 'locked' : ''}`}
                                     onClick={() => setActivePlatform(p.id)}
-                                    style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', border: 'none', background: active ? '#f8fafc' : 'transparent', borderRadius: '22px', cursor: locked ? 'not-allowed' : 'pointer', transition: '0.3s', border: active ? '1.5px solid #e2e8f0' : '1.5px solid transparent', position: 'relative' }}
+                                    style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '16px', border: 'none', background: active ? 'var(--bg-badge)' : 'transparent', borderRadius: '22px', cursor: locked ? 'not-allowed' : 'pointer', transition: '0.3s', border: active ? '1.5px solid var(--border-strong)' : '1.5px solid transparent', position: 'relative' }}
                                 >
-                                    <div className="p-icon-box-v2" style={{ width: '48px', height: '48px', borderRadius: '14px', background: active ? p.color : '#f1f5f9', color: active ? 'white' : locked ? '#94a3b8' : p.color, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.3s' }}>
+                                    <div className="p-icon-box-v2" style={{ width: '48px', height: '48px', borderRadius: '14px', background: active ? p.color : 'var(--bg-badge)', color: active ? 'white' : locked ? 'var(--text-muted)' : p.color, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.3s' }}>
                                         {locked ? <Lock size={20} /> : <p.icon size={22} />}
                                     </div>
                                     <div className="v-stack" style={{ flex: 1, textAlign: 'left' }}>
-                                        <span style={{ fontWeight: 950, fontSize: '1rem', color: active ? '#1e293b' : '#64748b' }}>{p.name}</span>
+                                        <span style={{ fontWeight: 950, fontSize: '1rem', color: active ? 'var(--text-heading)' : 'var(--text-main)' }}>{p.name}</span>
                                         {isEnabled && <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}><div style={{ width: '5px', height: '5px', borderRadius: '50%', background: '#10b981' }}></div><span style={{ fontSize: '0.65rem', color: '#10b981', fontWeight: 900, textTransform: 'uppercase' }}>Synchronized</span></div>}
                                     </div>
-                                    {active && <ChevronRight size={18} color="#6366f1" style={{ opacity: 0.5 }} />}
+                                    {active && <ChevronRight size={18} color="var(--primary)" style={{ opacity: 0.5 }} />}
                                     {locked && <div style={{ position: 'absolute', right: '14px', top: '14px', background: 'linear-gradient(135deg, #a855f7 0%, #7c3aed 100%)', color: 'white', padding: '4px', borderRadius: '8px', boxShadow: '0 4px 8px rgba(124, 58, 237, 0.2)' }}><Sparkles size={10} /></div>}
                                 </button>
                             );
@@ -197,12 +204,12 @@ export default function SocialsConfig() {
             {/* V2 Main Platform Studio Area */}
             <main className="v-stack" style={{ gap: '32px' }}>
                 {isLocked ? (
-                    <div className="pc-tier-gate-v2 animate slide-up" style={{ padding: '100px 40px', background: 'white', borderRadius: '40px', border: '1px solid #e2e8f0', textAlign: 'center', boxShadow: 'var(--shadow-premium)' }}>
-                        <div style={{ width: '100px', height: '100px', background: 'linear-gradient(135deg, #f5f3ff 0%, #ddd6fe 100%)', color: '#7c3aed', borderRadius: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 40px', boxShadow: '0 20px 40px rgba(124, 58, 237, 0.15)' }}>
+                    <div className="pc-tier-gate-v2 animate slide-up" style={{ padding: '100px 40px', background: 'var(--bg-card)', borderRadius: '40px', border: '1px solid var(--border)', textAlign: 'center', boxShadow: 'var(--shadow-premium)' }}>
+                        <div style={{ width: '100px', height: '100px', background: 'var(--bg-badge)', color: 'var(--primary)', borderRadius: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 40px', boxShadow: '0 20px 40px rgba(124, 58, 237, 0.15)' }}>
                             <Lock size={48} />
                         </div>
-                        <h2 style={{ fontFamily: 'Outfit', fontSize: '2.5rem', fontWeight: 950, marginBottom: '16px', color: '#1e293b', letterSpacing: '-1.5px' }}>Premium Studio Slot</h2>
-                        <p style={{ color: '#64748b', fontSize: '1.15rem', marginBottom: '48px', maxWidth: '500px', margin: '0 auto 48px', fontWeight: 650, lineHeight: 1.6 }}>Il monitoraggio professionale di <strong>{pData.name}</strong> è riservato ai partner con abbonamento Platinum.</p>
+                        <h2 style={{ fontSize: '2.5rem', fontWeight: 950, marginBottom: '16px', color: 'var(--text-heading)', letterSpacing: '-1.5px' }}>Premium Studio Slot</h2>
+                        <p style={{ color: 'var(--text-muted)', fontSize: '1.15rem', marginBottom: '48px', maxWidth: '500px', margin: '0 auto 48px', fontWeight: 650, lineHeight: 1.6 }}>Il monitoraggio professionale di <strong>{pData.name}</strong> è riservato ai partner con abbonamento Platinum.</p>
                         <button className="pc-btn-primary" style={{ margin: '0 auto', background: 'linear-gradient(135deg, #6366f1 0%, #d946ef 100%)', padding: '20px 52px', fontSize: '1.1rem', borderRadius: '20px' }} onClick={() => router.push(`/config/${guildId}/premium`)}>
                             <Sparkles size={22} />
                             <span>Effettua Upgrade Ora</span>
@@ -210,14 +217,14 @@ export default function SocialsConfig() {
                     </div>
                 ) : (
                     <div className="v-stack animate slide-up" key={activePlatform} style={{ gap: '32px' }}>
-                        <section className="pc-platform-banner-v2" style={{ display: 'flex', alignItems: 'center', gap: '32px', padding: '40px', background: 'white', borderRadius: '32px', border: '1px solid #e2e8f0', position: 'relative', overflow: 'hidden', boxShadow: 'var(--shadow-premium)' }}>
+                        <section className="pc-platform-banner-v2" style={{ display: 'flex', alignItems: 'center', gap: '32px', padding: '40px', background: 'var(--bg-card)', borderRadius: '32px', border: '1px solid var(--border)', position: 'relative', overflow: 'hidden', boxShadow: 'var(--shadow-premium)' }}>
                             <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '10px', background: pData.color }}></div>
-                            <div className="p-hero-icon-v2" style={{ width: '80px', height: '80px', borderRadius: '22px', background: '#f8fafc', color: pData.color, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'inset 0 0 0 1.5px rgba(0,0,0,0.03)' }}>
+                            <div className="p-hero-icon-v2" style={{ width: '80px', height: '80px', borderRadius: '22px', background: 'var(--bg-badge)', color: pData.color, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'inset 0 0 0 1.5px rgba(0,0,0,0.03)' }}>
                                 <pData.icon size={42} />
                             </div>
                             <div className="v-stack" style={{ flex: 1 }}>
-                                <h2 style={{ margin: 0, fontFamily: 'Outfit', fontSize: '2rem', fontWeight: 950, color: '#1e293b', letterSpacing: '-0.5px' }}>Hub {pData.name}</h2>
-                                <p style={{ margin: '8px 0 0 0', color: '#64748b', fontSize: '1.05rem', fontWeight: 650, lineHeight: 1.5 }}>{pData.description}</p>
+                                <h2 style={{ margin: 0, fontSize: '2rem', fontWeight: 950, color: 'var(--text-heading)', letterSpacing: '-0.5px' }}>Hub {pData.name}</h2>
+                                <p style={{ margin: '8px 0 0 0', color: 'var(--text-muted)', fontSize: '1.05rem', fontWeight: 650, lineHeight: 1.5 }}>{pData.description}</p>
                             </div>
                             <div className="v-stack" style={{ alignItems: 'flex-end', gap: '12px' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: currentPlatformConfig.enabled ? '#ecfdf5' : '#f1f5f9', color: currentPlatformConfig.enabled ? '#10b981' : '#94a3b8', padding: '6px 14px', borderRadius: '100px', fontSize: '0.7rem', fontWeight: 950, border: currentPlatformConfig.enabled ? '1.5px solid #d1fae5' : '1.5px solid #e2e8f0' }}>
@@ -242,51 +249,51 @@ export default function SocialsConfig() {
                             </div>
                         ) : (
                             <>
-                                <nav className="pc-tabs-v2" style={{ display: 'flex', gap: '8px', background: '#f1f5f9', padding: '6px', borderRadius: '20px', width: 'fit-content' }}>
-                                    <button className={activeTab === 'settings' ? 'active' : ''} onClick={() => setActiveTab('settings')} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '14px 28px', border: 'none', background: activeTab === 'settings' ? 'white' : 'transparent', color: activeTab === 'settings' ? '#6366f1' : '#64748b', fontWeight: 950, fontSize: '0.95rem', borderRadius: '16px', cursor: 'pointer', transition: '0.2s', boxShadow: activeTab === 'settings' ? '0 4px 12px rgba(0,0,0,0.05)' : 'none' }}>
-                                        <UserPlus size={18} /> <span>Account Studio</span>
-                                    </button>
-                                    <button className={activeTab === 'design' ? 'active' : ''} onClick={() => setActiveTab('design')} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '14px 28px', border: 'none', background: activeTab === 'design' ? 'white' : 'transparent', color: activeTab === 'design' ? '#6366f1' : '#64748b', fontWeight: 950, fontSize: '0.95rem', borderRadius: '16px', cursor: 'pointer', transition: '0.2s', boxShadow: activeTab === 'design' ? '0 4px 12px rgba(0,0,0,0.05)' : 'none' }}>
-                                        <Palette size={18} /> <span>Creative Design</span>
-                                    </button>
-                                </nav>
+                                <nav className="pc-tabs-v2" style={{ display: 'flex', gap: '8px', background: 'var(--bg-badge)', padding: '6px', borderRadius: '20px', width: 'fit-content' }}>
+                                    <button className={activeTab === 'settings' ? 'active' : ''} onClick={() => setActiveTab('settings')} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '14px 28px', border: 'none', background: activeTab === 'settings' ? 'var(--bg-card)' : 'transparent', color: activeTab === 'settings' ? 'var(--primary)' : 'var(--text-muted)', fontWeight: 950, fontSize: '0.95rem', borderRadius: '16px', cursor: 'pointer', transition: '0.2s', boxShadow: activeTab === 'settings' ? '0 4px 12px rgba(0,0,0,0.05)' : 'none' }}>
+                                         <UserPlus size={18} /> <span>Account Studio</span>
+                                     </button>
+                                     <button className={activeTab === 'design' ? 'active' : ''} onClick={() => setActiveTab('design')} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '14px 28px', border: 'none', background: activeTab === 'design' ? 'var(--bg-card)' : 'transparent', color: activeTab === 'design' ? 'var(--primary)' : 'var(--text-muted)', fontWeight: 950, fontSize: '0.95rem', borderRadius: '16px', cursor: 'pointer', transition: '0.2s', boxShadow: activeTab === 'design' ? '0 4px 12px rgba(0,0,0,0.05)' : 'none' }}>
+                                         <Palette size={18} /> <span>Creative Design</span>
+                                     </button>
+                                 </nav>
 
-                                {activeTab === 'settings' && (
-                                    <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '32px' }}>
-                                        <div className="v-stack" style={{ gap: '32px' }}>
-                                            <section className="pc-card-v2">
-                                                <div className="card-header-v2" style={{ marginBottom: '32px' }}>
-                                                    <div className="header-icon" style={{ background: '#f5f3ff', color: '#7c3aed' }}><Users size={18} /></div>
-                                                    <h3 style={{ margin: 0 }}>Canali Monitorati</h3>
-                                                </div>
-                                                <div className="card-body-v2">
-                                                    <div className="v-stack" style={{ gap: '20px' }}>
-                                                        {currentPlatformConfig.accounts.map((acc, i) => (
-                                                            <div key={i} className="pc-sub-card-v2 animate slide-up" style={{ display: 'flex', gap: '20px', background: '#f8fafc', padding: '24px', borderRadius: '24px', border: '1.5px solid #e2e8f0', alignItems: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
-                                                                <div className="v-stack" style={{ flex: 1, gap: '10px' }}>
-                                                                    <label style={{ fontSize: '0.75rem', fontWeight: 950, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{pData.name} Identity / URL</label>
-                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'white', padding: '10px 20px', borderRadius: '16px', border: '1.5px solid #e2e8f0' }}>
-                                                                        <Link2 size={18} color="#94a3b8" />
-                                                                        <input 
-                                                                            style={{ border: 'none', background: 'transparent', padding: '8px 0', width: '100%', fontWeight: 900, fontSize: '1.05rem', outline: 'none', color: '#1e293b' }}
-                                                                            placeholder={`Es: ${pData.id === 'twitch' ? 'verix_official' : 'VerixBot'}`}
-                                                                            value={acc.username}
-                                                                            onChange={e => updateAccount(i, 'username', e.target.value)}
-                                                                        />
-                                                                    </div>
-                                                                </div>
-                                                                <button onClick={() => removeAccount(i)} className="pc-btn-delete-studio-v2" style={{ marginTop: '26px', width: '48px', height: '48px', borderRadius: '14px', background: '#fef2f2', color: '#ef4444', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.2s' }}>
-                                                                    <Trash2 size={22} />
-                                                                </button>
-                                                            </div>
-                                                        ))}
-                                                        <button className="pc-btn-add-account" onClick={addAccount} style={{ width: '100%', padding: '28px', border: '2.5px dashed #cbd5e1', background: 'white', borderRadius: '28px', color: '#64748b', fontWeight: 950, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', transition: '0.3s', fontSize: '1rem' }}>
-                                                            <Plus size={24} /> <span>Connect New {pData.name} Account</span>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </section>
-                                        </div>
+                                 {activeTab === 'settings' && (
+                                     <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '32px' }}>
+                                         <div className="v-stack" style={{ gap: '32px' }}>
+                                             <section className="pc-card-v2">
+                                                 <div className="card-header-v2" style={{ marginBottom: '32px' }}>
+                                                     <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><Users size={18} /></div>
+                                                     <h3 style={{ margin: 0 }}>Canali Monitorati</h3>
+                                                 </div>
+                                                 <div className="card-body-v2">
+                                                     <div className="v-stack" style={{ gap: '20px' }}>
+                                                         {currentPlatformConfig.accounts.map((acc, i) => (
+                                                             <div key={i} className="pc-sub-card-v2 animate slide-up" style={{ display: 'flex', gap: '20px', background: 'var(--bg-badge)', padding: '24px', borderRadius: '24px', border: '1.5px solid var(--border)', alignItems: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
+                                                                 <div className="v-stack" style={{ flex: 1, gap: '10px' }}>
+                                                                     <label style={{ fontSize: '0.75rem', fontWeight: 950, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{pData.name} Identity / URL</label>
+                                                                     <div style={{ display: 'flex', alignItems: 'center', gap: '16px', background: 'var(--bg-card)', padding: '10px 20px', borderRadius: '16px', border: '1.5px solid var(--border)' }}>
+                                                                         <Link2 size={18} color="var(--text-muted)" />
+                                                                         <input 
+                                                                             style={{ border: 'none', background: 'transparent', padding: '8px 0', width: '100%', fontWeight: 900, fontSize: '1.05rem', outline: 'none', color: 'var(--text-heading)' }}
+                                                                             placeholder={`Es: ${pData.id === 'twitch' ? 'verix_official' : 'VerixBot'}`}
+                                                                             value={acc.username}
+                                                                             onChange={e => updateAccount(i, 'username', e.target.value)}
+                                                                         />
+                                                                     </div>
+                                                                 </div>
+                                                                 <button onClick={() => removeAccount(i)} className="pc-btn-delete-studio-v2" style={{ marginTop: '26px', width: '48px', height: '48px', borderRadius: '14px', background: '#fef2f2', color: '#ef4444', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.2s' }}>
+                                                                     <Trash2 size={22} />
+                                                                 </button>
+                                                             </div>
+                                                         ))}
+                                                         <button className="pc-btn-add-account" onClick={addAccount} style={{ width: '100%', padding: '28px', border: '2.5px dashed var(--border)', background: 'var(--bg-card)', borderRadius: '28px', color: 'var(--text-muted)', fontWeight: 950, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', transition: '0.3s', fontSize: '1rem' }}>
+                                                             <Plus size={24} /> <span>Connect New {pData.name} Account</span>
+                                                         </button>
+                                                     </div>
+                                                 </div>
+                                             </section>
+                                         </div>
 
                                         <div className="v-stack" style={{ gap: '32px' }}>
                                             <section className="pc-card-v2">
@@ -338,17 +345,17 @@ export default function SocialsConfig() {
         </div>
 
         <style jsx>{`
-            .pc-premium-wrapper { padding: 40px; max-width: 1700px; margin: 0 auto; font-family: 'Inter', sans-serif; }
+            .pc-premium-wrapper { padding: 40px; max-width: 1700px; margin: 0 auto; }
             
             /* Header V2 */
-            .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; background: white; padding: 32px; border-radius: 32px; box-shadow: var(--shadow-premium); border: 1px solid var(--border-light); }
+            .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; background: var(--bg-card); padding: 32px; border-radius: 32px; box-shadow: var(--shadow-premium); border: 1px solid var(--border); }
             .header-info { display: flex; align-items: center; gap: 24px; }
             .pc-icon-box { width: 64px; height: 64px; color: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 12px 24px rgba(99, 102, 241, 0.25); }
             .pc-title-row { display: flex; flex-direction: column; gap: 6px; }
-            .pc-title-row h1 { font-family: 'Outfit', sans-serif; font-size: 2.2rem; font-weight: 950; margin: 0; color: #1e293b; letter-spacing: -1.2px; }
+            .pc-title-row h1 { font-size: 2.2rem; font-weight: 950; margin: 0; color: var(--text-heading); letter-spacing: -1.2px; }
             
             .pc-status-tag-v2 { display: flex; align-items: center; gap: 8px; font-size: 0.65rem; font-weight: 950; padding: 4px 12px; border-radius: 100px; letter-spacing: 0.5px; }
-            .pc-status-tag-v2.on { background: #f5f3ff; color: #6366f1; }
+            .pc-status-tag-v2.on { background: var(--primary-glow); color: var(--primary); }
             .status-dot-v2 { width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: dot-pulse 2s infinite; }
             @keyframes dot-pulse { 0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); } 70% { box-shadow: 0 0 0 6px rgba(99, 102, 241, 0); } 100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); } }
 
@@ -356,22 +363,22 @@ export default function SocialsConfig() {
             .pc-btn-primary:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(99, 102, 241, 0.3); }
 
             /* Card V2 */
-            .pc-card-v2 { background: white; border: 1px solid var(--border-light); border-radius: 32px; padding: 40px; box-shadow: var(--shadow-premium); }
+            .pc-card-v2 { background: var(--bg-card); border: 1px solid var(--border); border-radius: 32px; padding: 40px; box-shadow: var(--shadow-premium); }
             .card-header-v2 { display: flex; align-items: center; gap: 20px; }
             .header-icon { width: 52px; height: 52px; border-radius: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
-            .card-header-v2 h3 { margin: 0; font-family: 'Outfit'; font-size: 1.5rem; font-weight: 950; color: #1e293b; }
+            .card-header-v2 h3 { margin: 0; font-size: 1.5rem; font-weight: 950; color: var(--text-heading); }
 
             /* Navigation & Inputs */
-            .pc-nav-item-v2.active { background: #f5f3ff !important; border-color: #ddd6fe !important; box-shadow: 0 8px 24px rgba(99, 102, 241, 0.05); }
-            .pc-btn-add-account:hover { border-color: #6366f1 !important; color: #6366f1 !important; background: #f5f3ff !important; transform: translateY(-3px); }
+            .pc-nav-item-v2.active { background: var(--primary-glow) !important; border-color: var(--primary) !important; box-shadow: 0 8px 24px rgba(99, 102, 241, 0.05); }
+            .pc-btn-add-account:hover { border-color: var(--primary) !important; color: var(--primary) !important; background: var(--primary-glow) !important; transform: translateY(-3px); }
             .pc-btn-delete-studio-v2:hover { background: #ef4444 !important; color: white !important; transform: rotate(8deg); }
 
             .pc-input-group-v2 { display: flex; flex-direction: column; gap: 8px; }
-            .pc-input-group-v2 label { font-size: 0.75rem; font-weight: 950; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+            .pc-input-group-v2 label { font-size: 0.75rem; font-weight: 950; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
 
             .pc-toggle-v2 { position: relative; width: 44px; height: 22px; }
             .pc-toggle-v2 input { opacity: 0; width: 0; height: 0; }
-            .pc-slider-v2 { position: absolute; cursor: pointer; inset: 0; background: #cbd5e1; transition: .4s; border-radius: 34px; }
+            .pc-slider-v2 { position: absolute; cursor: pointer; inset: 0; background: var(--bg-badge); transition: .4s; border-radius: 34px; }
             .pc-slider-v2:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background: white; transition: .4s; border-radius: 50%; }
             input:checked + .pc-slider-v2 { background: var(--primary); }
             input:checked + .pc-slider-v2:before { transform: translateX(22px); }
@@ -379,8 +386,6 @@ export default function SocialsConfig() {
             .v-stack { display: flex; flex-direction: column; }
             .animate { animation: slideUp 0.4s ease-out; }
             @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-            :global(.light-theme) .pc-header-v2, :global(.light-theme) .pc-card-v2, :global(.light-theme) .pc-sidebar-card-v2, :global(.light-theme) .pc-sub-card-v2, :global(.light-theme) .pc-platform-banner-v2 { background: #ffffff !important; box-shadow: 0 8px 30px rgba(0,0,0,0.04) !important; }
         `}</style>
     </div>
   );
