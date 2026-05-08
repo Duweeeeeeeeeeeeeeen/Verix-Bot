@@ -6,7 +6,7 @@ import { useT } from '../../../contexts/LanguageContext';
 import { 
     Crown, Check, Star, Zap, Shield, 
     Bot, Image, Settings, Globe, 
-    ChevronRight, ArrowRight, Info,
+    ChevronRight, ChevronLeft, ArrowRight, Info,
     XCircle, CheckCircle2, Layout,
     Sparkles, Rocket, Gem, Award,
     CheckCircle, ShieldCheck, Target,
