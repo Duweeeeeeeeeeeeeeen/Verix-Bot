@@ -125,7 +125,7 @@ export default function CustomSelect({
           top: calc(100% + 8px);
           left: 0;
           right: 0;
-          z-index: 1000;
+          z-index: 99999;
           background: var(--bg-card);
           backdrop-filter: blur(20px);
           border-radius: 16px;

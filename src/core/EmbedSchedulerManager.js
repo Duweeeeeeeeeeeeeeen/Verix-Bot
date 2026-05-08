@@ -24,9 +24,13 @@ class EmbedSchedulerManager {
         if (mongoose.connection.readyState !== 1) return;
         try {
             const now = new Date();
+            // Find embeds that are due: either not sent (one-off) OR recurring and past their scheduled time
             const pending = await ScheduledEmbed.find({
-                sent: false,
-                scheduledAt: { $lte: now }
+                scheduledAt: { $lte: now },
+                $or: [
+                    { sent: false, recurrence: 'none' },
+                    { recurrence: { $ne: 'none' } }
+                ]
             });
 
             if (pending.length === 0) return;
@@ -37,9 +41,17 @@ class EmbedSchedulerManager {
                 if (this.client.multiBotManager && !this.client.multiBotManager.shouldHandle(item.guildId, this.client)) continue;
                 try {
                     await this.sendEmbed(item);
-                    item.sent = true;
+                    
+                    if (item.recurrence === 'none') {
+                        item.sent = true;
+                    } else {
+                        // Update for next recurrence
+                        item.lastSentAt = now;
+                        item.scheduledAt = this.calculateNextRun(item.scheduledAt, item.recurrence);
+                    }
+                    
                     await item.save();
-                    logger.info(`[EmbedScheduler] Successfully sent and marked as sent ID: ${item._id}`);
+                    logger.info(`[EmbedScheduler] Handled ID: ${item._id} (Recurrence: ${item.recurrence})`);
                 } catch (error) {
                     logger.error(`[EmbedScheduler] Failed to send scheduled embed ${item._id}:`, error.message);
                 }
@@ -47,6 +59,28 @@ class EmbedSchedulerManager {
         } catch (error) {
             logger.error('[EmbedScheduler] General Error in check loop:', error);
         }
+    }
+
+    calculateNextRun(currentScheduled, recurrence) {
+        let next = new Date(currentScheduled);
+        const now = new Date();
+        
+        while (next <= now) {
+            switch (recurrence) {
+                case 'daily':
+                    next.setDate(next.getDate() + 1);
+                    break;
+                case 'weekly':
+                    next.setDate(next.getDate() + 7);
+                    break;
+                case 'monthly':
+                    next.setMonth(next.getMonth() + 1);
+                    break;
+                default:
+                    return next;
+            }
+        }
+        return next;
     }
 
     async sendEmbed(item) {

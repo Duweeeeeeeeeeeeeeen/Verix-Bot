@@ -6,11 +6,14 @@ import { EmbedEditor } from '../../../components/LazyConfigComponents';
 import api from '../../../utils/api';
 import { useT } from '../../../contexts/LanguageContext';
 import { 
-    Save, UserPlus, UserMinus, Settings2, RefreshCcw, 
-    Power, Palette, Info, Bell, Layout as LayoutIcon, ChevronRight, Zap
+    Save, UserPlus, UserMinus, Settings2, RefreshCcw, Power, Palette, Info, Bell, Layout as LayoutIcon, 
+    ChevronRight, Zap, ArrowRight, MessageSquare, Shield, Clock, Plus, Trash2, Camera, 
+    Terminal, Layout, Sparkles, CheckCircle2, Box, MessageCircle, Hash, ArrowLeft,
+    Monitor, Smartphone, Laptop
 } from 'lucide-react';
 import { mergeConfig } from '../../../utils/defaults';
 import defaultMessagesMap from '../../../locales';
+import Head from 'next/head';
 
 export default function WelcomeConfig() {
   const router = useRouter();
@@ -31,34 +34,32 @@ export default function WelcomeConfig() {
 
   useEffect(() => {
     if (guildId && mounted) {
-      const fetchData = async () => {
-        try {
-          const [configRes, discordRes] = await Promise.all([
-            api.request(`/config/${guildId}/welcome`),
-            api.request(`/config/${guildId}/discord-data`)
-          ]);
-
-          if (configRes) {
-            setConfig(mergeConfig(configRes, 'welcome'));
-          }
-          if (discordRes && (discordRes.data || discordRes)) {
-            setDiscordData(discordRes.data || discordRes);
-          }
-          setLoading(false);
-        } catch (error) {
-          console.error("Error loading welcome config:", error);
-          setLoading(false);
-        }
-      };
       fetchData();
     }
   }, [guildId, mounted]);
 
-  useEffect(() => {
-    if (config) {
-      window.dispatchEvent(new CustomEvent('update-guide-context', { detail: config }));
+  const fetchData = async () => {
+    window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
+    try {
+      const [configRes, discordRes] = await Promise.all([
+        api.request(`/config/${guildId}/welcome`),
+        api.request(`/config/${guildId}/discord-data`)
+      ]);
+
+      if (configRes) {
+        setConfig(mergeConfig(configRes.data || configRes, 'welcome'));
+      }
+      if (discordRes && (discordRes.data || discordRes)) {
+        setDiscordData(discordRes.data || discordRes);
+      }
+      setLoading(false);
+    } catch (error) {
+      console.error("Welcome config load error:", error);
+      setLoading(false);
+    } finally {
+        window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
     }
-  }, [config]);
+  };
 
   const showToast = (message, type = 'success') => {
     window.dispatchEvent(new CustomEvent('show-toast', { detail: { message, type } }));
@@ -66,24 +67,29 @@ export default function WelcomeConfig() {
 
   const handleSave = async () => {
     setSaving(true);
+    window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
     try {
       await api.request(`/config/${guildId}/welcome`, {
         method: 'POST',
         body: JSON.stringify(config)
       });
-      showToast(t('common.saved_success'));
+      showToast("Configurazione accoglienza salvata!");
     } catch (error) {
-        showToast(t('common.error'), 'error');
-    } finally { setSaving(false); }
+        showToast("Errore durante il salvataggio.", 'error');
+    } finally { 
+        setSaving(false); 
+        window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
+    }
   };
 
   const handleTest = async () => {
+    if (!config.welcome?.channelId) return showToast("Seleziona un canale per il test!", 'error');
     setTesting(true);
     try {
         const res = await api.request(`/config/${guildId}/welcome/test`, { method: 'POST' });
-        showToast(res.message || t('embeds.sent'));
+        showToast("Messaggio di test inviato correttamente!");
     } catch (error) {
-        showToast(error.message || t('common.error'), 'error');
+        showToast('Errore durante l\'invio del test.', 'error');
     } finally { setTesting(false); }
   };
 
@@ -104,181 +110,234 @@ export default function WelcomeConfig() {
     setConfig(newConfig);
   };
 
-  if (loading || !config) return <><Skeleton height="500px" /></>;
+  if (!mounted || loading || !config) return <Skeleton height="600px" />;
 
   return (
-    <div className="config-page-layout">
-      <div className="config-main-col">
-        <div className="animate">
-        
-        {/* Module Header */}
-        <header className="module-header">
-           <div className="header-info">
-              <div className="header-icon">
-                <Bell size={24} />
-              </div>
-              <div className="header-text">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <h1>{t('welcome.title')}</h1>
-                  <label className="toggle-mini" title={config.enabled ? t('common.enabled') : t('common.disabled')}>
-                    <input type="checkbox" checked={!!config.enabled} onChange={e => setConfig({...config, enabled: e.target.checked})} />
-                    <span className="slider-mini"></span>
-                  </label>
+    <div className="pc-premium-wrapper fade-in">
+        <Head>
+            <title>Benvenuti & Addii | Verix Dashboard</title>
+        </Head>
+
+        {/* V2 Header */}
+        <header className="pc-header-v2">
+            <div className="header-info">
+                <div className="pc-icon-box" style={{ background: 'linear-gradient(135deg, #f43f5e 0%, #e11d48 100%)' }}>
+                    <UserPlus size={28} />
                 </div>
-                <p>{t('welcome.desc')}</p>
-              </div>
-           </div>
-           <div className="header-buttons">
-              <button onClick={handleTest} className="btn-outline" disabled={testing || !config.welcome?.channelId}>
-                <Zap size={16} /> {testing ? t('welcome.testing_btn') : t('welcome.test_btn')}
-              </button>
-              <button onClick={handleSave} className="btn-primary" disabled={saving}>
-                <Save size={16} /> {saving ? t('common.saving') : t('common.save')}
-              </button>
-           </div>
+                <div className="pc-title-row">
+                    <h1>Accoglienza Community</h1>
+                    <div className={`pc-status-tag-v2 ${config.enabled ? 'on' : 'off'}`}>
+                        <div className="status-dot-v2"></div>
+                        {config.enabled ? 'SISTEMA AUTOMAZIONE ATTIVO' : 'SISTEMA DISABILITATO'}
+                    </div>
+                </div>
+            </div>
+            
+            <div className="header-controls">
+                <button 
+                  className={`pc-status-toggle-v2 ${config.enabled ? 'active' : ''}`}
+                  onClick={() => setConfig({...config, enabled: !config.enabled})}
+                >
+                  <Power size={18} />
+                  <span>{config.enabled ? 'Spegni' : 'Attiva'}</span>
+                </button>
+                <button className="pc-btn-primary" onClick={handleSave} disabled={saving}>
+                    <Save size={18} />
+                    <span>{saving ? 'Salvataggio...' : 'Salva Modifiche'}</span>
+                </button>
+            </div>
         </header>
 
-        {/* Minimal Tabs */}
-        <div className="tab-navigation">
-            <button onClick={() => setActiveTab('settings')} className={`tab-link ${activeTab === 'settings' ? 'active' : ''}`}>
-                <Settings2 size={16} />
-                <span>{t('welcome.tab_config')}</span>
-            </button>
-            <button onClick={() => setActiveTab('personalization')} className={`tab-link ${activeTab === 'personalization' ? 'active' : ''}`}>
-                <Palette size={16} />
-                <span>{t('welcome.tab_style')}</span>
-            </button>
-        </div>
-
-        {activeTab === 'settings' && (
-            <div className="animate fade-in contents-grid">
-                <div className="config-columns">
-                    <section className="card content-card">
-                        <div className="card-header-p">
-                            <div className="align-center">
-                                <UserPlus size={18} color="var(--primary)" />
-                                <h3>{t('welcome.channels_title')}</h3>
-                            </div>
-                            <label className="toggle">
-                                <input type="checkbox" checked={!!config.welcome?.enabled} onChange={e => updateMessageConfig('welcome', 'enabled', e.target.checked)} />
-                                <span className="slider"></span>
-                            </label>
-                        </div>
-                        <div className="field-box" style={{ marginTop: '20px' }}>
-                            <label className="text-label">{t('automations.channel_label')}</label>
-                            <DiscordSelector type="channel" options={discordData.channels} value={config.welcome?.channelId || ''} onChange={v => updateMessageConfig('welcome', 'channelId', v)} />
-                        </div>
-                    </section>
-
-                    <section className="card content-card">
-                        <div className="card-header-p">
-                            <div className="align-center">
-                                <UserMinus size={18} color="var(--error)" />
-                                <h3>{t('welcome.leave_title')}</h3>
-                            </div>
-                            <label className="toggle">
-                                <input type="checkbox" checked={!!config.leave?.enabled} onChange={e => updateMessageConfig('leave', 'enabled', e.target.checked)} />
-                                <span className="slider"></span>
-                            </label>
-                        </div>
-                        <div className="field-box" style={{ marginTop: '20px' }}>
-                            <label className="text-label">{t('automations.channel_label')}</label>
-                            <DiscordSelector type="channel" options={discordData.channels} value={config.leave?.channelId || ''} onChange={v => updateMessageConfig('leave', 'channelId', v)} />
-                        </div>
-                    </section>
-                </div>
-
-                <div className="card info-card-p">
-                    <Info size={20} color="var(--primary)" />
-                    <p>{t('welcome.variables_info')}</p>
-                </div>
+        {/* V2 Navigation Tabs */}
+        <nav className="pc-tabs-container-v2" style={{ marginBottom: '40px' }}>
+            <div className="pc-tabs-v2">
+                <button className={activeTab === 'settings' ? 'active' : ''} onClick={() => setActiveTab('settings')}>
+                    <Settings2 size={16} /> <span>Configurazione Canali</span>
+                </button>
+                <button className={activeTab === 'personalization' ? 'active' : ''} onClick={() => setActiveTab('personalization')}>
+                    <Palette size={16} /> <span>Studio Creativo (Design)</span>
+                </button>
             </div>
-        )}
+        </nav>
 
-        {activeTab === 'personalization' && (
-            <div className="animate fade-in card editor-container-p">
-                <div className="editor-nav-p">
-                    <button 
-                        onClick={() => setActiveEmbedKey('welcome')} 
-                        className={`editor-nav-link ${activeEmbedKey === 'welcome' ? 'active' : ''}`}
-                    >
-                        <UserPlus size={14} /> {t('welcome.welcome_label')}
-                        <ChevronRight size={14} className="nav-arrow" />
-                    </button>
-                    <button 
-                        onClick={() => setActiveEmbedKey('leave')} 
-                        className={`editor-nav-link ${activeEmbedKey === 'leave' ? 'active' : ''}`}
-                    >
-                        <UserMinus size={14} /> {t('welcome.leave_label')}
-                        <ChevronRight size={14} className="nav-arrow" />
-                    </button>
-                </div>
-                <div className="editor-main-p">
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
-                        <button 
-                            onClick={() => {
-                                if (window.confirm(t('embeds.manager.reset_confirm'))) {
-                                    const defaults = defaultMessagesMap[language] || defaultMessagesMap['it'];
-                                    const moduleDefaults = defaults['welcome'] || {};
-                                    const fallback = moduleDefaults[activeEmbedKey] || {
-                                        title: t('embeds.manager.missing_title'),
-                                        description: t('embeds.manager.missing_desc'),
-                                        color: '#6366f1'
-                                    };
-                                    updateEmbed(activeEmbedKey, fallback);
-                                }
-                            }}
-                            className="btn-outline"
-                            style={{ fontSize: '0.8rem', padding: '8px 16px' }}
-                        >
-                            <RefreshCcw size={14} /> {t('embeds.manager.reset_defaults')}
-                        </button>
+        <div className="pc-content-v2">
+            {activeTab === 'settings' && (
+                <div className="v-stack animate slide-up" style={{ gap: '32px' }}>
+                    <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
+                        <section className="pc-card-v2">
+                            <div className="card-header-v2" style={{ marginBottom: '24px' }}>
+                                <div className="header-icon" style={{ background: '#f0fdf4', color: '#10b981' }}><UserPlus size={18} /></div>
+                                <div className="v-stack" style={{ flex: 1 }}>
+                                    <h3 style={{ margin: 0 }}>Benvenuto New Members</h3>
+                                    <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 650 }}>Attivato all'ingresso di un utente.</span>
+                                </div>
+                                <label className="pc-toggle-v2 mini">
+                                    <input type="checkbox" checked={!!config.welcome?.enabled} onChange={e => updateMessageConfig('welcome', 'enabled', e.target.checked)} />
+                                    <span className="pc-slider-v2"></span>
+                                </label>
+                            </div>
+                            <div className="card-body-v2">
+                                <div className="pc-input-group-v2">
+                                    <label>Canale Pubblicazione</label>
+                                    <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 0 || c.type === 5)} value={config.welcome?.channelId || ''} onChange={v => updateMessageConfig('welcome', 'channelId', v)} />
+                                </div>
+                                <button className="pc-btn-outline-v2" style={{ marginTop: '24px', width: '100%', justifyContent: 'center' }} onClick={handleTest} disabled={testing || !config.welcome?.channelId}>
+                                    <Zap size={16} /> <span>{testing ? 'Invio in corso...' : 'Invia Messaggio Test'}</span>
+                                </button>
+                            </div>
+                        </section>
+
+                        <section className="pc-card-v2">
+                            <div className="card-header-v2" style={{ marginBottom: '24px' }}>
+                                <div className="header-icon" style={{ background: '#fef2f2', color: '#ef4444' }}><UserMinus size={18} /></div>
+                                <div className="v-stack" style={{ flex: 1 }}>
+                                    <h3 style={{ margin: 0 }}>Messaggio di Addio</h3>
+                                    <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 650 }}>Attivato all'uscita di un utente.</span>
+                                </div>
+                                <label className="pc-toggle-v2 mini">
+                                    <input type="checkbox" checked={!!config.leave?.enabled} onChange={e => updateMessageConfig('leave', 'enabled', e.target.checked)} />
+                                    <span className="pc-slider-v2"></span>
+                                </label>
+                            </div>
+                            <div className="card-body-v2">
+                                <div className="pc-input-group-v2">
+                                    <label>Canale Pubblicazione</label>
+                                    <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 0 || c.type === 5)} value={config.leave?.channelId || ''} onChange={v => updateMessageConfig('leave', 'channelId', v)} />
+                                </div>
+                                <div style={{ marginTop: '24px', background: '#f8fafc', padding: '16px', borderRadius: '14px', border: '1.5px solid #e2e8f0', textAlign: 'center' }}>
+                                    <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 800 }}>Il test automatico non è disponibile per l'addio.</span>
+                                </div>
+                            </div>
+                        </section>
                     </div>
-                    <EmbedEditor 
-                        embed={config[activeEmbedKey]?.embed || {}} 
-                        onChange={d => updateEmbed(activeEmbedKey, d)}
-                        variables={['user', 'user_mention', 'user_tag', 'guild', 'member_count']}
-                    />
+
+                    <section className="pc-card-v2">
+                        <div className="card-header-v2">
+                            <div className="header-icon" style={{ background: '#f8fafc', color: '#475569' }}><Hash size={18} /></div>
+                            <h3 style={{ margin: 0 }}>Variabili Dinamiche</h3>
+                        </div>
+                        <div className="card-body-v2">
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
+                                {[
+                                    { k: '{user}', v: 'Username (es: Verix)' },
+                                    { k: '{user_mention}', v: 'Menziona l\'utente' },
+                                    { k: '{user_tag}', v: 'Tag completo (es: Verix#0001)' },
+                                    { k: '{guild}', v: 'Nome di questo server' },
+                                    { k: '{member_count}', v: 'Numero totale membri' }
+                                ].map(x => (
+                                    <div key={x.k} style={{ display: 'flex', alignItems: 'center', gap: '12px', background: '#f8fafc', padding: '16px 20px', borderRadius: '18px', border: '1.5px solid #e2e8f0' }}>
+                                        <code style={{ background: 'white', color: '#f43f5e', padding: '4px 10px', borderRadius: '10px', fontWeight: 900, border: '1px solid #e2e8f0', fontSize: '0.85rem' }}>{x.k}</code>
+                                        <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 750 }}>{x.v}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </section>
                 </div>
-            </div>
-        )}
+            )}
+
+            {activeTab === 'personalization' && (
+                <div className="pc-card-v2 animate slide-up" style={{ padding: 0, overflow: 'hidden', minHeight: '750px' }}>
+                    <div className="pc-studio-layout-v2" style={{ display: 'grid', gridTemplateColumns: '350px 1fr', height: '100%' }}>
+                        <aside style={{ background: '#f8fafc', borderRight: '1px solid #e2e8f0', padding: '40px 32px' }}>
+                            <div style={{ fontSize: '0.7rem', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.2px', marginBottom: '24px' }}>Editor Messaggi</div>
+                            <div className="v-stack" style={{ gap: '12px' }}>
+                                <button 
+                                    className={`pc-studio-tab-v2 ${activeEmbedKey === 'welcome' ? 'active' : ''}`}
+                                    onClick={() => setActiveEmbedKey('welcome')}
+                                    style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '18px 24px', border: 'none', borderRadius: '20px', cursor: 'pointer', transition: '0.2s', background: activeEmbedKey === 'welcome' ? 'white' : 'transparent', color: activeEmbedKey === 'welcome' ? '#1e293b' : '#64748b', fontWeight: 900, textAlign: 'left', border: activeEmbedKey === 'welcome' ? '1.5px solid #e2e8f0' : '1.5px solid transparent', boxShadow: activeEmbedKey === 'welcome' ? '0 10px 20px rgba(0,0,0,0.04)' : 'none' }}
+                                >
+                                    <div style={{ width: '36px', height: '36px', borderRadius: '12px', background: '#f0fdf4', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><UserPlus size={18} /></div>
+                                    <span style={{ flex: 1 }}>Welcome Studio</span>
+                                    <ChevronRight size={16} style={{ opacity: activeEmbedKey === 'welcome' ? 1 : 0.3 }} />
+                                </button>
+                                <button 
+                                    className={`pc-studio-tab-v2 ${activeEmbedKey === 'leave' ? 'active' : ''}`}
+                                    onClick={() => setActiveEmbedKey('leave')}
+                                    style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '18px 24px', border: 'none', borderRadius: '20px', cursor: 'pointer', transition: '0.2s', background: activeEmbedKey === 'leave' ? 'white' : 'transparent', color: activeEmbedKey === 'leave' ? '#1e293b' : '#64748b', fontWeight: 900, textAlign: 'left', border: activeEmbedKey === 'leave' ? '1.5px solid #e2e8f0' : '1.5px solid transparent', boxShadow: activeEmbedKey === 'leave' ? '0 10px 20px rgba(0,0,0,0.04)' : 'none' }}
+                                >
+                                    <div style={{ width: '36px', height: '36px', borderRadius: '12px', background: '#fef2f2', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><UserMinus size={18} /></div>
+                                    <span style={{ flex: 1 }}>Leave Studio</span>
+                                    <ChevronRight size={16} style={{ opacity: activeEmbedKey === 'leave' ? 1 : 0.3 }} />
+                                </button>
+                            </div>
+                            
+                            <div style={{ marginTop: '40px', paddingTop: '40px', borderTop: '2px dashed #e2e8f0' }}>
+                                <button className="pc-btn-reset-v2" style={{ display: 'flex', alignItems: 'center', gap: '12px', background: '#fff1f2', color: '#ef4444', border: 'none', width: '100%', padding: '16px', borderRadius: '18px', fontWeight: 900, cursor: 'pointer', justifyContent: 'center', transition: '0.2s' }} onClick={() => {
+                                    if (window.confirm('Ripristinare i parametri di default?')) {
+                                        const defaults = defaultMessagesMap[language] || defaultMessagesMap['it'];
+                                        const fallback = defaults['welcome']?.[activeEmbedKey] || { title: 'Verix Welcome', description: 'Benvenuto!', color: '#6366f1' };
+                                        updateEmbed(activeEmbedKey, fallback);
+                                    }
+                                }}>
+                                    <RefreshCcw size={18} /> <span>Ripristina Default</span>
+                                </button>
+                            </div>
+                        </aside>
+                        
+                        <main style={{ padding: '50px', background: 'white', overflowY: 'auto' }}>
+                            <EmbedEditor 
+                                embed={config[activeEmbedKey]?.embed || {}} 
+                                onChange={d => updateEmbed(activeEmbedKey, d)}
+                                variables={['user', 'user_mention', 'user_tag', 'guild', 'member_count']}
+                            />
+                        </main>
+                    </div>
+                </div>
+            )}
         </div>
-      </div>
 
-      <style jsx>{`
-            .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-badge); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
-            .header-info { display: flex; align-items: center; gap: 16px; }
-            .header-icon { width: 48px; height: 48px; background: var(--primary-glow); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-            .header-text h1 { font-size: 1.5rem; margin-bottom: 2px; color: var(--text-main); }
-            .header-text p { font-size: 0.85rem; color: var(--text-muted); }
+        <style jsx>{`
+            .pc-premium-wrapper { padding: 40px; max-width: 1600px; margin: 0 auto; font-family: 'Inter', sans-serif; }
             
-            .tab-navigation { display: flex; gap: 8px; margin-bottom: 32px; padding: 6px; background: var(--bg-sidebar-alt); border-radius: 14px; border: 1px solid var(--border); width: fit-content; }
-            .tab-link { display: flex; align-items: center; gap: 10px; padding: 10px 18px; border: none; background: transparent; color: var(--text-muted); font-size: 0.85rem; font-weight: 600; border-radius: 10px; cursor: pointer; transition: 0.2s; }
-            .tab-link:hover { color: var(--text-main); background: var(--bg-badge); }
-            .tab-link.active { color: var(--text-main); background: var(--bg-card); box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
+            /* Header V2 */
+            .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; background: white; padding: 32px; border-radius: 32px; box-shadow: var(--shadow-premium); border: 1px solid var(--border-light); }
+            .header-info { display: flex; align-items: center; gap: 24px; }
+            .pc-icon-box { width: 64px; height: 64px; border-radius: 20px; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 12px 24px rgba(244, 63, 94, 0.25); }
+            .pc-title-row { display: flex; flex-direction: column; gap: 6px; }
+            .pc-title-row h1 { font-family: 'Outfit', sans-serif; font-size: 2.2rem; font-weight: 900; margin: 0; color: #1e293b; letter-spacing: -0.5px; }
+            
+            .pc-status-tag-v2 { display: flex; align-items: center; gap: 8px; font-size: 0.65rem; font-weight: 900; padding: 4px 12px; border-radius: 100px; letter-spacing: 0.5px; }
+            .pc-status-tag-v2.on { background: #ecfdf5; color: #10b981; }
+            .pc-status-tag-v2.off { background: #fef2f2; color: #ef4444; }
+            .status-dot-v2 { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 
-            .status-section { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; margin-bottom: 24px; }
-            .section-info { display: flex; align-items: center; gap: 16px; }
-            .status-box { width: 40px; height: 40px; background: var(--bg-status-box); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--text-dim); border: 1px solid var(--border); transition: 0.3s; }
-            .status-box.on { color: var(--primary); background: rgba(129, 140, 248, 0.1); border-color: rgba(129, 140, 248, 0.2); }
-            .section-info h3 { font-size: 1rem; margin-bottom: 2px; }
+            .pc-status-toggle-v2 { display: flex; align-items: center; gap: 10px; background: #f8fafc; color: #64748b; border: 1.5px solid #e2e8f0; padding: 12px 24px; border-radius: 16px; font-weight: 800; cursor: pointer; transition: 0.2s; }
+            .pc-status-toggle-v2.active { background: #fef2f2; color: #ef4444; border-color: #fecaca; }
+            .pc-btn-primary { background: var(--primary); color: white; border: none; padding: 14px 28px; border-radius: 16px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2); }
+            .pc-btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 15px 25px rgba(99, 102, 241, 0.3); }
 
-            .config-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-            .card-header-p { display: flex; justify-content: space-between; align-items: center; }
-            .card-header-p h3 { font-size: 1.05rem; }
+            /* Tabs V2 */
+            .pc-tabs-v2 { display: flex; gap: 8px; background: #f1f5f9; padding: 6px; border-radius: 18px; width: fit-content; overflow-x: auto; max-width: 100%; }
+            .pc-tabs-v2 button { display: flex; align-items: center; gap: 10px; padding: 12px 24px; border: none; background: transparent; color: #64748b; font-weight: 800; font-size: 0.9rem; border-radius: 14px; cursor: pointer; transition: 0.2s; white-space: nowrap; }
+            .pc-tabs-v2 button.active { background: white; color: var(--primary); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
 
-            .info-card-p { margin-top: 24px; background: var(--primary-glow); border: 1px solid var(--primary); display: flex; align-items: center; gap: 16px; padding: 16px 24px; font-size: 0.9rem; color: var(--text-muted); border-radius: 12px; }
-            .info-card-p code { background: var(--bg-badge); padding: 2px 6px; border-radius: 4px; color: var(--primary); font-family: monospace; }
+            /* Card V2 */
+            .pc-card-v2 { background: white; border: 1px solid var(--border-light); border-radius: 32px; padding: 32px; box-shadow: var(--shadow-premium); }
+            .card-header-v2 { display: flex; align-items: center; gap: 16px; margin-bottom: 32px; }
+            .header-icon { width: 44px; height: 44px; background: #f5f3ff; color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+            .card-header-v2 h3 { margin: 0; font-family: 'Outfit'; font-size: 1.25rem; font-weight: 900; color: #1e293b; }
 
-            .editor-container-p { display: grid; grid-template-columns: 240px 1fr; padding: 0 !important; }
-            .editor-nav-p { background: var(--bg-sidebar-alt); padding: 20px; border-right: 1px solid var(--border); display: flex; flex-direction: column; gap: 6px; }
-            .editor-nav-link { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: transparent; border: 1px solid transparent; color: var(--text-muted); border-radius: 10px; cursor: pointer; text-align: left; transition: 0.2s; font-size: 0.85rem; font-weight: 600; }
-            .editor-nav-link:hover { color: var(--text-main); background: var(--bg-badge); }
-            .editor-nav-link.active { color: var(--primary); background: var(--primary-glow); border-color: var(--primary); }
-            .nav-arrow { margin-left: auto; opacity: 0.4; }
-            .editor-main-p { padding: 32px; }
+            /* Inputs V2 */
+            .pc-input-group-v2 { display: flex; flex-direction: column; gap: 8px; }
+            .pc-input-group-v2 label { font-size: 0.7rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
 
-            @media (max-width: 900px) { .config-columns { grid-template-columns: 1fr; } .editor-container-p { grid-template-columns: 1fr; } .editor-nav-p { border-right: none; border-bottom: 1px solid var(--border); } }
+            /* Toggle V2 */
+            .pc-toggle-v2 { position: relative; width: 44px; height: 22px; }
+            .pc-toggle-v2 input { opacity: 0; width: 0; height: 0; }
+            .pc-slider-v2 { position: absolute; cursor: pointer; inset: 0; background: #cbd5e1; transition: .4s; border-radius: 34px; }
+            .pc-slider-v2:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background: white; transition: .4s; border-radius: 50%; }
+            input:checked + .pc-slider-v2 { background: var(--primary); }
+            input:checked + .pc-slider-v2:before { transform: translateX(22px); }
+
+            .pc-btn-outline-v2 { background: #f8fafc; color: #64748b; border: 1.5px solid #e2e8f0; padding: 12px 24px; border-radius: 16px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
+            .pc-btn-outline-v2:hover:not(:disabled) { background: white; border-color: var(--primary); color: var(--primary); }
+
+            .v-stack { display: flex; flex-direction: column; }
+            .animate { animation: slideUp 0.4s ease-out; }
+            @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+            :global(.light-theme) .pc-header-v2, :global(.light-theme) .pc-card-v2, :global(.light-theme) .pc-btn-outline-v2 { background: #ffffff !important; box-shadow: 0 8px 30px rgba(0,0,0,0.04) !important; }
         `}</style>
     </div>
   );

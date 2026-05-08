@@ -2,13 +2,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { Search, ChevronDown, Hash, Shield, Check, AlertCircle, X } from 'lucide-react';
 
 /**
- * Professional Discord Selector Component
- * @param {Array} options - List of roles or channels
- * @param {string} value - Current selected ID
- * @param {Function} onChange - Change handler
- * @param {string} type - 'role' | 'channel'
- * @param {string} placeholder - Empty state text
- * @param {string} error - Optional error message
+ * Premium Discord Selector Component V2
  */
 export default function DiscordSelector({ 
   options = [], 
@@ -31,14 +25,6 @@ export default function DiscordSelector({
     return options.find(opt => opt.id === value);
   }, [options, value, multiple]);
 
-  const isSelected = (id) => {
-    if (multiple) {
-      const values = Array.isArray(value) ? value : (value ? [value] : []);
-      return values.includes(id);
-    }
-    return value === id;
-  };
-
   const filteredOptions = useMemo(() => {
     if (!search) return options;
     const s = search.toLowerCase();
@@ -59,8 +45,6 @@ export default function DiscordSelector({
   }, []);
 
   const handleSelect = (option) => {
-    if (option.assignable === false) return;
-    
     if (multiple) {
       const currentValues = Array.isArray(value) ? value : (value ? [value] : []);
       const newValues = currentValues.includes(option.id)
@@ -81,401 +65,206 @@ export default function DiscordSelector({
   };
 
   return (
-    <div className={`selector-container ${isOpen ? 'is-open' : ''}`} ref={containerRef}>
+    <div className={`ds-container-v2 ${isOpen ? 'is-open' : ''}`} ref={containerRef}>
       <div 
-        className={`selector-trigger ${isOpen ? 'active' : ''} ${error ? 'has-error' : ''}`}
+        className={`ds-trigger-v2 ${isOpen ? 'active' : ''} ${error ? 'has-error' : ''}`}
         onClick={() => setIsOpen(!isOpen)}
       >
-        <div className="trigger-content">
+        <div className="ds-trigger-content">
           {multiple && Array.isArray(selectedOptions) && selectedOptions.length > 0 ? (
-            <div className="tags-wrapper">
+            <div className="ds-tags-grid">
               {selectedOptions.map(opt => (
-                <div key={opt.id} className="selector-tag">
-                  {type === 'role' && <div className="tag-dot" style={{ background: opt.color || '#99aab5' }} />}
+                <div key={opt.id} className="ds-tag-v2">
+                  {type === 'role' && <div className="ds-tag-dot" style={{ background: opt.color || '#94a3b8' }} />}
                   <span>{opt.name}</span>
-                  <button className="btn-remove-premium" style={{ width: '20px', height: '20px', padding: '0', borderRadius: '50%' }} onClick={(e) => removeValue(opt.id, e)}>
-                    <X size={10} />
+                  <button className="ds-btn-remove" onClick={(e) => removeValue(opt.id, e)}>
+                    <X size={10} strokeWidth={3} />
                   </button>
                 </div>
               ))}
             </div>
           ) : !multiple && selectedOptions ? (
-            <div className="option-display">
+            <div className="ds-selected-single">
               {type === 'role' ? (
-                <div className="role-dot" style={{ background: selectedOptions.color || '#99aab5' }} />
+                <div className="ds-role-v2">
+                   <div className="ds-tag-dot" style={{ background: selectedOptions.color || '#94a3b8' }} />
+                   <span>{selectedOptions.name}</span>
+                </div>
               ) : (
-                <Hash size={16} className="text-dim" />
+                <div className="ds-channel-v2">
+                  <Hash size={14} className="ds-icon-muted" />
+                  <span>{selectedOptions.name}</span>
+                </div>
               )}
-              <span className="selected-text">{selectedOptions.name}</span>
-              <button 
-                className="btn-clear-single" 
-                onClick={(e) => {
-                    e.stopPropagation();
-                    onChange('');
-                }}
-              >
-                <X size={14} />
-              </button>
             </div>
           ) : (
-            <span className="placeholder-text">{placeholder}</span>
+            <span className="ds-placeholder">{placeholder}</span>
           )}
         </div>
-        <ChevronDown size={18} className={`chevron ${isOpen ? 'rotate' : ''}`} />
+        <div className="ds-trigger-arrow">
+          <ChevronDown size={18} />
+        </div>
       </div>
 
       {isOpen && (
-        <div className="selector-dropdown glass-heavy animate-fade-in">
-          <div className="search-box">
-            <Search size={16} className="search-icon" />
+        <div className="ds-dropdown-v2 fade-in">
+          <div className="ds-search-box">
+            <Search size={16} />
             <input 
               autoFocus
-              className="search-input"
-              placeholder="Cerca..."
+              placeholder="Cerca..." 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onClick={(e) => e.stopPropagation()}
             />
-            {search && <X size={14} className="clear-search" onClick={() => setSearch('')} />}
           </div>
-
-          <div className="options-list">
+          <div className="ds-options-list">
             {filteredOptions.length > 0 ? (
-              filteredOptions.map((opt) => (
-                <div 
-                  key={opt.id}
-                  className={`option-item ${isSelected(opt.id) ? 'selected' : ''} ${(opt.assignable === false || (opt.occupiedBy && !isSelected(opt.id))) ? 'disabled' : ''}`}
-                  onClick={() => handleSelect(opt)}
-                >
-                  <div className="option-info">
-                    {type === 'role' ? (
-                      <div className="role-dot" style={{ background: opt.color || '#99aab5' }} />
-                    ) : (
-                      <Hash size={16} className="text-dim" />
-                    )}
-                    <div className="name-wrapper">
-                      <span className="option-name">{opt.name}</span>
-                      {type === 'role' && opt.position !== undefined && (
-                        <span className="option-meta">Pos. {opt.position}</span>
-                      )}
+              filteredOptions.map(opt => {
+                const active = multiple ? Array.isArray(value) && value.includes(opt.id) : value === opt.id;
+                return (
+                  <div 
+                    key={opt.id} 
+                    className={`ds-option-v2 ${active ? 'active' : ''}`}
+                    onClick={(e) => { e.stopPropagation(); handleSelect(opt); }}
+                  >
+                    <div className="ds-option-left">
+                       {type === 'role' ? (
+                         <div className="ds-role-preview">
+                           <div className="ds-tag-dot" style={{ background: opt.color || '#94a3b8' }} />
+                           <span className="ds-opt-name">{opt.name}</span>
+                         </div>
+                       ) : (
+                         <div className="ds-channel-preview">
+                            <Hash size={16} />
+                            <span className="ds-opt-name">{opt.name}</span>
+                         </div>
+                       )}
                     </div>
+                    {active && <Check size={16} className="ds-check-icon" />}
                   </div>
-                  
-                  <div className="option-status">
-                    {isSelected(opt.id) && <Check size={16} className="text-primary" />}
-                    {opt.assignable === false && (
-                      <div className="disabled-badge" title="Ruolo superiore nella gerarchia del Bot">
-                        <AlertCircle size={14} />
-                        <span>non assegnabile</span>
-                      </div>
-                    )}
-                    {opt.occupiedBy && !isSelected(opt.id) && (
-                      <div className="disabled-badge occupied" title={`In uso da: ${opt.occupiedBy}`}>
-                        <AlertCircle size={14} />
-                        <span>In uso ({opt.occupiedBy})</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))
+                );
+              })
             ) : (
-              <div className="no-results">
-                {options.length === 0 ? 'Nessun dato disponibile.' : 'Nessun risultato trovato.'}
-              </div>
+              <div className="ds-no-results">Nessun risultato trovato</div>
             )}
           </div>
         </div>
       )}
 
-      {error && <p className="error-hint">{error}</p>}
-
       <style jsx>{`
-        .selector-container {
-          position: relative;
-          width: 100%;
-          user-select: none;
-          z-index: 10;
-        }
-
-        .selector-container.is-open {
-          z-index: 1010;
-        }
-
-        .selector-trigger {
+        .ds-container-v2 { position: relative; width: 100%; font-family: 'Outfit', sans-serif; }
+        
+        .ds-trigger-v2 {
           display: flex;
           align-items: center;
           justify-content: space-between;
           background: var(--bg-input);
-          border: 1px solid var(--border);
-          padding: 12px 16px;
-          border-radius: 12px;
-          cursor: pointer;
-          transition: var(--transition-fast);
+          border: 1.5px solid var(--border);
+          border-radius: 14px;
+          padding: 10px 16px;
           min-height: 48px;
-        }
-
-        .selector-trigger:hover {
-          border-color: var(--border-light);
-          background: var(--bg-elevated);
-        }
-
-        .selector-trigger.active {
-          border-color: var(--primary);
-          background: rgba(16, 185, 129, 0.05);
-          box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
-        }
-
-        .selector-trigger.has-error {
-          border-color: var(--error);
-        }
-
-        .trigger-content {
-          flex: 1;
-          display: flex;
-          align-items: center;
-          overflow: hidden;
-          flex-wrap: wrap;
-          gap: 6px;
-        }
-
-        .tags-wrapper {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 6px;
-          padding: 2px 0;
-        }
-
-        .selector-tag {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          background: var(--bg-badge);
-          border: 1px solid var(--border);
-          padding: 4px 8px;
-          border-radius: 8px;
-          font-size: 0.8rem;
-          font-weight: 600;
-          color: var(--text-main);
-          transition: var(--transition-fast);
-        }
-
-        .selector-tag:hover {
-          background: var(--bg-elevated-hover);
-          border-color: var(--border-strong);
-        }
-
-        .tag-dot {
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-        }
-
-        .tag-remove {
           cursor: pointer;
-          color: var(--text-dim);
-          transition: var(--transition-fast);
+          transition: 0.3s var(--ease-premium);
         }
-
-        .tag-remove:hover {
-          color: var(--error);
-        }
+        .ds-trigger-v2:hover { border-color: var(--primary-muted); }
+        .ds-trigger-v2.active { border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-glow); }
         
-        .btn-clear-single {
-          background: transparent;
+        .ds-trigger-content { flex: 1; display: flex; align-items: center; min-width: 0; }
+        .ds-placeholder { color: var(--text-muted); font-size: 0.95rem; font-weight: 600; }
+        
+        .ds-tags-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+        .ds-tag-v2 {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background: white;
+          border: 1px solid var(--border-light);
+          padding: 4px 6px 4px 10px;
+          border-radius: 10px;
+          font-size: 0.85rem;
+          font-weight: 700;
+          box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+          color: var(--text-main);
+        }
+        .ds-tag-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+        
+        .ds-btn-remove {
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
           border: none;
-          color: var(--text-dim);
-          cursor: pointer;
-          padding: 4px;
+          background: var(--bg-badge);
+          color: var(--text-muted);
           display: flex;
           align-items: center;
           justify-content: center;
-          border-radius: 50%;
+          cursor: pointer;
           transition: 0.2s;
-          margin-left: auto;
         }
-        
-        .btn-clear-single:hover {
-          background: var(--bg-badge);
-          color: var(--error);
-        }
+        .ds-btn-remove:hover { background: var(--error); color: white; }
 
-        .option-display {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          width: 100%;
-        }
+        .ds-selected-single { font-weight: 700; font-size: 0.95rem; color: var(--text-main); }
+        .ds-role-v2, .ds-channel-v2 { display: flex; align-items: center; gap: 10px; }
+        .ds-icon-muted { color: var(--text-muted); opacity: 0.6; }
 
-        .selected-text {
-          font-weight: 600;
-          font-size: 0.95rem;
-          color: var(--text-main);
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
+        .ds-trigger-arrow { color: var(--text-muted); transition: 0.3s; }
+        .ds-container-v2.is-open .ds-trigger-arrow { transform: rotate(180deg); color: var(--primary); }
 
-        .placeholder-text {
-          color: var(--text-dim);
-          font-size: 0.95rem;
-        }
-
-        .chevron {
-          color: var(--text-dim);
-          transition: transform 0.3s ease;
-          margin-left: 12px;
-        }
-
-        .chevron.rotate {
-          transform: rotate(180deg);
-          color: var(--primary);
-        }
-
-        .selector-dropdown {
+        .ds-dropdown-v2 {
           position: absolute;
           top: calc(100% + 8px);
           left: 0;
           right: 0;
+          background: white;
+          border: 1px solid var(--border-light);
+          border-radius: 20px;
+          box-shadow: 0 15px 40px rgba(0,0,0,0.12);
           z-index: 1000;
-          background: var(--bg-card); /* Use themed background */
-          backdrop-filter: blur(20px);
-          border-radius: 16px;
-          border: 1px solid var(--border-strong);
           overflow: hidden;
-          box-shadow: var(--shadow-premium);
+          padding: 12px;
         }
 
-        .search-box {
+        .ds-search-box {
           display: flex;
           align-items: center;
-          padding: 12px 16px;
-          border-bottom: 1px solid var(--border);
-          background: var(--bg-elevated);
           gap: 12px;
+          background: var(--bg-badge);
+          padding: 10px 16px;
+          border-radius: 12px;
+          margin-bottom: 12px;
+          border: 1px solid var(--border-light);
         }
+        .ds-search-box input { border: none; background: transparent; width: 100%; font-weight: 700; outline: none; color: var(--text-main); font-size: 0.9rem; }
+        .ds-search-box svg { color: var(--text-muted); }
 
-        .search-icon {
-          color: var(--text-dim);
-        }
-
-        .search-input {
-          background: none;
-          border: none;
-          color: var(--text-main);
-          font-size: 0.9rem;
-          width: 100%;
-          outline: none;
-          font-family: inherit;
-        }
-
-        .clear-search {
-          color: var(--text-dim);
-          cursor: pointer;
-          transition: color 0.2s;
-        }
-
-        .clear-search:hover {
-          color: var(--text-main);
-        }
-
-        .options-list {
-          max-height: 280px;
-          overflow-y: auto;
-          padding: 8px;
-        }
-
-        .option-item {
+        .ds-options-list { max-height: 250px; overflow-y: auto; padding-right: 4px; }
+        .ds-option-v2 {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          padding: 10px 12px;
-          border-radius: 10px;
+          padding: 12px 16px;
+          border-radius: 12px;
           cursor: pointer;
-          transition: all 0.2s;
-          margin-bottom: 2px;
+          transition: 0.2s;
+          margin-bottom: 4px;
         }
+        .ds-option-v2:hover { background: var(--bg-badge); }
+        .ds-option-v2.active { background: var(--primary-glow); color: var(--primary); }
+        
+        .ds-role-preview, .ds-channel-preview { display: flex; align-items: center; gap: 12px; }
+        .ds-opt-name { font-weight: 700; font-size: 0.9rem; }
+        .ds-check-icon { color: var(--primary); }
+        .ds-no-results { padding: 32px; text-align: center; color: var(--text-muted); font-weight: 600; font-size: 0.9rem; }
 
-        .option-item:hover:not(.disabled) {
-          background: var(--bg-elevated-hover);
-        }
+        /* Custom Scrollbar */
+        .ds-options-list::-webkit-scrollbar { width: 6px; }
+        .ds-options-list::-webkit-scrollbar-track { background: transparent; }
+        .ds-options-list::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 10px; }
 
-        .option-item.selected {
-          background: rgba(var(--primary-rgb), 0.1);
-        }
-
-        .option-item.disabled {
-          opacity: 0.5;
-          cursor: not-allowed;
-        }
-
-        .option-info {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          flex: 1;
-        }
-
-        .role-dot {
-          width: 12px;
-          height: 12px;
-          border-radius: 50%;
-          flex-shrink: 0;
-          box-shadow: 0 0 8px rgba(0,0,0,0.3);
-        }
-
-        .name-wrapper {
-          display: flex;
-          flex-direction: column;
-        }
-
-        .option-name {
-          font-size: 0.9rem;
-          font-weight: 600;
-          color: var(--text-main);
-        }
-
-        .option-meta {
-          font-size: 0.7rem;
-          color: var(--text-dim);
-          font-weight: 500;
-        }
-
-        .disabled-badge {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          color: var(--error);
-          font-size: 0.7rem;
-          font-weight: 700;
-          text-transform: uppercase;
-          background: rgba(239, 68, 68, 0.1);
-          padding: 4px 8px;
-          border-radius: 6px;
-        }
-
-        .no-results {
-          padding: 30px;
-          text-align: center;
-          color: var(--text-dim);
-          font-size: 0.9rem;
-        }
-
-        .error-hint {
-          color: var(--error);
-          font-size: 0.75rem;
-          font-weight: 600;
-          margin-top: 6px;
-          margin-left: 4px;
-        }
-
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(-10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
-        .animate-fade-in {
-          animation: fadeIn 0.2s var(--ease-premium);
-        }
+        :global(.light-theme) .ds-dropdown-v2 { background: #ffffff !important; box-shadow: 0 20px 50px rgba(0,0,0,0.08) !important; }
+        :global(.light-theme) .ds-tag-v2 { background: #ffffff !important; border-color: #f1f5f9 !important; }
+        :global(.light-theme) .ds-option-v2:hover { background: #f8fafc !important; }
       `}</style>
     </div>
   );

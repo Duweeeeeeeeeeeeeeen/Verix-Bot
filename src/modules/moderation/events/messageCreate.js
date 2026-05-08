@@ -50,6 +50,25 @@ export default {
             }
         }
 
+        // --- 2.1 ANTI REPEAT (Duplicate Content) ---
+        if (!violation && config.antiRepeat?.enabled) {
+            const userKey = `${guildId}:${userId}:repeat`;
+            const lastData = userMessages.get(userKey) || { content: '', count: 0 };
+
+            if (lastData.content === content.toLowerCase().trim()) {
+                lastData.count++;
+            } else {
+                lastData.content = content.toLowerCase().trim();
+                lastData.count = 1;
+            }
+            userMessages.set(userKey, lastData);
+
+            if (lastData.count > config.antiRepeat.maxDuplicates) {
+                violation = true;
+                violationReason = 'non inviare lo stesso messaggio ripetutamente';
+            }
+        }
+
         // --- 3. ANTI FLOOD (Walltext / Lines / Emojis) ---
         if (!violation && config.antiFlood?.enabled) {
             // Line count

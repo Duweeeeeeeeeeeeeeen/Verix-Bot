@@ -13,6 +13,7 @@ export const sendEmbedSchema = z.object({
     schedule: z.object({
         type: z.enum(['NOW', 'DELAY', 'TIME']),
         delayMinutes: z.number().min(1).optional(),
-        specificTime: z.string().optional()
+        specificTime: z.string().optional(),
+        recurrence: z.enum(['none', 'daily', 'weekly', 'monthly']).optional()
     }).optional()
 }).strict();

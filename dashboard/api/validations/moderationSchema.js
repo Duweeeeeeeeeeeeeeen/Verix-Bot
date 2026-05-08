@@ -11,6 +11,11 @@ export const moderationSchema = z.object({
         maxMessages: z.number().min(1).max(50).default(5),
         timeWindow: z.number().min(1000).max(60000).default(5000),
     }).default({}),
+    
+    antiRepeat: z.object({
+        enabled: z.boolean().default(false),
+        maxDuplicates: z.number().min(1).max(10).default(3),
+    }).default({}),
 
     antiFlood: z.object({
         enabled: z.boolean().default(false),

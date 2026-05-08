@@ -28,6 +28,15 @@ const scheduledEmbedSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    recurrence: {
+        type: String,
+        enum: ['none', 'daily', 'weekly', 'monthly'],
+        default: 'none',
+        index: true
+    },
+    lastSentAt: {
+        type: Date
+    },
     createdAt: {
         type: Date,
         default: Date.now

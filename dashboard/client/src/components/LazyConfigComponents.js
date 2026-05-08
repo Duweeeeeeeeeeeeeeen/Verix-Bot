@@ -31,3 +31,8 @@ export const OnboardingWizard = dynamic(() => import('./OnboardingWizard'), {
   ssr: false,
   loading: configFallback
 });
+
+export const CustomSelect = dynamic(() => import('./CustomSelect'), {
+  ssr: false,
+  loading: configFallback
+});

@@ -1719,3 +1719,49 @@ input:checked + .slider-mini:before {
 .text-premium-gold {
   color: #fbbf24 !important;
 }
+
+/* ============================================================
+   PREMIUM V2 GLOBAL UTILITIES
+   ============================================================ */
+
+body {
+  font-family: 'Inter', 'Outfit', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Outfit', sans-serif;
+}
+
+.fade-in { animation: fadeIn 0.4s var(--ease-premium); }
+.slide-up { animation: slideUp 0.4s var(--ease-premium); }
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* V2 Layout Helpers used by PhotoContest and Socials */
+.pc-card-v2 {
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    border-radius: 28px;
+    padding: 32px;
+    box-shadow: var(--shadow-premium);
+    transition: 0.3s var(--ease-premium);
+}
+.pc-card-v2:hover { box-shadow: var(--shadow-lift); }
+
+:global(.light-theme) .pc-card-v2 {
+    background: #ffffff !important;
+    border-color: rgba(0,0,0,0.04) !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.04) !important;
+}
+
+.spinning { animation: spin 1s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }

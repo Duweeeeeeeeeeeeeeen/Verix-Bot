@@ -128,6 +128,7 @@ router.post('/:guildId/send', adminCheck, validate(sendEmbedSchema), async (req,
                 channelId,
                 embed,
                 scheduledAt,
+                recurrence: schedule.recurrence || 'none',
                 createdBy: req.user.id
             });
 

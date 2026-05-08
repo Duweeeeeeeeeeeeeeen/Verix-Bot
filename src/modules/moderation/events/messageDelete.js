@@ -1,6 +1,7 @@
 import { Events, EmbedBuilder } from 'discord.js';
 import ModerationConfig from '../../../models/ModerationConfig.js';
 import logger from '../../../utils/logger.js';
+import messageService from '../../../utils/messageService.js';
 
 export default {
     name: Events.MessageDelete,
@@ -24,27 +25,22 @@ export default {
             if (config.ignoredRoles?.some(roleId => member.roles.cache.has(roleId))) return;
         }
 
-        // Send log if configured
-        if (config.ghostPing.logInChannel && config.logChannelId) {
-            try {
-                const logChannel = await message.guild.channels.fetch(config.logChannelId).catch(() => null);
-                if (logChannel) {
-                    const embed = new EmbedBuilder()
-                        .setTitle('👻 Ghost Ping Rilevato')
-                        .setDescription(`Un messaggio contenente menzioni è stato eliminato.`)
-                        .addFields(
-                            { name: '👤 Autore', value: `${message.author} (${message.author.id})`, inline: true },
-                            { name: '📍 Canale', value: `${message.channel}`, inline: true },
-                            { name: '💬 Contenuto', value: message.content || '_Contenuto non disponibile (non in cache)_' }
-                        )
-                        .setColor('#ff4757')
-                        .setTimestamp();
-
-                    await logChannel.send({ embeds: [embed] });
+        // Send notification using MessageService
+        try {
+            const logChannelId = config.ghostPing.logInChannel ? config.logChannelId : null;
+            if (logChannelId) {
+                const channel = await message.guild.channels.fetch(logChannelId).catch(() => null);
+                if (channel) {
+                    const embed = await messageService.get(message.guildId, 'moderation', 'ghost_ping', {
+                        user: message.author.tag,
+                        channel: message.channel.toString(),
+                        content: message.content || '[No Content]'
+                    });
+                    await channel.send({ embeds: [embed] }).catch(() => null);
                 }
-            } catch (error) {
-                logger.error('[Moderation] Error logging ghost ping:', error);
             }
+        } catch (error) {
+            logger.error('[Moderation] Error logging ghost ping:', error);
         }
     }
 };

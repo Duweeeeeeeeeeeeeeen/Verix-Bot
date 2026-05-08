@@ -8,42 +8,16 @@ import { DiscordSelector } from '../../../components/LazyConfigComponents';
 import api from '../../../utils/api';
 import { useT } from '../../../contexts/LanguageContext';
 import { 
-  Save, 
-  Send, 
-  Users, 
-  Settings2, 
-  ListChecks, 
-  Palette, 
-  Plus, 
-  Trash2, 
-  RefreshCcw, 
-  Power, 
-  Clock, 
-  ShieldCheck, 
-  Target, 
-  BellRing,
-  Type,
-  Hash,
-  MousePointer2,
-  ChevronRight,
-  Info,
-  Mic2,
-  Lock,
-  Volume2,
-  AlertCircle,
-  ExternalLink,
-  Command,
-  MessageSquare,
-  Play,
-  HelpCircle,
-  CheckCircle2,
-  XCircle,
-  FileText
+  Save, Send, Users, Settings2, ListChecks, Palette, Plus, Trash2, RefreshCcw, Power, Clock, 
+  ShieldCheck, Target, BellRing, Type, Hash, MousePointer2, ChevronRight, Info, Mic2, Lock, 
+  Volume2, AlertCircle, ExternalLink, Command, MessageSquare, Play, HelpCircle, CheckCircle2, 
+  XCircle, FileText, Trash, ChevronLeft, Zap, Layout, Sparkles, Layers, Award
 } from 'lucide-react';
 import EmojiInput from '../../../components/EmojiInput';
 import CustomSelect from '../../../components/CustomSelect';
 import { NotificationSettings } from '../../../components/LazyConfigComponents';
 import { mergeConfig } from '../../../utils/defaults';
+import Head from 'next/head';
 
 export default function WhitelistConfig() {
   const { t } = useT();
@@ -59,52 +33,40 @@ export default function WhitelistConfig() {
   const [sendingPanel, setSendingPanel] = useState(false);
   const [sendingBgPanel, setSendingBgPanel] = useState(false);
   const [messages, setMessages] = useState({});
-  const [loadingMessages, setLoadingMessages] = useState(true);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const fetchMessages = async () => {
+  const fetchData = async () => {
+    if (!guildId || !mounted) return;
+    setLoading(true);
+    window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
     try {
-      const res = await api.request(`/messages/${guildId}/whitelist`);
-      setMessages(res.data || res || {});
+      const [wlData, bgData, discordRes, msgRes] = await Promise.all([
+        api.request(`/config/${guildId}/whitelist`),
+        api.request(`/config/${guildId}/background`),
+        api.request(`/config/${guildId}/discord-data`),
+        api.request(`/messages/${guildId}/whitelist`).catch(() => ({}))
+      ]);
+      
+      setConfig(mergeConfig(wlData.data || wlData, 'whitelist'));
+      setBgConfig(mergeConfig(bgData.data || bgData, 'background'));
+      setChannels(discordRes?.data?.channels || discordRes?.channels || []);
+      setRoles(discordRes?.data?.roles || discordRes?.roles || []);
+      setMessages(msgRes.data || msgRes || {});
     } catch (err) {
-      console.error('Error fetching messages:', err);
+      console.error("Admission data load error:", err);
     } finally {
-      setLoadingMessages(false);
+      setLoading(false);
+      window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
     }
   };
 
   useEffect(() => {
-    if (guildId && mounted) {
-      fetchMessages();
-      Promise.all([
-        api.request(`/config/${guildId}/whitelist`),
-        api.request(`/config/${guildId}/background`),
-        api.request(`/config/${guildId}/discord-data`)
-      ]).then(([wlData, bgData, discordRes]) => {
-        const finalConfig = mergeConfig(wlData.data || wlData, 'whitelist');
-        const finalBgConfig = mergeConfig(bgData.data || bgData, 'background');
-        
-        setConfig(finalConfig);
-        setBgConfig(finalBgConfig);
-        setChannels(discordRes?.data?.channels || discordRes?.channels || []);
-        setRoles(discordRes?.data?.roles || discordRes?.roles || []);
-        setLoading(false);
-      }).catch(err => {
-        console.error("Error loading admission data:", err);
-        setLoading(false);
-      });
-    }
+    fetchData();
   }, [guildId, mounted]);
-
-  useEffect(() => {
-    if (config) {
-      window.dispatchEvent(new CustomEvent('update-guide-context', { detail: config }));
-    }
-  }, [config]);
 
   const setNested = (path, value) => {
     setConfig(prev => {
@@ -127,584 +89,485 @@ export default function WhitelistConfig() {
 
   const handleSave = async () => {
     setSaving(true);
+    window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
     try {
       await Promise.all([
-        api.request(`/config/${guildId}/whitelist`, {
-          method: 'POST',
-          body: JSON.stringify(config)
-        }),
-        api.request(`/config/${guildId}/background`, {
-          method: 'POST',
-          body: JSON.stringify(bgConfig)
-        }),
-        api.request(`/messages/${guildId}/whitelist`, {
-          method: 'POST',
-          body: JSON.stringify(messages)
-        })
+        api.request(`/config/${guildId}/whitelist`, { method: 'POST', body: JSON.stringify(config) }),
+        api.request(`/config/${guildId}/background`, { method: 'POST', body: JSON.stringify(bgConfig) }),
+        api.request(`/messages/${guildId}/whitelist`, { method: 'POST', body: JSON.stringify(messages) })
       ]);
-      showToast(t('common.save_success'));
+      showToast("Configurazione whitelist salvata!");
     } catch (error) {
-       showToast(t('common.save_error'), 'error');
+       showToast("Errore durante il salvataggio", 'error');
     } finally {
       setSaving(false);
+      window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
     }
   };
 
   const handleSendPanel = async () => {
-    if (!config.panelChannelId) return showToast(t('whitelist.panel_channel_error'), 'error');
+    if (!config.panelChannelId) return showToast("Seleziona un canale per il panel", 'error');
     setSendingPanel(true);
     try {
       await handleSave();
-      await api.request(`/config/${guildId}/whitelist/send-panel`, {
-        method: 'POST',
-        body: JSON.stringify({ channelId: config.panelChannelId })
-      });
-      showToast(t('common.save_success'));
-    } catch (error) {
-       console.error(error);
-    } finally {
-      setSendingPanel(false);
-    }
+      await api.request(`/config/${guildId}/whitelist/send-panel`, { method: 'POST', body: JSON.stringify({ channelId: config.panelChannelId }) });
+      showToast("Panel Whitelist inviato!");
+    } catch (error) { console.error(error); } 
+    finally { setSendingPanel(false); }
   };
 
   const handleSendBgPanel = async () => {
-    if (!bgConfig.panelChannelId) return showToast(t('whitelist.bg_channel_error'), 'error');
+    if (!bgConfig.panelChannelId) return showToast("Seleziona un canale per il panel provini", 'error');
     setSendingBgPanel(true);
     try {
       await handleSave();
-      await api.request(`/config/${guildId}/background/send-panel`, {
-        method: 'POST',
-        body: JSON.stringify({ channelId: bgConfig.panelChannelId })
-      });
-      showToast(t('common.save_success'));
-    } catch (error) {
-       console.error(error);
-    } finally {
-      setSendingBgPanel(false);
-    }
+      await api.request(`/config/${guildId}/background/send-panel`, { method: 'POST', body: JSON.stringify({ channelId: bgConfig.panelChannelId }) });
+      showToast("Panel Provini inviato!");
+    } catch (error) { console.error(error); }
+    finally { setSendingBgPanel(false); }
   };
 
-  if (!mounted || loading || !config) return <Skeleton type="config" />;
+  if (!mounted || loading || !config) return <Skeleton height="600px" />;
 
   const tabs = [
-    { id: 'settings', name: t('whitelist.tab_settings'), icon: Settings2 },
-    { id: 'background', name: t('whitelist.tab_background'), icon: Command, modes: ['BG_ONLY', 'BG_TEXT', 'BG_VOICE', 'FULL'] },
-    { id: 'questions', name: t('whitelist.tab_questions'), icon: ListChecks, modes: ['TEXT', 'HYBRID', 'BG_TEXT', 'FULL'] },
-    { id: 'voice', name: t('whitelist.tab_voice'), icon: Mic2, modes: ['VOICE', 'HYBRID', 'BG_VOICE', 'FULL'] },
-    { id: 'personalization', name: t('whitelist.tab_design'), icon: Palette },
+    { id: 'settings', name: 'Configurazione', icon: Settings2 },
+    { id: 'background', name: 'Provini Staff', icon: Command, modes: ['BG_ONLY', 'BG_TEXT', 'BG_VOICE', 'FULL'] },
+    { id: 'questions', name: 'Domande Scritte', icon: ListChecks, modes: ['TEXT', 'HYBRID', 'BG_TEXT', 'FULL'] },
+    { id: 'voice', name: 'Sistema Orale', icon: Mic2, modes: ['VOICE', 'HYBRID', 'BG_VOICE', 'FULL'] },
+    { id: 'design', name: 'Design Studio', icon: Palette },
   ].filter(tab => !tab.modes || tab.modes.includes(config.mode));
 
   return (
-    <div className="config-page-layout">
-      <div className="config-main-col">
-        <div className="animate">
-        
-        {/* Header */}
-        <header className="module-header">
-           <div className="header-info">
-              <div className="header-icon">
-                <ShieldCheck size={24} />
-              </div>
-              <div className="header-text">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <h1>{t('whitelist.title')}</h1>
-                  <label className="toggle-mini" title={config.enabled ? t('whitelist.active') : t('whitelist.inactive')}>
-                    <input type="checkbox" checked={!!config.enabled} onChange={e => setConfig({...config, enabled: e.target.checked})} />
-                    <span className="slider-mini"></span>
-                  </label>
+    <div className="pc-premium-wrapper fade-in">
+        <Head>
+            <title>Whitelist & Admissioni | Verix Dashboard</title>
+        </Head>
+
+        {/* V2 Header */}
+        <header className="pc-header-v2">
+            <div className="header-info">
+                <div className="pc-icon-box" style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }}>
+                    <ShieldCheck size={28} />
                 </div>
-                <p>{t('whitelist.desc')}</p>
-              </div>
-           </div>
-           <div className="header-buttons">
-              {activeTab === 'background' ? (
-                bgConfig.entryPoint !== 'INTEGRATED' && (
-                  <button onClick={handleSendBgPanel} className="btn-outline" disabled={sendingBgPanel}>
-                     <Send size={16} /> {t('whitelist.send_panel_bg')}
-                  </button>
-                )
-              ) : config.mode !== 'BG_ONLY' && (
-                <button onClick={handleSendPanel} className="btn-outline" disabled={sendingPanel}>
-                   <Send size={16} /> {t('whitelist.send_panel_wl')}
+                <div className="pc-title-row">
+                    <h1>Whitelist & Admissioni</h1>
+                    <div className={`pc-status-tag-v2 ${config.enabled ? 'on' : 'off'}`}>
+                        <div className="status-dot-v2"></div>
+                        {config.enabled ? 'SISTEMA ADMISSIONI ATTIVO' : 'SISTEMA DISABILITATO'}
+                    </div>
+                </div>
+            </div>
+            
+            <div className="header-controls">
+                <button 
+                  className={`pc-status-toggle-v2 ${config.enabled ? 'active' : ''}`}
+                  onClick={() => setConfig({...config, enabled: !config.enabled})}
+                >
+                  <Power size={18} />
+                  <span>{config.enabled ? 'Disattiva' : 'Attiva'}</span>
                 </button>
-              )}
-              <button onClick={handleSave} className="btn-primary" disabled={saving}>
-                <Save size={16} /> {saving ? t('common.saving') : t('common.save')}
-              </button>
-           </div>
+                <button className="pc-btn-primary" onClick={handleSave} disabled={saving}>
+                    <Save size={18} />
+                    <span>{saving ? 'Salvataggio...' : 'Salva Modifiche'}</span>
+                </button>
+            </div>
         </header>
 
-        {/* Tab Navigation */}
-        <div className="tab-navigation">
-            {tabs.map(tab => {
-                const Icon = tab.icon;
-                return (
-                    <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`tab-link ${activeTab === tab.id ? 'active' : ''}`}>
-                        <Icon size={16} />
-                        <span>{tab.name}</span>
+        {/* V2 Navigation Tabs */}
+        <nav className="pc-tabs-container-v2" style={{ marginBottom: '40px' }}>
+            <div className="pc-tabs-v2">
+                {tabs.map(tab => (
+                    <button key={tab.id} className={activeTab === tab.id ? 'active' : ''} onClick={() => setActiveTab(tab.id)}>
+                        <tab.icon size={16} /> <span>{tab.name}</span>
                     </button>
-                );
-            })}
-        </div>
+                ))}
+            </div>
+        </nav>
 
-        <div className="tab-panel animate">
-            
-            {/* TAB: Settings */}
+        <div className="pc-content-v2">
             {activeTab === 'settings' && (
-                <div className="config-grid">
-                    <div className="grid-left">
-                        <section className="card section-card">
-                            <div className="section-header">
-                                <div className="align-center">
-                                    <Power size={18} color="var(--primary)" />
-                                    <h3>{t('whitelist.core_config')}</h3>
-                                </div>
+                <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: '32px' }}>
+                    <div className="v-stack" style={{ gap: '32px' }}>
+                        <section className="pc-card-v2 animate slide-up">
+                            <div className="card-header-v2">
+                                <div className="header-icon" style={{ background: '#f5f3ff', color: '#7c3aed' }}><Zap size={18} /></div>
+                                <h3 style={{ margin: 0 }}>Struttura dell'Ammissione</h3>
                             </div>
-                            
-                             <div className="fields-grid" style={{ marginTop: '24px' }}>
-                                {config.mode !== 'BG_ONLY' && (
-                                    <>
-                                        <div className="field-box">
-                                            <label className="text-label">{t('whitelist.panel_channel')}</label>
-                                            <DiscordSelector type="channel" options={channels.filter(c => c.type === 0 || c.type === 5)} value={config.panelChannelId || ''} onChange={val => setConfig({...config, panelChannelId: val})} />
-                                        </div>
-                                        <div className="field-box">
-                                            <label className="text-label">{t('whitelist.ticket_category')}</label>
-                                            <DiscordSelector type="channel" options={channels.filter(c => c.type === 4)} value={config.categoryOpenId || ''} onChange={val => setConfig({...config, categoryOpenId: val})} />
-                                        </div>
-                                        <div className="field-box">
-                                            <label className="text-label">{t('whitelist.log_channel')}</label>
-                                            <DiscordSelector type="channel" options={channels.filter(c => c.type === 0 || c.type === 5)} value={config.logChannelId || ''} onChange={val => setConfig({...config, logChannelId: val})} />
-                                        </div>
-                                    </>
-                                )}
-                                <div className="field-box">
-                                    <label className="text-label">{t('whitelist.mode')}</label>
-                                    <CustomSelect 
-                                        options={[
-                                            { value: 'TEXT', label: t('whitelist.mode_text') },
-                                            { value: 'VOICE', label: t('whitelist.mode_voice') },
-                                            { value: 'HYBRID', label: t('whitelist.mode_hybrid') },
-                                            { value: 'BG_ONLY', label: t('whitelist.mode_bg_only') },
-                                            { value: 'BG_TEXT', label: t('whitelist.mode_bg_text') },
-                                            { value: 'BG_VOICE', label: t('whitelist.mode_bg_voice') },
-                                            { value: 'FULL', label: t('whitelist.mode_full') }
-                                        ]} 
-                                        value={config.mode || 'TEXT'} 
-                                        onChange={val => setConfig({...config, mode: val})} 
-                                    />
+                            <div className="card-body-v2">
+                                <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                                    <div className="pc-input-group-v2">
+                                        <label>Metodo di Selezione</label>
+                                        <CustomSelect 
+                                            options={[
+                                                { value: 'TEXT', label: 'Solo Test Scritto' },
+                                                { value: 'VOICE', label: 'Solo Orale Staff' },
+                                                { value: 'HYBRID', label: 'Ibrido (Scritto + Orale)' },
+                                                { value: 'BG_ONLY', label: 'Solo Provini Staff' },
+                                                { value: 'BG_TEXT', label: 'Provini Staff + Scritto' },
+                                                { value: 'FULL', label: 'Full Ecosystem' }
+                                            ]} 
+                                            value={config.mode || 'TEXT'} 
+                                            onChange={val => setConfig({...config, mode: val})} 
+                                        />
+                                    </div>
+                                    <div className="pc-input-group-v2">
+                                        <label>Canale Log Esiti</label>
+                                        <DiscordSelector type="channel" options={channels.filter(c => c.type === 0 || c.type === 5)} value={config.logChannelId || ''} onChange={val => setConfig({...config, logChannelId: val})} />
+                                    </div>
+                                    <div className="pc-input-group-v2">
+                                        <label>Canale del Panel</label>
+                                        <DiscordSelector type="channel" options={channels.filter(c => c.type === 0 || c.type === 5)} value={config.panelChannelId || ''} onChange={val => setConfig({...config, panelChannelId: val})} />
+                                    </div>
+                                    <div className="pc-input-group-v2">
+                                        <label>Categoria Stanza Esami</label>
+                                        <DiscordSelector type="channel" options={channels.filter(c => c.type === 4)} value={config.categoryOpenId || ''} onChange={val => setConfig({...config, categoryOpenId: val})} />
+                                    </div>
                                 </div>
                             </div>
                         </section>
 
+                        <section className="pc-card-v2 animate slide-up" style={{ animationDelay: '0.1s' }}>
+                            <div className="card-header-v2">
+                                <div className="header-icon" style={{ background: '#fffbeb', color: '#d97706' }}><Clock size={18} /></div>
+                                <h3 style={{ margin: 0 }}>Vincoli Temporali</h3>
+                            </div>
+                            <div className="card-body-v2">
+                                <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                                    <div className="pc-input-group-v2">
+                                        <label>Tempo Scadenza Test (Min)</label>
+                                        <div className="pc-input-wrapper-v2" style={{ display: 'flex', alignItems: 'center', background: '#f8fafc', border: '1.5px solid #e2e8f0', borderRadius: '16px' }}>
+                                            <Clock size={16} style={{ marginLeft: '16px', color: '#94a3b8' }} />
+                                            <input type="number" style={{ width: '100%', border: 'none', background: 'transparent', padding: '14px 16px', fontWeight: 800, outline: 'none' }} value={config.timeLimit || 30} onChange={e => setConfig({...config, timeLimit: parseInt(e.target.value)})} />
+                                        </div>
+                                    </div>
+                                    <div className="pc-input-group-v2">
+                                        <label>Cooldown tra tentativi (Ore)</label>
+                                        <div className="pc-input-wrapper-v2" style={{ display: 'flex', alignItems: 'center', background: '#f8fafc', border: '1.5px solid #e2e8f0', borderRadius: '16px' }}>
+                                            <RefreshCcw size={16} style={{ marginLeft: '16px', color: '#94a3b8' }} />
+                                            <input type="number" style={{ width: '100%', border: 'none', background: 'transparent', padding: '14px 16px', fontWeight: 800, outline: 'none' }} value={config.cooldown || 24} onChange={e => setConfig({...config, cooldown: parseInt(e.target.value)})} />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
 
-
-                        {config.mode !== 'BG_ONLY' && (
-                            <>
-                                <section className="card section-card" style={{ marginTop: '24px' }}>
-                                    <div className="align-center" style={{ marginBottom: '20px' }}>
-                                        <Clock size={18} color="var(--primary)" />
-                                        <h3>{t('whitelist.limits_title')}</h3>
+                        <section className="pc-card-v2 animate slide-up" style={{ animationDelay: '0.2s' }}>
+                            <div className="card-header-v2">
+                                <div className="header-icon" style={{ background: '#ecfdf5', color: '#10b981' }}><Award size={18} /></div>
+                                <h3 style={{ margin: 0 }}>Automazione Premi & Ruoli</h3>
+                            </div>
+                            <div className="card-body-v2">
+                                <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                                    <div className="pc-input-group-v2">
+                                        <label>Ruoli da Assegnare (Passato)</label>
+                                        <DiscordSelector type="role" multiple={true} options={roles} value={config.rolesToAddOnTextPass || []} onChange={val => setConfig({...config, rolesToAddOnTextPass: val})} />
                                     </div>
-                                    <div className="fields-grid">
-                                        <div className="field-box">
-                                            <label className="text-label">{t('whitelist.test_duration')}</label>
-                                            <input type="number" className="input" value={config.timeLimit || 30} onChange={e => setConfig({...config, timeLimit: parseInt(e.target.value)})} />
-                                        </div>
-                                        <div className="field-box">
-                                            <label className="text-label">{t('whitelist.cooldown')}</label>
-                                            <input type="number" className="input" value={config.cooldown || 24} onChange={e => setConfig({...config, cooldown: parseInt(e.target.value)})} />
-                                        </div>
+                                    <div className="pc-input-group-v2">
+                                        <label>Ruoli da Rimuovere (Passato)</label>
+                                        <DiscordSelector type="role" multiple={true} options={roles} value={config.rolesToRemoveOnTextPass || []} onChange={val => setConfig({...config, rolesToRemoveOnTextPass: val})} />
                                     </div>
-                                </section>
-
-                                <section className="card section-card" style={{ marginTop: '24px' }}>
-                                    <div className="align-center" style={{ marginBottom: '20px' }}>
-                                        <ShieldCheck size={18} color="var(--primary)" />
-                                        <h3>{t('whitelist.auto_text_title')}</h3>
-                                        <HelpTooltip text={t('whitelist.staff_help')} />
-                                    </div>
-                                    <div className="fields-grid">
-                                        <div className="field-box">
-                                            <label className="text-label">{t('whitelist.roles_to_add')}</label>
-                                            <DiscordSelector type="role" multiple={true} options={roles} value={config.rolesToAddOnTextPass || []} onChange={val => setConfig({...config, rolesToAddOnTextPass: val})} />
-                                        </div>
-                                        <div className="field-box">
-                                            <label className="text-label">{t('whitelist.roles_to_remove')}</label>
-                                            <DiscordSelector type="role" multiple={true} options={roles} value={config.rolesToRemoveOnTextPass || []} onChange={val => setConfig({...config, rolesToRemoveOnTextPass: val})} />
-                                        </div>
-                                    </div>
-                                </section>
-                            </>
-                        )}
+                                </div>
+                            </div>
+                        </section>
                     </div>
 
-                    <div className="grid-right">
-                        <section className="card section-card">
-                            <h3 className="sidebar-title align-center" style={{ marginBottom: '16px' }}><Users size={18} /> {t('whitelist.staff_roles')}</h3>
-                            <DiscordSelector type="role" multiple={true} options={roles} value={config.staffRoleIds || []} onChange={val => setConfig({...config, staffRoleIds: val})} />
-                            <p className="text-description" style={{ marginTop: '12px' }}>{t('whitelist.staff_help')}</p>
+                    <div className="v-stack" style={{ gap: '32px' }}>
+                        <section className="pc-card-v2">
+                            <div className="card-header-v2">
+                                <div className="header-icon" style={{ background: '#f0f9ff', color: '#0ea5e9' }}><Users size={18} /></div>
+                                <h3 style={{ margin: 0 }}>Team Valutatori</h3>
+                            </div>
+                            <div className="card-body-v2">
+                                <div className="pc-input-group-v2">
+                                    <label>Staff Whitelist Autorizzato</label>
+                                    <DiscordSelector type="role" multiple={true} options={roles} value={config.staffRoleIds || []} onChange={val => setConfig({...config, staffRoleIds: val})} />
+                                    <div style={{ marginTop: '16px', background: '#f8fafc', padding: '16px', borderRadius: '16px', border: '1.5px solid #e2e8f0' }}>
+                                        <p style={{ margin: 0, fontSize: '0.75rem', color: '#64748b', fontWeight: 700, lineHeight: 1.5 }}>Questi ruoli avranno i permessi per gestire i ticket di ammissione.</p>
+                                    </div>
+                                </div>
+                            </div>
                         </section>
 
                         <NotificationSettings 
                             guildId={guildId}
                             value={config.notifications}
                             onChange={val => setConfig({...config, notifications: val})}
-                            title={t('whitelist.notif_title')}
-                            description={t('whitelist.notif_desc')}
+                            title="Notifiche Log Ammissioni"
                         />
+
+                        <button className="pc-btn-primary" style={{ width: '100%', background: '#f5f3ff', color: '#7c3aed', border: '1.5px solid #ddd6fe', boxShadow: 'none', justifyContent: 'center' }} onClick={handleSendPanel} disabled={sendingPanel}>
+                            <Send size={18} />
+                            <span>{sendingPanel ? 'Invio in corso...' : 'Invia Panel Whitelist'}</span>
+                        </button>
                     </div>
                 </div>
             )}
 
-            {/* TAB: Background */}
             {activeTab === 'background' && (
-                <div className="config-grid">
-                    <div className="grid-left">
-                        <section className="card section-card">
-                            <div className="section-header">
-                                <div className="align-center">
-                                    <Command size={18} color="var(--primary)" />
-                                    <h3>{t('whitelist.bg_title')}</h3>
+                <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: '32px' }}>
+                    <div className="v-stack" style={{ gap: '32px' }}>
+                        <section className="pc-card-v2">
+                            <div className="card-header-v2">
+                                <div className="header-icon" style={{ background: '#fffbeb', color: '#d97706' }}><Command size={18} /></div>
+                                <div className="v-stack" style={{ flex: 1 }}>
+                                    <h3 style={{ margin: 0 }}>Reclutamento Staff (Provini)</h3>
+                                    <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>Crea un percorso di ingresso dedicato per i nuovi membri del team.</p>
                                 </div>
-                                <label className="toggle">
+                                <label className="pc-toggle-v2 mini">
                                     <input type="checkbox" checked={!!bgConfig.enabled} onChange={e => setBgConfig({...bgConfig, enabled: e.target.checked})} />
-                                    <span className="slider"></span>
+                                    <span className="pc-slider-v2"></span>
                                 </label>
                             </div>
-                            
-                            <div className="fields-grid" style={{ marginTop: '24px' }}>
-                                {bgConfig.entryPoint !== 'INTEGRATED' && (
-                                    <div className="field-box">
-                                        <label className="text-label">{t('whitelist.bg_channel')}</label>
-                                        <DiscordSelector type="channel" options={channels.filter(c => c.type === 0 || c.type === 5)} value={bgConfig.panelChannelId || ''} onChange={val => setBgConfig({...bgConfig, panelChannelId: val})} />
+                            <div className="card-body-v2">
+                                <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                                    <div className="pc-input-group-v2">
+                                        <label>Logistica Ingresso</label>
+                                        <CustomSelect 
+                                            options={[
+                                                { value: 'PANEL', label: 'Panel Separato' },
+                                                { value: 'INTEGRATED', label: 'Unificato in Whitelist' }
+                                            ]} 
+                                            value={bgConfig.entryPoint || 'PANEL'} 
+                                            onChange={val => setBgConfig({...bgConfig, entryPoint: val})} 
+                                        />
                                     </div>
-                                )}
-                                <div className="field-box">
-                                    <label className="text-label">{t('whitelist.bg_log')}</label>
-                                    <DiscordSelector type="channel" options={channels.filter(c => c.type === 0 || c.type === 5)} value={bgConfig.logChannelId || ''} onChange={val => setBgConfig({...bgConfig, logChannelId: val})} />
+                                    <div className="pc-input-group-v2">
+                                        <label>Canale Log Staff</label>
+                                        <DiscordSelector type="channel" options={channels.filter(c => c.type === 0 || c.type === 5)} value={bgConfig.logChannelId || ''} onChange={val => setBgConfig({...bgConfig, logChannelId: val})} />
+                                    </div>
+                                    {bgConfig.entryPoint === 'PANEL' && (
+                                        <div className="pc-input-group-v2" style={{ gridColumn: 'span 2' }}>
+                                            <label>Canale Pubblicazione Panel Provini</label>
+                                            <DiscordSelector type="channel" options={channels.filter(c => c.type === 0 || c.type === 5)} value={bgConfig.panelChannelId || ''} onChange={val => setBgConfig({...bgConfig, panelChannelId: val})} />
+                                        </div>
+                                    )}
                                 </div>
-                                <div className="field-box">
-                                    <label className="text-label">{t('whitelist.entry_point')}</label>
-                                    <CustomSelect 
-                                        options={[
-                                            { value: 'PANEL', label: t('whitelist.entry_panel') },
-                                            { value: 'INTEGRATED', label: t('whitelist.entry_integrated') }
-                                        ]} 
-                                        value={bgConfig.entryPoint || 'PANEL'} 
-                                        onChange={val => setBgConfig({...bgConfig, entryPoint: val})} 
-                                    />
-                                </div>
-                                <div className="field-box">
-                                    <label className="text-label">{t('whitelist.bg_staff')}</label>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div className="v-stack" style={{ gap: '32px' }}>
+                        <section className="pc-card-v2">
+                            <div className="card-header-v2">
+                                <div className="header-icon" style={{ background: '#fdf2f8', color: '#db2777' }}><ShieldCheck size={18} /></div>
+                                <h3 style={{ margin: 0 }}>Team Selezionatori</h3>
+                            </div>
+                            <div className="card-body-v2">
+                                <div className="pc-input-group-v2">
+                                    <label>Ruoli Staff Recruiters</label>
                                     <DiscordSelector type="role" multiple={true} options={roles} value={bgConfig.staffRoleIds || []} onChange={val => setBgConfig({...bgConfig, staffRoleIds: val})} />
                                 </div>
                             </div>
                         </section>
-
-
-                    </div>
-                    <div className="grid-right">
-                        <NotificationSettings 
-                            guildId={guildId}
-                            value={bgConfig.notifications}
-                            onChange={val => setBgConfig({...bgConfig, notifications: val})}
-                            title={t('whitelist.bg_notif_title')}
-                            description={t('whitelist.bg_notif_desc')}
-                        />
+                        <button className="pc-btn-primary" style={{ width: '100%', background: '#fffbeb', color: '#d97706', border: '1.5px solid #fde68a', boxShadow: 'none', justifyContent: 'center' }} onClick={handleSendBgPanel} disabled={sendingBgPanel}>
+                            <Send size={18} />
+                            <span>{sendingBgPanel ? 'Invio in corso...' : 'Invia Panel Provini'}</span>
+                        </button>
                     </div>
                 </div>
             )}
 
-            {/* TAB: Voice (Vocale) */}
+            {activeTab === 'questions' && (
+                <div className="v-stack animate slide-up" style={{ gap: '32px' }}>
+                    <section className="pc-card-v2">
+                        <div className="card-header-v2">
+                            <div className="header-icon" style={{ background: '#f5f3ff', color: '#7c3aed' }}><ListChecks size={18} /></div>
+                            <div className="v-stack" style={{ flex: 1 }}>
+                                <h3 style={{ margin: 0 }}>Banca Domande Scritte</h3>
+                                <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>Le domande verranno pescate casualmente per ogni nuovo candidato.</p>
+                            </div>
+                            <button className="pc-btn-primary mini-v2" onClick={() => setConfig({...config, questions: [{ text: '', minLength: 30 }, ...(config.questions || [])]})}>
+                                <Plus size={16} /> <span>Aggiungi Domanda</span>
+                            </button>
+                        </div>
+                        <div className="card-body-v2">
+                            <div className="v-stack" style={{ gap: '20px' }}>
+                                {(config.questions || []).map((q, idx) => (
+                                    <div key={idx} className="pc-question-slot-v2" style={{ display: 'flex', gap: '24px', background: '#f8fafc', padding: '28px', borderRadius: '28px', border: '1.5px solid #e2e8f0', position: 'relative' }}>
+                                        <div style={{ width: '40px', height: '40px', background: 'white', borderRadius: '12px', border: '1.5px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, color: '#7c3aed', flexShrink: 0, fontFamily: 'Outfit' }}>{idx + 1}</div>
+                                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                                            <div className="pc-input-group-v2">
+                                                <label>Testo della Domanda</label>
+                                                <textarea 
+                                                    style={{ width: '100%', background: 'white', border: '1.5px solid #e2e8f0', borderRadius: '16px', padding: '16px', fontWeight: 700, color: '#1e293b', outline: 'none', resize: 'none', minHeight: '80px' }}
+                                                    value={q.text || ''} 
+                                                    onChange={e => {
+                                                        const qs = [...config.questions];
+                                                        qs[idx].text = e.target.value;
+                                                        setConfig({...config, questions: qs});
+                                                    }} 
+                                                    placeholder="Inserisci la domanda per il candidato..." 
+                                                />
+                                            </div>
+                                            <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', paddingTop: '16px', borderTop: '1.5px dashed #e2e8f0' }}>
+                                                <div className="pc-input-group-v2">
+                                                    <label>Caratteri Minimi Risposta</label>
+                                                    <input 
+                                                        type="number" 
+                                                        style={{ width: '120px', background: 'white', border: '1.5px solid #e2e8f0', borderRadius: '12px', padding: '10px 16px', fontWeight: 800, textAlign: 'center' }}
+                                                        value={q.minLength || 0} 
+                                                        onChange={e => {
+                                                            const qs = [...config.questions];
+                                                            qs[idx].minLength = parseInt(e.target.value) || 0;
+                                                            setConfig({...config, questions: qs});
+                                                        }} 
+                                                    />
+                                                </div>
+                                                <button style={{ width: '40px', height: '40px', background: '#fff1f2', color: '#ef4444', border: 'none', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setConfig({...config, questions: config.questions.filter((_, i) => i !== idx)})}>
+                                                    <Trash2 size={18} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                                {(config.questions || []).length === 0 && (
+                                    <div style={{ textAlign: 'center', padding: '80px', color: '#94a3b8' }}>
+                                        <FileText size={56} style={{ margin: '0 auto 20px', opacity: 0.2 }} />
+                                        <p style={{ fontWeight: 800 }}>Nessuna domanda configurata nella banca dati.</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            )}
+
             {activeTab === 'voice' && (
-                <div className="config-grid">
-                    <div className="grid-left">
-                        <section className="card section-card">
-                            <div className="section-header">
-                                <div className="align-center">
-                                    <Mic2 size={18} color="var(--primary)" />
-                                    <h3>{t('whitelist.voice_title')}</h3>
+                <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: '32px' }}>
+                    <div className="v-stack" style={{ gap: '32px' }}>
+                        <section className="pc-card-v2">
+                            <div className="card-header-v2">
+                                <div className="header-icon" style={{ background: '#f0f9ff', color: '#0ea5e9' }}><Mic2 size={18} /></div>
+                                <div className="v-stack" style={{ flex: 1 }}>
+                                    <h3 style={{ margin: 0 }}>Coda Colloqui (Voice Waiting)</h3>
+                                    <p style={{ margin: '4px 0 0 0', fontSize: '0.8rem', color: '#64748b', fontWeight: 600 }}>Gestisci il sistema di attesa vocale per i colloqui orali.</p>
                                 </div>
-                                <label className="toggle">
+                                <label className="pc-toggle-v2 mini">
                                     <input type="checkbox" checked={!config.voiceSettings?.paused} onChange={e => setNested('voiceSettings.paused', !e.target.checked)} />
-                                    <span className="slider"></span>
+                                    <span className="pc-slider-v2"></span>
                                 </label>
                             </div>
-                            
-                            <div className="fields-grid" style={{ marginTop: '24px' }}>
-                                <div className="field-box">
-                                    <label className="text-label">{t('whitelist.voice_waiting')}</label>
-                                    <DiscordSelector type="channel" options={channels.filter(c => c.type === 2)} value={config.voiceSettings?.joinChannelId || ''} onChange={val => setNested('voiceSettings.joinChannelId', val)} />
-                                </div>
-                                <div className="field-box">
-                                    <label className="text-label">{t('whitelist.voice_category')}</label>
-                                    <DiscordSelector type="channel" options={channels.filter(c => c.type === 4)} value={config.voiceSettings?.categoryId || ''} onChange={val => setNested('voiceSettings.categoryId', val)} />
-                                </div>
-                                <div className="field-box">
-                                    <label className="text-label">{t('whitelist.voice_rejection_cooldown')}</label>
-                                    <input type="number" className="input" value={config.voiceSettings?.rejectionCooldown || 24} onChange={e => setNested('voiceSettings.rejectionCooldown', parseInt(e.target.value))} />
-                                </div>
-                                <div className="field-box" style={{ gridColumn: 'span 2' }}>
-                                    <label className="text-label flex-between">
-                                        {t('whitelist.voice_name_template')}
-                                        <HelpTooltip text={t('whitelist.voice_help_template')} />
-                                    </label>
-                                    <input 
-                                        type="text" 
-                                        className="input" 
-                                        placeholder="es: wl-{user}" 
-                                        value={config.voiceSettings?.channelNameTemplate || ''} 
-                                        onChange={e => setNested('voiceSettings.channelNameTemplate', e.target.value)} 
-                                    />
-                                </div>
-                                <div className="field-box" style={{ gridColumn: 'span 2' }}>
-                                <div className="alert-box" style={{ background: 'var(--primary-glow)', borderColor: 'var(--primary)' }}>
-                                        <div className="flex-between w-full">
-                                            <div className="align-center">
-                                                <Hash size={16} color="var(--primary)" />
-                                                <span>{t('whitelist.voice_counter')}: <strong>{config.voiceSettings?.sessionCounter || 0}</strong></span>
-                                            </div>
-                                            <button 
-                                                className="btn-outline-sm" 
-                                                onClick={() => {
-                                                    if(confirm(t('whitelist.voice_reset_confirm'))) {
-                                                        setNested('voiceSettings.sessionCounter', 0);
-                                                    }
-                                                }}
-                                            >
-                                                <RefreshCcw size={14} /> {t('dashboard.refresh')}
-                                            </button>
+                            <div className="card-body-v2">
+                                <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                                    <div className="pc-input-group-v2">
+                                        <label>Canale Vocale Attesa</label>
+                                        <DiscordSelector type="channel" options={channels.filter(c => c.type === 2)} value={config.voiceSettings?.joinChannelId || ''} onChange={val => setNested('voiceSettings.joinChannelId', val)} />
+                                    </div>
+                                    <div className="pc-input-group-v2">
+                                        <label>Categoria Stanza Colloquio</label>
+                                        <DiscordSelector type="channel" options={channels.filter(c => c.type === 4)} value={config.voiceSettings?.categoryId || ''} onChange={val => setNested('voiceSettings.categoryId', val)} />
+                                    </div>
+                                    <div className="pc-input-group-v2" style={{ gridColumn: 'span 2' }}>
+                                        <label>Naming Stanza Colloquio</label>
+                                        <div className="pc-input-wrapper-v2" style={{ display: 'flex', alignItems: 'center', background: '#f8fafc', border: '1.5px solid #e2e8f0', borderRadius: '16px' }}>
+                                            <Type size={16} style={{ marginLeft: '16px', color: '#94a3b8' }} />
+                                            <input style={{ width: '100%', border: 'none', background: 'transparent', padding: '14px 16px', fontWeight: 800, outline: 'none' }} placeholder="es: colloquio-{user}" value={config.voiceSettings?.channelNameTemplate || ''} onChange={e => setNested('voiceSettings.channelNameTemplate', e.target.value)} />
                                         </div>
                                     </div>
                                 </div>
                             </div>
-
-                            <div className="toggle-list" style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                <div className="toggle-box">
-                                    <div className="flex-col">
-                                        <span style={{ fontWeight: 600 }}>{t('whitelist.voice_auto_delete')}</span>
-                                        <p className="text-dim" style={{ fontSize: '0.75rem' }}>{t('whitelist.voice_auto_delete_desc')}</p>
-                                    </div>
-                                    <label className="toggle">
-                                        <input type="checkbox" checked={!!config.voiceSettings?.autoDelete} onChange={e => setNested('voiceSettings.autoDelete', e.target.checked)} />
-                                        <span className="slider"></span>
-                                    </label>
-                                </div>
-                                <div className="toggle-box">
-                                    <div className="flex-col">
-                                        <span style={{ fontWeight: 600 }}>{t('whitelist.voice_ping_staff')}</span>
-                                        <p className="text-dim" style={{ fontSize: '0.75rem' }}>{t('whitelist.voice_ping_staff_desc')}</p>
-                                    </div>
-                                    <label className="toggle">
-                                        <input type="checkbox" checked={!!config.voiceSettings?.pingStaffOnJoin} onChange={e => setNested('voiceSettings.pingStaffOnJoin', e.target.checked)} />
-                                        <span className="slider"></span>
-                                    </label>
-                                </div>
-                            </div>
-                        </section>
-
-                        <section className="card section-card" style={{ marginTop: '24px' }}>
-                            <div className="align-center" style={{ marginBottom: '20px' }}>
-                                <ShieldCheck size={18} color="var(--primary)" />
-                                <h3>{t('whitelist.voice_promo_title')}</h3>
-                            </div>
-                            <div className="fields-grid">
-                                <div className="field-box">
-                                    <label className="text-label">{t('whitelist.roles_to_add')}</label>
-                                    <DiscordSelector type="role" multiple={true} options={roles} value={config.voiceSettings?.rolesToAdd || []} onChange={val => setNested('voiceSettings.rolesToAdd', val)} />
-                                </div>
-                                <div className="field-box">
-                                    <label className="text-label">{t('whitelist.roles_to_remove')}</label>
-                                    <DiscordSelector type="role" multiple={true} options={roles} value={config.voiceSettings?.rolesToRemove || []} onChange={val => setNested('voiceSettings.rolesToRemove', val)} />
-                                </div>
-                            </div>
                         </section>
                     </div>
 
-                    <div className="grid-right">
-                        <section className="card section-card">
-                            <h3 className="sidebar-title align-center" style={{ marginBottom: '16px' }}><Users size={18} /> {t('whitelist.voice_staffers')}</h3>
-                            <DiscordSelector type="role" multiple={true} options={roles} value={config.voiceSettings?.staffRoleIds || []} onChange={val => setNested('voiceSettings.staffRoleIds', val)} />
+                    <div className="v-stack" style={{ gap: '32px' }}>
+                        <section className="pc-card-v2">
+                             <div className="card-header-v2">
+                                 <div className="header-icon" style={{ background: '#f1f5f9', color: '#475569' }}><Settings2 size={18} /></div>
+                                 <h3 style={{ margin: 0 }}>Automazione Voice</h3>
+                             </div>
+                             <div className="card-body-v2">
+                                 <div className="v-stack" style={{ gap: '20px' }}>
+                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                         <div className="v-stack">
+                                             <strong style={{ fontSize: '0.9rem', fontWeight: 900, color: '#1e293b' }}>Auto-Termina</strong>
+                                             <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 650 }}>Elimina stanza all'uscita</span>
+                                         </div>
+                                         <label className="pc-toggle-v2 mini">
+                                            <input type="checkbox" checked={!!config.voiceSettings?.autoDelete} onChange={e => setNested('voiceSettings.autoDelete', e.target.checked)} />
+                                            <span className="pc-slider-v2"></span>
+                                         </label>
+                                     </div>
+                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                         <div className="v-stack">
+                                             <strong style={{ fontSize: '0.9rem', fontWeight: 900, color: '#1e293b' }}>Notifica Staff</strong>
+                                             <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 650 }}>Ping staff all'ingresso utente</span>
+                                         </div>
+                                         <label className="pc-toggle-v2 mini">
+                                            <input type="checkbox" checked={!!config.voiceSettings?.pingStaffOnJoin} onChange={e => setNested('voiceSettings.pingStaffOnJoin', e.target.checked)} />
+                                            <span className="pc-slider-v2"></span>
+                                         </label>
+                                     </div>
+                                 </div>
+                             </div>
                         </section>
                     </div>
                 </div>
             )}
 
-            {/* TAB: Questions */}
-            {activeTab === 'questions' && (
-                <div className="card section-card">
-                    <div className="section-header">
-                        <div>
-                            <h3>{t('whitelist.q_bank')}</h3>
-                            <p className="text-muted">{t('whitelist.q_per_session', { count: config.questionsPerSession })}</p>
-                        </div>
-                        <button onClick={() => setConfig({...config, questions: [{ text: '', minLength: 20 }, ...(config.questions || [])]})} className="btn-primary">
-                            <Plus size={16} /> {t('common.add')}
-                        </button>
-                    </div>
-
-                    <div className="questions-container" style={{ marginTop: '24px' }}>
-                        {config.questions?.map((q, idx) => (
-                            <div key={idx} className="question-row" style={{ display: 'flex', gap: '16px', marginBottom: '16px', alignItems: 'flex-start' }}>
-                                <div className="q-badge">{idx + 1}</div>
-                                <div style={{ flex: 1 }}>
-                                    <textarea className="input" rows="3" value={q.text || ''} onChange={e => {
-                                        const qs = [...config.questions];
-                                        qs[idx].text = e.target.value;
-                                        setConfig({...config, questions: qs});
-                                    }} placeholder={t('whitelist.q_placeholder')} />
-                                </div>
-                                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                                    <input type="number" className="input" style={{ width: '80px' }} value={q.minLength || 0} onChange={e => {
-                                        const qs = [...config.questions];
-                                        qs[idx].minLength = parseInt(e.target.value) || 0;
-                                        setConfig({...config, questions: qs});
-                                    }} />
-                                    <button onClick={() => setConfig({...config, questions: config.questions.filter((_, i) => i !== idx)})} className="btn-icon-danger">
-                                        <Trash2 size={16} />
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            {/* TAB: Design */}
-            {activeTab === 'personalization' && (
-                <div className="animate fade-in">
-                    <section className="card section-card" style={{ marginBottom: '24px' }}>
-                        <div className="align-center" style={{ marginBottom: '20px' }}>
-                            <MousePointer2 size={18} color="var(--primary)" />
-                            <h3>{t('whitelist.btn_branding')}</h3>
-                        </div>
-                        <div className="fields-grid">
-                            <div className="field-box">
-                                <label className="label-tiny">{t('whitelist.btn_label')}</label>
-                                <input className="input" value={config.buttons?.start_wl?.label || ''} onChange={e => setNested('buttons.start_wl.label', e.target.value)} placeholder={t('whitelist.msg_start')} />
-                            </div>
-                            <div className="field-box">
-                                <label className="label-tiny">{t('whitelist.btn_emoji')}</label>
-                                <div style={{ width: '60px' }}>
-                                    <EmojiInput value={config.buttons?.start_wl?.emoji || ''} onChange={e => setNested('buttons.start_wl.emoji', e.target.value)} />
-                                </div>
-                            </div>
-                            <div className="field-box" style={{ gridColumn: 'span 2' }}>
-                                <label className="label-tiny">{t('whitelist.btn_style')}</label>
-                                <div className="style-selector-v">
-                                    {[
-                                        { id: 'SUCCESS', label: t('tickets.btn_style_green'), color: 'var(--discord-green)' },
-                                        { id: 'PRIMARY', label: t('tickets.btn_style_blue'), color: 'var(--discord-blurple)' },
-                                        { id: 'SECONDARY', label: t('tickets.btn_style_gray'), color: 'var(--discord-gray)' },
-                                        { id: 'DANGER', label: t('tickets.btn_style_red'), color: 'var(--discord-red)' },
-                                        { id: 'LINK', label: t('tickets.btn_style_link'), color: 'var(--info)' }
-                                    ].map(style => (
-                                        <button 
-                                            key={style.id}
-                                            onClick={() => setNested('buttons.start_wl.style', style.id)}
-                                            className={`style-btn ${config.buttons?.start_wl?.style === style.id ? 'active' : ''}`}
-                                        >
-                                            <div className="dot" style={{ backgroundColor: style.color }}></div>
-                                            <span>{style.label}</span>
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                            {config.buttons?.start_wl?.style === 'LINK' && (
-                                <div className="field-box animate fade-in" style={{ gridColumn: 'span 2' }}>
-                                    <label className="label-tiny">{t('whitelist.btn_url')}</label>
-                                    <input className="input" value={config.buttons?.start_wl?.url || ''} onChange={e => setNested('buttons.start_wl.url', e.target.value)} placeholder="https://..." />
-                                </div>
-                            )}
-                        </div>
-                    </section>
-
-                    <section className="card section-card" style={{ marginBottom: '24px' }}>
-                        <div className="section-header">
-                            <div className="align-center">
-                                <Palette size={18} color="var(--primary)" />
-                                <h3>{t('whitelist.global_colors')}</h3>
-                            </div>
-                        </div>
-                        <div className="fields-grid" style={{ marginTop: '16px' }}>
-                            <div className="field-box">
-                                <label className="text-label">{t('whitelist.color_success')}</label>
-                                <input type="color" value={config.colors?.success || 'var(--success)'} onChange={e => setNested('colors.success', e.target.value)} />
-                            </div>
-                            <div className="field-box">
-                                <label className="text-label">{t('whitelist.color_danger')}</label>
-                                <input type="color" value={config.colors?.danger || 'var(--error)'} onChange={e => setNested('colors.danger', e.target.value)} />
-                            </div>
-                        </div>
-                    </section>
-
-                    <EmbedMessageManager 
+            {activeTab === 'design' && (
+                <div className="v-stack animate slide-up">
+                     <EmbedMessageManager 
                         guildId={guildId}
                         module="whitelist"
                         slugs={[
-                            { key: 'panel', label: t('whitelist.msg_panel'), description: t('whitelist.msg_panel'), variables: ['guild'], group: t('whitelist.group_access'), groupIcon: Play },
-                            { key: 'start', label: t('whitelist.msg_start'), description: t('whitelist.msg_start'), variables: ['user', 'time_limit'], group: t('whitelist.group_interview'), groupIcon: Play },
-                            { key: 'question', label: t('whitelist.msg_question'), description: t('whitelist.msg_question'), variables: ['text', 'count', 'total'], group: t('whitelist.group_interview'), groupIcon: Play },
-                            { key: 'review', label: t('whitelist.msg_review'), description: t('whitelist.msg_review'), variables: ['user'], group: t('whitelist.group_interview'), groupIcon: Play },
-                            { key: 'session_completed', label: t('whitelist.msg_completed'), description: t('whitelist.msg_completed'), variables: ['user'], group: t('whitelist.group_end'), groupIcon: CheckCircle2 },
-                            { key: 'submission_confirmed', label: t('whitelist.msg_confirmed'), description: t('whitelist.msg_confirmed'), variables: ['user'], group: t('whitelist.group_end'), groupIcon: CheckCircle2 },
-                            { key: 'staff_received', label: t('whitelist.msg_staff_received'), description: t('whitelist.msg_staff_received'), variables: ['user', 'age', 'about'], group: t('whitelist.group_staff'), groupIcon: ShieldCheck },
-                            { key: 'queue_log', label: t('whitelist.msg_queue_log'), description: t('whitelist.msg_queue_log'), variables: ['user', 'waiting_count'], group: t('whitelist.group_staff'), groupIcon: ShieldCheck },
-                            { key: 'dm_accepted', label: t('whitelist.msg_accepted'), description: t('whitelist.msg_accepted'), variables: ['user'], group: t('whitelist.group_outcome'), groupIcon: CheckCircle2 },
-                            { key: 'dm_rejected', label: t('whitelist.msg_rejected'), description: t('whitelist.msg_rejected'), variables: ['user', 'reason'], group: t('whitelist.group_outcome_neg'), groupIcon: XCircle },
-                            { key: 'dm_text_pass', label: t('whitelist.msg_text_pass'), description: t('whitelist.msg_text_pass'), variables: ['user'], group: t('whitelist.group_outcome'), groupIcon: CheckCircle2 },
-                            { key: 'dm_voice_rejected', label: t('whitelist.msg_voice_rejected'), description: t('whitelist.msg_voice_rejected'), variables: ['user', 'reason'], group: t('whitelist.group_outcome_neg'), groupIcon: XCircle },
-                            { key: 'promote_vip_success', label: t('whitelist.msg_promo_vip'), description: t('whitelist.msg_promo_vip'), variables: ['user'], group: t('whitelist.group_staff_actions'), groupIcon: Mic2 },
-                            { key: 'pause_success', label: t('whitelist.msg_pause'), description: t('whitelist.msg_pause'), variables: [], group: t('whitelist.group_staff_actions'), groupIcon: Mic2 },
-                            { key: 'resume_success', label: t('whitelist.msg_resume'), description: t('whitelist.msg_resume'), variables: [], group: t('whitelist.group_staff_actions'), groupIcon: Mic2 },
-                            { key: 'skip_success', label: t('whitelist.msg_skip'), description: t('whitelist.msg_skip'), variables: [], group: t('whitelist.group_staff_actions'), groupIcon: Mic2 },
-                            { key: 'voice_waiting', label: t('whitelist.msg_waiting'), description: t('whitelist.msg_waiting'), variables: ['user'], group: t('whitelist.group_voice'), groupIcon: Play },
-                            { key: 'voice_guide', label: t('whitelist.msg_guide'), description: t('whitelist.msg_guide'), variables: ['user', 'start_time'], group: t('whitelist.group_voice'), groupIcon: Mic2 },
-                            { key: 'voice_procedural_error', label: t('whitelist.msg_procedural_error'), description: t('whitelist.msg_procedural_error'), variables: [], group: t('whitelist.group_errors'), groupIcon: XCircle },
-                            { key: 'cooldown', label: t('whitelist.msg_cooldown'), description: t('whitelist.msg_cooldown'), variables: ['time'], group: t('whitelist.group_errors'), groupIcon: XCircle },
-                            { key: 'app_not_found', label: t('whitelist.msg_app_not_found'), description: t('whitelist.msg_app_not_found'), variables: [], group: t('whitelist.group_errors'), groupIcon: XCircle }
+                            { key: 'panel', label: 'Panel Ammissioni Principale', description: 'Messaggio iniziale con i pulsanti per iniziare il test.', variables: ['guild'], group: 'Entry UI', groupIcon: Play },
+                            { key: 'dm_accepted', label: 'DM Esito Positivo', description: 'Inviato all\'utente quando viene ammesso al server.', variables: ['user'], group: 'Outcome UI', groupIcon: CheckCircle2 },
+                            { key: 'dm_rejected', label: 'DM Esito Negativo', description: 'Inviato all\'utente in caso di bocciatura.', variables: ['user', 'reason'], group: 'Outcome UI', groupIcon: XCircle }
                         ]}
-                        extraButtons={(slug) => {
-                            if (slug === 'panel') {
-                                return [config.buttons?.start_wl || { label: t('whitelist.msg_start'), emoji: '📝', style: 'SUCCESS' }];
-                            }
-                            return null;
-                        }}
-                    />
+                     />
                 </div>
             )}
         </div>
-      </div>
-    </div>
 
-      <style jsx>{`
-          .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-badge); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
-          .header-info { display: flex; align-items: center; gap: 16px; }
-          .header-icon { width: 48px; height: 48px; background: var(--primary-glow); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-          .header-text h1 { font-size: 1.5rem; margin-bottom: 2px; color: var(--text-main); }
-          .header-text p { font-size: 0.85rem; color: var(--text-muted); }
-          
-          .tab-navigation { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 32px; padding: 6px; background: var(--bg-sidebar-alt); border-radius: 14px; border: 1px solid var(--border); }
-          .tab-link { display: flex; align-items: center; gap: 10px; padding: 10px 18px; border: none; background: transparent; color: var(--text-muted); font-size: 0.85rem; font-weight: 600; border-radius: 10px; cursor: pointer; transition: 0.2s; }
-          .tab-link:hover { color: var(--text-main); background: var(--bg-badge); }
-          .tab-link.active { color: var(--text-main); background: var(--bg-card); box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
+        <style jsx>{`
+            .pc-premium-wrapper { padding: 40px; max-width: 1600px; margin: 0 auto; font-family: 'Inter', sans-serif; }
+            
+            /* Header V2 */
+            .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; background: white; padding: 32px; border-radius: 32px; box-shadow: var(--shadow-premium); border: 1px solid var(--border-light); }
+            .header-info { display: flex; align-items: center; gap: 24px; }
+            .pc-icon-box { width: 64px; height: 64px; color: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 12px 24px rgba(16, 185, 129, 0.25); }
+            .pc-title-row { display: flex; flex-direction: column; gap: 6px; }
+            .pc-title-row h1 { font-family: 'Outfit', sans-serif; font-size: 2.2rem; font-weight: 900; margin: 0; color: #1e293b; letter-spacing: -0.5px; }
+            
+            .pc-status-tag-v2 { display: flex; align-items: center; gap: 8px; font-size: 0.65rem; font-weight: 900; padding: 4px 12px; border-radius: 100px; letter-spacing: 0.5px; }
+            .pc-status-tag-v2.on { background: #ecfdf5; color: #10b981; }
+            .pc-status-tag-v2.off { background: #fef2f2; color: #ef4444; }
+            .status-dot-v2 { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 
-          .config-grid { display: grid; grid-template-columns: 1fr 300px; gap: 24px; }
-          .grid-left { display: flex; flex-direction: column; gap: 24px; }
-          .section-header { display: flex; justify-content: space-between; align-items: center; }
-          
-          .fields-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-          .field-box { display: flex; flex-direction: column; gap: 8px; }
-          
-          .toggle-box { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: var(--bg-badge); border-radius: 12px; border: 1px solid var(--border); }
-          .flex-col { display: flex; flex-direction: column; }
-          
-          .q-badge { width: 32px; height: 32px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--text-main); fontWeight: bold; flex-shrink: 0; }
-          
-          .align-center { display: flex; align-items: center; gap: 10px; }
-          @media (max-width: 1000px) { .config-grid { grid-template-columns: 1fr; } }
-      `}</style>
+            .pc-status-toggle-v2 { display: flex; align-items: center; gap: 10px; background: #f8fafc; color: #64748b; border: 1.5px solid #e2e8f0; padding: 12px 24px; border-radius: 16px; font-weight: 800; cursor: pointer; transition: 0.2s; }
+            .pc-status-toggle-v2.active { background: #f0fdf4; color: #10b981; border-color: #bbf7d0; }
+
+            .pc-btn-primary { background: var(--primary); color: white; border: none; padding: 14px 28px; border-radius: 16px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2); }
+            .pc-btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 15px 25px rgba(99, 102, 241, 0.3); }
+
+            /* Tabs V2 */
+            .pc-tabs-v2 { display: flex; gap: 8px; background: #f1f5f9; padding: 6px; border-radius: 18px; width: fit-content; overflow-x: auto; max-width: 100%; }
+            .pc-tabs-v2 button { display: flex; align-items: center; gap: 10px; padding: 12px 24px; border: none; background: transparent; color: #64748b; font-weight: 800; font-size: 0.9rem; border-radius: 14px; cursor: pointer; transition: 0.2s; white-space: nowrap; }
+            .pc-tabs-v2 button.active { background: white; color: var(--primary); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+
+            /* Card V2 */
+            .pc-card-v2 { background: white; border: 1px solid var(--border-light); border-radius: 32px; padding: 32px; box-shadow: var(--shadow-premium); }
+            .card-header-v2 { display: flex; align-items: center; gap: 16px; margin-bottom: 32px; }
+            .header-icon { width: 44px; height: 44px; background: #f5f3ff; color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+            /* Inputs V2 */
+            .pc-input-group-v2 { display: flex; flex-direction: column; gap: 8px; }
+            .pc-input-group-v2 label { font-size: 0.7rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+
+            /* Toggle V2 */
+            .pc-toggle-v2 { position: relative; width: 44px; height: 22px; }
+            .pc-toggle-v2 input { opacity: 0; width: 0; height: 0; }
+            .pc-slider-v2 { position: absolute; cursor: pointer; inset: 0; background: #cbd5e1; transition: .4s; border-radius: 34px; }
+            .pc-slider-v2:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background: white; transition: .4s; border-radius: 50%; }
+            input:checked + .pc-slider-v2 { background: var(--primary); }
+            input:checked + .pc-slider-v2:before { transform: translateX(22px); }
+
+            .v-stack { display: flex; flex-direction: column; }
+            .animate { animation: slideUp 0.4s ease-out; }
+            @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+            :global(.light-theme) .pc-header-v2, :global(.light-theme) .pc-card-v2, :global(.light-theme) .pc-question-slot-v2 { background: #ffffff !important; box-shadow: 0 8px 30px rgba(0,0,0,0.04) !important; }
+        `}</style>
     </div>
   );
 }

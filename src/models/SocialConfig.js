@@ -6,6 +6,7 @@ const socialPlatformSchema = new mongoose.Schema({
     roleId: { type: String, default: null }, // Role to mention
     liveRoleId: { type: String, default: null }, // Role to give when live
     mentionEveryone: { type: Boolean, default: false },
+    pingMessage: { type: String, default: '{role} **{username}** è live!' },
     embed: {
         title: { type: String, default: 'Nuovo contenuto!' },
         description: { type: String, default: '**{title}**\n\n[Guarda ora]({url})' },

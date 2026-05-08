@@ -4,10 +4,15 @@ import { useT } from '../../../contexts/LanguageContext';
 import { 
     BarChart3, TrendingUp, Users, MessageSquare, 
     Zap, Crown, Lock, ChevronRight, Activity,
-    Calendar, Download, Filter, RefreshCw, Shield
+    Calendar, Download, Filter, RefreshCw, Shield,
+    ArrowUpRight, Target, Clock, Star, AlertCircle,
+    TrendingDown, CheckCircle2, ChevronLeft, Layout,
+    PieChart, MousePointer2, Sparkles, LineChart,
+    Users2, ShieldCheck, EyeOff
 } from 'lucide-react';
 import Skeleton from '../../../components/Skeleton';
 import api from '../../../utils/api';
+import Head from 'next/head';
 
 export default function AnalyticsPage() {
   const { t } = useT();
@@ -16,396 +21,337 @@ export default function AnalyticsPage() {
   const [guildData, setGuildData] = useState(null);
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const fetchData = async () => {
-    if (!guildId || guildId === 'undefined') return;
+    if (!guildId || !mounted) return;
     setLoading(true);
+    window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
     try {
         const [gRes, aRes] = await Promise.all([
             api.request(`/config/${guildId}/guild`),
-            api.request(`/analytics/${guildId}`).catch(() => ({ success: true, isPro: false, data: {} }))
+            api.request(`/analytics/${guildId}`).catch(() => ({ success: true, isPro: false, data: {
+                tickets: { total: 0, new7d: 0 },
+                moderation: { total: 0, activeMutes: 0 },
+                heatmap: Array(24).fill(0),
+                growth: [],
+                staff: []
+            } }))
         ]);
         
         setGuildData(gRes.data || gRes);
-        setAnalytics(aRes); // Keep the full response to access isPro
+        setAnalytics(aRes);
     } catch (err) {
         console.error('Failed to fetch analytics data:', err);
     } finally {
         setLoading(false);
+        window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
     }
   };
 
   useEffect(() => {
-    setGuildData(null);
-    setAnalytics(null);
-    setLoading(true);
     fetchData();
-  }, [guildId]);
+  }, [guildId, mounted]);
 
-  if (loading) return <Skeleton type="config" />;
+  if (!mounted || loading) return <Skeleton height="600px" />;
 
   const isPro = analytics?.isPro || guildData?.isPremium || ['premium', 'platinum'].includes(guildData?.premiumTier);
   const stats = analytics?.data || {};
 
   return (
-    <div className="analytics-container animate">
-        <header className="page-header">
+    <div className="pc-premium-wrapper fade-in">
+        <Head>
+            <title>Analytics & Reports | Verix Studio</title>
+        </Head>
+
+        {/* V2 Header */}
+        <header className="pc-header-v2">
             <div className="header-info">
-                <div className="header-icon-glow">
-                    <BarChart3 size={24} />
+                <div className="pc-icon-box" style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #ea580c 100%)' }}>
+                    <BarChart3 size={28} />
                 </div>
-                <div className="header-text">
-                    <h1>{t('sidebar.analytics')}</h1>
-                    <p>Monitoraggio in tempo reale e approfondimenti basati sui dati.</p>
+                <div className="pc-title-row">
+                    <h1>Intelligence Hub</h1>
+                    <div className="pc-status-tag-v2 on" style={{ background: '#fffbeb', color: '#d97706' }}>
+                        <div className="status-dot-v2"></div>
+                        DATA SYNC LIVE
+                    </div>
                 </div>
             </div>
-            {isPro && (
-                <div className="header-actions">
-                    <button className="btn-glass">
-                        <Download size={16} /> Esporta Report
+            
+            <div className="header-controls">
+                {isPro && (
+                    <button className="pc-btn-outline-v2" onClick={() => {}}>
+                        <Download size={18} /> <span>Export Dataset</span>
                     </button>
-                    <button className="btn-primary-premium" onClick={fetchData}>
-                        <RefreshCw size={16} /> Sincronizza
-                    </button>
-                </div>
-            )}
+                )}
+                <button className="pc-btn-primary" onClick={fetchData}>
+                    <RefreshCw size={18} /> <span>Refresh Engine</span>
+                </button>
+            </div>
         </header>
 
-        <div className="analytics-content fade-in">
-            {/* Main Stats Grid */}
-            <div className="stats-cards-grid">
-                <div className="stat-card glass-card">
-                    <div className="stat-label-row">
-                        <MessageSquare size={14} />
-                        <span>Ticket Totali</span>
-                    </div>
-                    <div className="stat-value">{stats?.tickets?.total || 0}</div>
-                    {isPro ? (
-                        <div className="stat-change positive">
-                            <TrendingUp size={12} />
-                            <span>+{stats?.tickets?.new7d || 0} nuovi (7gg)</span>
+        <div className="pc-content-v2">
+            {/* V2 Stat Matrix */}
+            <div className="pc-stat-matrix-v2" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px', marginBottom: '40px' }}>
+                <section className="pc-stat-card-v2 animate slide-up">
+                    <div className="s-card-glow-v2" style={{ background: 'rgba(99, 102, 241, 0.05)' }}></div>
+                    <div className="s-header-v2">
+                        <div className="s-icon-box-v2" style={{ background: '#f5f3ff', color: '#6366f1' }}>
+                            <MessageSquare size={20} />
                         </div>
-                    ) : (
-                        <div className="stat-locked-label">Sblocca trend con PRO</div>
-                    )}
-                </div>
-
-                <div className="stat-card glass-card">
-                    <div className="stat-label-row">
-                        <Shield size={14} />
-                        <span>Infrazioni</span>
-                    </div>
-                    <div className="stat-value">{stats?.moderation?.total || 0}</div>
-                    {isPro ? (
-                        <div className="stat-change neutral">
-                            <Activity size={12} />
-                            <span>{stats?.moderation?.activeMutes || 0} sanzioni attive</span>
+                        <div className="v-stack">
+                            <span className="s-label-v2">Operations Flow</span>
+                            <h3 className="s-value-v2">{stats?.tickets?.total || 0}</h3>
                         </div>
-                    ) : (
-                        <div className="stat-locked-label">Sblocca monitoraggio PRO</div>
-                    )}
-                </div>
+                    </div>
+                    <div className="s-footer-v2">
+                        {isPro ? (
+                            <div className="s-trend-box-v2 positive">
+                                <ArrowUpRight size={14} />
+                                <span>+{stats?.tickets?.new7d || 0} Ticket (7d)</span>
+                            </div>
+                        ) : (
+                            <div className="s-lock-badge-v2"><Lock size={12} /> Pro-Trends Locked</div>
+                        )}
+                    </div>
+                </section>
 
-                <div className={`stat-card status-card ${isPro ? 'pro' : 'basic'}`} onClick={() => !isPro && router.push(`/config/${guildId}/premium`)}>
-                    <div className="stat-label-row">
-                        <Crown size={14} />
-                        <span>Piano Attivo</span>
+                <section className="pc-stat-card-v2 animate slide-up" style={{ animationDelay: '0.1s' }}>
+                    <div className="s-card-glow-v2" style={{ background: 'rgba(239, 68, 68, 0.05)' }}></div>
+                    <div className="s-header-v2">
+                        <div className="s-icon-box-v2" style={{ background: '#fef2f2', color: '#ef4444' }}>
+                            <Shield size={20} />
+                        </div>
+                        <div className="v-stack">
+                            <span className="s-label-v2">Security Impact</span>
+                            <h3 className="s-value-v2">{stats?.moderation?.total || 0}</h3>
+                        </div>
                     </div>
-                    <div className="stat-value-status">
-                        {isPro ? 'PREMIUM ACTIVE' : 'BASIC PLAN'}
+                    <div className="s-footer-v2">
+                        {isPro ? (
+                            <div className="s-trend-box-v2 neutral">
+                                <Activity size={14} />
+                                <span>{stats?.moderation?.activeMutes || 0} Sanzioni Attive</span>
+                            </div>
+                        ) : (
+                            <div className="s-lock-badge-v2"><Lock size={12} /> Impact Locked</div>
+                        )}
                     </div>
-                    <div className="stat-status-footer">
-                        {isPro ? 'Tutti i report sbloccati' : 'Fai l\'upgrade per i report PRO'}
-                        <ChevronRight size={14} />
+                </section>
+
+                <section className={`pc-stat-card-v2 animate slide-up tier-aware-v2 ${isPro ? 'pro' : 'base'}`} style={{ animationDelay: '0.2s' }} onClick={() => !isPro && router.push(`/config/${guildId}/premium`)}>
+                    <div className="s-card-glow-v2"></div>
+                    <div className="s-header-v2">
+                        <div className="s-icon-box-v2">
+                            <Crown size={20} />
+                        </div>
+                        <div className="v-stack">
+                            <span className="s-label-v2">Intelligence Level</span>
+                            <h3 className="s-value-v2" style={{ fontSize: '1.4rem' }}>{isPro ? 'PLATINUM' : 'STANDARD'}</h3>
+                        </div>
                     </div>
-                </div>
+                    <div className="s-footer-v2">
+                        <div className="s-tier-action-v2">
+                            <span>{isPro ? 'Accesso Completo Attivo' : 'Sblocca Studio Hub'}</span>
+                            <ChevronRight size={16} />
+                        </div>
+                    </div>
+                </section>
             </div>
 
-            {/* Advanced Insights Section */}
-            <div className={`advanced-section ${!isPro ? 'gated-container' : ''}`}>
-                {!isPro && (
-                    <div className="pro-gate-overlay">
-                        <div className="gate-content">
-                            <div className="lock-icon-container">
-                                <Lock size={32} />
-                            </div>
-                            <h2>Report Avanzati Bloccati</h2>
-                            <p>Accedi a grafici di crescita, heatmap di attività e analisi delle performance del team.</p>
-                            <button className="btn-premium-upgrade" onClick={() => router.push(`/config/${guildId}/premium`)}>
-                                Passa a Premium ora
-                            </button>
+            <div className="pc-analytics-engine-v2">
+                {!isPro ? (
+                    <div className="pc-pro-gate-box-v2" style={{ background: 'white', border: '1px solid var(--border-light)', borderRadius: '48px', padding: '120px 40px', textAlign: 'center', maxWidth: '1000px', margin: '0 auto', boxShadow: 'var(--shadow-premium)' }}>
+                         <div className="gate-icon-glow-v2" style={{ width: '100px', height: '100px', background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)', color: '#f59e0b', borderRadius: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 40px', boxShadow: '0 20px 40px rgba(245, 158, 11, 0.2)' }}>
+                            <LineChart size={52} />
+                         </div>
+                         <h2 style={{ fontFamily: 'Outfit', fontWeight: 950, fontSize: '3rem', color: '#1e293b', marginBottom: '20px', letterSpacing: '-1.5px' }}>Intelligence Visual Studio</h2>
+                         <p style={{ color: '#64748b', fontSize: '1.25rem', maxWidth: '700px', margin: '0 auto 60px', fontWeight: 650, lineHeight: 1.6 }}>Analizza l'andamento del tuo server con grafici di crescita, heatmap di attività staff e performance dettagliate in tempo reale.</p>
+                         
+                         <div className="gate-feature-matrix-v2" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', textAlign: 'left', maxWidth: '850px', margin: '0 auto 64px' }}>
+                            {[
+                                { icon: <Activity size={18} />, text: 'Staff Performance Heatmap' },
+                                { icon: <Users2 size={18} />, text: 'Real-time Growth Engine' },
+                                { icon: <ShieldCheck size={18} />, text: 'Security Impact Reports' }
+                            ].map((p, i) => (
+                                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '14px', background: '#f8fafc', padding: '18px', borderRadius: '20px', border: '1.5px solid #e2e8f0', fontWeight: 850, color: '#475569', fontSize: '0.85rem' }}>
+                                    <div style={{ color: '#f59e0b' }}>{p.icon}</div>
+                                    <span>{p.text}</span>
+                                </div>
+                            ))}
+                         </div>
+
+                         <button className="pc-btn-platinum-v2" style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #ea580c 100%)', color: 'white', border: 'none', padding: '22px 56px', borderRadius: '22px', fontWeight: 950, fontSize: '1.15rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '14px', margin: '0 auto', boxShadow: '0 15px 35px rgba(245, 158, 11, 0.3)', transition: '0.3s' }} onClick={() => router.push(`/config/${guildId}/premium`)}>
+                            <Sparkles size={22} />
+                            <span>Upgrade a Platinum Studio</span>
+                         </button>
+                    </div>
+                ) : (
+                    <div className="pc-studio-layout-v2" style={{ display: 'grid', gridTemplateColumns: '2.2fr 1fr', gap: '32px' }}>
+                        <div className="v-stack" style={{ gap: '32px' }}>
+                            {/* Heatmap Section */}
+                            <section className="pc-card-v2 animate slide-up">
+                                <div className="card-header-v2">
+                                    <div className="header-icon" style={{ background: '#ecfdf5', color: '#10b981' }}><Activity size={18} /></div>
+                                    <div className="v-stack" style={{ flex: 1 }}>
+                                        <h3 style={{ margin: 0 }}>Traffic Distribution (24h)</h3>
+                                        <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: '#64748b', fontWeight: 650 }}>Heatmap dell'attività globale rilevata sul server.</p>
+                                    </div>
+                                </div>
+                                <div className="card-body-v2">
+                                    <div className="pc-heatmap-engine-v2" style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', height: '220px', paddingBottom: '32px' }}>
+                                        {(stats?.heatmap || Array(24).fill(0)).map((val, hour) => {
+                                            const max = Math.max(...(stats?.heatmap || [1]));
+                                            const height = max > 0 ? (val / max) * 100 : 0;
+                                            return (
+                                                <div key={hour} className="h-column-v2" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', height: '100%', position: 'relative' }} title={`${hour}:00 - ${val} eventi`}>
+                                                    <div className="h-fill-v2" style={{ width: '100%', background: 'linear-gradient(to top, #10b981, #34d399)', borderRadius: '10px', height: `${Math.max(height, 4)}%`, transition: '1.5s cubic-bezier(0.4, 0, 0.2, 1)', opacity: height > 0 ? 1 : 0.3, boxShadow: '0 4px 12px rgba(16, 185, 129, 0.2)' }}></div>
+                                                    <span style={{ fontSize: '0.65rem', fontWeight: 950, color: '#94a3b8' }}>{hour}h</span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* Growth Chart Section */}
+                            <section className="pc-card-v2 animate slide-up" style={{ animationDelay: '0.1s' }}>
+                                <div className="card-header-v2">
+                                    <div className="header-icon" style={{ background: '#eff6ff', color: '#2563eb' }}><LineChart size={18} /></div>
+                                    <div className="v-stack" style={{ flex: 1 }}>
+                                        <h3 style={{ margin: 0 }}>Community Growth Trend</h3>
+                                        <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: '#64748b', fontWeight: 650 }}>Analisi storica dei membri acquisiti.</p>
+                                    </div>
+                                </div>
+                                <div className="card-body-v2" style={{ height: '300px', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    {stats?.growth?.length > 1 ? (
+                                        <svg viewBox="0 0 800 200" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
+                                            <defs>
+                                                <linearGradient id="growthGrad" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="0%" stopColor="#2563eb" stopOpacity="0.15" />
+                                                    <stop offset="100%" stopColor="#2563eb" stopOpacity="0" />
+                                                </linearGradient>
+                                            </defs>
+                                            <path d={`M 0,200 L ${stats.growth.map((s, i) => `${(i / (stats.growth.length - 1)) * 800},${200 - ((s.count / Math.max(...stats.growth.map(x => x.count))) * 160 + 20)}`).join(' L ')} L 800,200 Z`} fill="url(#growthGrad)" />
+                                            <path d={`M ${stats.growth.map((s, i) => `${(i / (stats.growth.length - 1)) * 800},${200 - ((s.count / Math.max(...stats.growth.map(x => x.count))) * 160 + 20)}`).join(' L ')}`} fill="none" stroke="#2563eb" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+                                        </svg>
+                                    ) : (
+                                        <div className="pc-empty-state-v2" style={{ textAlign: 'center', color: '#94a3b8' }}>
+                                            <EyeOff size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
+                                            <p style={{ fontWeight: 700 }}>Data Points Insufficienti</p>
+                                            <span style={{ fontSize: '0.8rem' }}>Attendi la prossima scansione del sistema.</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </section>
                         </div>
+
+                        <aside className="v-stack" style={{ gap: '32px' }}>
+                            <section className="pc-card-v2 animate slide-up" style={{ animationDelay: '0.2s' }}>
+                                <div className="card-header-v2">
+                                    <div className="header-icon" style={{ background: '#f5f3ff', color: '#7c3aed' }}><Target size={18} /></div>
+                                    <h3 style={{ margin: 0 }}>Staff Power</h3>
+                                </div>
+                                <div className="card-body-v2">
+                                    <div className="pc-staff-engine-v2" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                                        {(stats?.staff || []).length > 0 ? stats.staff.map((s, i) => (
+                                            <div key={i} className="pc-rank-bar-v2">
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                                                    <span style={{ fontSize: '0.85rem', fontWeight: 850, color: '#1e293b' }}>Moderator {s.id.slice(-4)}</span>
+                                                    <span style={{ fontSize: '0.9rem', fontWeight: 950, color: '#7c3aed' }}>{s.closed}</span>
+                                                </div>
+                                                <div style={{ height: '10px', background: '#f1f5f9', borderRadius: '10px', overflow: 'hidden' }}>
+                                                    <div style={{ height: '100%', background: 'linear-gradient(90deg, #7c3aed, #a855f7)', borderRadius: '10px', width: `${(s.closed / Math.max(...stats.staff.map(x => x.closed))) * 100}%`, transition: '1s ease-out' }}></div>
+                                                </div>
+                                            </div>
+                                        )) : (
+                                            <div style={{ textAlign: 'center', padding: '20px', background: '#f8fafc', borderRadius: '20px', color: '#94a3b8', fontSize: '0.8rem', fontWeight: 700 }}>
+                                                Nessun dato staffer rilevato.
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </section>
+
+                            <div className="pc-sync-alert-v2" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', color: 'white', borderRadius: '32px', padding: '32px', position: 'relative', overflow: 'hidden' }}>
+                                 <div className="align-center" style={{ gap: '16px', position: 'relative', zIndex: 2 }}>
+                                     <div style={{ width: '48px', height: '48px', background: 'rgba(255,255,255,0.1)', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <RefreshCcw size={20} className="spin" />
+                                     </div>
+                                     <div className="v-stack">
+                                         <span style={{ fontSize: '0.7rem', fontWeight: 950, textTransform: 'uppercase', color: '#94a3b8', letterSpacing: '1px' }}>Frequenza Aggiornamento</span>
+                                         <span style={{ fontSize: '1rem', fontWeight: 850 }}>Ciclo 6 Ore</span>
+                                     </div>
+                                 </div>
+                                 <div style={{ position: 'absolute', bottom: '-20px', right: '-20px', opacity: 0.1 }}>
+                                    <Activity size={100} />
+                                 </div>
+                            </div>
+                        </aside>
                     </div>
                 )}
-
-                <div className="insights-grid">
-                    {/* Activity Heatmap */}
-                    <div className="insight-box glass-card wide">
-                        <div className="insight-header">
-                            <div className="insight-title">
-                                <Activity size={18} />
-                                <h3>Heatmap Attività (24h)</h3>
-                            </div>
-                            <span className="insight-desc">Distribuzione oraria delle interazioni</span>
-                        </div>
-                        <div className="heatmap-wrapper">
-                            {stats?.heatmap ? (
-                                <div className="heatmap-visual">
-                                    {stats.heatmap.map((val, hour) => (
-                                        <div 
-                                            key={hour} 
-                                            className="heatmap-column" 
-                                            style={{ 
-                                                '--val': val,
-                                                '--max': Math.max(...stats.heatmap, 1),
-                                                opacity: Math.max(0.15, (val / Math.max(...stats.heatmap, 1))) 
-                                            }}
-                                            title={`${hour}:00 - ${val} eventi`}
-                                        >
-                                            <div className="heatmap-bar"></div>
-                                            <span className="heatmap-label">{hour}h</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="no-data-placeholder">
-                                    <Calendar size={32} />
-                                    <p>Dati non ancora disponibili per questo server.</p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Growth Chart */}
-                    <div className="insight-box glass-card">
-                        <div className="insight-header">
-                            <div className="insight-title">
-                                <Users size={18} />
-                                <h3>Crescita Community</h3>
-                            </div>
-                        </div>
-                        <div className="growth-chart-container">
-                            {stats?.growth?.length > 1 ? (
-                                <div className="svg-chart-wrapper">
-                                    <svg viewBox="0 0 400 120" preserveAspectRatio="none">
-                                        <defs>
-                                            <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.3" />
-                                                <stop offset="100%" stopColor="var(--primary)" stopOpacity="0" />
-                                            </linearGradient>
-                                        </defs>
-                                        <path 
-                                            d={`M 0,120 L ${stats.growth.map((s, i) => `${(i / (stats.growth.length - 1)) * 400},${120 - ((s.count / Math.max(...stats.growth.map(x => x.count))) * 90 + 10)}`).join(' L ')} L 400,120 Z`}
-                                            fill="url(#chartGradient)"
-                                        />
-                                        <path 
-                                            d={`M ${stats.growth.map((s, i) => `${(i / (stats.growth.length - 1)) * 400},${120 - ((s.count / Math.max(...stats.growth.map(x => x.count))) * 90 + 10)}`).join(' L ')}`} 
-                                            fill="none" 
-                                            stroke="var(--primary)" 
-                                            strokeWidth="2.5" 
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                        />
-                                    </svg>
-                                </div>
-                            ) : (
-                                <div className="no-data-placeholder mini">
-                                    <p>Tracking in corso...</p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Staff Performance */}
-                    <div className="insight-box glass-card">
-                        <div className="insight-header">
-                            <div className="insight-title">
-                                <Zap size={18} />
-                                <h3>Top Performance Staff</h3>
-                            </div>
-                        </div>
-                        <div className="staff-leaderboard">
-                            {stats?.staff?.length > 0 ? stats.staff.map((s, idx) => (
-                                <div key={s.id} className="staff-item">
-                                    <div className="staff-rank">{idx + 1}</div>
-                                    <div className="staff-details">
-                                        <div className="staff-name">Staffer {s.id.slice(-4)}</div>
-                                        <div className="staff-progress-bg">
-                                            <div 
-                                                className="staff-progress-fill" 
-                                                style={{ width: `${(s.closed / Math.max(...stats.staff.map(x => x.closed))) * 100}%` }}
-                                            ></div>
-                                        </div>
-                                    </div>
-                                    <div className="staff-score">{s.closed}</div>
-                                </div>
-                            )) : (
-                                <div className="no-data-placeholder mini">
-                                    <p>Nessun dato staffer.</p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
 
         <style jsx>{`
-            .analytics-container { padding: 32px; max-width: 1400px; margin: 0 auto; }
-            .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
-            .header-info { display: flex; align-items: center; gap: 20px; }
-            .header-icon-glow { 
-                width: 56px; height: 56px; background: var(--primary-glow); 
-                color: var(--primary); border-radius: 16px; display: flex; 
-                align-items: center; justify-content: center;
-                box-shadow: 0 8px 24px rgba(var(--primary-rgb), 0.2);
-            }
-            .header-text h1 { font-size: 2.2rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.5px; }
-            .header-text p { color: var(--text-muted); font-size: 1rem; margin-top: 4px; }
+            .pc-premium-wrapper { padding: 40px; max-width: 1600px; margin: 0 auto; font-family: 'Inter', sans-serif; }
             
-            .header-actions { display: flex; gap: 12px; }
-
-            /* Glass Cards */
-            .glass-card {
-                background: var(--bg-card-glass);
-                backdrop-filter: blur(12px);
-                border: 1px solid var(--border-light);
-                border-radius: 24px;
-                padding: 24px;
-                transition: all 0.3s ease;
-            }
-            .glass-card:hover { border-color: var(--primary-muted); transform: translateY(-2px); }
-
-            /* Stats Grid */
-            .stats-cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 32px; }
-            .stat-card { display: flex; flex-direction: column; min-height: 160px; }
-            .stat-label-row { display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 0.85rem; font-weight: 700; text-transform: uppercase; margin-bottom: 16px; }
-            .stat-value { font-size: 2.8rem; font-weight: 900; color: var(--text-main); line-height: 1; }
-            .stat-change { display: flex; align-items: center; gap: 4px; font-size: 0.85rem; font-weight: 700; margin-top: auto; }
-            .stat-change.positive { color: var(--success); }
-            .stat-change.neutral { color: var(--primary); }
-            .stat-locked-label { font-size: 0.8rem; color: var(--text-muted); font-style: italic; margin-top: auto; }
-
-            .status-card { 
-                cursor: pointer; position: relative; overflow: hidden;
-                background: linear-gradient(135deg, var(--bg-card-glass), var(--bg-badge));
-            }
-            .status-card.basic { border: 1px dashed var(--gold); }
-            .status-card.pro { border: 1px solid var(--success-muted); }
-            .stat-value-status { font-size: 1.5rem; font-weight: 900; margin: 8px 0; }
-            .status-card.basic .stat-value-status { color: var(--gold); }
-            .status-card.pro .stat-value-status { color: var(--success); }
-            .stat-status-footer { display: flex; align-items: center; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted); margin-top: auto; }
-
-            /* Advanced Section Gate */
-            .advanced-section { position: relative; min-height: 500px; }
-            .gated-container { filter: blur(6px); pointer-events: none; user-select: none; }
-            .pro-gate-overlay {
-                position: absolute; inset: -20px; z-index: 100;
-                display: flex; align-items: center; justify-content: center;
-                background: rgba(var(--bg-rgb), 0.4);
-                backdrop-filter: blur(10px);
-                border-radius: 32px;
-            }
-            .gate-content { text-align: center; max-width: 400px; padding: 40px; }
-            .lock-icon-container { 
-                width: 80px; height: 80px; background: var(--gold-glow); color: var(--gold);
-                border-radius: 50%; display: flex; align-items: center; justify-content: center;
-                margin: 0 auto 24px; box-shadow: 0 0 40px rgba(245, 158, 11, 0.2);
-            }
-            .gate-content h2 { font-size: 1.8rem; font-weight: 800; margin-bottom: 12px; color: var(--text-main); }
-            .gate-content p { color: var(--text-muted); margin-bottom: 32px; line-height: 1.6; }
-
-            /* Insights Grid */
-            .insights-grid { display: grid; grid-template-columns: 1.5fr 1fr; gap: 24px; }
-            .insight-box.wide { grid-column: span 2; }
-            .insight-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
-            .insight-title { display: flex; align-items: center; gap: 12px; color: var(--primary); }
-            .insight-title h3 { font-size: 1.1rem; font-weight: 800; color: var(--text-main); }
-            .insight-desc { font-size: 0.8rem; color: var(--text-muted); }
-
-            /* Heatmap */
-            .heatmap-wrapper { padding: 10px 0; }
-            .heatmap-visual { display: flex; align-items: flex-end; gap: 6px; height: 100px; width: 100%; }
-            .heatmap-column { 
-                flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; 
-                height: 100%; position: relative;
-            }
-            .heatmap-bar { 
-                width: 100%; background: var(--primary); border-radius: 4px; 
-                height: calc((var(--val) / var(--max)) * 100%);
-                transition: height 1s cubic-bezier(0.4, 0, 0.2, 1);
-            }
-            .heatmap-label { font-size: 0.65rem; color: var(--text-muted); font-weight: 600; }
-
-            /* Chart */
-            .growth-chart-container { height: 180px; position: relative; width: 100%; overflow: hidden; border-radius: 12px; }
-            .svg-chart-wrapper { width: 100%; height: 100%; }
-
-            /* Leaderboard */
-            .staff-leaderboard { display: flex; flex-direction: column; gap: 16px; }
-            .staff-item { display: flex; align-items: center; gap: 12px; padding: 8px 0; }
-            .staff-rank { 
-                width: 28px; height: 28px; background: var(--bg-badge); 
-                border-radius: 8px; display: flex; align-items: center; 
-                justify-content: center; font-size: 0.8rem; font-weight: 800; color: var(--primary);
-            }
-            .staff-details { flex: 1; }
-            .staff-name { font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 6px; }
-            .staff-progress-bg { height: 6px; background: var(--bg-badge); border-radius: 3px; overflow: hidden; }
-            .staff-progress-fill { height: 100%; background: var(--primary); border-radius: 3px; }
-            .staff-score { font-size: 0.9rem; font-weight: 800; color: var(--text-main); }
-
-            /* Placeholders */
-            .no-data-placeholder { 
-                display: flex; flex-direction: column; align-items: center; justify-content: center; 
-                gap: 16px; padding: 40px; color: var(--text-muted); text-align: center;
-            }
-            .no-data-placeholder.mini { padding: 20px; }
-            .no-data-placeholder p { font-size: 0.9rem; font-style: italic; }
-
-            /* Buttons */
-            .btn-glass { 
-                background: var(--bg-badge); color: var(--text-main); border: 1px solid var(--border);
-                padding: 12px 24px; border-radius: 14px; font-weight: 700; cursor: pointer;
-                display: flex; align-items: center; gap: 8px; transition: 0.3s;
-            }
-            .btn-glass:hover { background: var(--bg-card-glass); border-color: var(--primary); }
+            /* Header V2 */
+            .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; background: white; padding: 32px; border-radius: 32px; box-shadow: var(--shadow-premium); border: 1px solid var(--border-light); }
+            .header-info { display: flex; align-items: center; gap: 24px; }
+            .pc-icon-box { width: 64px; height: 64px; border-radius: 20px; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 12px 24px rgba(245, 158, 11, 0.25); }
+            .pc-title-row { display: flex; flex-direction: column; gap: 6px; }
+            .pc-title-row h1 { font-family: 'Outfit', sans-serif; font-size: 2.2rem; font-weight: 900; margin: 0; color: #1e293b; letter-spacing: -1px; }
             
-            .btn-primary-premium {
-                background: var(--primary); color: white; border: none;
-                padding: 12px 24px; border-radius: 14px; font-weight: 700; cursor: pointer;
-                display: flex; align-items: center; gap: 8px; transition: 0.3s;
-                box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.3);
-            }
-            .btn-primary-premium:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(var(--primary-rgb), 0.4); }
+            .pc-status-tag-v2 { display: flex; align-items: center; gap: 8px; font-size: 0.65rem; font-weight: 900; padding: 4px 12px; border-radius: 100px; letter-spacing: 0.5px; }
+            .status-dot-v2 { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 
-            .btn-premium-upgrade {
-                background: linear-gradient(135deg, #f59e0b, #fbbf24);
-                color: white; border: none; padding: 16px 32px; border-radius: 16px;
-                font-size: 1.1rem; font-weight: 800; cursor: pointer; transition: 0.3s;
-                box-shadow: 0 10px 30px rgba(245, 158, 11, 0.4);
-            }
-            .btn-premium-upgrade:hover { transform: scale(1.05); box-shadow: 0 15px 40px rgba(245, 158, 11, 0.5); }
+            .pc-btn-primary { background: var(--primary); color: white; border: none; padding: 14px 28px; border-radius: 16px; font-weight: 850; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: 0.3s; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2); }
+            .pc-btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 15px 25px rgba(99, 102, 241, 0.3); }
 
-            @media (max-width: 1000px) {
-                .insights-grid { grid-template-columns: 1fr; }
-                .stats-cards-grid { grid-template-columns: 1fr; }
-            }
+            .pc-btn-outline-v2 { display: flex; align-items: center; gap: 10px; background: white; color: #64748b; border: 1.5px solid #e2e8f0; padding: 12px 24px; border-radius: 16px; font-weight: 800; cursor: pointer; transition: 0.2s; }
+            .pc-btn-outline-v2:hover { border-color: var(--primary); color: var(--primary); }
 
-            /* Force Light Mode Visibility */
-            :global(.light-theme) .stat-glass-card, :global(.light-theme) .insight-glass-card { 
-                background: rgba(255, 255, 255, 0.9) !important; 
-                border-color: rgba(0, 0, 0, 0.1) !important; 
-                box-shadow: 0 4px 15px rgba(0,0,0,0.05) !important;
-            }
-            :global(.light-theme) .page-header-premium { 
-                background: white !important; 
-                box-shadow: 0 4px 20px rgba(0,0,0,0.05) !important; 
-                border-color: rgba(0,0,0,0.08) !important;
-            }
-            :global(.light-theme) .staff-progress-bg { background: #f1f5f9 !important; }
-            :global(.light-theme) .insight-header h3 { color: #0f172a !important; }
+            /* Stat Cards V2 */
+            .pc-stat-card-v2 { background: white; border: 1px solid var(--border-light); border-radius: 28px; padding: 32px; box-shadow: var(--shadow-premium); position: relative; overflow: hidden; transition: 0.3s; }
+            .pc-stat-card-v2:hover { transform: translateY(-5px); }
+            .s-card-glow-v2 { position: absolute; inset: 0; z-index: 1; }
+            .s-header-v2 { display: flex; align-items: center; gap: 20px; position: relative; z-index: 2; margin-bottom: 24px; }
+            .s-icon-box-v2 { width: 52px; height: 52px; border-radius: 16px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+            .s-label-v2 { font-size: 0.75rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+            .s-value-v2 { margin: 4px 0 0 0; font-family: 'Outfit'; font-size: 2.2rem; font-weight: 950; color: #1e293b; line-height: 1; }
+            
+            .s-footer-v2 { position: relative; z-index: 2; border-top: 1.5px solid #f1f5f9; padding-top: 20px; }
+            .s-trend-box-v2 { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 850; }
+            .s-trend-box-v2.positive { color: #10b981; }
+            .s-trend-box-v2.neutral { color: var(--primary); }
+            .s-lock-badge-v2 { display: flex; align-items: center; gap: 8px; font-size: 0.7rem; color: #94a3b8; font-weight: 950; text-transform: uppercase; }
+
+            .tier-aware-v2.base { cursor: pointer; background: #f8fafc; }
+            .tier-aware-v2.pro { background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%); border: none; color: white; }
+            .tier-aware-v2.pro .s-label-v2, .tier-aware-v2.pro .s-value-v2, .tier-aware-v2.pro .s-tier-action-v2 { color: white; }
+            .tier-aware-v2.pro .s-icon-box-v2 { background: rgba(255,255,255,0.2); color: white; }
+            .s-tier-action-v2 { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; font-weight: 900; }
+
+            /* Card V2 */
+            .pc-card-v2 { background: white; border: 1px solid var(--border-light); border-radius: 32px; padding: 40px; box-shadow: var(--shadow-premium); }
+            .card-header-v2 { display: flex; align-items: center; gap: 20px; margin-bottom: 40px; }
+            .header-icon { width: 52px; height: 52px; border-radius: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+            .card-header-v2 h3 { margin: 0; font-family: 'Outfit'; font-size: 1.5rem; font-weight: 950; color: #1e293b; }
+
+            .v-stack { display: flex; flex-direction: column; }
+            .align-center { display: flex; align-items: center; }
+            .spin { animation: spin-slow 4s linear infinite; }
+            @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+            .animate { animation: slideUp 0.4s ease-out; }
+            @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+            :global(.light-theme) .pc-header-v2, :global(.light-theme) .pc-card-v2, :global(.light-theme) .pc-stat-card-v2, :global(.light-theme) .pc-pro-gate-box-v2 { background: #ffffff !important; box-shadow: 0 8px 30px rgba(0,0,0,0.04) !important; }
         `}</style>
     </div>
   );

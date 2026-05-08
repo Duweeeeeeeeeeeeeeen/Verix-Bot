@@ -32,15 +32,21 @@ export default function TempVoiceConfig() {
   const [channels, setChannels] = useState([]);
   const [categories, setCategories] = useState([]);
   const [activeTab, setActiveTab] = useState('settings');
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (guildId) {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (guildId && mounted) {
       fetchData();
     }
-  }, [guildId]);
+  }, [guildId, mounted]);
 
   const fetchData = async () => {
     setLoading(true);
+    window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
     try {
       const [configRes, discordRes] = await Promise.all([
         api.request(`/config/${guildId}/tempvoice`),
@@ -49,7 +55,6 @@ export default function TempVoiceConfig() {
       
       if (configRes) setConfig(configRes.data || configRes);
       if (discordRes) {
-        // api.request already returns result.data
         const discordData = discordRes || {};
         const chanData = discordData.channels || [];
         setChannels(chanData.filter(c => c.type === 2)); // Voice
@@ -59,11 +64,13 @@ export default function TempVoiceConfig() {
       console.error(e);
     } finally {
       setLoading(false);
+      window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
     }
   };
 
   const handleSave = async () => {
     setSaving(true);
+    window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
     try {
       await api.request(`/config/${guildId}/tempvoice`, {
         method: 'POST',
@@ -75,6 +82,7 @@ export default function TempVoiceConfig() {
       window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('common.save_error'), type: 'error' } }));
     } finally {
       setSaving(false);
+      window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
     }
   };
 
@@ -90,146 +98,182 @@ export default function TempVoiceConfig() {
     setConfig(newConfig);
   };
 
-  if (loading || !config) return <Skeleton type="config" />;
+  if (!mounted || loading || !config) return <Skeleton height="600px" />;
 
   return (
-    <div className="config-page-layout animate">
-      <div className="config-main-col">
+    <div className="pc-premium-wrapper fade-in">
         <Head>
-            <title>{t('tempvoice.title')} | Verix</title>
+            <title>{t('tempvoice.title')} | Verix Dashboard</title>
         </Head>
-        {/* Module Header */}
-        <header className="module-header">
-           <div className="header-info">
-              <div className="header-icon">
-                <Mic2 size={24} />
-              </div>
-              <div className="header-text">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <h1>{t('tempvoice.title')}</h1>
-                  <label className="toggle-mini" title={config.enabled ? t('common.enabled') : t('common.disabled')}>
-                    <input type="checkbox" checked={!!config.enabled} onChange={e => setConfig({...config, enabled: e.target.checked})} />
-                    <span className="slider-mini"></span>
-                  </label>
+
+        {/* V2 Header */}
+        <header className="pc-header-v2">
+            <div className="header-info">
+                <div className="pc-icon-box" style={{ background: 'linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)' }}>
+                    <Mic2 size={28} />
                 </div>
-                <p>{t('tempvoice.desc')}</p>
-              </div>
-           </div>
-           <div className="header-buttons">
-              <button onClick={handleSave} className="btn-primary" disabled={saving}>
-                <Save size={16} /> {saving ? t('common.saving') : t('common.save_changes')}
-              </button>
-           </div>
+                <div className="pc-title-row">
+                    <h1>Canali Vocali Temporanei</h1>
+                    <div className={`pc-status-tag-v2 ${config.enabled ? 'on' : 'off'}`}>
+                        <div className="status-dot-v2"></div>
+                        {config.enabled ? 'SISTEMA OPERATIVO' : 'SISTEMA DISABILITATO'}
+                    </div>
+                </div>
+            </div>
+            
+            <div className="header-controls">
+                <button 
+                  className={`pc-status-toggle-v2 ${config.enabled ? 'active' : ''}`}
+                  onClick={() => setConfig({...config, enabled: !config.enabled})}
+                >
+                  <Power size={18} />
+                  <span>{config.enabled ? 'Spegni' : 'Attiva'}</span>
+                </button>
+                <button className="pc-btn-primary" onClick={handleSave} disabled={saving}>
+                    <Save size={18} />
+                    <span>{saving ? 'Salvataggio...' : 'Salva Modifiche'}</span>
+                </button>
+            </div>
         </header>
 
-        {/* Tab Navigation */}
-        <div className="tab-navigation">
-            <button onClick={() => setActiveTab('settings')} className={`tab-link ${activeTab === 'settings' ? 'active' : ''}`}>
-                <Settings2 size={16} /> <span>{t('tempvoice.tab_settings')}</span>
-            </button>
-            <button onClick={() => setActiveTab('design')} className={`tab-link ${activeTab === 'design' ? 'active' : ''}`}>
-                <Palette size={16} /> <span>{t('tempvoice.tab_design')}</span>
-            </button>
-        </div>
+        {/* V2 Navigation Tabs */}
+        <nav className="pc-tabs-container-v2" style={{ marginBottom: '40px' }}>
+            <div className="pc-tabs-v2">
+                <button className={activeTab === 'settings' ? 'active' : ''} onClick={() => setActiveTab('settings')}>
+                    <Settings2 size={16} /> <span>Configurazione Canali</span>
+                </button>
+                <button className={activeTab === 'design' ? 'active' : ''} onClick={() => setActiveTab('design')}>
+                    <Palette size={16} /> <span>Design & Template</span>
+                </button>
+            </div>
+        </nav>
 
-        <div className="tab-content">
+        <div className="pc-content-v2">
             {activeTab === 'settings' && (
-                <div className="animate fade-in">
-                    <section className="card section-card-v">
-                        <div className="align-center" style={{ marginBottom: '20px' }}>
-                            <Zap size={18} color="var(--primary)" />
-                            <h3>{t('tempvoice.config_title')}</h3>
+                <div className="v-stack animate slide-up" style={{ gap: '32px' }}>
+                    <section className="pc-card-v2">
+                        <div className="card-header-v2">
+                            <div className="header-icon" style={{ background: '#f0f9ff', color: '#0ea5e9' }}><Zap size={18} /></div>
+                            <div className="v-stack" style={{ flex: 1 }}>
+                                <h3 style={{ margin: 0 }}>Canale Generatore</h3>
+                                <p style={{ margin: '4px 0 0 0', fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>Il canale che gli utenti devono joinare per creare la propria stanza.</p>
+                            </div>
                         </div>
-                        <div className="fields-grid-v">
-                            <div className="field-box">
-                                <label className="text-label">{t('tempvoice.creator_label')}</label>
-                                <DiscordSelector 
-                                    type="channel" 
-                                    options={channels} 
-                                    value={config.creatorChannelId || ''} 
-                                    onChange={val => setNested('creatorChannelId', val)} 
-                                    placeholder={t('tempvoice.creator_placeholder')}
-                                />
-                                <p className="field-help">{t('tempvoice.creator_help')}</p>
+                        <div className="card-body-v2">
+                            <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                                <div className="pc-input-group-v2">
+                                    <label>Canale Sorgente (Join to Create)</label>
+                                    <DiscordSelector 
+                                        type="channel" 
+                                        options={channels} 
+                                        value={config.creatorChannelId || ''} 
+                                        onChange={val => setNested('creatorChannelId', val)} 
+                                    />
+                                </div>
+                                <div className="pc-input-group-v2">
+                                    <label>Categoria di Destinazione</label>
+                                    <DiscordSelector 
+                                        type="channel" 
+                                        options={categories} 
+                                        value={config.categoryId || ''} 
+                                        onChange={val => setNested('categoryId', val)} 
+                                    />
+                                </div>
                             </div>
-                            <div className="field-box">
-                                <label className="text-label">{t('tempvoice.category_label')}</label>
-                                <DiscordSelector 
-                                    type="channel" 
-                                    options={categories} 
-                                    value={config.categoryId || ''} 
-                                    onChange={val => setNested('categoryId', val)} 
-                                    placeholder={t('tempvoice.category_placeholder')}
-                                />
-                                <p className="field-help">{t('tempvoice.category_help')}</p>
-                            </div>
+                            <p className="pc-hint-v2" style={{ marginTop: '24px' }}>Tutte le stanze create verranno posizionate sotto la categoria selezionata.</p>
                         </div>
                     </section>
                 </div>
             )}
 
             {activeTab === 'design' && (
-                <div className="config-grid-v animate fade-in">
-                    <div className="grid-main-v">
-                        <section className="card section-card-v">
-                            <div className="align-center" style={{ marginBottom: '20px' }}>
-                                <Layout size={18} color="var(--primary)" />
-                                <h3>{t('tempvoice.design_title')}</h3>
+                <div className="v-stack animate slide-up" style={{ gap: '32px' }}>
+                    <section className="pc-card-v2">
+                        <div className="card-header-v2">
+                            <div className="header-icon" style={{ background: '#f5f3ff', color: '#6366f1' }}><Layout size={18} /></div>
+                            <div className="v-stack" style={{ flex: 1 }}>
+                                <h3 style={{ margin: 0 }}>Aspetto e Limiti</h3>
+                                <p style={{ margin: '4px 0 0 0', fontSize: '0.75rem', color: '#64748b', fontWeight: 600 }}>Personalizza come appaiono le stanze create dagli utenti.</p>
                             </div>
-                            <div className="fields-grid-v">
-                                <div className="field-box">
-                                    <label className="text-label">{t('tempvoice.template_label')}</label>
-                                    <input 
-                                        type="text" 
-                                        className="input" 
-                                        value={config.channelNameTemplate || ''} 
-                                        onChange={e => setNested('channelNameTemplate', e.target.value)} 
-                                        placeholder={t('tempvoice.template_placeholder')}
-                                    />
-                                    <p className="field-help">{t('tempvoice.template_help')}</p>
+                        </div>
+                        <div className="card-body-v2">
+                            <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                                <div className="pc-input-group-v2">
+                                    <label>Template Nome Canale</label>
+                                    <div className="pc-input-wrapper-v2" style={{ background: '#f8fafc', border: '1.5px solid #e2e8f0', borderRadius: '14px' }}>
+                                        <MessageSquare size={16} className="input-icon-v2" style={{ marginLeft: '16px', color: '#94a3b8' }} />
+                                        <input 
+                                            type="text" 
+                                            style={{ width: '100%', border: 'none', background: 'transparent', padding: '14px 16px', fontWeight: 700 }}
+                                            value={config.channelNameTemplate || ''} 
+                                            onChange={e => setNested('channelNameTemplate', e.target.value)} 
+                                            placeholder="es: Stanza di {user}"
+                                        />
+                                    </div>
+                                    <p className="pc-hint-v2" style={{ marginTop: '8px' }}>Usa <code>{`{user}`}</code> per inserire il nome del creatore.</p>
                                 </div>
-                                <div className="field-box">
-                                    <label className="text-label">{t('tempvoice.limit_label')}</label>
-                                    <input 
-                                        type="number" 
-                                        className="input" 
-                                        value={config.defaultUserLimit || 0} 
-                                        onChange={e => setNested('defaultUserLimit', parseInt(e.target.value))} 
-                                    />
-                                    <p className="field-help">{t('tempvoice.limit_help')}</p>
+                                <div className="pc-input-group-v2">
+                                    <label>Limite Membri Predefinito</label>
+                                    <div className="pc-input-wrapper-v2" style={{ background: '#f8fafc', border: '1.5px solid #e2e8f0', borderRadius: '14px' }}>
+                                        <Users size={16} className="input-icon-v2" style={{ marginLeft: '16px', color: '#94a3b8' }} />
+                                        <input 
+                                            type="number" 
+                                            style={{ width: '100%', border: 'none', background: 'transparent', padding: '14px 16px', fontWeight: 700 }}
+                                            value={config.defaultUserLimit || 0} 
+                                            onChange={e => setNested('defaultUserLimit', parseInt(e.target.value))} 
+                                        />
+                                    </div>
+                                    <p className="pc-hint-v2" style={{ marginTop: '8px' }}>0 per nessun limite (max 99).</p>
                                 </div>
                             </div>
-                        </section>
-                    </div>
+                        </div>
+                    </section>
                 </div>
             )}
         </div>
-      </div>
 
-      <style jsx>{`
-            .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-badge); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
-            .header-info { display: flex; align-items: center; gap: 16px; }
-            .header-icon { width: 48px; height: 48px; background: var(--primary-glow); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-            .header-text h1 { font-size: 1.5rem; margin-bottom: 2px; color: var(--text-main); }
-            .header-text p { font-size: 0.85rem; color: var(--text-muted); }
+        <style jsx>{`
+            .pc-premium-wrapper { padding: 40px; max-width: 1400px; margin: 0 auto; font-family: 'Inter', sans-serif; }
             
-            .tab-navigation { display: flex; gap: 8px; margin-bottom: 32px; padding: 6px; background: var(--bg-sidebar-alt); border-radius: 14px; border: 1px solid var(--border); width: fit-content; }
-            .tab-link { display: flex; align-items: center; gap: 10px; padding: 10px 18px; border: none; background: transparent; color: var(--text-muted); font-size: 0.85rem; font-weight: 600; border-radius: 10px; cursor: pointer; transition: 0.2s; }
-            .tab-link:hover { color: var(--text-main); background: var(--bg-badge); }
-            .tab-link.active { color: var(--text-main); background: var(--bg-card); box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
-
-            .config-grid-v { display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
-            .fields-grid-v { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-            .align-center { display: flex; align-items: center; gap: 10px; }
+            /* Header V2 */
+            .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; background: white; padding: 32px; border-radius: 32px; box-shadow: var(--shadow-premium); border: 1px solid var(--border-light); }
+            .header-info { display: flex; align-items: center; gap: 24px; }
+            .pc-icon-box { width: 64px; height: 64px; border-radius: 20px; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 12px 24px rgba(14, 165, 233, 0.25); }
+            .pc-title-row { display: flex; flex-direction: column; gap: 6px; }
+            .pc-title-row h1 { font-family: 'Outfit', sans-serif; font-size: 2rem; font-weight: 900; margin: 0; color: #1e293b; letter-spacing: -0.5px; }
             
-            .toggle-mini { position: relative; display: inline-block; width: 34px; height: 18px; }
-            .toggle-mini input { opacity: 0; width: 0; height: 0; }
-            .slider-mini { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--bg-sidebar-alt); transition: .3s; border-radius: 18px; border: 1px solid var(--border); }
-            .slider-mini:before { position: absolute; content: ""; height: 10px; width: 10px; left: 3px; bottom: 3px; background-color: var(--text-main); transition: .3s; border-radius: 50%; }
-            input:checked + .slider-mini { background-color: var(--primary); }
-            input:checked + .slider-mini:before { transform: translateX(16px); }
+            .pc-status-tag-v2 { display: flex; align-items: center; gap: 8px; font-size: 0.65rem; font-weight: 900; padding: 4px 12px; border-radius: 100px; letter-spacing: 0.5px; }
+            .pc-status-tag-v2.on { background: #eff6ff; color: #2563eb; }
+            .pc-status-tag-v2.off { background: #fef2f2; color: #ef4444; }
+            .status-dot-v2 { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 
-            @media (max-width: 1000px) { .config-grid-v { grid-template-columns: 1fr; } .fields-grid-v { grid-template-columns: 1fr; } }
+            .pc-btn-primary { background: var(--primary); color: white; border: none; padding: 14px 28px; border-radius: 16px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2); }
+            .pc-btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 15px 25px rgba(99, 102, 241, 0.3); }
+
+            .pc-status-toggle-v2 { display: flex; align-items: center; gap: 10px; background: #f8fafc; color: #64748b; border: 1.5px solid #e2e8f0; padding: 12px 24px; border-radius: 16px; font-weight: 800; cursor: pointer; transition: 0.2s; }
+            .pc-status-toggle-v2.active { background: #f0f9ff; color: #0ea5e9; border-color: #bae6fd; }
+
+            /* Tabs V2 */
+            .pc-tabs-v2 { display: flex; gap: 8px; background: #f1f5f9; padding: 6px; border-radius: 18px; width: fit-content; }
+            .pc-tabs-v2 button { display: flex; align-items: center; gap: 10px; padding: 12px 24px; border: none; background: transparent; color: #64748b; font-weight: 800; font-size: 0.9rem; border-radius: 14px; cursor: pointer; transition: 0.2s; white-space: nowrap; }
+            .pc-tabs-v2 button.active { background: white; color: var(--primary); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+
+            /* Card V2 */
+            .pc-card-v2 { background: white; border: 1px solid var(--border-light); border-radius: 32px; padding: 32px; box-shadow: var(--shadow-premium); }
+            .card-header-v2 { display: flex; align-items: center; gap: 16px; margin-bottom: 32px; }
+            .header-icon { width: 44px; height: 44px; background: #f5f3ff; color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+            .card-header-v2 h3 { margin: 0; font-family: 'Outfit'; font-size: 1.2rem; font-weight: 900; color: #1e293b; }
+
+            /* Inputs V2 */
+            .pc-input-group-v2 { display: flex; flex-direction: column; gap: 8px; }
+            .pc-input-group-v2 label { font-size: 0.7rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+
+            .pc-hint-v2 { font-size: 0.8rem; color: #94a3b8; font-weight: 600; }
+            .v-stack { display: flex; flex-direction: column; }
+            .animate { animation: slideUp 0.4s ease-out; }
+            @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+            :global(.light-theme) .pc-header-v2, :global(.light-theme) .pc-card-v2 { background: #ffffff !important; box-shadow: 0 8px 30px rgba(0,0,0,0.04) !important; }
         `}</style>
     </div>
   );

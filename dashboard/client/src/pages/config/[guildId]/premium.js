@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import Link from 'next/link';
 import Skeleton from '../../../components/Skeleton';
 import api from '../../../utils/api';
 import { useT } from '../../../contexts/LanguageContext';
@@ -8,8 +7,13 @@ import {
     Crown, Check, Star, Zap, Shield, 
     Bot, Image, Settings, Globe, 
     ChevronRight, ArrowRight, Info,
-    XCircle, CheckCircle2
+    XCircle, CheckCircle2, Layout,
+    Sparkles, Rocket, Gem, Award,
+    CheckCircle, ShieldCheck, Target,
+    Activity, Layers, Heart, ShieldAlert,
+    Cpu, RefreshCcw
 } from 'lucide-react';
+import Head from 'next/head';
 
 export default function PremiumHub() {
   const router = useRouter();
@@ -23,298 +27,305 @@ export default function PremiumHub() {
     setMounted(true);
   }, []);
 
-  useEffect(() => {
-    if (guildId && mounted) {
-      const fetchData = async () => {
-        try {
-          const res = await api.request(`/config/${guildId}/guild`);
-          if (res) {
-              setConfig(res.data || res);
-          }
-          setLoading(false);
-        } catch (error) {
-          console.error("Error loading guild data:", error);
-          setLoading(false);
-        }
-      };
-      fetchData();
+  const fetchData = async () => {
+    if (!guildId || !mounted) return;
+    setLoading(true);
+    window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
+    try {
+      const res = await api.request(`/config/${guildId}/guild`);
+      setConfig(res.data || res);
+    } catch (error) {
+      console.error("Error loading guild data:", error);
+    } finally {
+      setLoading(false);
+      window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
     }
+  };
+
+  useEffect(() => {
+    fetchData();
   }, [guildId, mounted]);
 
-  if (loading || !config) return <><Skeleton height="600px" /></>;
+  if (!mounted || loading || !config) return <Skeleton height="600px" />;
 
   const premiumTier = config.premiumTier || 'none';
   const isPremium = premiumTier === 'premium' || premiumTier === 'platinum';
   const isPlatinum = premiumTier === 'platinum';
 
-  const getTierName = () => {
-    if (isPlatinum) return 'PLATINUM';
-    if (isPremium) return 'PREMIUM';
-    return t('premium_hub.tier_free');
-  };
+  const currentTierColor = isPlatinum ? '#a855f7' : isPremium ? '#f59e0b' : '#6366f1';
 
   return (
-    <div className="premium-page animate">
-      <div className="premium-hero">
-        <div className="hero-content">
-            <div className="premium-badge-glow">
-                <Crown size={32} />
-            </div>
-            <h1>{t('premium_hub.hero_title')}</h1>
-            <p>{t('premium_hub.hero_desc')}</p>
-        </div>
-      </div>
+    <div className="pc-premium-wrapper fade-in">
+        <Head>
+            <title>Premium Hub | Verix Studio</title>
+        </Head>
 
-      <div className="premium-grid">
-        {/* Status Card */}
-        <div className={`status-card card tier-${premiumTier}`}>
-            <div className="status-header">
-                <h3>{t('premium_hub.status_title')}</h3>
-                <span className={`badge-tier-tag tier-${premiumTier}`}>
-                    {premiumTier === 'platinum' ? <Zap size={12} /> : (isPremium ? <Star size={12} /> : null)} 
-                    {getTierName()}
-                </span>
-            </div>
-            <div className="status-body">
-                {premiumTier !== 'none' ? (
-                    <div className="status-active-msg">
-                        <CheckCircle2 size={40} color={isPlatinum ? "#a855f7" : "var(--primary)"} />
-                        <div>
-                            <h4>{t('premium_hub.active_msg', { tier: getTierName() })}</h4>
-                            <p>{isPlatinum ? t('premium_hub.platinum_benefit') : t('premium_hub.premium_benefit')}</p>
-                        </div>
+        {/* V2 Header */}
+        <header className="pc-header-v2">
+            <div className="header-info">
+                <div className="pc-icon-box" style={{ background: `linear-gradient(135deg, ${currentTierColor} 0%, #000 100%)` }}>
+                    <Gem size={28} />
+                </div>
+                <div className="pc-title-row">
+                    <h1>Sottoscrizioni Studio</h1>
+                    <div className={`pc-status-tag-v2 ${isPremium ? 'on' : 'off'}`}>
+                        <div className="status-dot-v2"></div>
+                        {isPremium ? `${premiumTier.toUpperCase()} ATTIVO` : 'ACCESSO STANDARD'}
                     </div>
-                ) : (
-                    <div className="status-upgrade-msg">
-                        <div className="limit-item">
-                            <span>FiveM Servers</span>
-                            <span>1 / 1</span>
-                        </div>
-                        <div className="limit-item">
-                            <span>Ticket Categories</span>
-                            <span>2 / 2</span>
-                        </div>
-                        <button className="btn-upgrade-main">{t('premium_hub.upgrade_btn')} <ArrowRight size={16} /></button>
-                    </div>
-                )}
-            </div>
-        </div>
-
-        {/* Feature Comparison */}
-        <div className="comparison-section">
-            <div className="section-title">
-                <h2>{t('premium_hub.compare_title')}</h2>
+                </div>
             </div>
             
-            <div className="comparison-table">
-                <div className="comp-row head">
-                    <div className="feat-col">{t('premium_hub.feat_col')}</div>
-                    <div className="plan-col">Free</div>
-                    <div className="plan-col">Premium</div>
-                    <div className="plan-col platinum">Platinum</div>
+            <div className="header-controls">
+                <button className="pc-btn-back-v2" onClick={() => router.push(`/config/${guildId}`)}>
+                    <ChevronLeft size={20} />
+                    <span>Dashboard</span>
+                </button>
+            </div>
+        </header>
+
+        <div className="pc-content-v2">
+            {/* V2 Grand Hero Engine */}
+            <section className={`pc-hero-engine-v2 ${premiumTier}`}>
+                <div className="engine-glow-v2"></div>
+                <div className="hero-content-v2">
+                    <div className="hero-text-v2">
+                        <div className="premium-badge-v2">
+                            <Sparkles size={14} />
+                            <span>VERIX PLATINUM PROGRAM</span>
+                        </div>
+                        <h2>{isPlatinum ? 'Potenza Platinum Attiva' : isPremium ? 'Abbonamento Premium Attivo' : 'Sblocca il Prossimo Livello'}</h2>
+                        <p>Trasforma la tua community con strumenti di moderazione d'elite, personalizzazione totale e un'infrastruttura dedicata ad alte prestazioni.</p>
+                        
+                        <div className="hero-stats-row-v2">
+                            <div className="hero-stat-item-v2">
+                                <span className="stat-val-v2">∞</span>
+                                <span className="stat-label-v2">Automazioni</span>
+                            </div>
+                            <div className="hero-stat-item-v2">
+                                <span className="stat-val-v2">24/7</span>
+                                <span className="stat-label-v2">Uptime Core</span>
+                            </div>
+                            <div className="hero-stat-item-v2">
+                                <span className="stat-val-v2">Dedicated</span>
+                                <span className="stat-label-v2">Compute</span>
+                            </div>
+                        </div>
+
+                        {!isPremium && (
+                            <div className="hero-actions-v2">
+                                <button className="pc-btn-primary invite-pulse" style={{ background: 'white', color: '#6366f1' }}>
+                                    <Rocket size={18} />
+                                    <span>Esplora Piani</span>
+                                </button>
+                                <button className="pc-btn-outline-v2" style={{ borderColor: 'rgba(255,255,255,0.3)', color: 'white', background: 'rgba(255,255,255,0.1)' }}>
+                                    <span>Vedi Demo Platinum</span>
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="hero-visual-v2">
+                        <div className="tier-hologram-v2">
+                            <div className="hologram-ring-1"></div>
+                            <div className="hologram-ring-2"></div>
+                            <div className="tier-symbol-v2">
+                                {isPlatinum ? <Award size={80} /> : isPremium ? <Crown size={80} /> : <Rocket size={80} />}
+                            </div>
+                            <div className="tier-label-v2">{isPlatinum ? 'PLATINUM' : isPremium ? 'PREMIUM' : 'BASE'}</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* V2 Pricing Grid */}
+            <div className="pc-pricing-grid-v2">
+                {/* Standard Plan */}
+                <div className="pc-price-card-v2 standard">
+                    <div className="price-header-v2">
+                        <div className="price-title-v2">STANDARD</div>
+                        <div className="price-val-v2">€0<span>/sempre</span></div>
+                    </div>
+                    <div className="price-body-v2">
+                        <ul className="feature-list-v2">
+                            <li><CheckCircle2 size={16} /> Moderazione Base</li>
+                            <li><CheckCircle2 size={16} /> 2 Slots Automazioni</li>
+                            <li><CheckCircle2 size={16} /> 1 Server FiveM</li>
+                            <li><XCircle size={16} opacity={0.4} /> White-Label Bot</li>
+                        </ul>
+                    </div>
+                    <button className="pc-btn-price-v2" disabled={!isPremium}>Il tuo piano</button>
                 </div>
 
-                <div className="comp-row">
-                    <div className="feat-col">
-                        <Bot size={16} /> <span>{t('premium_hub.feat_whitelabel')}</span>
-                        <Info size={12} className="info-icon" title={t('premium_hub.feat_whitelabel_info')} />
+                {/* Premium Plan */}
+                <div className="pc-price-card-v2 premium active-border">
+                    <div className="popular-tag-v2">BEST SELLER</div>
+                    <div className="price-header-v2">
+                        <div className="price-title-v2" style={{ color: '#f59e0b' }}>PREMIUM</div>
+                        <div className="price-val-v2">€9.99<span>/mese</span></div>
                     </div>
-                    <div className="plan-col"><XCircle size={18} className="text-muted" /></div>
-                    <div className="plan-col"><XCircle size={18} className="text-muted" /></div>
-                    <div className="plan-col"><CheckCircle2 size={18} className="text-platinum" /></div>
+                    <div className="price-body-v2">
+                        <ul className="feature-list-v2">
+                            <li><CheckCircle2 size={16} color="#f59e0b" /> 10 Slots Automazioni</li>
+                            <li><CheckCircle2 size={16} color="#f59e0b" /> Analytics Live</li>
+                            <li><CheckCircle2 size={16} color="#f59e0b" /> Nessun Logo Verix</li>
+                            <li><CheckCircle2 size={16} color="#f59e0b" /> Supporto Prioritario</li>
+                        </ul>
+                    </div>
+                    <button className="pc-btn-price-v2 premium" disabled={premiumTier === 'premium'}>
+                        {premiumTier === 'premium' ? 'Attivo' : 'Attiva Premium'}
+                    </button>
                 </div>
 
-                <div className="comp-row">
-                    <div className="feat-col">
-                        <Shield size={16} /> <span>{t('premium_hub.feat_identity')}</span>
+                {/* Platinum Plan */}
+                <div className="pc-price-card-v2 platinum">
+                    <div className="elite-tag-v2">ELITE ENGINE</div>
+                    <div className="price-header-v2">
+                        <div className="price-title-v2" style={{ color: '#a855f7' }}>PLATINUM</div>
+                        <div className="price-val-v2">€19.99<span>/mese</span></div>
                     </div>
-                    <div className="plan-col"><XCircle size={18} className="text-muted" /></div>
-                    <div className="plan-col"><CheckCircle2 size={18} className="text-primary" /></div>
-                    <div className="plan-col"><CheckCircle2 size={18} className="text-platinum" /></div>
-                </div>
-
-                <div className="comp-row">
-                    <div className="feat-col">
-                        <Image size={16} /> <span>{t('premium_hub.feat_branding')}</span>
+                    <div className="price-body-v2">
+                        <ul className="feature-list-v2">
+                            <li><CheckCircle2 size={16} color="#a855f7" /> <strong>White-Label Bot (Token)</strong></li>
+                            <li><CheckCircle2 size={16} color="#a855f7" /> Slots Illimitati</li>
+                            <li><CheckCircle2 size={16} color="#a855f7" /> 25+ FiveM Servers</li>
+                            <li><CheckCircle2 size={16} color="#a855f7" /> API Developer Access</li>
+                        </ul>
                     </div>
-                    <div className="plan-col"><XCircle size={18} className="text-muted" /></div>
-                    <div className="plan-col"><CheckCircle2 size={18} className="text-primary" /></div>
-                    <div className="plan-col"><CheckCircle2 size={18} className="text-platinum" /></div>
-                </div>
-
-                <div className="comp-row">
-                    <div className="feat-col">
-                        <Globe size={16} /> <span>{t('premium_hub.feat_modules')}</span>
-                    </div>
-                    <div className="plan-col">{t('premium_hub.limited')}</div>
-                    <div className="plan-col">{t('premium_hub.unlimited')}</div>
-                    <div className="plan-col">{t('premium_hub.unlimited')}</div>
-                </div>
-
-                <div className="comp-row">
-                    <div className="feat-col">
-                        <Zap size={16} /> <span>{t('premium_hub.feat_priority')}</span>
-                    </div>
-                    <div className="plan-col">{t('premium_hub.base')}</div>
-                    <div className="plan-col">{t('premium_hub.priority')}</div>
-                    <div className="plan-col">{t('premium_hub.dedicated')}</div>
+                    <button className="pc-btn-price-v2 platinum" disabled={isPlatinum}>
+                        {isPlatinum ? 'Attivo' : 'Passa a Platinum'}
+                    </button>
                 </div>
             </div>
+
+            {/* V2 Comparison Hub */}
+            <section className="pc-card-v2 animate slide-up" style={{ marginTop: '48px' }}>
+                <div className="card-header-v2">
+                    <div className="header-icon" style={{ background: '#f5f3ff', color: '#6366f1' }}><Layers size={18} /></div>
+                    <h3 style={{ margin: 0 }}>Matrice delle Funzionalità</h3>
+                </div>
+                <div className="card-body-v2">
+                    <div className="pc-comparison-hub-v2">
+                        <div className="hub-row-v2 header">
+                            <div className="hub-col-v2 feat">Caratteristica</div>
+                            <div className="hub-col-v2 val">Standard</div>
+                            <div className="hub-col-v2 val">Premium</div>
+                            <div className="hub-col-v2 val highlight">Platinum</div>
+                        </div>
+                        {[
+                            { name: 'Branding Personalizzato', s: false, p: true, pl: true },
+                            { name: 'Vanity Bot Identity (Token)', s: false, p: false, pl: true },
+                            { name: 'Analytics in Tempo Reale', s: false, p: true, pl: true },
+                            { name: 'Automazioni Studio', s: '2 Slots', p: '10 Slots', pl: 'Illimitati' },
+                            { name: 'Integrazione FiveM API', s: 'Limitata', p: 'Full Access', pl: 'Elite Access' },
+                            { name: 'Supporto Dedicato', s: 'Community', p: 'Prioritario', pl: 'One-to-One' }
+                        ].map((row, i) => (
+                            <div key={i} className="hub-row-v2">
+                                <div className="hub-col-v2 feat">{row.name}</div>
+                                <div className="hub-col-v2 val">{typeof row.s === 'boolean' ? (row.s ? <CheckCircle size={16} color="#10b981" /> : <XCircle size={16} color="#cbd5e1" />) : row.s}</div>
+                                <div className="hub-col-v2 val">{typeof row.p === 'boolean' ? (row.p ? <CheckCircle size={16} color="#f59e0b" /> : <XCircle size={16} color="#cbd5e1" />) : row.p}</div>
+                                <div className="hub-col-v2 val highlight">{typeof row.pl === 'boolean' ? (row.pl ? <CheckCircle size={16} color="#a855f7" /> : <XCircle size={16} color="#cbd5e1" />) : row.pl}</div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
         </div>
-      </div>
 
-      <div className="pricing-cta-section">
-          <h2>{t('premium_hub.choose_title')}</h2>
-          <div className="pricing-cards">
-              <div className="price-card">
-                  <div className="card-top">
-                    <h4>Premium</h4>
-                    <div className="price">€9.99 <span>{t('premium_hub.per_month')}</span></div>
-                  </div>
-                  <ul className="price-list">
-                      <li><Check size={14} /> {t('premium_hub.premium_benefit')}</li>
-                      <li><Check size={14} /> {t('premium_hub.unlimited')}</li>
-                      <li><Check size={14} /> {t('premium_hub.priority')}</li>
-                  </ul>
-                  <button className="btn-buy">{t('premium_hub.btn_choose')}</button>
-              </div>
+        <style jsx>{`
+            .pc-premium-wrapper { padding: 40px; max-width: 1600px; margin: 0 auto; font-family: 'Inter', sans-serif; }
+            
+            /* Header V2 */
+            .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; background: white; padding: 32px; border-radius: 32px; box-shadow: var(--shadow-premium); border: 1px solid var(--border-light); }
+            .header-info { display: flex; align-items: center; gap: 24px; }
+            .pc-icon-box { width: 64px; height: 64px; border-radius: 20px; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 12px 24px rgba(0,0,0,0.2); }
+            .pc-title-row { display: flex; flex-direction: column; gap: 6px; }
+            .pc-title-row h1 { font-family: 'Outfit', sans-serif; font-size: 2.2rem; font-weight: 900; margin: 0; color: #1e293b; letter-spacing: -1px; }
+            
+            .pc-status-tag-v2 { display: flex; align-items: center; gap: 8px; font-size: 0.65rem; font-weight: 900; padding: 4px 12px; border-radius: 100px; letter-spacing: 1px; }
+            .pc-status-tag-v2.on { background: #ecfdf5; color: #10b981; }
+            .pc-status-tag-v2.off { background: #f1f5f9; color: #94a3b8; }
+            .status-dot-v2 { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 
-              <div className="price-card platinum popular">
-                  <div className="popular-tag">TOP QUALITY</div>
-                  <div className="card-top">
-                    <h4>Platinum</h4>
-                    <div className="price">€19.99 <span>{t('premium_hub.per_month')}</span></div>
-                    <div className="save-tag">{t('premium_hub.most_complete')}</div>
-                  </div>
-                  <ul className="price-list">
-                      <li><Check size={14} /> <strong>TUTTO</strong> il pacchetto Premium</li>
-                      <li><Check size={14} /> <strong>{t('premium_hub.feat_whitelabel')}</strong></li>
-                      <li><Check size={14} /> {t('premium_hub.feat_branding')}</li>
-                      <li><Check size={14} /> Setup dedicato System Ops</li>
-                  </ul>
-                  <button className="btn-buy-platinum">{t('premium_hub.btn_get_platinum')}</button>
-              </div>
-          </div>
-      </div>
+            .pc-btn-back-v2 { display: flex; align-items: center; gap: 10px; background: white; color: #64748b; border: 1.5px solid #e2e8f0; padding: 12px 20px; border-radius: 16px; font-weight: 800; cursor: pointer; transition: 0.2s; }
+            .pc-btn-back-v2:hover { border-color: var(--primary); color: var(--primary); }
 
-      <footer className="premium-footer">
-          <div className="legal-links">
-              <Link href="/terms">{t('premium_hub.legal_terms')}</Link>
-              <span className="separator">•</span>
-              <Link href="/privacy">{t('premium_hub.legal_privacy')}</Link>
-          </div>
-          <p>&copy; {new Date().getFullYear()} Verix Bot. {t('premium_hub.copyright')}</p>
-      </footer>
+            /* Hero Engine V2 */
+            .pc-hero-engine-v2 { border-radius: 48px; padding: 80px; position: relative; overflow: hidden; color: white; margin-bottom: 48px; background: #1e293b; }
+            .pc-hero-engine-v2.premium { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+            .pc-hero-engine-v2.platinum { background: linear-gradient(135deg, #7c3aed 0%, #4338ca 100%); }
+            .pc-hero-engine-v2.none { background: linear-gradient(135deg, #6366f1 0%, #1e1b4b 100%); }
+            
+            .engine-glow-v2 { position: absolute; top: -100px; right: -100px; width: 400px; height: 400px; background: rgba(255,255,255,0.1); border-radius: 50%; filter: blur(80px); }
+            .hero-content-v2 { display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 10; }
+            .hero-text-v2 { max-width: 650px; }
+            .premium-badge-v2 { display: flex; alignItems: center; gap: 8px; background: rgba(255,255,255,0.2); padding: 6px 16px; border-radius: 100px; font-size: 0.7rem; fontWeight: 950; letterSpacing: 1px; margin-bottom: 24px; width: fit-content; }
+            .hero-text-v2 h2 { font-family: 'Outfit'; font-size: 3.5rem; fontWeight: 950; margin: 0 0 20px 0; lineHeight: 1.1; letterSpacing: -2px; }
+            .hero-text-v2 p { font-size: 1.25rem; fontWeight: 600; opacity: 0.9; margin: 0 0 40px 0; lineHeight: 1.6; }
+            
+            .hero-stats-row-v2 { display: flex; gap: 40px; margin-bottom: 48px; border-top: 1.5px solid rgba(255,255,255,0.1); padding-top: 32px; }
+            .hero-stat-item-v2 { display: flex; flexDirection: column; }
+            .stat-val-v2 { font-size: 1.8rem; fontWeight: 950; font-family: 'Outfit'; }
+            .stat-label-v2 { font-size: 0.75rem; fontWeight: 800; opacity: 0.7; textTransform: uppercase; letterSpacing: 0.5px; }
 
-      <style jsx>{`
-        .premium-page { color: var(--text-main); padding-bottom: 60px; }
-        .premium-footer { margin-top: 80px; text-align: center; border-top: 1px solid var(--border); padding-top: 40px; }
-        .legal-links { display: flex; justify-content: center; gap: 16px; margin-bottom: 12px; }
-        .legal-links :global(a) { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; font-weight: 600; transition: 0.2s; }
-        .legal-links :global(a:hover) { color: var(--primary); }
-        .separator { color: var(--border); }
-        .premium-footer p { color: var(--text-muted); font-size: 0.85rem; }
-        
-        .premium-hero {
-            background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(99, 102, 241, 0.1) 100%);
-            padding: 80px 40px;
-            border-radius: 32px;
-            text-align: center;
-            border: 1px solid var(--border);
-            margin-bottom: 48px;
-            position: relative;
-            overflow: hidden;
-        }
- 
-        .hero-content { position: relative; z-index: 2; }
-        .premium-badge-glow {
-            width: 80px;
-            height: 80px;
-            background: var(--primary-glow);
-            color: var(--primary);
-            border-radius: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 24px auto;
-            box-shadow: 0 0 30px rgba(168, 85, 247, 0.3);
-            animation: float 4s ease-in-out infinite;
-        }
- 
-        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
- 
-        .premium-hero h1 { font-size: 3rem; font-weight: 800; margin-bottom: 16px; background: linear-gradient(to right, #fff, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .premium-hero p { font-size: 1.1rem; color: var(--text-muted); max-width: 600px; margin: 0 auto; line-height: 1.6; }
- 
-        .premium-grid { display: grid; grid-template-columns: 320px 1fr; gap: 32px; margin-bottom: 64px; }
- 
-        .status-card { background: var(--bg-card); padding: 32px; display: flex; flex-direction: column; gap: 24px; border: 1px solid var(--border); border-radius: 24px; }
-        .status-card.tier-premium { border: 2px solid var(--primary); box-shadow: 0 0 20px rgba(99, 102, 241, 0.1); }
-        .status-card.tier-platinum { border: 2px solid #a855f7; box-shadow: 0 0 30px rgba(168, 85, 247, 0.15); background: linear-gradient(180deg, var(--bg-card) 0%, rgba(168, 85, 247, 0.05) 100%); }
-        
-        .status-header { display: flex; justify-content: space-between; align-items: center; }
-        .badge-tier-tag { padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; display: flex; align-items: center; gap: 6px; }
-        .badge-tier-tag.tier-none { background: var(--bg-badge); color: var(--text-muted); }
-        .badge-tier-tag.tier-premium { background: var(--primary-glow); color: var(--primary); }
-        .badge-tier-tag.tier-platinum { background: rgba(168, 85, 247, 0.1); color: #a855f7; border: 1px solid rgba(168, 85, 247, 0.3); }
- 
-        .status-active-msg { display: flex; align-items: center; gap: 16px; padding: 20px; background: rgba(16, 185, 129, 0.05); border-radius: 16px; border: 1px solid rgba(16, 185, 129, 0.1); }
-        .status-active-msg h4 { margin-bottom: 4px; }
-        .status-active-msg p { font-size: 0.85rem; color: var(--text-muted); }
- 
-        .limit-item { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 0.9rem; color: var(--text-muted); }
-        .limit-item span:last-child { font-weight: 700; color: var(--text-main); }
-        .btn-upgrade-main { width: 100%; background: var(--primary); color: #fff; border: none; padding: 14px; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 20px; transition: 0.3s; }
-        .btn-upgrade-main:hover { transform: translateY(-2px); box-shadow: var(--primary-glow); }
- 
-        .comparison-section { background: var(--bg-card); border-radius: 24px; border: 1px solid var(--border); padding: 32px; }
-        .comparison-table { display: flex; flex-direction: column; gap: 8px; }
-        .comp-row { display: grid; grid-template-columns: 1fr 100px 100px 100px; padding: 16px; border-radius: 12px; transition: 0.2s; align-items: center; }
-        .comp-row:not(.head):hover { background: var(--bg-badge); }
-        .comp-row.head { font-weight: 800; font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; border-bottom: 1px solid var(--border); margin-bottom: 8px; }
-        
-        .feat-col { display: flex; align-items: center; gap: 12px; }
-        .plan-col { text-align: center; font-weight: 700; font-size: 0.9rem; }
-        .plan-col.platinum { color: #a855f7; }
-        .text-platinum { color: #a855f7; }
-        .text-primary { color: var(--primary); }
-        .info-icon { opacity: 0.4; cursor: help; }
- 
-        .pricing-cta-section { text-align: center; margin-bottom: 80px; }
-        .pricing-cta-section h2 { font-size: 2rem; margin-bottom: 40px; }
-        .pricing-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; max-width: 900px; margin: 0 auto; }
-        
-        .price-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 24px; padding: 40px; text-align: left; position: relative; transition: 0.3s; }
-        .price-card.popular { border-color: var(--primary); box-shadow: 0 10px 40px rgba(99, 102, 241, 0.1); transform: scale(1.05); }
-        .price-card.platinum.popular { border-color: #a855f7; box-shadow: 0 10px 40px rgba(168, 85, 247, 0.2); transform: scale(1.05); }
-        
-        .popular-tag { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: var(--primary); color: #fff; padding: 4px 16px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; z-index: 10; }
-        .price-card.platinum .popular-tag { background: linear-gradient(90deg, #6366f1, #a855f7); }
-        
-        .card-top h4 { color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
-        .price { font-size: 2.5rem; font-weight: 800; margin-bottom: 24px; }
-        .price span { font-size: 1rem; color: var(--text-muted); font-weight: 400; }
-        
-        .save-tag { background: rgba(16, 185, 129, 0.1); color: var(--success); padding: 4px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: 700; display: inline-block; margin-bottom: 24px; }
- 
-        .price-list { list-style: none; padding: 0; margin-bottom: 40px; display: flex; flex-direction: column; gap: 12px; }
-        .price-list li { display: flex; align-items: center; gap: 10px; font-size: 0.95rem; color: var(--text-muted); }
-        
-        .btn-buy { width: 100%; padding: 16px; border-radius: 14px; border: 1px solid var(--border); background: var(--bg-badge); color: var(--text-main); font-weight: 700; cursor: pointer; transition: 0.2s; }
-        .btn-buy:hover { background: var(--border); }
-        .btn-buy-premium { width: 100%; padding: 16px; border-radius: 14px; border: none; background: var(--primary); color: #fff; font-weight: 700; cursor: pointer; box-shadow: var(--primary-glow); transition: 0.3s; }
-        .btn-buy-premium:hover { transform: translateY(-3px); filter: brightness(1.1); }
-        .btn-buy-platinum { width: 100%; padding: 16px; border-radius: 14px; border: none; background: linear-gradient(135deg, #6366f1, #a855f7); color: #fff; font-weight: 700; cursor: pointer; box-shadow: 0 10px 20px rgba(168, 85, 247, 0.3); transition: 0.3s; }
-        .btn-buy-platinum:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(168, 85, 247, 0.4); }
- 
-        @media (max-width: 1000px) {
-            .premium-grid { grid-template-columns: 1fr; }
-            .pricing-cards { grid-template-columns: 1fr; }
-            .price-card.popular { transform: none; margin-top: 20px; }
-            .premium-hero h1 { font-size: 2rem; }
-            .comp-row { grid-template-columns: 1fr 60px 60px 60px; font-size: 0.8rem; }
-        }
-      `}</style>
+            .hero-actions-v2 { display: flex; gap: 20px; }
+            .pc-btn-primary { background: white; color: var(--primary); border: none; padding: 18px 40px; border-radius: 20px; font-weight: 950; cursor: pointer; display: flex; alignItems: center; gap: 12px; transition: 0.3s; }
+            .pc-btn-primary:hover { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(0,0,0,0.2); }
+            .invite-pulse { animation: invite-glow 2s infinite; }
+            @keyframes invite-glow { 0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.4); } 70% { box-shadow: 0 0 0 15px rgba(255,255,255,0); } 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0); } }
+
+            .hero-visual-v2 { position: relative; padding-right: 40px; }
+            .tier-hologram-v2 { position: relative; width: 240px; height: 240px; display: flex; alignItems: center; justifyContent: center; flexDirection: column; }
+            .hologram-ring-1 { position: absolute; inset: 0; border: 4px solid rgba(255,255,255,0.1); border-radius: 50%; animation: spin 10s linear infinite; }
+            .hologram-ring-2 { position: absolute; inset: 20px; border: 2px dashed rgba(255,255,255,0.2); border-radius: 50%; animation: spin-reverse 15s linear infinite; }
+            @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+            @keyframes spin-reverse { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
+            .tier-symbol-v2 { font-size: 5rem; animation: float 4s ease-in-out infinite; }
+            @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+            .tier-label-v2 { margin-top: 10px; font-size: 1.2rem; fontWeight: 950; letterSpacing: 2px; text-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+
+            /* Pricing Grid V2 */
+            .pc-pricing-grid-v2 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
+            .pc-price-card-v2 { background: white; border-radius: 40px; padding: 48px 40px; border: 1.5px solid #e2e8f0; position: relative; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flexDirection: column; }
+            .pc-price-card-v2:hover { transform: translateY(-10px); box-shadow: 0 25px 60px rgba(0,0,0,0.06); border-color: #cbd5e1; }
+            .active-border { border-color: #f59e0b !important; }
+            .platinum.pc-price-card-v2 { border-color: #a855f7; background: linear-gradient(135deg, #ffffff 0%, #fdf4ff 100%); }
+            
+            .popular-tag-v2 { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: #f59e0b; color: white; padding: 6px 18px; border-radius: 100px; font-size: 0.65rem; font-weight: 950; letterSpacing: 1px; }
+            .elite-tag-v2 { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: #a855f7; color: white; padding: 6px 18px; border-radius: 100px; font-size: 0.65rem; font-weight: 950; letterSpacing: 1px; }
+
+            .price-header-v2 { margin-bottom: 40px; }
+            .price-title-v2 { font-size: 0.8rem; fontWeight: 950; letterSpacing: 2px; color: #94a3b8; margin-bottom: 12px; }
+            .price-val-v2 { font-family: 'Outfit'; font-size: 3rem; fontWeight: 950; color: #1e293b; lineHeight: 1; }
+            .price-val-v2 span { font-size: 1.1rem; color: #94a3b8; fontWeight: 700; margin-left: 4px; }
+
+            .feature-list-v2 { list-style: none; padding: 0; margin: 0 0 48px 0; display: flex; flexDirection: column; gap: 16px; flex: 1; }
+            .feature-list-v2 li { display: flex; alignItems: center; gap: 14px; font-size: 1rem; fontWeight: 750; color: #475569; }
+
+            .pc-btn-price-v2 { width: 100%; padding: 20px; border-radius: 20px; font-weight: 950; font-size: 1.1rem; cursor: pointer; transition: 0.3s; border: 1.5px solid #e2e8f0; background: #f8fafc; color: #94a3b8; }
+            .pc-btn-price-v2.premium { background: #f59e0b; color: white; border: none; box-shadow: 0 10px 25px rgba(245, 158, 11, 0.3); }
+            .pc-btn-price-v2.platinum { background: #a855f7; color: white; border: none; box-shadow: 0 10px 25px rgba(168, 85, 247, 0.3); }
+            .pc-btn-price-v2:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+            .pc-btn-price-v2:hover:not(:disabled) { transform: scale(1.02); }
+
+            /* Comparison Matrix V2 */
+            .pc-card-v2 { background: white; border: 1px solid var(--border-light); border-radius: 32px; padding: 40px; box-shadow: var(--shadow-premium); }
+            .card-header-v2 { display: flex; align-items: center; gap: 20px; margin-bottom: 40px; }
+            .header-icon { width: 52px; height: 52px; background: #f5f3ff; color: var(--primary); border-radius: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+            .card-header-v2 h3 { margin: 0; font-family: 'Outfit'; font-size: 1.5rem; font-weight: 950; color: #1e293b; }
+
+            .pc-comparison-hub-v2 { display: flex; flexDirection: column; }
+            .hub-row-v2 { display: flex; alignItems: center; padding: 24px 0; border-bottom: 1.5px solid #f1f5f9; }
+            .hub-row-v2.header { border-bottom: 2.5px solid #e2e8f0; }
+            .hub-row-v2.header .hub-col-v2 { font-size: 0.8rem; fontWeight: 950; color: #94a3b8; textTransform: uppercase; letterSpacing: 1px; }
+            .hub-col-v2.feat { flex: 1; font-weight: 850; color: #1e293b; font-size: 1.05rem; }
+            .hub-col-v2.val { width: 140px; text-align: center; font-weight: 900; color: #64748b; }
+            .hub-col-v2.highlight { color: #a855f7; background: #fdf4ff; border-radius: 12px; padding: 12px 0; }
+
+            .animate { animation: slideUp 0.4s ease-out; }
+            @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+            :global(.light-theme) .pc-header-v2, :global(.light-theme) .pc-card-v2, :global(.light-theme) .pc-price-card-v2 { background: #ffffff !important; box-shadow: 0 8px 30px rgba(0,0,0,0.04) !important; }
+        `}</style>
     </div>
   );
 }

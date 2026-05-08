@@ -15,6 +15,10 @@ const moderationConfigSchema = new mongoose.Schema({
         maxMessages: { type: Number, default: 5 },
         timeWindow: { type: Number, default: 5000 }, // ms
     },
+    antiRepeat: {
+        enabled: { type: Boolean, default: false },
+        maxDuplicates: { type: Number, default: 3 },
+    },
 
     // [ CAPS LOCK ]
     capsLock: {

@@ -792,6 +792,16 @@ export default {
             allowRoles: [],
             allowChannels: [],
         },
+        ghost_ping: {
+            title: '👻 Ghost Ping Detected',
+            description: 'User **{user}** removed a message containing a mention.\n\n**CHANNEL:** {channel}\n**CONTENT:**\n>>> {content}',
+            color: '#ff9900'
+        },
+        anti_raid: {
+            title: '🚨 Anti-Raid Alarm',
+            description: 'An unusual influx of new citizens detected!\n\n**DETAILS:** {details}\n**STATUS:** {status}\n**ACTION:** {action}',
+            color: '#ff0000'
+        },
         antiEveryone: {
             enabled: false,
             action: 'delete',
@@ -807,28 +817,29 @@ export default {
             action: 'notify',
         },
         warn: {
-            title: '⚠️ Official Warning',
-            description: '{user}, your behavior has violated city protocols.\n\n**REASON:** {reason}',
-            color: '#f1c40f'
+            title: '🛡️ Recall Protocol',
+            description: 'Attention **{user}**, you have received an official recall for violation of civil codes.\n\n**REASON:**\n>>> {reason}',
+            color: '#f1c40f',
+            footer: 'Disciplinary Office | Verix RP'
         },
         timeout: {
-            title: '🔇 Communications Restriction',
-            description: '{user}, you have been put in isolation for **{duration} minutes**.\n\n**REASON:** {reason}',
+            title: '🔇 Communication Restriction',
+            description: 'Citizen **{user}** has been placed in temporary isolation for **{duration}**.\n\n**REASON:**\n>>> {reason}',
             color: '#e67e22'
         },
-        dm_kick: {
+        kick: {
             title: '👢 Forced Expulsion',
-            description: '{user}, you have been removed from the city for serious protocol violations.\n\n**REASON:** {reason}',
+            description: 'You have been removed from the city for serious failure to follow city protocols.\n\n**REASON:**\n>>> {reason}',
             color: '#e74c3c'
         },
-        dm_ban: {
+        ban: {
             title: '🚫 Permanent Exile',
-            description: '{user}, you have been permanently banned from the city.\n\n**REASON:** {reason}',
+            description: 'Your visa to reside in the city has been permanently revoked. Access is now denied.\n\n**REASON:**\n>>> {reason}',
             color: '#000000'
         },
         command_ban: {
-            title: '🔨 Member Banned',
-            description: '**User:** {user}\n**Moderator:** {mod}\n**Reason:** {reason}',
+            title: '🔨 Ban Protocol Executed',
+            description: '**SUBJECT:** {user}\n**OFFICIAL:** {mod}\n**REASON:** {reason}',
             color: '#FF0000'
         },
         command_kick: {

@@ -1,6 +1,7 @@
 import { Events, EmbedBuilder, PermissionFlagsBits } from 'discord.js';
 import ModerationConfig from '../../../models/ModerationConfig.js';
 import logger from '../../../utils/logger.js';
+import messageService from '../../../utils/messageService.js';
 
 // In-memory join tracker: guildId -> [timestamps]
 const guildJoins = new Map();
@@ -47,15 +48,11 @@ async function handleRaidDetection(guild, member, config, joinCount) {
         try {
             const logChannel = await guild.channels.fetch(config.logChannelId).catch(() => null);
             if (logChannel) {
-                const embed = new EmbedBuilder()
-                    .setTitle('🚨 Allarme Anti-Raid')
-                    .setDescription(`Rilevato afflusso anomalo di utenti: **${joinCount}** join nell'intervallo configurato.`)
-                    .addFields(
-                        { name: '⚡ Azione Intrapresa', value: action.toUpperCase(), inline: true },
-                        { name: '👤 Ultimo Join', value: `${member.user.tag}`, inline: true }
-                    )
-                    .setColor('#ff4757')
-                    .setTimestamp();
+                const embed = await messageService.get(guild.id, 'moderation', 'anti_raid', {
+                    details: `${joinCount} join in ${config.antiRaid.timeWindow / 1000}s`,
+                    status: 'UNDER ATTACK',
+                    action: action.toUpperCase()
+                });
 
                 await logChannel.send({ content: '@everyone', embeds: [embed] });
             }

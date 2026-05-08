@@ -4,7 +4,9 @@ import { useT } from '../../../contexts/LanguageContext';
 import { 
     Bot, Shield, Info, Save, 
     Key, Power, AlertTriangle, 
-    ExternalLink, CheckCircle, XCircle, Zap, RefreshCcw
+    ExternalLink, CheckCircle, XCircle, Zap, RefreshCcw,
+    ChevronRight, ChevronLeft, Layout, Sparkles, Gem,
+    Eye, EyeOff
 } from 'lucide-react';
 import Skeleton from '../../../components/Skeleton';
 import api from '../../../utils/api';
@@ -20,42 +22,45 @@ export default function PrivateBotPage() {
   const [saving, setSaving] = useState(false);
   const [restarting, setRestarting] = useState(false);
   const [token, setToken] = useState('');
+  const [showToken, setShowToken] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const fetchData = async () => {
-    if (!guildId || guildId === 'undefined') return;
+    if (!guildId || !mounted) return;
     setLoading(true);
+    window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
     try {
-        const guildRes = await api.request(`/config/${guildId}/guild`);
+        const [guildRes, botRes] = await Promise.all([
+            api.request(`/config/${guildId}/guild`),
+            api.request(`/private-bot/${guildId}`).catch(() => ({ bot: null }))
+        ]);
         setConfig(guildRes.data || guildRes);
-
-        const botRes = await api.request(`/private-bot/${guildId}`);
         setBotData(botRes.bot);
     } catch (err) {
         console.error('Failed to fetch data:', err);
     } finally {
         setLoading(false);
+        window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
     }
   };
 
   useEffect(() => {
     fetchData();
-  }, [guildId]);
+  }, [guildId, mounted]);
 
   const handleSave = async () => {
-    if (!token && !botData) {
-        alert('Inserisci un token valido');
-        return;
-    }
-
+    if (!token && !botData) return;
     setSaving(true);
+    window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
     try {
         await api.request(`/private-bot/${guildId}`, {
             method: 'POST',
-            data: {
-                token: token || undefined,
-                enabled: botData ? botData.enabled : true
-            }
+            data: { token: token || undefined, enabled: botData ? botData.enabled : true }
         });
         setToken('');
         fetchData();
@@ -63,6 +68,7 @@ export default function PrivateBotPage() {
         console.error('Save failed:', err);
     } finally {
         setSaving(false);
+        window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
     }
   };
 
@@ -81,328 +87,292 @@ export default function PrivateBotPage() {
     setRestarting(true);
     try {
         await api.request(`/private-bot/${guildId}/restart`, { method: 'POST' });
-        // Refresh data after a short delay to let the bot login
-        setTimeout(fetchData, 2000);
+        setTimeout(fetchData, 3000);
     } catch (err) {
         console.error('Restart failed:', err);
     } finally {
-        setTimeout(() => setRestarting(false), 2000);
+        setTimeout(() => setRestarting(false), 3000);
     }
   };
 
-  if (loading) return <Skeleton type="config" />;
+  if (!mounted || loading) return <Skeleton height="600px" />;
 
   const isPlatinum = config?.premiumTier === 'platinum';
-  const isPremium = !!config?.isPremium;
 
   return (
-    <div className="private-bot-container animate">
-        <header className="page-header">
+    <div className="pc-premium-wrapper fade-in">
+        {/* V2 Header */}
+        <header className="pc-header-v2">
             <div className="header-info">
-                <div className="header-icon">
-                    <Key size={24} />
+                <div className="pc-icon-box" style={{ background: 'linear-gradient(135deg, #a855f7 0%, #7c3aed 100%)' }}>
+                    <Bot size={28} />
                 </div>
-                <div className="header-text">
-                    <h1>{t('private_bot.title')}</h1>
-                    <p>{t('private_bot.desc')}</p>
+                <div className="pc-title-row">
+                    <h1>White-Label Bot</h1>
+                    <div className={`pc-status-pill ${isPlatinum ? 'active' : 'off'}`}>
+                        {isPlatinum ? 'PLATINUM ACTIVE' : 'NON DISPONIBILE'}
+                    </div>
                 </div>
             </div>
-            {isPlatinum && (
-                <button 
-                    className="btn-save" 
-                    onClick={handleSave} 
-                    disabled={saving || (!token && !botData)}
-                >
-                    {saving ? <Zap size={16} className="animate-spin" /> : <Save size={16} />}
-                    {t('private_bot.save_btn')}
-                </button>
-            )}
+            
+            <div className="header-controls">
+                {isPlatinum && (
+                    <button className="pc-btn-primary" onClick={handleSave} disabled={saving || (!token && !botData)}>
+                        <Save size={18} />
+                        <span>{saving ? 'Salvataggio...' : 'Salva Token'}</span>
+                    </button>
+                )}
+            </div>
         </header>
 
-        {!isPlatinum ? (
-            <div className="premium-upsell card">
-                <div className="upsell-badge">{t('private_bot.platinum_exclusive')}</div>
-                <div className="upsell-icon">
-                    <Bot size={48} />
-                </div>
-                <h2>{t('private_bot.upsell_title')}</h2>
-                <p>
-                    {isPremium 
-                        ? t('private_bot.upsell_desc_premium')
-                        : t('private_bot.upsell_desc_free')}
-                </p>
-                <div className="premium-features-mini">
-                    <span>{t('private_bot.feat_avatar')}</span>
-                    <span>{t('private_bot.feat_status')}</span>
-                    <span>{t('private_bot.feat_no_brand')}</span>
-                </div>
-                <button onClick={() => router.push(`/config/${guildId}/premium`)} className="btn-platinum-cta">
-                    {t('private_bot.cta_btn')}
-                </button>
-            </div>
-        ) : (
-            <div className="private-bot-content fade-in">
-                <div className="grid-layout">
-                    <div className="main-card card">
-                        <div className="card-header">
-                            <Bot size={20} />
-                            <h3>{t('private_bot.config_card')}</h3>
+        <div className="pc-content-v2">
+            {!isPlatinum ? (
+                <div className="pc-pro-gate-v2 big">
+                    <div className="gate-card-v2 big">
+                        <div className="gate-icon-v2" style={{ background: 'var(--platinum-glow)', color: '#a855f7' }}>
+                            <Gem size={40} />
                         </div>
-                        
-                        <div className="alert warning">
-                            <AlertTriangle size={20} />
-                            <div>
-                                <strong>{t('private_bot.alert_warning')}</strong> {t('private_bot.alert_token_desc')}
+                        <h2>Bot Privato & Identità</h2>
+                        <p>Crea il tuo bot personalizzato con il tuo nome, avatar e stato. Nessun riferimento a Verix, solo il tuo brand.</p>
+                        <div className="gate-features-v2">
+                            <div className="gf-item">
+                                <Check size={16} /> <span>White-Label Bot</span>
+                            </div>
+                            <div className="gf-item">
+                                <Check size={16} /> <span>Custom Status & Presence</span>
+                            </div>
+                            <div className="gf-item">
+                                <Check size={16} /> <span>Setup Dedicato</span>
                             </div>
                         </div>
-
-                        <div className="input-group">
-                            <label>{t('private_bot.token_label')}</label>
-                            <input 
-                                type="password" 
-                                value={token} 
-                                onChange={(e) => setToken(e.target.value)}
-                                placeholder={botData ? t('private_bot.token_placeholder_existing') : t('private_bot.token_placeholder_new')}
-                            />
-                            <p className="hint">{t('private_bot.token_hint')} <a href="https://discord.com/developers/applications" target="_blank" rel="noreferrer">Discord Developer Portal <ExternalLink size={12} /></a></p>
-                        </div>
-
-                        <div className="setup-stepper">
-                            <h4>{t('private_bot.guide_title')}</h4>
-                            
-                            <div className="step-item">
-                                <div className="step-number">1</div>
-                                <div className="step-content">
-                                    <h5>{t('private_bot.step1_title')}</h5>
-                                    <p dangerouslySetInnerHTML={{ __html: t('private_bot.step1_desc').replace('<link>', '<a href="https://discord.com/developers/applications" target="_blank" rel="noreferrer">').replace('</link>', '</a>') }} />
-                                    <div className="step-img-container clickable" onClick={() => setSelectedImage({ src: `/img/guide${langPath}/step1.png`, title: t('private_bot.step1_title') })}>
-                                        <img src={`/img/guide${langPath}/step1.png`} alt="Step 1" />
-                                        <div className="zoom-overlay"><Zap size={16} /> {t('private_bot.zoom_overlay')}</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="step-item">
-                                <div className="step-number">2</div>
-                                <div className="step-content">
-                                    <h5>{t('private_bot.step2_title')}</h5>
-                                    <p dangerouslySetInnerHTML={{ __html: t('private_bot.step2_desc') }} />
-                                    <div className="step-img-container clickable" onClick={() => setSelectedImage({ src: `/img/guide${langPath}/step2.png`, title: t('private_bot.step2_title') })}>
-                                        <img src={`/img/guide${langPath}/step2.png`} alt="Step 2" />
-                                        <div className="zoom-overlay"><Zap size={16} /> {t('private_bot.zoom_overlay')}</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="step-item warning">
-                                <div className="step-number">3</div>
-                                <div className="step-content">
-                                    <h5>{t('private_bot.step3_title')}</h5>
-                                    <p dangerouslySetInnerHTML={{ __html: t('private_bot.step3_desc') }} />
-                                    <div className="step-img-container clickable" onClick={() => setSelectedImage({ src: `/img/guide${langPath}/step3.png`, title: t('private_bot.step3_title') })}>
-                                        <img src={`/img/guide${langPath}/step3.png`} alt="Step 3" />
-                                        <div className="zoom-overlay"><Zap size={16} /> {t('private_bot.zoom_overlay')}</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="step-item">
-                                <div className="step-number">4</div>
-                                <div className="step-content">
-                                    <h5>{t('private_bot.step4_title')}</h5>
-                                    <p dangerouslySetInnerHTML={{ __html: t('private_bot.step4_desc') }} />
-                                </div>
-                            </div>
-                        </div>
+                        <button className="pc-btn-primary platinum" onClick={() => router.push(`/config/${guildId}/premium`)}>
+                            Passa a Platinum
+                        </button>
                     </div>
-
-                    <div className="status-section">
-                        <div className="status-card card">
-                            <div className="card-header">
-                                <Power size={20} />
-                                <h3>{t('private_bot.status_card')}</h3>
+                </div>
+            ) : (
+                <div className="pc-editor-grid-v2 animate slide-up" style={{ gridTemplateColumns: '1.2fr 0.8fr' }}>
+                    <div className="v-stack" style={{ gap: '32px' }}>
+                        <section className="pc-card-v2">
+                            <div className="card-header-v2">
+                                <div className="header-icon"><Key size={18} /></div>
+                                <h3>Configurazione Credenziali</h3>
                             </div>
-
-                            {botData ? (
-                                <div className="bot-status-info">
-                                    <div className="bot-profile">
-                                        <img src={botData.avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'} alt="Bot Avatar" />
-                                        <div className="bot-details">
-                                            <h4>{botData.clientName || t('private_bot.bot_default_name')}</h4>
-                                            <span className={`badge status-${botData.status}`}>
-                                                {botData.status.toUpperCase()}
-                                            </span>
-                                        </div>
+                            <div className="card-body-v2">
+                                <div className="pc-alert-v2 warning" style={{ marginBottom: '32px' }}>
+                                    <AlertTriangle size={20} />
+                                    <div className="v-stack">
+                                        <span className="alert-title">Importante per la sicurezza</span>
+                                        <span className="alert-desc">Non condividere mai il tuo bot token. Inseriscilo qui per avviare la tua istanza privata su Verix Ops.</span>
                                     </div>
+                                </div>
 
-                                    <div className="toggle-control">
-                                        <span>{t('private_bot.toggle_label')}</span>
-                                        <label className="switch">
-                                            <input 
-                                                type="checkbox" 
-                                                checked={botData.enabled} 
-                                                onChange={handleToggle}
-                                            />
-                                            <span className="slider round"></span>
-                                        </label>
-                                    </div>
-
-                                    {botData.enabled && (
-                                        <button 
-                                            className="btn-restart-action" 
-                                            onClick={handleRestart}
-                                            disabled={restarting}
-                                        >
-                                            <RefreshCcw size={16} className={restarting ? 'animate-spin' : ''} />
-                                            {restarting ? t('private_bot.restarting') : t('private_bot.restart_btn')}
+                                <div className="pc-input-group-v2">
+                                    <label>Discord Bot Token</label>
+                                    <div className="pc-input-wrapper-v2">
+                                        <Key size={16} className="input-icon" />
+                                        <input 
+                                            type={showToken ? 'text' : 'password'} 
+                                            placeholder={botData ? '••••••••••••••••••••' : 'MTE3MjMx...'} 
+                                            value={token}
+                                            onChange={e => setToken(e.target.value)}
+                                        />
+                                        <button className="pc-input-eye-btn" onClick={() => setShowToken(!showToken)}>
+                                            {showToken ? <EyeOff size={18} /> : <Eye size={18} />}
                                         </button>
-                                    )}
-
-                                    {botData.status === 'error' && (
-                                        <div className="error-log">
-                                            <strong>{t('private_bot.last_error')}</strong>
-                                            <p>{botData.lastError}</p>
-                                        </div>
-                                    )}
-                                </div>
-                            ) : (
-                                <div className="empty-status">
-                                    <Info size={40} />
-                                    <p>{t('private_bot.empty_status')}</p>
-                                </div>
-                            )}
-                        </div>
-
-                        {botData?.enabled && (
-                            <div className="next-steps-card card fade-in">
-                                <div className="card-header">
-                                    <ExternalLink size={20} />
-                                    <h3>{t('private_bot.next_steps')}</h3>
-                                </div>
-                                
-                                <div className="mini-stepper">
-                                    <div className="mini-step">
-                                        <div className="mini-number">5</div>
-                                        <div className="mini-content">
-                                            <h5>{t('private_bot.step5_title')}</h5>
-                                            <p dangerouslySetInnerHTML={{ __html: t('private_bot.step5_desc') }} />
-                                            <div className="step-img-container mini clickable" onClick={() => setSelectedImage({ src: `/img/guide${langPath}/step4.png`, title: t('private_bot.step5_title') })}>
-                                                <img src={`/img/guide${langPath}/step4.png`} alt="Step 5" />
-                                                <div className="zoom-overlay"><Zap size={14} /> {t('private_bot.zoom_mini')}</div>
-                                            </div>
-                                        </div>
                                     </div>
-
-                                    <div className="mini-step success">
-                                        <div className="mini-number">✓</div>
-                                        <div className="mini-content">
-                                            <h5>{t('private_bot.step6_title')}</h5>
-                                            <p dangerouslySetInnerHTML={{ __html: t('private_bot.step6_desc') }} />
-                                            <div className="step-img-container mini clickable" onClick={() => setSelectedImage({ src: `/img/guide${langPath}/step5.png`, title: t('private_bot.step6_title') })}>
-                                                <img src={`/img/guide${langPath}/step5.png`} alt="Step 6" />
-                                                <div className="zoom-overlay"><Zap size={14} /> {t('private_bot.zoom_mini')}</div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <p className="pc-hint-v2" style={{ marginTop: '12px' }}>
+                                        Puoi ottenere il token nel <a href="https://discord.com/developers/applications" target="_blank" rel="noreferrer" className="pc-link-v2">Developer Portal</a>
+                                    </p>
                                 </div>
                             </div>
-                        )}
+                        </section>
+
+                        <section className="pc-card-v2">
+                             <div className="card-header-v2">
+                                <div className="header-icon"><Layout size={18} /></div>
+                                <h3>Guida al Setup</h3>
+                            </div>
+                            <div className="card-body-v2">
+                                <div className="pc-stepper-v2">
+                                    {[1,2,3,4].map(step => (
+                                        <div key={step} className="pc-step-item-v2">
+                                            <div className="step-num">{step}</div>
+                                            <div className="step-content">
+                                                <h4 className="step-title">{t(`private_bot.step${step}_title`)}</h4>
+                                                <p className="step-desc" dangerouslySetInnerHTML={{ __html: t(`private_bot.step${step}_desc`) }}></p>
+                                                <div className="step-media-v2" onClick={() => setSelectedImage({ src: `/img/guide${langPath}/step${step}.png`, title: t(`private_bot.step${step}_title`) })}>
+                                                    <img src={`/img/guide${langPath}/step${step}.png`} alt={`Step ${step}`} />
+                                                    <div className="media-overlay"><Sparkles size={16} /> Ingrandisci</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div className="v-stack" style={{ gap: '32px' }}>
+                        <section className="pc-card-v2 status-monitor-v2">
+                            <div className="card-header-v2">
+                                <div className="header-icon"><Power size={18} /></div>
+                                <h3>Stato Istanza</h3>
+                            </div>
+                            <div className="card-body-v2">
+                                {botData ? (
+                                    <div className="v-stack" style={{ gap: '24px' }}>
+                                        <div className="pc-bot-identity-v2">
+                                            <img src={botData.avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'} className="bot-avatar" />
+                                            <div className="bot-info">
+                                                <span className="bot-name">{botData.clientName || 'Private Bot'}</span>
+                                                <div className={`pc-status-pill mini ${botData.status}`}>
+                                                    {botData.status.toUpperCase()}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="pc-action-row-v2">
+                                            <div className="v-stack">
+                                                <span className="action-label">Abilitato</span>
+                                                <span className="action-desc">Ricevi comandi</span>
+                                            </div>
+                                            <label className="pc-toggle-mini">
+                                                <input type="checkbox" checked={!!botData.enabled} onChange={handleToggle} />
+                                                <span className="pc-slider-mini"></span>
+                                            </label>
+                                        </div>
+
+                                        <button className="pc-btn-outline" style={{ width: '100%', height: '56px' }} onClick={handleRestart} disabled={restarting}>
+                                            <RefreshCcw size={18} className={restarting ? 'animate-spin' : ''} />
+                                            <span>{restarting ? 'Riavvio...' : 'Riavvia Istanza'}</span>
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="pc-empty-mini">Configura il token per avviare l'istanza.</div>
+                                )}
+                            </div>
+                        </section>
+
+                        <section className="pc-card-v2 help-card-v2">
+                             <div className="v-stack" style={{ gap: '16px' }}>
+                                 <div className="icon-glow"><Info size={24} /></div>
+                                 <h3 style={{ margin: 0 }}>Bisogno di Aiuto?</h3>
+                                 <p style={{ margin: 0, fontSize: '0.9rem', opacity: 0.7, lineHeight: 1.5 }}>
+                                     Il setup del bot privato richiede il <strong style={{ color: 'white' }}>Server Members Intent</strong> abilitato nel developer portal.
+                                 </p>
+                                 <button className="pc-btn-primary" style={{ background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.2)' }}>
+                                     Leggi Documentazione
+                                 </button>
+                             </div>
+                        </section>
                     </div>
                 </div>
-            </div>
-        )}
+            )}
+        </div>
 
         {selectedImage && (
-            <div className="lightbox-overlay" onClick={() => setSelectedImage(null)}>
-                <div className="lightbox-content" onClick={e => e.stopPropagation()}>
-                    <button className="close-btn" onClick={() => setSelectedImage(null)}><XCircle size={24} /></button>
-                    <img src={selectedImage.src} alt="Zoom" />
-                    <p>{selectedImage.title}</p>
+            <div className="pc-lightbox-v2" onClick={() => setSelectedImage(null)}>
+                <div className="lightbox-content-v2 animate zoom-in" onClick={e => e.stopPropagation()}>
+                    <div className="lightbox-header-v2">
+                        <span>{selectedImage.title}</span>
+                        <button onClick={() => setSelectedImage(null)}><XCircle size={24} /></button>
+                    </div>
+                    <img src={selectedImage.src} />
                 </div>
             </div>
         )}
 
         <style jsx>{`
-            .private-bot-container { padding: 20px; }
-            .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
-            .header-info { display: flex; align-items: center; gap: 16px; }
-            .header-icon { width: 48px; height: 48px; background: var(--primary-glow); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-            .header-text h1 { font-size: 1.8rem; font-weight: 800; color: var(--text-main); }
-            .btn-save { background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 700; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: 0.3s; }
-            .grid-layout { display: grid; grid-template-columns: 1.5fr 1fr; gap: 24px; align-items: start; }
-            .status-section { display: flex; flex-direction: column; gap: 24px; }
-            .card { padding: 24px; }
-            .card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; border-bottom: 1px solid var(--border); padding-bottom: 16px; }
-            .alert { display: flex; gap: 12px; padding: 16px; border-radius: 12px; margin-bottom: 24px; font-size: 0.9rem; }
-            .alert.warning { background: rgba(255, 152, 0, 0.1); border: 1px solid rgba(255, 152, 0, 0.3); color: #ff9800; }
-            .input-group { margin-bottom: 24px; }
-            .input-group label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-muted); }
-            .input-group input { width: 100%; padding: 12px 16px; background: var(--bg-badge); border: 1px solid var(--border); border-radius: 12px; color: var(--text-main); outline: none; transition: 0.2s; }
-            .input-group input:focus { border-color: var(--primary); }
-            .setup-stepper { margin-top: 32px; border-top: 1px solid var(--border); padding-top: 24px; }
-            .setup-stepper h4 { font-size: 1.1rem; margin-bottom: 24px; color: var(--text-main); font-weight: 700; }
-            .step-item { display: flex; gap: 16px; margin-bottom: 32px; position: relative; }
-            .step-item:not(:last-child):after { content: ''; position: absolute; left: 16px; top: 32px; bottom: -32px; width: 2px; background: var(--border); opacity: 0.5; }
-            .step-number { width: 32px; height: 32px; background: var(--bg-badge); border: 2px solid var(--border); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.8rem; flex-shrink: 0; z-index: 2; }
-            .step-item.warning .step-number { border-color: #ff9800; color: #ff9800; background: rgba(255, 152, 0, 0.1); }
-            .step-content h5 { font-size: 1rem; margin-bottom: 6px; color: var(--text-main); }
-            .step-content p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 12px; }
-            .step-content strong { color: var(--text-main); }
-            .intent-list { list-style: none; padding: 0; margin-bottom: 16px; }
-            .intent-list li { font-size: 0.85rem; color: var(--text-main); display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
-            .intent-list li:before { content: '✓'; color: #4caf50; font-weight: 900; }
-            .step-img-container { width: 100%; max-width: 500px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); margin-top: 12px; background: var(--bg-badge); box-shadow: 0 4px 12px rgba(0,0,0,0.1); position: relative; }
-            .step-img-container.mini { max-width: 100%; margin-top: 8px; }
-            .step-img-container.clickable { cursor: pointer; transition: 0.3s; }
-            .step-img-container.clickable:hover { transform: translateY(-4px); border-color: var(--primary); }
-            .step-img-container img { width: 100%; height: auto; display: block; }
-            .zoom-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.6); color: white; padding: 8px; font-size: 0.7rem; font-weight: 600; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px; opacity: 0; transition: 0.3s; }
-            .step-img-container.clickable:hover .zoom-overlay { opacity: 1; }
-            .lightbox-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 40px; animation: fadeIn 0.3s; }
-            .lightbox-content { position: relative; max-width: 90%; max-height: 90%; display: flex; flex-direction: column; align-items: center; }
-            .lightbox-content img { max-width: 100%; max-height: 80vh; border-radius: 12px; box-shadow: 0 0 40px rgba(0,0,0,0.5); }
-            .lightbox-content p { color: white; margin-top: 16px; font-weight: 600; font-size: 1.1rem; }
-            .lightbox-content .close-btn { position: absolute; top: -40px; right: 0; background: none; border: none; color: white; cursor: pointer; opacity: 0.7; transition: 0.3s; }
-            .lightbox-content .close-btn:hover { opacity: 1; transform: scale(1.1); }
-            @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-            .bot-profile { display: flex; align-items: center; gap: 16px; margin-bottom: 32px; background: var(--bg-badge); padding: 16px; border-radius: 16px; }
-            .bot-profile img { width: 64px; height: 64px; border-radius: 50%; border: 2px solid var(--primary); }
-            .bot-details h4 { font-size: 1.2rem; margin-bottom: 4px; }
-            .next-steps-card { background: var(--bg-badge); border: 1px solid var(--primary-glow); }
-            .mini-stepper { display: flex; flex-direction: column; gap: 20px; margin-top: 10px; }
-            .mini-step { display: flex; gap: 12px; }
-            .mini-number { width: 24px; height: 24px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800; flex-shrink: 0; }
-            .mini-step.success .mini-number { border-color: #4caf50; color: #4caf50; background: rgba(76, 175, 80, 0.1); }
-            .mini-content h5 { font-size: 0.9rem; margin-bottom: 4px; }
-            .mini-content p { font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; }
-            .mini-content code { background: rgba(255,255,255,0.05); padding: 2px 4px; border-radius: 4px; font-size: 0.75rem; }
-            .badge { padding: 4px 10px; border-radius: 8px; font-size: 0.7rem; font-weight: 800; }
-            .status-online { background: rgba(76, 175, 80, 0.1); color: #4caf50; }
-            .status-offline { background: rgba(158, 158, 158, 0.1); color: #9e9e9e; }
-            .status-error { background: rgba(244, 67, 54, 0.1); color: #f44336; }
-            .toggle-control { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: var(--bg-badge); border-radius: 12px; }
-            .btn-restart-action { width: 100%; margin-top: 12px; padding: 12px; background: var(--bg-card); border: 1px solid var(--border); color: var(--text-main); border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; }
-            .btn-restart-action:hover:not(:disabled) { background: var(--bg-badge); border-color: var(--primary); color: var(--primary); transform: translateY(-2px); }
-            .btn-restart-action:disabled { opacity: 0.5; cursor: not-allowed; }
-            .error-log { margin-top: 24px; padding: 12px; background: rgba(244, 67, 54, 0.05); border-radius: 8px; border: 1px solid rgba(244, 67, 54, 0.2); }
-            .error-log p { font-size: 0.8rem; color: #f44336; margin-top: 4px; }
-            .empty-status { text-align: center; padding: 40px; color: var(--text-muted); }
-            .empty-status p { margin-top: 12px; font-size: 0.9rem; }
-            .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
-            .switch input { opacity: 0; width: 0; height: 0; }
-            .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--bg-card); transition: .4s; border: 1px solid var(--border); }
-            .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; }
-            input:checked + .slider { background-color: var(--primary); border-color: var(--primary); }
-            input:checked + .slider:before { transform: translateX(24px); }
-            .slider.round { border-radius: 34px; }
-            .slider.round:before { border-radius: 50%; }
-            .premium-upsell { text-align: center; padding: 60px; margin-top: 40px; display: flex; flex-direction: column; align-items: center; }
-            .upsell-badge { background: linear-gradient(90deg, #6366f1, #a855f7); color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 800; margin-bottom: 24px; letter-spacing: 1px; }
-            .upsell-icon { color: var(--primary); margin-bottom: 24px; filter: drop-shadow(0 0 15px var(--primary-glow)); }
-            .premium-features-mini { display: flex; gap: 20px; margin: 24px 0; }
-            .premium-features-mini span { font-size: 0.85rem; color: var(--text-main); font-weight: 600; display: flex; align-items: center; gap: 6px; }
-            .btn-platinum-cta { background: linear-gradient(135deg, #6366f1, #a855f7); color: white; padding: 16px 32px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; margin-top: 24px; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3); transition: 0.3s; }
-            .btn-platinum-cta:hover { transform: translateY(-2px); box-shadow: 0 15px 30px rgba(99, 102, 241, 0.4); }
+            .pc-premium-wrapper { padding: 40px; max-width: 1500px; margin: 0 auto; font-family: 'Inter', sans-serif; }
+            
+            /* Header V2 */
+            .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; background: white; padding: 32px; border-radius: 32px; box-shadow: var(--shadow-premium); border: 1px solid var(--border-light); }
+            .header-info { display: flex; align-items: center; gap: 24px; }
+            .pc-icon-box { width: 64px; height: 64px; color: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 12px 24px rgba(168, 85, 247, 0.25); }
+            .pc-title-row { display: flex; flex-direction: column; gap: 6px; }
+            .pc-title-row h1 { font-family: 'Outfit', sans-serif; font-size: 2rem; font-weight: 900; margin: 0; color: var(--text-main); letter-spacing: -0.5px; }
+            .pc-status-pill { font-size: 0.65rem; font-weight: 900; padding: 4px 12px; border-radius: 100px; letter-spacing: 1px; width: fit-content; }
+            .pc-status-pill.active { background: #fdf4ff; color: #a855f7; border: 1px solid #a855f733; }
+            .pc-status-pill.off { background: #fef2f2; color: #ef4444; border: 1px solid #ef444433; }
+            .pc-status-pill.online { background: #ecfdf5; color: #10b981; border: 1px solid #10b98133; }
+            .pc-status-pill.offline { background: #f9fafb; color: #6b7280; border: 1px solid #e5e7eb; }
+
+            .header-controls { display: flex; gap: 16px; }
+            .pc-btn-primary { display: flex; align-items: center; gap: 12px; background: var(--primary); color: white; border: none; padding: 14px 28px; border-radius: 16px; font-weight: 800; cursor: pointer; transition: 0.3s; }
+            .pc-btn-primary.platinum { background: linear-gradient(135deg, #a855f7, #7c3aed); box-shadow: 0 10px 20px rgba(168, 85, 247, 0.2); }
+            .pc-btn-outline { display: flex; align-items: center; gap: 10px; background: white; color: var(--text-main); border: 1.5px solid var(--border); padding: 14px 24px; border-radius: 16px; font-weight: 700; cursor: pointer; transition: 0.3s; }
+
+            /* Gate */
+            .pc-pro-gate-v2.big { min-height: 500px; display: flex; align-items: center; justify-content: center; }
+            .gate-card-v2.big { background: white; border-radius: 40px; padding: 60px; text-align: center; max-width: 600px; box-shadow: var(--shadow-xl); border: 1px solid var(--border-light); }
+            .gate-icon-v2 { width: 80px; height: 80px; border-radius: 24px; display: flex; align-items: center; justify-content: center; margin: 0 auto 32px; }
+            .gate-card-v2 h2 { font-size: 2.2rem; font-weight: 900; margin-bottom: 16px; font-family: 'Outfit'; }
+            .gate-card-v2 p { color: var(--text-muted); font-size: 1.1rem; line-height: 1.6; margin-bottom: 40px; }
+            .gate-features-v2 { display: flex; flex-direction: column; gap: 16px; align-items: center; margin-bottom: 40px; }
+            .gf-item { display: flex; align-items: center; gap: 12px; font-weight: 700; color: var(--text-main); }
+
+            /* Cards */
+            .pc-card-v2 { background: white; border: 1px solid var(--border-light); border-radius: 28px; padding: 32px; box-shadow: var(--shadow-premium); }
+            .card-header-v2 { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+            .header-icon { width: 40px; height: 40px; background: var(--bg-badge); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+            .card-header-v2 h3 { margin: 0; font-size: 1.1rem; font-weight: 850; }
+
+            .pc-alert-v2 { display: flex; gap: 16px; padding: 20px; border-radius: 20px; border: 1px solid transparent; }
+            .pc-alert-v2.warning { background: #fffbeb; border-color: #fef3c7; color: #92400e; }
+            .alert-title { font-weight: 900; font-size: 0.9rem; }
+            .alert-desc { font-size: 0.85rem; opacity: 0.8; }
+
+            .pc-input-group-v2 label { display: block; font-size: 0.65rem; font-weight: 900; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+            .pc-input-wrapper-v2 { display: flex; align-items: center; background: var(--bg-input); border: 1.5px solid var(--border); border-radius: 16px; overflow: hidden; }
+            .pc-input-wrapper-v2 input { width: 100%; background: transparent; border: none; padding: 16px; font-weight: 700; color: var(--text-main); outline: none; }
+            .input-icon { margin-left: 20px; color: var(--text-muted); }
+            .pc-input-eye-btn { background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 0 20px; }
+
+            /* Stepper */
+            .pc-stepper-v2 { display: flex; flex-direction: column; gap: 40px; }
+            .pc-step-item-v2 { display: flex; gap: 24px; position: relative; }
+            .pc-step-item-v2:not(:last-child):after { content: ''; position: absolute; left: 19px; top: 48px; bottom: -48px; width: 2px; background: var(--border-light); }
+            .step-num { width: 40px; height: 40px; border-radius: 14px; background: var(--bg-badge); border: 2px solid var(--border-light); display: flex; align-items: center; justify-content: center; font-weight: 900; color: var(--primary); z-index: 2; flex-shrink: 0; }
+            .step-title { margin: 0 0 8px; font-size: 1.1rem; font-weight: 850; }
+            .step-desc { font-size: 0.95rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 16px; }
+            .step-media-v2 { border-radius: 20px; border: 1px solid var(--border-light); overflow: hidden; cursor: pointer; position: relative; max-width: 400px; }
+            .step-media-v2 img { width: 100%; display: block; }
+            .media-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; color: white; font-weight: 800; opacity: 0; transition: 0.3s; }
+            .step-media-v2:hover .media-overlay { opacity: 1; }
+
+            /* Status */
+            .pc-bot-identity-v2 { display: flex; align-items: center; gap: 20px; background: var(--bg-badge); padding: 20px; border-radius: 20px; }
+            .bot-avatar { width: 64px; height: 64px; border-radius: 50%; border: 3px solid white; box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
+            .bot-name { font-weight: 900; font-size: 1.1rem; display: block; margin-bottom: 4px; }
+            
+            .pc-action-row-v2 { display: flex; justify-content: space-between; align-items: center; padding: 20px; background: white; border: 1px solid var(--border-light); border-radius: 20px; }
+            .action-label { font-weight: 850; font-size: 0.9rem; }
+            .action-desc { font-size: 0.8rem; color: var(--text-muted); }
+
+            .help-card-v2 { background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%); color: white; border: none; }
+            .icon-glow { width: 48px; height: 48px; background: rgba(255,255,255,0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+
+            /* Lightbox */
+            .pc-lightbox-v2 { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 40px; }
+            .lightbox-content-v2 { background: white; border-radius: 32px; overflow: hidden; max-width: 1000px; width: 100%; }
+            .lightbox-header-v2 { padding: 20px 32px; border-bottom: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; font-weight: 900; font-family: 'Outfit'; font-size: 1.2rem; }
+            .lightbox-content-v2 img { width: 100%; height: auto; display: block; max-height: 80vh; object-fit: contain; background: #111; }
+
+            .pc-toggle-mini { position: relative; width: 50px; height: 26px; }
+            .pc-toggle-mini input { opacity: 0; width: 0; height: 0; }
+            .pc-slider-mini { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border); transition: .4s; border-radius: 34px; }
+            .pc-slider-mini:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+            input:checked + .pc-slider-mini { background-color: #10b981; }
+            input:checked + .pc-slider-mini:before { transform: translateX(24px); }
+
+            .v-stack { display: flex; flex-direction: column; }
+            .align-center { display: flex; align-items: center; gap: 12px; }
+            .pc-link-v2 { color: var(--primary); text-decoration: none; font-weight: 800; border-bottom: 1.5px solid var(--primary-muted); }
+            .pc-empty-mini { text-align: center; padding: 40px; color: var(--text-muted); font-style: italic; }
+
+            @media (max-width: 1100px) { .pc-editor-grid-v2 { grid-template-columns: 1fr !important; } }
+            :global(.light-theme) .pc-header-v2, :global(.light-theme) .pc-card-v2, :global(.light-theme) .gate-card-v2 { background: #ffffff !important; box-shadow: 0 8px 30px rgba(0,0,0,0.04) !important; }
         `}</style>
     </div>
   );

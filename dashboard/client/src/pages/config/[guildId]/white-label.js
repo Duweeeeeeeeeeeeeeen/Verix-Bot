@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useT } from '../../../contexts/LanguageContext';
 import { 
-    Bot, Shield, Info, Save, 
-    Crown, EyeOff, MessageSquare, 
-    Zap, Sparkles, Check, Plus, Trash2, Clock
+    Bot, Shield, Info, Save, Crown, EyeOff, MessageSquare, Zap, Sparkles, Check, 
+    Plus, Trash2, Clock, CheckCircle2, AlertCircle, RefreshCw, Smartphone, Monitor,
+    Fingerprint, UserCircle, Globe, Layout, Layers, Box, Cpu, Activity,
+    ShieldCheck, XCircle, Rocket, Gauge, Palette, Search, Settings2, Power
 } from 'lucide-react';
 import Skeleton from '../../../components/Skeleton';
 import api from '../../../utils/api';
+import Head from 'next/head';
 
 export default function WhiteLabelPage() {
   const { t } = useT();
@@ -16,14 +18,20 @@ export default function WhiteLabelPage() {
   const [config, setConfig] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   // Status management
   const [statuses, setStatuses] = useState([]);
   const [rotationInterval, setRotationInterval] = useState(60);
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const fetchData = async () => {
-    if (!guildId || guildId === 'undefined') return;
+    if (!guildId || !mounted) return;
     setLoading(true);
+    window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
     try {
         const res = await api.request(`/config/${guildId}/guild`);
         const data = res.data || res;
@@ -34,12 +42,13 @@ export default function WhiteLabelPage() {
         console.error('Failed to fetch config:', err);
     } finally {
         setLoading(false);
+        window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
     }
   };
 
   useEffect(() => {
     fetchData();
-  }, [guildId]);
+  }, [guildId, mounted]);
 
   const addStatus = () => {
     setStatuses([...statuses, { text: '', type: 0 }]);
@@ -57,245 +66,306 @@ export default function WhiteLabelPage() {
 
   const handleSave = async () => {
     setSaving(true);
+    window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
     try {
         await api.request(`/config/${guildId}/guild`, {
             method: 'PATCH',
-            data: {
+            body: JSON.stringify({
                 customBotName: config.customBotName,
                 customStatuses: statuses,
                 statusRotationInterval: rotationInterval,
                 hideBranding: config.hideBranding
-            }
+            })
         });
+        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: "White-Label Protocol sincronizzato!", type: 'success' } }));
     } catch (err) {
         console.error('Save failed:', err);
+        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: "Errore durante la sincronizzazione.", type: 'error' } }));
     } finally {
         setSaving(false);
+        window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
     }
   };
 
-  if (loading) return <Skeleton type="config" />;
+  if (!mounted || loading) return <Skeleton height="600px" />;
 
-  const isPremium = !!config?.isPremium;
+  const isPremium = config?.isPremium || ['premium', 'platinum'].includes(config?.premiumTier);
 
   return (
-    <div className="white-label-container animate">
-        <header className="page-header">
+    <div className="pc-premium-wrapper fade-in">
+        <Head>
+            <title>White-Label Studio | Verix Dashboard</title>
+        </Head>
+
+        {/* V2 Header */}
+        <header className="pc-header-v2">
             <div className="header-info">
-                <div className="header-icon">
-                    <Sparkles size={24} />
+                <div className="pc-icon-box" style={{ background: 'linear-gradient(135deg, #6366f1 0%, #312e81 100%)' }}>
+                    <Fingerprint size={28} />
                 </div>
-                <div className="header-text">
-                    <h1>{t('whitelabel.title')}</h1>
-                    <p>{t('whitelabel.desc')}</p>
+                <div className="pc-title-row">
+                    <h1>White-Label Studio Pro</h1>
+                    <div className={`pc-status-tag-v2 ${isPremium ? 'on' : 'off'}`}>
+                        <div className="status-dot-v2"></div>
+                        {isPremium ? 'ACCESSO PLATINUM OPERATIVO' : 'UPGRADE PLATINUM RICHIESTO'}
+                    </div>
                 </div>
             </div>
-            {isPremium && (
-                <button 
-                    className="btn-save" 
-                    onClick={handleSave} 
-                    disabled={saving}
-                >
-                    {saving ? <Zap size={16} className="animate-spin" /> : <Save size={16} />}
-                    {t('whitelabel.save')}
-                </button>
-            )}
+            
+            <div className="header-controls">
+                {isPremium && (
+                    <button className="pc-btn-primary" onClick={handleSave} disabled={saving} style={{ background: 'linear-gradient(135deg, #6366f1 0%, #4338ca 100%)' }}>
+                        <Save size={18} />
+                        <span>{saving ? 'Sincronizzazione...' : 'Salva Identità'}</span>
+                    </button>
+                )}
+            </div>
         </header>
 
-        {!isPremium ? (
-            <div className="premium-upsell card">
-                <div className="upsell-badge">PRO FEATURE</div>
-                <div className="upsell-icon">
-                    <Bot size={48} />
-                </div>
-                <h2>{t('whitelabel.upsell_title')}</h2>
-                <p>{t('whitelabel.upsell_desc')}</p>
-                
-                <div className="preview-comparison">
-                    <div className="preview-box free">
-                        <span className="p-label">{t('whitelabel.free_version')}</span>
-                        <div className="mock-embed">
-                            <div className="embed-footer">Powered by Verix Bot</div>
-                        </div>
+        <div className="pc-content-v2">
+            {!isPremium ? (
+                <div className="pc-pro-gate-box-v2 animate slide-up" style={{ padding: '120px 40px', background: 'white', borderRadius: '40px', border: '1px solid #e2e8f0', textAlign: 'center', boxShadow: 'var(--shadow-premium)', maxWidth: '1200px', margin: '0 auto' }}>
+                    <div className="gate-icon-glow-v2" style={{ width: '110px', height: '110px', background: '#eef2ff', color: '#6366f1', borderRadius: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 40px', boxShadow: '0 20px 40px rgba(99, 102, 241, 0.15)' }}>
+                        <Rocket size={56} />
                     </div>
-                    <div className="preview-box premium">
-                        <span className="p-label">{t('whitelabel.premium_version')}</span>
-                        <div className="mock-embed">
-                            <div className="embed-footer">© {config?.name || 'Il Tuo Server'}</div>
-                        </div>
-                    </div>
-                </div>
-
-                <button onClick={() => router.push(`/config/${guildId}/premium`)} className="btn-premium-cta">
-                    {t('whitelabel.unlock_cta')}
-                </button>
-            </div>
-        ) : (
-            <div className="white-label-content fade-in">
-                <div className="settings-grid">
-                    <div className="settings-card card">
-                        <div className="card-header">
-                            <Bot size={20} />
-                            <h3>{t('whitelabel.profile_title')}</h3>
-                        </div>
-                        <div className="input-group">
-                            <label>{t('whitelabel.nickname_label')}</label>
-                            <input 
-                                type="text" 
-                                value={config.customBotName || ''} 
-                                onChange={(e) => setConfig({...config, customBotName: e.target.value})}
-                                placeholder={t('whitelabel.nickname_placeholder')}
-                            />
-                            <p className="hint">{t('whitelabel.nickname_hint')}</p>
-                        </div>
-                        
-                        <div className="status-section">
-                            <div className="section-header">
-                                <label>{t('whitelabel.status_rotation_title')}</label>
-                                <button className="btn-add-status" onClick={addStatus}>
-                                    <Plus size={14} /> {t('whitelabel.add_status')}
-                                </button>
+                    <h2 style={{ fontFamily: 'Outfit', fontSize: '3.2rem', fontWeight: 950, color: '#1e293b', marginBottom: '20px', letterSpacing: '-1.8px' }}>Identity White-Label</h2>
+                    <p style={{ fontSize: '1.3rem', color: '#64748b', lineHeight: 1.7, maxWidth: 650, margin: '0 auto 64px', fontWeight: 650 }}>Trasforma Verix in un'estensione nativa del tuo brand. Elimina ogni branding esterno e personalizza l'identità del bot per la tua community.</p>
+                    
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', maxWidth: '1000px', margin: '0 auto 64px' }}>
+                        <div style={{ background: 'white', border: '1.5px solid #e2e8f0', padding: '48px', borderRadius: '32px', textAlign: 'left', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
+                                <span style={{ fontSize: '0.75rem', fontWeight: 950, background: '#f1f5f9', padding: '8px 20px', borderRadius: '100px', color: '#64748b', letterSpacing: '1px' }}>STANDARD BOT</span>
+                                <XCircle size={24} color="#94a3b8" />
                             </div>
-                            
-                            <div className="statuses-list">
-                                {statuses.map((s, index) => (
-                                    <div key={index} className="status-item animate-slide-in">
-                                        <select 
-                                            className="status-type-select"
-                                            value={s.type || 0}
-                                            onChange={(e) => updateStatus(index, 'type', parseInt(e.target.value))}
-                                        >
-                                            <option value="0">{t('whitelabel.status_play')}</option>
-                                            <option value="3">{t('whitelabel.status_watch')}</option>
-                                            <option value="2">{t('whitelabel.status_listen')}</option>
-                                            <option value="5">{t('whitelabel.status_compete')}</option>
-                                            <option value="4">{t('whitelabel.status_custom')}</option>
-                                        </select>
+                            <div style={{ background: '#f8fafc', border: '1.5px solid #e2e8f0', borderRadius: '22px', padding: '32px' }}>
+                                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#cbd5e1', marginBottom: '20px' }}></div>
+                                <div style={{ fontSize: '1.1rem', fontWeight: 950, color: '#1e293b', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    <Shield size={18} color="#6366f1" /> Powered by Verix
+                                </div>
+                                <p style={{ fontSize: '0.85rem', color: '#94a3b8', marginTop: '12px', fontWeight: 700 }}>Branding Verix visibile ovunque.</p>
+                            </div>
+                        </div>
+                        <div style={{ background: 'linear-gradient(135deg, #f5f3ff 0%, #ffffff 100%)', border: '2.5px solid #ddd6fe', padding: '48px', borderRadius: '32px', textAlign: 'left', position: 'relative', boxShadow: '0 20px 50px rgba(99, 102, 241, 0.1)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
+                                <span style={{ fontSize: '0.75rem', fontWeight: 950, background: '#6366f1', padding: '8px 20px', borderRadius: '100px', color: 'white', letterSpacing: '1px' }}>PLATINUM STUDIO</span>
+                                <ShieldCheck size={28} color="#6366f1" />
+                            </div>
+                            <div style={{ background: 'white', border: '1.5px solid #ddd6fe', borderRadius: '22px', padding: '32px', boxShadow: '0 10px 25px rgba(99, 102, 241, 0.05)' }}>
+                                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#6366f1', marginBottom: '20px' }}></div>
+                                <div style={{ fontSize: '1.1rem', fontWeight: 950, color: '#1e293b' }}>© {config?.name || 'Your Global Brand'}</div>
+                                <p style={{ fontSize: '0.85rem', color: '#6366f1', marginTop: '12px', fontWeight: 800 }}>Ghost Mode: Zero Branding.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button className="pc-btn-primary" style={{ background: 'linear-gradient(135deg, #6366f1 0%, #312e81 100%)', padding: '24px 72px', fontSize: '1.25rem', borderRadius: '24px', margin: '0 auto', boxShadow: '0 15px 40px rgba(99, 102, 241, 0.3)' }} onClick={() => router.push(`/config/${guildId}/premium`)}>
+                        <Sparkles size={24} />
+                        <span>Upgrade to Platinum Studio</span>
+                    </button>
+                </div>
+            ) : (
+                <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 440px', gap: '40px' }}>
+                    <div className="v-stack" style={{ gap: '32px' }}>
+                        <section className="pc-card-v2 animate slide-up">
+                            <div className="card-header-v2" style={{ marginBottom: '32px' }}>
+                                <div className="header-icon" style={{ background: '#eef2ff', color: '#6366f1' }}><UserCircle size={18} /></div>
+                                <h3 style={{ margin: 0 }}>Identità & Nome Global</h3>
+                            </div>
+                            <div className="card-body-v2">
+                                <div className="pc-input-group-v2">
+                                    <label>Nickname Personalizzato del Bot</label>
+                                    <div className="pc-input-wrapper-v2" style={{ background: '#f8fafc', border: '1.5px solid #e2e8f0', borderRadius: '22px', display: 'flex', alignItems: 'center', transition: '0.3s' }}>
+                                        <Bot size={22} style={{ marginLeft: '24px', color: '#94a3b8' }} />
                                         <input 
                                             type="text" 
-                                            value={s.text || ''} 
-                                            onChange={(e) => updateStatus(index, 'text', e.target.value)}
-                                            placeholder={t('whitelabel.status_placeholder')}
+                                            style={{ width: '100%', border: 'none', background: 'transparent', padding: '24px', fontWeight: 950, color: '#1e293b', fontSize: '1.2rem', outline: 'none' }}
+                                            value={config.customBotName || ''} 
+                                            onChange={(e) => setConfig({...config, customBotName: e.target.value})}
+                                            placeholder="Nome del Bot per il tuo Server..."
                                         />
-                                        <button className="btn-delete-status" onClick={() => removeStatus(index)}>
-                                            <Trash2 size={16} />
-                                        </button>
                                     </div>
-                                ))}
-                                {statuses.length === 0 && (
-                                    <div className="empty-statuses">
-                                        {t('whitelabel.empty_statuses')}
+                                    <div style={{ marginTop: '24px', background: 'rgba(99, 102, 241, 0.03)', padding: '24px', borderRadius: '22px', border: '1.5px solid #e2e8f0', display: 'flex', gap: '20px', alignItems: 'center' }}>
+                                        <Info size={24} color="#6366f1" style={{ flexShrink: 0 }} />
+                                        <p style={{ margin: 0, fontSize: '0.9rem', color: '#64748b', fontWeight: 700, lineHeight: 1.6 }}>Il bot aggiornerà automaticamente il suo nickname globalmente nel server per riflettere il tuo brand.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section className="pc-card-v2 animate slide-up" style={{ animationDelay: '0.1s' }}>
+                            <div className="card-header-v2" style={{ marginBottom: '32px' }}>
+                                <div className="header-icon" style={{ background: '#f5f3ff', color: '#7c3aed' }}><RefreshCw size={18} /></div>
+                                <div style={{ flex: 1 }}>
+                                    <h3 style={{ margin: 0 }}>Status Rotation Studio</h3>
+                                    <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: '#64748b', fontWeight: 700 }}>Gestisci i messaggi di attività dinamici del bot.</p>
+                                </div>
+                                <button className="pc-btn-add-studio-v2" style={{ background: '#f5f3ff', color: '#6366f1', border: '1.5px solid #ddd6fe', padding: '12px 24px', borderRadius: '14px', fontWeight: 950, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', transition: '0.3s' }} onClick={addStatus}>
+                                    <Plus size={18} /> <span>Aggiungi Stato</span>
+                                </button>
+                            </div>
+                            <div className="card-body-v2">
+                                <div className="v-stack" style={{ gap: '18px' }}>
+                                    {statuses.map((s, index) => (
+                                        <div key={index} className="pc-status-card-v2 animate slide-up" style={{ display: 'flex', gap: '20px', background: '#f8fafc', padding: '20px', borderRadius: '24px', border: '1.5px solid #e2e8f0', alignItems: 'center', transition: '0.3s', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
+                                            <div className="pc-select-wrapper-v2" style={{ background: 'white', borderRadius: '16px', border: '1.5px solid #e2e8f0', padding: '0 16px' }}>
+                                                <select 
+                                                    style={{ border: 'none', background: 'transparent', padding: '14px 0', color: '#6366f1', fontWeight: 950, outline: 'none', fontSize: '0.9rem', cursor: 'pointer', minWidth: '110px' }}
+                                                    value={s.type || 0}
+                                                    onChange={(e) => updateStatus(index, 'type', parseInt(e.target.value))}
+                                                >
+                                                    <option value="0">Playing</option>
+                                                    <option value="3">Watching</option>
+                                                    <option value="2">Listening</option>
+                                                    <option value="5">Competing</option>
+                                                    <option value="4">Custom</option>
+                                                </select>
+                                            </div>
+                                            <input 
+                                                type="text" 
+                                                style={{ flex: 1, background: 'white', border: '1.5px solid #e2e8f0', padding: '14px 24px', borderRadius: '16px', color: '#1e293b', fontWeight: 900, outline: 'none', fontSize: '1.05rem' }}
+                                                value={s.text || ''} 
+                                                onChange={(e) => updateStatus(index, 'text', e.target.value)}
+                                                placeholder="Attività del bot (es: {players} Players Online)"
+                                            />
+                                            <button className="pc-btn-delete-studio-v2" style={{ width: '48px', height: '48px', borderRadius: '14px', background: '#fef2f2', color: '#ef4444', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => removeStatus(index)}><Trash2 size={22} /></button>
+                                        </div>
+                                    ))}
+                                    {statuses.length === 0 && (
+                                        <div style={{ textAlign: 'center', padding: '100px 40px', color: '#cbd5e1', background: '#f8fafc', borderRadius: '32px', border: '2px dashed #e2e8f0' }}>
+                                            <Activity size={64} style={{ margin: '0 auto 24px', opacity: 0.3 }} />
+                                            <p style={{ fontWeight: 950, color: '#94a3b8', fontSize: '1.1rem' }}>Configurazione Stati Vuota</p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {statuses.length > 1 && (
+                                    <div style={{ marginTop: '40px', padding: '36px', background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)', borderRadius: '32px', border: '1.5px solid #e2e8f0' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '32px' }}>
+                                            <div style={{ width: '48px', height: '48px', background: '#f5f3ff', color: '#6366f1', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(0,0,0,0.03)' }}><Timer size={22} /></div>
+                                            <div className="v-stack">
+                                                <span style={{ fontWeight: 950, color: '#1e293b', fontSize: '1.1rem', letterSpacing: '-0.3px' }}>Frequenza di Rotazione</span>
+                                                <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 700 }}>Tempo di switch tra gli stati configurati.</span>
+                                            </div>
+                                            <div style={{ marginLeft: 'auto', background: 'white', padding: '10px 24px', borderRadius: '16px', border: '1.5px solid #e2e8f0', color: '#6366f1', fontWeight: 950, fontSize: '1.3rem' }}>
+                                                {rotationInterval}s
+                                            </div>
+                                        </div>
+                                        <input 
+                                            type="range" 
+                                            min="15" 
+                                            max="3600" 
+                                            step="15"
+                                            style={{ width: '100%', accentColor: '#6366f1', height: '10px', cursor: 'pointer' }}
+                                            value={rotationInterval} 
+                                            onChange={(e) => setRotationInterval(parseInt(e.target.value))}
+                                        />
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px', fontSize: '0.8rem', fontWeight: 950, color: '#94a3b8', textTransform: 'uppercase' }}>
+                                            <span>Ultra High (15s)</span>
+                                            <span>Slow (1h)</span>
+                                        </div>
                                     </div>
                                 )}
                             </div>
-
-                            {statuses.length > 1 && (
-                                <div className="input-group rotation-interval">
-                                    <label><Clock size={14} /> {t('whitelabel.rotation_interval_label')}</label>
-                                    <input 
-                                        type="number" 
-                                        min="15"
-                                        value={rotationInterval} 
-                                        onChange={(e) => setRotationInterval(parseInt(e.target.value))}
-                                    />
-                                    <p className="hint">{t('whitelabel.rotation_interval_hint', { interval: rotationInterval })}</p>
-                                </div>
-                            )}
-                        </div>
+                        </section>
                     </div>
 
-                    <div className="settings-card card">
-                        <div className="card-header">
-                            <EyeOff size={20} />
-                            <h3>{t('whitelabel.branding_title')}</h3>
-                        </div>
-                        <div className="toggle-group">
-                            <div className="toggle-info">
-                                <h4>{t('whitelabel.remove_branding_label')}</h4>
-                                <p>{t('whitelabel.remove_branding_desc')}</p>
+                    <aside className="v-stack" style={{ gap: '32px' }}>
+                        <section className="pc-card-v2 animate slide-up">
+                            <div className="card-header-v2" style={{ marginBottom: '32px' }}>
+                                <div className="header-icon" style={{ background: '#fef2f2', color: '#ef4444' }}><EyeOff size={18} /></div>
+                                <h3 style={{ margin: 0 }}>Ghost Mode Protocol</h3>
                             </div>
-                            <label className="switch">
-                                <input 
-                                    type="checkbox" 
-                                    checked={config.hideBranding} 
-                                    onChange={(e) => setConfig({...config, hideBranding: e.target.checked})}
-                                />
-                                <span className="slider round"></span>
-                            </label>
+                            <div className="card-body-v2">
+                                <div style={{ background: '#f8fafc', padding: '32px', borderRadius: '28px', border: '1.5px solid #e2e8f0', boxShadow: '0 8px 20px rgba(0,0,0,0.02)' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <div className="v-stack" style={{ flex: 1, gap: '6px' }}>
+                                            <strong style={{ fontWeight: 950, fontSize: '1.1rem', color: '#1e293b', letterSpacing: '-0.5px' }}>Hide Verix Branding</strong>
+                                            <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 700, lineHeight: 1.5 }}>Rimuove "Powered by Verix" da ogni embed e messaggio del bot.</span>
+                                        </div>
+                                        <label className="pc-toggle-v2">
+                                            <input 
+                                                type="checkbox" 
+                                                checked={config.hideBranding} 
+                                                onChange={(e) => setConfig({...config, hideBranding: e.target.checked})}
+                                            />
+                                            <span className="pc-slider-v2"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <div className="pc-variable-card-v2 animate slide-up" style={{ background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', borderRadius: '32px', padding: '40px', color: 'white', position: 'relative', overflow: 'hidden' }}>
+                            <div style={{ position: 'relative', zIndex: 2 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
+                                    <div style={{ background: 'rgba(255,255,255,0.1)', padding: '12px', borderRadius: '16px', color: '#38bdf8' }}><Globe size={24} /></div>
+                                    <span style={{ fontWeight: 950, fontSize: '0.95rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Studio Placeholders</span>
+                                </div>
+                                <p style={{ margin: 0, fontSize: '1rem', fontWeight: 700, opacity: 0.8, lineHeight: 1.7, marginBottom: '32px' }}>Personalizza i tuoi stati con dati dinamici in tempo reale dal tuo server FiveM o Discord.</p>
+                                <div className="v-stack" style={{ gap: '16px' }}>
+                                    <div style={{ background: 'rgba(255,255,255,0.05)', padding: '16px 20px', borderRadius: '18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                        <code style={{ background: '#38bdf8', color: '#0f172a', padding: '6px 14px', borderRadius: '10px', fontWeight: 950, fontSize: '0.9rem' }}>{`{players}`}</code>
+                                        <span style={{ fontSize: '0.9rem', fontWeight: 800 }}>Online Count</span>
+                                    </div>
+                                    <div style={{ background: 'rgba(255,255,255,0.05)', padding: '16px 20px', borderRadius: '18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                        <code style={{ background: '#38bdf8', color: '#0f172a', padding: '6px 14px', borderRadius: '10px', fontWeight: 950, fontSize: '0.9rem' }}>{`{max_players}`}</code>
+                                        <span style={{ fontSize: '0.9rem', fontWeight: 800 }}>Total Slots</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style={{ position: 'absolute', right: '-40px', bottom: '-40px', opacity: 0.05 }}><Cpu size={200} /></div>
                         </div>
-                        
-                        <div className="placeholder-info card mt-4">
-                            <h4>{t('whitelabel.placeholders_title')}</h4>
-                            <p>{t('whitelabel.placeholders_desc')}</p>
-                            <ul>
-                                <li><code>{`{players}`}</code> - {t('whitelabel.placeholder_players')}</li>
-                                <li><code>{`{max_players}`}</code> - {t('whitelabel.placeholder_max_players')}</li>
-                            </ul>
-                        </div>
-                    </div>
+                    </aside>
                 </div>
-            </div>
-        )}
+            )}
+        </div>
 
         <style jsx>{`
-            .white-label-container { padding: 20px; }
-            .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
-            .header-info { display: flex; align-items: center; gap: 16px; }
-            .header-icon { width: 48px; height: 48px; background: var(--primary-glow); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-            .header-text h1 { font-size: 1.8rem; font-weight: 800; color: var(--text-main); }
-            .header-text p { color: var(--text-muted); font-size: 0.9rem; }
+            .pc-premium-wrapper { padding: 40px; max-width: 1700px; margin: 0 auto; font-family: 'Inter', sans-serif; }
             
-            .btn-save { background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 12px; font-weight: 700; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: 0.3s; }
-            .btn-save:hover { transform: translateY(-2px); box-shadow: var(--primary-glow); }
-
-            .premium-upsell { 
-                display: flex; flex-direction: column; align-items: center; justify-content: center; 
-                padding: 60px 40px; text-align: center; max-width: 900px; margin: 40px auto;
-                background: var(--bg-card);
-                border: 1px solid var(--border);
-                border-radius: 24px;
-            }
-            .upsell-badge { background: var(--primary-glow); color: var(--primary); padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 900; margin-bottom: 20px; }
-            .upsell-icon { width: 100px; height: 100px; background: var(--primary-glow); color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 24px; }
-            .premium-upsell h2 { font-size: 2rem; font-weight: 900; margin-bottom: 12px; }
-            .preview-comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; width: 100%; max-width: 700px; margin-bottom: 48px; }
-            .preview-box { background: var(--bg-badge); padding: 24px; border-radius: 16px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 16px; }
-            .btn-premium-cta { background: var(--primary); color: white; border: none; padding: 18px 36px; border-radius: 16px; font-size: 1.1rem; font-weight: 800; cursor: pointer; transition: 0.3s; box-shadow: var(--primary-glow); }
-
-            .settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-            .settings-card { padding: 24px; }
-            .card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
-            .card-header h3 { font-size: 1.1rem; font-weight: 700; color: var(--text-main); }
-
-            .input-group { margin-bottom: 20px; }
-            .input-group label { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; }
-            .input-group input { width: 100%; background: var(--bg-badge); border: 1px solid var(--border); padding: 12px 16px; border-radius: 12px; color: var(--text-main); outline: none; transition: 0.2s; }
+            /* Header V2 */
+            .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; background: white; padding: 32px; border-radius: 32px; box-shadow: var(--shadow-premium); border: 1px solid var(--border-light); }
+            .header-info { display: flex; align-items: center; gap: 24px; }
+            .pc-icon-box { width: 64px; height: 64px; border-radius: 20px; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 12px 24px rgba(99, 102, 241, 0.25); }
+            .pc-title-row { display: flex; flex-direction: column; gap: 6px; }
+            .pc-title-row h1 { font-family: 'Outfit', sans-serif; font-size: 2.3rem; font-weight: 950; margin: 0; color: #1e293b; letter-spacing: -1.5px; }
             
-            .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; margin-top: 32px; }
-            .section-header label { font-size: 0.9rem; font-weight: 700; color: var(--text-main); }
-            .btn-add-status { background: var(--primary-glow); color: var(--primary); border: none; padding: 6px 12px; border-radius: 8px; font-size: 0.8rem; font-weight: 700; display: flex; align-items: center; gap: 4px; cursor: pointer; transition: 0.2s; }
-            .btn-add-status:hover { background: var(--primary); color: white; }
+            .pc-status-tag-v2 { display: flex; align-items: center; gap: 8px; font-size: 0.65rem; font-weight: 950; padding: 4px 12px; border-radius: 100px; letter-spacing: 0.5px; }
+            .pc-status-tag-v2.on { background: #eef2ff; color: #6366f1; }
+            .pc-status-tag-v2.off { background: #fef2f2; color: #ef4444; }
+            .status-dot-v2 { width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: dot-pulse 2s infinite; }
+            @keyframes dot-pulse { 0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); } 70% { box-shadow: 0 0 0 6px rgba(99, 102, 241, 0); } 100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); } }
 
-            .statuses-list { display: flex; flex-direction: column; gap: 12px; }
-            .status-item { display: flex; gap: 10px; background: var(--bg-badge); padding: 12px; border-radius: 16px; border: 1px solid var(--border); align-items: center; }
-            .status-type-select { background: var(--bg-card); border: 1px solid var(--border); padding: 8px; border-radius: 8px; color: var(--text-main); outline: none; font-size: 0.85rem; }
-            .status-item input { flex: 1; background: transparent; border: none; color: var(--text-main); outline: none; font-size: 0.9rem; }
-            .btn-delete-status { color: var(--danger); background: transparent; border: none; cursor: pointer; opacity: 0.6; transition: 0.2s; }
-            .btn-delete-status:hover { opacity: 1; transform: scale(1.1); }
-            
-            .empty-statuses { text-align: center; padding: 24px; color: var(--text-muted); font-size: 0.85rem; background: var(--bg-badge); border-radius: 16px; border: 1px dashed var(--border); }
-            .rotation-interval { margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border); }
+            .pc-btn-primary { background: var(--primary); color: white; border: none; padding: 14px 28px; border-radius: 18px; font-weight: 850; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: 0.3s; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2); }
+            .pc-btn-primary:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(99, 102, 241, 0.3); }
 
-            .placeholder-info { padding: 16px; background: rgba(var(--primary-rgb), 0.05); border: 1px solid var(--primary-glow); border-radius: 16px; }
-            .placeholder-info h4 { font-size: 0.9rem; font-weight: 700; color: var(--primary); margin-bottom: 12px; }
-            .placeholder-info p { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px; }
-            .placeholder-info ul { list-style: none; padding: 0; }
-            .placeholder-info li { font-size: 0.8rem; color: var(--text-main); margin-bottom: 4px; }
-            .placeholder-info code { background: var(--bg-card); padding: 2px 6px; border-radius: 4px; color: var(--primary); font-weight: 700; }
+            /* Card V2 */
+            .pc-card-v2 { background: white; border: 1px solid var(--border-light); border-radius: 32px; padding: 40px; box-shadow: var(--shadow-premium); }
+            .card-header-v2 { display: flex; align-items: center; gap: 20px; }
+            .header-icon { width: 52px; height: 52px; border-radius: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+            .card-header-v2 h3 { margin: 0; font-family: 'Outfit'; font-size: 1.5rem; font-weight: 950; color: #1e293b; }
 
-            .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
-            .slider.round { border-radius: 34px; }
-            .mt-4 { margin-top: 16px; }
+            .pc-status-card-v2:hover { border-color: #6366f1 !important; transform: translateY(-3px); box-shadow: 0 10px 25px rgba(99, 102, 241, 0.05); }
+            .pc-btn-delete-studio-v2:hover { background: #ef4444 !important; color: white !important; transform: rotate(8deg); }
+            .pc-btn-add-studio-v2:hover { background: #6366f1 !important; color: white !important; transform: translateY(-3px); }
+
+            /* Toggle V2 */
+            .pc-toggle-v2 { position: relative; width: 44px; height: 22px; }
+            .pc-toggle-v2 input { opacity: 0; width: 0; height: 0; }
+            .pc-slider-v2 { position: absolute; cursor: pointer; inset: 0; background: #cbd5e1; transition: .4s; border-radius: 34px; }
+            .pc-slider-v2:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background: white; transition: .4s; border-radius: 50%; }
+            input:checked + .pc-slider-v2 { background: var(--primary); }
+            input:checked + .pc-slider-v2:before { transform: translateX(22px); }
+
+            /* Inputs V2 */
+            .pc-input-group-v2 { display: flex; flex-direction: column; gap: 10px; }
+            .pc-input-group-v2 label { font-size: 0.75rem; font-weight: 950; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.2px; }
+
+            .v-stack { display: flex; flex-direction: column; }
+            .animate { animation: slideUp 0.4s ease-out; }
+            @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+            :global(.light-theme) .pc-header-v2, :global(.light-theme) .pc-card-v2, :global(.light-theme) .pc-status-card-v2, :global(.light-theme) .pc-pro-gate-box-v2 { background: #ffffff !important; box-shadow: 0 8px 30px rgba(0,0,0,0.04) !important; }
         `}</style>
     </div>
   );

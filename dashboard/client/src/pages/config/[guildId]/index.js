@@ -1,37 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Skeleton from '../../../components/Skeleton';
-import HelpTooltip from '../../../components/HelpTooltip';
 import api from '../../../utils/api';
-import { OnboardingWizard } from '../../../components/LazyConfigComponents';
 import { useT } from '../../../contexts/LanguageContext';
 import { useAuth } from '../../../contexts/AuthContext';
 import { 
-  Shield, 
-  Ticket, 
-  Users, 
-  Mic2, 
-  ArrowRight, 
-  RefreshCcw, 
-  Zap, 
-  Activity, 
-  ShieldCheck,
-  ExternalLink,
-  Info,
-  Camera,
-  Globe,
-  ShieldAlert,
-  Power,
-  UserPlus,
-  Layout as LayoutIcon,
-  ChevronRight,
-  Box,
-  Settings2,
-  TrendingUp,
-  Plus,
-  MousePointer2,
-  ListChecks
+  Shield, Ticket, Users, Mic2, ArrowRight, RefreshCcw, Zap, Activity, ShieldCheck,
+  ExternalLink, Info, Camera, Globe, ShieldAlert, Power, UserPlus, Layout as LayoutIcon,
+  ChevronRight, Box, Settings2, TrendingUp, Plus, MousePointer2, ListChecks, Crown,
+  History, LayoutTemplate, CheckCircle2, AlertTriangle, Sparkles, Layers, Award,
+  Cpu, MessageSquare, Terminal, Heart, Share2, Filter, Search, MoreHorizontal, Bell,
+  Target, Rocket, Command, HelpCircle
 } from 'lucide-react';
+import Head from 'next/head';
 
 export default function GuildHome() {
   const { t } = useT();
@@ -58,6 +39,7 @@ export default function GuildHome() {
   const fetchData = async () => {
     setLoading(true);
     setError(null);
+    window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
     try {
       const responses = await Promise.all([
         api.request(`/config/${guildId}`),
@@ -68,18 +50,19 @@ export default function GuildHome() {
       
       setConfig(configData);
       setStats(statsData?.data || statsData);
-      setLoading(false);
     } catch (err) {
       console.error('Fetch error:', err);
-      setError(err.message || t('common.error'));
+      setError(err.message || "Errore di connessione");
+    } finally {
       setLoading(false);
+      window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
     }
   };
 
   const toggleModule = async (moduleName, currentStatus) => {
     setUpdating(moduleName);
+    window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
     try {
-      // Handle special route cases for toggling
       let endpoint = `/config/${guildId}/${moduleName}`;
       if (moduleName === 'polls') endpoint = `/config/${guildId}/polls/config`;
       if (moduleName === 'reactionRoles') endpoint = `/config/${guildId}/reaction-roles`;
@@ -90,507 +73,317 @@ export default function GuildHome() {
       });
       
       await fetchData();
-      const statusKey = !currentStatus ? 'dashboard.module_enabled' : 'dashboard.module_disabled';
       window.dispatchEvent(new CustomEvent('show-toast', { 
-          detail: { message: t(statusKey, { module: moduleName.toUpperCase() }), type: 'success' } 
+          detail: { message: `Modulo ${moduleName.toUpperCase()} ${!currentStatus ? 'attivato' : 'disattivato'}!`, type: 'success' } 
       }));
     } catch (error) {
         console.error('Toggle error:', error);
     } finally {
       setUpdating(null);
+      window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
     }
   };
 
-   if (!mounted || (loading && !config)) return <Skeleton height="600px" />;
+   if (!mounted || loading) return <Skeleton height="600px" />;
 
   if (error) return (
-    <div className="error-container-p animate fade-in">
-      <Zap size={48} color="var(--error)" />
-      <h2>{t('dashboard.connection_failed')}</h2>
-      <p>{error}</p>
-      <button onClick={fetchData} className="btn-primary">{t('dashboard.retry')}</button>
+    <div className="pc-error-view-v2 animate fade-in" style={{ padding: '80px', textAlign: 'center', background: 'white', borderRadius: '32px', boxShadow: 'var(--shadow-premium)', border: '1px solid var(--border-light)', maxWidth: '600px', margin: '40px auto' }}>
+      <AlertTriangle size={48} color="#ef4444" style={{ marginBottom: '24px' }} />
+      <h2 style={{ fontFamily: 'Outfit', fontWeight: 950, marginBottom: '12px' }}>Connessione Fallita</h2>
+      <p style={{ color: '#64748b', marginBottom: '32px' }}>{error}</p>
+      <button onClick={fetchData} className="pc-btn-primary" style={{ margin: '0 auto' }}>Riprova</button>
     </div>
   );
 
+  const activeModulesCount = [
+    'whitelist', 'tickets', 'verify', 'photocontest', 'support', 'fivem', 'welcome', 'reactionRoles', 'polls'
+  ].filter(id => config?.[id]?.enabled).length;
+
   return (
-    <div className="dashboard-wrapper-p animate">
-      {/* Background Glow Blobs */}
-      <div className="glow-blob blob-1"></div>
-      <div className="glow-blob blob-2"></div>
-      
-      <div className="dashboard-content-main-p">
-        {/* Modern Hero Header - SPLIT VERSION */}
-        <div className="top-split-container animate slide-up">
-          <header className="hero-banner-p hero-left">
-            <div className="hero-info-p">
-              <div className="server-avatar-container">
-                {config?.guildIcon ? (
-                  <img src={config.guildIcon} alt={config.guildName} className="server-avatar-glow" />
-                ) : (
-                  <img src="/logo.png" alt="Verix" className="server-avatar-glow" />
+    <div className="pc-premium-wrapper fade-in">
+        <Head>
+            <title>Dashboard Hub | {config?.guildName || 'Verix'}</title>
+        </Head>
+
+        {/* V2 Hero Studio */}
+        <section className="pc-hero-studio-v2 animate slide-up">
+            <div className="hero-visuals-v2">
+                <div className="server-avatar-container-v2">
+                    {config?.guildIcon ? (
+                        <img src={config.guildIcon} alt={config.guildName} className="server-icon-v2" />
+                    ) : (
+                        <div className="avatar-placeholder-v2">{config?.guildName?.charAt(0)}</div>
+                    )}
+                    {config?.isPremium && (
+                        <div className="premium-crown-v2">
+                            <Crown size={14} fill="currentColor" />
+                        </div>
+                    )}
+                </div>
+                <div className="hero-text-v2">
+                    <div className="status-row-v2">
+                        <span className="live-tag-v2"><div className="pulse-dot"></div> ENGINE ONLINE</span>
+                        <div className={`tier-badge-v2 ${config?.isPremium ? 'premium' : 'standard'}`}>
+                            {config?.isPremium ? 'VERIX PLATINUM' : 'VERIX STANDARD'}
+                        </div>
+                    </div>
+                    <h1>Bentornato, <span className="user-name-v2">{user?.username}</span></h1>
+                    <p>Gestione operativa di <strong>{config?.guildName}</strong> • <strong>{activeModulesCount}</strong> moduli attivi</p>
+                </div>
+            </div>
+            
+            <div className="hero-controls-v2">
+                {config?.mainBotMissing && (
+                    <button className="pc-btn-invite-v2" onClick={() => window.open(config.mainBotInviteUrl, '_blank')}>
+                        <Rocket size={20} />
+                        <span>Invita Verix</span>
+                    </button>
                 )}
-                <div className="premium-badge-mini">
-                  <Zap size={10} fill="currentColor" />
-                </div>
-              </div>
-              <div className="hero-text-p">
-                <div className="badge-setup">{t('dashboard.setup_active')}</div>
-                <h1 className="hero-title">{t('dashboard.welcome_back')}, <span className="text-gradient">{user?.username || 'User'}</span></h1>
-                <p className="hero-subtitle">
-                  {t('dashboard.hero_desc', { 
-                    count: [
-                      'whitelist', 'tickets', 'verify', 'photocontest', 'support', 'fivem', 'welcome', 'reactionRoles', 'polls'
-                    ].filter(id => config?.[id]?.enabled).length 
-                  })} — <span className="server-label">{config?.guildName}</span>
-                </p>
-              </div>
-            </div>
-          </header>
-
-          <div className="hero-banner-p hero-right">
-            <div className="hero-actions-p">
-              {config?.mainBotMissing && (
-                <button 
-                  onClick={() => window.open(config.mainBotInviteUrl, '_blank')} 
-                  className="btn-glass-p pulse-primary"
-                  style={{ background: 'rgba(99, 102, 241, 0.2)', borderColor: 'var(--primary)' }}
-                >
-                  <Plus size={18} />
-                  <span>Invita Verix Bot</span>
+                <button className="pc-btn-refresh-v2" onClick={fetchData}>
+                    <RefreshCcw size={20} className={loading ? 'spin' : ''} />
                 </button>
-              )}
-              <button onClick={fetchData} className="btn-glass-p">
-                <RefreshCcw size={18} className={loading ? 'spin' : ''} />
-                <span>{t('dashboard.refresh_data')}</span>
-              </button>
             </div>
-          </div>
-        </div>
+        </section>
 
-        {/* Stats Grid - Glass Edition */}
-        <div className="stats-glass-grid">
-          <div className="stat-glass-card indigo">
-            <div className="stat-glass-icon">
-              <Ticket size={24} />
-            </div>
-            <div className="stat-glass-info">
-              <h3>{stats?.openTickets || 0}</h3>
-              <p>{t('dashboard.active_tickets')}</p>
-            </div>
-            <div className="stat-sparkline indigo"></div>
-          </div>
-
-          <div className="stat-glass-card amber">
-            <div className="stat-glass-icon">
-              <ShieldCheck size={24} />
-            </div>
-            <div className="stat-glass-info">
-              <h3>{stats?.pendingWhitelist || 0}</h3>
-              <p>{t('dashboard.whitelist_req')}</p>
-            </div>
-            <div className="stat-sparkline amber"></div>
-          </div>
-
-          <div className="stat-glass-card success">
-            <div className="stat-glass-icon">
-              <Activity size={24} />
-            </div>
-            <div className="stat-glass-info">
-              <h3>{stats?.activeVoiceSessions || 0}</h3>
-              <p>{t('dashboard.voice_active')}</p>
-            </div>
-            <div className="stat-sparkline success"></div>
-          </div>
-        </div>
-
-        {/* Main Dashboard Layout */}
-        <div className="main-grid-p">
-          
-          {/* Module Grid - The Core Experience */}
-          <section className="modules-grid-section">
-            <div className="grid-header-p">
-              <div className="grid-title-p">
-                <LayoutIcon size={20} className="text-primary" />
-                <h2>{t('dashboard.modules_center')}</h2>
-              </div>
-              <span className="grid-count-p">
-                {[
-                  'whitelist', 'tickets', 'verify', 'photocontest', 'support', 'fivem', 'welcome', 'reactionRoles', 'polls'
-                ].filter(id => config?.[id]?.enabled).length} {t('dashboard.active_modules')}
-              </span>
-            </div>
-
-            <div className="features-grid-p">
-              {[
-                { id: 'whitelist', label: t('dashboard.module_whitelist'), desc: t('dashboard.module_whitelist_desc'), icon: ShieldCheck, color: '#6366f1', path: 'whitelist' },
-                { id: 'tickets', label: t('dashboard.module_tickets'), desc: t('dashboard.module_tickets_desc'), icon: Ticket, color: '#8b5cf6', path: 'tickets' },
-                { id: 'reactionRoles', label: t('dashboard.module_reactionroles') || 'Reaction Roles', desc: t('dashboard.module_reactionroles_desc') || 'Assign roles via buttons or emojis.', icon: MousePointer2, color: '#10b981', path: 'reaction-roles' },
-                { id: 'polls', label: t('dashboard.module_polls') || 'Polls', desc: t('dashboard.module_polls_desc') || 'Create interactive surveys with duration.', icon: ListChecks, color: '#f59e0b', path: 'polls' },
-                { id: 'verify', label: t('dashboard.module_verify'), desc: t('dashboard.module_verify_desc'), icon: Shield, color: '#06b6d4', path: 'verify' },
-                { id: 'photocontest', label: t('dashboard.module_photocontest'), desc: t('dashboard.module_photocontest_desc'), icon: Camera, color: '#f59e0b', path: 'photocontest' },
-                { id: 'support', label: t('dashboard.module_support'), desc: t('dashboard.module_support_desc'), icon: Mic2, color: '#ec4899', path: 'support' },
-                { id: 'fivem', label: t('dashboard.module_fivem'), desc: t('dashboard.module_fivem_desc'), icon: Globe, color: '#10b981', path: 'fivem' },
-                { id: 'welcome', label: t('dashboard.module_welcome'), desc: t('dashboard.module_welcome_desc'), icon: UserPlus, color: '#6366f1', path: 'welcome' }
-              ].map(module => (
-                <div key={module.id} className={`feature-glass-card ${config[module.id]?.enabled ? 'enabled' : 'disabled'}`}>
-                  <div className="feature-card-inner">
-                    <div className="feature-card-header">
-                      <div className="feature-icon-box" style={{ '--module-color': module.color }}>
-                        <module.icon size={26} />
-                      </div>
-                      <label className="toggle-premium">
-                        <input 
-                          type="checkbox" 
-                          checked={config[module.id]?.enabled} 
-                          onChange={() => toggleModule(module.id, config[module.id]?.enabled)}
-                          disabled={updating === module.id}
-                        />
-                        <span className="slider-premium"></span>
-                      </label>
+        {/* V2 Metric Engine */}
+        <div className="pc-metric-grid-v2">
+            {[
+                { label: 'Tickets Aperti', value: stats?.openTickets || 0, icon: Ticket, color: '#6366f1', trend: '+12% questa settimana' },
+                { label: 'Richieste Whitelist', value: stats?.pendingWhitelist || 0, icon: ShieldCheck, color: '#f59e0b', trend: 'In attesa di revisione' },
+                { label: 'Sessioni SOS', value: stats?.activeVoiceSessions || 0, icon: Activity, color: '#10b981', trend: 'Sistema di emergenza attivo' }
+            ].map((stat, idx) => (
+                <div key={idx} className="pc-metric-card-v2 animate slide-up" style={{ animationDelay: `${idx * 0.1}s` }}>
+                    <div className="metric-header-v2">
+                        <div className="metric-icon-v2" style={{ background: `${stat.color}15`, color: stat.color }}>
+                            <stat.icon size={26} />
+                        </div>
+                        <div className="metric-value-v2">
+                            <span className="count-v2">{stat.value}</span>
+                            <span className="label-v2">{stat.label}</span>
+                        </div>
                     </div>
-                    <div className="feature-card-content" onClick={() => router.push(`/config/${guildId}/${module.path}`)}>
-                      <h3>{module.label}</h3>
-                      <p>{module.desc}</p>
+                    <div className="metric-footer-v2">
+                        <TrendingUp size={14} style={{ opacity: 0.6 }} />
+                        <span>{stat.trend}</span>
                     </div>
-                    <div className="feature-card-footer">
-                      <div className={`status-pill ${config[module.id]?.enabled ? 'online' : 'offline'}`}>
-                        <div className="status-pulse"></div>
-                        {config[module.id]?.enabled ? t('common.active') : t('common.inactive')}
-                      </div>
-                      <ChevronRight size={16} className="footer-arrow" />
-                    </div>
-                  </div>
+                    <div className="metric-glow-v2" style={{ background: stat.color }}></div>
                 </div>
-              ))}
-            </div>
-          </section>
-
-          {/* Side Panel - Quick Navigation */}
-          <aside className="side-panel-p">
-            <div className="panel-card-p">
-              <div className="panel-header-p">
-                <Zap size={18} className="text-warning" />
-                <h3>{t('dashboard.quick_access')}</h3>
-              </div>
-              <div className="nav-list-p">
-                {[
-                  { label: t('sidebar.embeds'), path: 'embeds', icon: LayoutIcon },
-                  { label: t('sidebar.management'), path: 'global', icon: Settings2 },
-                  { label: t('sidebar.audit'), path: 'audit', icon: Activity },
-                  { label: t('sidebar.analytics'), path: 'analytics', icon: TrendingUp }
-                ].map(nav => (
-                  <button key={nav.path} onClick={() => router.push(`/config/${guildId}/${nav.path}`)} className="nav-btn-p">
-                    <div className="nav-btn-icon">
-                      <nav.icon size={18} />
-                    </div>
-                    <span>{nav.label}</span>
-                    <ChevronRight size={14} className="nav-btn-arrow" />
-                  </button>
-                ))}
-              </div>
-              
-              <div className="panel-divider-p"></div>
-              
-              <button className="danger-zone-btn" onClick={() => { if(confirm(t('dashboard.reset_confirm'))) alert('Inviato!'); }}>
-                <RefreshCcw size={16} />
-                <span>{t('dashboard.factory_reset')}</span>
-              </button>
-            </div>
-          </aside>
+            ))}
         </div>
-      </div>
 
-      <style jsx>{`
-        .dashboard-wrapper-p {
-          position: relative;
-          min-height: 100vh;
-          padding: 40px;
-          color: var(--text-main);
-          overflow: hidden;
-        }
+        {/* V2 Workspace Layout */}
+        <div className="pc-workspace-v2">
+            <main className="pc-main-deck-v2">
+                <div className="deck-header-v2">
+                    <div className="title-group-v2">
+                        <Box size={22} color="var(--primary)" />
+                        <h3>Moduli Operativi</h3>
+                    </div>
+                    <div className="deck-stats-v2">
+                        <span>{activeModulesCount} ATTIVI</span>
+                        <div className="progress-bar-v2"><div className="fill" style={{ width: `${(activeModulesCount / 9) * 100}%` }}></div></div>
+                    </div>
+                </div>
 
-        /* Glow Blobs */
-        .glow-blob {
-          position: absolute;
-          width: 600px;
-          height: 600px;
-          background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
-          filter: blur(80px);
-          z-index: -1;
-          opacity: 0.4;
-          pointer-events: none;
-        }
-        .blob-1 { top: -200px; right: -100px; }
-        .blob-2 { bottom: -200px; left: -100px; background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 70%); }
+                <div className="pc-module-grid-v2">
+                    {[
+                        { id: 'whitelist', label: 'Whitelist', icon: ShieldCheck, color: '#6366f1', path: 'whitelist', desc: 'Gestione accessi e selezioni.' },
+                        { id: 'tickets', label: 'Ticket System', icon: Ticket, color: '#8b5cf6', path: 'tickets', desc: 'Assistenza e supporto utenti.' },
+                        { id: 'reactionRoles', label: 'Ruoli a Reazione', icon: MousePointer2, color: '#10b981', path: 'reaction-roles', desc: 'Auto-assegnazione ruoli.' },
+                        { id: 'polls', label: 'Poll Studio', icon: ListChecks, color: '#f59e0b', path: 'polls', desc: 'Creazione sondaggi avanzati.' },
+                        { id: 'verify', label: 'Security Center', icon: Shield, color: '#06b6d4', path: 'verify', desc: 'Protezione bot e verifica.' },
+                        { id: 'photocontest', label: 'Photo Contest', icon: Camera, color: '#ec4899', path: 'photocontest', desc: 'Competizioni fotografiche.' },
+                        { id: 'support', label: 'Assistenza Vocale', icon: Mic2, color: '#f43f5e', path: 'support', desc: 'Canali di supporto SOS.' },
+                        { id: 'fivem', label: 'FiveM Bridge', icon: Globe, color: '#14b8a6', path: 'fivem', desc: 'Integrazione server live.' },
+                        { id: 'welcome', label: 'Welcome Hub', icon: UserPlus, color: '#6366f1', path: 'welcome', desc: 'Benvenuto e autoruoli.' }
+                    ].map(module => {
+                        const isEnabled = config?.[module.id]?.enabled;
+                        return (
+                            <div key={module.id} className={`pc-module-studio-card-v2 ${isEnabled ? 'on' : 'off'}`}>
+                                <div className="card-top-v2">
+                                    <div className="module-icon-v2" style={{ color: module.color }}>
+                                        <module.icon size={26} />
+                                    </div>
+                                    <label className="pc-toggle-v2 mini">
+                                        <input type="checkbox" checked={isEnabled} onChange={() => toggleModule(module.id, isEnabled)} disabled={updating === module.id} />
+                                        <span className="pc-slider-v2"></span>
+                                    </label>
+                                </div>
+                                <div className="card-body-v2" onClick={() => router.push(`/config/${guildId}/${module.path}`)}>
+                                    <h4>{module.label}</h4>
+                                    <p>{module.desc}</p>
+                                </div>
+                                <div className="card-footer-v2">
+                                    <div className="status-indicator-v2">
+                                        <div className="status-pill-v2">{isEnabled ? 'ONLINE' : 'OFFLINE'}</div>
+                                    </div>
+                                    <button className="pc-btn-enter-v2" onClick={() => router.push(`/config/${guildId}/${module.path}`)}>
+                                        <ChevronRight size={18} />
+                                    </button>
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </main>
 
-        .dashboard-content-main-p {
-          max-width: 1400px;
-          margin: 0 auto;
-        }
+            <aside className="pc-control-panel-v2">
+                <section className="pc-card-v2 side-panel-v2">
+                    <div className="panel-header-v2">
+                        <Command size={18} color="#6366f1" />
+                        <h4>Centro di Comando</h4>
+                    </div>
+                    <div className="panel-nav-v2">
+                        {[
+                            { label: 'Embed Designer', path: 'embeds', icon: LayoutTemplate, color: '#10b981', sub: 'Progetta messaggi' },
+                            { label: 'Automazioni', path: 'automations', icon: Cpu, color: '#f59e0b', sub: 'Auto-Clear & Broadcast' },
+                            { label: 'White Label', path: 'white-label', icon: Sparkles, color: '#6366f1', sub: 'Branding Personalizzato' },
+                            { label: 'Audit Registry', path: 'audit', icon: History, color: '#64748b', sub: 'Log delle attività' },
+                            { label: 'Global Settings', path: 'global', icon: Settings2, color: '#1e293b', sub: 'Configurazione base' }
+                        ].map(nav => (
+                            <button key={nav.path} onClick={() => router.push(`/config/${guildId}/${nav.path}`)} className="nav-btn-v2">
+                                <div className="nav-icon-v2" style={{ background: `${nav.color}10`, color: nav.color }}>
+                                    <nav.icon size={20} />
+                                </div>
+                                <div className="nav-text-v2">
+                                    <span className="main-v2">{nav.label}</span>
+                                    <span className="sub-v2">{nav.sub}</span>
+                                </div>
+                                <ChevronRight size={14} className="arrow-v2" />
+                            </button>
+                        ))}
+                    </div>
+                    
+                    <div className="panel-divider-v2"></div>
+                    
+                    <button className="pc-btn-danger-v2" onClick={() => confirm("ATTENZIONE: Questa azione ripristinerà TUTTI i moduli ai valori di fabbrica. Procedere?")}>
+                        <RefreshCcw size={16} />
+                        <span>Factory Reset</span>
+                    </button>
+                </section>
 
-        /* Hero Banner */
-        .top-split-container {
-          display: flex;
-          gap: 24px;
-          margin-bottom: 48px;
-        }
+                <div className="pc-help-banner-v2">
+                    <div className="help-icon-v2"><HelpCircle size={24} /></div>
+                    <div className="help-text-v2">
+                        <strong>Verix Academy</strong>
+                        <p>Impara a configurare al meglio il tuo server.</p>
+                        <button onClick={() => window.open('https://docs.verixbot.com', '_blank')}>Leggi Documentazione</button>
+                    </div>
+                </div>
+            </aside>
+        </div>
 
-        .hero-banner-p {
-          flex: 1;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          background: rgba(255, 255, 255, 0.03);
-          padding: 32px;
-          border-radius: 24px;
-          border: 1px solid var(--glass-border);
-          backdrop-filter: blur(10px);
-          box-shadow: 0 20px 50px rgba(0,0,0,0.1);
-        }
+        <style jsx>{`
+            .pc-premium-wrapper { padding: 40px; max-width: 1600px; margin: 0 auto; font-family: 'Inter', sans-serif; }
+            
+            /* Hero Studio V2 */
+            .pc-hero-studio-v2 { display: flex; justify-content: space-between; align-items: center; background: white; padding: 48px; border-radius: 40px; box-shadow: var(--shadow-premium); border: 1px solid var(--border-light); margin-bottom: 40px; }
+            .hero-visuals-v2 { display: flex; align-items: center; gap: 32px; }
+            .server-avatar-container-v2 { position: relative; width: 110px; height: 110px; }
+            .server-icon-v2 { width: 100%; height: 100%; border-radius: 32px; object-fit: cover; border: 4px solid white; box-shadow: 0 15px 35px rgba(0,0,0,0.1); }
+            .avatar-placeholder-v2 { width: 100%; height: 100%; border-radius: 32px; background: var(--primary); color: white; display: flex; alignItems: center; justifyContent: center; fontSize: 2.8rem; fontWeight: 900; }
+            .premium-crown-v2 { position: absolute; bottom: -8px; right: -8px; width: 36px; height: 36px; background: linear-gradient(135deg, #f59e0b, #fbbf24); color: white; border-radius: 50%; display: flex; alignItems: center; justifyContent: center; border: 4px solid white; box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4); }
+            
+            .hero-text-v2 h1 { font-family: 'Outfit'; font-size: 2.8rem; fontWeight: 950; margin: 0; color: #1e293b; letterSpacing: -1.5px; }
+            .user-name-v2 { background: linear-gradient(135deg, #6366f1 0%, #a78bfa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+            .hero-text-v2 p { margin: 8px 0 0 0; color: #64748b; font-size: 1.15rem; fontWeight: 600; }
+            .status-row-v2 { display: flex; gap: 12px; margin-bottom: 12px; }
+            .live-tag-v2 { font-size: 0.65rem; fontWeight: 950; color: #10b981; background: #ecfdf5; padding: 4px 14px; border-radius: 100px; display: flex; alignItems: center; gap: 8px; letterSpacing: 1px; }
+            .pulse-dot { width: 6px; height: 6px; border-radius: 50%; background: #10b981; animation: pulse 1.5s infinite; }
+            @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+            .tier-badge-v2 { font-size: 0.65rem; fontWeight: 950; padding: 4px 14px; border-radius: 100px; letterSpacing: 1px; }
+            .tier-badge-v2.premium { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
+            .tier-badge-v2.standard { background: #f1f5f9; color: #64748b; }
 
-        .hero-right {
-          flex: 0 0 auto;
-          min-width: 300px;
-          justify-content: center;
-        }
+            .hero-controls-v2 { display: flex; gap: 16px; }
+            .pc-btn-invite-v2 { background: var(--primary); color: white; border: none; padding: 16px 32px; border-radius: 20px; font-weight: 900; cursor: pointer; display: flex; alignItems: center; gap: 12px; transition: 0.3s; box-shadow: 0 10px 25px rgba(99, 102, 241, 0.25); }
+            .pc-btn-invite-v2:hover { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(99, 102, 241, 0.35); }
+            .pc-btn-refresh-v2 { width: 56px; height: 56px; border-radius: 20px; border: 1.5px solid #e2e8f0; background: white; color: #64748b; cursor: pointer; display: flex; alignItems: center; justifyContent: center; transition: 0.2s; }
+            .pc-btn-refresh-v2:hover { border-color: var(--primary); color: var(--primary); background: #f5f3ff; }
 
-        .hero-info-p { display: flex; align-items: center; gap: 28px; }
-        .hero-title { font-size: 2.5rem; font-weight: 800; margin: 0; color: var(--text-main); }
-        .hero-subtitle { font-size: 1.1rem; color: var(--text-muted); margin: 0; font-weight: 500; }
-        .server-label { color: var(--primary); font-weight: 700; opacity: 1; }
-        
-        .server-avatar-container {
-          position: relative;
-          width: 80px;
-          height: 80px;
-        }
-        .server-avatar-glow {
-          width: 100%;
-          height: 100%;
-          border-radius: 20px;
-          object-fit: cover;
-          box-shadow: 0 10px 30px var(--primary-glow);
-          border: 2px solid var(--border-strong);
-        }
-        .server-avatar-placeholder {
-          width: 100%;
-          height: 100%;
-          border-radius: 20px;
-          background: var(--primary);
-          color: white;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 2rem;
-          font-weight: 800;
-        }
-        .premium-badge-mini {
-          position: absolute;
-          bottom: -5px;
-          right: -5px;
-          width: 24px;
-          height: 24px;
-          background: var(--warning);
-          color: black;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border: 2px solid var(--bg-card);
-          box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-        }
+            /* Metrics V2 */
+            .pc-metric-grid-v2 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; margin-bottom: 48px; }
+            .pc-metric-card-v2 { background: white; border-radius: 32px; padding: 32px; border: 1.5px solid var(--border-light); position: relative; overflow: hidden; transition: 0.3s; box-shadow: 0 8px 30px rgba(0,0,0,0.02); }
+            .pc-metric-card-v2:hover { transform: translateY(-5px); box-shadow: 0 20px 50px rgba(0,0,0,0.05); }
+            .metric-header-v2 { display: flex; gap: 24px; align-items: center; margin-bottom: 24px; }
+            .metric-icon-v2 { width: 64px; height: 64px; border-radius: 20px; display: flex; alignItems: center; justifyContent: center; }
+            .metric-value-v2 { display: flex; flexDirection: column; }
+            .count-v2 { font-size: 2.2rem; fontWeight: 950; color: #1e293b; lineHeight: 1; letterSpacing: -1px; }
+            .label-v2 { font-size: 0.85rem; fontWeight: 800; color: #94a3b8; textTransform: uppercase; marginTop: 4px; letterSpacing: 0.5px; }
+            .metric-footer-v2 { display: flex; alignItems: center; gap: 8px; font-size: 0.8rem; fontWeight: 700; color: #64748b; border-top: 1.5px dashed #f1f5f9; padding-top: 16px; }
+            .metric-glow-v2 { position: absolute; bottom: 0; left: 0; width: 100%; height: 4px; opacity: 0.1; }
 
-        .badge-setup {
-          background: var(--primary-glow);
-          color: var(--primary);
-          padding: 4px 12px;
-          border-radius: 100px;
-          font-size: 0.7rem;
-          font-weight: 800;
-          text-transform: uppercase;
-          letter-spacing: 1px;
-          width: fit-content;
-          margin-bottom: 12px;
-          border: 1px solid var(--primary);
-        }
-        .hero-title { font-size: 2.2rem; font-weight: 900; line-height: 1.1; margin-bottom: 8px; }
-        .text-gradient { background: linear-gradient(135deg, var(--primary) 0%, #a78bfa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .hero-subtitle { color: var(--text-dim); font-size: 1rem; }
+            /* Workspace V2 */
+            .pc-workspace-v2 { display: grid; grid-template-columns: 1fr 380px; gap: 48px; }
+            .deck-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+            .title-group-v2 { display: flex; alignItems: center; gap: 12px; }
+            .title-group-v2 h3 { margin: 0; font-family: 'Outfit'; font-size: 1.4rem; fontWeight: 950; color: #1e293b; }
+            .deck-stats-v2 { display: flex; alignItems: center; gap: 20px; }
+            .deck-stats-v2 span { font-size: 0.75rem; fontWeight: 900; color: #94a3b8; letterSpacing: 1px; }
+            .progress-bar-v2 { width: 120px; height: 8px; background: #f1f5f9; border-radius: 100px; overflow: hidden; }
+            .progress-bar-v2 .fill { height: 100%; background: var(--primary); border-radius: 100px; transition: 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
 
-        .btn-glass-p {
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid var(--border-strong);
-          color: var(--text-main);
-          padding: 12px 24px;
-          border-radius: 14px;
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          font-weight: 700;
-          cursor: pointer;
-          transition: 0.3s;
-          backdrop-filter: blur(5px);
-        }
-        .btn-glass-p:hover { background: rgba(255, 255, 255, 0.1); border-color: var(--primary); transform: translateY(-2px); }
+            /* Module Studio Cards V2 */
+            .pc-module-grid-v2 { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; }
+            .pc-module-studio-card-v2 { background: white; border-radius: 32px; padding: 32px; border: 1.5px solid var(--border-light); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; }
+            .pc-module-studio-card-v2:hover { transform: translateY(-8px); box-shadow: 0 15px 40px rgba(0,0,0,0.06); border-color: #cbd5e1; }
+            .pc-module-studio-card-v2.on { border-color: #e0e7ff; background: linear-gradient(135deg, #ffffff 0%, #f9faff 100%); }
+            
+            .card-top-v2 { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
+            .card-body-v2 { cursor: pointer; }
+            .card-body-v2 h4 { margin: 0 0 10px 0; font-size: 1.25rem; fontWeight: 950; color: #1e293b; }
+            .card-body-v2 p { margin: 0; font-size: 0.95rem; color: #64748b; lineHeight: 1.5; fontWeight: 650; }
+            
+            .card-footer-v2 { display: flex; justify-content: space-between; align-items: center; margin-top: 28px; padding-top: 20px; border-top: 1.5px solid #f1f5f9; }
+            .status-pill-v2 { font-size: 0.65rem; fontWeight: 950; padding: 4px 12px; border-radius: 100px; background: #f8fafc; color: #94a3b8; border: 1px solid #e2e8f0; }
+            .on .status-pill-v2 { background: #ecfdf5; color: #10b981; border-color: #d1fae5; }
+            
+            .pc-btn-enter-v2 { width: 44px; height: 44px; border-radius: 14px; background: #f8fafc; color: #cbd5e1; border: none; cursor: pointer; display: flex; alignItems: center; justifyContent: center; transition: 0.2s; }
+            .on .pc-btn-enter-v2 { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2); }
+            .pc-module-studio-card-v2:hover .pc-btn-enter-v2 { transform: translateX(4px); }
 
-        /* Stats Grid */
-        .stats-glass-grid {
-          display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 24px;
-          margin-bottom: 48px;
-        }
-        .stat-glass-card {
-          background: rgba(255, 255, 255, 0.03);
-          border: 1px solid var(--glass-border);
-          padding: 24px;
-          border-radius: 20px;
-          display: flex;
-          align-items: center;
-          gap: 20px;
-          position: relative;
-          overflow: hidden;
-          backdrop-filter: blur(10px);
-          transition: 0.3s;
-        }
-        .stat-glass-card:hover { transform: translateY(-5px); border-color: var(--border-strong); background: rgba(255, 255, 255, 0.05); }
-        .stat-glass-icon {
-          width: 54px;
-          height: 54px;
-          border-radius: 16px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: var(--bg-inset);
-          color: var(--text-dim);
-          transition: 0.3s;
-        }
-        .stat-glass-card.indigo .stat-glass-icon { color: var(--primary); background: var(--primary-glow); }
-        .stat-glass-card.amber .stat-glass-icon { color: var(--warning); background: rgba(245, 158, 11, 0.1); }
-        .stat-glass-card.success .stat-glass-icon { color: var(--success); background: rgba(16, 185, 129, 0.1); }
-        
-        .stat-glass-info h3 { font-size: 1.8rem; font-weight: 800; margin-bottom: 2px; }
-        .stat-glass-info p { font-size: 0.8rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+            /* Side Panel V2 */
+            .side-panel-v2 { padding: 32px; border-radius: 40px; }
+            .panel-header-v2 { display: flex; alignItems: center; gap: 12px; margin-bottom: 28px; }
+            .panel-header-v2 h4 { margin: 0; font-family: 'Outfit'; font-size: 1.25rem; fontWeight: 950; color: #1e293b; }
+            
+            .panel-nav-v2 { display: flex; flexDirection: column; gap: 10px; }
+            .nav-btn-v2 { display: flex; alignItems: center; gap: 16px; padding: 14px; background: #f8fafc; border: 1.5px solid transparent; border-radius: 20px; cursor: pointer; transition: 0.3s; text-align: left; }
+            .nav-btn-v2:hover { background: white; border-color: #e2e8f0; transform: translateX(8px); box-shadow: 0 10px 25px rgba(0,0,0,0.03); }
+            .nav-icon-v2 { width: 48px; height: 48px; border-radius: 16px; display: flex; alignItems: center; justifyContent: center; flex-shrink: 0; }
+            .nav-text-v2 { display: flex; flexDirection: column; gap: 2px; }
+            .main-v2 { font-weight: 900; font-size: 0.95rem; color: #1e293b; }
+            .sub-v2 { font-size: 0.75rem; font-weight: 750; color: #94a3b8; }
+            .arrow-v2 { margin-left: auto; color: #cbd5e1; transition: 0.2s; }
+            .nav-btn-v2:hover .arrow-v2 { color: var(--primary); transform: translateX(2px); }
 
-        .stat-sparkline { position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; }
-        .stat-sparkline.indigo { background: linear-gradient(90deg, transparent, var(--primary)); }
-        .stat-sparkline.amber { background: linear-gradient(90deg, transparent, var(--warning)); }
-        .stat-sparkline.success { background: linear-gradient(90deg, transparent, var(--success)); }
+            .panel-divider-v2 { height: 1.5px; background: #f1f5f9; margin: 28px 0; }
+            .pc-btn-danger-v2 { width: 100%; display: flex; alignItems: center; justifyContent: center; gap: 12px; padding: 16px; background: #fff1f2; color: #ef4444; border: 1.5px solid #fee2e2; border-radius: 18px; font-weight: 900; font-size: 0.9rem; cursor: pointer; transition: 0.2s; }
+            .pc-btn-danger-v2:hover { background: #ef4444; color: white; border-color: #ef4444; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(239, 68, 68, 0.2); }
 
-        /* Main Grid */
-        .main-grid-p { display: grid; grid-template-columns: 1fr 340px; gap: 40px; }
+            .pc-help-banner-v2 { margin-top: 40px; padding: 32px; background: #f0f9ff; border: 1.5px solid #e0f2fe; border-radius: 32px; display: flex; gap: 20px; }
+            .help-icon-v2 { width: 52px; height: 52px; background: white; color: #0ea5e9; border-radius: 16px; display: flex; alignItems: center; justifyContent: center; box-shadow: 0 4px 15px rgba(14, 165, 233, 0.1); flex-shrink: 0; }
+            .help-text-v2 strong { display: block; font-size: 1.1rem; fontWeight: 950; color: #0369a1; margin-bottom: 6px; }
+            .help-text-v2 p { margin: 0 0 16px 0; font-size: 0.9rem; fontWeight: 700; color: #0ea5e9; lineHeight: 1.5; }
+            .help-text-v2 button { background: #0ea5e9; color: white; border: none; padding: 10px 20px; border-radius: 12px; font-weight: 900; font-size: 0.85rem; cursor: pointer; transition: 0.2s; }
+            .help-text-v2 button:hover { background: #0369a1; transform: translateY(-2px); }
 
-        .grid-header-p { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 24px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
-        .grid-title-p { display: flex; align-items: center; gap: 12px; }
-        .grid-title-p h2 { font-size: 1.1rem; color: var(--text-main); }
-        .grid-count-p { font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; }
+            /* Common V2 Toggles */
+            .pc-toggle-v2 { position: relative; width: 44px; height: 22px; }
+            .pc-toggle-v2 input { opacity: 0; width: 0; height: 0; }
+            .pc-slider-v2 { position: absolute; cursor: pointer; inset: 0; background: #cbd5e1; transition: .4s; border-radius: 34px; }
+            .pc-slider-v2:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background: white; transition: .4s; border-radius: 50%; }
+            input:checked + .pc-slider-v2 { background: var(--primary); }
+            input:checked + .pc-slider-v2:before { transform: translateX(22px); }
 
-        /* Feature Cards Grid */
-        .features-grid-p {
-          display: grid;
-          grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-          gap: 20px;
-        }
-        .feature-glass-card {
-          background: rgba(255, 255, 255, 0.02);
-          border: 1px solid var(--glass-border);
-          border-radius: 22px;
-          position: relative;
-          transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-          backdrop-filter: blur(8px);
-        }
-        .feature-glass-card:hover { transform: scale(1.03); border-color: var(--primary); background: rgba(255, 255, 255, 0.04); box-shadow: 0 15px 40px rgba(0,0,0,0.2); }
-        .feature-glass-card.enabled { border-color: rgba(99, 102, 241, 0.3); }
-        
-        .feature-card-inner { padding: 24px; height: 100%; display: flex; flex-direction: column; }
-        
-        .feature-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
-        .feature-icon-box {
-          width: 50px;
-          height: 50px;
-          border-radius: 14px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: var(--bg-inset);
-          color: var(--module-color);
-          box-shadow: inset 0 2px 10px rgba(0,0,0,0.2);
-          position: relative;
-        }
-        .feature-icon-box::after {
-          content: ''; position: absolute; inset: -4px; border-radius: 18px; border: 2px solid var(--module-color); opacity: 0.1;
-        }
-        
-        .feature-card-content { flex: 1; cursor: pointer; }
-        .feature-card-content h3 { font-size: 1.1rem; font-weight: 800; margin-bottom: 8px; }
-        .feature-card-content p { font-size: 0.85rem; color: var(--text-dim); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+            .spin { animation: spin 1s linear infinite; }
+            @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        .feature-card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border); }
-        .status-pill { display: flex; align-items: center; gap: 8px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; padding: 4px 10px; border-radius: 100px; }
-        .status-pill.online { color: var(--success); background: rgba(16, 185, 129, 0.1); }
-        .status-pill.offline { color: var(--text-muted); background: var(--bg-inset); }
-        
-        .status-pulse { width: 6px; height: 6px; border-radius: 50%; background: currentColor; position: relative; }
-        .online .status-pulse::after { content: ''; position: absolute; inset: -2px; border-radius: 50%; background: currentColor; animation: pulse 2s infinite; }
-        
-        @keyframes pulse { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(3); opacity: 0; } }
-        
-        .footer-arrow { opacity: 0; transition: 0.3s; color: var(--primary); }
-        .feature-glass-card:hover .footer-arrow { opacity: 1; transform: translateX(5px); }
+            .animate { animation: slideUp 0.4s ease-out; }
+            @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Toggles */
-        .toggle-premium { position: relative; width: 44px; height: 22px; }
-        .toggle-premium input { opacity: 0; width: 0; height: 0; }
-        .slider-premium { position: absolute; cursor: pointer; inset: 0; background: var(--bg-inset); border: 1px solid var(--border); transition: 0.3s; border-radius: 34px; }
-        .slider-premium:before { position: absolute; content: ""; height: 14px; width: 14px; left: 4px; bottom: 3px; background: var(--text-muted); transition: 0.3s; border-radius: 50%; }
-        input:checked + .slider-premium { background: var(--primary); border-color: var(--primary); }
-        input:checked + .slider-premium:before { transform: translateX(22px); background: white; }
-
-        /* Side Panel */
-        .panel-card-p { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--glass-border); border-radius: 24px; padding: 28px; backdrop-filter: blur(10px); position: sticky; top: 40px; }
-        .panel-header-p { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
-        .panel-header-p h3 { font-size: 1rem; color: var(--text-main); }
-        
-        .nav-list-p { display: flex; flex-direction: column; gap: 10px; }
-        .nav-btn-p { 
-          display: flex; align-items: center; gap: 14px; padding: 14px; background: var(--bg-inset); border: 1px solid transparent; border-radius: 16px; color: var(--text-dim); font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: 0.3s; text-align: left;
-        }
-        .nav-btn-icon { width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.03); }
-        .nav-btn-p:hover { background: rgba(255,255,255,0.06); color: var(--text-main); border-color: var(--border-strong); transform: translateX(8px); }
-        .nav-btn-p:hover .nav-btn-icon { background: var(--primary-glow); color: var(--primary); }
-        .nav-btn-arrow { margin-left: auto; opacity: 0; transition: 0.3s; }
-        .nav-btn-p:hover .nav-btn-arrow { opacity: 1; transform: translateX(4px); }
-
-        .panel-divider-p { height: 1px; background: var(--border); margin: 24px 0; }
-        
-        .danger-zone-btn {
-          width: 100%; display: flex; align-items: center; justify-content: center; gap: 12px; padding: 16px; background: rgba(239, 68, 68, 0.05); color: var(--error); border: 1px solid rgba(239, 68, 68, 0.1); border-radius: 16px; font-weight: 800; font-size: 0.85rem; cursor: pointer; transition: 0.3s;
-        }
-        .danger-zone-btn:hover { background: var(--error); color: white; box-shadow: 0 10px 20px rgba(239, 68, 68, 0.2); }
-
-        .pulse-primary { animation: pulse-shadow 2s infinite; }
-        @keyframes pulse-shadow {
-          0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
-          70% { box-shadow: 0 0 0 15px rgba(99, 102, 241, 0); }
-          100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
-        }
-
-        .spin { animation: spin 1s linear infinite; }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-        @media (max-width: 1100px) {
-          .main-grid-p { grid-template-columns: 1fr; }
-          .side-panel-p { position: static; width: 100%; }
-          .stats-glass-grid { grid-template-columns: 1fr 1fr; }
-        }
-        @media (max-width: 768px) {
-          .dashboard-wrapper-p { padding: 20px; }
-          .hero-banner-p { flex-direction: column; text-align: center; gap: 24px; }
-          .hero-info-p { flex-direction: column; }
-          .stats-glass-grid { grid-template-columns: 1fr; }
-          .hero-title { font-size: 1.8rem; }
-        }
-      `}</style>
+            :global(.light-theme) .pc-hero-studio-v2, :global(.light-theme) .pc-metric-card-v2, :global(.light-theme) .pc-module-studio-card-v2, :global(.light-theme) .pc-card-v2, :global(.light-theme) .nav-btn-v2 { background: #ffffff !important; box-shadow: 0 8px 30px rgba(0,0,0,0.04) !important; }
+        `}</style>
     </div>
   );
 }

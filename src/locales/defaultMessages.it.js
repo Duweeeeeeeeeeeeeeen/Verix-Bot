@@ -776,6 +776,16 @@ export default {
             timeWindow: 10000,
             action: 'notify',
         },
+        ghost_ping: {
+            title: '👻 Ghost Ping Rilevato',
+            description: 'L\'utente **{user}** ha rimosso un messaggio contenente una menzione.\n\n**CANALE:** {channel}\n**CONTENUTO:**\n>>> {content}',
+            color: '#ff9900'
+        },
+        anti_raid: {
+            title: '🚨 Allarme Anti-Raid',
+            description: 'Rilevato un afflusso anomalo di nuovi cittadini!\n\n**DETTAGLI:** {details}\n**STATO:** {status}\n**AZIONE:** {action}',
+            color: '#ff0000'
+        },
         warn: {
             title: '🛡️ Protocollo di Richiamo',
             description: 'Attenzione **{user}**, hai ricevuto un richiamo ufficiale per violazione dei codici civili.\n\n**MOTIVAZIONE:**\n>>> {reason}',
@@ -787,12 +797,12 @@ export default {
             description: 'Il cittadino **{user}** è stato messo in isolamento temporaneo per **{duration}**.\n\n**MOTIVAZIONE:**\n>>> {reason}',
             color: '#e67e22'
         },
-        dm_kick: {
+        kick: {
             title: '👢 Espulsione Coatta',
             description: 'Sei stato allontanato dalla città per gravi mancanze verso i protocolli cittadini.\n\n**MOTIVAZIONE:**\n>>> {reason}',
             color: '#e74c3c'
         },
-        dm_ban: {
+        ban: {
             title: '🚫 Esilio Definitivo',
             description: 'Il tuo visto per risiedere in città è stato revocato permanentemente. L\'accesso ti è ora precluso.\n\n**MOTIVAZIONE:**\n>>> {reason}',
             color: '#000000'
