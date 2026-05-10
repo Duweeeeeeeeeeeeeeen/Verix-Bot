@@ -222,7 +222,7 @@ export default function Selector() {
             </div>
         </div>
 
-        <style jsx>{`
+        <style jsx global>{`
             .pc-selector-wrapper { min-height: 100vh; padding: 40px; background: var(--bg-main); font-family: 'Inter', sans-serif; }
             
             /* Header */
