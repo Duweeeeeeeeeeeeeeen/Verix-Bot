@@ -10,7 +10,7 @@ import {
     Trash, Search, Settings, ShieldCheck, Lock, ChevronRight, ArrowRight, Info, AlertCircle, 
     Layout, Terminal, ShieldX, Activity, Eye, EyeOff, Globe, Layers, Palette, Users, 
     MessageCircle, Hash, Box, Filter, Sparkles, Star, MousePointer2, ShieldQuestion,
-    VolumeX, UserMinus, ShieldEllipsis, Network, Timer, Gauge, ShieldHalf, RefreshCw
+    VolumeX, UserMinus, Network, Timer, Gauge, ShieldHalf, RefreshCw
 } from 'lucide-react';
 import { mergeConfig } from '../../../utils/defaults';
 import Head from 'next/head';
@@ -332,14 +332,14 @@ export default function ModerationConfig() {
                         <div className="card-header-v2">
                             <div className="header-icon"><Gavel size={18} /></div>
                             <h3 style={{ margin: 0, flex: 1 }}>{t('mod.punish_hierarchy')}</h3>
-                            <button className="pc-btn-primary" onClick={addPunishment}><Plus size={18} /> <span>{t('mod.add_step')}</span></button>
+                            <button className="pc-btn-primary" onClick={addPunishment}><Shield size={18} /> <span>{t('mod.add_step')}</span></button>
                         </div>
                         <div className="card-body-v2">
                             <div className="v-stack" style={{ gap: '16px' }}>
                                 {(config.punishments || []).map((p, idx) => (
                                     <div key={idx} className="pc-sub-card-v2 animate slide-up">
                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                                            <span style={{ fontWeight: 800, fontSize: '0.8rem', color: 'var(--text-muted)' }}>LEVEL {p.level}</span>
+                                            <span style={{ fontWeight: 700, fontSize: '0.8rem', color: 'var(--text-muted)' }}>LEVEL {p.level}</span>
                                             <button onClick={() => removePunishment(idx)} className="pc-btn-icon-danger-v2"><Trash2 size={18} /></button>
                                         </div>
                                         <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
@@ -418,38 +418,39 @@ export default function ModerationConfig() {
             
             .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-card); padding: 24px; border-radius: 28px; box-shadow: var(--shadow-premium); border: 1px solid var(--border); }
             .header-info { display: flex; align-items: center; gap: 16px; }
-            .pc-icon-box { width: 52px; height: 52px; color: white; border-radius: 16px; display: flex; align-items: center; justify-content: center; }
-            .pc-title-row h1 { font-family: 'Inter'; font-size: 1.8rem; font-weight: 800; margin: 0; color: var(--text-heading); letter-spacing: -0.5px; }
+            .pc-icon-box { width: 52px; height: 52px; color: #fff; border-radius: 16px; display: flex; align-items: center; justify-content: center; }
+            .pc-title-row h1 { font-family: 'Inter'; font-size: 1.8rem; font-weight: 700; margin: 0; color: var(--text-heading); letter-spacing: normal; }
             
-            .pc-status-tag-v2 { display: flex; align-items: center; gap: 6px; font-size: 0.6rem; font-weight: 800; padding: 4px 10px; border-radius: 100px; }
-            .pc-status-tag-v2.on { background: rgba(79, 70, 229, 0.1); color: #4f46e5; }
-            .pc-status-tag-v2.off { background: var(--bg-badge); color: var(--text-muted); }
+            .pc-status-tag-v2 { display: flex; align-items: center; gap: 6px; font-size: 0.6rem; font-weight: 700; padding: 4px 10px; border-radius: 100px; }
+            .pc-status-tag-v2.on { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+            .pc-status-tag-v2.off { background: var(--bg-badge); color: #ef4444; }
             .status-dot-v2 { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
 
-            .pc-btn-primary { background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 14px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
+            .pc-btn-primary { background: var(--primary); color: #fff; border: none; padding: 12px 24px; border-radius: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
             .pc-btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(var(--primary-rgb), 0.2); }
 
             .pc-tabs-v2 { display: flex; gap: 6px; background: var(--bg-badge); padding: 5px; border-radius: 16px; width: fit-content; overflow-x: auto; max-width: 100%; }
-            .pc-tabs-v2 button { display: flex; align-items: center; gap: 10px; padding: 10px 24px; border: none; background: transparent; color: var(--text-muted); font-weight: 800; font-size: 0.9rem; border-radius: 14px; cursor: pointer; transition: 0.2s; white-space: nowrap; }
+            .pc-tabs-v2 button { display: flex; align-items: center; gap: 10px; padding: 10px 24px; border: none; background: transparent; color: var(--text-muted); font-weight: 700; font-size: 0.9rem; border-radius: 14px; cursor: pointer; transition: 0.2s; white-space: nowrap; }
             .pc-tabs-v2 button.active { background: var(--bg-card); color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
 
             .pc-card-v2 { background: var(--bg-card); border: 1px solid var(--border); border-radius: 28px; padding: 32px; box-shadow: var(--shadow-premium); }
             .card-header-v2 { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
-            .header-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: var(--bg-badge); }
-            .card-header-v2 h3 { margin: 0; font-family: 'Inter'; font-size: 1.3rem; font-weight: 800; color: var(--text-heading); }
+            .header-icon { width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: var(--bg-badge); }
+            .card-header-v2 h3 { margin: 0; font-family: 'Inter'; font-size: 1.3rem; font-weight: 700; color: var(--text-heading); }
 
             .pc-sub-card-v2 { background: var(--bg-badge); padding: 24px; border-radius: 20px; border: 1.5px solid var(--border); }
             .pc-btn-icon-danger-v2 { width: 36px; height: 36px; border-radius: 10px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
-            .pc-input-group-v2 label { font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; display: block; }
-            .pc-input-modern-v2 { width: 100%; background: var(--bg-card); border: 1.5px solid var(--border); border-radius: 14px; padding: 12px 16px; font-weight: 800; color: var(--text-heading); outline: none; }
+            .pc-input-group-v2 label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; display: block; }
+            .pc-input-modern-v2 { width: 100%; background: var(--bg-badge); border: 1.5px solid var(--border); border-radius: 14px; padding: 12px 16px; font-weight: 700; color: var(--text-heading); outline: none; transition: 0.2s; }
+            .pc-input-modern-v2:focus { border-color: var(--primary); }
 
-            .pc-tag-v2 { display: flex; align-items: center; gap: 8px; background: var(--bg-badge); padding: 6px 12px; border-radius: 10px; border: 1.5px solid var(--border); font-size: 0.9rem; font-weight: 800; color: var(--text-heading); }
+            .pc-tag-v2 { display: flex; align-items: center; gap: 8px; background: var(--bg-badge); padding: 6px 12px; border-radius: 10px; border: 1.5px solid var(--border); font-size: 0.9rem; font-weight: 700; color: var(--text-heading); }
 
             .pc-toggle-v2 { position: relative; width: 44px; height: 22px; }
             .pc-toggle-v2 input { opacity: 0; width: 0; height: 0; }
-            .pc-slider-v2 { position: absolute; cursor: pointer; inset: 0; background: #cbd5e1; transition: .4s; border-radius: 34px; }
-            .pc-slider-v2:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background: white; transition: .4s; border-radius: 50%; }
+            .pc-slider-v2 { position: absolute; cursor: pointer; inset: 0; background: var(--border); transition: .4s; border-radius: 34px; }
+            .pc-slider-v2:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background: #fff; transition: .4s; border-radius: 50%; }
             input:checked + .pc-slider-v2 { background: var(--primary); }
             input:checked + .pc-slider-v2:before { transform: translateX(22px); }
 

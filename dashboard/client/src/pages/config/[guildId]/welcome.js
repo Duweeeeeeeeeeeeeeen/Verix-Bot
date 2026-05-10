@@ -169,7 +169,7 @@ export default function WelcomeConfig() {
                                 <div className="header-icon" style={{ background: '#f0fdf4', color: '#10b981' }}><UserPlus size={18} /></div>
                                 <div className="v-stack" style={{ flex: 1 }}>
                                     <h3 style={{ margin: 0 }}>Benvenuto New Members</h3>
-                                    <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 650 }}>Attivato all'ingresso di un utente.</span>
+                                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 650 }}>Attivato all'ingresso di un utente.</span>
                                 </div>
                                 <label className="pc-toggle-v2 mini">
                                     <input type="checkbox" checked={!!config.welcome?.enabled} onChange={e => updateMessageConfig('welcome', 'enabled', e.target.checked)} />
@@ -192,7 +192,7 @@ export default function WelcomeConfig() {
                                 <div className="header-icon" style={{ background: '#fef2f2', color: '#ef4444' }}><UserMinus size={18} /></div>
                                 <div className="v-stack" style={{ flex: 1 }}>
                                     <h3 style={{ margin: 0 }}>Messaggio di Addio</h3>
-                                    <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 650 }}>Attivato all'uscita di un utente.</span>
+                                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 650 }}>Attivato all'uscita di un utente.</span>
                                 </div>
                                 <label className="pc-toggle-v2 mini">
                                     <input type="checkbox" checked={!!config.leave?.enabled} onChange={e => updateMessageConfig('leave', 'enabled', e.target.checked)} />
@@ -204,8 +204,8 @@ export default function WelcomeConfig() {
                                     <label>Canale Pubblicazione</label>
                                     <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 0 || c.type === 5)} value={config.leave?.channelId || ''} onChange={v => updateMessageConfig('leave', 'channelId', v)} />
                                 </div>
-                                <div style={{ marginTop: '24px', background: '#f8fafc', padding: '16px', borderRadius: '14px', border: '1.5px solid #e2e8f0', textAlign: 'center' }}>
-                                    <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 800 }}>Il test automatico non è disponibile per l'addio.</span>
+                                <div style={{ marginTop: '24px', background: 'var(--bg-badge)', padding: '16px', borderRadius: '14px', border: '1.5px solid var(--border)', textAlign: 'center' }}>
+                                    <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)', fontWeight: 700 }}>Il test automatico non è disponibile per l'addio.</span>
                                 </div>
                             </div>
                         </section>
@@ -213,7 +213,7 @@ export default function WelcomeConfig() {
 
                     <section className="pc-card-v2">
                         <div className="card-header-v2">
-                            <div className="header-icon" style={{ background: '#f8fafc', color: '#475569' }}><Hash size={18} /></div>
+                            <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--text-muted)' }}><Hash size={18} /></div>
                             <h3 style={{ margin: 0 }}>Variabili Dinamiche</h3>
                         </div>
                         <div className="card-body-v2">
@@ -225,9 +225,9 @@ export default function WelcomeConfig() {
                                     { k: '{guild}', v: 'Nome di questo server' },
                                     { k: '{member_count}', v: 'Numero totale membri' }
                                 ].map(x => (
-                                    <div key={x.k} style={{ display: 'flex', alignItems: 'center', gap: '12px', background: '#f8fafc', padding: '16px 20px', borderRadius: '18px', border: '1.5px solid #e2e8f0' }}>
-                                        <code style={{ background: 'white', color: '#f43f5e', padding: '4px 10px', borderRadius: '10px', fontWeight: 900, border: '1px solid #e2e8f0', fontSize: '0.85rem' }}>{x.k}</code>
-                                        <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 750 }}>{x.v}</span>
+                                    <div key={x.k} style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--bg-badge)', padding: '16px 20px', borderRadius: '18px', border: '1.5px solid var(--border)' }}>
+                                        <code style={{ background: 'white', color: '#f43f5e', padding: '4px 10px', borderRadius: '10px', fontWeight: 700, border: '1px solid var(--border)', fontSize: '0.85rem' }}>{x.k}</code>
+                                        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 750 }}>{x.v}</span>
                                     </div>
                                 ))}
                             </div>
@@ -239,13 +239,13 @@ export default function WelcomeConfig() {
             {activeTab === 'personalization' && (
                 <div className="pc-card-v2 animate slide-up" style={{ padding: 0, overflow: 'hidden', minHeight: '750px' }}>
                     <div className="pc-studio-layout-v2" style={{ display: 'grid', gridTemplateColumns: '350px 1fr', height: '100%' }}>
-                        <aside style={{ background: '#f8fafc', borderRight: '1px solid #e2e8f0', padding: '40px 32px' }}>
-                            <div style={{ fontSize: '0.7rem', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.2px', marginBottom: '24px' }}>Editor Messaggi</div>
+                        <aside style={{ background: 'var(--bg-badge)', borderRight: '1px solid var(--border)', padding: '40px 32px' }}>
+                            <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '1.2px', marginBottom: '24px' }}>Editor Messaggi</div>
                             <div className="v-stack" style={{ gap: '12px' }}>
                                 <button 
                                     className={`pc-studio-tab-v2 ${activeEmbedKey === 'welcome' ? 'active' : ''}`}
                                     onClick={() => setActiveEmbedKey('welcome')}
-                                    style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '18px 24px', border: 'none', borderRadius: '20px', cursor: 'pointer', transition: '0.2s', background: activeEmbedKey === 'welcome' ? 'white' : 'transparent', color: activeEmbedKey === 'welcome' ? '#1e293b' : '#64748b', fontWeight: 900, textAlign: 'left', border: activeEmbedKey === 'welcome' ? '1.5px solid #e2e8f0' : '1.5px solid transparent', boxShadow: activeEmbedKey === 'welcome' ? '0 10px 20px rgba(0,0,0,0.04)' : 'none' }}
+                                    style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '18px 24px', border: 'none', borderRadius: '20px', cursor: 'pointer', transition: '0.2s', background: activeEmbedKey === 'welcome' ? 'white' : 'transparent', color: activeEmbedKey === 'welcome' ? 'var(--text-heading)' : 'var(--text-muted)', fontWeight: 700, textAlign: 'left', border: activeEmbedKey === 'welcome' ? '1.5px solid var(--border)' : '1.5px solid transparent', boxShadow: activeEmbedKey === 'welcome' ? '0 10px 20px rgba(0,0,0,0.04)' : 'none' }}
                                 >
                                     <div style={{ width: '36px', height: '36px', borderRadius: '12px', background: '#f0fdf4', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><UserPlus size={18} /></div>
                                     <span style={{ flex: 1 }}>Welcome Studio</span>
@@ -254,7 +254,7 @@ export default function WelcomeConfig() {
                                 <button 
                                     className={`pc-studio-tab-v2 ${activeEmbedKey === 'leave' ? 'active' : ''}`}
                                     onClick={() => setActiveEmbedKey('leave')}
-                                    style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '18px 24px', border: 'none', borderRadius: '20px', cursor: 'pointer', transition: '0.2s', background: activeEmbedKey === 'leave' ? 'white' : 'transparent', color: activeEmbedKey === 'leave' ? '#1e293b' : '#64748b', fontWeight: 900, textAlign: 'left', border: activeEmbedKey === 'leave' ? '1.5px solid #e2e8f0' : '1.5px solid transparent', boxShadow: activeEmbedKey === 'leave' ? '0 10px 20px rgba(0,0,0,0.04)' : 'none' }}
+                                    style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '18px 24px', border: 'none', borderRadius: '20px', cursor: 'pointer', transition: '0.2s', background: activeEmbedKey === 'leave' ? 'white' : 'transparent', color: activeEmbedKey === 'leave' ? 'var(--text-heading)' : 'var(--text-muted)', fontWeight: 700, textAlign: 'left', border: activeEmbedKey === 'leave' ? '1.5px solid var(--border)' : '1.5px solid transparent', boxShadow: activeEmbedKey === 'leave' ? '0 10px 20px rgba(0,0,0,0.04)' : 'none' }}
                                 >
                                     <div style={{ width: '36px', height: '36px', borderRadius: '12px', background: '#fef2f2', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><UserMinus size={18} /></div>
                                     <span style={{ flex: 1 }}>Leave Studio</span>
@@ -262,8 +262,8 @@ export default function WelcomeConfig() {
                                 </button>
                             </div>
                             
-                            <div style={{ marginTop: '40px', paddingTop: '40px', borderTop: '2px dashed #e2e8f0' }}>
-                                <button className="pc-btn-reset-v2" style={{ display: 'flex', alignItems: 'center', gap: '12px', background: '#fff1f2', color: '#ef4444', border: 'none', width: '100%', padding: '16px', borderRadius: '18px', fontWeight: 900, cursor: 'pointer', justifyContent: 'center', transition: '0.2s' }} onClick={() => {
+                            <div style={{ marginTop: '40px', paddingTop: '40px', borderTop: '2px dashed var(--border)' }}>
+                                <button className="pc-btn-reset-v2" style={{ display: 'flex', alignItems: 'center', gap: '12px', background: '#fff1f2', color: '#ef4444', border: 'none', width: '100%', padding: '16px', borderRadius: '18px', fontWeight: 700, cursor: 'pointer', justifyContent: 'center', transition: '0.2s' }} onClick={() => {
                                     if (window.confirm('Ripristinare i parametri di default?')) {
                                         const defaults = defaultMessagesMap[language] || defaultMessagesMap['it'];
                                         const fallback = defaults['welcome']?.[activeEmbedKey] || { title: 'Verix Welcome', description: 'Benvenuto!', color: '#6366f1' };
@@ -288,56 +288,54 @@ export default function WelcomeConfig() {
         </div>
 
         <style jsx>{`
-            .pc-premium-wrapper { padding: 40px; max-width: 1600px; margin: 0 auto; font-family: 'Inter', sans-serif; }
+            .pc-premium-wrapper { padding: 32px; max-width: 1500px; margin: 0 auto; font-family: 'Inter', sans-serif; }
             
             /* Header V2 */
-            .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; background: white; padding: 32px; border-radius: 32px; box-shadow: var(--shadow-premium); border: 1px solid var(--border-light); }
-            .header-info { display: flex; align-items: center; gap: 24px; }
-            .pc-icon-box { width: 64px; height: 64px; border-radius: 20px; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 12px 24px rgba(244, 63, 94, 0.25); }
+            .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-card); padding: 24px; border-radius: 28px; box-shadow: var(--shadow-premium); border: 1px solid var(--border); }
+            .header-info { display: flex; align-items: center; gap: 16px; }
+            .pc-icon-box { width: 52px; height: 52px; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: #fff; box-shadow: 0 12px 24px rgba(244, 63, 94, 0.25); }
             .pc-title-row { display: flex; flex-direction: column; gap: 6px; }
-            .pc-title-row h1 { font-family: 'Inter', sans-serif; font-size: 2.2rem; font-weight: 900; margin: 0; color: #1e293b; letter-spacing: -0.5px; }
+            .pc-title-row h1 { font-family: 'Inter', sans-serif; font-size: 1.8rem; font-weight: 700; margin: 0; color: var(--text-heading); letter-spacing: -0.03em; }
             
-            .pc-status-tag-v2 { display: flex; align-items: center; gap: 8px; font-size: 0.65rem; font-weight: 900; padding: 4px 12px; border-radius: 100px; letter-spacing: 0.5px; }
-            .pc-status-tag-v2.on { background: #ecfdf5; color: #10b981; }
-            .pc-status-tag-v2.off { background: #fef2f2; color: #ef4444; }
-            .status-dot-v2 { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+            .pc-status-tag-v2 { display: flex; align-items: center; gap: 6px; font-size: 0.6rem; font-weight: 700; padding: 4px 10px; border-radius: 100px; }
+            .pc-status-tag-v2.on { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+            .pc-status-tag-v2.off { background: var(--bg-badge); color: #ef4444; }
+            .status-dot-v2 { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
 
-            .pc-status-toggle-v2 { display: flex; align-items: center; gap: 10px; background: #f8fafc; color: #64748b; border: 1.5px solid #e2e8f0; padding: 12px 24px; border-radius: 16px; font-weight: 800; cursor: pointer; transition: 0.2s; }
-            .pc-status-toggle-v2.active { background: #fef2f2; color: #ef4444; border-color: #fecaca; }
-            .pc-btn-primary { background: var(--primary); color: white; border: none; padding: 14px 28px; border-radius: 16px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2); }
-            .pc-btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 15px 25px rgba(99, 102, 241, 0.3); }
+            .pc-status-toggle-v2 { display: flex; align-items: center; gap: 10px; background: var(--bg-badge); color: var(--text-muted); border: 1.5px solid var(--border); padding: 12px 24px; border-radius: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+            .pc-status-toggle-v2.active { background: rgba(16, 185, 129, 0.1); color: #10b981; border-color: #10b981; }
+            .pc-btn-primary { background: var(--primary); color: #fff; border: none; padding: 12px 24px; border-radius: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
+            .pc-btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(var(--primary-rgb), 0.2); }
 
             /* Tabs V2 */
-            .pc-tabs-v2 { display: flex; gap: 8px; background: #f1f5f9; padding: 6px; border-radius: 18px; width: fit-content; overflow-x: auto; max-width: 100%; }
-            .pc-tabs-v2 button { display: flex; align-items: center; gap: 10px; padding: 12px 24px; border: none; background: transparent; color: #64748b; font-weight: 800; font-size: 0.9rem; border-radius: 14px; cursor: pointer; transition: 0.2s; white-space: nowrap; }
-            .pc-tabs-v2 button.active { background: white; color: var(--primary); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+            .pc-tabs-v2 { display: flex; gap: 6px; background: var(--bg-badge); padding: 5px; border-radius: 18px; width: fit-content; }
+            .pc-tabs-v2 button { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border: none; background: transparent; color: var(--text-muted); font-weight: 700; font-size: 0.9rem; border-radius: 14px; cursor: pointer; transition: 0.2s; }
+            .pc-tabs-v2 button.active { background: var(--bg-card); color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
 
             /* Card V2 */
-            .pc-card-v2 { background: white; border: 1px solid var(--border-light); border-radius: 32px; padding: 32px; box-shadow: var(--shadow-premium); }
+            .pc-card-v2 { background: var(--bg-card); border: 1px solid var(--border); border-radius: 28px; padding: 32px; box-shadow: var(--shadow-premium); }
             .card-header-v2 { display: flex; align-items: center; gap: 16px; margin-bottom: 32px; }
-            .header-icon { width: 44px; height: 44px; background: #f5f3ff; color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-            .card-header-v2 h3 { margin: 0; font-family: 'Inter'; font-size: 1.25rem; font-weight: 900; color: #1e293b; }
+            .header-icon { width: 44px; height: 44px; background: var(--bg-badge); color: var(--primary); border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+            .card-header-v2 h3 { margin: 0; font-family: 'Inter'; font-size: 1.3rem; font-weight: 700; color: var(--text-heading); }
 
             /* Inputs V2 */
             .pc-input-group-v2 { display: flex; flex-direction: column; gap: 8px; }
-            .pc-input-group-v2 label { font-size: 0.7rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+            .pc-input-group-v2 label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; }
 
             /* Toggle V2 */
             .pc-toggle-v2 { position: relative; width: 44px; height: 22px; }
             .pc-toggle-v2 input { opacity: 0; width: 0; height: 0; }
-            .pc-slider-v2 { position: absolute; cursor: pointer; inset: 0; background: #cbd5e1; transition: .4s; border-radius: 34px; }
-            .pc-slider-v2:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background: white; transition: .4s; border-radius: 50%; }
+            .pc-slider-v2 { position: absolute; cursor: pointer; inset: 0; background: var(--bg-badge); transition: .4s; border-radius: 34px; }
+            .pc-slider-v2:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background: #fff; transition: .4s; border-radius: 50%; }
             input:checked + .pc-slider-v2 { background: var(--primary); }
             input:checked + .pc-slider-v2:before { transform: translateX(22px); }
 
-            .pc-btn-outline-v2 { background: #f8fafc; color: #64748b; border: 1.5px solid #e2e8f0; padding: 12px 24px; border-radius: 16px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
-            .pc-btn-outline-v2:hover:not(:disabled) { background: white; border-color: var(--primary); color: var(--primary); }
+            .pc-btn-outline-v2 { background: var(--bg-badge); color: var(--text-muted); border: 1.5px solid var(--border); padding: 12px 24px; border-radius: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
+            .pc-btn-outline-v2:hover:not(:disabled) { background: var(--bg-card); border-color: var(--primary); color: var(--primary); }
 
             .v-stack { display: flex; flex-direction: column; }
             .animate { animation: slideUp 0.4s ease-out; }
             @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-            :global(.light-theme) .pc-header-v2, :global(.light-theme) .pc-card-v2, :global(.light-theme) .pc-btn-outline-v2 { background: #ffffff !important; box-shadow: 0 8px 30px rgba(0,0,0,0.04) !important; }
         `}</style>
     </div>
   );

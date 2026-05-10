@@ -615,7 +615,7 @@ export default function SystemUpdates() {
                     margin: 0; 
                     font-size: 2.5rem; 
                     font-weight: 800;
-                    letter-spacing: -0.5px;
+                    letter-spacing: -0.01em;
                 }
                 
                 .title-group p { 
@@ -1051,3 +1051,4 @@ export default function SystemUpdates() {
         </Layout>
     );
 }
+

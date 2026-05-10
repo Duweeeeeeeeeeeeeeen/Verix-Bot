@@ -210,15 +210,15 @@ export default function VoiceConfig() {
                                 </div>
                                 <div className="pc-input-group-v2" style={{ marginTop: '24px' }}>
                                     <label>Cooldown Rifiuto (Ore)</label>
-                                    <div className="pc-input-wrapper-v2" style={{ display: 'flex', alignItems: 'center', background: '#f8fafc', border: '1.5px solid #e2e8f0', borderRadius: '16px' }}>
-                                        <Clock size={16} style={{ marginLeft: '16px', color: '#94a3b8' }} />
-                                        <input type="number" style={{ width: '100%', border: 'none', background: 'transparent', padding: '14px 16px', fontWeight: 800, outline: 'none' }} value={config.rejectionCooldown || 24} onChange={e => setNested('rejectionCooldown', parseInt(e.target.value))} />
+                                    <div className="pc-input-wrapper-v2" style={{ display: 'flex', alignItems: 'center', background: 'var(--bg-badge)', border: '1.5px solid var(--border)', borderRadius: '16px' }}>
+                                        <Clock size={16} style={{ marginLeft: '16px', color: 'var(--text-dim)' }} />
+                                        <input type="number" style={{ width: '100%', border: 'none', background: 'transparent', padding: '14px 16px', fontWeight: 700, outline: 'none' }} value={config.rejectionCooldown || 24} onChange={e => setNested('rejectionCooldown', parseInt(e.target.value))} />
                                     </div>
                                 </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '24px', background: '#f8fafc', padding: '20px', borderRadius: '24px', border: '1.5px solid #e2e8f0' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '24px', background: 'var(--bg-badge)', padding: '20px', borderRadius: '24px', border: '1.5px solid var(--border)' }}>
                                     <div className="v-stack">
-                                        <strong style={{ fontWeight: 900, color: '#1e293b', fontSize: '0.9rem' }}>Auto-Cleanup</strong>
-                                        <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 650 }}>Elimina canali inattivi.</span>
+                                        <strong style={{ fontWeight: 700, color: 'var(--text-heading)', fontSize: '0.9rem' }}>Auto-Cleanup</strong>
+                                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 650 }}>Elimina canali inattivi.</span>
                                     </div>
                                     <label className="pc-toggle-v2 mini">
                                         <input type="checkbox" checked={!!config.autoDelete} onChange={e => setNested('autoDelete', e.target.checked)} />
@@ -245,12 +245,12 @@ export default function VoiceConfig() {
                                     { key: 'deny', label: 'Rifiuto', icon: XCircle, color: '#ef4444' },
                                     { key: 'reset', label: 'Reset Stato', icon: RefreshCcw, color: '#6366f1' }
                                 ].map(btn => (
-                                    <div key={btn.key} className="pc-sub-card-v2" style={{ background: '#f8fafc', padding: '24px', borderRadius: '28px', border: '1.5px solid #e2e8f0' }}>
+                                    <div key={btn.key} className="pc-sub-card-v2" style={{ background: 'var(--bg-badge)', padding: '24px', borderRadius: '28px', border: '1.5px solid var(--border)' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
                                             <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', color: btn.color, boxShadow: '0 4px 10px rgba(0,0,0,0.05)' }}>
                                                 <btn.icon size={16} />
                                             </div>
-                                            <span style={{ fontWeight: 900, color: '#1e293b', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{btn.label}</span>
+                                            <span style={{ fontWeight: 700, color: 'var(--text-heading)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{btn.label}</span>
                                         </div>
                                         <div className="v-stack" style={{ gap: '16px' }}>
                                             <div className="pc-input-group-v2">
@@ -287,7 +287,7 @@ export default function VoiceConfig() {
                             <h3 style={{ margin: 0 }}>Design Canale Temporaneo</h3>
                         </div>
                         <div className="card-body-v2">
-                            <div className="pc-tabs-v2" style={{ marginBottom: '32px', background: '#f8fafc', padding: '6px' }}>
+                            <div className="pc-tabs-v2" style={{ marginBottom: '32px', background: 'var(--bg-badge)', padding: '6px' }}>
                                 {[
                                     { key: 'voice_waiting', label: 'In Attesa' },
                                     { key: 'voice_guide', label: 'Guida Staff' },
@@ -322,45 +322,46 @@ export default function VoiceConfig() {
         </div>
 
         <style jsx>{`
-            .pc-premium-wrapper { padding: 40px; max-width: 1600px; margin: 0 auto; font-family: 'Inter', sans-serif; }
+            .pc-premium-wrapper { padding: 32px; max-width: 1500px; margin: 0 auto; font-family: 'Inter', sans-serif; }
             
             /* Header V2 */
-            .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; background: white; padding: 32px; border-radius: 32px; box-shadow: var(--shadow-premium); border: 1px solid var(--border-light); }
-            .header-info { display: flex; align-items: center; gap: 24px; }
-            .pc-icon-box { width: 64px; height: 64px; border-radius: 20px; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 12px 24px rgba(6, 182, 212, 0.25); }
+            .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-card); padding: 24px; border-radius: 28px; box-shadow: var(--shadow-premium); border: 1px solid var(--border); }
+            .header-info { display: flex; align-items: center; gap: 16px; }
+            .pc-icon-box { width: 52px; height: 52px; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: #fff; }
             .pc-title-row { display: flex; flex-direction: column; gap: 6px; }
-            .pc-title-row h1 { font-family: 'Inter', sans-serif; font-size: 2.2rem; font-weight: 900; margin: 0; color: #1e293b; letter-spacing: -0.5px; }
+            .pc-title-row h1 { font-family: 'Inter', sans-serif; font-size: 1.8rem; font-weight: 700; margin: 0; color: var(--text-heading); letter-spacing: normal; }
             
-            .pc-status-tag-v2 { display: flex; align-items: center; gap: 8px; font-size: 0.65rem; font-weight: 900; padding: 4px 12px; border-radius: 100px; letter-spacing: 0.5px; }
-            .pc-status-tag-v2.on { background: #ecfeff; color: #0891b2; }
-            .pc-status-tag-v2.off { background: #fef2f2; color: #ef4444; }
-            .status-dot-v2 { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+            .pc-status-tag-v2 { display: flex; align-items: center; gap: 6px; font-size: 0.6rem; font-weight: 700; padding: 4px 10px; border-radius: 100px; }
+            .pc-status-tag-v2.on { background: rgba(6, 182, 212, 0.1); color: #0891b2; }
+            .pc-status-tag-v2.off { background: var(--bg-badge); color: #ef4444; }
+            .status-dot-v2 { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
 
-            .pc-status-toggle-v2 { display: flex; align-items: center; gap: 10px; background: #f8fafc; color: #64748b; border: 1.5px solid #e2e8f0; padding: 12px 24px; border-radius: 16px; font-weight: 800; cursor: pointer; transition: 0.2s; }
-            .pc-status-toggle-v2.active { background: #ecfeff; color: #0891b2; border-color: #a5f3fc; }
-            .pc-btn-primary { background: var(--primary); color: white; border: none; padding: 14px 28px; border-radius: 16px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2); }
-            .pc-btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 15px 25px rgba(99, 102, 241, 0.3); }
+            .pc-status-toggle-v2 { display: flex; align-items: center; gap: 10px; background: var(--bg-badge); color: var(--text-muted); border: 1.5px solid var(--border); padding: 12px 24px; border-radius: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+            .pc-status-toggle-v2.active { background: var(--bg-badge); color: #0891b2; border-color: var(--primary); }
+            .pc-btn-primary { background: var(--primary); color: #fff; border: none; padding: 12px 24px; border-radius: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
+            .pc-btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(var(--primary-rgb), 0.2); }
 
             /* Tabs V2 */
-            .pc-tabs-v2 { display: flex; gap: 8px; background: #f1f5f9; padding: 6px; border-radius: 18px; width: fit-content; overflow-x: auto; max-width: 100%; }
-            .pc-tabs-v2 button { display: flex; align-items: center; gap: 10px; padding: 12px 24px; border: none; background: transparent; color: #64748b; font-weight: 800; font-size: 0.9rem; border-radius: 14px; cursor: pointer; transition: 0.2s; white-space: nowrap; }
-            .pc-tabs-v2 button.active { background: white; color: var(--primary); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+            .pc-tabs-v2 { display: flex; gap: 6px; background: var(--bg-badge); padding: 5px; border-radius: 18px; width: fit-content; }
+            .pc-tabs-v2 button { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border: none; background: transparent; color: var(--text-muted); font-weight: 700; font-size: 0.9rem; border-radius: 14px; cursor: pointer; transition: 0.2s; }
+            .pc-tabs-v2 button.active { background: var(--bg-card); color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
 
             /* Card V2 */
-            .pc-card-v2 { background: white; border: 1px solid var(--border-light); border-radius: 32px; padding: 32px; box-shadow: var(--shadow-premium); }
+            .pc-card-v2 { background: var(--bg-card); border: 1px solid var(--border); border-radius: 28px; padding: 32px; box-shadow: var(--shadow-premium); }
             .card-header-v2 { display: flex; align-items: center; gap: 16px; margin-bottom: 32px; }
-            .header-icon { width: 44px; height: 44px; background: #f5f3ff; color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+            .header-icon { width: 44px; height: 44px; background: var(--bg-badge); color: var(--primary); border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 
             /* Inputs V2 */
             .pc-input-group-v2 { display: flex; flex-direction: column; gap: 8px; }
-            .pc-input-group-v2 label { font-size: 0.7rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
-            .pc-input-modern-v2 { width: 100%; background: white; border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 14px 16px; font-weight: 700; color: #1e293b; outline: none; }
+            .pc-input-group-v2 label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; }
+            .pc-input-modern-v2 { width: 100%; background: var(--bg-card); border: 1.5px solid var(--border); border-radius: 14px; padding: 12px 16px; font-weight: 700; color: var(--text-heading); outline: none; transition: 0.2s; }
+            .pc-input-modern-v2:focus { border-color: var(--primary); }
 
             /* Toggle V2 */
             .pc-toggle-v2 { position: relative; width: 44px; height: 22px; }
             .pc-toggle-v2 input { opacity: 0; width: 0; height: 0; }
-            .pc-slider-v2 { position: absolute; cursor: pointer; inset: 0; background: #cbd5e1; transition: .4s; border-radius: 34px; }
-            .pc-slider-v2:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background: white; transition: .4s; border-radius: 50%; }
+            .pc-slider-v2 { position: absolute; cursor: pointer; inset: 0; background: var(--border); transition: .4s; border-radius: 34px; }
+            .pc-slider-v2:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background: #fff; transition: .4s; border-radius: 50%; }
             input:checked + .pc-slider-v2 { background: var(--primary); }
             input:checked + .pc-slider-v2:before { transform: translateX(22px); }
 
@@ -368,7 +369,7 @@ export default function VoiceConfig() {
             .animate { animation: slideUp 0.4s ease-out; }
             @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-            :global(.light-theme) .pc-header-v2, :global(.light-theme) .pc-card-v2, :global(.light-theme) .pc-sub-card-v2 { background: #ffffff !important; box-shadow: 0 8px 30px rgba(0,0,0,0.04) !important; }
+            :global(.light-theme) .pc-header-v2, :global(.light-theme) .pc-card-v2, :global(.light-theme) .pc-sub-card-v2 { box-shadow: 0 8px 30px rgba(0,0,0,0.04) !important; }
         `}</style>
     </div>
   );

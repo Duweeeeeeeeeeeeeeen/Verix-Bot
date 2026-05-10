@@ -7,7 +7,7 @@ import {
   Save, Palette, Eye, Send, Plus, Trash2, FolderOpen, Zap, Info, Layers, Sparkles, 
   Smartphone, Monitor, Clock, Calendar, ChevronDown, Box, MessageSquare, Lock, Crown, 
   RefreshCw, ChevronLeft, ArrowRight, MousePointer2, LayoutTemplate, Share2, Rocket,
-  Target, SendHorizontal
+  Target
 } from 'lucide-react';
 import { useT } from '../../../contexts/LanguageContext';
 import Head from 'next/head';
@@ -198,7 +198,7 @@ export default function EmbedBuilder() {
                     />
                 </div>
                 <button className="pc-btn-primary" onClick={handleSend} disabled={sending || !selectedChannel}>
-                    <SendHorizontal size={18} className={sending ? 'spin' : ''} />
+                    <Send size={18} className={sending ? 'spin' : ''} />
                     <span>{sending ? 'In Trasmissione...' : 'Lancia Broadcast'}</span>
                 </button>
             </div>
@@ -212,7 +212,7 @@ export default function EmbedBuilder() {
                             <div className="header-icon" style={{ background: '#ecfdf5', color: '#10b981' }}><FolderOpen size={18} /></div>
                             <div className="v-stack" style={{ flex: 1 }}>
                                 <h3 style={{ margin: 0 }}>Libreria Progetti</h3>
-                                <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: '#64748b', fontWeight: 650 }}>Gestisci i tuoi template salvati e carica vecchi progetti.</p>
+                                <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 650 }}>Gestisci i tuoi template salvati e carica vecchi progetti.</p>
                             </div>
                         </div>
                         <div className="card-body-v2">
@@ -243,9 +243,9 @@ export default function EmbedBuilder() {
                     </section>
 
                     <section className="pc-card-v2 animate slide-up" style={{ padding: 0, animationDelay: '0.1s' }}>
-                        <div style={{ background: '#f8fafc', padding: '24px 32px', borderBottom: '1.5px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '16px', borderTopLeftRadius: '32px', borderTopRightRadius: '32px' }}>
+                        <div style={{ background: 'var(--bg-badge)', padding: '24px 32px', borderBottom: '1.5px solid var(--border)', display: 'flex', alignItems: 'center', gap: '16px', borderTopLeftRadius: '32px', borderTopRightRadius: '32px' }}>
                             <div className="header-icon" style={{ background: 'white', color: '#10b981', width: '36px', height: '36px' }}><Palette size={16} /></div>
-                            <h4 style={{ margin: 0, fontFamily: 'Inter', fontWeight: 900, color: '#1e293b' }}>Designer Visuale</h4>
+                            <h4 style={{ margin: 0, fontFamily: 'Inter', fontWeight: 700, color: 'var(--text-heading)' }}>Designer Visuale</h4>
                         </div>
                         <div className="pc-editor-wrapper-v2">
                             <EmbedEditor 
@@ -274,8 +274,8 @@ export default function EmbedBuilder() {
                                     <button key={type.id} onClick={() => setScheduleType(type.id)} className={`pc-schedule-tab-v2 ${scheduleType === type.id ? 'active' : ''}`}>
                                         <div className="tab-icon-v2"><type.icon size={18} /></div>
                                         <div className="v-stack">
-                                            <span style={{ fontWeight: 950, fontSize: '0.95rem' }}>{type.label}</span>
-                                            <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontWeight: 700 }}>{type.desc}</span>
+                                            <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>{type.label}</span>
+                                            <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)', fontWeight: 700 }}>{type.desc}</span>
                                         </div>
                                         {scheduleType === type.id && <div className="active-glow-v2"></div>}
                                     </button>
@@ -296,10 +296,10 @@ export default function EmbedBuilder() {
                                 </div>
                             )}
 
-                            <div className="pc-recurrence-studio-v2" style={{ marginTop: '32px', paddingTop: '24px', borderTop: '1.5px dashed #e2e8f0' }}>
+                            <div className="pc-recurrence-studio-v2" style={{ marginTop: '32px', paddingTop: '24px', borderTop: '1.5px dashed var(--border)' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
                                     <RefreshCw size={14} color="#6366f1" />
-                                    <label style={{ fontSize: '0.75rem', fontWeight: 950, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>Ricorrenza</label>
+                                    <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '1px' }}>Ricorrenza</label>
                                 </div>
                                 <CustomSelect 
                                     options={[
@@ -311,7 +311,7 @@ export default function EmbedBuilder() {
                                     value={recurrence} 
                                     onChange={setRecurrence} 
                                 />
-                                <div className="pc-info-badge-v2" style={{ marginTop: '16px', background: '#f5f3ff', color: '#6366f1', padding: '12px 16px', borderRadius: '14px', fontSize: '0.8rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <div className="pc-info-badge-v2" style={{ marginTop: '16px', background: 'var(--primary-glow)', color: 'var(--primary)', padding: '12px 16px', borderRadius: '14px', fontSize: '0.8rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '10px' }}>
                                     <Sparkles size={14} />
                                     <span>{recurrence !== 'none' ? 'Modalità Ciclica Attivata' : 'Esecuzione One-Shot'}</span>
                                 </div>
@@ -319,12 +319,12 @@ export default function EmbedBuilder() {
                         </div>
                     </section>
 
-                    <div className="pc-alert-box-v2" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', color: 'white', borderRadius: '32px', padding: '28px' }}>
+                    <div className="pc-alert-box-v2" style={{ background: 'linear-gradient(135deg, #0f172a 0%, var(--bg-card) 100%)', color: '#fff', borderRadius: '32px', padding: '28px', border: '1px solid var(--border)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
                             <Target size={20} color="#10b981" />
-                            <span style={{ fontWeight: 950, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Smart Preview</span>
+                            <span style={{ fontWeight: 700, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Smart Preview</span>
                         </div>
-                        <p style={{ margin: 0, fontSize: '0.85rem', color: '#94a3b8', lineHeight: 1.6, fontWeight: 700 }}>
+                        <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-dim)', lineHeight: 1.6, fontWeight: 700 }}>
                             Il trasmettitore Verix supporta placeholder dinamici. Usa <code>{'{user}'}</code> per menzionare chi invia o <code>{'{guild}'}</code> per il nome del server.
                         </p>
                     </div>
@@ -333,51 +333,51 @@ export default function EmbedBuilder() {
         </div>
 
         <style jsx>{`
-            .pc-premium-wrapper { padding: 40px; max-width: 1600px; margin: 0 auto; font-family: 'Inter', sans-serif; }
+            .pc-premium-wrapper { padding: 32px; max-width: 1500px; margin: 0 auto; font-family: 'Inter', sans-serif; }
             
             /* Header V2 */
-            .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; background: white; padding: 32px; border-radius: 32px; box-shadow: var(--shadow-premium); border: 1px solid var(--border-light); }
-            .header-info { display: flex; align-items: center; gap: 24px; }
-            .pc-icon-box { width: 64px; height: 64px; border-radius: 20px; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 12px 24px rgba(16, 185, 129, 0.25); }
+            .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-card); padding: 24px; border-radius: 28px; box-shadow: var(--shadow-premium); border: 1px solid var(--border); }
+            .header-info { display: flex; align-items: center; gap: 16px; }
+            .pc-icon-box { width: 52px; height: 52px; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: #fff; }
             .pc-title-row { display: flex; flex-direction: column; gap: 6px; }
-            .pc-title-row h1 { font-family: 'Inter', sans-serif; font-size: 2.2rem; font-weight: 900; margin: 0; color: #1e293b; letter-spacing: -0.5px; }
+            .pc-title-row h1 { font-family: 'Inter', sans-serif; font-size: 1.8rem; font-weight: 700; margin: 0; color: var(--text-heading); letter-spacing: normal; }
             
-            .pc-status-tag-v2 { display: flex; align-items: center; gap: 8px; font-size: 0.65rem; font-weight: 900; padding: 4px 12px; border-radius: 100px; letter-spacing: 0.5px; }
-            .pc-status-tag-v2.on { background: #ecfdf5; color: #10b981; }
-            .pc-status-tag-v2.off { background: #f1f5f9; color: #94a3b8; }
-            .status-dot-v2 { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+            .pc-status-tag-v2 { display: flex; align-items: center; gap: 6px; font-size: 0.6rem; font-weight: 700; padding: 4px 10px; border-radius: 100px; }
+            .pc-status-tag-v2.on { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+            .pc-status-tag-v2.off { background: var(--bg-badge); color: #ef4444; }
+            .status-dot-v2 { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
 
-            .pc-btn-primary { background: var(--primary); color: white; border: none; padding: 16px 32px; border-radius: 18px; font-weight: 900; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: 0.3s; box-shadow: 0 10px 25px rgba(99, 102, 241, 0.2); }
-            .pc-btn-primary:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(99, 102, 241, 0.3); }
+            .pc-btn-primary { background: var(--primary); color: #fff; border: none; padding: 12px 24px; border-radius: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
+            .pc-btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(var(--primary-rgb), 0.2); }
 
-            .pc-btn-save-v2 { background: #f8fafc; color: #1e293b; border: 1.5px solid #e2e8f0; padding: 12px 24px; border-radius: 16px; font-weight: 900; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; width: 100%; height: 56px; justifyContent: center; }
-            .pc-btn-save-v2:hover { background: white; border-color: var(--primary); color: var(--primary); }
+            .pc-btn-save-v2 { background: var(--bg-badge); color: var(--text-heading); border: 1.5px solid var(--border); padding: 12px 24px; border-radius: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; width: 100%; height: 56px; justify-content: center; }
+            .pc-btn-save-v2:hover { background: var(--bg-card); border-color: var(--primary); color: var(--primary); }
 
             /* Card V2 */
-            .pc-card-v2 { background: white; border: 1px solid var(--border-light); border-radius: 32px; padding: 32px; box-shadow: var(--shadow-premium); }
-            .card-header-v2 { display: flex; align-items: center; gap: 20px; margin-bottom: 32px; }
-            .header-icon { width: 52px; height: 52px; background: #ecfdf5; color: #10b981; border-radius: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-            .card-header-v2 h3 { margin: 0; font-family: 'Inter'; font-size: 1.5rem; font-weight: 950; color: #1e293b; }
+            .pc-card-v2 { background: var(--bg-card); border: 1px solid var(--border); border-radius: 28px; padding: 32px; box-shadow: var(--shadow-premium); }
+            .card-header-v2 { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+            .header-icon { width: 44px; height: 44px; background: var(--bg-badge); color: var(--primary); border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+            .card-header-v2 h3 { margin: 0; font-family: 'Inter'; font-size: 1.3rem; font-weight: 700; color: var(--text-heading); }
 
             /* Schedule Tabs V2 */
-            .pc-schedule-tab-v2 { display: flex; align-items: center; gap: 16px; padding: 16px; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 20px; cursor: pointer; transition: 0.3s; position: relative; text-align: left; width: 100%; }
-            .pc-schedule-tab-v2:hover { border-color: #cbd5e1; background: white; }
-            .pc-schedule-tab-v2.active { border-color: #ef4444; background: #fef2f2; }
-            .tab-icon-v2 { width: 44px; height: 44px; background: white; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #94a3b8; border: 1.5px solid #e2e8f0; }
-            .pc-schedule-tab-v2.active .tab-icon-v2 { color: #ef4444; border-color: #fecaca; }
-            .active-glow-v2 { position: absolute; right: 20px; width: 8px; height: 8px; background: #ef4444; border-radius: 50%; box-shadow: 0 0 12px #ef4444; }
+            .pc-schedule-tab-v2 { display: flex; align-items: center; gap: 16px; padding: 16px; background: var(--bg-badge); border: 1.5px solid var(--border); border-radius: 20px; cursor: pointer; transition: 0.3s; position: relative; text-align: left; width: 100%; }
+            .pc-schedule-tab-v2:hover { border-color: var(--primary); background: var(--bg-card); }
+            .pc-schedule-tab-v2.active { border-color: var(--primary); background: var(--bg-card); box-shadow: 0 8px 20px rgba(0,0,0,0.04); }
+            .tab-icon-v2 { width: 44px; height: 44px; background: var(--bg-card); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); border: 1.5px solid var(--border); }
+            .pc-schedule-tab-v2.active .tab-icon-v2 { color: var(--primary); border-color: var(--primary); }
+            .active-glow-v2 { position: absolute; right: 20px; width: 8px; height: 8px; background: var(--primary); border-radius: 50%; box-shadow: 0 0 12px var(--primary); }
 
             /* Inputs V2 */
             .pc-input-group-v2 { display: flex; flex-direction: column; gap: 8px; }
-            .pc-input-group-v2 label { font-size: 0.75rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.8px; }
-            .pc-input-modern-v2 { width: 100%; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 16px; padding: 14px 20px; font-weight: 800; color: #1e293b; outline: none; transition: 0.2s; font-size: 1rem; }
-            .pc-input-modern-v2:focus { border-color: #10b981; background: white; }
+            .pc-input-group-v2 label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; }
+            .pc-input-modern-v2 { width: 100%; background: var(--bg-badge); border: 1.5px solid var(--border); border-radius: 14px; padding: 12px 16px; font-weight: 700; color: var(--text-heading); outline: none; transition: 0.2s; font-size: 1rem; }
+            .pc-input-modern-v2:focus { border-color: var(--primary); }
 
             .v-stack { display: flex; flex-direction: column; }
             .animate { animation: slideUp 0.4s ease-out; }
             @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-            :global(.light-theme) .pc-header-v2, :global(.light-theme) .pc-card-v2, :global(.light-theme) .pc-schedule-tab-v2, :global(.light-theme) .pc-btn-save-v2 { background: #ffffff !important; box-shadow: 0 8px 30px rgba(0,0,0,0.04) !important; }
+            :global(.light-theme) .pc-header-v2, :global(.light-theme) .pc-card-v2, :global(.light-theme) .pc-schedule-tab-v2, :global(.light-theme) .pc-btn-save-v2 { box-shadow: 0 8px 30px rgba(0,0,0,0.04) !important; }
         `}</style>
     </div>
   );

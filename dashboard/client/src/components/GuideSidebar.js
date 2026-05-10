@@ -212,7 +212,7 @@ export default function GuideSidebar({ type, context = {}, isOpen, onToggle }) {
 
           .guide-title span {
             font-size: 0.75rem;
-            font-weight: 850;
+            font-weight: 800;
             color: var(--text-main);
             text-transform: uppercase;
             letter-spacing: 1px;
@@ -389,3 +389,4 @@ export default function GuideSidebar({ type, context = {}, isOpen, onToggle }) {
     </>
   );
 }
+

@@ -44,24 +44,24 @@ export default function GuidePage() {
 
   return (
     <>
-      <div className="animate">
+      <div className="pc-premium-wrapper animate slide-up">
         
         {/* Module Header */}
-        <header className="module-header">
+        <header className="pc-header-v2">
            <div className="header-info">
-              <div className="header-icon">
-                <BookOpen size={24} />
+              <div className="pc-icon-box" style={{ background: 'var(--primary-glow)', color: 'var(--primary)' }}>
+                <BookOpen size={28} />
               </div>
-              <div className="header-text">
+              <div className="pc-title-row">
                 <h1>{t('guide_page.title')}</h1>
-                <p>{t('guide_page.subtitle')}</p>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: 0, fontWeight: 700 }}>{t('guide_page.subtitle')}</p>
               </div>
            </div>
         </header>
 
         <div className="guide-grid-p">
            {/* Section: Placeholders */}
-           <section className="card section-card-p">
+           <section className="pc-card-v2 section-card-p">
               <div className="align-center" style={{ marginBottom: '24px' }}>
                 <Variable size={20} color="var(--primary)" />
                 <h3>{t('guide_page.placeholders_title')}</h3>
@@ -84,7 +84,7 @@ export default function GuidePage() {
 
            <div className="guide-side-p">
               {/* Section: Limits */}
-              <section className="card section-card-p">
+              <section className="pc-card-v2 section-card-p">
                 <div className="align-center" style={{ marginBottom: '20px' }}>
                     <Layers size={18} color="var(--primary)" />
                     <h3>{t('guide_page.limits_title')}</h3>
@@ -100,7 +100,7 @@ export default function GuidePage() {
               </section>
 
               {/* Section: Markdown */}
-              <section className="card section-card-p" style={{ marginTop: '24px' }}>
+              <section className="pc-card-v2 section-card-p" style={{ marginTop: '24px' }}>
                 <div className="align-center" style={{ marginBottom: '20px' }}>
                     <Terminal size={18} color="var(--primary)" />
                     <h3>{t('guide_page.markdown_title')}</h3>
@@ -116,7 +116,7 @@ export default function GuidePage() {
         </div>
 
         {/* Live Preview Area */}
-        <section className="card section-card-p" style={{ marginTop: '32px' }}>
+        <section className="pc-card-v2 section-card-p" style={{ marginTop: '32px' }}>
             <div className="align-center" style={{ marginBottom: '24px' }}>
                 <ImageIcon size={20} color="var(--primary)" />
                 <h3>{t('guide_page.preview_title')}</h3>
@@ -143,20 +143,23 @@ export default function GuidePage() {
                 </div>
             </div>
         </section>
+      </div>
 
         <style jsx>{`
-            .module-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-badge); padding: 24px; border-radius: 16px; border: 1px solid var(--border); }
+            .pc-premium-wrapper { padding: 32px; max-width: 1500px; margin: 0 auto; font-family: 'Inter', sans-serif; }
+            
+            .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-card); padding: 24px; border-radius: 28px; box-shadow: var(--shadow-premium); border: 1px solid var(--border); }
             .header-info { display: flex; align-items: center; gap: 16px; }
-            .header-icon { width: 48px; height: 48px; background: rgba(129, 140, 248, 0.1); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-            .header-text h1 { font-size: 1.5rem; margin-bottom: 2px; color: var(--text-main); }
-            .header-text p { font-size: 0.85rem; color: var(--text-muted); }
+            .pc-icon-box { width: 52px; height: 52px; border-radius: 16px; display: flex; align-items: center; justify-content: center; }
+            .pc-title-row h1 { font-family: 'Inter'; font-size: 1.8rem; font-weight: 700; margin: 0; color: var(--text-heading); letter-spacing: normal; }
 
             .guide-grid-p { display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
             
             .tags-grid-p { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+            .pc-card-v2 { background: var(--bg-card); border: 1px solid var(--border); border-radius: 28px; padding: 32px; box-shadow: var(--shadow-premium); }
             .tag-card-v2 { background: var(--bg-badge); border: 1px solid var(--border); padding: 16px; border-radius: 14px; display: flex; flex-direction: column; gap: 10px; transition: 0.2s; }
             .tag-card-v2:hover { border-color: var(--primary); transform: translateY(-2px); }
-            .tag-p { color: var(--primary); font-weight: 800; font-family: monospace; background: rgba(129, 140, 248, 0.1); padding: 2px 6px; border-radius: 4px; font-size: 0.85rem; }
+            .tag-p { color: var(--primary); font-weight: 700; font-family: monospace; background: rgba(129, 140, 248, 0.1); padding: 2px 6px; border-radius: 4px; font-size: 0.85rem; }
             .tag-desc-p { font-size: 0.8rem; color: var(--text-muted); }
             .tag-example-p { font-size: 0.75rem; background: var(--bg-dark); padding: 8px; border-radius: 6px; }
             .tag-example-p span { color: var(--text-dim); display: block; margin-bottom: 4px; font-size: 0.65rem; text-transform: uppercase; }
@@ -177,7 +180,6 @@ export default function GuidePage() {
             .align-center { display: flex; align-items: center; gap: 10px; }
             @media (max-width: 1000px) { .guide-grid-p { grid-template-columns: 1fr; } .preview-demo-grid { grid-template-columns: 1fr; } }
         `}</style>
-      </div>
     </>
   );
 }

@@ -61,9 +61,9 @@ export default function WhitelistConfig() {
         api.request(`/config/${guildId}/whitelist`, { method: 'POST', body: JSON.stringify(config) }),
         api.request(`/config/${guildId}/background`, { method: 'POST', body: JSON.stringify(bgConfig) })
       ]);
-      window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: "Protocollo Whitelist Sincronizzato!", type: 'success' } }));
+      window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('whitelist.sync_success'), type: 'success' } }));
     } catch (error) {
-       window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: "Errore durante il salvataggio.", type: 'error' } }));
+       window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('common.save_error'), type: 'error' } }));
     } finally {
       setSaving(false);
       window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
@@ -244,7 +244,7 @@ export default function WhitelistConfig() {
                                             </div>
                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                                 <div className="v-stack" style={{ gap: '4px' }}>
-                                                    <span style={{ fontSize: '0.75rem', fontWeight: 900, color: 'var(--text-muted)' }}>Min Caratteri: {q.minLength || 0}</span>
+                                                    <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>Min Caratteri: {q.minLength || 0}</span>
                                                     <input type="range" min="0" max="500" step="10" value={q.minLength || 0} onChange={e => {
                                                         const qs = [...config.questions];
                                                         qs[idx].minLength = parseInt(e.target.value);
@@ -312,46 +312,47 @@ export default function WhitelistConfig() {
             /* Header V2 */
             .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-card); padding: 24px; border-radius: 28px; box-shadow: var(--shadow-premium); border: 1px solid var(--border); }
             .header-info { display: flex; align-items: center; gap: 16px; }
-            .pc-icon-box { width: 52px; height: 52px; color: white; border-radius: 16px; display: flex; align-items: center; justify-content: center; }
-            .pc-title-row h1 { font-family: 'Inter'; font-size: 1.8rem; font-weight: 800; margin: 0; color: var(--text-heading); letter-spacing: -0.5px; }
+            .pc-icon-box { width: 52px; height: 52px; color: #fff; border-radius: 16px; display: flex; align-items: center; justify-content: center; }
+            .pc-title-row h1 { font-family: 'Inter'; font-size: 1.8rem; font-weight: 700; margin: 0; color: var(--text-heading); letter-spacing: normal; }
             
-            .pc-status-tag-v2 { display: flex; align-items: center; gap: 6px; font-size: 0.6rem; font-weight: 800; padding: 4px 10px; border-radius: 100px; }
+            .pc-status-tag-v2 { display: flex; align-items: center; gap: 6px; font-size: 0.6rem; font-weight: 700; padding: 4px 10px; border-radius: 100px; }
             .pc-status-tag-v2.on { background: rgba(16, 185, 129, 0.1); color: #10b981; }
-            .pc-status-tag-v2.off { background: var(--bg-badge); color: var(--text-muted); }
+            .pc-status-tag-v2.off { background: var(--bg-badge); color: #ef4444; }
             .status-dot-v2 { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
 
-            .pc-btn-primary { background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 14px; font-weight: 850; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
+            .pc-btn-primary { background: var(--primary); color: #fff; border: none; padding: 12px 24px; border-radius: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
             .pc-btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(var(--primary-rgb), 0.2); }
 
             /* Tabs V2 */
             .pc-tabs-v2 { display: flex; gap: 6px; background: var(--bg-badge); padding: 5px; border-radius: 18px; width: fit-content; }
-            .pc-tabs-v2 button { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border: none; background: transparent; color: var(--text-muted); font-weight: 850; font-size: 0.9rem; border-radius: 14px; cursor: pointer; transition: 0.2s; }
+            .pc-tabs-v2 button { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border: none; background: transparent; color: var(--text-muted); font-weight: 700; font-size: 0.9rem; border-radius: 14px; cursor: pointer; transition: 0.2s; }
             .pc-tabs-v2 button.active { background: var(--bg-card); color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
 
             /* Card V2 */
             .pc-card-v2 { background: var(--bg-card); border: 1px solid var(--border); border-radius: 28px; padding: 32px; box-shadow: var(--shadow-premium); }
             .card-header-v2 { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
             .header-icon { width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: var(--bg-badge); }
-            .card-header-v2 h3 { margin: 0; font-family: 'Inter'; font-size: 1.3rem; font-weight: 800; color: var(--text-heading); }
+            .card-header-v2 h3 { margin: 0; font-family: 'Inter'; font-size: 1.3rem; font-weight: 700; color: var(--text-heading); }
 
             /* Inputs */
-            .pc-input-group-v2 label { font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; display: block; }
-            .pc-input-modern-v2 { display: flex; align-items: center; gap: 12px; background: var(--bg-badge); padding: 10px 16px; border-radius: 14px; border: 1.5px solid var(--border); }
-            .pc-input-modern-v2 input { border: none; background: transparent; width: 100%; font-weight: 800; font-size: 1rem; outline: none; color: var(--text-heading); }
-            .pc-textarea-v2 { width: 100%; background: var(--bg-badge); border: 1.5px solid var(--border); border-radius: 16px; padding: 16px; font-weight: 700; color: var(--text-heading); outline: none; min-height: 100px; resize: none; }
+            .pc-input-group-v2 label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; display: block; }
+            .pc-input-modern-v2 { display: flex; align-items: center; gap: 12px; background: var(--bg-badge); padding: 10px 16px; border-radius: 14px; border: 1.5px solid var(--border); transition: 0.2s; }
+            .pc-input-modern-v2:focus-within { border-color: var(--primary); }
+            .pc-input-modern-v2 input { border: none; background: transparent; width: 100%; font-weight: 700; font-size: 1rem; outline: none; color: var(--text-heading); }
+            .pc-textarea-v2 { width: 100%; background: var(--bg-badge); border: 1.5px solid var(--border); border-radius: 16px; padding: 16px; font-weight: 700; color: var(--text-heading); outline: none; min-height: 100px; resize: none; transition: 0.2s; }
             .pc-textarea-v2:focus { border-color: var(--primary); }
 
             .pc-sub-card-v2 { background: var(--bg-badge); padding: 20px; border-radius: 20px; border: 1.5px solid var(--border); }
             .pc-btn-icon-danger-v2 { width: 40px; height: 40px; border-radius: 12px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
             .pc-toggle-card-v2 { background: var(--bg-badge); padding: 20px; border-radius: 20px; border: 1.5px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-            .pc-toggle-card-v2 strong { font-weight: 800; color: var(--text-heading); }
+            .pc-toggle-card-v2 strong { font-weight: 700; color: var(--text-heading); }
             .pc-toggle-card-v2 span { font-size: 0.75rem; color: var(--text-muted); font-weight: 700; }
 
             .pc-toggle-v2 { position: relative; width: 40px; height: 20px; }
             .pc-toggle-v2 input { opacity: 0; width: 0; height: 0; }
             .pc-slider-v2 { position: absolute; cursor: pointer; inset: 0; background: var(--border); transition: .3s; border-radius: 34px; }
-            .pc-slider-v2:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background: white; transition: .3s; border-radius: 50%; }
+            .pc-slider-v2:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background: #fff; transition: .3s; border-radius: 50%; }
             input:checked + .pc-slider-v2 { background: var(--primary); }
             input:checked + .pc-slider-v2:before { transform: translateX(20px); }
 

@@ -87,9 +87,9 @@ export default function ReactionRolesConfig() {
         method: 'POST',
         body: JSON.stringify(config)
       });
-      window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: "Configurazione Reaction Roles sincronizzata!", type: 'success' } }));
+      window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('rr.sync_success'), type: 'success' } }));
     } catch (e) {
-      window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: "Errore durante il salvataggio.", type: 'error' } }));
+      window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('common.save_error'), type: 'error' } }));
     } finally {
       setSaving(false);
       window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
@@ -102,12 +102,12 @@ export default function ReactionRolesConfig() {
       await handleSave();
       const res = await api.request(`/config/${guildId}/reaction-roles/deploy/${panelId}`, { method: 'POST' });
       if (res.success) {
-          window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: "Pannello inviato correttamente allo Studio!", type: 'success' } }));
+          window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('rr.panel_success'), type: 'success' } }));
           const newPanels = config.panels.map(p => p.id === panelId ? { ...p, messageId: res.messageId } : p);
           setConfig({ ...config, panels: newPanels });
       }
     } catch (e) {
-      window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: "Errore invio panel. Verifica i permessi del bot.", type: 'error' } }));
+      window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('rr.panel_error'), type: 'error' } }));
     } finally {
       window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
     }
@@ -148,7 +148,7 @@ export default function ReactionRolesConfig() {
 
   const addRole = (panelId) => {
       const panel = config.panels.find(p => p.id === panelId);
-      if (panel.roles.length >= 25) return window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: "Limite massimo raggiunto (25 componenti).", type: 'error' } }));
+      if (panel.roles.length >= 25) return window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('rr.max_components'), type: 'error' } }));
       const newRoles = [...panel.roles, { roleId: '', emoji: '💠', label: 'New Role', style: 'PRIMARY' }];
       updatePanel(panelId, { roles: newRoles });
   };
@@ -198,8 +198,8 @@ export default function ReactionRolesConfig() {
             <aside className="v-stack animate slide-up" style={{ gap: '24px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div className="v-stack">
-                        <span style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase' }}>{t('rr.fleet_repo')}</span>
-                        <span style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--primary)' }}>{config.panels.length} {t('rr.panels')}</span>
+                        <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>{t('rr.fleet_repo')}</span>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--primary)' }}>{config.panels.length} {t('rr.panels')}</span>
                     </div>
                     <button onClick={addPanel} className="pc-btn-icon-v2"><Plus size={20} /></button>
                 </div>
@@ -227,8 +227,8 @@ export default function ReactionRolesConfig() {
                     <div className="v-stack animate slide-up" style={{ gap: '32px' }}>
                         <div className="pc-card-v2" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <div className="v-stack" style={{ gap: '4px' }}>
-                                <h2 style={{ margin: 0, fontFamily: 'Inter', fontWeight: 800, fontSize: '1.6rem', color: 'var(--text-heading)' }}>{activePanel.name}</h2>
-                                <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)' }}>ID: {activePanel.id}</span>
+                                <h2 style={{ margin: 0, fontFamily: 'Inter', fontWeight: 700, fontSize: '1.6rem', color: 'var(--text-heading)' }}>{activePanel.name}</h2>
+                                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>ID: {activePanel.id}</span>
                             </div>
                             <button className="pc-btn-primary" onClick={() => handleDeploy(activePanel.id)}>
                                 <Send size={18} /> <span>{t('rr.launch_panel')}</span>
@@ -299,7 +299,7 @@ export default function ReactionRolesConfig() {
                                             {activePanel.roles.map((role, idx) => (
                                                 <div key={idx} className="pc-sub-card-v2 animate slide-up">
                                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                                                        <span style={{ fontWeight: 800, fontSize: '0.8rem', color: 'var(--text-muted)' }}>SLOT #{idx + 1}</span>
+                                                        <span style={{ fontWeight: 700, fontSize: '0.8rem', color: 'var(--text-muted)' }}>SLOT #{idx + 1}</span>
                                                         <button onClick={() => {
                                                             const filtered = activePanel.roles.filter((_, i) => i !== idx);
                                                             updatePanel(activePanel.id, { roles: filtered });
@@ -316,7 +316,7 @@ export default function ReactionRolesConfig() {
                                                         </div>
                                                         <div className="pc-input-group-v2">
                                                             <label>{t('rr.emoji')}</label>
-                                                            <input className="pc-input-modern-v2" style={{ textAlign: 'center' }} value={role.emoji} onChange={e => {
+                                                            <input className="pc-input-modern-v2" style={{ textAlign: 'center', background: 'var(--bg-badge)' }} value={role.emoji} onChange={e => {
                                                                 const newRoles = [...activePanel.roles];
                                                                 newRoles[idx].emoji = e.target.value;
                                                                 updatePanel(activePanel.id, { roles: newRoles });
@@ -327,7 +327,7 @@ export default function ReactionRolesConfig() {
                                                         <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '16px' }}>
                                                             <div className="pc-input-group-v2">
                                                                 <label>{t('rr.label')}</label>
-                                                                <input className="pc-input-modern-v2" value={role.label} onChange={e => {
+                                                                <input className="pc-input-modern-v2" style={{ background: 'var(--bg-badge)' }} value={role.label} onChange={e => {
                                                                     const newRoles = [...activePanel.roles];
                                                                     newRoles[idx].label = e.target.value;
                                                                     updatePanel(activePanel.id, { roles: newRoles });
@@ -366,9 +366,9 @@ export default function ReactionRolesConfig() {
                             <aside style={{ position: 'sticky', top: '32px', height: 'fit-content' }}>
                                 <div className="pc-card-v2" style={{ padding: 0, overflow: 'hidden' }}>
                                     <div style={{ background: 'var(--bg-badge)', padding: '20px', borderBottom: '1.5px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 800, color: 'var(--text-heading)', fontSize: '0.9rem' }}><Monitor size={18} /> {t('rr.preview')}</div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700, color: 'var(--text-heading)', fontSize: '0.9rem' }}><Monitor size={18} /> {t('rr.preview')}</div>
                                     </div>
-                                    <div style={{ padding: '32px', background: previewTheme === 'dark' ? '#0f172a' : '#f8fafc', minHeight: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <div style={{ padding: '32px', background: previewTheme === 'dark' ? '#0f172a' : 'var(--bg-card)', minHeight: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                         <EmbedPreview 
                                             theme={previewTheme}
                                             isMobile={isPreviewMobile}
@@ -382,7 +382,7 @@ export default function ReactionRolesConfig() {
                                             }} 
                                         />
                                     </div>
-                                    <div style={{ padding: '16px', background: 'var(--bg-card)', borderTop: '1.5px solid var(--border)', display: 'flex', justifyContent: 'center', gap: '16px' }}>
+                                    <div style={{ padding: '16px', background: 'var(--bg-badge)', borderTop: '1.5px solid var(--border)', display: 'flex', justifyContent: 'center', gap: '16px' }}>
                                         <button onClick={() => setPreviewTheme('dark')} className={previewTheme === 'dark' ? 'active' : ''} style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: previewTheme === 'dark' ? 'var(--primary)' : 'var(--text-muted)' }}><Moon size={20} /></button>
                                         <button onClick={() => setPreviewTheme('light')} className={previewTheme === 'light' ? 'active' : ''} style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: previewTheme === 'light' ? 'var(--primary)' : 'var(--text-muted)' }}><Sun size={20} /></button>
                                     </div>
@@ -393,7 +393,7 @@ export default function ReactionRolesConfig() {
                 ) : (
                     <div style={{ textAlign: 'center', padding: '100px 32px' }}>
                         <Fingerprint size={64} style={{ color: 'var(--primary)', marginBottom: '24px', opacity: 0.5 }} />
-                        <h2 style={{ fontFamily: 'Inter', fontWeight: 800, fontSize: '2rem', color: 'var(--text-heading)' }}>{t('rr.no_panel_title')}</h2>
+                        <h2 style={{ fontFamily: 'Inter', fontWeight: 700, fontSize: '2rem', color: 'var(--text-heading)' }}>{t('rr.no_panel_title')}</h2>
                         <p style={{ color: 'var(--text-muted)', marginBottom: '32px' }}>{t('rr.no_panel_desc')}</p>
                         <button onClick={addPanel} className="pc-btn-primary" style={{ margin: '0 auto' }}>
                             <Plus size={20} /> <span>Nuovo Pannello</span>
@@ -404,19 +404,22 @@ export default function ReactionRolesConfig() {
         </div>
 
         <style jsx>{`
-            .pc-premium-wrapper { padding: 32px; max-width: 1600px; margin: 0 auto; font-family: 'Inter', sans-serif; }
+            .pc-premium-wrapper { padding: 32px; max-width: 1500px; margin: 0 auto; font-family: 'Inter', sans-serif; }
             
             .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-card); padding: 24px; border-radius: 28px; box-shadow: var(--shadow-premium); border: 1px solid var(--border); }
             .header-info { display: flex; align-items: center; gap: 16px; }
-            .pc-icon-box { width: 52px; height: 52px; color: white; border-radius: 16px; display: flex; align-items: center; justify-content: center; }
-            .pc-title-row h1 { font-family: 'Inter'; font-size: 1.8rem; font-weight: 800; margin: 0; color: var(--text-heading); letter-spacing: -1px; }
+            .pc-icon-box { width: 52px; height: 52px; color: #fff; border-radius: 16px; display: flex; align-items: center; justify-content: center; }
+            .pc-title-row h1 { font-family: 'Inter'; font-size: 1.8rem; font-weight: 700; margin: 0; color: var(--text-heading); letter-spacing: normal; }
             
-            .pc-status-tag-v2 { display: flex; align-items: center; gap: 6px; font-size: 0.6rem; font-weight: 800; padding: 4px 10px; border-radius: 100px; }
-            .pc-status-tag-v2.on { background: rgba(99, 102, 241, 0.1); color: #6366f1; }
-            .pc-status-tag-v2.off { background: var(--bg-badge); color: var(--text-muted); }
+            .pc-status-tag-v2 { display: flex; align-items: center; gap: 6px; font-size: 0.65rem; font-weight: 700; padding: 4px 10px; border-radius: 100px; }
+            .pc-status-tag-v2.on { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+            .pc-status-tag-v2.off { background: var(--bg-badge); color: #ef4444; }
             .status-dot-v2 { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
 
-            .pc-btn-primary { background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 14px; font-weight: 850; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
+            .pc-status-toggle-v2 { display: flex; align-items: center; gap: 10px; background: var(--bg-badge); color: var(--text-muted); border: 1.5px solid var(--border); padding: 12px 24px; border-radius: 16px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+            .pc-status-toggle-v2.active { background: rgba(239, 68, 68, 0.1); color: #ef4444; border-color: rgba(239, 68, 68, 0.2); }
+
+            .pc-btn-primary { background: var(--primary); color: #fff; border: none; padding: 12px 24px; border-radius: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
             .pc-btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(var(--primary-rgb), 0.2); }
 
             .pc-btn-icon-v2 { width: 40px; height: 40px; border-radius: 12px; background: var(--bg-badge); color: var(--primary); border: 1.5px solid var(--border); cursor: pointer; display: flex; align-items: center; justify-content: center; }
@@ -427,22 +430,23 @@ export default function ReactionRolesConfig() {
             .pc-panel-nav-btn-v2 .nav-icon { width: 40px; height: 40px; border-radius: 10px; background: var(--bg-card); display: flex; align-items: center; justify-content: center; color: var(--text-muted); }
             .pc-panel-nav-btn-v2.active .nav-icon { color: var(--primary); }
             .pc-panel-nav-btn-v2 .nav-info { display: flex; flex-direction: column; flex: 1; }
-            .pc-panel-nav-btn-v2 .nav-name { font-weight: 800; color: var(--text-heading); font-size: 1rem; }
+            .pc-panel-nav-btn-v2 .nav-name { font-weight: 700; color: var(--text-heading); font-size: 1rem; }
             .pc-panel-nav-btn-v2 .nav-meta { font-size: 0.7rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; }
 
             .pc-card-v2 { background: var(--bg-card); border: 1px solid var(--border); border-radius: 28px; padding: 32px; box-shadow: var(--shadow-premium); }
             .card-header-v2 { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
-            .header-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: var(--bg-badge); }
-            .card-header-v2 h3 { margin: 0; font-family: 'Inter'; font-size: 1.3rem; font-weight: 800; color: var(--text-heading); }
+            .header-icon { width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: var(--bg-badge); }
+            .card-header-v2 h3 { margin: 0; font-family: 'Inter'; font-size: 1.3rem; font-weight: 700; color: var(--text-heading); }
 
             .pc-sub-card-v2 { background: var(--bg-badge); padding: 24px; border-radius: 20px; border: 1.5px solid var(--border); }
             .pc-btn-icon-danger-v2 { width: 36px; height: 36px; border-radius: 10px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
-            .pc-input-group-v2 label { font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; display: block; }
-            .pc-input-modern-v2 { width: 100%; background: var(--bg-card); border: 1.5px solid var(--border); border-radius: 14px; padding: 12px 16px; font-weight: 800; color: var(--text-heading); outline: none; }
+            .pc-input-group-v2 label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; display: block; }
+            .pc-input-modern-v2 { width: 100%; background: var(--bg-badge); border: 1.5px solid var(--border); border-radius: 14px; padding: 12px 16px; font-weight: 700; color: var(--text-heading); outline: none; transition: 0.2s; }
+            .pc-input-modern-v2:focus { border-color: var(--primary); }
 
-            .pc-btn-danger-studio-v2 { width: 100%; padding: 16px; background: rgba(239, 68, 68, 0.05); color: #ef4444; border: 1.5px solid rgba(239, 68, 68, 0.1); border-radius: 20px; font-weight: 850; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s; }
-            .pc-btn-danger-studio-v2:hover { background: #ef4444; color: white; }
+            .pc-btn-danger-studio-v2 { width: 100%; padding: 16px; background: rgba(239, 68, 68, 0.05); color: #ef4444; border: 1.5px solid rgba(239, 68, 68, 0.1); border-radius: 20px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s; }
+            .pc-btn-danger-studio-v2:hover { background: #ef4444; color: #fff; }
 
             .v-stack { display: flex; flex-direction: column; }
             .animate { animation: slideUp 0.4s ease-out; }

@@ -554,7 +554,7 @@ export default function OnboardingWizard({ config, guildId }) {
         .wizard-step h2 {
           font-size: 1.8rem;
           margin-bottom: 8px;
-          letter-spacing: -0.5px;
+          letter-spacing: -0.01em;
         }
 
         .step-badge {
@@ -907,4 +907,5 @@ export default function OnboardingWizard({ config, guildId }) {
     </div>
   );
 }
+
 

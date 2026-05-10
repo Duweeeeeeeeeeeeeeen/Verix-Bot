@@ -208,7 +208,7 @@ export default function PollsConfig() {
                                     <label>{t('polls.project_q')}</label>
                                     <textarea 
                                         className="pc-input-modern-v2" 
-                                        style={{ width: '100%', minHeight: '120px', fontSize: '1.4rem', fontWeight: 950, borderRadius: '22px', padding: '24px', lineHeight: 1.4, letterSpacing: '-0.5px' }} 
+                                        style={{ minHeight: '120px', fontSize: '1.4rem', lineHeight: 1.4 }} 
                                         value={newPoll.question} 
                                         onChange={e => setNewPoll({...newPoll, question: e.target.value})} 
                                         placeholder={t('polls.q_placeholder')} 
@@ -221,9 +221,9 @@ export default function PollsConfig() {
                                     </div>
                                     <div className="pc-input-group-v2">
                                         <label>{t('polls.duration_mins')}</label>
-                                        <div className="pc-input-wrapper-v2" style={{ display: 'flex', alignItems: 'center', background: '#f8fafc', border: '1.5px solid #e2e8f0', borderRadius: '18px' }}>
-                                            <Timer size={18} style={{ marginLeft: '18px', color: '#94a3b8' }} />
-                                            <input type="number" style={{ width: '100%', border: 'none', background: 'transparent', padding: '18px 20px', fontWeight: 950, fontSize: '1.1rem' }} value={newPoll.duration} onChange={e => setNewPoll({...newPoll, duration: parseInt(e.target.value)})} min="1" />
+                                        <div className="pc-input-modern-v2">
+                                            <Timer size={18} style={{ color: 'var(--primary)' }} />
+                                            <input type="number" style={{ width: '100%', border: 'none', background: 'transparent', fontWeight: 700, outline: 'none' }} value={newPoll.duration} onChange={e => setNewPoll({...newPoll, duration: parseInt(e.target.value)})} min="1" />
                                         </div>
                                     </div>
                                 </div>
@@ -231,24 +231,24 @@ export default function PollsConfig() {
                                 <div className="v-stack" style={{ marginTop: '48px', gap: '24px' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                         <div className="v-stack">
-                                            <label style={{ fontSize: '0.75rem', fontWeight: 950, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1px' }}>{t('polls.choices_matrix')}</label>
-                                            <span style={{ fontSize: '0.65rem', fontWeight: 800, color: '#f59e0b' }}>{t('polls.choices_limit')}</span>
+                                            <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '1px' }}>{t('polls.choices_matrix')}</label>
+                                            <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#f59e0b' }}>{t('polls.choices_limit')}</span>
                                         </div>
-                                        <button className="pc-btn-secondary-v2" style={{ padding: '12px 24px', borderRadius: '14px', background: '#fffbeb', border: '1.5px solid #fde68a', color: '#d97706', fontWeight: 950, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }} onClick={addOption} disabled={newPoll.options.length >= 10}>
+                                        <button className="pc-btn-secondary-v2" style={{ padding: '12px 24px', borderRadius: '14px', background: '#fffbeb', border: '1.5px solid #fde68a', color: '#d97706', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }} onClick={addOption} disabled={newPoll.options.length >= 10}>
                                             <Plus size={18} /> <span>{t('polls.add_choice')}</span>
                                         </button>
                                     </div>
                                     <div className="v-stack" style={{ gap: '16px' }}>
                                         {newPoll.options.map((opt, idx) => (
-                                            <div key={idx} className="pc-poll-option-v2 animate slide-up" style={{ display: 'flex', gap: '18px', alignItems: 'center', background: '#f8fafc', padding: '18px', borderRadius: '24px', border: '1.5px solid #e2e8f0', transition: '0.3s', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
-                                                <div style={{ width: '56px', height: '56px', background: 'white', borderRadius: '14px', border: '1.5px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 8px rgba(0,0,0,0.03)' }}>
+                                            <div key={idx} className="pc-poll-option-v2 animate slide-up" style={{ display: 'flex', gap: '18px', alignItems: 'center', background: 'var(--bg-badge)', padding: '18px', borderRadius: '24px', border: '1.5px solid var(--border)', transition: '0.3s', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
+                                                <div style={{ width: '56px', height: '56px', background: 'white', borderRadius: '14px', border: '1.5px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 8px rgba(0,0,0,0.03)' }}>
                                                     <input style={{ width: '100%', border: 'none', background: 'transparent', textAlign: 'center', fontSize: '1.5rem', outline: 'none' }} value={opt.emoji} onChange={e => {
                                                         const newOpts = [...newPoll.options];
                                                         newOpts[idx].emoji = e.target.value;
                                                         setNewPoll({...newPoll, options: newOpts});
                                                     }} />
                                                 </div>
-                                                <input style={{ flex: 1, border: 'none', background: 'transparent', fontWeight: 900, color: '#1e293b', outline: 'none', fontSize: '1.1rem' }} value={opt.label} onChange={e => {
+                                                <input style={{ flex: 1, border: 'none', background: 'transparent', fontWeight: 700, color: 'var(--text-heading)', outline: 'none', fontSize: '1.1rem' }} value={opt.label} onChange={e => {
                                                     const newOpts = [...newPoll.options];
                                                     newOpts[idx].label = e.target.value;
                                                     setNewPoll({...newPoll, options: newOpts});
@@ -262,18 +262,18 @@ export default function PollsConfig() {
                                 <div className="pc-input-group-v2" style={{ marginTop: '48px' }}>
                                     <label>{t('polls.voting_policy')}</label>
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginTop: '16px' }}>
-                                        <button onClick={() => setNewPoll({...newPoll, mode: 'SINGLE'})} className={`pc-mode-btn-v2 ${newPoll.mode === 'SINGLE' ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '24px', background: newPoll.mode === 'SINGLE' ? '#fffbeb' : '#f8fafc', border: newPoll.mode === 'SINGLE' ? '2.5px solid #f59e0b' : '2.5px solid #e2e8f0', borderRadius: '24px', cursor: 'pointer', transition: '0.3s', textAlign: 'left' }}>
-                                            <div className="mode-icon-v2" style={{ width: '48px', height: '48px', borderRadius: '14px', background: newPoll.mode === 'SINGLE' ? '#f59e0b' : 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', color: newPoll.mode === 'SINGLE' ? 'white' : '#cbd5e1', boxShadow: '0 4px 10px rgba(0,0,0,0.03)' }}><CheckCircle2 size={24} /></div>
+                                        <button onClick={() => setNewPoll({...newPoll, mode: 'SINGLE'})} className={`pc-mode-btn-v2 ${newPoll.mode === 'SINGLE' ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '24px', background: newPoll.mode === 'SINGLE' ? '#fffbeb' : 'var(--bg-badge)', border: newPoll.mode === 'SINGLE' ? '2.5px solid #f59e0b' : '2.5px solid var(--border)', borderRadius: '24px', cursor: 'pointer', transition: '0.3s', textAlign: 'left' }}>
+                                            <div className="mode-icon-v2" style={{ width: '48px', height: '48px', borderRadius: '14px', background: newPoll.mode === 'SINGLE' ? '#f59e0b' : 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', color: newPoll.mode === 'SINGLE' ? 'white' : 'var(--border)', boxShadow: '0 4px 10px rgba(0,0,0,0.03)' }}><CheckCircle2 size={24} /></div>
                                             <div className="v-stack">
-                                                <span className="mode-title-v2" style={{ fontWeight: 950, fontSize: '1.1rem', color: newPoll.mode === 'SINGLE' ? '#b45309' : '#1e293b' }}>{t('polls.mode_exclusive')}</span>
-                                                <small style={{ fontSize: '0.75rem', fontWeight: 700, opacity: 0.8, color: newPoll.mode === 'SINGLE' ? '#d97706' : '#64748b' }}>{t('polls.mode_exclusive_desc')}</small>
+                                                <span className="mode-title-v2" style={{ fontWeight: 700, fontSize: '1.1rem', color: newPoll.mode === 'SINGLE' ? '#b45309' : 'var(--text-heading)' }}>{t('polls.mode_exclusive')}</span>
+                                                <small style={{ fontSize: '0.75rem', fontWeight: 700, opacity: 0.8, color: newPoll.mode === 'SINGLE' ? '#d97706' : 'var(--text-muted)' }}>{t('polls.mode_exclusive_desc')}</small>
                                             </div>
                                         </button>
-                                        <button onClick={() => setNewPoll({...newPoll, mode: 'MULTIPLE'})} className={`pc-mode-btn-v2 ${newPoll.mode === 'MULTIPLE' ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '24px', background: newPoll.mode === 'MULTIPLE' ? '#fffbeb' : '#f8fafc', border: newPoll.mode === 'MULTIPLE' ? '2.5px solid #f59e0b' : '2.5px solid #e2e8f0', borderRadius: '24px', cursor: 'pointer', transition: '0.3s', textAlign: 'left' }}>
-                                            <div className="mode-icon-v2" style={{ width: '48px', height: '48px', borderRadius: '14px', background: newPoll.mode === 'MULTIPLE' ? '#f59e0b' : 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', color: newPoll.mode === 'MULTIPLE' ? 'white' : '#cbd5e1', boxShadow: '0 4px 10px rgba(0,0,0,0.03)' }}><Layers size={24} /></div>
+                                        <button onClick={() => setNewPoll({...newPoll, mode: 'MULTIPLE'})} className={`pc-mode-btn-v2 ${newPoll.mode === 'MULTIPLE' ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '24px', background: newPoll.mode === 'MULTIPLE' ? '#fffbeb' : 'var(--bg-badge)', border: newPoll.mode === 'MULTIPLE' ? '2.5px solid #f59e0b' : '2.5px solid var(--border)', borderRadius: '24px', cursor: 'pointer', transition: '0.3s', textAlign: 'left' }}>
+                                            <div className="mode-icon-v2" style={{ width: '48px', height: '48px', borderRadius: '14px', background: newPoll.mode === 'MULTIPLE' ? '#f59e0b' : 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', color: newPoll.mode === 'MULTIPLE' ? 'white' : 'var(--border)', boxShadow: '0 4px 10px rgba(0,0,0,0.03)' }}><Layers size={24} /></div>
                                             <div className="v-stack">
-                                                <span className="mode-title-v2" style={{ fontWeight: 950, fontSize: '1.1rem', color: newPoll.mode === 'MULTIPLE' ? '#b45309' : '#1e293b' }}>{t('polls.mode_multiple')}</span>
-                                                <small style={{ fontSize: '0.75rem', fontWeight: 700, opacity: 0.8, color: newPoll.mode === 'MULTIPLE' ? '#d97706' : '#64748b' }}>{t('polls.mode_multiple_desc')}</small>
+                                                <span className="mode-title-v2" style={{ fontWeight: 700, fontSize: '1.1rem', color: newPoll.mode === 'MULTIPLE' ? '#b45309' : 'var(--text-heading)' }}>{t('polls.mode_multiple')}</span>
+                                                <small style={{ fontSize: '0.75rem', fontWeight: 700, opacity: 0.8, color: newPoll.mode === 'MULTIPLE' ? '#d97706' : 'var(--text-muted)' }}>{t('polls.mode_multiple_desc')}</small>
                                             </div>
                                         </button>
                                     </div>
@@ -284,19 +284,19 @@ export default function PollsConfig() {
 
                     <aside className="pc-preview-sticky-v2 animate fade-in" style={{ position: 'sticky', top: '40px', height: 'fit-content' }}>
                         <div className="pc-card-v2" style={{ padding: '0', overflow: 'hidden', border: 'none', boxShadow: '0 20px 50px rgba(0,0,0,0.1)' }}>
-                            <div style={{ background: '#f8fafc', padding: '28px', borderBottom: '1.5px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontWeight: 950, color: '#1e293b', fontSize: '1rem' }}><PieChart size={22} style={{ color: '#f59e0b' }} /> {t('polls.preview_title')}</div>
-                                <div style={{ display: 'flex', gap: '6px', background: 'white', padding: '6px', borderRadius: '16px', border: '1.5px solid #e2e8f0' }}>
-                                    <button onClick={() => setPreviewIsMobile(false)} style={{ border: 'none', background: !previewIsMobile ? '#fffbeb' : 'transparent', color: !previewIsMobile ? '#f59e0b' : '#94a3b8', padding: '10px', borderRadius: '12px', cursor: 'pointer', transition: '0.2s' }}><Monitor size={18} /></button>
-                                    <button onClick={() => setPreviewIsMobile(true)} style={{ border: 'none', background: previewIsMobile ? '#fffbeb' : 'transparent', color: previewIsMobile ? '#f59e0b' : '#94a3b8', padding: '10px', borderRadius: '12px', cursor: 'pointer', transition: '0.2s' }}><Smartphone size={18} /></button>
+                            <div style={{ background: 'var(--bg-badge)', padding: '28px', borderBottom: '1.5px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontWeight: 700, color: 'var(--text-heading)', fontSize: '1rem' }}><PieChart size={22} style={{ color: '#f59e0b' }} /> {t('polls.preview_title')}</div>
+                                <div style={{ display: 'flex', gap: '6px', background: 'white', padding: '6px', borderRadius: '16px', border: '1.5px solid var(--border)' }}>
+                                    <button onClick={() => setPreviewIsMobile(false)} style={{ border: 'none', background: !previewIsMobile ? '#fffbeb' : 'transparent', color: !previewIsMobile ? '#f59e0b' : 'var(--text-dim)', padding: '10px', borderRadius: '12px', cursor: 'pointer', transition: '0.2s' }}><Monitor size={18} /></button>
+                                    <button onClick={() => setPreviewIsMobile(true)} style={{ border: 'none', background: previewIsMobile ? '#fffbeb' : 'transparent', color: previewIsMobile ? '#f59e0b' : 'var(--text-dim)', padding: '10px', borderRadius: '12px', cursor: 'pointer', transition: '0.2s' }}><Smartphone size={18} /></button>
                                 </div>
                             </div>
-                            <div style={{ padding: '40px', background: previewTheme === 'dark' ? '#0f172a' : '#f8fafc', minHeight: '480px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <div style={{ padding: '40px', background: previewTheme === 'dark' ? '#0f172a' : 'var(--bg-badge)', minHeight: '480px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 <EmbedPreview data={previewPollEmbed} isMobile={previewIsMobile} theme={previewTheme} />
                             </div>
-                            <div style={{ padding: '20px 32px', background: 'white', borderTop: '1.5px solid #e2e8f0', display: 'flex', justifyContent: 'space-between' }}>
-                                <button onClick={() => setPreviewTheme('dark')} style={{ border: 'none', background: previewTheme === 'dark' ? '#fffbeb' : 'transparent', color: previewTheme === 'dark' ? '#f59e0b' : '#64748b', fontWeight: 950, fontSize: '0.8rem', padding: '10px 20px', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}><Moon size={16} /> DARK</button>
-                                <button onClick={() => setPreviewTheme('light')} style={{ border: 'none', background: previewTheme === 'light' ? '#fffbeb' : 'transparent', color: previewTheme === 'light' ? '#f59e0b' : '#64748b', fontWeight: 950, fontSize: '0.8rem', padding: '10px 20px', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}><Sun size={16} /> LIGHT</button>
+                            <div style={{ padding: '20px 32px', background: 'white', borderTop: '1.5px solid var(--border)', display: 'flex', justifyContent: 'space-between' }}>
+                                <button onClick={() => setPreviewTheme('dark')} style={{ border: 'none', background: previewTheme === 'dark' ? '#fffbeb' : 'transparent', color: previewTheme === 'dark' ? '#f59e0b' : 'var(--text-muted)', fontWeight: 700, fontSize: '0.8rem', padding: '10px 20px', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}><Moon size={16} /> DARK</button>
+                                <button onClick={() => setPreviewTheme('light')} style={{ border: 'none', background: previewTheme === 'light' ? '#fffbeb' : 'transparent', color: previewTheme === 'light' ? '#f59e0b' : 'var(--text-muted)', fontWeight: 700, fontSize: '0.8rem', padding: '10px 20px', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}><Sun size={16} /> LIGHT</button>
                             </div>
                         </div>
                         <button className="pc-btn-primary" style={{ marginTop: '32px', width: '100%', padding: '24px', borderRadius: '28px', fontSize: '1.2rem', justifyContent: 'center', background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', boxShadow: '0 10px 30px rgba(245, 158, 11, 0.2)' }} onClick={handleCreatePoll} disabled={creating}>
@@ -317,24 +317,24 @@ export default function PollsConfig() {
                         <div className="card-body-v2">
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(440px, 1fr))', gap: '28px' }}>
                                 {activePolls.map(poll => (
-                                    <div key={poll._id} className="pc-matrix-item-v2 animate slide-up" style={{ background: 'white', border: '1.5px solid #e2e8f0', padding: '32px', borderRadius: '32px', display: 'flex', gap: '24px', alignItems: 'center', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
+                                    <div key={poll._id} className="pc-matrix-item-v2 animate slide-up" style={{ background: 'white', border: '1.5px solid var(--border)', padding: '32px', borderRadius: '32px', display: 'flex', gap: '24px', alignItems: 'center', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
                                         <div style={{ width: '72px', height: '72px', background: '#fffbeb', borderRadius: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f59e0b', border: '1.5px solid #fde68a' }}><BarChart size={32} /></div>
                                         <div style={{ flex: 1 }}>
-                                            <h4 style={{ margin: '0 0 10px 0', fontSize: '1.3rem', fontWeight: 950, color: '#1e293b', letterSpacing: '-0.5px' }}>{poll.question}</h4>
+                                            <h4 style={{ margin: '0 0 10px 0', fontSize: '1.3rem', fontWeight: 700, color: 'var(--text-heading)', letterSpacing: '-0.5px' }}>{poll.question}</h4>
                                             <div style={{ display: 'flex', gap: '14px' }}>
-                                                <div className="pc-live-badge-v2" style={{ background: '#fffbeb', color: '#d97706', border: '1.5px solid #fde68a', padding: '6px 14px', borderRadius: '100px', fontSize: '0.75rem', fontWeight: 950, display: 'flex', alignItems: 'center', gap: '8px' }}><Clock size={16} /> {new Date(poll.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-                                                <div className="pc-live-badge-v2" style={{ background: '#fffbeb', color: '#d97706', border: '1.5px solid #fde68a', padding: '6px 14px', borderRadius: '100px', fontSize: '0.75rem', fontWeight: 950, display: 'flex', alignItems: 'center', gap: '8px' }}><Users size={16} /> {t('polls.votes_count', { count: poll.options.reduce((acc, o) => acc + (o.votes?.length || 0), 0) })}</div>
+                                                <div className="pc-live-badge-v2" style={{ background: '#fffbeb', color: '#d97706', border: '1.5px solid #fde68a', padding: '6px 14px', borderRadius: '100px', fontSize: '0.75rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}><Clock size={16} /> {new Date(poll.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                                                <div className="pc-live-badge-v2" style={{ background: '#fffbeb', color: '#d97706', border: '1.5px solid #fde68a', padding: '6px 14px', borderRadius: '100px', fontSize: '0.75rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}><Users size={16} /> {t('polls.votes_count', { count: poll.options.reduce((acc, o) => acc + (o.votes?.length || 0), 0) })}</div>
                                             </div>
                                         </div>
                                         <button className="pc-btn-delete-studio-v2" style={{ width: '48px', height: '48px', borderRadius: '14px', background: '#fef2f2', color: '#ef4444', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.2s' }}><Trash2 size={22} /></button>
                                     </div>
                                 ))}
                                 {activePolls.length === 0 && (
-                                    <div style={{ gridColumn: 'span 2', textAlign: 'center', padding: '120px 40px', background: '#f8fafc', borderRadius: '40px', border: '2px dashed #e2e8f0' }}>
-                                        <div style={{ width: '80px', height: '80px', background: '#f1f5f9', borderRadius: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', color: '#cbd5e1' }}>
+                                    <div style={{ gridColumn: 'span 2', textAlign: 'center', padding: '120px 40px', background: 'var(--bg-badge)', borderRadius: '40px', border: '2px dashed var(--border)' }}>
+                                        <div style={{ width: '80px', height: '80px', background: 'var(--bg-badge)', borderRadius: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', color: 'var(--border)' }}>
                                             <Shapes size={40} />
                                         </div>
-                                        <p style={{ fontWeight: 950, color: '#94a3b8', margin: 0, fontSize: '1.2rem' }}>{t('polls.empty_studio')}</p>
+                                        <p style={{ fontWeight: 700, color: 'var(--text-dim)', margin: 0, fontSize: '1.2rem' }}>{t('polls.empty_studio')}</p>
                                         <button onClick={() => setActiveTab('create')} className="pc-btn-primary" style={{ margin: '32px auto 0', padding: '12px 24px', borderRadius: '14px', background: '#f59e0b' }}><Plus size={18} /> {t('polls.start_now')}</button>
                                     </div>
                                 )}
@@ -348,7 +348,7 @@ export default function PollsConfig() {
                 <div className="v-stack animate slide-up" style={{ gap: '32px' }}>
                     <section className="pc-card-v2">
                         <div className="card-header-v2" style={{ marginBottom: '32px' }}>
-                            <div className="header-icon" style={{ background: '#f5f3ff', color: '#7c3aed' }}><Settings2 size={18} /></div>
+                            <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><Settings2 size={18} /></div>
                             <h3 style={{ margin: 0 }}>{t('polls.protocol_defaults')}</h3>
                         </div>
                         <div className="card-body-v2">
@@ -359,10 +359,10 @@ export default function PollsConfig() {
                             <div className="pc-input-group-v2" style={{ marginTop: '40px' }}>
                                 <label>{t('polls.branding_color')}</label>
                                 <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-                                    <div style={{ width: '64px', height: '64px', borderRadius: '18px', background: config.defaultColor, border: '3.5px solid white', boxShadow: '0 12px 24px rgba(0,0,0,0.1)' }}></div>
+                                    <div style={{ width: '64px', height: '64px', borderRadius: '18px', background: config.defaultColor, border: '3.5px solid var(--border)', boxShadow: '0 12px 24px rgba(0,0,0,0.1)' }}></div>
                                     <input type="color" style={{ width: '0', height: '0', opacity: 0, position: 'absolute' }} id="poll-def-color-studio" value={config.defaultColor} onChange={e => setConfig({...config, defaultColor: e.target.value})} />
-                                    <button onClick={() => document.getElementById('poll-def-color-studio').click()} className="pc-btn-outline-v2" style={{ background: '#f8fafc', padding: '16px 28px', borderRadius: '16px', fontWeight: 950, fontSize: '0.9rem', border: '1.5px solid #e2e8f0', cursor: 'pointer' }}>{t('polls.hex_picker')}</button>
-                                    <span style={{ fontSize: '1rem', color: '#94a3b8', fontWeight: 950, fontFamily: 'monospace' }}>{config.defaultColor?.toUpperCase() || '#F59E0B'}</span>
+                                    <button onClick={() => document.getElementById('poll-def-color-studio').click()} className="pc-btn-outline-v2" style={{ background: 'var(--bg-badge)', padding: '16px 28px', borderRadius: '16px', fontWeight: 700, fontSize: '0.9rem', border: '1.5px solid var(--border)', cursor: 'pointer' }}>{t('polls.hex_picker')}</button>
+                                    <span style={{ fontSize: '1rem', color: 'var(--text-dim)', fontWeight: 700, fontFamily: 'monospace' }}>{config.defaultColor?.toUpperCase() || '#F59E0B'}</span>
                                 </div>
                             </div>
                         </div>
@@ -372,52 +372,54 @@ export default function PollsConfig() {
         </div>
 
         <style jsx>{`
-            .pc-premium-wrapper { padding: 40px; max-width: 1700px; margin: 0 auto; font-family: 'Inter', sans-serif; }
+            .pc-premium-wrapper { padding: 32px; max-width: 1500px; margin: 0 auto; font-family: 'Inter', sans-serif; }
             
             /* Header V2 */
-            .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; background: white; padding: 32px; border-radius: 32px; box-shadow: var(--shadow-premium); border: 1px solid var(--border-light); }
-            .header-info { display: flex; align-items: center; gap: 24px; }
-            .pc-icon-box { width: 64px; height: 64px; border-radius: 20px; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 12px 24px rgba(245, 158, 11, 0.25); }
+            .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-card); padding: 24px; border-radius: 28px; box-shadow: var(--shadow-premium); border: 1px solid var(--border); }
+            .header-info { display: flex; align-items: center; gap: 16px; }
+            .pc-icon-box { width: 52px; height: 52px; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: #fff; }
             .pc-title-row { display: flex; flex-direction: column; gap: 6px; }
-            .pc-title-row h1 { font-family: 'Inter', sans-serif; font-size: 2.2rem; font-weight: 950; margin: 0; color: #1e293b; letter-spacing: -1.2px; }
+            .pc-title-row h1 { font-family: 'Inter', sans-serif; font-size: 1.8rem; font-weight: 700; margin: 0; color: var(--text-heading); letter-spacing: normal; }
             
-            .pc-status-tag-v2 { display: flex; align-items: center; gap: 8px; font-size: 0.65rem; font-weight: 950; padding: 4px 12px; border-radius: 100px; letter-spacing: 0.5px; }
-            .pc-status-tag-v2.on { background: #fffbeb; color: #d97706; }
-            .pc-status-tag-v2.off { background: #fef2f2; color: #ef4444; }
-            .status-dot-v2 { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+            .pc-status-tag-v2 { display: flex; align-items: center; gap: 6px; font-size: 0.6rem; font-weight: 700; padding: 4px 10px; border-radius: 100px; }
+            .pc-status-tag-v2.on { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+            .pc-status-tag-v2.off { background: var(--bg-badge); color: #ef4444; }
+            .status-dot-v2 { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
 
-            .pc-btn-primary { background: var(--primary); color: white; border: none; padding: 14px 28px; border-radius: 18px; font-weight: 850; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: 0.3s; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2); }
-            .pc-btn-primary:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(99, 102, 241, 0.3); }
+            .pc-btn-primary { background: var(--primary); color: #fff; border: none; padding: 12px 24px; border-radius: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
+            .pc-btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(var(--primary-rgb), 0.2); }
 
-            .pc-status-toggle-v2 { display: flex; align-items: center; gap: 10px; background: #f8fafc; color: #64748b; border: 1.5px solid #e2e8f0; padding: 12px 28px; border-radius: 18px; font-weight: 850; cursor: pointer; transition: 0.2s; }
-            .pc-status-toggle-v2.active { background: #fffbeb; color: #d97706; border-color: #fde68a; }
+            .pc-status-toggle-v2 { display: flex; align-items: center; gap: 10px; background: var(--bg-badge); color: var(--text-muted); border: 1.5px solid var(--border); padding: 12px 24px; border-radius: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+            .pc-status-toggle-v2.active { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border-color: #f59e0b; }
 
             /* Tabs V2 */
-            .pc-tabs-v2 { display: flex; gap: 8px; background: #f1f5f9; padding: 6px; border-radius: 20px; width: fit-content; }
-            .pc-tabs-v2 button { display: flex; align-items: center; gap: 10px; padding: 14px 28px; border: none; background: transparent; color: #64748b; font-weight: 850; font-size: 0.95rem; border-radius: 16px; cursor: pointer; transition: 0.2s; position: relative; }
-            .pc-tabs-v2 button.active { background: white; color: var(--primary); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-            .tab-count-v2 { background: var(--primary); color: white; font-size: 0.65rem; padding: 2px 8px; border-radius: 100px; margin-left: 4px; }
+            .pc-tabs-v2 { display: flex; gap: 6px; background: var(--bg-badge); padding: 5px; border-radius: 18px; width: fit-content; }
+            .pc-tabs-v2 button { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border: none; background: transparent; color: var(--text-muted); font-weight: 700; font-size: 0.9rem; border-radius: 14px; cursor: pointer; transition: 0.2s; }
+            .pc-tabs-v2 button.active { background: var(--bg-card); color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+            .pc-tab-badge-v2 { background: var(--primary); color: #fff; font-size: 0.65rem; padding: 1px 6px; border-radius: 100px; margin-left: 4px; }
 
             /* Card V2 */
-            .pc-card-v2 { background: white; border: 1px solid var(--border-light); border-radius: 32px; padding: 40px; box-shadow: var(--shadow-premium); }
-            .card-header-v2 { display: flex; align-items: center; gap: 20px; }
-            .header-icon { width: 52px; height: 52px; border-radius: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
-            .card-header-v2 h3 { margin: 0; font-family: 'Inter'; font-size: 1.5rem; font-weight: 950; color: #1e293b; }
+            .pc-card-v2 { background: var(--bg-card); border: 1px solid var(--border); border-radius: 28px; padding: 32px; box-shadow: var(--shadow-premium); }
+            .card-header-v2 { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+            .header-icon { width: 44px; height: 44px; background: var(--bg-badge); color: var(--primary); border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+            .card-header-v2 h3 { margin: 0; font-family: 'Inter'; font-size: 1.3rem; font-weight: 700; color: var(--text-heading); }
 
             /* Inputs V2 */
             .pc-input-group-v2 { display: flex; flex-direction: column; gap: 8px; }
-            .pc-input-group-v2 label { font-size: 0.75rem; font-weight: 950; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
-            .pc-input-modern-v2 { width: 100%; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 18px; padding: 16px 20px; font-weight: 900; color: #1e293b; outline: none; transition: 0.2s; }
-            .pc-input-modern-v2:focus { border-color: var(--primary); background: white; }
+            .pc-input-group-v2 label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; }
+
+            .pc-input-modern-v2 { width: 100%; background: var(--bg-badge); border: 1.5px solid var(--border); border-radius: 14px; padding: 12px 16px; font-weight: 700; color: var(--text-heading); outline: none; transition: 0.2s; display: flex; align-items: center; gap: 12px; }
+            .pc-input-modern-v2:focus-within { border-color: var(--primary); }
+            .pc-input-modern-v2 input { width: 100%; background: transparent; border: none; font-weight: 700; color: var(--text-heading); outline: none; }
 
             .pc-poll-option-v2:hover { border-color: #f59e0b !important; transform: translateY(-3px); box-shadow: 0 8px 24px rgba(245, 158, 11, 0.08) !important; }
-            .pc-btn-delete-studio-v2:hover { background: #ef4444 !important; color: white !important; transform: rotate(8deg); }
+            .pc-btn-delete-studio-v2:hover { background: #ef4444 !important; color: #fff !important; transform: rotate(8deg); }
 
             .v-stack { display: flex; flex-direction: column; }
             .animate { animation: slideUp 0.4s ease-out; }
             @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-            :global(.light-theme) .pc-header-v2, :global(.light-theme) .pc-card-v2, :global(.light-theme) .pc-matrix-item-v2, :global(.light-theme) .pc-poll-option-v2 { background: #ffffff !important; box-shadow: 0 8px 30px rgba(0,0,0,0.04) !important; }
+            :global(.light-theme) .pc-header-v2, :global(.light-theme) .pc-card-v2, :global(.light-theme) .pc-matrix-item-v2, :global(.light-theme) .pc-poll-option-v2 { box-shadow: 0 8px 30px rgba(0,0,0,0.04) !important; }
         `}</style>
     </div>
   );

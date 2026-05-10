@@ -85,7 +85,7 @@ class ErrorBoundary extends React.Component {
               font-size: 2rem;
               font-weight: 900;
               margin-bottom: 16px;
-              letter-spacing: -1px;
+              letter-spacing: -0.02em;
             }
             .error-message {
               color: var(--text-muted);
@@ -126,3 +126,4 @@ class ErrorBoundary extends React.Component {
 }
 
 export default ErrorBoundary;
+

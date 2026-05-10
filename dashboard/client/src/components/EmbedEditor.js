@@ -186,7 +186,7 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
         .pc-card-v2 { background: white; border: 1px solid var(--border-light); border-radius: 28px; padding: 24px; box-shadow: var(--shadow-premium); }
         .card-header-v2 { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
         .header-icon { width: 36px; height: 36px; background: var(--bg-badge); color: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
-        .card-header-v2 h3 { margin: 0; font-size: 1.05rem; font-weight: 850; }
+        .card-header-v2 h3 { margin: 0; font-size: 1.05rem; font-weight: 800; }
 
         .pc-input-group-v2 { display: flex; flex-direction: column; gap: 8px; }
         .pc-input-group-v2 label { font-size: 0.65rem; font-weight: 900; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; padding-left: 4px; }
@@ -238,3 +238,4 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
     </div>
   );
 }
+

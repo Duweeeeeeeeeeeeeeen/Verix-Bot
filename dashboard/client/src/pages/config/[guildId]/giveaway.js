@@ -279,7 +279,7 @@ export default function GiveawayConfig() {
                                             <div className="color-preview" style={{ backgroundColor: newGw.color }}>
                                                 <input type="color" value={newGw.color} onChange={e => setNewGw({...newGw, color: e.target.value})} />
                                             </div>
-                                            <span style={{ fontSize: '0.8rem', fontWeight: 800 }}>PICK</span>
+                                            <span style={{ fontSize: '0.8rem', fontWeight: 700 }}>PICK</span>
                                         </div>
                                     </div>
                                 </div>
@@ -311,13 +311,13 @@ export default function GiveawayConfig() {
                     <aside className="pc-preview-sticky-v2" style={{ position: 'sticky', top: '32px', height: 'fit-content' }}>
                         <div className="pc-card-v2" style={{ padding: '0', overflow: 'hidden' }}>
                             <div style={{ background: 'var(--bg-badge)', padding: '24px', borderBottom: '1.5px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 800, color: 'var(--text-heading)' }}><Eye size={20} /> {t('giveaway.live_preview')}</div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 700, color: 'var(--text-heading)' }}><Eye size={20} /> {t('giveaway.live_preview')}</div>
                                 <div style={{ display: 'flex', gap: '4px' }}>
                                     <button onClick={() => setIsPreviewMobile(false)} className={`pc-btn-icon-v2 ${!isPreviewMobile ? 'active' : ''}`}><Monitor size={18} /></button>
                                     <button onClick={() => setIsPreviewMobile(true)} className={`pc-btn-icon-v2 ${isPreviewMobile ? 'active' : ''}`}><Smartphone size={18} /></button>
                                 </div>
                             </div>
-                            <div style={{ padding: '32px', background: previewTheme === 'dark' ? '#0f172a' : '#f8fafc', minHeight: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <div style={{ padding: '32px', background: previewTheme === 'dark' ? '#0f172a' : 'var(--bg-badge)', minHeight: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 <EmbedPreview data={previewEmbed} isMobile={isPreviewMobile} theme={previewTheme} />
                             </div>
                             <div style={{ padding: '16px', background: 'var(--bg-card)', borderTop: '1.5px solid var(--border)', display: 'flex', justifyContent: 'center', gap: '12px' }}>
@@ -336,9 +336,9 @@ export default function GiveawayConfig() {
                             <div key={gw.messageId} className="pc-sub-card-v2" style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
                                 <div style={{ width: '64px', height: '64px', background: 'var(--bg-card)', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)', border: '1.5px solid var(--border)' }}><Trophy size={32} /></div>
                                 <div style={{ flex: 1 }}>
-                                    <h4 style={{ margin: '0 0 8px 0', fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-heading)' }}>{gw.prize}</h4>
+                                    <h4 style={{ margin: '0 0 8px 0', fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-heading)' }}>{gw.prize}</h4>
                                     <div style={{ display: 'flex', gap: '12px' }}>
-                                        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 800 }}><Users size={14} /> {gw.participants?.length || 0} Entrate</span>
+                                        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 700 }}><Users size={14} /> {gw.participants?.length || 0} Entrate</span>
                                     </div>
                                 </div>
                                 <button onClick={() => handleDeleteGiveaway(gw.messageId)} className="pc-btn-icon-danger-v2"><Trash2 size={20} /></button>
@@ -347,7 +347,7 @@ export default function GiveawayConfig() {
                         {activeGiveaways.length === 0 && (
                             <div style={{ gridColumn: 'span 2', textAlign: 'center', padding: '100px 32px', background: 'var(--bg-badge)', borderRadius: '32px', border: '2px dashed var(--border)' }}>
                                 <Box size={64} style={{ margin: '0 auto 24px', opacity: 0.1 }} />
-                                <h3 style={{ margin: 0, fontWeight: 800, color: 'var(--text-heading)' }}>{t('giveaway.no_active')}</h3>
+                                <h3 style={{ margin: 0, fontWeight: 700, color: 'var(--text-heading)' }}>{t('giveaway.no_active')}</h3>
                                 <button onClick={() => setActiveTab('create')} className="pc-btn-primary" style={{ margin: '24px auto 0' }}><Plus size={18} /> {t('giveaway.new_project')}</button>
                             </div>
                         )}
@@ -369,7 +369,7 @@ export default function GiveawayConfig() {
                             <tbody>
                                 {logs.map((log, i) => (
                                     <tr key={i} style={{ borderTop: '1px solid var(--border)' }}>
-                                        <td style={{ padding: '24px 32px', fontWeight: 800, color: 'var(--text-heading)' }}>{log.prize}</td>
+                                        <td style={{ padding: '24px 32px', fontWeight: 700, color: 'var(--text-heading)' }}>{log.prize}</td>
                                         <td style={{ padding: '24px 32px', color: 'var(--text-muted)' }}>{new Date(log.endTime).toLocaleDateString()}</td>
                                         <td style={{ padding: '24px 32px' }}><span className="pc-tag-v2">{log.participants?.length || 0}</span></td>
                                     </tr>
@@ -403,36 +403,37 @@ export default function GiveawayConfig() {
             
             .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-card); padding: 24px; border-radius: 28px; box-shadow: var(--shadow-premium); border: 1px solid var(--border); }
             .header-info { display: flex; align-items: center; gap: 16px; }
-            .pc-icon-box { width: 52px; height: 52px; color: white; border-radius: 16px; display: flex; align-items: center; justify-content: center; }
-            .pc-title-row h1 { font-family: 'Inter'; font-size: 1.8rem; font-weight: 800; margin: 0; color: var(--text-heading); letter-spacing: -0.5px; }
+            .pc-icon-box { width: 52px; height: 52px; color: #fff; border-radius: 16px; display: flex; align-items: center; justify-content: center; }
+            .pc-title-row h1 { font-family: 'Inter'; font-size: 1.8rem; font-weight: 700; margin: 0; color: var(--text-heading); letter-spacing: normal; }
             
-            .pc-status-tag-v2 { display: flex; align-items: center; gap: 6px; font-size: 0.6rem; font-weight: 800; padding: 4px 10px; border-radius: 100px; }
-            .pc-status-tag-v2.on { background: rgba(99, 102, 241, 0.1); color: #6366f1; }
-            .pc-status-tag-v2.off { background: var(--bg-badge); color: var(--text-muted); }
+            .pc-status-tag-v2 { display: flex; align-items: center; gap: 6px; font-size: 0.6rem; font-weight: 700; padding: 4px 10px; border-radius: 100px; }
+            .pc-status-tag-v2.on { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+            .pc-status-tag-v2.off { background: var(--bg-badge); color: #ef4444; }
             .status-dot-v2 { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
 
-            .pc-btn-primary { background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 14px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
-            .pc-btn-secondary-v2 { background: var(--bg-card); color: var(--primary); border: 1.5px solid var(--border); padding: 12px 24px; border-radius: 14px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
+            .pc-btn-primary { background: var(--primary); color: #fff; border: none; padding: 12px 24px; border-radius: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
+            .pc-btn-secondary-v2 { background: var(--bg-card); color: var(--primary); border: 1.5px solid var(--border); padding: 12px 24px; border-radius: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
 
             .pc-tabs-v2 { display: flex; gap: 6px; background: var(--bg-badge); padding: 5px; border-radius: 16px; width: fit-content; overflow-x: auto; max-width: 100%; }
-            .pc-tabs-v2 button { display: flex; align-items: center; gap: 10px; padding: 10px 24px; border: none; background: transparent; color: var(--text-muted); font-weight: 800; font-size: 0.9rem; border-radius: 14px; cursor: pointer; transition: 0.2s; white-space: nowrap; }
+            .pc-tabs-v2 button { display: flex; align-items: center; gap: 10px; padding: 10px 24px; border: none; background: transparent; color: var(--text-muted); font-weight: 700; font-size: 0.9rem; border-radius: 14px; cursor: pointer; transition: 0.2s; white-space: nowrap; }
             .pc-tabs-v2 button.active { background: var(--bg-card); color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-            .pc-tab-badge-v2 { background: var(--primary); color: white; font-size: 0.7rem; padding: 2px 8px; border-radius: 100px; }
+            .pc-tab-badge-v2 { background: var(--primary); color: #fff; font-size: 0.7rem; padding: 2px 8px; border-radius: 100px; }
 
             .pc-card-v2 { background: var(--bg-card); border: 1px solid var(--border); border-radius: 28px; padding: 32px; box-shadow: var(--shadow-premium); }
             .card-header-v2 { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
-            .header-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: var(--bg-badge); color: var(--primary); }
-            .card-header-v2 h3 { margin: 0; font-family: 'Inter'; font-size: 1.3rem; font-weight: 800; color: var(--text-heading); }
+            .header-icon { width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: var(--bg-badge); color: var(--primary); }
+            .card-header-v2 h3 { margin: 0; font-family: 'Inter'; font-size: 1.3rem; font-weight: 700; color: var(--text-heading); }
 
-            .pc-input-group-v2 label { font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 12px; display: block; }
-            .pc-input-modern-v2 { width: 100%; background: var(--bg-card); border: 1.5px solid var(--border); border-radius: 14px; padding: 12px 16px; font-weight: 800; color: var(--text-heading); outline: none; }
+            .pc-input-group-v2 label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 12px; display: block; }
+            .pc-input-modern-v2 { width: 100%; background: var(--bg-badge); border: 1.5px solid var(--border); border-radius: 14px; padding: 12px 16px; font-weight: 700; color: var(--text-heading); outline: none; transition: 0.2s; }
+            .pc-input-modern-v2:focus { border-color: var(--primary); }
             .pc-sub-card-v2 { background: var(--bg-badge); padding: 24px; border-radius: 20px; border: 1.5px solid var(--border); }
 
             .pc-color-box-v2 { display: flex; align-items: center; gap: 10px; background: var(--bg-card); padding: 8px; border-radius: 12px; border: 1.5px solid var(--border); }
-            .color-preview { width: 32px; height: 32px; border-radius: 8px; position: relative; overflow: hidden; border: 1px solid white; }
+            .color-preview { width: 32px; height: 32px; border-radius: 8px; position: relative; overflow: hidden; border: 1px solid #fff; }
             .color-preview input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 
-            .pc-tag-v2 { background: var(--bg-badge); color: var(--text-muted); padding: 4px 12px; border-radius: 100px; border: 1.5px solid var(--border); font-size: 0.8rem; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+            .pc-tag-v2 { background: var(--bg-badge); color: var(--text-muted); padding: 4px 12px; border-radius: 100px; border: 1.5px solid var(--border); font-size: 0.8rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
             .pc-tag-v2.active { background: var(--primary-glow); color: var(--primary); border-color: var(--primary); }
 
             .pc-btn-icon-v2 { background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 8px; border-radius: 10px; }

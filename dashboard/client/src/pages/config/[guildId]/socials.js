@@ -174,7 +174,7 @@ export default function SocialsConfig() {
                                     className={`pc-nav-item-v2 ${active ? 'active' : ''} ${locked ? 'locked' : ''}`}
                                     onClick={() => !locked && setActivePlatform(p.id)}
                                 >
-                                    <div className="p-icon-box-v2" style={{ background: active ? p.color : 'var(--bg-badge)', color: active ? 'white' : locked ? 'var(--text-muted)' : p.color }}>
+                                    <div className="p-icon-box-v2" style={{ background: active ? p.color : 'var(--bg-badge)', color: active ? '#fff' : locked ? 'var(--text-muted)' : p.color }}>
                                         {locked ? <Lock size={18} /> : <p.icon size={20} />}
                                     </div>
                                     <div className="v-stack" style={{ flex: 1, textAlign: 'left' }}>
@@ -219,8 +219,8 @@ export default function SocialsConfig() {
                                 <pData.icon size={36} />
                             </div>
                             <div className="v-stack" style={{ flex: 1 }}>
-                                <h4 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 950, color: '#1e293b' }}>{t(pData.nameKey)}</h4>
-                                <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: '#64748b', fontWeight: 700, lineHeight: 1.4 }}>{t(pData.descKey)}</p>
+                                <h4 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-heading)' }}>{t(pData.nameKey)}</h4>
+                                <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 700, lineHeight: 1.4 }}>{t(pData.descKey)}</p>
                             </div>
                             <div className="v-stack" style={{ alignItems: 'flex-end', gap: '12px' }}>
                                 <div className={`pc-status-badge-v2 ${currentPlatformConfig.enabled ? 'on' : 'off'}`}>
@@ -363,71 +363,72 @@ export default function SocialsConfig() {
             /* Header V2 */
             .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-card); padding: 24px; border-radius: 28px; box-shadow: var(--shadow-premium); border: 1px solid var(--border); }
             .header-info { display: flex; align-items: center; gap: 16px; }
-            .pc-icon-box { width: 52px; height: 52px; color: white; border-radius: 16px; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 20px rgba(99, 102, 241, 0.2); }
-            .pc-title-row h1 { font-family: 'Inter'; font-size: 1.8rem; font-weight: 800; margin: 0; color: var(--text-heading); letter-spacing: -0.5px; }
+            .pc-icon-box { width: 52px; height: 52px; color: #fff; border-radius: 16px; display: flex; align-items: center; justify-content: center; }
+            .pc-title-row h1 { font-family: 'Inter', sans-serif; font-size: 1.8rem; font-weight: 700; margin: 0; color: var(--text-heading); letter-spacing: normal; }
             
-            .pc-status-tag-v2 { display: flex; align-items: center; gap: 6px; font-size: 0.6rem; font-weight: 800; padding: 4px 10px; border-radius: 100px; letter-spacing: 0.5px; }
-            .pc-status-tag-v2.on { background: var(--primary-glow); color: var(--primary); }
+            .pc-status-tag-v2 { display: flex; align-items: center; gap: 6px; font-size: 0.6rem; font-weight: 700; padding: 4px 10px; border-radius: 100px; }
+            .pc-status-tag-v2.on { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+            .pc-status-tag-v2.off { background: var(--bg-badge); color: #ef4444; }
             .status-dot-v2 { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
 
-            .pc-btn-primary { background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 14px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; box-shadow: 0 8px 16px rgba(99, 102, 241, 0.15); }
-            .pc-btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 12px 24px rgba(99, 102, 241, 0.25); }
+            .pc-btn-primary { background: var(--primary); color: #fff; border: none; padding: 12px 24px; border-radius: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
+            .pc-btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(var(--primary-rgb), 0.2); }
 
             /* Sidebar */
             .pc-sidebar-card-v2 { background: var(--bg-card); padding: 24px; border-radius: 28px; box-shadow: var(--shadow-premium); border: 1px solid var(--border); }
-            .sidebar-label-v2 { font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; display: block; }
+            .sidebar-label-v2 { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; display: block; }
             .pc-nav-stack-v2 { display: flex; flex-direction: column; gap: 12px; }
             .pc-nav-item-v2 { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border: 1.5px solid transparent; background: transparent; border-radius: 18px; cursor: pointer; transition: 0.2s; position: relative; width: 100%; }
-            .pc-nav-item-v2:hover:not(.locked) { background: var(--bg-badge); }
-            .pc-nav-item-v2.active { background: var(--bg-badge); border-color: var(--border-strong); }
+            .pc-nav-item-v2:hover:not(.locked) { background: var(--bg-badge); color: var(--primary); }
+            .pc-nav-item-v2.active { background: var(--bg-badge); border-color: var(--primary); color: var(--primary); }
             .p-icon-box-v2 { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; transition: 0.2s; flex-shrink: 0; }
-            .nav-label-v2 { font-weight: 800; font-size: 0.95rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
+            .nav-label-v2 { font-weight: 700; font-size: 0.95rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
             .nav-sync-tag-v2 { display: flex; align-items: center; gap: 4px; margin-top: 2px; }
             .nav-sync-tag-v2 .dot { width: 4px; height: 4px; border-radius: 50%; background: #10b981; }
-            .nav-sync-tag-v2 span { font-size: 0.6rem; color: #10b981; font-weight: 900; text-transform: uppercase; }
-            .lock-badge-v2 { position: absolute; right: 10px; top: 10px; background: linear-gradient(135deg, #a855f7, #7c3aed); color: white; padding: 3px; border-radius: 6px; }
+            .nav-sync-tag-v2 span { font-size: 0.6rem; color: #10b981; font-weight: 700; text-transform: uppercase; }
+            .lock-badge-v2 { position: absolute; right: 10px; top: 10px; background: linear-gradient(135deg, #a855f7, #7c3aed); color: #fff; padding: 3px; border-radius: 6px; }
 
-            .pc-pro-card-v2 { background: var(--bg-status-box); padding: 24px; border-radius: 28px; color: var(--text-main); border: 1px solid var(--border); }
+            .pc-pro-card-v2 { background: var(--bg-badge); padding: 24px; border-radius: 28px; color: var(--text-heading); border: 1px solid var(--border); }
             .pro-header-v2 { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-            .pro-icon-v2 { padding: 8px; background: var(--bg-badge); border-radius: 10px; color: var(--primary); }
+            .pro-icon-v2 { padding: 8px; background: var(--bg-card); border-radius: 10px; color: var(--primary); }
             .pc-pro-card-v2 p { margin: 0; font-size: 0.8rem; opacity: 0.8; line-height: 1.6; font-weight: 700; }
 
             /* Main Area */
             .pc-platform-banner-v2 { display: flex; align-items: center; gap: 24px; padding: 32px; background: var(--bg-card); border-radius: 28px; border: 1px solid var(--border); position: relative; overflow: hidden; box-shadow: var(--shadow-premium); }
             .p-hero-icon-v2 { width: 64px; height: 64px; border-radius: 18px; background: var(--bg-badge); display: flex; align-items: center; justify-content: center; }
-            .pc-platform-banner-v2 h2 { margin: 0; font-family: 'Inter'; font-size: 1.6rem; font-weight: 800; color: var(--text-heading); }
+            .pc-platform-banner-v2 h2 { margin: 0; font-family: 'Inter'; font-size: 1.6rem; font-weight: 700; color: var(--text-heading); }
             .pc-platform-banner-v2 p { margin: 6px 0 0 0; color: var(--text-muted); font-size: 0.95rem; font-weight: 700; }
-            .pc-status-badge-v2 { display: flex; align-items: center; gap: 6px; background: var(--bg-badge); color: var(--text-muted); padding: 5px 12px; border-radius: 100px; font-size: 0.65rem; font-weight: 800; border: 1px solid var(--border); }
+            .pc-status-badge-v2 { display: flex; align-items: center; gap: 6px; background: var(--bg-badge); color: var(--text-muted); padding: 5px 12px; border-radius: 100px; font-size: 0.65rem; font-weight: 700; border: 1px solid var(--border); }
             .pc-status-badge-v2.on { background: rgba(16, 185, 129, 0.1); color: #10b981; border-color: rgba(16, 185, 129, 0.2); }
             .pc-status-badge-v2 .dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
 
             .pc-tabs-v2 { display: flex; gap: 6px; background: var(--bg-badge); padding: 5px; border-radius: 18px; width: fit-content; margin-top: 8px; overflow-x: auto; max-width: 100%; }
-            .pc-tabs-v2 button { display: flex; align-items: center; gap: 10px; padding: 10px 24px; border: none; background: transparent; color: var(--text-muted); font-weight: 800; font-size: 0.9rem; border-radius: 14px; cursor: pointer; transition: 0.2s; }
+            .pc-tabs-v2 button { display: flex; align-items: center; gap: 10px; padding: 10px 24px; border: none; background: transparent; color: var(--text-muted); font-weight: 700; font-size: 0.9rem; border-radius: 14px; cursor: pointer; transition: 0.2s; }
             .pc-tabs-v2 button.active { background: var(--bg-card); color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
 
             .pc-settings-layout-v2 { display: grid; grid-template-columns: 1.3fr 1fr; gap: 32px; }
             .pc-card-v2 { background: var(--bg-card); border: 1px solid var(--border); border-radius: 28px; padding: 32px; box-shadow: var(--shadow-premium); }
             .card-header-v2 { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
             .header-icon { width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: var(--bg-badge); color: var(--primary); }
-            .card-header-v2 h3 { margin: 0; font-family: 'Inter'; font-size: 1.3rem; font-weight: 800; color: var(--text-heading); }
+            .card-header-v2 h3 { margin: 0; font-family: 'Inter'; font-size: 1.3rem; font-weight: 700; color: var(--text-heading); }
 
             .pc-sub-card-v2 { background: var(--bg-badge); padding: 20px; border-radius: 20px; border: 1.5px solid var(--border); }
-            .input-label-v2 { font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-            .pc-input-modern-v2 { display: flex; align-items: center; gap: 12px; background: var(--bg-card); padding: 10px 16px; border-radius: 14px; border: 1.5px solid var(--border); transition: 0.2s; }
-            .pc-input-modern-v2:focus-within { border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-glow); }
-            .pc-input-modern-v2 input { border: none; background: transparent; width: 100%; font-weight: 800; font-size: 1rem; outline: none; color: var(--text-heading); }
+            .input-label-v2 { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+            .pc-input-modern-v2 { display: flex; align-items: center; gap: 12px; background: var(--bg-badge); padding: 10px 16px; border-radius: 14px; border: 1.5px solid var(--border); transition: 0.2s; }
+            .pc-input-modern-v2:focus-within { border-color: var(--primary); }
+            .pc-input-modern-v2 input { border: none; background: transparent; width: 100%; font-weight: 700; font-size: 1rem; outline: none; color: var(--text-heading); }
             
             .pc-btn-icon-danger-v2 { width: 40px; height: 40px; border-radius: 12px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
-            .pc-btn-icon-danger-v2:hover { background: #ef4444; color: white; }
+            .pc-btn-icon-danger-v2:hover { background: #ef4444; color: #fff; }
 
-            .pc-btn-add-account-v2 { width: 100%; padding: 20px; border: 2px dashed var(--border); background: transparent; border-radius: 20px; color: var(--text-muted); font-weight: 900; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px; transition: 0.2s; }
+            .pc-btn-add-account-v2 { width: 100%; padding: 20px; border: 2px dashed var(--border); background: transparent; border-radius: 20px; color: var(--text-muted); font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px; transition: 0.2s; }
             .pc-btn-add-account-v2:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-glow); }
 
-            .pc-input-group-v2 label { font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 12px; display: block; letter-spacing: 0.5px; }
+            .pc-input-group-v2 label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 12px; display: block; letter-spacing: 0.5px; }
             .input-hint-v2 { margin: 10px 0 0 0; font-size: 0.7rem; color: var(--text-muted); font-weight: 650; line-height: 1.5; }
 
             .pc-toggle-card-v2 { background: var(--bg-badge); padding: 20px; border-radius: 20px; border: 1.5px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-            .pc-toggle-card-v2 strong { font-weight: 800; color: var(--text-heading); }
+            .pc-toggle-card-v2 strong { font-weight: 700; color: var(--text-heading); }
             .pc-toggle-card-v2 span { font-size: 0.75rem; color: var(--text-muted); font-weight: 700; }
 
             .pc-standby-view-v2 { text-align: center; padding: 80px 40px; background: var(--bg-badge); border: 2px dashed var(--border); border-radius: 32px; }
@@ -439,7 +440,7 @@ export default function SocialsConfig() {
             .pc-toggle-v2 { position: relative; width: 40px; height: 20px; }
             .pc-toggle-v2 input { opacity: 0; width: 0; height: 0; }
             .pc-slider-v2 { position: absolute; cursor: pointer; inset: 0; background: var(--border); transition: .3s; border-radius: 34px; }
-            .pc-slider-v2:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background: white; transition: .3s; border-radius: 50%; }
+            .pc-slider-v2:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background: #fff; transition: .3s; border-radius: 50%; }
             input:checked + .pc-slider-v2 { background: var(--primary); }
             input:checked + .pc-slider-v2:before { transform: translateX(20px); }
 

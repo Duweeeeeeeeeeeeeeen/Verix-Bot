@@ -310,7 +310,7 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
                     title={isCollapsed ? item.name : ''}
                   >
                     <div className="nav-link-icon">
-                      <Icon size={18} strokeWidth={2.5} />
+                       <Icon size={18} strokeWidth={2.5} />
                     </div>
                     {!isCollapsed && <span className="nav-link-text animate fade-in">{item.name}</span>}
                     {isActive && !isCollapsed && <ChevronRight size={14} className="active-arrow" />}
@@ -346,7 +346,7 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
                     title={isCollapsed ? item.name : ''}
                   >
                     <div className="nav-link-icon">
-                      <Icon size={18} strokeWidth={2.5} />
+                       <Icon size={18} strokeWidth={2.5} />
                     </div>
                     {!isCollapsed && <span className="nav-link-text animate fade-in">{item.name}</span>}
                     {isActive && !isCollapsed && <ChevronRight size={14} className="active-arrow" />}
@@ -471,7 +471,7 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
         }
 
         .nav-section { margin-bottom: 2px; }
-        .nav-group-title { font-size: 8px; font-weight: 800; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1px; padding: 8px 16px 1px 16px; opacity: 0.5; }
+        .nav-group-title { font-size: 8px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px; padding: 8px 16px 1px 16px; opacity: 0.5; }
         .nav-divider { height: 1px; background: var(--border); margin: 4px 16px; opacity: 0.3; }
         .nav-link {
           display: flex;
