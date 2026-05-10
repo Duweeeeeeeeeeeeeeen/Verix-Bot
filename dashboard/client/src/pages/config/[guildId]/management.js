@@ -305,7 +305,7 @@ export default function ManagementPage() {
                                         <div className="hero-avatar-box-v2"><User size={40} /></div>
                                         <div className="hero-info-v2">
                                             <div className="align-center" style={{ gap: '16px' }}>
-                                                <h2 style={{ margin: 0, fontSize: '1.8rem', fontWeight: 900, fontFamily: 'Outfit' }}>{userData.user?.username}</h2>
+                                                <h2 style={{ margin: 0, fontSize: '1.8rem', fontWeight: 900, fontFamily: 'Inter' }}>{userData.user?.username}</h2>
                                                 <div className="pc-status-pill active" style={{ fontSize: '0.7rem' }}>REGISTRATO</div>
                                             </div>
                                             <p className="pc-hint-v2" style={{ fontSize: '0.9rem', marginTop: '4px' }}>ID Discord: {userData.user?.discordId}</p>
@@ -480,7 +480,7 @@ export default function ManagementPage() {
             .header-info { display: flex; align-items: center; gap: 24px; }
             .pc-icon-box { width: 64px; height: 64px; color: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 12px 24px rgba(79, 70, 229, 0.25); }
             .pc-title-row { display: flex; flex-direction: column; gap: 6px; }
-            .pc-title-row h1 { font-family: 'Outfit', sans-serif; font-size: 2rem; font-weight: 900; margin: 0; color: var(--text-main); letter-spacing: -0.5px; }
+            .pc-title-row h1 { font-family: 'Inter', sans-serif; font-size: 2rem; font-weight: 900; margin: 0; color: var(--text-main); letter-spacing: -0.5px; }
             .pc-status-pill { font-size: 0.65rem; font-weight: 900; padding: 4px 12px; border-radius: 100px; letter-spacing: 1px; width: fit-content; }
             .pc-status-pill.active { background: #ecfdf5; color: #10b981; border: 1px solid #10b98133; }
             

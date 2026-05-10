@@ -15,6 +15,7 @@ import {
   Layout,
   Globe
 } from 'lucide-react';
+import Head from 'next/head';
 
 export default function SystemConfig() {
   const { t } = useT();
@@ -35,12 +36,16 @@ export default function SystemConfig() {
 
   const handleSave = () => {
       window.dispatchEvent(new CustomEvent('show-toast', { 
-          detail: { message: "Configurazione sistema salvata!", type: 'success' } 
+          detail: { message: t('common.saved_success'), type: 'success' } 
       }));
   };
 
   return (
     <div className="pc-premium-wrapper fade-in">
+        <Head>
+            <title>{t('system.title')} | Verix Dashboard</title>
+        </Head>
+
         {/* V2 Header */}
         <header className="pc-header-v2">
             <div className="header-info">
@@ -48,15 +53,18 @@ export default function SystemConfig() {
                     <Settings size={28} />
                 </div>
                 <div className="pc-title-row">
-                    <h1>Messaggi di Sistema</h1>
-                    <div className="pc-status-pill active">CONFIGURAZIONE GLOBALE</div>
+                    <h1>{t('system.messages')}</h1>
+                    <div className="pc-status-tag-v2 on">
+                        <div className="status-dot-v2"></div>
+                        {t('system.global_tag')}
+                    </div>
                 </div>
             </div>
             
             <div className="header-controls">
                 <button className="pc-btn-primary" onClick={handleSave}>
                     <Save size={18} />
-                    <span>Salva Tutto</span>
+                    <span>{t('common.save_all')}</span>
                 </button>
             </div>
         </header>
@@ -64,24 +72,24 @@ export default function SystemConfig() {
         <div className="pc-content-v2">
             <section className="pc-card-v2">
                 <div className="card-header-v2">
-                    <div className="header-icon"><MessageSquare size={18} /></div>
-                    <h3>Personalizzazione Risposte</h3>
+                    <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><MessageSquare size={18} /></div>
+                    <h3 style={{ margin: 0 }}>{t('system.custom_resp')}</h3>
                 </div>
                 <div className="card-body-v2">
                     <EmbedMessageManager 
                         guildId={guildId}
                         module="system"
                         slugs={[
-                            { key: 'no_permission', label: 'Permessi Insufficienti', description: 'Inviato quando un utente non ha i permessi per un comando', variables: ['user', 'guild'], group: 'Sicurezza', groupIcon: Shield },
-                            { key: 'module_disabled', label: 'Modulo Disabilitato', description: 'Inviato quando un utente tenta di usare un modulo spento', variables: ['user', 'module'], group: 'Sicurezza', groupIcon: Shield },
-                            { key: 'role_hierarchy', label: 'Gerarchia Ruoli', description: 'Inviato quando il bot non può agire per gerarchia', variables: ['user', 'role'], group: 'Sicurezza', groupIcon: Shield },
-                            { key: 'generic_error', label: 'Errore Generico', description: 'Inviato in caso di errore inaspettato', variables: ['user', 'error'], group: 'Sistema', groupIcon: Layout },
-                            { key: 'setup_success', label: 'Setup Completato', description: 'Inviato alla fine del setup iniziale', variables: ['user', 'guild'], group: 'Sistema', groupIcon: Layout },
-                            { key: 'module_list', label: 'Lista Moduli', description: 'Inviato quando viene richiesta la lista dei moduli', variables: ['user', 'modules'], group: 'Comandi', groupIcon: Globe },
-                            { key: 'module_enabled', label: 'Modulo Abilitato', description: 'Inviato all\'abilitazione di un modulo', variables: ['user', 'module'], group: 'Comandi', groupIcon: Globe },
-                            { key: 'module_disabled_success', label: 'Modulo Disabilitato (Successo)', description: 'Inviato alla disabilitazione di un modulo', variables: ['user', 'module'], group: 'Comandi', groupIcon: Globe },
-                            { key: 'module_already_in_state', label: 'Modulo Già in Stato', description: 'Inviato se il modulo è già attivo/spento', variables: ['user', 'module', 'state'], group: 'Comandi', groupIcon: Globe },
-                            { key: 'module_not_found', label: 'Modulo Non Trovato', description: 'Inviato se il modulo specificato non esiste', variables: ['user', 'module'], group: 'Comandi', groupIcon: Globe }
+                            { key: 'no_permission', label: t('system.no_perm'), description: t('system.no_perm_desc'), variables: ['user', 'guild'], group: t('system.security'), groupIcon: Shield },
+                            { key: 'module_disabled', label: t('system.mod_disabled'), description: t('system.mod_disabled_desc'), variables: ['user', 'module'], group: t('system.security'), groupIcon: Shield },
+                            { key: 'role_hierarchy', label: t('system.role_hierarchy'), description: t('system.role_hierarchy_desc'), variables: ['user', 'role'], group: t('system.security'), groupIcon: Shield },
+                            { key: 'generic_error', label: t('system.generic_err'), description: t('system.generic_err_desc'), variables: ['user', 'error'], group: t('system.system'), groupIcon: Layout },
+                            { key: 'setup_success', label: t('system.setup_success'), description: t('system.setup_success_desc'), variables: ['user', 'guild'], group: t('system.system'), groupIcon: Layout },
+                            { key: 'module_list', label: t('system.mod_list'), description: t('system.mod_list_desc'), variables: ['user', 'modules'], group: t('system.commands'), groupIcon: Globe },
+                            { key: 'module_enabled', label: t('system.mod_enabled'), description: t('system.mod_enabled_desc'), variables: ['user', 'module'], group: t('system.commands'), groupIcon: Globe },
+                            { key: 'module_disabled_success', label: t('system.mod_disabled_success'), description: t('system.mod_disabled_success_desc'), variables: ['user', 'module'], group: t('system.commands'), groupIcon: Globe },
+                            { key: 'module_already_in_state', label: t('system.mod_already_state'), description: t('system.mod_already_state_desc'), variables: ['user', 'module', 'state'], group: t('system.commands'), groupIcon: Globe },
+                            { key: 'module_not_found', label: t('system.mod_not_found'), description: t('system.mod_not_found_desc'), variables: ['user', 'module'], group: t('system.commands'), groupIcon: Globe }
                         ]}
                     />
                 </div>
@@ -89,26 +97,30 @@ export default function SystemConfig() {
         </div>
 
         <style jsx>{`
-            .pc-premium-wrapper { padding: 40px; max-width: 1400px; margin: 0 auto; font-family: 'Inter', sans-serif; }
+            .pc-premium-wrapper { padding: 32px; max-width: 1400px; margin: 0 auto; font-family: 'Inter', sans-serif; }
             
             /* Header V2 */
-            .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; background: white; padding: 32px; border-radius: 32px; box-shadow: var(--shadow-premium); border: 1px solid var(--border-light); }
-            .header-info { display: flex; align-items: center; gap: 24px; }
-            .pc-icon-box { width: 64px; height: 64px; color: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; }
-            .pc-title-row { display: flex; flex-direction: column; gap: 6px; }
-            .pc-title-row h1 { font-family: 'Outfit', sans-serif; font-size: 2rem; font-weight: 900; margin: 0; color: var(--text-main); letter-spacing: -0.5px; }
-            .pc-status-pill { font-size: 0.65rem; font-weight: 900; padding: 4px 12px; border-radius: 100px; letter-spacing: 1px; width: fit-content; }
-            .pc-status-pill.active { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+            .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-card); padding: 24px; border-radius: 28px; box-shadow: var(--shadow-premium); border: 1px solid var(--border); }
+            .header-info { display: flex; align-items: center; gap: 16px; }
+            .pc-icon-box { width: 52px; height: 52px; color: white; border-radius: 16px; display: flex; align-items: center; justify-content: center; }
+            .pc-title-row h1 { font-family: 'Inter'; font-size: 1.8rem; font-weight: 800; margin: 0; color: var(--text-heading); letter-spacing: -1px; }
+            
+            .pc-status-tag-v2 { display: flex; align-items: center; gap: 6px; font-size: 0.6rem; font-weight: 800; padding: 4px 10px; border-radius: 100px; }
+            .pc-status-tag-v2.on { background: var(--bg-badge); color: var(--text-muted); }
+            .status-dot-v2 { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
 
-            .pc-btn-primary { display: flex; align-items: center; gap: 12px; background: var(--primary); color: white; border: none; padding: 14px 28px; border-radius: 16px; font-weight: 800; cursor: pointer; transition: 0.3s; }
+            .pc-btn-primary { background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 14px; font-weight: 850; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
+            .pc-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(var(--primary-rgb), 0.2); }
 
             /* Cards */
-            .pc-card-v2 { background: white; border: 1px solid var(--border-light); border-radius: 28px; padding: 32px; box-shadow: var(--shadow-premium); }
+            .pc-card-v2 { background: var(--bg-card); border: 1px solid var(--border); border-radius: 28px; padding: 32px; box-shadow: var(--shadow-premium); }
             .card-header-v2 { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
-            .header-icon { width: 40px; height: 40px; background: var(--bg-badge); color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-            .card-header-v2 h3 { margin: 0; font-size: 1.1rem; font-weight: 850; }
+            .header-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+            .card-header-v2 h3 { margin: 0; font-family: 'Inter'; font-size: 1.3rem; font-weight: 800; color: var(--text-heading); }
 
-            :global(.light-theme) .pc-header-v2, :global(.light-theme) .pc-card-v2 { background: #ffffff !important; box-shadow: 0 8px 30px rgba(0,0,0,0.04) !important; }
+            .v-stack { display: flex; flex-direction: column; }
+            .animate { animation: slideUp 0.4s ease-out; }
+            @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         `}</style>
     </div>
   );

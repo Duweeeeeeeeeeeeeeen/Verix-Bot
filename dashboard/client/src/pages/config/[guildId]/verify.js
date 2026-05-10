@@ -124,7 +124,7 @@ export default function VerifyConfig() {
   return (
     <div className="pc-premium-wrapper fade-in">
         <Head>
-            <title>Sistema di Verifica | Verix Dashboard</title>
+            <title>{t('verify.title')} | Verix Dashboard</title>
         </Head>
 
         {/* V2 Header */}
@@ -134,10 +134,10 @@ export default function VerifyConfig() {
                     <ShieldCheck size={28} />
                 </div>
                 <div className="pc-title-row">
-                    <h1>Protocollo di Verifica</h1>
+                    <h1>{t('verify.title')}</h1>
                     <div className={`pc-status-tag-v2 ${config.enabled ? 'on' : 'off'}`}>
                         <div className="status-dot-v2"></div>
-                        {config.enabled ? 'SISTEMA SICUREZZA ATTIVO' : 'SISTEMA DISABILITATO'}
+                        {config.enabled ? t('verify.active_tag') : t('verify.disabled_tag')}
                     </div>
                 </div>
             </div>
@@ -148,80 +148,68 @@ export default function VerifyConfig() {
                   onClick={() => setConfig({...config, enabled: !config.enabled})}
                 >
                   <Power size={18} />
-                  <span>{config.enabled ? 'Spegni' : 'Attiva'}</span>
+                  <span>{config.enabled ? t('common.online') : t('common.offline')}</span>
                 </button>
                 <button className="pc-btn-primary" onClick={handleSave} disabled={saving}>
                     <Save size={18} />
-                    <span>{saving ? 'Salvataggio...' : 'Salva Modifiche'}</span>
+                    <span>{saving ? t('common.saving') : t('whitelist.sync_config')}</span>
                 </button>
             </div>
         </header>
 
         {/* V2 Tabs */}
-        <nav className="pc-tabs-container-v2" style={{ marginBottom: '40px' }}>
-            <div className="pc-tabs-v2">
-                <button className={activeTab === 'settings' ? 'active' : ''} onClick={() => setActiveTab('settings')}>
-                    <Settings2 size={16} /> <span>Configurazione Base</span>
-                </button>
-                <button className={activeTab === 'design' ? 'active' : ''} onClick={() => setActiveTab('design')}>
-                    <Palette size={16} /> <span>Design & Studio</span>
-                </button>
-            </div>
+        <nav className="pc-tabs-v2" style={{ marginBottom: '32px' }}>
+            <button className={activeTab === 'settings' ? 'active' : ''} onClick={() => setActiveTab('settings')}>
+                <Settings2 size={16} /> <span>{t('verify.base_config')}</span>
+            </button>
+            <button className={activeTab === 'design' ? 'active' : ''} onClick={() => setActiveTab('design')}>
+                <Palette size={16} /> <span>{t('verify.design_studio')}</span>
+            </button>
         </nav>
 
         <div className="pc-content-v2">
             {activeTab === 'settings' && (
-                <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 420px', gap: '32px' }}>
+                <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: '32px' }}>
                     <div className="v-stack" style={{ gap: '32px' }}>
                         <section className="pc-card-v2 animate slide-up">
                             <div className="card-header-v2">
-                                <div className="header-icon" style={{ background: '#f0fdf4', color: '#10b981' }}><Shield size={18} /></div>
-                                <h3 style={{ margin: 0 }}>Automazione Ruoli</h3>
+                                <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><Shield size={18} /></div>
+                                <h3 style={{ margin: 0 }}>{t('whitelist.auto_roles')}</h3>
                             </div>
                             <div className="card-body-v2">
                                 <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
                                     <div className="pc-input-group-v2">
-                                        <label>Ruolo da Assegnare (Passato)</label>
+                                        <label>{t('verify.role_to_assign')}</label>
                                         <DiscordSelector type="role" options={discordData.roles} value={config.roleId} onChange={v => setNested('roleId', v)} error={getRoleError(config.roleId)} />
                                     </div>
                                     <div className="pc-input-group-v2">
-                                        <label>Canale Pubblicazione Panel</label>
+                                        <label>{t('verify.publish_channel')}</label>
                                         <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 0 || c.type === 5)} value={config.channelId} onChange={v => setNested('channelId', v)} />
                                     </div>
-                                    <div className="pc-input-group-v2" style={{ gridColumn: 'span 2' }}>
-                                        <label>Ruolo da Rimuovere (Opzionale)</label>
-                                        <DiscordSelector type="role" options={discordData.roles} value={config.removeRoleId} onChange={v => setNested('removeRoleId', v)} placeholder="Nessun ruolo da rimuovere" />
-                                        <p className="pc-hint-v2" style={{ marginTop: '12px' }}>Rimuovi ruoli come "Ospite" o "Non Verificato" al completamento del processo.</p>
+                                    <div className="pc-input-group-v2" style={{ gridColumn: 'span 2', marginTop: '16px' }}>
+                                        <label>{t('verify.role_to_remove')}</label>
+                                        <DiscordSelector type="role" options={discordData.roles} value={config.removeRoleId} onChange={v => setNested('removeRoleId', v)} placeholder="Nessuno" />
+                                        <p className="pc-hint-v2" style={{ marginTop: '8px' }}>{t('verify.remove_hint')}</p>
                                     </div>
                                 </div>
                             </div>
                         </section>
 
-                        <section className="pc-card-v2 animate slide-up" style={{ background: '#fffbeb', border: '1.5px solid #fde68a', animationDelay: '0.1s' }}>
-                            <div className="card-header-v2">
-                                <div className="header-icon" style={{ background: 'white', color: '#d97706' }}><ShieldAlert size={18} /></div>
-                                <h3 style={{ margin: 0, color: '#92400e' }}>Gerarchia dei Permessi</h3>
-                            </div>
-                            <div className="card-body-v2">
-                                <p style={{ margin: 0, fontSize: '0.85rem', color: '#b45309', fontWeight: 700, lineHeight: 1.6 }}>
-                                    Per garantire il corretto funzionamento, il ruolo <b>"Verix"</b> (o l'integrazione del Bot) deve essere posizionato <b>SOPRA</b> i ruoli di verifica all'interno della lista ruoli del server Discord.
-                                </p>
-                            </div>
-                        </section>
+                        <div className="pc-info-banner-v2 orange">
+                            <ShieldAlert size={20} />
+                            <p>{t('verify.hierarchy_warn')}</p>
+                        </div>
                     </div>
 
                     <div className="v-stack" style={{ gap: '32px' }}>
                         <section className="pc-card-v2">
                             <div className="card-header-v2">
-                                <div className="header-icon" style={{ background: '#f8fafc', color: '#475569' }}><Bell size={18} /></div>
-                                <h3 style={{ margin: 0 }}>Log & Audit</h3>
+                                <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><Bell size={18} /></div>
+                                <h3 style={{ margin: 0 }}>{t('verify.log_audit')}</h3>
                             </div>
                             <div className="card-body-v2">
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8fafc', padding: '24px', borderRadius: '24px', border: '1.5px solid #e2e8f0' }}>
-                                    <div className="v-stack">
-                                        <strong style={{ fontWeight: 900, color: '#1e293b' }}>Tracciamento Attivo</strong>
-                                        <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: 650 }}>Registra ogni verifica riuscita.</span>
-                                    </div>
+                                <div className="pc-toggle-card-v2">
+                                    <strong>{t('verify.active_tracking')}</strong>
                                     <label className="pc-toggle-v2 mini">
                                         <input type="checkbox" checked={!!config.logEnabled} onChange={e => setNested('logEnabled', e.target.checked)} />
                                         <span className="pc-slider-v2"></span>
@@ -229,16 +217,16 @@ export default function VerifyConfig() {
                                 </div>
                                 {config.logEnabled && (
                                     <div className="pc-input-group-v2 animate slide-up" style={{ marginTop: '24px' }}>
-                                        <label>Canale di Log dedicato</label>
-                                        <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 0 || c.type === 5)} value={config.logChannelId} onChange={v => setNested('logChannelId', v)} />
+                                        <label>{t('verify.log_channel')}</label>
+                                        <DiscordSelector type="channel" options={discordData.channels} value={config.logChannelId} onChange={v => setNested('logChannelId', v)} />
                                     </div>
                                 )}
                             </div>
                         </section>
 
-                        <button className="pc-btn-primary" style={{ width: '100%', background: '#ecfdf5', color: '#10b981', border: '1.5px solid #d1fae5', boxShadow: 'none', justifyContent: 'center' }} onClick={handleSendPanel} disabled={sendingPanel || !config.channelId}>
+                        <button className="pc-btn-primary" style={{ width: '100%', justifyContent: 'center' }} onClick={handleSendPanel} disabled={sendingPanel || !config.channelId}>
                             <Send size={18} />
-                            <span>{sendingPanel ? 'Invio in corso...' : 'Invia Panel Verifica'}</span>
+                            <span>{sendingPanel ? t('common.sending') : t('verify.send_panel')}</span>
                         </button>
                     </div>
                 </div>
@@ -248,46 +236,36 @@ export default function VerifyConfig() {
                 <div className="v-stack animate slide-up" style={{ gap: '32px' }}>
                     <section className="pc-card-v2">
                         <div className="card-header-v2">
-                            <div className="header-icon" style={{ background: '#f5f3ff', color: '#7c3aed' }}><MousePointer2 size={18} /></div>
-                            <h3 style={{ margin: 0 }}>Branding del Bottone</h3>
+                            <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><MousePointer2 size={18} /></div>
+                            <h3 style={{ margin: 0 }}>{t('verify.button_branding')}</h3>
                         </div>
                         <div className="card-body-v2">
-                            <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1.5fr 100px 1.2fr', gap: '24px' }}>
+                            <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 80px 1fr', gap: '24px' }}>
                                 <div className="pc-input-group-v2">
-                                    <label>Etichetta Bottone</label>
-                                    <div className="pc-input-wrapper-v2" style={{ display: 'flex', alignItems: 'center', background: '#f8fafc', border: '1.5px solid #e2e8f0', borderRadius: '16px' }}>
-                                        <Type size={16} style={{ marginLeft: '16px', color: '#94a3b8' }} />
-                                        <input style={{ width: '100%', border: 'none', background: 'transparent', padding: '14px 16px', fontWeight: 800, outline: 'none' }} value={config.buttons?.verify?.label || ''} onChange={e => setNested('buttons.verify.label', e.target.value)} placeholder="Verificati Ora" />
+                                    <label>{t('verify.label')}</label>
+                                    <div className="pc-input-modern-v2">
+                                        <Type size={16} />
+                                        <input value={config.buttons?.verify?.label || ''} onChange={e => setNested('buttons.verify.label', e.target.value)} placeholder={t('verify.placeholder')} />
                                     </div>
                                 </div>
                                 <div className="pc-input-group-v2">
-                                    <label>Emoji</label>
+                                    <label>{t('verify.emoji')}</label>
                                     <EmojiInput value={config.buttons?.verify?.emoji || ''} onChange={e => setNested('buttons.verify.emoji', e.target.value)} />
                                 </div>
                                 <div className="pc-input-group-v2">
-                                    <label>Stile Discord</label>
+                                    <label>{t('verify.style')}</label>
                                     <CustomSelect 
                                         options={[
-                                            { value: 'SUCCESS', label: 'Verde (Success)' },
-                                            { value: 'PRIMARY', label: 'Blurple (Standard)' },
-                                            { value: 'SECONDARY', label: 'Gray (Neutral)' },
-                                            { value: 'DANGER', label: 'Red (Urgent)' },
-                                            { value: 'LINK', label: 'URL (External)' }
+                                            { value: 'SUCCESS', label: 'Verde' },
+                                            { value: 'PRIMARY', label: 'Blurple' },
+                                            { value: 'SECONDARY', label: 'Grigio' },
+                                            { value: 'DANGER', label: 'Rosso' }
                                         ]} 
                                         value={config.buttons?.verify?.style || 'SUCCESS'} 
                                         onChange={val => setNested('buttons.verify.style', val)} 
                                     />
                                 </div>
                             </div>
-                            {config.buttons?.verify?.style === 'LINK' && (
-                                <div className="pc-input-group-v2 animate slide-up" style={{ marginTop: '24px' }}>
-                                    <label>Destinazione Link Esterno</label>
-                                    <div className="pc-input-wrapper-v2" style={{ display: 'flex', alignItems: 'center', background: '#f8fafc', border: '1.5px solid #e2e8f0', borderRadius: '16px' }}>
-                                        <Globe size={16} style={{ marginLeft: '16px', color: '#94a3b8' }} />
-                                        <input style={{ width: '100%', border: 'none', background: 'transparent', padding: '14px 16px', fontWeight: 800, outline: 'none' }} value={config.buttons?.verify?.url || ''} onChange={e => setNested('buttons.verify.url', e.target.value)} placeholder="https://portal.verix.gg/verify" />
-                                    </div>
-                                </div>
-                            )}
                         </div>
                     </section>
 
@@ -295,9 +273,8 @@ export default function VerifyConfig() {
                         guildId={guildId}
                         module="verify"
                         slugs={[
-                            { key: 'panel', label: 'Embed Panel Verifica', description: 'Visualizzato nel canale di benvenuto per avviare il processo.', variables: ['guild'], group: 'Entry UI', groupIcon: ShieldCheck },
-                            { key: 'success', label: 'Messaggio Benvenuto (DM)', description: 'Inviato all\'utente quando riceve il ruolo verificato.', variables: ['user', 'guild', 'member_count'], group: 'Outcome UI', groupIcon: CheckCircle2 },
-                            { key: 'already_verified', label: 'Messaggio Già Verificato', description: 'Mostrato in modalità effimera se l\'utente ha già il ruolo.', variables: ['user', 'guild'], group: 'Feedback UI', groupIcon: Info },
+                            { key: 'panel', label: 'Embed Panel', description: 'Messaggio iniziale.', variables: ['guild'], group: 'UI', groupIcon: ShieldCheck },
+                            { key: 'success', label: 'DM Successo', description: 'Inviato alla verifica.', variables: ['user', 'guild'], group: 'UI', groupIcon: CheckCircle2 }
                         ]}
                     />
                 </div>
@@ -305,53 +282,54 @@ export default function VerifyConfig() {
         </div>
 
         <style jsx>{`
-            .pc-premium-wrapper { padding: 40px; max-width: 1600px; margin: 0 auto; font-family: 'Inter', sans-serif; }
+            .pc-premium-wrapper { padding: 32px; max-width: 1500px; margin: 0 auto; font-family: 'Inter', sans-serif; }
             
-            /* Header V2 */
-            .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; background: white; padding: 32px; border-radius: 32px; box-shadow: var(--shadow-premium); border: 1px solid var(--border-light); }
-            .header-info { display: flex; align-items: center; gap: 24px; }
-            .pc-icon-box { width: 64px; height: 64px; border-radius: 20px; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 12px 24px rgba(16, 185, 129, 0.25); }
-            .pc-title-row { display: flex; flex-direction: column; gap: 6px; }
-            .pc-title-row h1 { font-family: 'Outfit', sans-serif; font-size: 2.2rem; font-weight: 900; margin: 0; color: #1e293b; letter-spacing: -0.5px; }
+            .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-card); padding: 24px; border-radius: 28px; box-shadow: var(--shadow-premium); border: 1px solid var(--border); }
+            .header-info { display: flex; align-items: center; gap: 16px; }
+            .pc-icon-box { width: 52px; height: 52px; color: white; border-radius: 16px; display: flex; align-items: center; justify-content: center; }
+            .pc-title-row h1 { font-family: 'Inter'; font-size: 1.8rem; font-weight: 800; margin: 0; color: var(--text-heading); letter-spacing: -0.5px; }
             
-            .pc-status-tag-v2 { display: flex; align-items: center; gap: 8px; font-size: 0.65rem; font-weight: 900; padding: 4px 12px; border-radius: 100px; letter-spacing: 0.5px; }
-            .pc-status-tag-v2.on { background: #ecfdf5; color: #10b981; }
-            .pc-status-tag-v2.off { background: #fef2f2; color: #ef4444; }
-            .status-dot-v2 { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+            .pc-status-tag-v2 { display: flex; align-items: center; gap: 6px; font-size: 0.6rem; font-weight: 800; padding: 4px 10px; border-radius: 100px; }
+            .pc-status-tag-v2.on { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+            .pc-status-tag-v2.off { background: var(--bg-badge); color: var(--text-muted); }
+            .status-dot-v2 { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
 
-            .pc-status-toggle-v2 { display: flex; align-items: center; gap: 10px; background: #f8fafc; color: #64748b; border: 1.5px solid #e2e8f0; padding: 12px 24px; border-radius: 16px; font-weight: 800; cursor: pointer; transition: 0.2s; }
-            .pc-status-toggle-v2.active { background: #f0fdf4; color: #10b981; border-color: #bbf7d0; }
-            .pc-btn-primary { background: var(--primary); color: white; border: none; padding: 14px 28px; border-radius: 16px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2); }
-            .pc-btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 15px 25px rgba(99, 102, 241, 0.3); }
+            .pc-status-toggle-v2 { display: flex; align-items: center; gap: 10px; background: var(--bg-badge); color: var(--text-muted); border: 1.5px solid var(--border); padding: 10px 20px; border-radius: 14px; font-weight: 850; cursor: pointer; transition: 0.2s; }
+            .pc-status-toggle-v2.active { background: rgba(16, 185, 129, 0.1); color: #10b981; border-color: #10b981; }
 
-            /* Tabs V2 */
-            .pc-tabs-v2 { display: flex; gap: 8px; background: #f1f5f9; padding: 6px; border-radius: 18px; width: fit-content; overflow-x: auto; max-width: 100%; }
-            .pc-tabs-v2 button { display: flex; align-items: center; gap: 10px; padding: 12px 24px; border: none; background: transparent; color: #64748b; font-weight: 800; font-size: 0.9rem; border-radius: 14px; cursor: pointer; transition: 0.2s; white-space: nowrap; }
-            .pc-tabs-v2 button.active { background: white; color: var(--primary); box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+            .pc-btn-primary { background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 14px; font-weight: 850; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
+            .pc-btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(var(--primary-rgb), 0.2); }
 
-            /* Card V2 */
-            .pc-card-v2 { background: white; border: 1px solid var(--border-light); border-radius: 32px; padding: 32px; box-shadow: var(--shadow-premium); }
-            .card-header-v2 { display: flex; align-items: center; gap: 16px; margin-bottom: 32px; }
-            .header-icon { width: 44px; height: 44px; background: #f5f3ff; color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+            .pc-tabs-v2 { display: flex; gap: 8px; background: var(--bg-badge); padding: 5px; border-radius: 16px; width: fit-content; }
+            .pc-tabs-v2 button { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border: none; background: transparent; color: var(--text-muted); font-weight: 850; font-size: 0.9rem; border-radius: 12px; cursor: pointer; transition: 0.2s; }
+            .pc-tabs-v2 button.active { background: var(--bg-card); color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
 
-            /* Inputs V2 */
-            .pc-input-group-v2 { display: flex; flex-direction: column; gap: 8px; }
-            .pc-input-group-v2 label { font-size: 0.7rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
+            .pc-card-v2 { background: var(--bg-card); border: 1px solid var(--border); border-radius: 28px; padding: 32px; box-shadow: var(--shadow-premium); }
+            .card-header-v2 { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+            .header-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: var(--bg-badge); }
+            .card-header-v2 h3 { margin: 0; font-family: 'Inter'; font-size: 1.3rem; font-weight: 800; color: var(--text-heading); }
 
-            /* Toggle V2 */
-            .pc-toggle-v2 { position: relative; width: 44px; height: 22px; }
+            .pc-input-group-v2 label { font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; display: block; }
+            .pc-input-modern-v2 { display: flex; align-items: center; gap: 12px; background: var(--bg-badge); padding: 10px 16px; border-radius: 14px; border: 1.5px solid var(--border); }
+            .pc-input-modern-v2 input { border: none; background: transparent; width: 100%; font-weight: 800; font-size: 1rem; outline: none; color: var(--text-heading); }
+
+            .pc-toggle-card-v2 { background: var(--bg-badge); padding: 20px; border-radius: 20px; border: 1.5px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+            .pc-toggle-card-v2 strong { font-weight: 800; color: var(--text-heading); }
+            
+            .pc-toggle-v2 { position: relative; width: 40px; height: 20px; }
             .pc-toggle-v2 input { opacity: 0; width: 0; height: 0; }
-            .pc-slider-v2 { position: absolute; cursor: pointer; inset: 0; background: #cbd5e1; transition: .4s; border-radius: 34px; }
-            .pc-slider-v2:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background: white; transition: .4s; border-radius: 50%; }
+            .pc-slider-v2 { position: absolute; cursor: pointer; inset: 0; background: var(--border); transition: .3s; border-radius: 34px; }
+            .pc-slider-v2:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background: white; transition: .3s; border-radius: 50%; }
             input:checked + .pc-slider-v2 { background: var(--primary); }
-            input:checked + .pc-slider-v2:before { transform: translateX(22px); }
+            input:checked + .pc-slider-v2:before { transform: translateX(20px); }
 
-            .pc-hint-v2 { font-size: 0.8rem; color: #94a3b8; font-weight: 700; }
+            .pc-info-banner-v2 { display: flex; align-items: center; gap: 16px; padding: 20px; border-radius: 20px; border: 1.5px solid transparent; font-size: 0.9rem; font-weight: 700; }
+            .pc-info-banner-v2.orange { background: rgba(255, 171, 0, 0.1); color: #ffab00; border-color: rgba(255, 171, 0, 0.2); }
+
+            .pc-hint-v2 { font-size: 0.8rem; color: var(--text-muted); font-weight: 700; }
             .v-stack { display: flex; flex-direction: column; }
             .animate { animation: slideUp 0.4s ease-out; }
             @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-            :global(.light-theme) .pc-header-v2, :global(.light-theme) .pc-card-v2 { background: #ffffff !important; box-shadow: 0 8px 30px rgba(0,0,0,0.04) !important; }
         `}</style>
     </div>
   );

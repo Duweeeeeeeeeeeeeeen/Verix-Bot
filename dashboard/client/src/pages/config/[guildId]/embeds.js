@@ -245,7 +245,7 @@ export default function EmbedBuilder() {
                     <section className="pc-card-v2 animate slide-up" style={{ padding: 0, animationDelay: '0.1s' }}>
                         <div style={{ background: '#f8fafc', padding: '24px 32px', borderBottom: '1.5px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '16px', borderTopLeftRadius: '32px', borderTopRightRadius: '32px' }}>
                             <div className="header-icon" style={{ background: 'white', color: '#10b981', width: '36px', height: '36px' }}><Palette size={16} /></div>
-                            <h4 style={{ margin: 0, fontFamily: 'Outfit', fontWeight: 900, color: '#1e293b' }}>Designer Visuale</h4>
+                            <h4 style={{ margin: 0, fontFamily: 'Inter', fontWeight: 900, color: '#1e293b' }}>Designer Visuale</h4>
                         </div>
                         <div className="pc-editor-wrapper-v2">
                             <EmbedEditor 
@@ -340,7 +340,7 @@ export default function EmbedBuilder() {
             .header-info { display: flex; align-items: center; gap: 24px; }
             .pc-icon-box { width: 64px; height: 64px; border-radius: 20px; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 12px 24px rgba(16, 185, 129, 0.25); }
             .pc-title-row { display: flex; flex-direction: column; gap: 6px; }
-            .pc-title-row h1 { font-family: 'Outfit', sans-serif; font-size: 2.2rem; font-weight: 900; margin: 0; color: #1e293b; letter-spacing: -0.5px; }
+            .pc-title-row h1 { font-family: 'Inter', sans-serif; font-size: 2.2rem; font-weight: 900; margin: 0; color: #1e293b; letter-spacing: -0.5px; }
             
             .pc-status-tag-v2 { display: flex; align-items: center; gap: 8px; font-size: 0.65rem; font-weight: 900; padding: 4px 12px; border-radius: 100px; letter-spacing: 0.5px; }
             .pc-status-tag-v2.on { background: #ecfdf5; color: #10b981; }
@@ -357,7 +357,7 @@ export default function EmbedBuilder() {
             .pc-card-v2 { background: white; border: 1px solid var(--border-light); border-radius: 32px; padding: 32px; box-shadow: var(--shadow-premium); }
             .card-header-v2 { display: flex; align-items: center; gap: 20px; margin-bottom: 32px; }
             .header-icon { width: 52px; height: 52px; background: #ecfdf5; color: #10b981; border-radius: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-            .card-header-v2 h3 { margin: 0; font-family: 'Outfit'; font-size: 1.5rem; font-weight: 950; color: #1e293b; }
+            .card-header-v2 h3 { margin: 0; font-family: 'Inter'; font-size: 1.5rem; font-weight: 950; color: #1e293b; }
 
             /* Schedule Tabs V2 */
             .pc-schedule-tab-v2 { display: flex; align-items: center; gap: 16px; padding: 16px; background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 20px; cursor: pointer; transition: 0.3s; position: relative; text-align: left; width: 100%; }

@@ -147,7 +147,7 @@ body {
   padding: 0;
   background-color: var(--bg-main);
   color: var(--text-main);
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Inter', sans-serif;
   line-height: 1.5;
 }
 
@@ -189,7 +189,7 @@ svg {
   color: var(--primary);
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 * {
   box-sizing: border-box;
@@ -263,7 +263,7 @@ body:has(.dashboard-container) {
 }
 
 body {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Inter', sans-serif;
   background-color: var(--bg-main);
   color: var(--text-main);
   line-height: 1.5;
@@ -275,7 +275,7 @@ body {
 
 /* Typography */
 h1, h2, h3, h4, p, span, div, button, input, textarea, select { 
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Inter', sans-serif;
   letter-spacing: -0.01em; 
 }
 
@@ -340,7 +340,7 @@ h1, h2, h3, h4, p, span, div, button, input, textarea, select {
   font-weight: 850; 
   color: var(--text-main); 
   line-height: 1.1;
-  letter-spacing: -1px;
+  letter-spacing: -0.5px;
 }
 
 .brand-text span { 
@@ -1723,12 +1723,12 @@ input:checked + .slider-mini:before {
    ============================================================ */
 
 body {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 .fade-in { animation: fadeIn 0.4s var(--ease-premium); }

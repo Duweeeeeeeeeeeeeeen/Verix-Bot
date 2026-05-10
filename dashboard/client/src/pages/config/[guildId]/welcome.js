@@ -295,7 +295,7 @@ export default function WelcomeConfig() {
             .header-info { display: flex; align-items: center; gap: 24px; }
             .pc-icon-box { width: 64px; height: 64px; border-radius: 20px; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 12px 24px rgba(244, 63, 94, 0.25); }
             .pc-title-row { display: flex; flex-direction: column; gap: 6px; }
-            .pc-title-row h1 { font-family: 'Outfit', sans-serif; font-size: 2.2rem; font-weight: 900; margin: 0; color: #1e293b; letter-spacing: -0.5px; }
+            .pc-title-row h1 { font-family: 'Inter', sans-serif; font-size: 2.2rem; font-weight: 900; margin: 0; color: #1e293b; letter-spacing: -0.5px; }
             
             .pc-status-tag-v2 { display: flex; align-items: center; gap: 8px; font-size: 0.65rem; font-weight: 900; padding: 4px 12px; border-radius: 100px; letter-spacing: 0.5px; }
             .pc-status-tag-v2.on { background: #ecfdf5; color: #10b981; }
@@ -316,7 +316,7 @@ export default function WelcomeConfig() {
             .pc-card-v2 { background: white; border: 1px solid var(--border-light); border-radius: 32px; padding: 32px; box-shadow: var(--shadow-premium); }
             .card-header-v2 { display: flex; align-items: center; gap: 16px; margin-bottom: 32px; }
             .header-icon { width: 44px; height: 44px; background: #f5f3ff; color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-            .card-header-v2 h3 { margin: 0; font-family: 'Outfit'; font-size: 1.25rem; font-weight: 900; color: #1e293b; }
+            .card-header-v2 h3 { margin: 0; font-family: 'Inter'; font-size: 1.25rem; font-weight: 900; color: #1e293b; }
 
             /* Inputs V2 */
             .pc-input-group-v2 { display: flex; flex-direction: column; gap: 8px; }

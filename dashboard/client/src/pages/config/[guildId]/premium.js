@@ -57,7 +57,7 @@ export default function PremiumHub() {
   return (
     <div className="pc-premium-wrapper fade-in">
         <Head>
-            <title>Premium Hub | Verix Studio</title>
+            <title>{t('ph.title')} | Verix Studio</title>
         </Head>
 
         {/* V2 Header */}
@@ -67,10 +67,10 @@ export default function PremiumHub() {
                     <Gem size={28} />
                 </div>
                 <div className="pc-title-row">
-                    <h1>Sottoscrizioni Studio</h1>
+                    <h1>{t('ph.title')}</h1>
                     <div className={`pc-status-tag-v2 ${isPremium ? 'on' : 'off'}`}>
                         <div className="status-dot-v2"></div>
-                        {isPremium ? `${premiumTier.toUpperCase()} ATTIVO` : 'ACCESSO STANDARD'}
+                        {isPremium ? `${premiumTier.toUpperCase()} ${t('ph.active')}` : t('ph.standard_access')}
                     </div>
                 </div>
             </div>
@@ -78,7 +78,7 @@ export default function PremiumHub() {
             <div className="header-controls">
                 <button className="pc-btn-back-v2" onClick={() => router.push(`/config/${guildId}`)}>
                     <ChevronLeft size={20} />
-                    <span>Dashboard</span>
+                    <span>{t('common.dashboard')}</span>
                 </button>
             </div>
         </header>
@@ -91,23 +91,23 @@ export default function PremiumHub() {
                     <div className="hero-text-v2">
                         <div className="premium-badge-v2">
                             <Sparkles size={14} />
-                            <span>VERIX PLATINUM PROGRAM</span>
+                            <span>{t('ph.hero_platinum')}</span>
                         </div>
-                        <h2>{isPlatinum ? 'Potenza Platinum Attiva' : isPremium ? 'Abbonamento Premium Attivo' : 'Sblocca il Prossimo Livello'}</h2>
-                        <p>Trasforma la tua community con strumenti di moderazione d'elite, personalizzazione totale e un'infrastruttura dedicata ad alte prestazioni.</p>
+                        <h2>{isPlatinum ? t('ph.hero_title_pl') : isPremium ? t('ph.hero_title_pr') : t('ph.hero_title_base')}</h2>
+                        <p>{t('ph.hero_desc')}</p>
                         
                         <div className="hero-stats-row-v2">
                             <div className="hero-stat-item-v2">
                                 <span className="stat-val-v2">∞</span>
-                                <span className="stat-label-v2">Automazioni</span>
+                                <span className="stat-label-v2">{t('ph.automations')}</span>
                             </div>
                             <div className="hero-stat-item-v2">
                                 <span className="stat-val-v2">24/7</span>
-                                <span className="stat-label-v2">Uptime Core</span>
+                                <span className="stat-label-v2">{t('ph.uptime')}</span>
                             </div>
                             <div className="hero-stat-item-v2">
                                 <span className="stat-val-v2">Dedicated</span>
-                                <span className="stat-label-v2">Compute</span>
+                                <span className="stat-label-v2">{t('ph.compute')}</span>
                             </div>
                         </div>
 
@@ -115,10 +115,10 @@ export default function PremiumHub() {
                             <div className="hero-actions-v2">
                                 <button className="pc-btn-primary invite-pulse" style={{ background: 'white', color: '#6366f1' }}>
                                     <Rocket size={18} />
-                                    <span>Esplora Piani</span>
+                                    <span>{t('ph.explore')}</span>
                                 </button>
                                 <button className="pc-btn-outline-v2" style={{ borderColor: 'rgba(255,255,255,0.3)', color: 'white', background: 'rgba(255,255,255,0.1)' }}>
-                                    <span>Vedi Demo Platinum</span>
+                                    <span>{t('ph.demo')}</span>
                                 </button>
                             </div>
                         )}
@@ -142,26 +142,26 @@ export default function PremiumHub() {
                 {/* Standard Plan */}
                 <div className="pc-price-card-v2 standard">
                     <div className="price-header-v2">
-                        <div className="price-title-v2">STANDARD</div>
-                        <div className="price-val-v2">€0<span>/sempre</span></div>
+                        <div className="price-title-v2">{t('ph.standard')}</div>
+                        <div className="price-val-v2">€0<span>/{t('ph.always')}</span></div>
                     </div>
                     <div className="price-body-v2">
                         <ul className="feature-list-v2">
                             <li><CheckCircle2 size={16} /> Moderazione Base</li>
                             <li><CheckCircle2 size={16} /> 2 Slots Automazioni</li>
                             <li><CheckCircle2 size={16} /> 1 Server FiveM</li>
-                            <li><XCircle size={16} opacity={0.4} /> White-Label Bot</li>
+                            <li><XCircle size={16} style={{ opacity: 0.4 }} /> White-Label Bot</li>
                         </ul>
                     </div>
-                    <button className="pc-btn-price-v2" disabled={!isPremium}>Il tuo piano</button>
+                    <button className="pc-btn-price-v2" disabled={!isPremium}>{t('ph.your_plan')}</button>
                 </div>
 
                 {/* Premium Plan */}
                 <div className="pc-price-card-v2 premium active-border">
-                    <div className="popular-tag-v2">BEST SELLER</div>
+                    <div className="popular-tag-v2">{t('common.best_seller')}</div>
                     <div className="price-header-v2">
-                        <div className="price-title-v2" style={{ color: '#f59e0b' }}>PREMIUM</div>
-                        <div className="price-val-v2">€9.99<span>/mese</span></div>
+                        <div className="price-title-v2" style={{ color: '#f59e0b' }}>{t('ph.premium')}</div>
+                        <div className="price-val-v2">€9.99<span>/{t('ph.month')}</span></div>
                     </div>
                     <div className="price-body-v2">
                         <ul className="feature-list-v2">
@@ -172,16 +172,16 @@ export default function PremiumHub() {
                         </ul>
                     </div>
                     <button className="pc-btn-price-v2 premium" disabled={premiumTier === 'premium'}>
-                        {premiumTier === 'premium' ? 'Attivo' : 'Attiva Premium'}
+                        {premiumTier === 'premium' ? t('ph.active') : t('ph.activate_pr')}
                     </button>
                 </div>
 
                 {/* Platinum Plan */}
                 <div className="pc-price-card-v2 platinum">
-                    <div className="elite-tag-v2">ELITE ENGINE</div>
+                    <div className="elite-tag-v2">{t('common.elite_engine')}</div>
                     <div className="price-header-v2">
-                        <div className="price-title-v2" style={{ color: '#a855f7' }}>PLATINUM</div>
-                        <div className="price-val-v2">€19.99<span>/mese</span></div>
+                        <div className="price-title-v2" style={{ color: '#a855f7' }}>{t('ph.platinum')}</div>
+                        <div className="price-val-v2">€19.99<span>/{t('ph.month')}</span></div>
                     </div>
                     <div className="price-body-v2">
                         <ul className="feature-list-v2">
@@ -192,7 +192,7 @@ export default function PremiumHub() {
                         </ul>
                     </div>
                     <button className="pc-btn-price-v2 platinum" disabled={isPlatinum}>
-                        {isPlatinum ? 'Attivo' : 'Passa a Platinum'}
+                        {isPlatinum ? t('ph.active') : t('ph.activate_pl')}
                     </button>
                 </div>
             </div>
@@ -200,16 +200,16 @@ export default function PremiumHub() {
             {/* V2 Comparison Hub */}
             <section className="pc-card-v2 animate slide-up" style={{ marginTop: '48px' }}>
                 <div className="card-header-v2">
-                    <div className="header-icon" style={{ background: '#f5f3ff', color: '#6366f1' }}><Layers size={18} /></div>
-                    <h3 style={{ margin: 0 }}>Matrice delle Funzionalità</h3>
+                    <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><Layers size={18} /></div>
+                    <h3 style={{ margin: 0 }}>{t('ph.feat_matrix')}</h3>
                 </div>
                 <div className="card-body-v2">
                     <div className="pc-comparison-hub-v2">
                         <div className="hub-row-v2 header">
-                            <div className="hub-col-v2 feat">Caratteristica</div>
-                            <div className="hub-col-v2 val">Standard</div>
-                            <div className="hub-col-v2 val">Premium</div>
-                            <div className="hub-col-v2 val highlight">Platinum</div>
+                            <div className="hub-col-v2 feat">{t('ph.feat_col')}</div>
+                            <div className="hub-col-v2 val">{t('ph.standard')}</div>
+                            <div className="hub-col-v2 val">{t('ph.premium')}</div>
+                            <div className="hub-col-v2 val highlight">{t('ph.platinum')}</div>
                         </div>
                         {[
                             { name: 'Branding Personalizzato', s: false, p: true, pl: true },
@@ -221,9 +221,9 @@ export default function PremiumHub() {
                         ].map((row, i) => (
                             <div key={i} className="hub-row-v2">
                                 <div className="hub-col-v2 feat">{row.name}</div>
-                                <div className="hub-col-v2 val">{typeof row.s === 'boolean' ? (row.s ? <CheckCircle size={16} color="#10b981" /> : <XCircle size={16} color="#cbd5e1" />) : row.s}</div>
-                                <div className="hub-col-v2 val">{typeof row.p === 'boolean' ? (row.p ? <CheckCircle size={16} color="#f59e0b" /> : <XCircle size={16} color="#cbd5e1" />) : row.p}</div>
-                                <div className="hub-col-v2 val highlight">{typeof row.pl === 'boolean' ? (row.pl ? <CheckCircle size={16} color="#a855f7" /> : <XCircle size={16} color="#cbd5e1" />) : row.pl}</div>
+                                <div className="hub-col-v2 val">{typeof row.s === 'boolean' ? (row.s ? <CheckCircle size={16} color="#10b981" /> : <XCircle size={16} color="var(--text-muted)" />) : row.s}</div>
+                                <div className="hub-col-v2 val">{typeof row.p === 'boolean' ? (row.p ? <CheckCircle size={16} color="#f59e0b" /> : <XCircle size={16} color="var(--text-muted)" />) : row.p}</div>
+                                <div className="hub-col-v2 val highlight">{typeof row.pl === 'boolean' ? (row.pl ? <CheckCircle size={16} color="#a855f7" /> : <XCircle size={16} color="var(--text-muted)" />) : row.pl}</div>
                             </div>
                         ))}
                     </div>
@@ -232,25 +232,25 @@ export default function PremiumHub() {
         </div>
 
         <style jsx>{`
-            .pc-premium-wrapper { padding: 40px; max-width: 1600px; margin: 0 auto; }
+            .pc-premium-wrapper { padding: 40px; max-width: 1600px; margin: 0 auto; font-family: 'Inter', sans-serif; }
             
             /* Header V2 */
-            .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; background: var(--bg-card); padding: 32px; border-radius: 40px; box-shadow: 0 10px 40px rgba(0,0,0,0.03); border: 1px solid var(--border); }
+            .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; background: var(--bg-card); padding: 32px; border-radius: 40px; box-shadow: var(--shadow-premium); border: 1px solid var(--border); }
             .header-info { display: flex; align-items: center; gap: 24px; }
             .pc-icon-box { width: 72px; height: 72px; border-radius: 22px; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 15px 35px rgba(0,0,0,0.2); }
             .pc-title-row { display: flex; flex-direction: column; gap: 6px; }
-            .pc-title-row h1 { font-size: 2.4rem; font-weight: 950; margin: 0; color: var(--text-heading); letter-spacing: -1.5px; }
+            .pc-title-row h1 { font-size: 2.4rem; font-weight: 800; margin: 0; color: var(--text-heading); letter-spacing: -1.5px; }
             
-            .pc-status-tag-v2 { display: flex; align-items: center; gap: 8px; font-size: 0.7rem; font-weight: 950; padding: 6px 16px; border-radius: 100px; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
+            .pc-status-tag-v2 { display: flex; align-items: center; gap: 8px; font-size: 0.7rem; font-weight: 800; padding: 6px 16px; border-radius: 100px; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
             .pc-status-tag-v2.on { background: rgba(16, 185, 129, 0.1); color: #10b981; }
             .pc-status-tag-v2.off { background: var(--bg-badge); color: var(--text-muted); }
             .status-dot-v2 { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
 
-            .pc-btn-back-v2 { display: flex; align-items: center; gap: 12px; background: var(--bg-card); color: var(--text-muted); border: 1.5px solid var(--border); padding: 14px 24px; border-radius: 20px; font-weight: 900; cursor: pointer; transition: 0.3s; }
+            .pc-btn-back-v2 { display: flex; align-items: center; gap: 12px; background: var(--bg-card); color: var(--text-muted); border: 1.5px solid var(--border); padding: 14px 24px; border-radius: 20px; font-weight: 800; cursor: pointer; transition: 0.3s; }
             .pc-btn-back-v2:hover { border-color: var(--primary); color: var(--primary); transform: translateX(-5px); background: var(--primary-glow); }
 
             /* Hero Engine V2 */
-            .pc-hero-engine-v2 { border-radius: 56px; padding: 100px 80px; position: relative; overflow: hidden; color: white; margin-bottom: 56px; background: #1e293b; box-shadow: 0 40px 100px rgba(0,0,0,0.2); }
+            .pc-hero-engine-v2 { border-radius: 56px; padding: 60px 80px; position: relative; overflow: hidden; color: white; margin-bottom: 56px; background: #1e293b; box-shadow: 0 40px 100px rgba(0,0,0,0.2); }
             .pc-hero-engine-v2.premium { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
             .pc-hero-engine-v2.platinum { background: linear-gradient(135deg, #7c3aed 0%, #4338ca 100%); }
             .pc-hero-engine-v2.none { background: linear-gradient(135deg, #6366f1 0%, #1e1b4b 100%); }
@@ -262,73 +262,73 @@ export default function PremiumHub() {
 
             .hero-content-v2 { display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 10; }
             .hero-text-v2 { max-width: 700px; }
-            .premium-badge-v2 { display: flex; alignItems: center; gap: 10px; background: rgba(255,255,255,0.15); padding: 8px 20px; border-radius: 100px; font-size: 0.75rem; fontWeight: 950; letterSpacing: 1.5px; margin-bottom: 28px; width: fit-content; border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(5px); }
-            .hero-text-v2 h2 { font-size: 4.2rem; fontWeight: 950; margin: 0 0 24px 0; lineHeight: 1; letterSpacing: -3px; text-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-            .hero-text-v2 p { font-size: 1.3rem; fontWeight: 650; opacity: 0.85; margin: 0 0 48px 0; lineHeight: 1.6; max-width: 600px; }
+            .premium-badge-v2 { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.15); padding: 8px 20px; border-radius: 100px; font-size: 0.75rem; font-weight: 800; letter-spacing: 1.5px; margin-bottom: 20px; width: fit-content; border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(5px); }
+            .hero-text-v2 h2 { font-size: 3.2rem; font-weight: 800; margin: 0 0 16px 0; line-height: 1; letter-spacing: -2px; text-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+            .hero-text-v2 p { font-size: 1.1rem; font-weight: 650; opacity: 0.85; margin: 0 0 40px 0; line-height: 1.6; max-width: 600px; }
             
             .hero-stats-row-v2 { display: flex; gap: 56px; margin-bottom: 56px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 40px; }
-            .hero-stat-item-v2 { display: flex; flexDirection: column; gap: 4px; }
-            .stat-val-v2 { font-size: 2.2rem; fontWeight: 950; letterSpacing: -1px; }
-            .stat-label-v2 { font-size: 0.8rem; fontWeight: 800; opacity: 0.6; textTransform: uppercase; letterSpacing: 1px; }
+            .hero-stat-item-v2 { display: flex; flex-direction: column; gap: 4px; }
+            .stat-val-v2 { font-size: 2.2rem; font-weight: 800; letter-spacing: -1px; }
+            .stat-label-v2 { font-size: 0.8rem; font-weight: 800; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; }
 
             .hero-actions-v2 { display: flex; gap: 24px; }
-            .pc-btn-primary { background: white !important; color: #1e293b !important; border: none; padding: 20px 48px; border-radius: 24px; font-weight: 950; cursor: pointer; display: flex; alignItems: center; gap: 14px; transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
+            .pc-btn-primary { background: white !important; color: #1e293b !important; border: none; padding: 20px 48px; border-radius: 24px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 14px; transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
             .pc-btn-primary:hover { transform: translateY(-5px) scale(1.02); box-shadow: 0 30px 70px rgba(0,0,0,0.3); }
-            .pc-btn-outline-v2 { padding: 20px 48px; border-radius: 24px; font-weight: 950; cursor: pointer; transition: 0.4s; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.05); color: white; backdrop-filter: blur(10px); }
+            .pc-btn-outline-v2 { padding: 20px 48px; border-radius: 24px; font-weight: 800; cursor: pointer; transition: 0.4s; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.05); color: white; backdrop-filter: blur(10px); }
             .pc-btn-outline-v2:hover { background: rgba(255,255,255,0.15); border-color: white; transform: translateY(-3px); }
 
             .hero-visual-v2 { position: relative; padding-right: 40px; }
-            .tier-hologram-v2 { position: relative; width: 280px; height: 280px; display: flex; alignItems: center; justifyContent: center; flexDirection: column; }
+            .tier-hologram-v2 { position: relative; width: 280px; height: 280px; display: flex; align-items: center; justify-content: center; flex-direction: column; }
             .hologram-ring-1 { position: absolute; inset: 0; border: 4px solid rgba(255,255,255,0.08); border-radius: 50%; animation: spin 12s linear infinite; }
             .hologram-ring-2 { position: absolute; inset: 30px; border: 2px dashed rgba(255,255,255,0.15); border-radius: 50%; animation: spin-reverse 20s linear infinite; }
             .tier-symbol-v2 { color: white; animation: float 5s ease-in-out infinite; filter: drop-shadow(0 0 30px rgba(255,255,255,0.3)); }
-            .tier-label-v2 { margin-top: 16px; font-size: 1.5rem; fontWeight: 950; letterSpacing: 4px; text-shadow: 0 10px 30px rgba(0,0,0,0.3); opacity: 0.9; }
+            .tier-label-v2 { margin-top: 16px; font-size: 1.5rem; font-weight: 800; letter-spacing: 4px; text-shadow: 0 10px 30px rgba(0,0,0,0.3); opacity: 0.9; }
 
-            /* Pricing Grid V2 - Modern Glass Cards */
+            /* Pricing Grid V2 */
             .pc-pricing-grid-v2 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
-            .pc-price-card-v2 { background: var(--bg-card); border-radius: 48px; padding: 60px 48px; border: 1px solid var(--border); position: relative; transition: 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); display: flex; flexDirection: column; box-shadow: 0 10px 40px rgba(0,0,0,0.05); }
+            .pc-price-card-v2 { background: var(--bg-card); border-radius: 48px; padding: 60px 48px; border: 1px solid var(--border); position: relative; transition: 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); display: flex; flex-direction: column; box-shadow: var(--shadow-premium); }
             .pc-price-card-v2:hover { transform: translateY(-12px); box-shadow: 0 40px 100px rgba(0,0,0,0.15); border-color: var(--border-strong); }
             
-            .pc-price-card-v2.active-border { border: 2px solid #f59e0b; box-shadow: 0 20px 60px rgba(245, 158, 11, 0.1); }
-            .pc-price-card-v2.platinum { border: 2px solid #a855f7; background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-badge) 100%); box-shadow: 0 20px 60px rgba(168, 85, 247, 0.1); }
+            .pc-price-card-v2.active-border { border: 2px solid #f59e0b; }
+            .pc-price-card-v2.platinum { border: 2px solid #a855f7; }
             
-            .popular-tag-v2 { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); background: #f59e0b; color: white; padding: 8px 24px; border-radius: 100px; font-size: 0.75rem; font-weight: 950; letterSpacing: 1.5px; box-shadow: 0 10px 20px rgba(245, 158, 11, 0.3); }
-            .elite-tag-v2 { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); background: #a855f7; color: white; padding: 8px 24px; border-radius: 100px; font-size: 0.75rem; font-weight: 950; letterSpacing: 1.5px; box-shadow: 0 10px 20px rgba(168, 85, 247, 0.3); }
+            .popular-tag-v2 { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); background: #f59e0b; color: white; padding: 8px 24px; border-radius: 100px; font-size: 0.75rem; font-weight: 950; letter-spacing: 1.5px; box-shadow: 0 10px 20px rgba(245, 158, 11, 0.3); }
+            .elite-tag-v2 { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); background: #a855f7; color: white; padding: 8px 24px; border-radius: 100px; font-size: 0.75rem; font-weight: 950; letter-spacing: 1.5px; box-shadow: 0 10px 20px rgba(168, 85, 247, 0.3); }
 
             .price-header-v2 { margin-bottom: 48px; }
-            .price-title-v2 { font-size: 0.9rem; fontWeight: 950; letterSpacing: 3px; color: var(--text-muted); margin-bottom: 16px; text-transform: uppercase; }
-            .price-val-v2 { font-size: 3.5rem; fontWeight: 950; color: var(--text-heading); lineHeight: 0.9; letterSpacing: -2px; }
-            .price-val-v2 span { font-size: 1.2rem; color: var(--text-muted); fontWeight: 700; margin-left: 6px; }
+            .price-title-v2 { font-size: 0.9rem; font-weight: 950; letter-spacing: 3px; color: var(--text-muted); margin-bottom: 16px; text-transform: uppercase; }
+            .price-val-v2 { font-size: 3.5rem; font-weight: 950; color: var(--text-heading); line-height: 0.9; letter-spacing: -2px; }
+            .price-val-v2 span { font-size: 1.2rem; color: var(--text-muted); font-weight: 700; margin-left: 6px; }
 
-            .feature-list-v2 { list-style: none; padding: 0; margin: 0 0 56px 0; display: flex; flexDirection: column; gap: 20px; flex: 1; }
-            .feature-list-v2 li { display: flex; alignItems: center; gap: 16px; font-size: 1.05rem; fontWeight: 700; color: var(--text-dim); }
+            .feature-list-v2 { list-style: none; padding: 0; margin: 0 0 56px 0; display: flex; flex-direction: column; gap: 20px; flex: 1; }
+            .feature-list-v2 li { display: flex; align-items: center; gap: 16px; font-size: 1.05rem; font-weight: 700; color: var(--text-dim); }
 
             .pc-btn-price-v2 { width: 100%; padding: 22px; border-radius: 24px; font-weight: 950; font-size: 1.15rem; cursor: pointer; transition: 0.3s; border: 1.5px solid var(--border); background: var(--bg-badge); color: var(--text-muted); }
-            .pc-btn-price-v2.premium { background: #f59e0b; color: white; border: none; box-shadow: 0 12px 30px rgba(245, 158, 11, 0.25); }
-            .pc-btn-price-v2.platinum { background: #a855f7; color: white; border: none; box-shadow: 0 12px 30px rgba(168, 85, 247, 0.25); }
-            .pc-btn-price-v2:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
-            .pc-btn-price-v2:hover:not(:disabled) { transform: translateY(-4px) scale(1.02); }
+            .pc-btn-price-v2.premium { background: #f59e0b; color: white; border: none; }
+            .pc-btn-price-v2.platinum { background: #a855f7; color: white; border: none; }
+            .pc-btn-price-v2:disabled { opacity: 0.5; cursor: not-allowed; }
+            .pc-btn-price-v2:hover:not(:disabled) { transform: translateY(-4px); }
 
-            /* Comparison Matrix V2 - Elite Table Design */
-            .pc-card-v2 { background: var(--bg-card); border: 1px solid var(--border); border-radius: 48px; padding: 56px; box-shadow: 0 20px 80px rgba(0,0,0,0.1); }
+            /* Comparison Matrix V2 */
+            .pc-card-v2 { background: var(--bg-card); border: 1px solid var(--border); border-radius: 48px; padding: 56px; box-shadow: var(--shadow-premium); }
             .card-header-v2 { display: flex; align-items: center; gap: 24px; margin-bottom: 56px; }
-            .header-icon { width: 64px; height: 64px; background: var(--bg-badge); color: var(--primary); border-radius: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 8px 25px rgba(99, 102, 241, 0.1); }
-            .card-header-v2 h3 { margin: 0; font-size: 1.8rem; font-weight: 950; color: var(--text-heading); letterSpacing: -0.5px; }
+            .header-icon { width: 64px; height: 64px; background: var(--bg-badge); color: var(--primary); border-radius: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+            .card-header-v2 h3 { margin: 0; font-size: 1.8rem; font-weight: 950; color: var(--text-heading); letter-spacing: -0.5px; }
 
-            .pc-comparison-hub-v2 { display: flex; flexDirection: column; }
-            .hub-row-v2 { display: grid; grid-template-columns: 1fr 180px 180px 220px; align-items: center; padding: 28px 0; border-bottom: 1.5px solid var(--border); transition: 0.2s; }
-            .hub-row-v2:not(.header):hover { background: var(--bg-badge); border-radius: 16px; padding-left: 20px; padding-right: 20px; margin-left: -20px; margin-right: -20px; }
-            
+            .pc-comparison-hub-v2 { display: flex; flex-direction: column; }
+            .hub-row-v2 { display: grid; grid-template-columns: 1fr 180px 180px 220px; align-items: center; padding: 28px 0; border-bottom: 1.5px solid var(--border); }
             .hub-row-v2.header { border-bottom: 2px solid var(--border-strong); padding-bottom: 32px; }
-            .hub-row-v2.header .hub-col-v2 { font-size: 0.85rem; fontWeight: 950; color: var(--text-muted); textTransform: uppercase; letterSpacing: 2px; }
-            .hub-col-v2.feat { font-weight: 850; color: var(--text-main); font-size: 1.15rem; letterSpacing: -0.2px; }
-            .hub-col-v2.val { text-align: center; font-weight: 900; color: var(--text-dim); font-size: 1rem; }
+            .hub-row-v2.header .hub-col-v2 { font-size: 0.85rem; font-weight: 950; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; }
+            .hub-col-v2.feat { font-weight: 850; color: var(--text-heading); font-size: 1.15rem; }
+            .hub-col-v2.val { text-align: center; font-weight: 900; color: var(--text-dim); }
             .hub-col-v2.highlight { color: #a855f7; font-weight: 950; }
-            
-            .hub-row-v2:not(.header) .hub-col-v2.val.highlight { background: rgba(168, 85, 247, 0.05); border-radius: 16px; padding: 12px 0; border: 1px solid rgba(168, 85, 247, 0.1); }
 
-            .animate { animation: slideUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); }
-            @keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+            @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+            @keyframes spin-reverse { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
+            @keyframes float { 0% { transform: translateY(0); } 50% { transform: translateY(-20px); } 100% { transform: translateY(0); } }
+
+            .animate { animation: slide-up 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); }
+            @keyframes slide-up { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
         `}</style>
     </div>
   );

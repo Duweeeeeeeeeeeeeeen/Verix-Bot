@@ -6,7 +6,7 @@ import {
     Crown, Download, Trash2, Clock, CheckCircle2, ArrowRight, AlertTriangle, 
     FileText, Settings, ShieldCheck, Zap, Sparkles, Layout, Terminal, 
     ExternalLink, Globe, Smartphone, Monitor, Moon, Sun, Layers, Database,
-    Activity, Fingerprint, Eye, MousePointer2
+    Activity, Fingerprint, Eye, MousePointer2, LayoutGrid
 } from 'lucide-react';
 import Skeleton from '../../../components/Skeleton';
 import api from '../../../utils/api';
@@ -64,11 +64,11 @@ export default function AuditPage() {
 
   const getActionStyles = (action) => {
       const a = action?.toUpperCase() || '';
-      if (a.includes('UPDATE')) return { bg: '#eff6ff', color: '#3b82f6', label: 'EDIT PROTOCOL', icon: Settings };
-      if (a.includes('DELETE') || a.includes('RESET') || a.includes('REMOVE')) return { bg: '#fef2f2', color: '#ef4444', label: 'DESTRUCTION', icon: Trash2 };
-      if (a.includes('SAVE') || a.includes('CREATE') || a.includes('ADD')) return { bg: '#ecfdf5', color: '#10b981', label: 'DEPLOYMENT', icon: Zap };
-      if (a.includes('SEND')) return { bg: '#f5f3ff', color: '#8b5cf6', label: 'DISPATCH', icon: ExternalLink };
-      return { bg: '#f8fafc', color: '#64748b', label: 'GENERAL', icon: FileText };
+      if (a.includes('UPDATE')) return { bg: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', label: 'EDIT PROTOCOL', icon: Settings };
+      if (a.includes('DELETE') || a.includes('RESET') || a.includes('REMOVE')) return { bg: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', label: 'DESTRUCTION', icon: Trash2 };
+      if (a.includes('SAVE') || a.includes('CREATE') || a.includes('ADD')) return { bg: 'rgba(16, 185, 129, 0.1)', color: '#10b981', label: 'DEPLOYMENT', icon: Zap };
+      if (a.includes('SEND')) return { bg: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6', label: 'DISPATCH', icon: ExternalLink };
+      return { bg: 'var(--bg-badge)', color: 'var(--text-muted)', label: 'GENERAL', icon: FileText };
   };
 
   if (!mounted || loading) return <Skeleton height="600px" />;
@@ -103,7 +103,7 @@ export default function AuditPage() {
                         <span>Esporta JSON</span>
                     </button>
                 )}
-                <button className="pc-btn-primary" onClick={() => router.push(`/config/${guildId}`)} style={{ background: '#1e293b' }}>
+                <button className="pc-btn-primary" onClick={() => router.push(`/config/${guildId}`)} style={{ background: 'var(--primary)' }}>
                     <LayoutGrid size={18} /> <span>Home Guild</span>
                 </button>
             </div>
@@ -111,48 +111,47 @@ export default function AuditPage() {
 
         <div className="pc-content-v2">
             {!isPremium ? (
-                <div className="pc-pro-gate-box-v2 animate slide-up" style={{ padding: '120px 40px', background: 'white', borderRadius: '40px', border: '1px solid #e2e8f0', textAlign: 'center', boxShadow: 'var(--shadow-premium)', maxWidth: '1200px', margin: '0 auto' }}>
-                    <div className="gate-icon-glow-v2" style={{ width: '110px', height: '110px', background: '#f8fafc', color: '#1e293b', borderRadius: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 40px', boxShadow: '0 20px 40px rgba(0,0,0,0.05)', border: '1.5px solid #e2e8f0' }}>
+                <div className="pc-pro-gate-box-v2 animate slide-up">
+                    <div className="gate-icon-glow-v2">
                         <ShieldCheck size={56} />
                     </div>
-                    <h2 style={{ fontFamily: 'Outfit', fontSize: '3rem', fontWeight: 950, color: '#1e293b', marginBottom: '16px', letterSpacing: '-1.5px' }}>Audit Studio Professional</h2>
-                    <p style={{ fontSize: '1.25rem', color: '#64748b', lineHeight: 1.7, maxWidth: 600, margin: '0 auto 56px', fontWeight: 650 }}>Prendi il controllo totale della tua infrastruttura. Monitora ogni azione dello staff, previeni vulnerabilità e mantieni l'integrità del server.</p>
+                    <h2>Audit Studio Professional</h2>
+                    <p>Prendi il controllo totale della tua infrastruttura. Monitora ogni azione dello staff, previeni vulnerabilità e mantieni l'integrità del server.</p>
                     
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '32px', maxWidth: '1000px', margin: '0 auto 64px' }}>
+                    <div className="gate-features-grid-v2">
                         {[
                             { icon: <Terminal size={24} />, title: "Live Traceability", desc: "Traccia ogni singolo comando e cambio di configurazione in tempo reale." },
                             { icon: <Shield size={24} />, title: "Staff Security", desc: "Monitora le attività critiche per prevenire abusi di potere amministrativo." },
                             { icon: <Database size={24} />, title: "Archivio Storico", desc: "Accesso a mesi di log dettagliati esportabili per reportistica esterna." }
                         ].map((f, i) => (
-                            <div key={i} style={{ background: '#f8fafc', padding: '32px', borderRadius: '28px', border: '1.5px solid #e2e8f0', textAlign: 'left', transition: '0.3s' }}>
-                                <div style={{ color: '#1e293b', marginBottom: '20px', background: 'white', width: '52px', height: '52px', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(0,0,0,0.02)' }}>{f.icon}</div>
-                                <h4 style={{ margin: '0 0 10px 0', fontWeight: 950, color: '#1e293b', fontSize: '1.15rem' }}>{f.title}</h4>
-                                <p style={{ margin: 0, fontSize: '0.9rem', color: '#64748b', fontWeight: 700, lineHeight: 1.6 }}>{f.desc}</p>
+                            <div key={i} className="gate-feature-card-v2">
+                                <div className="feature-icon-box-v2">{f.icon}</div>
+                                <h4>{f.title}</h4>
+                                <p>{f.desc}</p>
                             </div>
                         ))}
                     </div>
 
-                    <button className="pc-btn-primary" style={{ background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', padding: '22px 64px', fontSize: '1.2rem', borderRadius: '22px', margin: '0 auto' }} onClick={() => router.push(`/config/${guildId}/premium`)}>
+                    <button className="pc-btn-primary gate-btn-v2" onClick={() => router.push(`/config/${guildId}/premium`)}>
                         <Sparkles size={24} />
                         <span>Sblocca Audit Studio</span>
                     </button>
                 </div>
             ) : (
                 <div className="v-stack" style={{ gap: '32px' }}>
-                    <div className="pc-discovery-hub-v2 animate slide-up" style={{ display: 'flex', gap: '24px' }}>
-                        <div className="pc-search-v2" style={{ flex: 1, background: 'white', border: '1.5px solid #e2e8f0', borderRadius: '24px', padding: '0 28px', display: 'flex', alignItems: 'center', boxShadow: '0 8px 24px rgba(0,0,0,0.02)' }}>
-                            <Search size={22} style={{ color: '#94a3b8' }} />
+                    <div className="pc-discovery-hub-v2 animate slide-up">
+                        <div className="pc-search-v2">
+                            <Search size={22} style={{ color: 'var(--text-muted)' }} />
                             <input 
-                                style={{ width: '100%', border: 'none', background: 'transparent', padding: '22px 20px', fontWeight: 900, outline: 'none', color: '#1e293b', fontSize: '1.1rem' }}
                                 type="text" 
                                 placeholder="Cerca nello storico per staff, operazione o identità..." 
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
-                        <div className="pc-filter-v2" style={{ background: 'white', border: '1.5px solid #e2e8f0', borderRadius: '24px', padding: '0 24px', display: 'flex', alignItems: 'center', gap: '16px', boxShadow: '0 8px 24px rgba(0,0,0,0.02)' }}>
-                            <Filter size={22} style={{ color: '#94a3b8' }} />
-                            <select style={{ border: 'none', background: 'transparent', padding: '22px 0', fontWeight: 950, color: '#1e293b', outline: 'none', cursor: 'pointer', minWidth: '240px', fontSize: '1rem' }} value={filterAction} onChange={(e) => setFilterAction(e.target.value)}>
+                        <div className="pc-filter-v2">
+                            <Filter size={22} style={{ color: 'var(--text-muted)' }} />
+                            <select value={filterAction} onChange={(e) => setFilterAction(e.target.value)}>
                                 <option value="ALL">Visualizza Tutti</option>
                                 <option value="UPDATE_CONFIG">Configurazione Moduli</option>
                                 <option value="UPDATE_WHITELIST">Modifiche Accessi</option>
@@ -162,64 +161,62 @@ export default function AuditPage() {
                         </div>
                     </div>
 
-                    <section className="pc-card-v2" style={{ padding: 0, overflow: 'hidden', border: 'none', boxShadow: 'var(--shadow-premium)' }}>
-                        <div style={{ width: '100%', overflowX: 'auto' }}>
-                            <table style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0 }}>
+                    <section className="pc-card-v2 audit-table-container-v2">
+                        <div className="table-responsive-v2">
+                            <table className="pc-table-v2">
                                 <thead>
-                                    <tr style={{ background: '#f8fafc', borderBottom: '1.5px solid #e2e8f0' }}>
-                                        <th style={{ textAlign: 'left', padding: '24px 40px', color: '#94a3b8', fontSize: '0.75rem', fontWeight: 950, textTransform: 'uppercase', letterSpacing: '1.5px' }}>Staff / Responsible</th>
-                                        <th style={{ textAlign: 'left', padding: '24px 40px', color: '#94a3b8', fontSize: '0.75rem', fontWeight: 950, textTransform: 'uppercase', letterSpacing: '1.5px' }}>Action Taxonomy</th>
-                                        <th style={{ textAlign: 'left', padding: '24px 40px', color: '#94a3b8', fontSize: '0.75rem', fontWeight: 950, textTransform: 'uppercase', letterSpacing: '1.5px' }}>Studio Timeline</th>
-                                        <th style={{ textAlign: 'right', padding: '24px 40px', color: '#94a3b8', fontSize: '0.75rem', fontWeight: 950, textTransform: 'uppercase', letterSpacing: '1.5px' }}>Identity</th>
+                                    <tr>
+                                        <th>Staff / Responsible</th>
+                                        <th>Action Taxonomy</th>
+                                        <th>Studio Timeline</th>
+                                        <th style={{ textAlign: 'right' }}>Identity</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {filteredLogs.length > 0 ? filteredLogs.map((log, idx) => {
                                         const styles = getActionStyles(log.action);
                                         return (
-                                            <tr key={log._id || idx} className="pc-audit-row-v2" style={{ borderBottom: '1.5px solid #f1f5f9', transition: '0.3s' }}>
-                                                <td style={{ padding: '32px 40px' }}>
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-                                                        <div style={{ width: '56px', height: '56px', background: '#f8fafc', borderRadius: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#1e293b', border: '1.5px solid #e2e8f0', boxShadow: '0 4px 8px rgba(0,0,0,0.02)' }}>
+                                            <tr key={log._id || idx} className="pc-audit-row-v2">
+                                                <td>
+                                                    <div className="staff-cell-v2">
+                                                        <div className="staff-avatar-box-v2">
                                                             <User size={24} />
                                                         </div>
                                                         <div className="v-stack">
-                                                            <span style={{ fontWeight: 950, color: '#1e293b', fontSize: '1.1rem', letterSpacing: '-0.3px' }}>{log.username || 'System Root'}</span>
-                                                            <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: 750, fontFamily: 'monospace' }}>{log.userId || 'VERIX_PROTOCOL'}</span>
+                                                            <span className="staff-name-v2">{log.username || 'System Root'}</span>
+                                                            <span className="staff-id-v2">{log.userId || 'VERIX_PROTOCOL'}</span>
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td style={{ padding: '32px 40px' }}>
-                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start' }}>
-                                                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', padding: '8px 16px', borderRadius: '12px', fontSize: '0.7rem', fontWeight: 950, textTransform: 'uppercase', background: styles.bg, color: styles.color, border: `1.5px solid ${styles.color}15` }}>
-                                                            <styles.icon size={16} />
+                                                <td>
+                                                    <div className="action-cell-v2">
+                                                        <div className="action-tag-v2" style={{ background: styles.bg, color: styles.color, border: `1px solid ${styles.color}30` }}>
+                                                            <styles.icon size={14} />
                                                             <span>{styles.label}</span>
                                                         </div>
-                                                        <span style={{ fontSize: '0.95rem', color: '#475569', fontWeight: 800 }}>{log.action}</span>
+                                                        <span className="action-raw-v2">{log.action}</span>
                                                     </div>
                                                 </td>
-                                                <td style={{ padding: '32px 40px' }}>
-                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: '#64748b', fontSize: '1rem', fontWeight: 850 }}>
-                                                        <Clock size={18} style={{ opacity: 0.5 }} />
+                                                <td>
+                                                    <div className="timeline-cell-v2">
+                                                        <Clock size={16} />
                                                         <span>{new Date(log.timestamp).toLocaleString()}</span>
                                                     </div>
                                                 </td>
-                                                <td style={{ textAlign: 'right', padding: '32px 40px' }}>
-                                                    <button className="pc-audit-action-btn-v2" style={{ width: '52px', height: '52px', borderRadius: '18px', border: '1.5px solid #e2e8f0', background: 'white', color: '#1e293b', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: '0.2s', marginLeft: 'auto' }}>
-                                                        <ChevronRight size={24} />
+                                                <td style={{ textAlign: 'right' }}>
+                                                    <button className="pc-audit-action-btn-v2">
+                                                        <ChevronRight size={20} />
                                                     </button>
                                                 </td>
                                             </tr>
                                         );
                                     }) : (
                                         <tr>
-                                            <td colSpan="4" style={{ padding: '140px 40px', textAlign: 'center' }}>
-                                                <div className="v-stack" style={{ alignItems: 'center', gap: '28px' }}>
-                                                    <div style={{ width: '90px', height: '90px', background: '#f8fafc', borderRadius: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#cbd5e1' }}><FileText size={48} /></div>
-                                                    <div className="v-stack" style={{ gap: '8px' }}>
-                                                        <h3 style={{ margin: 0, color: '#1e293b', fontWeight: 950, fontSize: '1.6rem', letterSpacing: '-0.5px' }}>Database Protocol Clear</h3>
-                                                        <p style={{ fontWeight: 700, fontSize: '1.1rem', color: '#94a3b8' }}>Nessuna operazione registrata per questi parametri.</p>
-                                                    </div>
+                                            <td colSpan="4">
+                                                <div className="pc-empty-state-v2">
+                                                    <div className="empty-icon-v2"><FileText size={48} /></div>
+                                                    <h3>Database Protocol Clear</h3>
+                                                    <p>Nessuna operazione registrata per questi parametri.</p>
                                                 </div>
                                             </td>
                                         </tr>
@@ -233,36 +230,72 @@ export default function AuditPage() {
         </div>
 
         <style jsx>{`
-            .pc-premium-wrapper { padding: 40px; max-width: 1700px; margin: 0 auto; font-family: 'Inter', sans-serif; }
+            .pc-premium-wrapper { padding: 32px; max-width: 1500px; margin: 0 auto; font-family: 'Inter', sans-serif; }
             
             /* Header V2 */
-            .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; background: white; padding: 32px; border-radius: 32px; box-shadow: var(--shadow-premium); border: 1px solid var(--border-light); }
-            .header-info { display: flex; align-items: center; gap: 24px; }
-            .pc-icon-box { width: 64px; height: 64px; color: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 12px 24px rgba(30, 41, 59, 0.25); }
-            .pc-title-row { display: flex; flex-direction: column; gap: 6px; }
-            .pc-title-row h1 { font-family: 'Outfit', sans-serif; font-size: 2.3rem; font-weight: 950; margin: 0; color: #1e293b; letter-spacing: -1.2px; }
+            .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-card); padding: 24px; border-radius: 28px; box-shadow: var(--shadow-premium); border: 1px solid var(--border); }
+            .header-info { display: flex; align-items: center; gap: 16px; }
+            .pc-icon-box { width: 52px; height: 52px; color: white; border-radius: 16px; display: flex; align-items: center; justify-content: center; }
+            .pc-title-row h1 { font-family: 'Inter'; font-size: 1.8rem; font-weight: 950; margin: 0; color: var(--text-heading); letter-spacing: -1px; }
             
-            .pc-status-tag-v2 { display: flex; align-items: center; gap: 8px; font-size: 0.65rem; font-weight: 950; padding: 4px 12px; border-radius: 100px; letter-spacing: 0.5px; }
-            .pc-status-tag-v2.on { background: #ecfdf5; color: #10b981; }
-            .pc-status-tag-v2.off { background: #fff7ed; color: #f59e0b; }
-            .status-dot-v2 { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+            .pc-status-tag-v2 { display: flex; align-items: center; gap: 6px; font-size: 0.6rem; font-weight: 950; padding: 4px 10px; border-radius: 100px; }
+            .pc-status-tag-v2.on { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+            .pc-status-tag-v2.off { background: var(--bg-badge); color: var(--text-muted); }
+            .status-dot-v2 { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
 
-            .pc-btn-primary { background: var(--primary); color: white; border: none; padding: 14px 28px; border-radius: 18px; font-weight: 850; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: 0.3s; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2); }
-            .pc-btn-primary:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(99, 102, 241, 0.3); }
+            .pc-btn-primary { background: var(--primary); color: white; border: none; padding: 12px 24px; border-radius: 14px; font-weight: 850; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
+            .pc-btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(var(--primary-rgb), 0.2); }
+            .pc-btn-outline-v2 { background: var(--bg-badge); color: var(--text-heading); border: 1.5px solid var(--border); padding: 10px 20px; border-radius: 14px; font-weight: 900; cursor: pointer; display: flex; align-items: center; gap: 8px; }
 
-            .pc-btn-outline-v2 { background: #f8fafc; color: #64748b; border: 1.5px solid #e2e8f0; padding: 12px 28px; border-radius: 16px; font-weight: 900; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
-            .pc-btn-outline-v2:hover { background: #f1f5f9; color: #1e293b; border-color: #cbd5e1; }
-
-            .pc-card-v2 { background: white; border: 1px solid var(--border-light); border-radius: 32px; padding: 40px; box-shadow: var(--shadow-premium); }
+            .pc-card-v2 { background: var(--bg-card); border: 1px solid var(--border); border-radius: 28px; padding: 32px; box-shadow: var(--shadow-premium); }
             
-            .pc-audit-row-v2:hover td { background: #fcfdfe; }
-            :global(.pc-audit-action-btn-v2:hover) { background: #1e293b !important; color: white !important; border-color: #1e293b !important; transform: translateX(6px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+            /* Gate UI */
+            .pc-pro-gate-box-v2 { text-align: center; padding: 80px 40px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 40px; }
+            .gate-icon-glow-v2 { width: 90px; height: 90px; background: var(--bg-badge); color: var(--text-heading); border-radius: 24px; display: flex; align-items: center; justify-content: center; margin: 0 auto 32px; border: 1px solid var(--border); }
+            .pc-pro-gate-box-v2 h2 { font-family: 'Inter'; font-size: 2.2rem; font-weight: 950; color: var(--text-heading); margin-bottom: 12px; }
+            .pc-pro-gate-box-v2 p { color: var(--text-muted); font-size: 1.1rem; line-height: 1.6; max-width: 600px; margin: 0 auto 48px; font-weight: 650; }
+            
+            .gate-features-grid-v2 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; max-width: 900px; margin: 0 auto 48px; }
+            .gate-feature-card-v2 { background: var(--bg-badge); padding: 24px; border-radius: 20px; border: 1px solid var(--border); text-align: left; }
+            .feature-icon-box-v2 { color: var(--text-heading); margin-bottom: 16px; background: var(--bg-card); width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border); }
+            .gate-feature-card-v2 h4 { margin: 0 0 8px 0; color: var(--text-heading); font-weight: 950; }
+            .gate-feature-card-v2 p { margin: 0; font-size: 0.85rem; color: var(--text-muted); font-weight: 650; line-height: 1.5; }
+
+            /* Discovery Hub */
+            .pc-discovery-hub-v2 { display: flex; gap: 16px; margin-bottom: 32px; }
+            .pc-search-v2 { flex: 1; display: flex; align-items: center; gap: 12px; background: var(--bg-card); border: 1px solid var(--border); padding: 0 20px; border-radius: 18px; }
+            .pc-search-v2 input { width: 100%; border: none; background: transparent; padding: 16px 0; font-weight: 800; color: var(--text-heading); outline: none; }
+            .pc-filter-v2 { display: flex; align-items: center; gap: 12px; background: var(--bg-card); border: 1px solid var(--border); padding: 0 20px; border-radius: 18px; }
+            .pc-filter-v2 select { border: none; background: transparent; padding: 16px 0; font-weight: 950; color: var(--text-heading); outline: none; cursor: pointer; min-width: 180px; }
+
+            /* Table V2 */
+            .audit-table-container-v2 { padding: 0; overflow: hidden; }
+            .pc-table-v2 { width: 100%; border-collapse: collapse; }
+            .pc-table-v2 th { text-align: left; padding: 20px 32px; background: var(--bg-badge); color: var(--text-muted); font-size: 0.65rem; font-weight: 950; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border); }
+            .pc-table-v2 td { padding: 24px 32px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+            
+            .staff-cell-v2 { display: flex; align-items: center; gap: 16px; }
+            .staff-avatar-box-v2 { width: 44px; height: 44px; background: var(--bg-badge); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--text-heading); border: 1px solid var(--border); }
+            .staff-name-v2 { font-weight: 950; color: var(--text-heading); font-size: 1rem; }
+            .staff-id-v2 { font-size: 0.75rem; color: var(--text-muted); font-weight: 700; font-family: monospace; }
+
+            .action-cell-v2 { display: flex; flex-direction: column; gap: 6px; }
+            .action-tag-v2 { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 8px; font-size: 0.6rem; font-weight: 950; width: fit-content; }
+            .action-raw-v2 { font-size: 0.85rem; color: var(--text-main); font-weight: 750; }
+
+            .timeline-cell-v2 { display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 0.9rem; font-weight: 750; }
+            
+            .pc-audit-action-btn-v2 { width: 40px; height: 40px; border-radius: 12px; background: var(--bg-badge); border: 1px solid var(--border); color: var(--text-heading); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
+            .pc-audit-action-btn-v2:hover { background: var(--primary); color: white; border-color: var(--primary); transform: translateX(4px); }
+
+            .pc-empty-state-v2 { text-align: center; padding: 80px 0; }
+            .empty-icon-v2 { color: var(--border); margin-bottom: 24px; }
+            .pc-empty-state-v2 h3 { margin: 0; color: var(--text-heading); font-weight: 950; }
+            .pc-empty-state-v2 p { color: var(--text-muted); font-weight: 700; }
 
             .v-stack { display: flex; flex-direction: column; }
             .animate { animation: slideUp 0.4s ease-out; }
             @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-            :global(.light-theme) .pc-header-v2, :global(.light-theme) .pc-card-v2, :global(.light-theme) .pc-audit-row-v2 { background: #ffffff !important; box-shadow: 0 8px 30px rgba(0,0,0,0.04) !important; }
         `}</style>
     </div>
   );

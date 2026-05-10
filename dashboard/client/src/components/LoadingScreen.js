@@ -74,7 +74,7 @@ export default function LoadingScreen({ message }) {
         }
 
         h2 {
-          font-family: 'Outfit', sans-serif;
+          font-family: 'Inter', sans-serif;
           font-size: 1.45rem;
           font-weight: 900;
           letter-spacing: 0;

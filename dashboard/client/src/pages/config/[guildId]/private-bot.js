@@ -291,7 +291,7 @@ export default function PrivateBotPage() {
             .header-info { display: flex; align-items: center; gap: 24px; }
             .pc-icon-box { width: 64px; height: 64px; color: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 12px 24px rgba(168, 85, 247, 0.25); }
             .pc-title-row { display: flex; flex-direction: column; gap: 6px; }
-            .pc-title-row h1 { font-family: 'Outfit', sans-serif; font-size: 2rem; font-weight: 900; margin: 0; color: var(--text-main); letter-spacing: -0.5px; }
+            .pc-title-row h1 { font-family: 'Inter', sans-serif; font-size: 2rem; font-weight: 900; margin: 0; color: var(--text-main); letter-spacing: -0.5px; }
             .pc-status-pill { font-size: 0.65rem; font-weight: 900; padding: 4px 12px; border-radius: 100px; letter-spacing: 1px; width: fit-content; }
             .pc-status-pill.active { background: #fdf4ff; color: #a855f7; border: 1px solid #a855f733; }
             .pc-status-pill.off { background: #fef2f2; color: #ef4444; border: 1px solid #ef444433; }
@@ -307,7 +307,7 @@ export default function PrivateBotPage() {
             .pc-pro-gate-v2.big { min-height: 500px; display: flex; align-items: center; justify-content: center; }
             .gate-card-v2.big { background: white; border-radius: 40px; padding: 60px; text-align: center; max-width: 600px; box-shadow: var(--shadow-xl); border: 1px solid var(--border-light); }
             .gate-icon-v2 { width: 80px; height: 80px; border-radius: 24px; display: flex; align-items: center; justify-content: center; margin: 0 auto 32px; }
-            .gate-card-v2 h2 { font-size: 2.2rem; font-weight: 900; margin-bottom: 16px; font-family: 'Outfit'; }
+            .gate-card-v2 h2 { font-size: 2.2rem; font-weight: 900; margin-bottom: 16px; font-family: 'Inter'; }
             .gate-card-v2 p { color: var(--text-muted); font-size: 1.1rem; line-height: 1.6; margin-bottom: 40px; }
             .gate-features-v2 { display: flex; flex-direction: column; gap: 16px; align-items: center; margin-bottom: 40px; }
             .gf-item { display: flex; align-items: center; gap: 12px; font-weight: 700; color: var(--text-main); }
@@ -356,7 +356,7 @@ export default function PrivateBotPage() {
             /* Lightbox */
             .pc-lightbox-v2 { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 40px; }
             .lightbox-content-v2 { background: white; border-radius: 32px; overflow: hidden; max-width: 1000px; width: 100%; }
-            .lightbox-header-v2 { padding: 20px 32px; border-bottom: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; font-weight: 900; font-family: 'Outfit'; font-size: 1.2rem; }
+            .lightbox-header-v2 { padding: 20px 32px; border-bottom: 1px solid var(--border-light); display: flex; justify-content: space-between; align-items: center; font-weight: 900; font-family: 'Inter'; font-size: 1.2rem; }
             .lightbox-content-v2 img { width: 100%; height: auto; display: block; max-height: 80vh; object-fit: contain; background: #111; }
 
             .pc-toggle-mini { position: relative; width: 50px; height: 26px; }

@@ -127,7 +127,7 @@ export class SocialManager {
                             url: `https://twitch.tv/${stream.user_login}`,
                             author: stream.user_name,
                             thumbnail: stream.thumbnail_url?.replace('{width}', '1280').replace('{height}', '720'),
-                            profileImage: user?.profile_image_url
+                            profileImage: user?.profile_image_url || `https://static-cdn.jtvnw.net/jtv_user_pictures/${cleanName}-profile_image-300x300.png`
                         }, 'Twitch');
                         streamer.isLive = true;
                         streamer.lastPostId = stream.id;
@@ -174,10 +174,8 @@ export class SocialManager {
                     const channelId = await this.resolveYouTubeHandle(username);
                     if (channelId) {
                         feedUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`;
-                        // Optionally update account.username to the resolved ID for faster subsequent checks
-                        // account.username = channelId; 
                     } else {
-                        // Fallback to legacy username format
+                        // Fallback to legacy username format or direct handle search
                         const cleanUsername = username.replace('@', '');
                         feedUrl = `https://www.youtube.com/feeds/videos.xml?user=${cleanUsername}`;
                     }
@@ -190,11 +188,13 @@ export class SocialManager {
                         
                         if (latestVideo.id !== account.lastPostId) {
                             // NEW VIDEO detected
+                            const videoId = latestVideo.id.replace('yt:video:', '');
                             await this.handleSocialPost(guildId, platformConfig, account, {
                                 title: latestVideo.title,
                                 url: latestVideo.link,
                                 author: feed.title,
-                                thumbnail: `https://i.ytimg.com/vi/${latestVideo.id.replace('yt:video:', '')}/maxresdefault.jpg`
+                                thumbnail: `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`,
+                                fallbackThumbnail: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`
                             }, 'YouTube');
                             account.lastPostId = latestVideo.id;
                             changed = true;
@@ -255,25 +255,46 @@ export class SocialManager {
                                     : latestItem['media:content']?.$.url;
                             }
 
+                            if (!thumbnail && latestItem['media:thumbnail']) {
+                                thumbnail = Array.isArray(latestItem['media:thumbnail'])
+                                    ? latestItem['media:thumbnail'][0]?.$.url
+                                    : latestItem['media:thumbnail']?.$.url;
+                            }
+
+                            // Support for media:group (common in some bridges)
+                            if (!thumbnail && latestItem['media:group']) {
+                                const group = latestItem['media:group'];
+                                const media = group['media:content'] || group['media:thumbnail'];
+                                if (media) {
+                                    thumbnail = Array.isArray(media) ? media[0]?.$.url : media?.$.url;
+                                }
+                            }
+
                             if (!thumbnail) {
                                 const content = latestItem.content || latestItem.contentSnippet || '';
-                                // Support both double and single quotes in img src, and handle potential data-src
-                                const imgMatch = content.match(/<img[^>]+src=["']([^"']+)["']/i) || content.match(/<img[^>]+data-src=["']([^"']+)["']/i);
+                                // Support both double and single quotes, various attributes, and data-src
+                                const imgMatch = content.match(/<img[^>]+(?:src|data-src|original-src)=["']([^"']+)["']/i);
                                 if (imgMatch) thumbnail = imgMatch[1];
                             }
                             
-                            // Last resort for Instagram: if we have a link, try to use a proxy for the image if it's missing
-                            if (!thumbnail && platformName === 'Instagram' && latestItem.link) {
-                                // Some bridges provide the image URL in the link if optimized
-                                if (latestItem.link.includes('ddinstagram.com')) {
-                                    thumbnail = latestItem.link.replace('ddinstagram.com', 'ddinstagram.com/images'); // Just a guess, but let's stick to extraction
+                            // Last resort for Instagram/Twitter: if we have a link, try to use a proxy for the image if it's missing
+                            if (!thumbnail && latestItem.link) {
+                                if (latestItem.link.includes('instagram.com')) {
+                                    thumbnail = latestItem.link.replace('instagram.com', 'ddinstagram.com').replace('/p/', '/p/show/');
+                                } else if (latestItem.link.includes('twitter.com') || latestItem.link.includes('x.com')) {
+                                    thumbnail = latestItem.link.replace(/(twitter\.com|x\.com)/, 'fxtwitter.com').replace('/status/', '/status/show/');
                                 }
+                            }
+
+                            if (!thumbnail) {
+                                logger.debug(`[Socials/${platformName}] Could not find thumbnail for item: ${latestItem.title}`);
                             }
 
                             const isVideo = latestItem.enclosure?.type?.includes('video') || 
                                           latestItem.content?.includes('<video') || 
                                           latestItem.link?.includes('/video/') ||
-                                          latestItem.title?.toLowerCase().includes('video');
+                                          latestItem.title?.toLowerCase().includes('video') ||
+                                          latestItem.title?.toLowerCase().includes('reel');
 
                             await this.handleSocialPost(guildId, platformConfig, account, {
                                 title: latestItem.title || 'Nuovo post!',
@@ -281,7 +302,8 @@ export class SocialManager {
                                 author: feed.title || username,
                                 description: latestItem.contentSnippet || latestItem.content?.replace(/<[^>]*>/g, '').substring(0, 500) || '',
                                 thumbnail: thumbnail,
-                                isVideo: isVideo
+                                isVideo: isVideo,
+                                profileImage: feed.image?.url || feed.itunes?.image
                             }, platformName);
 
                             account.lastPostId = itemId;
@@ -386,9 +408,14 @@ export class SocialManager {
             if (authorName.includes(' - ')) authorName = authorName.split(' - ')[0];
             if (authorName.includes(' | ')) authorName = authorName.split(' | ')[0];
 
-            // Suppress description if video on Twitter
-            const isTwitterVideo = platform === 'Twitter' && postData.isVideo;
-            const finalDescription = isTwitterVideo ? '' : (formatText(customEmbed.description) || formatText(defaultDescs[platform]) || postData.description || postData.title);
+            // Suppress description if video on X/Twitter
+            const isTwitter = platform === 'Twitter' || platform === 'X';
+            const isTwitterVideo = isTwitter && postData.isVideo;
+            
+            let finalDescription = formatText(customEmbed.description) || formatText(defaultDescs[platform]) || postData.description || postData.title;
+            if (isTwitterVideo) {
+                finalDescription = ''; // Don't show post content if it's a video
+            }
 
             const embedData = new EmbedBuilder()
                 .setTitle(formatText(customEmbed.title) || formatText(defaultTitles[platform]) || 'Nuovo post!')
@@ -401,26 +428,30 @@ export class SocialManager {
                     iconURL: this.client.user.displayAvatarURL() 
                 });
 
+            // Use profile image if available, otherwise fallback to platform icon
+            const profileImage = postData.profileImage || style.icon;
+            
+            // Thumbnail (Right side) - The user explicitly requested the channel/streamer image here
+            embedData.setThumbnail(profileImage);
+
+            // Author (Top) - Use the platform icon for branding
             embedData.setAuthor({ 
-                name: style.label, 
+                name: `${style.label} - ${authorName}`, 
                 iconURL: style.icon || guild.iconURL() 
             });
 
-            // For Instagram, we keep the icon in thumbnail as well as it looks premium
-            if (style.icon) {
-                embedData.setThumbnail(style.icon);
-            }
-
             if (postData.thumbnail) {
+                // Main Image (Bottom) - The stream preview or post photo
                 embedData.setImage(postData.thumbnail);
             }
 
             const buttonLabels = {
                 'Twitch': 'Guarda la Live',
                 'YouTube': 'Guarda il Video',
-                'Twitter': 'Leggi il Tweet',
-                'Instagram': 'Vedi il Post',
-                'TikTok': 'Guarda il TikTok'
+                'Twitter': 'Vedi su 𝕏',
+                'X': 'Vedi su 𝕏',
+                'Instagram': 'Vedi su Instagram',
+                'TikTok': 'Vedi su TikTok'
             };
 
             const row = new ActionRowBuilder()
@@ -496,12 +527,20 @@ export class SocialManager {
                 }
             });
 
-            // Regex to find "channelId":"UC..."
-            const match = response.data.match(/\"channelId\":\"(UC[a-zA-Z0-9_-]+)\"/);
+            // Regex to find "channelId":"UC..." or "externalId":"UC..."
+            const match = response.data.match(/\"(?:channelId|externalId)\"\:\"(UC[a-zA-Z0-9_-]+)\"/);
             if (match && match[1]) {
                 logger.info(`[YouTubeResolver] Resolved ${handle} to ${match[1]}`);
                 return match[1];
             }
+
+            // Fallback: search for canonical link
+            const canonicalMatch = response.data.match(/<link rel=\"canonical\" href=\"https:\/\/www\.youtube\.com\/channel\/(UC[a-zA-Z0-9_-]+)\"/);
+            if (canonicalMatch && canonicalMatch[1]) {
+                logger.info(`[YouTubeResolver] Resolved ${handle} to ${canonicalMatch[1]} (via canonical)`);
+                return canonicalMatch[1];
+            }
+
             return null;
         } catch (error) {
             logger.debug(`[YouTubeResolver] Failed to resolve handle ${handle}: ${error.message}`);

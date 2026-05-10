@@ -153,7 +153,7 @@ export default function DiscordSelector({
       )}
 
       <style jsx>{`
-        .ds-container-v2 { position: relative; width: 100%; font-family: 'Outfit', sans-serif; }
+        .ds-container-v2 { position: relative; width: 100%; font-family: 'Inter', sans-serif; }
         
         .ds-trigger-v2 {
           display: flex;

@@ -144,7 +144,7 @@ export default function GlobalSync() {
                             <div className="gate-icon-glow-v2" style={{ width: '96px', height: '96px', background: '#fdf4ff', color: '#a855f7', borderRadius: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 32px', boxShadow: '0 15px 35px rgba(168, 85, 247, 0.2)' }}>
                                 <Gem size={48} />
                             </div>
-                            <h2 style={{ fontFamily: 'Outfit', fontSize: '2.5rem', fontWeight: 900, color: '#1e293b', marginBottom: '16px', textAlign: 'center' }}>Sincronizzazione Multi-Server</h2>
+                            <h2 style={{ fontFamily: 'Inter', fontSize: '2.5rem', fontWeight: 900, color: '#1e293b', marginBottom: '16px', textAlign: 'center' }}>Sincronizzazione Multi-Server</h2>
                             <p style={{ fontSize: '1.15rem', color: '#64748b', lineHeight: 1.6, maxWidth: 600, margin: '0 auto 40px', textAlign: 'center' }}>Gestisci un network di server? Copia istantaneamente intere configurazioni tra le tue community con un solo click e mantieni la coerenza assoluta.</p>
                             
                             <div className="gate-checklist-v2" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', maxWidth: '900px', margin: '0 auto 48px' }}>
@@ -269,7 +269,7 @@ export default function GlobalSync() {
                 .header-info { display: flex; align-items: center; gap: 24px; }
                 .pc-icon-box { width: 64px; height: 64px; color: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; box-shadow: 0 12px 24px rgba(124, 58, 237, 0.25); }
                 .pc-title-row { display: flex; flex-direction: column; gap: 6px; }
-                .pc-title-row h1 { font-family: 'Outfit', sans-serif; font-size: 2rem; font-weight: 900; margin: 0; color: #1e293b; letter-spacing: -0.5px; }
+                .pc-title-row h1 { font-family: 'Inter', sans-serif; font-size: 2rem; font-weight: 900; margin: 0; color: #1e293b; letter-spacing: -0.5px; }
                 
                 .pc-status-tag-v2 { display: flex; align-items: center; gap: 8px; font-size: 0.65rem; font-weight: 900; padding: 4px 12px; border-radius: 100px; letter-spacing: 0.5px; }
                 .pc-status-tag-v2.on { background: #f5f3ff; color: #7c3aed; }
@@ -286,7 +286,7 @@ export default function GlobalSync() {
                 .pc-card-v2 { background: white; border: 1px solid var(--border-light); border-radius: 32px; padding: 32px; box-shadow: var(--shadow-premium); }
                 .card-header-v2 { display: flex; align-items: center; gap: 16px; margin-bottom: 32px; }
                 .header-icon { width: 44px; height: 44px; background: #f5f3ff; color: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-                .card-header-v2 h3 { margin: 0; font-family: 'Outfit'; font-size: 1.2rem; font-weight: 900; color: #1e293b; }
+                .card-header-v2 h3 { margin: 0; font-family: 'Inter'; font-size: 1.2rem; font-weight: 900; color: #1e293b; }
 
                 /* Sync Card Interactions */
                 .pc-sync-card-v2:hover { border-color: #7c3aed !important; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(124, 58, 237, 0.08); }

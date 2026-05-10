@@ -230,7 +230,7 @@ export default function Selector() {
             .portal-brand-v2 { display: flex; align-items: center; gap: 24px; }
             .brand-logo-v2 { width: 56px; height: 56px; border-radius: 18px; background: white; padding: 8px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
             .brand-logo-v2 img { width: 100%; height: 100%; border-radius: 10px; }
-            .brand-text-v2 h1 { font-family: 'Outfit', sans-serif; font-size: 1.8rem; font-weight: 900; margin: 0; color: #1e293b; letter-spacing: -0.5px; }
+            .brand-text-v2 h1 { font-family: 'Inter', sans-serif; font-size: 1.8rem; font-weight: 900; margin: 0; color: #1e293b; letter-spacing: -0.5px; }
             .portal-tag-v2 { font-size: 0.65rem; font-weight: 900; color: var(--primary); letter-spacing: 2px; }
 
             .header-actions-v2 { display: flex; align-items: center; gap: 24px; }
@@ -257,7 +257,7 @@ export default function Selector() {
             .pc-guilds-sections-v2 { max-width: 1400px; margin: 0 auto; }
             .section-title-v2 { display: flex; align-items: center; gap: 16px; margin-bottom: 32px; }
             .title-icon-v2 { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-            .section-title-v2 h2 { margin: 0; font-family: 'Outfit'; font-size: 1.5rem; font-weight: 900; color: #1e293b; }
+            .section-title-v2 h2 { margin: 0; font-family: 'Inter'; font-size: 1.5rem; font-weight: 900; color: #1e293b; }
             .count-pill-v2 { background: #f1f5f9; color: #64748b; padding: 4px 10px; border-radius: 100px; font-size: 0.75rem; font-weight: 800; }
 
             .pc-guilds-grid-v2 { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
@@ -278,7 +278,7 @@ export default function Selector() {
             .pc-badge-platinum { background: #fdf4ff; color: #a855f7; padding: 4px 10px; border-radius: 8px; font-size: 0.6rem; font-weight: 900; border: 1px solid #f5d0fe; display: flex; align-items: center; gap: 6px; }
             .pc-badge-premium { background: #fffbeb; color: #d97706; padding: 4px 10px; border-radius: 8px; font-size: 0.6rem; font-weight: 900; border: 1px solid #fef3c7; display: flex; align-items: center; gap: 6px; }
 
-            .card-body-v2 h3 { margin: 0 0 8px; font-family: 'Outfit'; font-size: 1.25rem; font-weight: 900; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .card-body-v2 h3 { margin: 0 0 8px; font-family: 'Inter'; font-size: 1.25rem; font-weight: 900; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
             .guild-meta-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
             .guild-id-v2 { font-size: 0.75rem; font-weight: 700; color: #94a3b8; }
             .status-pill-v2 { font-size: 0.65rem; font-weight: 900; letter-spacing: 0.5px; }
@@ -294,7 +294,7 @@ export default function Selector() {
             /* Empty State */
             .pc-empty-selector-v2 { text-align: center; padding: 80px; background: white; border-radius: 40px; border: 2px dashed #e2e8f0; margin-top: 40px; }
             .empty-icon-v2 { width: 80px; height: 80px; background: #f8fafc; color: #cbd5e1; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; }
-            .pc-empty-selector-v2 h3 { font-family: 'Outfit'; font-size: 1.5rem; font-weight: 900; margin-bottom: 8px; }
+            .pc-empty-selector-v2 h3 { font-family: 'Inter'; font-size: 1.5rem; font-weight: 900; margin-bottom: 8px; }
             .pc-empty-selector-v2 p { color: #64748b; margin-bottom: 32px; }
 
             .pc-btn-primary { background: var(--primary); color: white; border: none; padding: 16px 32px; border-radius: 16px; font-weight: 800; cursor: pointer; transition: 0.3s; }

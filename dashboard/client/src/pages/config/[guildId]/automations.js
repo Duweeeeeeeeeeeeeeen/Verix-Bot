@@ -365,7 +365,7 @@ export default function AutomationsConfig() {
                             <ChevronLeft size={22} />
                         </button>
                         <div className="v-stack">
-                            <h2 style={{ margin: 0, fontFamily: 'Outfit', fontSize: '1.8rem', fontWeight: 950, color: '#1e293b' }}>Embed Designer: Slot #{editingEmbedIndex + 1}</h2>
+                            <h2 style={{ margin: 0, fontFamily: 'Inter', fontSize: '1.8rem', fontWeight: 950, color: '#1e293b' }}>Embed Designer: Slot #{editingEmbedIndex + 1}</h2>
                             <p style={{ margin: 0, fontSize: '0.9rem', color: '#64748b', fontWeight: 700 }}>Progetta un box grafico premium per il tuo broadcast.</p>
                         </div>
                         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '16px', background: 'white', padding: '12px 24px', borderRadius: '20px', border: '1.5px solid #e2e8f0' }}>
@@ -415,7 +415,7 @@ export default function AutomationsConfig() {
             .header-info { display: flex; align-items: center; gap: 24px; }
             .pc-icon-box { width: 64px; height: 64px; border-radius: 20px; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 12px 24px rgba(245, 158, 11, 0.25); }
             .pc-title-row { display: flex; flex-direction: column; gap: 6px; }
-            .pc-title-row h1 { font-family: 'Outfit', sans-serif; font-size: 2.2rem; font-weight: 900; margin: 0; color: #1e293b; letter-spacing: -0.5px; }
+            .pc-title-row h1 { font-family: 'Inter', sans-serif; font-size: 2.2rem; font-weight: 900; margin: 0; color: #1e293b; letter-spacing: -0.5px; }
             
             .pc-status-tag-v2 { display: flex; align-items: center; gap: 8px; font-size: 0.65rem; font-weight: 900; padding: 4px 12px; border-radius: 100px; letter-spacing: 0.5px; }
             .pc-status-tag-v2.on { background: #fffbeb; color: #d97706; }
@@ -440,7 +440,7 @@ export default function AutomationsConfig() {
             .pc-card-v2 { background: white; border: 1px solid var(--border-light); border-radius: 32px; padding: 32px; box-shadow: var(--shadow-premium); }
             .card-header-v2 { display: flex; align-items: center; gap: 20px; margin-bottom: 40px; }
             .header-icon { width: 52px; height: 52px; background: #f5f3ff; color: var(--primary); border-radius: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
-            .card-header-v2 h3 { margin: 0; font-family: 'Outfit'; font-size: 1.5rem; font-weight: 950; color: #1e293b; }
+            .card-header-v2 h3 { margin: 0; font-family: 'Inter'; font-size: 1.5rem; font-weight: 950; color: #1e293b; }
 
             .pc-btn-add-v2 { background: #f8fafc; color: #1e293b; border: 1.5px solid #e2e8f0; padding: 12px 24px; border-radius: 14px; font-weight: 900; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
             .pc-btn-add-v2:hover { background: white; border-color: var(--primary); color: var(--primary); transform: translateY(-2px); }

@@ -170,7 +170,7 @@ export default function AnalyticsPage() {
                          <div className="gate-icon-glow-v2" style={{ width: '100px', height: '100px', background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)', color: '#f59e0b', borderRadius: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 40px', boxShadow: '0 20px 40px rgba(245, 158, 11, 0.2)' }}>
                             <LineChart size={52} />
                          </div>
-                         <h2 style={{ fontFamily: 'Outfit', fontWeight: 950, fontSize: '3rem', color: '#1e293b', marginBottom: '20px', letterSpacing: '-1.5px' }}>Intelligence Visual Studio</h2>
+                         <h2 style={{ fontFamily: 'Inter', fontWeight: 950, fontSize: '3rem', color: '#1e293b', marginBottom: '20px', letterSpacing: '-1.5px' }}>Intelligence Visual Studio</h2>
                          <p style={{ color: '#64748b', fontSize: '1.25rem', maxWidth: '700px', margin: '0 auto 60px', fontWeight: 650, lineHeight: 1.6 }}>Analizza l'andamento del tuo server con grafici di crescita, heatmap di attività staff e performance dettagliate in tempo reale.</p>
                          
                          <div className="gate-feature-matrix-v2" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', textAlign: 'left', maxWidth: '850px', margin: '0 auto 64px' }}>
@@ -306,7 +306,7 @@ export default function AnalyticsPage() {
             .header-info { display: flex; align-items: center; gap: 24px; }
             .pc-icon-box { width: 64px; height: 64px; border-radius: 20px; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 12px 24px rgba(245, 158, 11, 0.25); }
             .pc-title-row { display: flex; flex-direction: column; gap: 6px; }
-            .pc-title-row h1 { font-family: 'Outfit', sans-serif; font-size: 2.2rem; font-weight: 900; margin: 0; color: #1e293b; letter-spacing: -1px; }
+            .pc-title-row h1 { font-family: 'Inter', sans-serif; font-size: 2.2rem; font-weight: 900; margin: 0; color: #1e293b; letter-spacing: -1px; }
             
             .pc-status-tag-v2 { display: flex; align-items: center; gap: 8px; font-size: 0.65rem; font-weight: 900; padding: 4px 12px; border-radius: 100px; letter-spacing: 0.5px; }
             .status-dot-v2 { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
@@ -324,7 +324,7 @@ export default function AnalyticsPage() {
             .s-header-v2 { display: flex; align-items: center; gap: 20px; position: relative; z-index: 2; margin-bottom: 24px; }
             .s-icon-box-v2 { width: 52px; height: 52px; border-radius: 16px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
             .s-label-v2 { font-size: 0.75rem; font-weight: 900; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
-            .s-value-v2 { margin: 4px 0 0 0; font-family: 'Outfit'; font-size: 2.2rem; font-weight: 950; color: #1e293b; line-height: 1; }
+            .s-value-v2 { margin: 4px 0 0 0; font-family: 'Inter'; font-size: 2.2rem; font-weight: 950; color: #1e293b; line-height: 1; }
             
             .s-footer-v2 { position: relative; z-index: 2; border-top: 1.5px solid #f1f5f9; padding-top: 20px; }
             .s-trend-box-v2 { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 850; }
@@ -342,7 +342,7 @@ export default function AnalyticsPage() {
             .pc-card-v2 { background: white; border: 1px solid var(--border-light); border-radius: 32px; padding: 40px; box-shadow: var(--shadow-premium); }
             .card-header-v2 { display: flex; align-items: center; gap: 20px; margin-bottom: 40px; }
             .header-icon { width: 52px; height: 52px; border-radius: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-            .card-header-v2 h3 { margin: 0; font-family: 'Outfit'; font-size: 1.5rem; font-weight: 950; color: #1e293b; }
+            .card-header-v2 h3 { margin: 0; font-family: 'Inter'; font-size: 1.5rem; font-weight: 950; color: #1e293b; }
 
             .v-stack { display: flex; flex-direction: column; }
             .align-center { display: flex; align-items: center; }
