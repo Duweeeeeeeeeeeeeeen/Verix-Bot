@@ -10,6 +10,10 @@ import {
 import Skeleton from '../../../components/Skeleton';
 import api from '../../../utils/api';
 import Head from 'next/head';
+import { 
+    Key, AlertTriangle, ExternalLink, CheckCircle, Timer,
+    Eye, ChevronLeft, Gem, X
+} from 'lucide-react';
 
 export default function WhiteLabelPage() {
   const { t } = useT();
@@ -23,6 +27,13 @@ export default function WhiteLabelPage() {
   // Status management
   const [statuses, setStatuses] = useState([]);
   const [rotationInterval, setRotationInterval] = useState(60);
+  
+  // Platinum specific states
+  const [botData, setBotData] = useState(null);
+  const [token, setToken] = useState('');
+  const [showToken, setShowToken] = useState(false);
+  const [restarting, setRestarting] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   useEffect(() => {
     setMounted(true);
@@ -33,11 +44,19 @@ export default function WhiteLabelPage() {
     setLoading(true);
     window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
     try {
-        const res = await api.request(`/config/${guildId}/guild`);
-        const data = res.data || res;
+        const [guildRes, botRes] = await Promise.all([
+            api.request(`/config/${guildId}/guild`),
+            api.request(`/private-bot/${guildId}`).catch(() => ({ bot: null }))
+        ]);
+        
+        const data = guildRes.data || guildRes;
         setConfig(data);
         setStatuses(data.customStatuses || []);
         setRotationInterval(data.statusRotationInterval || 60);
+        
+        if (botRes && botRes.bot) {
+            setBotData(botRes.bot);
+        }
     } catch (err) {
         console.error('Failed to fetch config:', err);
     } finally {
@@ -87,9 +106,58 @@ export default function WhiteLabelPage() {
     }
   };
 
+  // Platinum specific handlers
+  const handleSaveToken = async () => {
+    if (!token && !botData) return;
+    setSaving(true);
+    window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
+    try {
+        await api.request(`/private-bot/${guildId}`, {
+            method: 'POST',
+            data: { token: token || undefined, enabled: botData ? botData.enabled : true }
+        });
+        setToken('');
+        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Token salvato!', type: 'success' } }));
+        fetchData();
+    } catch (err) {
+        console.error('Token save failed:', err);
+        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Errore nel salvataggio token', type: 'error' } }));
+    } finally {
+        setSaving(false);
+        window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
+    }
+  };
+
+  const handleToggleBot = async () => {
+    if (!botData) return;
+    try {
+        const res = await api.request(`/private-bot/${guildId}/toggle`, { method: 'POST' });
+        setBotData({ ...botData, enabled: res.enabled });
+        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: res.enabled ? 'Bot attivata' : 'Bot disattivata', type: 'success' } }));
+    } catch (err) {
+        console.error('Toggle failed:', err);
+    }
+  };
+
+  const handleRestartBot = async () => {
+    if (!botData || !botData.enabled) return;
+    setRestarting(true);
+    try {
+        await api.request(`/private-bot/${guildId}/restart`, { method: 'POST' });
+        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Riavvio in corso...', type: 'warning' } }));
+        setTimeout(fetchData, 3000);
+    } catch (err) {
+        console.error('Restart failed:', err);
+    } finally {
+        setTimeout(() => setRestarting(false), 3000);
+    }
+  };
+
   if (!mounted || loading) return <Skeleton height="600px" />;
 
   const isPremium = config?.isPremium || ['premium', 'platinum'].includes(config?.premiumTier);
+  const isPlatinum = config?.premiumTier === 'platinum';
+  const langPath = t('lang.code') === 'it' ? '' : '/en';
 
   return (
     <div className="pc-premium-wrapper fade-in">
@@ -275,9 +343,116 @@ export default function WhiteLabelPage() {
                                 )}
                             </div>
                         </section>
+
+                        {/* Platinum Guide Section */}
+                        {isPlatinum && (
+                            <section className="pc-card-v2 animate slide-up" style={{ animationDelay: '0.2s' }}>
+                                <div className="card-header-v2">
+                                    <div className="header-icon"><Layout size={18} /></div>
+                                    <h3>Guida al Setup Private Bot</h3>
+                                </div>
+                                <div className="card-body-v2">
+                                    <div className="pc-stepper-v2">
+                                        {[1,2,3,4].map(step => (
+                                            <div key={step} className="pc-step-item-v2">
+                                                <div className="step-num">{step}</div>
+                                                <div className="step-content">
+                                                    <h4 className="step-title">{t(`private_bot.step${step}_title`)}</h4>
+                                                    <p className="step-desc" dangerouslySetInnerHTML={{ __html: t(`private_bot.step${step}_desc`) }}></p>
+                                                    <div className="step-media-v2" onClick={() => setSelectedImage({ src: `/img/guide${langPath}/step${step}.png`, title: t(`private_bot.step${step}_title`) })}>
+                                                        <img src={`/img/guide${langPath}/step${step}.png`} alt={`Step ${step}`} />
+                                                        <div className="media-overlay"><Sparkles size={16} /> Ingrandisci</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </section>
+                        )}
                     </div>
 
                     <aside className="v-stack" style={{ gap: '32px' }}>
+                        {/* Platinum Instance Monitor */}
+                        {isPlatinum && (
+                            <section className="pc-card-v2 status-monitor-v2 animate slide-up">
+                                <div className="card-header-v2">
+                                    <div className="header-icon"><Power size={18} /></div>
+                                    <h3>Stato Istanza Privata</h3>
+                                </div>
+                                <div className="card-body-v2">
+                                    {botData ? (
+                                        <div className="v-stack" style={{ gap: '24px' }}>
+                                            <div className="pc-bot-identity-v2">
+                                                <img src={botData.avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'} className="bot-avatar" />
+                                                <div className="bot-info">
+                                                    <span className="bot-name">{botData.clientName || 'Private Bot'}</span>
+                                                    <div className={`pc-status-tag-v2 ${botData.status === 'online' ? 'on' : 'off'}`}>
+                                                        <div className="status-dot-v2"></div>
+                                                        {botData.status.toUpperCase()}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="pc-action-row-v2">
+                                                <div className="v-stack">
+                                                    <span className="action-label">Abilitato</span>
+                                                    <span className="action-desc">Ricevi comandi</span>
+                                                </div>
+                                                <label className="pc-toggle-mini">
+                                                    <input type="checkbox" checked={!!botData.enabled} onChange={handleToggleBot} />
+                                                    <span className="pc-slider-mini"></span>
+                                                </label>
+                                            </div>
+
+                                            <button className="pc-btn-outline" style={{ width: '100%', height: '56px' }} onClick={handleRestartBot} disabled={restarting}>
+                                                <RefreshCw size={18} className={restarting ? 'animate-spin' : ''} />
+                                                <span>{restarting ? 'Riavvio...' : 'Riavvia Istanza'}</span>
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="pc-empty-mini">Configura il token sotto per avviare l'istanza.</div>
+                                    )}
+                                </div>
+                            </section>
+                        )}
+
+                        {/* Platinum Credentials */}
+                        {isPlatinum && (
+                            <section className="pc-card-v2 animate slide-up" style={{ animationDelay: '0.1s' }}>
+                                <div className="card-header-v2">
+                                    <div className="header-icon"><Key size={18} /></div>
+                                    <h3>Credenziali Private</h3>
+                                </div>
+                                <div className="card-body-v2">
+                                    <div className="pc-input-group-v2">
+                                        <label>Discord Bot Token</label>
+                                        <div className="pc-input-wrapper-v2" style={{ background: 'var(--bg-badge)', border: '1.5px solid var(--border)', borderRadius: '16px', overflow: 'hidden', display: 'flex' }}>
+                                            <input 
+                                                type={showToken ? 'text' : 'password'} 
+                                                style={{ flex: 1, background: 'transparent', border: 'none', padding: '16px', fontWeight: 700, color: 'var(--text-heading)', outline: 'none' }}
+                                                placeholder={botData ? '••••••••••••••••••••' : 'MTE3MjMx...'} 
+                                                value={token}
+                                                onChange={e => setToken(e.target.value)}
+                                            />
+                                            <button style={{ background: 'transparent', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '0 16px' }} onClick={() => setShowToken(!showToken)}>
+                                                {showToken ? <EyeOff size={18} /> : <Eye size={18} />}
+                                            </button>
+                                        </div>
+                                        <button 
+                                            className="pc-btn-primary" 
+                                            style={{ width: '100%', marginTop: '16px' }} 
+                                            onClick={handleSaveToken} 
+                                            disabled={saving || (!token && !botData)}
+                                        >
+                                            <Save size={18} />
+                                            <span>Salva Token</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </section>
+                        )}
+
                         <section className="pc-card-v2 animate slide-up">
                             <div className="card-header-v2" style={{ marginBottom: '32px' }}>
                                 <div className="header-icon" style={{ background: '#fef2f2', color: '#ef4444' }}><EyeOff size={18} /></div>
@@ -407,6 +582,48 @@ export default function WhiteLabelPage() {
 
             :global(.light-theme) .pc-header-v2, :global(.light-theme) .pc-card-v2, :global(.light-theme) .pc-status-card-v2, :global(.light-theme) .pc-onboarding-gate { box-shadow: 0 8px 30px rgba(0,0,0,0.04) !important; }
             
+            .pc-stepper-v2 { display: flex; flex-direction: column; gap: 40px; }
+            .pc-step-item-v2 { display: flex; gap: 24px; position: relative; text-align: left; }
+            .pc-step-item-v2:not(:last-child):after { content: ''; position: absolute; left: 19px; top: 48px; bottom: -48px; width: 2px; background: var(--border); opacity: 0.3; }
+            .step-num { width: 40px; height: 40px; border-radius: 14px; background: var(--bg-badge); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-weight: 800; color: var(--primary); z-index: 2; flex-shrink: 0; }
+            .step-title { margin: 0 0 8px; font-size: 1.1rem; font-weight: 700; color: var(--text-heading); }
+            .step-desc { font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 16px; }
+            .step-media-v2 { border-radius: 20px; border: 1.5px solid var(--border); overflow: hidden; cursor: pointer; position: relative; max-width: 100%; transition: 0.3s; }
+            .step-media-v2:hover { transform: scale(1.02); box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+            .step-media-v2 img { width: 100%; display: block; }
+            .media-overlay { position: absolute; inset: 0; background: rgba(99, 102, 241, 0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; opacity: 0; transition: 0.3s; }
+            .step-media-v2:hover .media-overlay { opacity: 1; }
+
+            /* Status monitor */
+            .pc-bot-identity-v2 { display: flex; align-items: center; gap: 20px; background: var(--bg-badge); padding: 20px; border-radius: 24px; }
+            .bot-avatar { width: 64px; height: 64px; border-radius: 50%; border: 3px solid white; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+            .bot-info { display: flex; flex-direction: column; gap: 4px; }
+            .bot-name { font-weight: 800; font-size: 1.2rem; color: var(--text-heading); }
+
+            .pc-action-row-v2 { display: flex; justify-content: space-between; align-items: center; padding: 20px; background: white; border: 1.5px solid var(--border); border-radius: 20px; }
+            .action-label { font-weight: 700; color: var(--text-heading); font-size: 0.95rem; }
+            .action-desc { font-size: 0.8rem; color: var(--text-muted); }
+
+            .pc-btn-outline { display: flex; align-items: center; justify-content: center; gap: 12px; background: white; border: 1.5px solid var(--border); border-radius: 18px; font-weight: 700; color: var(--text-heading); cursor: pointer; transition: 0.3s; }
+            .pc-btn-outline:hover { background: var(--bg-badge); transform: translateY(-2px); }
+
+            .pc-toggle-mini { position: relative; width: 50px; height: 26px; }
+            .pc-toggle-mini input { opacity: 0; width: 0; height: 0; }
+            .pc-slider-mini { position: absolute; cursor: pointer; inset: 0; background: var(--border); transition: .4s; border-radius: 34px; }
+            .pc-slider-mini:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background: white; transition: .4s; border-radius: 50%; }
+            input:checked + .pc-slider-mini { background: #10b981; }
+            input:checked + .pc-slider-mini:before { transform: translateX(24px); }
+
+            .pc-lightbox-v2 { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 40px; backdrop-filter: blur(10px); }
+            .lightbox-content-v2 { background: white; border-radius: 32px; overflow: hidden; max-width: 1000px; width: 100%; box-shadow: 0 40px 100px rgba(0,0,0,0.5); }
+            .lightbox-header-v2 { padding: 24px 32px; border-bottom: 1.5px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 1.2rem; color: var(--text-heading); }
+            .lightbox-header-v2 button { background: transparent; border: none; color: var(--text-dim); cursor: pointer; transition: 0.2s; }
+            .lightbox-header-v2 button:hover { color: #ef4444; transform: rotate(90deg); }
+            .lightbox-content-v2 img { width: 100%; height: auto; max-height: 80vh; object-fit: contain; }
+
+            .animate-spin { animation: spin 1s linear infinite; }
+            @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
             @media (max-width: 900px) {
                 .gate-comparison-grid { grid-template-columns: 1fr; }
                 .gate-header h1 { font-size: 2.5rem; }
