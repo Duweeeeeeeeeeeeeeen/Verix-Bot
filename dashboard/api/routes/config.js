@@ -141,6 +141,8 @@ router.get('/:guildId', adminCheck, async (req, res) => {
                 guild: guildData,
                 guildName: discordGuild?.name || guildData?.guildName || 'Verix Server',
                 guildIcon: discordGuild?.iconURL({ dynamic: true, size: 256 }) || null,
+                isPremium: guildData?.isPremium || ['premium', 'platinum'].includes(guildData?.premiumTier),
+                premiumTier: guildData?.premiumTier || (guildData?.isPremium ? 'premium' : 'none'),
                 mainBotMissing: !req.mainClient.guilds.cache.has(guildId),
                 mainBotInviteUrl: `https://discord.com/api/oauth2/authorize?client_id=${process.env.DISCORD_CLIENT_ID || process.env.CLIENT_ID}&permissions=8&scope=bot%20applications.commands&guild_id=${guildId}`,
                 globalConfig,
@@ -985,6 +987,38 @@ router.post('/:guildId/tickets/send-panel', adminCheck, async (req, res) => {
     } catch (error) {
         console.error('Error sending tickets panel:', error);
         res.status(500).json({ success: false, error: 'Errore durante l\'invio del pannello ticket.' });
+    }
+});
+
+// GET ticket statistics
+router.get('/:guildId/tickets/stats', adminCheck, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        
+        const [total, open, closed, avgResponseData] = await Promise.all([
+            Ticket.countDocuments({ guildId }),
+            Ticket.countDocuments({ guildId, status: { $in: ['OPEN', 'PROCESSING', 'WAITING'] } }),
+            Ticket.countDocuments({ guildId, status: 'CLOSED' }),
+            Ticket.aggregate([
+                { $match: { guildId, responseTimeMs: { $exists: true, $ne: null } } },
+                { $group: { _id: null, avgResponse: { $avg: '$responseTimeMs' } } }
+            ])
+        ]);
+
+        const avgResponseMs = avgResponseData.length > 0 ? avgResponseData[0].avgResponse : 0;
+        
+        res.json({
+            success: true,
+            data: {
+                total,
+                open,
+                closed,
+                avgResponseMs
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching ticket stats:', error);
+        res.status(500).json({ success: false, error: 'Errore durante il recupero delle statistiche.' });
     }
 });
 

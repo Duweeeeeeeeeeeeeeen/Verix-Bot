@@ -10,7 +10,7 @@ import {
     Fingerprint, Zap, AlignLeft, Paintbrush
 } from 'lucide-react';
 import { DiscordSelector, CustomSelect } from '../../../components/LazyConfigComponents';
-import EmbedPreview from '../../../components/EmbedPreview';
+import EmbedPreviewContainer from '../../../components/EmbedPreviewContainer';
 import Head from 'next/head';
 
 export default function ReactionRolesConfig() {
@@ -166,7 +166,7 @@ export default function ReactionRolesConfig() {
         {/* V2 Header */}
         <header className="pc-header-v2">
             <div className="header-info">
-                <div className="pc-icon-box" style={{ background: 'linear-gradient(135deg, #6366f1 0%, #4338ca 100%)' }}>
+                <div className="pc-icon-box" style={{ background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%)' }}>
                     <Fingerprint size={28} />
                 </div>
                 <div className="pc-title-row">
@@ -179,13 +179,30 @@ export default function ReactionRolesConfig() {
             </div>
             
             <div className="header-controls">
-                <button 
-                  className={`pc-status-toggle-v2 ${config.enabled ? 'active' : ''}`}
-                  onClick={() => setConfig({...config, enabled: !config.enabled})}
-                >
-                  <Power size={18} />
-                  <span>{config.enabled ? t('common.online') : t('common.offline')}</span>
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--bg-badge)', padding: '10px 20px', borderRadius: '14px', border: '1.5px solid var(--border)' }}>
+                    <label className="pc-toggle-v2" style={{ position: 'relative', width: '42px', height: '22px' }}>
+                        <input 
+                            type="checkbox" 
+                            style={{ opacity: 0, width: 0, height: 0, position: 'absolute' }}
+                            checked={config.enabled} 
+                            onChange={() => setConfig({...config, enabled: !config.enabled})} 
+                        />
+                        <span style={{ 
+                            position: 'absolute', cursor: 'pointer', inset: 0, 
+                            background: config.enabled ? '#10b981' : '#ef4444', 
+                            transition: '.4s', borderRadius: '34px' 
+                        }}>
+                            <span style={{
+                                position: 'absolute', content: '""', height: '16px', width: '16px', 
+                                left: config.enabled ? '23px' : '3px', bottom: '3px', 
+                                background: '#fff', transition: '.4s', borderRadius: '50%'
+                            }}></span>
+                        </span>
+                    </label>
+                    <span style={{ fontWeight: 700, fontSize: '0.9rem', color: config.enabled ? '#10b981' : '#ef4444' }}>
+                        {config.enabled ? t('common.active') : t('common.inactive')}
+                    </span>
+                </div>
                 <button className="pc-btn-primary" onClick={handleSave} disabled={saving}>
                     <Save size={18} />
                     <span>{saving ? t('common.saving') : t('rr.sync_studio')}</span>
@@ -364,29 +381,16 @@ export default function ReactionRolesConfig() {
                             </div>
 
                             <aside style={{ position: 'sticky', top: '32px', height: 'fit-content' }}>
-                                <div className="pc-card-v2" style={{ padding: 0, overflow: 'hidden' }}>
-                                    <div style={{ background: 'var(--bg-badge)', padding: '20px', borderBottom: '1.5px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 700, color: 'var(--text-heading)', fontSize: '0.9rem' }}><Monitor size={18} /> {t('rr.preview')}</div>
-                                    </div>
-                                    <div style={{ padding: '32px', background: previewTheme === 'dark' ? '#0f172a' : 'var(--bg-card)', minHeight: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                        <EmbedPreview 
-                                            theme={previewTheme}
-                                            isMobile={isPreviewMobile}
-                                            data={{
-                                                ...activePanel.embed,
-                                                buttons: activePanel.type === 'BUTTON' ? activePanel.roles.map(r => ({
-                                                    label: r.label,
-                                                    emoji: r.emoji,
-                                                    style: r.style
-                                                })) : []
-                                            }} 
-                                        />
-                                    </div>
-                                    <div style={{ padding: '16px', background: 'var(--bg-badge)', borderTop: '1.5px solid var(--border)', display: 'flex', justifyContent: 'center', gap: '16px' }}>
-                                        <button onClick={() => setPreviewTheme('dark')} className={previewTheme === 'dark' ? 'active' : ''} style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: previewTheme === 'dark' ? 'var(--primary)' : 'var(--text-muted)' }}><Moon size={20} /></button>
-                                        <button onClick={() => setPreviewTheme('light')} className={previewTheme === 'light' ? 'active' : ''} style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: previewTheme === 'light' ? 'var(--primary)' : 'var(--text-muted)' }}><Sun size={20} /></button>
-                                    </div>
-                                </div>
+                                <EmbedPreviewContainer 
+                                    data={{
+                                        ...activePanel.embed,
+                                        buttons: activePanel.type === 'BUTTON' ? activePanel.roles.map(r => ({
+                                            label: r.label,
+                                            emoji: r.emoji,
+                                            style: r.style
+                                        })) : []
+                                    }} 
+                                />
                             </aside>
                         </div>
                     </div>
@@ -411,13 +415,13 @@ export default function ReactionRolesConfig() {
             .pc-icon-box { width: 52px; height: 52px; color: #fff; border-radius: 16px; display: flex; align-items: center; justify-content: center; }
             .pc-title-row h1 { font-family: 'Inter'; font-size: 1.8rem; font-weight: 700; margin: 0; color: var(--text-heading); letter-spacing: normal; }
             
-            .pc-status-tag-v2 { display: flex; align-items: center; gap: 6px; font-size: 0.65rem; font-weight: 700; padding: 4px 10px; border-radius: 100px; }
+            .pc-status-tag-v2 { display: flex; align-items: center; gap: 6px; font-size: 0.65rem; font-weight: 700; padding: 4px 10px; border-radius: 100px;  width: fit-content; }
             .pc-status-tag-v2.on { background: rgba(16, 185, 129, 0.1); color: #10b981; }
             .pc-status-tag-v2.off { background: var(--bg-badge); color: #ef4444; }
             .status-dot-v2 { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
 
             .pc-status-toggle-v2 { display: flex; align-items: center; gap: 10px; background: var(--bg-badge); color: var(--text-muted); border: 1.5px solid var(--border); padding: 12px 24px; border-radius: 16px; font-weight: 700; cursor: pointer; transition: 0.2s; }
-            .pc-status-toggle-v2.active { background: rgba(239, 68, 68, 0.1); color: #ef4444; border-color: rgba(239, 68, 68, 0.2); }
+            .pc-status-toggle-v2.active { background: rgba(var(--primary-rgb), 0.1); color: var(--primary); border-color: rgba(var(--primary-rgb), 0.2); }
 
             .pc-btn-primary { background: var(--primary); color: #fff; border: none; padding: 12px 24px; border-radius: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
             .pc-btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(var(--primary-rgb), 0.2); }

@@ -241,7 +241,7 @@ export default function PremiumHub() {
             .pc-title-row { display: flex; flex-direction: column; gap: 6px; }
             .pc-title-row h1 { font-size: 1.8rem; font-weight: 700; margin: 0; color: var(--text-heading); letter-spacing: normal; }
             
-            .pc-status-tag-v2 { display: flex; align-items: center; gap: 8px; font-size: 0.7rem; font-weight: 700; padding: 6px 16px; border-radius: 100px; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
+            .pc-status-tag-v2 { display: flex; align-items: center; gap: 8px; font-size: 0.7rem; font-weight: 700; padding: 6px 16px; border-radius: 100px; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(0,0,0,0.03);  width: fit-content; }
             .pc-status-tag-v2.on { background: rgba(16, 185, 129, 0.1); color: #10b981; }
             .pc-status-tag-v2.off { background: var(--bg-badge); color: #ef4444; }
             .status-dot-v2 { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }

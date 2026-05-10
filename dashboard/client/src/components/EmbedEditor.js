@@ -24,7 +24,7 @@ import HelpTooltip from './HelpTooltip';
 import CustomSelect from './CustomSelect';
 import { useT } from '../contexts/LanguageContext';
 
-const EmbedPreview = dynamic(() => import('./EmbedPreview'), {
+const EmbedPreviewContainer = dynamic(() => import('./EmbedPreviewContainer'), {
   ssr: false,
   loading: () => <div className="embed-preview-skeleton" />
 });
@@ -150,30 +150,17 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
         </div>
 
         {/* Floating Preview Section */}
-        <aside className="pc-preview-sidebar-v2">
-            <div className="preview-header-v2">
-                <div className="align-center"><Eye size={18} /> <span>Anteprima Live</span></div>
-                <div className="preview-controls-v2">
-                    <button className={!isPreviewMobile ? 'active' : ''} onClick={() => setIsPreviewMobile(false)}><Monitor size={14} /></button>
-                    <button className={isPreviewMobile ? 'active' : ''} onClick={() => setIsPreviewMobile(true)}><Smartphone size={14} /></button>
-                    <div className="divider-v2" />
-                    <button className={previewTheme === 'dark' ? 'active' : ''} onClick={() => setPreviewTheme('dark')}><Moon size={14} /></button>
-                    <button className={previewTheme === 'light' ? 'active' : ''} onClick={() => setPreviewTheme('light')}><Sun size={14} /></button>
-                </div>
-            </div>
+        <aside className="pc-preview-sidebar-v2" style={{ position: 'sticky', top: '20px', height: 'fit-content' }}>
+            <EmbedPreviewContainer data={{ ...embed, buttons: previewButtons || embed.buttons }}>
+                {renderPreviewFooter && <div className="render-footer-v2" style={{ marginBottom: '16px' }}>{renderPreviewFooter}</div>}
 
-            <div className="preview-content-v2">
-                <EmbedPreview data={{ ...embed, buttons: previewButtons || embed.buttons }} isMobile={isPreviewMobile} theme={previewTheme} />
-                
-                {renderPreviewFooter && <div className="render-footer-v2">{renderPreviewFooter}</div>}
-
-                <div className="variable-hints-v2">
+                <div className="variable-hints-v2" style={{ margin: 0, border: 'none' }}>
                     <div className="hint-header-v2"><Info size={14} /> <span>Tag Disponibili</span></div>
                     <div className="tags-grid-v2">
                         {variables.map(v => <code key={v}>{`{${v}}`}</code>)}
                     </div>
                 </div>
-            </div>
+            </EmbedPreviewContainer>
         </aside>
       </div>
 

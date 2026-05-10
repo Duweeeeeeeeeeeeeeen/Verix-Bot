@@ -100,7 +100,7 @@ export default function WhiteLabelPage() {
         {/* V2 Header */}
         <header className="pc-header-v2">
             <div className="header-info">
-                <div className="pc-icon-box" style={{ background: 'linear-gradient(135deg, #6366f1 0%, #312e81 100%)' }}>
+                <div className="pc-icon-box" style={{ background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%)' }}>
                     <Fingerprint size={28} />
                 </div>
                 <div className="pc-title-row">
@@ -114,7 +114,7 @@ export default function WhiteLabelPage() {
             
             <div className="header-controls">
                 {isPremium && (
-                    <button className="pc-btn-primary" onClick={handleSave} disabled={saving} style={{ background: 'linear-gradient(135deg, #6366f1 0%, #4338ca 100%)' }}>
+                    <button className="pc-btn-primary" onClick={handleSave} disabled={saving}>
                         <Save size={18} />
                         <span>{saving ? t('common.saving') : t('wl.save_identity')}</span>
                     </button>
@@ -162,7 +162,7 @@ export default function WhiteLabelPage() {
                         </div>
                     </div>
 
-                    <button className="pc-btn-primary" style={{ background: 'linear-gradient(135deg, #6366f1 0%, #312e81 100%)', padding: '24px 72px', fontSize: '1.25rem', borderRadius: '24px', margin: '0 auto', boxShadow: '0 15px 40px rgba(99, 102, 241, 0.3)', display: 'flex', alignItems: 'center', gap: '16px' }} onClick={() => router.push(`/config/${guildId}/premium`)}>
+                    <button className="pc-btn-primary" style={{ padding: '24px 72px', fontSize: '1.25rem', borderRadius: '24px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '16px' }} onClick={() => router.push(`/config/${guildId}/premium`)}>
                         <Sparkles size={24} />
                         <span>Upgrade to Platinum Studio</span>
                     </button>
@@ -172,7 +172,7 @@ export default function WhiteLabelPage() {
                     <div className="v-stack" style={{ gap: '32px' }}>
                         <section className="pc-card-v2 animate slide-up">
                             <div className="card-header-v2" style={{ marginBottom: '32px' }}>
-                                <div className="header-icon" style={{ background: '#eef2ff', color: '#6366f1' }}><UserCircle size={18} /></div>
+                                <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><UserCircle size={18} /></div>
                                 <h3 style={{ margin: 0 }}>{t('wl.identity_global')}</h3>
                             </div>
                             <div className="card-body-v2">
@@ -198,12 +198,12 @@ export default function WhiteLabelPage() {
 
                         <section className="pc-card-v2 animate slide-up" style={{ animationDelay: '0.1s' }}>
                             <div className="card-header-v2" style={{ marginBottom: '32px' }}>
-                                <div className="header-icon" style={{ background: '#f5f3ff', color: '#7c3aed' }}><RefreshCw size={18} /></div>
+                                <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><RefreshCw size={18} /></div>
                                 <div style={{ flex: 1 }}>
                                     <h3 style={{ margin: 0 }}>{t('wl.rotation_studio')}</h3>
                                     <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 700 }}>{t('wl.rotation_desc')}</p>
                                 </div>
-                                <button className="pc-btn-add-studio-v2" style={{ background: '#f5f3ff', color: '#6366f1', border: '1.5px solid #ddd6fe', padding: '12px 24px', borderRadius: '14px', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', transition: '0.3s' }} onClick={addStatus}>
+                                <button className="pc-btn-add-studio-v2" style={{ background: 'var(--bg-badge)', color: 'var(--primary)', border: '1.5px solid var(--border)', padding: '12px 24px', borderRadius: '14px', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', transition: '0.3s' }} onClick={addStatus}>
                                     <Plus size={18} /> <span>{t('wl.add_status')}</span>
                                 </button>
                             </div>
@@ -330,17 +330,17 @@ export default function WhiteLabelPage() {
             /* Header V2 */
             .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-card); padding: 24px; border-radius: 28px; box-shadow: var(--shadow-premium); border: 1px solid var(--border); }
             .header-info { display: flex; align-items: center; gap: 16px; }
-            .pc-icon-box { width: 52px; height: 52px; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: #fff; box-shadow: 0 12px 24px rgba(99, 102, 241, 0.25); }
+            .pc-icon-box { width: 52px; height: 52px; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: #fff; box-shadow: 0 12px 24px rgba(var(--primary-rgb), 0.25); }
             .pc-title-row { display: flex; flex-direction: column; gap: 6px; }
             .pc-title-row h1 { font-family: 'Inter', sans-serif; font-size: 1.8rem; font-weight: 700; margin: 0; color: var(--text-heading); letter-spacing: normal; }
             
-            .pc-status-tag-v2 { display: flex; align-items: center; gap: 8px; font-size: 0.65rem; font-weight: 700; padding: 4px 12px; border-radius: 100px; letter-spacing: 0.5px; }
+            .pc-status-tag-v2 { display: flex; align-items: center; gap: 8px; font-size: 0.65rem; font-weight: 700; padding: 4px 12px; border-radius: 100px; letter-spacing: 0.5px;  width: fit-content; }
             .pc-status-tag-v2.on { background: rgba(16, 185, 129, 0.1); color: #10b981; }
             .pc-status-tag-v2.off { background: var(--bg-badge); color: #ef4444; }
             .status-dot-v2 { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 
-            .pc-btn-primary { background: var(--primary); color: #fff; border: none; padding: 14px 28px; border-radius: 18px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: 0.3s; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2); }
-            .pc-btn-primary:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(99, 102, 241, 0.3); }
+            .pc-btn-primary { background: var(--primary); color: #fff; border: none; padding: 14px 28px; border-radius: 18px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: 0.3s; box-shadow: 0 10px 20px rgba(var(--primary-rgb), 0.2); }
+            .pc-btn-primary:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(var(--primary-rgb), 0.3); }
 
             /* Card V2 */
             .pc-card-v2 { background: var(--bg-card); border: 1px solid var(--border); border-radius: 28px; padding: 32px; box-shadow: var(--shadow-premium); }
@@ -348,9 +348,9 @@ export default function WhiteLabelPage() {
             .header-icon { width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
             .card-header-v2 h3 { margin: 0; font-family: 'Inter'; font-size: 1.5rem; font-weight: 700; color: var(--text-heading); }
 
-            .pc-status-card-v2:hover { border-color: #6366f1 !important; transform: translateY(-3px); box-shadow: 0 10px 25px rgba(99, 102, 241, 0.05); }
+            .pc-status-card-v2:hover { border-color: var(--primary) !important; transform: translateY(-3px); box-shadow: 0 10px 25px rgba(var(--primary-rgb), 0.05); }
             .pc-btn-delete-studio-v2:hover { background: #ef4444 !important; color: #fff !important; transform: rotate(8deg); }
-            .pc-btn-add-studio-v2:hover { background: #6366f1 !important; color: #fff !important; transform: translateY(-3px); }
+            .pc-btn-add-studio-v2:hover { background: var(--primary) !important; color: #fff !important; transform: translateY(-3px); }
 
             /* Toggle V2 */
             .pc-toggle-v2 { position: relative; width: 44px; height: 22px; }

@@ -130,7 +130,7 @@ export default function VerifyConfig() {
         {/* V2 Header */}
         <header className="pc-header-v2">
             <div className="header-info">
-                <div className="pc-icon-box" style={{ background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)' }}>
+                <div className="pc-icon-box" style={{ background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%)' }}>
                     <ShieldCheck size={28} />
                 </div>
                 <div className="pc-title-row">
@@ -143,13 +143,30 @@ export default function VerifyConfig() {
             </div>
             
             <div className="header-controls">
-                <button 
-                  className={`pc-status-toggle-v2 ${config.enabled ? 'active' : ''}`}
-                  onClick={() => setConfig({...config, enabled: !config.enabled})}
-                >
-                  <Power size={18} />
-                  <span>{config.enabled ? t('common.online') : t('common.offline')}</span>
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--bg-badge)', padding: '10px 20px', borderRadius: '14px', border: '1.5px solid var(--border)' }}>
+                    <label className="pc-toggle-v2" style={{ position: 'relative', width: '42px', height: '22px' }}>
+                        <input 
+                            type="checkbox" 
+                            style={{ opacity: 0, width: 0, height: 0, position: 'absolute' }}
+                            checked={config.enabled} 
+                            onChange={() => setConfig({...config, enabled: !config.enabled})} 
+                        />
+                        <span style={{ 
+                            position: 'absolute', cursor: 'pointer', inset: 0, 
+                            background: config.enabled ? '#10b981' : '#ef4444', 
+                            transition: '.4s', borderRadius: '34px' 
+                        }}>
+                            <span style={{
+                                position: 'absolute', content: '""', height: '16px', width: '16px', 
+                                left: config.enabled ? '23px' : '3px', bottom: '3px', 
+                                background: '#fff', transition: '.4s', borderRadius: '50%'
+                            }}></span>
+                        </span>
+                    </label>
+                    <span style={{ fontWeight: 700, fontSize: '0.9rem', color: config.enabled ? '#10b981' : '#ef4444' }}>
+                        {config.enabled ? t('common.active') : t('common.inactive')}
+                    </span>
+                </div>
                 <button className="pc-btn-primary" onClick={handleSave} disabled={saving}>
                     <Save size={18} />
                     <span>{saving ? t('common.saving') : t('whitelist.sync_config')}</span>
@@ -289,13 +306,13 @@ export default function VerifyConfig() {
             .pc-icon-box { width: 52px; height: 52px; color: #fff; border-radius: 16px; display: flex; align-items: center; justify-content: center; }
             .pc-title-row h1 { font-family: 'Inter'; font-size: 1.8rem; font-weight: 700; margin: 0; color: var(--text-heading); letter-spacing: normal; }
             
-            .pc-status-tag-v2 { display: flex; align-items: center; gap: 6px; font-size: 0.6rem; font-weight: 700; padding: 4px 10px; border-radius: 100px; }
+            .pc-status-tag-v2 { display: flex; align-items: center; gap: 6px; font-size: 0.6rem; font-weight: 700; padding: 4px 10px; border-radius: 100px;  width: fit-content; }
             .pc-status-tag-v2.on { background: rgba(16, 185, 129, 0.1); color: #10b981; }
             .pc-status-tag-v2.off { background: var(--bg-badge); color: #ef4444; }
             .status-dot-v2 { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
 
             .pc-status-toggle-v2 { display: flex; align-items: center; gap: 10px; background: var(--bg-badge); color: var(--text-muted); border: 1.5px solid var(--border); padding: 12px 24px; border-radius: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; }
-            .pc-status-toggle-v2.active { background: rgba(16, 185, 129, 0.1); color: #10b981; border-color: #10b981; }
+            .pc-status-toggle-v2.active { background: rgba(var(--primary-rgb), 0.1); color: var(--primary); border-color: rgba(var(--primary-rgb), 0.2); }
 
             .pc-btn-primary { background: var(--primary); color: #fff; border: none; padding: 12px 24px; border-radius: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
             .pc-btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(var(--primary-rgb), 0.2); }

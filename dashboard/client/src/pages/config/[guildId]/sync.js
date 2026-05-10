@@ -112,7 +112,7 @@ export default function GlobalSync() {
             {/* V2 Header */}
             <header className="pc-header-v2">
                 <div className="header-info">
-                    <div className="pc-icon-box" style={{ background: 'linear-gradient(135deg, #a855f7 0%, #7c3aed 100%)' }}>
+                    <div className="pc-icon-box" style={{ background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%)' }}>
                         <RefreshCcw size={28} />
                     </div>
                     <div className="pc-title-row">
@@ -126,7 +126,7 @@ export default function GlobalSync() {
                 
                 <div className="header-controls">
                     {isPlatinum && (
-                        <button className="pc-btn-primary" style={{ background: '#7c3aed', boxShadow: '0 10px 20px rgba(124, 58, 237, 0.2)' }} onClick={handleSync} disabled={!sourceGuildId || selectedModules.length === 0 || syncing}>
+                        <button className="pc-btn-primary" onClick={handleSync} disabled={!sourceGuildId || selectedModules.length === 0 || syncing}>
                             {syncing ? <RefreshCcw className="animate-spin" size={18} /> : <Copy size={18} />}
                             <span>{syncing ? 'Sincronizzazione...' : 'Avvia Clonazione'}</span>
                         </button>
@@ -161,7 +161,7 @@ export default function GlobalSync() {
                                 ))}
                             </div>
 
-                            <button className="pc-btn-premium-v2" style={{ background: 'linear-gradient(135deg, #a855f7 0%, #7c3aed 100%)', color: 'white', border: 'none', padding: '20px 48px', borderRadius: '20px', fontWeight: 700, fontSize: '1.1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 14, margin: '0 auto', transition: '0.3s', boxShadow: '0 10px 25px rgba(168, 85, 247, 0.3)' }} onClick={() => router.push(`/config/${guildId}/premium`)}>
+                            <button className="pc-btn-premium-v2" style={{ background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%)', color: 'white', border: 'none', padding: '20px 48px', borderRadius: '20px', fontWeight: 700, fontSize: '1.1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 14, margin: '0 auto', transition: '0.3s', boxShadow: '0 10px 25px rgba(var(--primary-rgb), 0.3)' }} onClick={() => router.push(`/config/${guildId}/premium`)}>
                                 <Sparkles size={18} />
                                 <span>Attiva Piano Platinum</span>
                             </button>
@@ -172,7 +172,7 @@ export default function GlobalSync() {
                         <div className="v-stack" style={{ gap: '32px' }}>
                             <section className="pc-card-v2">
                                 <div className="card-header-v2">
-                                    <div className="header-icon" style={{ background: '#f5f3ff', color: '#7c3aed' }}><Server size={18} /></div>
+                                    <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><Server size={18} /></div>
                                     <h3>Server Sorgente</h3>
                                 </div>
                                 <div className="card-body-v2">
@@ -203,7 +203,7 @@ export default function GlobalSync() {
                                 </div>
                             </section>
 
-                            <section className="pc-card-v2" style={{ background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)', color: 'white', border: 'none', boxShadow: '0 15px 35px rgba(124, 58, 237, 0.2)' }}>
+                            <section className="pc-card-v2" style={{ background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%)', color: 'white', border: 'none', boxShadow: '0 15px 35px rgba(var(--primary-rgb), 0.2)' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
                                     <Info size={22} />
                                     <h4 style={{ margin: 0, fontWeight: 700 }}>Suggerimento Platinum</h4>
@@ -217,7 +217,7 @@ export default function GlobalSync() {
                         <div className="v-stack" style={{ gap: '32px' }}>
                             <section className="pc-card-v2">
                                 <div className="card-header-v2">
-                                    <div className="header-icon" style={{ background: '#f5f3ff', color: '#7c3aed' }}><Box size={18} /></div>
+                                    <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><Box size={18} /></div>
                                     <h3>Moduli da Sincronizzare</h3>
                                 </div>
                                 <div className="card-body-v2">
@@ -237,7 +237,7 @@ export default function GlobalSync() {
                                                     <span style={{ fontSize: '0.7rem', fontWeight: 600, color: 'var(--text-dim)' }}>{mod.desc}</span>
                                                 </div>
                                                 <div className={`pc-sync-check ${selectedModules.includes(mod.id) ? 'active' : ''}`} style={{ width: '22px', height: '22px', borderRadius: '50%', border: '2px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                    {selectedModules.includes(mod.id) && <CheckCircle2 size={16} color="#7c3aed" />}
+                                                    {selectedModules.includes(mod.id) && <CheckCircle2 size={16} color="var(--primary)" />}
                                                 </div>
                                             </div>
                                         ))}
@@ -246,7 +246,7 @@ export default function GlobalSync() {
                                     <div style={{ marginTop: '40px', borderTop: '1px solid var(--bg-badge)', paddingTop: '32px' }}>
                                         <button 
                                             className="pc-btn-primary" 
-                                            style={{ width: '100%', justifyContent: 'center', background: '#7c3aed', padding: '18px' }}
+                                            style={{ width: '100%', justifyContent: 'center', padding: '18px' }}
                                             onClick={handleSync}
                                             disabled={!sourceGuildId || selectedModules.length === 0 || syncing}
                                         >
@@ -271,8 +271,8 @@ export default function GlobalSync() {
             .pc-title-row { display: flex; flex-direction: column; gap: 6px; }
             .pc-title-row h1 { font-family: 'Inter', sans-serif; font-size: 1.8rem; font-weight: 700; margin: 0; color: var(--text-heading); letter-spacing: normal; }
                 
-            .pc-status-tag-v2 { display: flex; align-items: center; gap: 6px; font-size: 0.6rem; font-weight: 700; padding: 4px 10px; border-radius: 100px; }
-            .pc-status-tag-v2.on { background: rgba(124, 58, 237, 0.1); color: #7c3aed; }
+            .pc-status-tag-v2 { display: flex; align-items: center; gap: 6px; font-size: 0.6rem; font-weight: 700; padding: 4px 10px; border-radius: 100px;  width: fit-content; }
+            .pc-status-tag-v2.on { background: rgba(var(--primary-rgb), 0.1); color: var(--primary); }
             .pc-status-tag-v2.off { background: var(--bg-badge); color: #ef4444; }
             .status-dot-v2 { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
 
@@ -289,10 +289,10 @@ export default function GlobalSync() {
                 .card-header-v2 h3 { margin: 0; font-family: 'Inter'; font-size: 1.2rem; font-weight: 700; color: var(--text-heading); }
 
                 /* Sync Card Interactions */
-                .pc-sync-card-v2:hover { border-color: #7c3aed !important; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(124, 58, 237, 0.08); }
-                .pc-sync-card-v2.active { background: var(--bg-card) !important; border-color: #7c3aed !important; box-shadow: 0 10px 25px rgba(124, 58, 237, 0.12) !important; }
-                .pc-sync-card-v2.active .sync-icon-box { background: var(--bg-badge) !important; color: #7c3aed !important; border-color: #ddd6fe !important; }
-                .pc-sync-card-v2.active .pc-sync-check { border-color: #7c3aed !important; }
+                .pc-sync-card-v2:hover { border-color: var(--primary) !important; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(var(--primary-rgb), 0.08); }
+                .pc-sync-card-v2.active { background: var(--bg-card) !important; border-color: var(--primary) !important; box-shadow: 0 10px 25px rgba(var(--primary-rgb), 0.12) !important; }
+                .pc-sync-card-v2.active .sync-icon-box { background: var(--bg-badge) !important; color: var(--primary) !important; border-color: var(--border) !important; }
+                .pc-sync-card-v2.active .pc-sync-check { border-color: var(--primary) !important; }
 
                 .v-stack { display: flex; flex-direction: column; }
                 .animate { animation: slide-up 0.4s ease-out; }

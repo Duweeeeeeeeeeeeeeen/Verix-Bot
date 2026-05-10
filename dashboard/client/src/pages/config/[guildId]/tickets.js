@@ -8,7 +8,7 @@ import {
   Type, Hash, Shield, Palette, Layers, Archive, FileText, XCircle, CheckCircle2, Zap, Send, 
   Users, ShieldAlert, BarChart3, Lock, Crown, Trash, ArrowRight, Sparkles, Star, Layout, 
   Terminal, BellRing, Globe, MessageCircle, Timer, Activity, MousePointer2, Play,
-  Settings, LineChart, ShieldCheck, Mail, History, LifeBuoy
+  Settings, LineChart, ShieldCheck, Mail, History, LifeBuoy, GripVertical
 } from 'lucide-react';
 import { DiscordSelector, CustomSelect, EmbedMessageManager } from '../../../components/LazyConfigComponents';
 import EmojiInput from '../../../components/EmojiInput';
@@ -30,6 +30,7 @@ export default function TicketConfig() {
   const [mounted, setMounted] = useState(false);
   const [guildData, setGuildData] = useState(null);
   const [blacklistInput, setBlacklistInput] = useState('');
+  const [ticketStats, setTicketStats] = useState(null);
 
   useEffect(() => {
     setMounted(true);
@@ -40,11 +41,12 @@ export default function TicketConfig() {
     setLoading(true);
     window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
     try {
-      const [data, globalData, discordRes, guildRes] = await Promise.all([
+      const [data, globalData, discordRes, guildRes, statsRes] = await Promise.all([
         api.request(`/config/${guildId}/tickets`).catch(() => ({ data: {} })),
         api.request(`/config/${guildId}/global`).catch(() => ({ data: {} })),
         api.request(`/config/${guildId}/discord-data`).catch(() => ({ roles: [], channels: [] })),
-        api.request(`/config/${guildId}/guild`).catch(() => ({ data: {} }))
+        api.request(`/config/${guildId}/guild`).catch(() => ({ data: {} })),
+        api.request(`/config/${guildId}/tickets/stats`).catch(() => ({ data: null }))
       ]);
 
       const moduleConfig = mergeConfig(data?.data || data || {}, 'tickets');
@@ -54,6 +56,7 @@ export default function TicketConfig() {
       setGlobalConfig(globalConfigData);
       setDiscordData(discordRes?.data || discordRes || { roles: [], channels: [] });
       setGuildData(guildRes?.data || guildRes || {});
+      setTicketStats(statsRes?.data || null);
     } catch (err) {
       console.error("Ticket data load error:", err);
     } finally {
@@ -159,7 +162,7 @@ export default function TicketConfig() {
         {/* V2 Header */}
         <header className="pc-header-v2">
             <div className="header-info">
-                <div className="pc-icon-box" style={{ background: 'linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)' }}>
+                <div className="pc-icon-box" style={{ background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%)' }}>
                     <Ticket size={28} />
                 </div>
                 <div className="pc-title-row">
@@ -172,13 +175,30 @@ export default function TicketConfig() {
             </div>
             
             <div className="header-controls">
-                <button 
-                  className={`pc-status-toggle-v2 ${config.enabled ? 'active' : ''}`}
-                  onClick={() => setConfig({...config, enabled: !config.enabled})}
-                >
-                  <Power size={18} />
-                  <span>{config.enabled ? t('common.online') : t('common.offline')}</span>
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--bg-badge)', padding: '10px 20px', borderRadius: '14px', border: '1.5px solid var(--border)' }}>
+                    <label className="pc-toggle-v2" style={{ position: 'relative', width: '42px', height: '22px' }}>
+                        <input 
+                            type="checkbox" 
+                            style={{ opacity: 0, width: 0, height: 0, position: 'absolute' }}
+                            checked={config.enabled} 
+                            onChange={() => setConfig({...config, enabled: !config.enabled})} 
+                        />
+                        <span style={{ 
+                            position: 'absolute', cursor: 'pointer', inset: 0, 
+                            background: config.enabled ? '#10b981' : '#ef4444', 
+                            transition: '.4s', borderRadius: '34px' 
+                        }}>
+                            <span style={{
+                                position: 'absolute', content: '""', height: '16px', width: '16px', 
+                                left: config.enabled ? '23px' : '3px', bottom: '3px', 
+                                background: '#fff', transition: '.4s', borderRadius: '50%'
+                            }}></span>
+                        </span>
+                    </label>
+                    <span style={{ fontWeight: 700, fontSize: '0.9rem', color: config.enabled ? '#10b981' : '#ef4444' }}>
+                        {config.enabled ? t('common.active') : t('common.inactive')}
+                    </span>
+                </div>
                 <button className="pc-btn-primary" onClick={handleSave} disabled={saving}>
                     <Save size={18} />
                     <span>{saving ? t('common.saving') : t('tickets.sync_studio')}</span>
@@ -191,7 +211,6 @@ export default function TicketConfig() {
             {[
                 { id: 'settings', icon: <Settings2 size={18} />, label: t('tickets.core_config') },
                 { id: 'categories', icon: <Layers size={18} />, label: t('tickets.categories'), count: Object.keys(config.typesConfig || {}).length },
-                { id: 'automation', icon: <Zap size={18} />, label: t('tickets.automation') },
                 { id: 'responses', icon: <MessageSquare size={18} />, label: t('tickets.canned'), count: config.cannedResponses?.length },
                 { id: 'blacklist', icon: <ShieldAlert size={18} />, label: t('tickets.blacklist') },
                 { id: 'design', icon: <Palette size={18} />, label: t('tickets.design') },
@@ -240,6 +259,13 @@ export default function TicketConfig() {
                                             />
                                         </div>
                                     </div>
+                                    <div className="pc-input-group-v2" style={{ marginTop: '24px' }}>
+                                        <label>{t('tickets.channel_name_fmt')}</label>
+                                        <div className="pc-input-modern-v2">
+                                            <Type size={18} />
+                                            <input value={globalConfig?.naming?.ticket || ''} onChange={e => setGlobalNested('naming.ticket', e.target.value)} placeholder="ticket-{user}" />
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </section>
@@ -251,7 +277,7 @@ export default function TicketConfig() {
                             </div>
                             <div className="card-body-v2">
                                 <div className="pc-input-group-v2">
-                                    <label>Master Moderators Roles</label>
+                                    <label>{t('tickets.master_mods')}</label>
                                     <DiscordSelector type="role" multiple={true} options={discordData.roles} value={config.staffRoleIds || []} onChange={val => setConfig({...config, staffRoleIds: val})} />
                                 </div>
                             </div>
@@ -271,7 +297,7 @@ export default function TicketConfig() {
 
                         <div className="pc-toggle-card-v2">
                             <div className="v-stack" style={{ gap: '4px' }}>
-                                <strong>Ticket Protocol</strong>
+                                <strong>{t('tickets.title')}</strong>
                                 <span>{t('tickets.service_active')}</span>
                             </div>
                             <label className="pc-toggle-v2">
@@ -296,53 +322,74 @@ export default function TicketConfig() {
                             </button>
                         </div>
                         <div className="card-body-v2">
-                            <div className="v-stack" style={{ gap: '16px' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))', gap: '20px' }}>
                                 {Object.entries(config.typesConfig || {}).map(([id, data]) => (
-                                    <div key={id} className="pc-sub-card-v2">
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
-                                            <div style={{ width: '44px', height: '44px', background: 'var(--bg-card)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                <EmojiInput value={data.emoji || '🎫'} hideInput={true} onChange={e => {
-                                                    const newTypes = { ...config.typesConfig };
-                                                    newTypes[id] = { ...data, emoji: e.target.value };
-                                                    setConfig({ ...config, typesConfig: newTypes });
-                                                }} />
-                                            </div>
-                                            <input className="pc-input-ghost-v2" value={data.label || ''} onChange={e => {
-                                                const newTypes = { ...config.typesConfig };
-                                                newTypes[id] = { ...data, label: e.target.value };
-                                                setConfig({ ...config, typesConfig: newTypes });
-                                            }} placeholder={t('tickets.cat_title_placeholder')} />
-                                            <button onClick={() => {
-                                                const newTypes = { ...config.typesConfig };
-                                                delete newTypes[id];
-                                                setConfig({ ...config, typesConfig: newTypes });
-                                            }} className="pc-btn-icon-danger-v2"><Trash2 size={20} /></button>
+                                    <div key={id} className="pc-button-builder">
+                                        <div className="pc-bb-left">
+                                            <GripVertical size={20} color="rgba(255,255,255,0.2)" style={{ cursor: 'grab' }} />
                                         </div>
-                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-                                            <div className="pc-input-group-v2">
-                                                <label>{t('tickets.staff_role')}</label>
-                                                <DiscordSelector type="role" multiple={true} options={discordData.roles} value={data.staffRoleIds || []} onChange={val => {
-                                                    const newTypes = { ...config.typesConfig };
-                                                    newTypes[id] = { ...data, staffRoleIds: val };
-                                                    setConfig({ ...config, typesConfig: newTypes });
-                                                }} />
-                                            </div>
-                                            <div className="pc-input-group-v2">
-                                                <label>{t('tickets.btn_style')}</label>
-                                                <CustomSelect 
-                                                    options={[
-                                                        { value: 'PRIMARY', label: 'Blurple' },
-                                                        { value: 'SUCCESS', label: 'Green' },
-                                                        { value: 'DANGER', label: 'Red' },
-                                                        { value: 'SECONDARY', label: 'Gray' }
-                                                    ]} 
-                                                    value={data.style || 'PRIMARY'} 
-                                                    onChange={val => {
+                                        <div className="pc-bb-content">
+                                            {/* Top Row: Preview & Controls */}
+                                            <div className="pc-bb-top-row">
+                                                <div className={`pc-bb-preview ${data.style || 'PRIMARY'}`}>
+                                                    <span>{data.emoji || '🎫'}</span>
+                                                    <span>{data.label || 'Open Ticket'}</span>
+                                                </div>
+                                                <div className="pc-bb-controls">
+                                                    <label className="pc-bb-toggle">
+                                                        <input type="checkbox" defaultChecked={true} />
+                                                        <span className="pc-bb-slider"></span>
+                                                    </label>
+                                                    <button onClick={() => {
                                                         const newTypes = { ...config.typesConfig };
-                                                        newTypes[id] = { ...data, style: val };
+                                                        delete newTypes[id];
                                                         setConfig({ ...config, typesConfig: newTypes });
-                                                    }} 
-                                                />
+                                                    }} className="pc-bb-trash">
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            {/* Columns: Emoji, Title, Color */}
+                                            <div className="pc-bb-columns">
+                                                <div className="pc-bb-col">
+                                                    <label>{t('common.emoji')}</label>
+                                                    <div className="pc-bb-emoji-box">
+                                                        <EmojiInput value={data.emoji || '🎫'} hideInput={true} onChange={e => {
+                                                            const newTypes = { ...config.typesConfig };
+                                                            newTypes[id] = { ...data, emoji: e.target.value };
+                                                            setConfig({ ...config, typesConfig: newTypes });
+                                                        }} />
+                                                    </div>
+                                                </div>
+                                                <div className="pc-bb-col">
+                                                    <label>{t('embeds.editor.button_text')}</label>
+                                                    <div className="pc-bb-input-box">
+                                                        <input value={data.label || ''} onChange={e => {
+                                                            const newTypes = { ...config.typesConfig };
+                                                            newTypes[id] = { ...data, label: e.target.value };
+                                                            setConfig({ ...config, typesConfig: newTypes });
+                                                        }} placeholder="Open Ticket" />
+                                                    </div>
+                                                </div>
+                                                <div className="pc-bb-col">
+                                                    <label>{t('common.color')}</label>
+                                                    <div className="pc-bb-color-picker">
+                                                        {['PRIMARY', 'SUCCESS', 'DANGER', 'SECONDARY'].map(styleOption => (
+                                                            <div 
+                                                                key={styleOption}
+                                                                className={`pc-bb-swatch swatch-${styleOption} ${(data.style || 'PRIMARY') === styleOption ? 'active' : ''}`}
+                                                                onClick={() => {
+                                                                    const newTypes = { ...config.typesConfig };
+                                                                    newTypes[id] = { ...data, style: styleOption };
+                                                                    setConfig({ ...config, typesConfig: newTypes });
+                                                                }}
+                                                            >
+                                                                {(data.style || 'PRIMARY') === styleOption && <CheckCircle2 size={12} color="#fff" />}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -353,20 +400,86 @@ export default function TicketConfig() {
                 </div>
             )}
 
-            {activeTab === 'automation' && (
-                <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
+            {activeTab === 'responses' && (
+                <div className="v-stack animate slide-up" style={{ gap: '32px' }}>
                     <section className="pc-card-v2">
-                        <div className="card-header-v2">
-                            <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><Terminal size={20} /></div>
-                            <h3 style={{ margin: 0 }}>{t('tickets.system_logic')}</h3>
+                        <div className="card-header-v2" style={{ marginBottom: '32px' }}>
+                            <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><MessageSquare size={20} /></div>
+                            <div className="v-stack" style={{ flex: 1 }}>
+                                <h3 style={{ margin: 0 }}>{t('tickets.canned')}</h3>
+                            </div>
+                            <button className="pc-btn-primary" onClick={addCannedResponse}>
+                                <Plus size={20} /> <span>{t('common.add')}</span>
+                            </button>
                         </div>
                         <div className="card-body-v2">
-                            <div className="pc-input-group-v2">
-                                <label>{t('tickets.channel_name_fmt')}</label>
-                                <div className="pc-input-modern-v2">
+                            <div className="v-stack" style={{ gap: '16px' }}>
+                                {(config.cannedResponses || []).length === 0 ? (
+                                    <p style={{ color: 'var(--text-muted)' }}>{t('tickets.canned_empty')}</p>
+                                ) : (
+                                    config.cannedResponses.map((res, index) => (
+                                        <div key={index} className="pc-sub-card-v2">
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
+                                                <input className="pc-input-ghost-v2" value={res.label || ''} onChange={e => {
+                                                    const newRes = [...config.cannedResponses];
+                                                    newRes[index] = { ...res, label: e.target.value };
+                                                    setConfig({ ...config, cannedResponses: newRes });
+                                                }} placeholder={t('tickets.cat_title_placeholder')} />
+                                                <button onClick={() => removeCannedResponse(index)} className="pc-btn-icon-danger-v2"><Trash2 size={20} /></button>
+                                            </div>
+                                            <div className="pc-input-group-v2">
+                                                <label>{t('tickets.canned_responses')}</label>
+                                                <textarea className="pc-input-modern-v2" style={{ minHeight: '100px', width: '100%', resize: 'vertical' }} value={res.content || ''} onChange={e => {
+                                                    const newRes = [...config.cannedResponses];
+                                                    newRes[index] = { ...res, content: e.target.value };
+                                                    setConfig({ ...config, cannedResponses: newRes });
+                                                }} placeholder={t('tickets.canned_placeholder')} />
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            )}
+
+            {activeTab === 'blacklist' && (
+                <div className="v-stack animate slide-up" style={{ gap: '32px' }}>
+                    <section className="pc-card-v2">
+                        <div className="card-header-v2">
+                            <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><ShieldAlert size={20} /></div>
+                            <div className="v-stack" style={{ flex: 1 }}>
+                                <h3 style={{ margin: 0 }}>{t('tickets.blacklist')}</h3>
+                            </div>
+                        </div>
+                        <div className="card-body-v2">
+                            <div style={{ display: 'flex', gap: '16px', marginBottom: '32px' }}>
+                                <div className="pc-input-modern-v2" style={{ flex: 1 }}>
                                     <Type size={18} />
-                                    <input value={globalConfig?.naming?.ticket || ''} onChange={e => setGlobalNested('naming.ticket', e.target.value)} placeholder="ticket-{user}" />
+                                    <input value={blacklistInput} onChange={e => setBlacklistInput(e.target.value)} placeholder={t('tickets.blacklist_placeholder')} />
                                 </div>
+                                <button className="pc-btn-primary" onClick={addToBlacklist}>
+                                    <Plus size={20} /> <span>{t('common.add')}</span>
+                                </button>
+                            </div>
+
+                            <div className="v-stack" style={{ gap: '8px' }}>
+                                {(config.blacklist || []).length === 0 ? (
+                                    <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '20px 0' }}>{t('tickets.blacklist_empty')}</p>
+                                ) : (
+                                    config.blacklist.map((userId) => (
+                                        <div key={userId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', background: 'var(--bg-badge)', borderRadius: '14px', border: '1px solid var(--border)' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                    <Users size={16} color="var(--primary)" />
+                                                </div>
+                                                <span style={{ fontWeight: 700, color: 'var(--text-heading)' }}>ID: {userId}</span>
+                                            </div>
+                                            <button onClick={() => removeFromBlacklist(userId)} className="pc-btn-icon-danger-v2" style={{ width: '32px', height: '32px' }}><Trash2 size={16} /></button>
+                                        </div>
+                                    ))
+                                )}
                             </div>
                         </div>
                     </section>
@@ -385,6 +498,58 @@ export default function TicketConfig() {
                     />
                 </div>
             )}
+
+            {activeTab === 'stats' && (
+                <div className="v-stack animate slide-up" style={{ gap: '32px' }}>
+                    <section className="pc-card-v2">
+                        <div className="card-header-v2" style={{ marginBottom: '32px' }}>
+                            <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><BarChart3 size={20} /></div>
+                            <div className="v-stack" style={{ flex: 1 }}>
+                                <h3 style={{ margin: 0 }}>{t('tickets.stats')}</h3>
+                                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: '4px 0 0 0' }}>{t('tickets.stats_desc')}</p>
+                            </div>
+                        </div>
+                        <div className="card-body-v2">
+                            {ticketStats ? (
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '24px' }}>
+                                    <div style={{ background: 'var(--bg-badge)', padding: '24px', borderRadius: '20px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase' }}>
+                                            <Layers size={16} /> {t('admin.total_tickets')}
+                                        </div>
+                                        <div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--text-heading)' }}>{ticketStats.total || 0}</div>
+                                    </div>
+                                    <div style={{ background: 'var(--bg-badge)', padding: '24px', borderRadius: '20px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase' }}>
+                                            <MessageCircle size={16} /> {t('tickets.stats_open')}
+                                        </div>
+                                        <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#10b981' }}>{ticketStats.open || 0}</div>
+                                    </div>
+                                    <div style={{ background: 'var(--bg-badge)', padding: '24px', borderRadius: '20px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase' }}>
+                                            <CheckCircle2 size={16} /> {t('tickets.stats_closed')}
+                                        </div>
+                                        <div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--text-heading)' }}>{ticketStats.closed || 0}</div>
+                                    </div>
+                                    <div style={{ background: 'var(--bg-badge)', padding: '24px', borderRadius: '20px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase' }}>
+                                            <Timer size={16} /> {t('tickets.stats_avg_time')}
+                                        </div>
+                                        <div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--text-heading)' }}>
+                                            {ticketStats.avgResponseMs ? `${Math.round(ticketStats.avgResponseMs / 60000)}m` : 'N/A'}
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div style={{ textAlign: 'center', padding: '60px 0' }}>
+                                    <Activity size={48} style={{ color: 'var(--primary)', opacity: 0.5, marginBottom: '16px' }} />
+                                    <h4 style={{ color: 'var(--text-heading)', fontSize: '1.2rem', margin: '0 0 8px 0' }}>{t('common.no_results')}</h4>
+                                    <p style={{ color: 'var(--text-muted)' }}>{t('tickets.stats_empty')}</p>
+                                </div>
+                            )}
+                        </div>
+                    </section>
+                </div>
+            )}
         </div>
 
         <style jsx>{`
@@ -396,13 +561,13 @@ export default function TicketConfig() {
             .pc-icon-box { width: 52px; height: 52px; color: #fff; border-radius: 16px; display: flex; align-items: center; justify-content: center; }
             .pc-title-row h1 { font-family: 'Inter'; font-size: 1.8rem; font-weight: 700; margin: 0; color: var(--text-heading); letter-spacing: normal; }
             
-            .pc-status-tag-v2 { display: flex; align-items: center; gap: 6px; font-size: 0.6rem; font-weight: 700; padding: 4px 10px; border-radius: 100px; }
+            .pc-status-tag-v2 { display: flex; align-items: center; gap: 6px; font-size: 0.6rem; font-weight: 700; padding: 4px 10px; border-radius: 100px;  width: fit-content; }
             .pc-status-tag-v2.on { background: rgba(16, 185, 129, 0.1); color: #10b981; }
             .pc-status-tag-v2.off { background: var(--bg-badge); color: #ef4444; }
             .status-dot-v2 { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
 
             .pc-status-toggle-v2 { display: flex; align-items: center; gap: 10px; background: var(--bg-badge); color: var(--text-muted); border: 1.5px solid var(--border); padding: 10px 20px; border-radius: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; }
-            .pc-status-toggle-v2.active { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border-color: rgba(139, 92, 246, 0.2); }
+            .pc-status-toggle-v2.active { background: rgba(var(--primary-rgb), 0.1); color: var(--primary); border-color: rgba(var(--primary-rgb), 0.2); }
 
             .pc-btn-primary { background: var(--primary); color: #fff; border: none; padding: 12px 24px; border-radius: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
             .pc-btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(var(--primary-rgb), 0.2); }
@@ -441,6 +606,51 @@ export default function TicketConfig() {
             .pc-slider-v2:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background: #fff; transition: .3s; border-radius: 50%; }
             input:checked + .pc-slider-v2 { background: var(--primary); }
             input:checked + .pc-slider-v2:before { transform: translateX(20px); }
+
+            /* Discord Button Builder — theme-aware via CSS vars */
+            .pc-button-builder { background: var(--bg-elevated, rgba(255,255,255,0.02)); border-radius: 12px; border: 1px solid var(--border); font-family: 'Inter', sans-serif; display: flex; position: relative; }
+            .pc-bb-left { padding: 24px 16px; border-right: 1px solid var(--border); display: flex; align-items: flex-start; justify-content: center; }
+            .pc-bb-content { flex: 1; padding: 24px; display: flex; flex-direction: column; gap: 24px; }
+            
+            .pc-bb-top-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+            .pc-bb-preview { display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 6px; font-weight: 500; font-size: 0.95rem; color: #fff; user-select: none; transition: background 0.2s; min-width: 140px; justify-content: center; }
+            .pc-bb-preview.PRIMARY { background: #5865F2; }
+            .pc-bb-preview.SUCCESS { background: #248046; }
+            .pc-bb-preview.DANGER { background: #da373c; }
+            .pc-bb-preview.SECONDARY { background: #4e5058; }
+
+            .pc-bb-controls { display: flex; align-items: center; gap: 12px; }
+            .pc-bb-toggle { position: relative; width: 44px; height: 24px; }
+            .pc-bb-toggle input { opacity: 0; width: 0; height: 0; }
+            .pc-bb-slider { position: absolute; cursor: pointer; inset: 0; background: #4e5058; transition: .3s; border-radius: 34px; }
+            .pc-bb-slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background: #fff; transition: .3s; border-radius: 50%; }
+            .pc-bb-toggle input:checked + .pc-bb-slider { background: #5865F2; }
+            .pc-bb-toggle input:checked + .pc-bb-slider:before { transform: translateX(20px); }
+
+            .pc-bb-trash { background: rgba(237, 66, 69, 0.1); color: #ed4245; border: none; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
+            .pc-bb-trash:hover { background: rgba(237, 66, 69, 0.2); }
+
+            .pc-bb-columns { display: grid; grid-template-columns: auto 1fr auto; gap: 16px; }
+            .pc-bb-col { display: flex; flex-direction: column; gap: 8px; }
+            .pc-bb-col label { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; }
+            
+            .pc-bb-input-box { background: var(--bg-inset); border-radius: 8px; border: 1px solid var(--border); height: 44px; display: flex; align-items: center; padding: 0 16px; transition: 0.2s; }
+            .pc-bb-input-box:focus-within { border-color: var(--primary); }
+            .pc-bb-input-box input { background: transparent; border: none; outline: none; color: var(--text-main); font-size: 0.95rem; width: 100%; font-family: 'Inter'; }
+            
+            .pc-bb-emoji-box { background: var(--bg-inset); border-radius: 8px; border: 1px solid var(--border); width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; cursor: pointer; }
+
+            .pc-bb-color-picker { background: var(--bg-inset); border-radius: 8px; border: 1px solid var(--border); height: 44px; display: flex; align-items: center; padding: 0 12px; gap: 12px; }
+            .pc-bb-swatch { width: 22px; height: 22px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; position: relative; }
+            .pc-bb-swatch.active { transform: scale(1.1); box-shadow: 0 0 0 4px rgba(var(--primary-rgb), 0.3); }
+            .swatch-PRIMARY { background: #5865F2; }
+            .swatch-SUCCESS { background: #248046; }
+            .swatch-DANGER { background: #da373c; }
+            .swatch-SECONDARY { background: #4e5058; }
+
+            /* Light mode — Button Builder already inherits CSS vars, just override toggle defaults */
+            :global(.light-theme) .pc-bb-slider { background: var(--border-strong); }
+            :global(.light-theme) .pc-bb-left svg { opacity: 0.4; }
 
             .v-stack { display: flex; flex-direction: column; }
             .animate { animation: slideUp 0.4s ease-out; }

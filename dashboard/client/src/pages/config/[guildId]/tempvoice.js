@@ -109,7 +109,7 @@ export default function TempVoiceConfig() {
         {/* V2 Header */}
         <header className="pc-header-v2">
             <div className="header-info">
-                <div className="pc-icon-box" style={{ background: 'linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%)' }}>
+                <div className="pc-icon-box" style={{ background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%)' }}>
                     <Mic2 size={28} />
                 </div>
                 <div className="pc-title-row">
@@ -122,13 +122,30 @@ export default function TempVoiceConfig() {
             </div>
             
             <div className="header-controls">
-                <button 
-                  className={`pc-status-toggle-v2 ${config.enabled ? 'active' : ''}`}
-                  onClick={() => setConfig({...config, enabled: !config.enabled})}
-                >
-                  <Power size={18} />
-                  <span>{config.enabled ? 'Spegni' : 'Attiva'}</span>
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--bg-badge)', padding: '10px 20px', borderRadius: '14px', border: '1.5px solid var(--border)' }}>
+                    <label className="pc-toggle-v2" style={{ position: 'relative', width: '42px', height: '22px' }}>
+                        <input 
+                            type="checkbox" 
+                            style={{ opacity: 0, width: 0, height: 0, position: 'absolute' }}
+                            checked={config.enabled} 
+                            onChange={() => setConfig({...config, enabled: !config.enabled})} 
+                        />
+                        <span style={{ 
+                            position: 'absolute', cursor: 'pointer', inset: 0, 
+                            background: config.enabled ? '#10b981' : '#ef4444', 
+                            transition: '.4s', borderRadius: '34px' 
+                        }}>
+                            <span style={{
+                                position: 'absolute', content: '""', height: '16px', width: '16px', 
+                                left: config.enabled ? '23px' : '3px', bottom: '3px', 
+                                background: '#fff', transition: '.4s', borderRadius: '50%'
+                            }}></span>
+                        </span>
+                    </label>
+                    <span style={{ fontWeight: 700, fontSize: '0.9rem', color: config.enabled ? '#10b981' : '#ef4444' }}>
+                        {config.enabled ? t('common.active') : t('common.inactive')}
+                    </span>
+                </div>
                 <button className="pc-btn-primary" onClick={handleSave} disabled={saving}>
                     <Save size={18} />
                     <span>{saving ? 'Salvataggio...' : 'Salva Modifiche'}</span>
@@ -242,7 +259,7 @@ export default function TempVoiceConfig() {
             .pc-title-row { display: flex; flex-direction: column; gap: 6px; }
             .pc-title-row h1 { font-family: 'Inter', sans-serif; font-size: 1.8rem; font-weight: 700; margin: 0; color: var(--text-heading); letter-spacing: normal; }
             
-            .pc-status-tag-v2 { display: flex; align-items: center; gap: 6px; font-size: 0.6rem; font-weight: 700; padding: 4px 10px; border-radius: 100px; }
+            .pc-status-tag-v2 { display: flex; align-items: center; gap: 6px; font-size: 0.6rem; font-weight: 700; padding: 4px 10px; border-radius: 100px;  width: fit-content; }
             .pc-status-tag-v2.on { background: rgba(14, 165, 233, 0.1); color: #0ea5e9; }
             .pc-status-tag-v2.off { background: var(--bg-badge); color: #ef4444; }
             .status-dot-v2 { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
@@ -251,7 +268,7 @@ export default function TempVoiceConfig() {
             .pc-btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(var(--primary-rgb), 0.2); }
 
             .pc-status-toggle-v2 { display: flex; align-items: center; gap: 10px; background: var(--bg-badge); color: var(--text-muted); border: 1.5px solid var(--border); padding: 12px 24px; border-radius: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; }
-            .pc-status-toggle-v2.active { background: var(--bg-badge); color: #0ea5e9; border-color: var(--primary); }
+            .pc-status-toggle-v2.active { background: rgba(var(--primary-rgb), 0.1); color: var(--primary); border-color: rgba(var(--primary-rgb), 0.2); }
 
             /* Tabs V2 */
             .pc-tabs-v2 { display: flex; gap: 8px; background: var(--bg-badge); padding: 6px; border-radius: 18px; width: fit-content; }

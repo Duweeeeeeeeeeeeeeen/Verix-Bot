@@ -10,7 +10,7 @@ import {
     MousePointer2, Timer, Award, UserCheck, ShieldAlert, Layers, Target, Eye, EyeOff, Wand2, RefreshCw
 } from 'lucide-react';
 import { DiscordSelector, CustomSelect } from '../../../components/LazyConfigComponents';
-import EmbedPreview from '../../../components/EmbedPreview';
+import EmbedPreviewContainer from '../../../components/EmbedPreviewContainer';
 import Head from 'next/head';
 
 export default function GiveawayConfig() {
@@ -171,7 +171,7 @@ export default function GiveawayConfig() {
         {/* V2 Header */}
         <header className="pc-header-v2">
             <div className="header-info">
-                <div className="pc-icon-box" style={{ background: 'linear-gradient(135deg, #6366f1 0%, #312e81 100%)' }}>
+                <div className="pc-icon-box" style={{ background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%)' }}>
                     <Gift size={28} />
                 </div>
                 <div className="pc-title-row">
@@ -184,13 +184,30 @@ export default function GiveawayConfig() {
             </div>
             
             <div className="header-controls">
-                <button 
-                  className={`pc-status-toggle-v2 ${config.enabled ? 'active' : ''}`}
-                  onClick={() => setConfig({...config, enabled: !config.enabled})}
-                >
-                  <Power size={18} />
-                  <span>{config.enabled ? t('common.active') : t('common.inactive')}</span>
-                </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--bg-badge)', padding: '10px 20px', borderRadius: '14px', border: '1.5px solid var(--border)' }}>
+                    <label className="pc-toggle-v2" style={{ position: 'relative', width: '42px', height: '22px' }}>
+                        <input 
+                            type="checkbox" 
+                            style={{ opacity: 0, width: 0, height: 0, position: 'absolute' }}
+                            checked={config.enabled} 
+                            onChange={() => setConfig({...config, enabled: !config.enabled})} 
+                        />
+                        <span style={{ 
+                            position: 'absolute', cursor: 'pointer', inset: 0, 
+                            background: config.enabled ? '#10b981' : '#ef4444', 
+                            transition: '.4s', borderRadius: '34px' 
+                        }}>
+                            <span style={{
+                                position: 'absolute', content: '""', height: '16px', width: '16px', 
+                                left: config.enabled ? '23px' : '3px', bottom: '3px', 
+                                background: '#fff', transition: '.4s', borderRadius: '50%'
+                            }}></span>
+                        </span>
+                    </label>
+                    <span style={{ fontWeight: 700, fontSize: '0.9rem', color: config.enabled ? '#10b981' : '#ef4444' }}>
+                        {config.enabled ? t('common.active') : t('common.inactive')}
+                    </span>
+                </div>
                 <button className="pc-btn-primary" onClick={handleSaveConfig} disabled={saving}>
                     <Save size={18} />
                     <span>{saving ? t('common.saving') : t('common.sync')}</span>
@@ -309,22 +326,7 @@ export default function GiveawayConfig() {
                     </div>
 
                     <aside className="pc-preview-sticky-v2" style={{ position: 'sticky', top: '32px', height: 'fit-content' }}>
-                        <div className="pc-card-v2" style={{ padding: '0', overflow: 'hidden' }}>
-                            <div style={{ background: 'var(--bg-badge)', padding: '24px', borderBottom: '1.5px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 700, color: 'var(--text-heading)' }}><Eye size={20} /> {t('giveaway.live_preview')}</div>
-                                <div style={{ display: 'flex', gap: '4px' }}>
-                                    <button onClick={() => setIsPreviewMobile(false)} className={`pc-btn-icon-v2 ${!isPreviewMobile ? 'active' : ''}`}><Monitor size={18} /></button>
-                                    <button onClick={() => setIsPreviewMobile(true)} className={`pc-btn-icon-v2 ${isPreviewMobile ? 'active' : ''}`}><Smartphone size={18} /></button>
-                                </div>
-                            </div>
-                            <div style={{ padding: '32px', background: previewTheme === 'dark' ? '#0f172a' : 'var(--bg-badge)', minHeight: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <EmbedPreview data={previewEmbed} isMobile={isPreviewMobile} theme={previewTheme} />
-                            </div>
-                            <div style={{ padding: '16px', background: 'var(--bg-card)', borderTop: '1.5px solid var(--border)', display: 'flex', justifyContent: 'center', gap: '12px' }}>
-                                <button onClick={() => setPreviewTheme('dark')} className={`pc-tag-v2 ${previewTheme === 'dark' ? 'active' : ''}`}><Moon size={14} /> DARK</button>
-                                <button onClick={() => setPreviewTheme('light')} className={`pc-tag-v2 ${previewTheme === 'light' ? 'active' : ''}`}><Sun size={14} /> LIGHT</button>
-                            </div>
-                        </div>
+                        <EmbedPreviewContainer data={previewEmbed} />
                     </aside>
                 </div>
             )}
@@ -406,7 +408,7 @@ export default function GiveawayConfig() {
             .pc-icon-box { width: 52px; height: 52px; color: #fff; border-radius: 16px; display: flex; align-items: center; justify-content: center; }
             .pc-title-row h1 { font-family: 'Inter'; font-size: 1.8rem; font-weight: 700; margin: 0; color: var(--text-heading); letter-spacing: normal; }
             
-            .pc-status-tag-v2 { display: flex; align-items: center; gap: 6px; font-size: 0.6rem; font-weight: 700; padding: 4px 10px; border-radius: 100px; }
+            .pc-status-tag-v2 { display: flex; align-items: center; gap: 6px; font-size: 0.6rem; font-weight: 700; padding: 4px 10px; border-radius: 100px;  width: fit-content; }
             .pc-status-tag-v2.on { background: rgba(16, 185, 129, 0.1); color: #10b981; }
             .pc-status-tag-v2.off { background: var(--bg-badge); color: #ef4444; }
             .status-dot-v2 { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }

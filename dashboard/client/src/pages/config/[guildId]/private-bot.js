@@ -104,7 +104,7 @@ export default function PrivateBotPage() {
         {/* V2 Header */}
         <header className="pc-header-v2">
             <div className="header-info">
-                <div className="pc-icon-box" style={{ background: 'linear-gradient(135deg, #a855f7 0%, #7c3aed 100%)' }}>
+                <div className="pc-icon-box" style={{ background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%)' }}>
                     <Bot size={28} />
                 </div>
                 <div className="pc-title-row">
@@ -291,17 +291,17 @@ export default function PrivateBotPage() {
             /* Header V2 */
             .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-card); padding: 24px; border-radius: 28px; box-shadow: var(--shadow-premium); border: 1px solid var(--border-light); }
             .header-info { display: flex; align-items: center; gap: 16px; }
-            .pc-icon-box { width: 52px; height: 52px; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: #fff; box-shadow: 0 12px 24px rgba(168, 85, 247, 0.25); }
+            .pc-icon-box { width: 52px; height: 52px; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: #fff; box-shadow: 0 12px 24px rgba(var(--primary-rgb), 0.25); }
             .pc-title-row { display: flex; flex-direction: column; gap: 6px; }
             .pc-title-row h1 { font-family: 'Inter', sans-serif; font-size: 1.8rem; font-weight: 700; margin: 0; color: var(--text-main); letter-spacing: normal; }
-            .pc-status-tag-v2 { display: flex; align-items: center; gap: 6px; font-size: 0.6rem; font-weight: 700; padding: 4px 10px; border-radius: 100px; }
+            .pc-status-tag-v2 { display: flex; align-items: center; gap: 6px; font-size: 0.6rem; font-weight: 700; padding: 4px 10px; border-radius: 100px;  width: fit-content; }
             .pc-status-tag-v2.on { background: rgba(16, 185, 129, 0.1); color: #10b981; }
             .pc-status-tag-v2.off { background: var(--bg-badge); color: #ef4444; }
             .status-dot-v2 { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
 
             .header-controls { display: flex; gap: 16px; }
             .pc-btn-primary { display: flex; align-items: center; gap: 12px; background: var(--primary); color: #fff; border: none; padding: 14px 28px; border-radius: 16px; font-weight: 700; cursor: pointer; transition: 0.3s; }
-            .pc-btn-primary.platinum { background: linear-gradient(135deg, #a855f7, #7c3aed); box-shadow: 0 10px 20px rgba(168, 85, 247, 0.2); }
+            .pc-btn-primary.platinum { background: linear-gradient(135deg, var(--primary), var(--primary-hover)); box-shadow: 0 10px 20px rgba(var(--primary-rgb), 0.2); }
             .pc-btn-outline { display: flex; align-items: center; gap: 10px; background: var(--bg-card); color: var(--text-main); border: 1.5px solid var(--border); padding: 14px 24px; border-radius: 16px; font-weight: 700; cursor: pointer; transition: 0.3s; }
 
             /* Gate */
@@ -351,7 +351,7 @@ export default function PrivateBotPage() {
             .action-label { font-weight: 700; font-size: 0.9rem; }
             .action-desc { font-size: 0.8rem; color: var(--text-muted); }
 
-            .help-card-v2 { background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%); color: #fff; border: none; }
+            .help-card-v2 { background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%); color: #fff; border: none; }
             .icon-glow { width: 48px; height: 48px; background: rgba(255,255,255,0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
 
             /* Lightbox */
@@ -364,7 +364,7 @@ export default function PrivateBotPage() {
             .pc-toggle-mini input { opacity: 0; width: 0; height: 0; }
             .pc-slider-mini { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border); transition: .4s; border-radius: 34px; }
             .pc-slider-mini:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: #fff; transition: .4s; border-radius: 50%; }
-            input:checked + .pc-slider-mini { background-color: #10b981; }
+            input:checked + .pc-slider-mini { background-color: var(--primary); }
             input:checked + .pc-slider-mini:before { transform: translateX(24px); }
 
             .v-stack { display: flex; flex-direction: column; }

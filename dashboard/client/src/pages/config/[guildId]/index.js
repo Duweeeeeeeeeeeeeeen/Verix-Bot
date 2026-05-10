@@ -124,7 +124,7 @@ export default function GuildHome() {
                     <div className="status-row-v2">
                         <span className="live-tag-v2"><div className="pulse-dot"></div> {t('hub.engine_online')}</span>
                         <div className={`tier-badge-v2 ${config?.isPremium ? 'premium' : 'standard'}`}>
-                            {config?.isPremium ? 'VERIX PLATINUM' : 'VERIX STANDARD'}
+                            {config?.premiumTier === 'platinum' ? 'VERIX PLATINUM' : config?.isPremium ? 'VERIX PREMIUM' : 'VERIX STANDARD'}
                         </div>
                     </div>
                     <h1>{t('hub.welcome')} <span className="user-name-v2">{user?.username}</span></h1>
@@ -187,15 +187,15 @@ export default function GuildHome() {
 
                 <div className="pc-module-grid-v2">
                     {[
-                        { id: 'whitelist', label: 'Whitelist', icon: ShieldCheck, color: '#6366f1', path: 'whitelist', desc: 'Gestione accessi e selezioni.' },
-                        { id: 'tickets', label: 'Ticket System', icon: Ticket, color: '#8b5cf6', path: 'tickets', desc: 'Assistenza e supporto utenti.' },
-                        { id: 'reactionRoles', label: 'Ruoli a Reazione', icon: MousePointer2, color: '#10b981', path: 'reaction-roles', desc: 'Auto-assegnazione ruoli.' },
-                        { id: 'polls', label: 'Poll Studio', icon: ListChecks, color: '#f59e0b', path: 'polls', desc: 'Creazione sondaggi avanzati.' },
-                        { id: 'verify', label: 'Security Center', icon: Shield, color: '#06b6d4', path: 'verify', desc: 'Protezione bot e verifica.' },
-                        { id: 'photocontest', label: 'Photo Contest', icon: Camera, color: '#ec4899', path: 'photocontest', desc: 'Competizioni fotografiche.' },
-                        { id: 'support', label: 'Assistenza Vocale', icon: Mic2, color: '#f43f5e', path: 'support', desc: 'Canali di supporto SOS.' },
-                        { id: 'fivem', label: 'FiveM Bridge', icon: Globe, color: '#14b8a6', path: 'fivem', desc: 'Integrazione server live.' },
-                        { id: 'welcome', label: 'Welcome Hub', icon: UserPlus, color: '#6366f1', path: 'welcome', desc: 'Benvenuto e autoruoli.' }
+                        { id: 'whitelist', label: 'Whitelist', icon: ShieldCheck, color: '#6366f1', path: 'whitelist', desc: t('dashboard.module_whitelist_desc_v2') },
+                        { id: 'tickets', label: 'Ticket System', icon: Ticket, color: '#8b5cf6', path: 'tickets', desc: t('dashboard.module_tickets_desc_v2') },
+                        { id: 'reactionRoles', label: 'Reaction Roles', icon: MousePointer2, color: '#10b981', path: 'reaction-roles', desc: t('dashboard.module_reactionroles_desc_v2') },
+                        { id: 'polls', label: 'Poll Studio', icon: ListChecks, color: '#f59e0b', path: 'polls', desc: t('dashboard.module_polls_desc_v2') },
+                        { id: 'verify', label: 'Security Center', icon: Shield, color: '#06b6d4', path: 'verify', desc: t('dashboard.module_verify_desc_v2') },
+                        { id: 'photocontest', label: 'Photo Contest', icon: Camera, color: '#ec4899', path: 'photocontest', desc: t('dashboard.module_photocontest_desc_v2') },
+                        { id: 'support', label: 'Voice Support', icon: Mic2, color: '#f43f5e', path: 'support', desc: t('dashboard.module_support_desc_v2') },
+                        { id: 'fivem', label: 'FiveM Bridge', icon: Globe, color: '#14b8a6', path: 'fivem', desc: t('dashboard.module_fivem_desc_v2') },
+                        { id: 'welcome', label: 'Welcome Hub', icon: UserPlus, color: '#6366f1', path: 'welcome', desc: t('dashboard.module_welcome_desc_v2') }
                     ].map(module => {
                         const isEnabled = config?.[module.id]?.enabled;
                         return (
@@ -235,11 +235,11 @@ export default function GuildHome() {
                     </div>
                     <div className="panel-nav-v2">
                         {[
-                            { label: 'Embed Designer', path: 'embeds', icon: LayoutTemplate, color: '#10b981', sub: 'Progetta messaggi' },
-                            { label: 'Automazioni', path: 'automations', icon: Cpu, color: '#f59e0b', sub: 'Auto-Clear & Broadcast' },
-                            { label: 'White Label', path: 'white-label', icon: Sparkles, color: '#6366f1', sub: 'Branding Personalizzato' },
-                            { label: 'Audit Registry', path: 'audit', icon: History, color: 'var(--text-muted)', sub: 'Log delle attività' },
-                            { label: 'Global Settings', path: 'global', icon: Settings2, color: 'var(--text-heading)', sub: 'Configurazione base' }
+                            { label: 'Embed Designer', path: 'embeds', icon: LayoutTemplate, color: '#10b981', sub: t('hub.nav_embeds') },
+                            { label: 'Automations', path: 'automations', icon: Cpu, color: '#f59e0b', sub: t('hub.nav_automations') },
+                            { label: 'White Label', path: 'white-label', icon: Sparkles, color: '#6366f1', sub: t('hub.nav_whitelabel') },
+                            { label: 'Audit Registry', path: 'audit', icon: History, color: 'var(--text-muted)', sub: t('hub.nav_audit') },
+                            { label: 'Global Settings', path: 'global', icon: Settings2, color: 'var(--text-heading)', sub: t('hub.nav_global') }
                         ].map(nav => (
                             <button key={nav.path} onClick={() => router.push(`/config/${guildId}/${nav.path}`)} className="nav-btn-v2">
                                 <div className="nav-icon-v2" style={{ background: `${nav.color}10`, color: nav.color }}>
@@ -297,7 +297,7 @@ export default function GuildHome() {
             .premium-crown-v2 { position: absolute; bottom: -6px; right: -6px; width: 40px; height: 40px; background: linear-gradient(135deg, #f59e0b, #fbbf24); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 4px solid var(--bg-card); box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4); }
             
             .hero-text-v2 h1 { font-size: 3rem; font-weight: 700; margin: 0; color: var(--text-heading); letter-spacing: normal; }
-            .user-name-v2 { background: linear-gradient(135deg, var(--primary) 0%, #a78bfa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+            .user-name-v2 { font-weight: 800; background: linear-gradient(135deg, var(--primary) 0%, #a78bfa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
             .hero-text-v2 p { margin: 8px 0 0 0; color: var(--text-dim); font-size: 1.2rem; font-weight: 700; }
             .status-row-v2 { display: flex; gap: 12px; margin-bottom: 12px; }
             .live-tag-v2 { font-size: 0.7rem; font-weight: 700; color: #10b981; background: rgba(16, 185, 129, 0.1); padding: 6px 16px; border-radius: 100px; display: flex; align-items: center; gap: 8px; letter-spacing: 1px; }
@@ -335,7 +335,7 @@ export default function GuildHome() {
             .progress-bar-v2 .fill { height: 100%; background: linear-gradient(to right, var(--primary), #a78bfa); border-radius: 100px; transition: 1s; }
 
             /* Module Studio Cards V2 */
-            .pc-module-grid-v2 { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 28px; }
+            .pc-module-grid-v2 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
             .pc-module-studio-card-v2 { background: var(--bg-card); border-radius: 40px; padding: 36px; border: 1px solid var(--border); transition: 0.4s; position: relative; overflow: hidden; box-shadow: var(--shadow-premium); }
             .pc-module-studio-card-v2:hover { transform: translateY(-8px); border-color: var(--primary-muted); }
             .pc-module-studio-card-v2.on { border-color: var(--primary-muted); }

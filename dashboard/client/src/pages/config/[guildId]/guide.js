@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-import EmbedPreview from '../../../components/EmbedPreview';
+import EmbedPreviewContainer from '../../../components/EmbedPreviewContainer';
 import { useT } from '../../../contexts/LanguageContext';
 import { 
   Book, 
