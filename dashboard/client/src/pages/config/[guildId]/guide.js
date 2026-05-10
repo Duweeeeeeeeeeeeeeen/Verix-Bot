@@ -132,7 +132,7 @@ export default function GuidePage() {
                 <div className="discord-mock-p">
                     <label className="text-label">{t('guide_page.preview.discord_label')}</label>
                     <div className="embed-container-p">
-                        <EmbedPreview 
+                        <EmbedPreviewContainer 
                             data={{
                                 title: t('guide_page.preview.mock_text1'),
                                 description: t('guide_page.preview.mock_desc'),
