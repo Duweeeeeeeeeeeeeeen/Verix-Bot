@@ -136,7 +136,7 @@ export default function Selector() {
 
             <div className="header-actions-v2">
                 <div className="user-profile-mini-v2">
-                    <img src={user.avatarUrl} alt={user.username} />
+                    <img src={user?.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : 'https://cdn.discordapp.com/embed/avatars/0.png'} alt={user.username} />
                     <div className="user-info-v2">
                         <span className="u-name-v2">{user.username}</span>
                         <span className="u-status-v2">Amministratore</span>
