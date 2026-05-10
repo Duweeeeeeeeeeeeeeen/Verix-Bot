@@ -63,7 +63,7 @@ export default function PremiumHub() {
         {/* V2 Header */}
         <header className="pc-header-v2">
             <div className="header-info">
-                <div className="pc-icon-box" style={{ background: `linear-gradient(135deg, ${currentTierColor} 0%, #000 100%)` }}>
+                <div className="pc-icon-box" style={{ background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%)' }}>
                     <Gem size={28} />
                 </div>
                 <div className="pc-title-row">
@@ -91,7 +91,7 @@ export default function PremiumHub() {
                     <div className="hero-text-v2">
                         <div className="premium-badge-v2">
                             <Sparkles size={14} />
-                            <span>{t('ph.hero_platinum')}</span>
+                            <span>{isPlatinum ? 'PLATINUM ELITE' : isPremium ? 'PREMIUM ENGINE' : 'STANDARD ACCESS'}</span>
                         </div>
                         <h2>{isPlatinum ? t('ph.hero_title_pl') : isPremium ? t('ph.hero_title_pr') : t('ph.hero_title_base')}</h2>
                         <p>{t('ph.hero_desc')}</p>
@@ -113,7 +113,7 @@ export default function PremiumHub() {
 
                         {!isPremium && (
                             <div className="hero-actions-v2">
-                                <button className="pc-btn-primary invite-pulse" style={{ background: 'white', color: '#6366f1' }}>
+                                <button className="pc-btn-primary invite-pulse" style={{ background: 'white', color: 'var(--primary)' }}>
                                     <Rocket size={18} />
                                     <span>{t('ph.explore')}</span>
                                 </button>
@@ -129,7 +129,7 @@ export default function PremiumHub() {
                             <div className="hologram-ring-1"></div>
                             <div className="hologram-ring-2"></div>
                             <div className="tier-symbol-v2">
-                                {isPlatinum ? <Award size={80} /> : isPremium ? <Crown size={80} /> : <Rocket size={80} />}
+                                {isPlatinum ? <Award size={100} /> : isPremium ? <Crown size={100} /> : <Rocket size={100} />}
                             </div>
                             <div className="tier-label-v2">{isPlatinum ? 'PLATINUM' : isPremium ? 'PREMIUM' : 'BASE'}</div>
                         </div>
@@ -250,10 +250,10 @@ export default function PremiumHub() {
             .pc-btn-back-v2:hover { border-color: var(--primary); color: var(--primary); transform: translateX(-5px); background: var(--primary-glow); }
 
             /* Hero Engine V2 */
-            .pc-hero-engine-v2 { border-radius: 56px; padding: 60px 80px; position: relative; overflow: hidden; color: #fff; margin-bottom: 56px; background: #1e1b4b; box-shadow: 0 40px 100px rgba(0,0,0,0.2); }
+            .pc-hero-engine-v2 { border-radius: 56px; padding: 60px 80px; position: relative; overflow: hidden; color: #fff; margin-bottom: 56px; background: #1e1b4b; box-shadow: 0 40px 100px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); }
             .pc-hero-engine-v2.premium { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
             .pc-hero-engine-v2.platinum { background: linear-gradient(135deg, #7c3aed 0%, #4338ca 100%); }
-            .pc-hero-engine-v2.none { background: linear-gradient(135deg, #6366f1 0%, #1e1b4b 100%); }
+            .pc-hero-engine-v2.none { background: linear-gradient(135deg, var(--primary) 0%, #1e1b4b 100%); }
             
             .pc-hero-engine-v2::after { content: ''; position: absolute; inset: 0; background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"); opacity: 0.3; }
 
@@ -281,16 +281,16 @@ export default function PremiumHub() {
             .tier-hologram-v2 { position: relative; width: 280px; height: 280px; display: flex; align-items: center; justify-content: center; flex-direction: column; }
             .hologram-ring-1 { position: absolute; inset: 0; border: 4px solid rgba(255,255,255,0.08); border-radius: 50%; animation: spin 12s linear infinite; }
             .hologram-ring-2 { position: absolute; inset: 30px; border: 2px dashed rgba(255,255,255,0.15); border-radius: 50%; animation: spin-reverse 20s linear infinite; }
-            .tier-symbol-v2 { color: #fff; animation: float 5s ease-in-out infinite; filter: drop-shadow(0 0 30px rgba(255,255,255,0.3)); }
+            .tier-symbol-v2 { color: #fff; animation: float 5s ease-in-out infinite; filter: drop-shadow(0 0 40px rgba(255,255,255,0.4)); }
             .tier-label-v2 { margin-top: 16px; font-size: 1.5rem; font-weight: 700; letter-spacing: 4px; text-shadow: 0 10px 30px rgba(0,0,0,0.3); opacity: 0.9; }
 
             /* Pricing Grid V2 */
-            .pc-pricing-grid-v2 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
-            .pc-price-card-v2 { background: var(--bg-card); border-radius: 48px; padding: 60px 48px; border: 1px solid var(--border); position: relative; transition: 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); display: flex; flex-direction: column; box-shadow: var(--shadow-premium); }
-            .pc-price-card-v2:hover { transform: translateY(-12px); box-shadow: 0 40px 100px rgba(0,0,0,0.15); border-color: var(--border-strong); }
+            .pc-pricing-grid-v2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 32px; }
+            .pc-price-card-v2 { background: var(--bg-card); border-radius: 48px; padding: 60px 48px; border: 1.5px solid var(--border); position: relative; transition: 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); display: flex; flex-direction: column; box-shadow: var(--shadow-premium); }
+            .pc-price-card-v2:hover { transform: translateY(-12px); box-shadow: 0 40px 100px rgba(0,0,0,0.1); border-color: var(--primary); }
             
-            .pc-price-card-v2.active-border { border: 2px solid #f59e0b; }
-            .pc-price-card-v2.platinum { border: 2px solid #a855f7; }
+            .pc-price-card-v2.active-border { border: 2.5px solid #f59e0b; }
+            .pc-price-card-v2.platinum { border: 2.5px solid #a855f7; }
             
             .popular-tag-v2 { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); background: #f59e0b; color: #fff; padding: 8px 24px; border-radius: 100px; font-size: 0.75rem; font-weight: 700; letter-spacing: 1.5px; box-shadow: 0 10px 20px rgba(245, 158, 11, 0.3); }
             .elite-tag-v2 { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); background: #a855f7; color: #fff; padding: 8px 24px; border-radius: 100px; font-size: 0.75rem; font-weight: 700; letter-spacing: 1.5px; box-shadow: 0 10px 20px rgba(168, 85, 247, 0.3); }
@@ -307,7 +307,7 @@ export default function PremiumHub() {
             .pc-btn-price-v2.premium { background: #f59e0b; color: #fff; border: none; }
             .pc-btn-price-v2.platinum { background: #a855f7; color: #fff; border: none; }
             .pc-btn-price-v2:disabled { opacity: 0.5; cursor: not-allowed; }
-            .pc-btn-price-v2:hover:not(:disabled) { transform: translateY(-4px); }
+            .pc-btn-price-v2:hover:not(:disabled) { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
 
             /* Comparison Matrix V2 */
             .pc-card-v2 { background: var(--bg-card); border: 1px solid var(--border); border-radius: 48px; padding: 56px; box-shadow: var(--shadow-premium); }
@@ -329,6 +329,17 @@ export default function PremiumHub() {
 
             .animate { animation: slide-up 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); }
             @keyframes slide-up { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+            
+            @media (max-width: 1024px) {
+                .pc-hero-engine-v2 { padding: 40px; }
+                .hero-content-v2 { flex-direction: column; text-align: center; gap: 48px; }
+                .hero-text-v2 { max-width: 100%; }
+                .premium-badge-v2 { margin-left: auto; margin-right: auto; }
+                .hero-stats-row-v2 { justify-content: center; gap: 32px; }
+                .hero-actions-v2 { justify-content: center; }
+                .hub-row-v2 { grid-template-columns: 1fr 100px 100px 120px; }
+                .pc-pricing-grid-v2 { grid-template-columns: 1fr; }
+            }
         `}</style>
     </div>
   );
