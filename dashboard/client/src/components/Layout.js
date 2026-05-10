@@ -46,9 +46,11 @@ import {
   HelpCircle,
   Coins,
   Sun,
-  Moon
+  Moon,
+  Trash2
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
+import ConfirmModal from './ConfirmModal';
 
 const GuideSidebar = dynamic(() => import('./GuideSidebar'), {
   ssr: false,
@@ -78,6 +80,8 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [guideContext, setGuideContext] = useState({});
   const [isActivity, setIsActivity] = useState(false);
+  const [showLeaveModal, setShowLeaveModal] = useState(false);
+  const [isLeaving, setIsLeaving] = useState(false);
 
   // Persistence for Guide Sidebar
   useEffect(() => {
@@ -250,6 +254,35 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
     ]
   };
 
+  const handleLeaveServer = async () => {
+    setIsLeaving(true);
+    try {
+        const res = await fetch(`/api/config/${guildId}/leave`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+        if (data.success) {
+            window.dispatchEvent(new CustomEvent('show-toast', { 
+                detail: { message: t('management.bot_left_success') || 'Il bot ha lasciato il server!', type: 'success' } 
+            }));
+            router.push('/selector');
+        } else {
+            window.dispatchEvent(new CustomEvent('show-toast', { 
+                detail: { message: data.message || t('common.error'), type: 'error' } 
+            }));
+        }
+    } catch (err) {
+        console.error('Leave error:', err);
+        window.dispatchEvent(new CustomEvent('show-toast', { 
+            detail: { message: t('common.error'), type: 'error' } 
+        }));
+    } finally {
+        setIsLeaving(false);
+        setShowLeaveModal(false);
+    }
+  };
+
   const getToastIcon = (type) => {
     switch(type) {
       case 'success': return <CheckCircle size={20} color="var(--success)" />;
@@ -382,7 +415,11 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
                 <span>{t('sidebar.servers')}</span>
              </Link>
              <div className="header-divider"></div>
-             <div className="server-crumb">
+             <div 
+               className="server-crumb interactive" 
+               onClick={() => setShowLeaveModal(true)}
+               title={t('management.leave_server') || 'Fai uscire il bot dal server'}
+             >
                 {serverInfo.icon && (
                   <img 
                     src={`https://cdn.discordapp.com/icons/${guildId}/${serverInfo.icon}.png`} 
@@ -390,6 +427,7 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
                   />
                 )}
                 <span>{serverInfo.name}</span>
+                <Trash2 size={12} className="leave-icon" />
              </div>
           </div>
 
@@ -458,6 +496,16 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
           <span className="activity-dot"></span>
       </div>
 
+      <ConfirmModal 
+        isOpen={showLeaveModal}
+        onClose={() => setShowLeaveModal(false)}
+        onConfirm={handleLeaveServer}
+        title={t('management.leave_title') || 'Sei sicuro?'}
+        message={t('management.leave_confirm') || 'Il bot lascerà questo server e non potrai più configurarlo finché non lo inviti nuovamente.'}
+        confirmText={isLeaving ? t('common.processing') : (t('management.leave_btn') || 'Lascia Server')}
+        type="danger"
+      />
+
       <style jsx>{`
 
         .main-content {
@@ -494,6 +542,32 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
           width: 100% !important;
           max-width: none !important;
           margin: 0 !important;
+        }
+
+        .server-crumb.interactive {
+          cursor: pointer;
+          transition: all 0.2s;
+          padding: 4px 12px;
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
+        .server-crumb.interactive:hover {
+          background: rgba(239, 68, 68, 0.05);
+          color: var(--error);
+        }
+
+        .server-crumb .leave-icon {
+          opacity: 0;
+          transition: 0.2s;
+          color: var(--error);
+        }
+
+        .server-crumb.interactive:hover .leave-icon {
+          opacity: 1;
+          transform: scale(1.1);
         }
 
         .language-selector {

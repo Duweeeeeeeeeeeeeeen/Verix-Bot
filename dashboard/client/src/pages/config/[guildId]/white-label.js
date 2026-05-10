@@ -5,7 +5,7 @@ import {
     Bot, Shield, Info, Save, Crown, EyeOff, MessageSquare, Zap, Sparkles, Check, 
     Plus, Trash2, Clock, CheckCircle2, AlertCircle, RefreshCw, Smartphone, Monitor,
     Fingerprint, UserCircle, Globe, Layout, Layers, Box, Cpu, Activity,
-    ShieldCheck, XCircle, Rocket, Gauge, Palette, Search, Settings2, Power
+    ShieldCheck, XCircle, Rocket, Gauge, Palette, Search, Settings2, Power, ArrowRight
 } from 'lucide-react';
 import Skeleton from '../../../components/Skeleton';
 import api from '../../../utils/api';
@@ -124,47 +124,51 @@ export default function WhiteLabelPage() {
 
         <div className="pc-content-v2">
             {!isPremium ? (
-                <div className="pc-pro-gate-box-v2 animate slide-up" style={{ padding: '120px 40px', background: 'white', borderRadius: '40px', border: '1px solid var(--border)', textAlign: 'center', boxShadow: 'var(--shadow-premium)', maxWidth: '1200px', margin: '0 auto' }}>
-                    <div className="gate-icon-glow-v2" style={{ width: '110px', height: '110px', background: '#eef2ff', color: '#6366f1', borderRadius: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 40px', boxShadow: '0 20px 40px rgba(99, 102, 241, 0.15)' }}>
-                        <Rocket size={56} />
+                <div className="pc-onboarding-gate animate fade-in">
+                    <div className="gate-header">
+                        <div className="gate-icon-main">
+                            <Sparkles size={48} />
+                        </div>
+                        <h1>Identity <span className="text-gradient">White-Label</span></h1>
+                        <p>Trasforma Verix in un'estensione nativa del tuo brand. Elimina ogni branding esterno e personalizza l'identità del bot per la tua community.</p>
                     </div>
-                    <h2 style={{ fontFamily: 'Inter', fontSize: '3.2rem', fontWeight: 700, color: 'var(--text-heading)', marginBottom: '20px', letterSpacing: '-1px' }}>{t('wl.gate_title')}</h2>
-                    <p style={{ fontSize: '1.3rem', color: 'var(--text-muted)', lineHeight: 1.7, maxWidth: 650, margin: '0 auto 64px', fontWeight: 600 }}>{t('wl.gate_desc')}</p>
                     
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', maxWidth: '1000px', margin: '0 auto 64px' }}>
+                    <div className="gate-comparison-grid">
                         {/* Standard Card */}
-                        <div style={{ background: 'white', border: '1.5px solid var(--border)', padding: '48px', borderRadius: '32px', textAlign: 'left', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
-                                <span style={{ fontSize: '0.75rem', fontWeight: 700, background: 'var(--bg-badge)', padding: '8px 20px', borderRadius: '100px', color: 'var(--text-muted)', letterSpacing: '1px' }}>{t('wl.standard_bot')}</span>
-                                <XCircle size={24} color="var(--text-dim)" />
-                            </div>
-                            <div style={{ background: 'var(--bg-badge)', border: '1.5px solid var(--border)', borderRadius: '22px', padding: '32px' }}>
-                                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: 'var(--border)', marginBottom: '20px' }}></div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                    <Shield size={18} color="#6366f1" /> 
-                                    <span style={{ fontWeight: 700, color: 'var(--text-dim)' }}>{t('wl.powered_by')} Verix</span>
+                        <div className="gate-card standard">
+                            <div className="card-badge">STANDARD BOT</div>
+                            <div className="card-mockup legacy">
+                                <div className="mock-avatar"></div>
+                                <div className="mock-text">
+                                    <Shield size={14} />
+                                    <span>Powered by Verix</span>
                                 </div>
-                                <p style={{ fontSize: '0.85rem', color: 'var(--text-dim)', marginTop: '12px', fontWeight: 600 }}>{t('wl.branding_visible')}</p>
+                                <p>Branding Verix visibile ovunque.</p>
+                            </div>
+                            <div className="card-status-icon negative">
+                                <XCircle size={24} />
                             </div>
                         </div>
 
                         {/* Platinum Card */}
-                        <div style={{ background: 'linear-gradient(135deg, #f5f3ff 0%, var(--bg-card) 100%)', border: '2.5px solid #ddd6fe', padding: '48px', borderRadius: '32px', textAlign: 'left', position: 'relative', boxShadow: '0 20px 50px rgba(99, 102, 241, 0.1)' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
-                                <span style={{ fontSize: '0.75rem', fontWeight: 700, background: '#6366f1', padding: '8px 20px', borderRadius: '100px', color: 'white', letterSpacing: '1px' }}>{t('wl.platinum_studio')}</span>
-                                <ShieldCheck size={28} color="#6366f1" />
+                        <div className="gate-card platinum">
+                            <div className="card-badge highlight">PLATINUM STUDIO</div>
+                            <div className="card-mockup modern">
+                                <div className="mock-avatar primary"></div>
+                                <div className="mock-text-bold">{config?.name || 'Your Global Brand'}</div>
+                                <p className="text-primary-bright">Ghost Mode: Zero Branding.</p>
                             </div>
-                            <div style={{ background: 'white', border: '1.5px solid #ddd6fe', borderRadius: '22px', padding: '32px', boxShadow: '0 10px 25px rgba(99, 102, 241, 0.05)' }}>
-                                <div style={{ width: '40px', height: '40px', borderRadius: '12px', background: '#6366f1', marginBottom: '20px' }}></div>
-                                <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-heading)' }}>{config?.name || 'Your Global Brand'}</div>
-                                <p style={{ fontSize: '0.85rem', color: '#6366f1', marginTop: '12px', fontWeight: 700 }}>{t('wl.ghost_mode')}</p>
+                            <div className="card-status-icon positive">
+                                <ShieldCheck size={28} />
                             </div>
+                            <div className="platinum-glow"></div>
                         </div>
                     </div>
 
-                    <button className="pc-btn-primary" style={{ padding: '24px 72px', fontSize: '1.25rem', borderRadius: '24px', margin: '0 auto', display: 'flex', alignItems: 'center', gap: '16px' }} onClick={() => router.push(`/config/${guildId}/premium`)}>
-                        <Sparkles size={24} />
-                        <span>Upgrade to Platinum Studio</span>
+                    <button className="gate-btn-platinum" onClick={() => router.push(`/config/${guildId}/premium`)}>
+                        <Crown size={22} />
+                        <span>Attiva Platinum Studio</span>
+                        <ArrowRight size={20} />
                     </button>
                 </div>
             ) : (
@@ -327,6 +331,39 @@ export default function WhiteLabelPage() {
         <style jsx>{`
             .pc-premium-wrapper { padding: 32px; max-width: 1500px; margin: 0 auto; font-family: 'Inter', sans-serif; }
             
+            /* Onboarding Gate Redesign */
+            .pc-onboarding-gate { padding: 80px 40px; background: white; border-radius: 40px; border: 1px solid var(--border); text-align: center; box-shadow: var(--shadow-premium); max-width: 1200px; margin: 0 auto; position: relative; overflow: hidden; }
+            .gate-header { margin-bottom: 60px; }
+            .gate-icon-main { width: 100px; height: 100px; background: rgba(99, 102, 241, 0.1); color: #6366f1; border-radius: 32px; display: flex; align-items: center; justify-content: center; margin: 0 auto 32px; box-shadow: 0 20px 40px rgba(99, 102, 241, 0.1); }
+            .gate-header h1 { font-size: 3.5rem; font-weight: 900; color: var(--text-heading); margin-bottom: 20px; letter-spacing: -2px; }
+            .gate-header p { font-size: 1.2rem; color: var(--text-muted); max-width: 700px; margin: 0 auto; line-height: 1.7; font-weight: 500; }
+            .text-gradient { background: linear-gradient(to right, #6366f1, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+            .gate-comparison-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; max-width: 1000px; margin: 0 auto 60px; }
+            .gate-card { position: relative; background: white; border: 1.5px solid var(--border); padding: 40px; border-radius: 32px; text-align: left; transition: 0.3s; }
+            .gate-card.platinum { border-color: #ddd6fe; background: linear-gradient(135deg, #f5f3ff 0%, #fff 100%); }
+            .gate-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.05); }
+
+            .card-badge { font-size: 0.7rem; font-weight: 800; padding: 6px 16px; border-radius: 100px; background: var(--bg-badge); color: var(--text-muted); letter-spacing: 1px; width: fit-content; margin-bottom: 32px; }
+            .card-badge.highlight { background: #6366f1; color: white; }
+
+            .card-mockup { background: var(--bg-badge); border: 1.5px solid var(--border); border-radius: 20px; padding: 24px; position: relative; }
+            .gate-card.platinum .card-mockup { background: white; border-color: #ddd6fe; box-shadow: 0 10px 30px rgba(99, 102, 241, 0.05); }
+            .mock-avatar { width: 32px; height: 32px; border-radius: 10px; background: var(--border); margin-bottom: 16px; }
+            .mock-avatar.primary { background: #6366f1; }
+            .mock-text { display: flex; align-items: center; gap: 8px; color: var(--text-dim); font-weight: 700; font-size: 0.85rem; }
+            .mock-text-bold { font-size: 1.1rem; font-weight: 800; color: var(--text-heading); }
+            .text-primary-bright { color: #6366f1; font-weight: 700; font-size: 0.85rem; margin-top: 8px; }
+
+            .card-status-icon { position: absolute; top: 40px; right: 40px; }
+            .negative { color: var(--text-dim); }
+            .positive { color: #6366f1; }
+
+            .gate-btn-platinum { background: #6366f1; color: white; border: none; padding: 20px 60px; border-radius: 24px; font-size: 1.2rem; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 16px; margin: 0 auto; transition: 0.3s; box-shadow: 0 20px 40px rgba(99, 102, 241, 0.3); }
+            .gate-btn-platinum:hover { transform: scale(1.05); box-shadow: 0 30px 60px rgba(99, 102, 241, 0.4); }
+
+            .platinum-glow { position: absolute; top: 0; right: 0; width: 100px; height: 100px; background: #6366f1; filter: blur(80px); opacity: 0.1; pointer-events: none; }
+            
             /* Header V2 */
             .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-card); padding: 24px; border-radius: 28px; box-shadow: var(--shadow-premium); border: 1px solid var(--border); }
             .header-info { display: flex; align-items: center; gap: 16px; }
@@ -368,7 +405,12 @@ export default function WhiteLabelPage() {
             .animate { animation: slideUp 0.4s ease-out; }
             @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-            :global(.light-theme) .pc-header-v2, :global(.light-theme) .pc-card-v2, :global(.light-theme) .pc-status-card-v2, :global(.light-theme) .pc-pro-gate-box-v2 { box-shadow: 0 8px 30px rgba(0,0,0,0.04) !important; }
+            :global(.light-theme) .pc-header-v2, :global(.light-theme) .pc-card-v2, :global(.light-theme) .pc-status-card-v2, :global(.light-theme) .pc-onboarding-gate { box-shadow: 0 8px 30px rgba(0,0,0,0.04) !important; }
+            
+            @media (max-width: 900px) {
+                .gate-comparison-grid { grid-template-columns: 1fr; }
+                .gate-header h1 { font-size: 2.5rem; }
+            }
         `}</style>
     </div>
   );

@@ -68,7 +68,7 @@ export default function PremiumHub() {
                 </div>
                 <div className="pc-title-row">
                     <h1>{t('ph.title')}</h1>
-                    <div className={`pc-status-tag-v2 ${isPremium ? 'on' : 'off'}`}>
+                    <div className={`pc-status-tag-v2 ${isPremium ? 'on' : 'off'} ${isPlatinum ? 'platinum-v2' : ''}`}>
                         <div className="status-dot-v2"></div>
                         {isPremium ? `${premiumTier.toUpperCase()} ${t('ph.active')}` : t('ph.standard_access')}
                     </div>
@@ -131,7 +131,6 @@ export default function PremiumHub() {
                             <div className="tier-symbol-v2">
                                 {isPlatinum ? <Award size={100} /> : isPremium ? <Crown size={100} /> : <Rocket size={100} />}
                             </div>
-                            <div className="tier-label-v2">{isPlatinum ? 'PLATINUM' : isPremium ? 'PREMIUM' : 'BASE'}</div>
                         </div>
                     </div>
                 </div>
@@ -263,13 +262,13 @@ export default function PremiumHub() {
             .hero-content-v2 { display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 10; }
             .hero-text-v2 { max-width: 700px; }
             .premium-badge-v2 { display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.15); padding: 8px 20px; border-radius: 100px; font-size: 0.75rem; font-weight: 700; letter-spacing: 1.5px; margin-bottom: 20px; width: fit-content; border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(5px); color: #fff; }
-            .hero-text-v2 h2 { font-size: 3.2rem; font-weight: 700; margin: 0 0 16px 0; line-height: 1; letter-spacing: -2px; text-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-            .hero-text-v2 p { font-size: 1.1rem; font-weight: 650; opacity: 0.85; margin: 0 0 40px 0; line-height: 1.6; max-width: 600px; }
+            .hero-text-v2 h2 { font-size: 3.2rem; font-weight: 700; margin: 0 0 16px 0; line-height: 1; letter-spacing: -2px; text-shadow: 0 10px 30px rgba(0,0,0,0.1); color: #fff !important; }
+            .hero-text-v2 p { font-size: 1.1rem; font-weight: 650; opacity: 0.85; margin: 0 0 40px 0; line-height: 1.6; max-width: 600px; color: #fff !important; }
             
-            .hero-stats-row-v2 { display: flex; gap: 56px; margin-bottom: 56px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 40px; }
+            .hero-stats-row-v2 { display: flex; gap: 56px; margin-bottom: 56px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 40px; color: #fff !important; }
             .hero-stat-item-v2 { display: flex; flex-direction: column; gap: 4px; }
-            .stat-val-v2 { font-size: 2.2rem; font-weight: 700; letter-spacing: normal; }
-            .stat-label-v2 { font-size: 0.8rem; font-weight: 700; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; }
+            .stat-val-v2 { font-size: 2.2rem; font-weight: 700; letter-spacing: normal; color: #fff !important; }
+            .stat-label-v2 { font-size: 0.8rem; font-weight: 700; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; color: #fff !important; }
 
             .hero-actions-v2 { display: flex; gap: 24px; }
             .pc-btn-primary { background: #fff !important; color: #1e1b4b !important; border: none; padding: 20px 48px; border-radius: 24px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 14px; transition: 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
@@ -310,6 +309,9 @@ export default function PremiumHub() {
             .pc-btn-price-v2:hover:not(:disabled) { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
 
             /* Comparison Matrix V2 */
+            .pc-status-tag-v2.platinum-v2 { background: #6366f1 !important; color: #fff !important; }
+            .pc-status-tag-v2.platinum-v2 .status-dot-v2 { background: #fff !important; box-shadow: 0 0 10px rgba(255,255,255,0.5); }
+            
             .pc-card-v2 { background: var(--bg-card); border: 1px solid var(--border); border-radius: 48px; padding: 56px; box-shadow: var(--shadow-premium); }
             .card-header-v2 { display: flex; align-items: center; gap: 24px; margin-bottom: 56px; }
             .header-icon { width: 64px; height: 64px; background: var(--bg-badge); color: var(--primary); border-radius: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }

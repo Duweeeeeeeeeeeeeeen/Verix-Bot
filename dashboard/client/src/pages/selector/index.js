@@ -17,7 +17,8 @@ import {
   ArrowRight,
   Zap,
   Layout,
-  Globe
+  Globe,
+  RefreshCw
 } from 'lucide-react';
 
 import LoadingScreen from '../../components/LoadingScreen';
@@ -25,11 +26,12 @@ import { useT } from '../../contexts/LanguageContext';
 
 export default function Selector() {
   const { t } = useT();
-  const { user, loading, logout } = useAuth();
+  const { user, loading, logout, fetchUser } = useAuth();
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState('all'); // all, active, missing
   const [mounted, setMounted] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -37,7 +39,26 @@ export default function Selector() {
 
   useEffect(() => {
     if (!loading && !user && mounted) router.push('/');
+    
+    // Auto-refresh when user comes back to the tab (useful after inviting bot)
+    const handleFocus = () => {
+      if (mounted && user) fetchUser();
+    };
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
   }, [user, loading, mounted]);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    try {
+        await fetchUser();
+        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Lista server aggiornata!', type: 'success' } }));
+    } catch (e) {
+        console.error('Refresh failed:', e);
+    } finally {
+        setRefreshing(false);
+    }
+  };
 
   if (!mounted || (loading && !user)) return <LoadingScreen message={t('selector.loading')} />;
   if (!user) return null;
@@ -142,6 +163,13 @@ export default function Selector() {
                         <span className="u-status-v2">Amministratore</span>
                     </div>
                 </div>
+                <button 
+                  onClick={handleRefresh} 
+                  className={`pc-refresh-btn-v2 ${refreshing ? 'spinning' : ''}`}
+                  disabled={refreshing}
+                >
+                    <RefreshCw size={18} />
+                </button>
                 <button onClick={logout} className="pc-logout-btn-v2">
                     <LogOut size={18} />
                 </button>
@@ -239,6 +267,12 @@ export default function Selector() {
             .user-info-v2 { display: flex; flex-direction: column; }
             .u-name-v2 { font-size: 0.85rem; font-weight: 800; color: var(--text-heading); }
             .u-status-v2 { font-size: 0.65rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+            
+            .pc-refresh-btn-v2 { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--border); background: var(--bg-card); color: var(--primary); cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
+            .pc-refresh-btn-v2:hover { background: var(--bg-badge); transform: scale(1.05); }
+            .pc-refresh-btn-v2.spinning :global(svg) { animation: spin 1s linear infinite; }
+            @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
             .pc-logout-btn-v2 { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--border); background: var(--bg-card); color: var(--error); cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
             .pc-logout-btn-v2:hover { background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.2); transform: scale(1.05); }
 

@@ -7,9 +7,10 @@ import {
     Save, Gift, Trophy, Clock, Users, Trash2, Plus, RefreshCcw, Settings2, Shield, Power, Palette, Zap, 
     Info, MessageSquare, ExternalLink, History, X, Calendar, ChevronRight, AlertCircle, Square, 
     Monitor, Smartphone, Sun, Moon, ArrowRight, Search, Sparkles, Layout, CheckCircle2, Box, Send, Star,
-    MousePointer2, Timer, Award, UserCheck, ShieldAlert, Layers, Target, Eye, EyeOff, Wand2, RefreshCw
+    MousePointer2, Timer, Award, UserCheck, ShieldAlert, Layers, Target, Eye, EyeOff, Wand2, RefreshCw, GripVertical
 } from 'lucide-react';
 import { DiscordSelector, CustomSelect } from '../../../components/LazyConfigComponents';
+import EmojiInput from '../../../components/EmojiInput';
 import EmbedPreviewContainer from '../../../components/EmbedPreviewContainer';
 import Head from 'next/head';
 
@@ -285,18 +286,54 @@ export default function GiveawayConfig() {
                                     <label>{t('giveaway.embed_desc')}</label>
                                     <textarea className="pc-input-modern-v2" style={{ minHeight: '120px' }} value={newGw.customDescription} onChange={e => setNewGw({...newGw, customDescription: e.target.value})} />
                                 </div>
-                                <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 150px', gap: '20px', marginTop: '24px' }}>
-                                    <div className="pc-input-group-v2">
-                                        <label>{t('giveaway.button_label')}</label>
-                                        <input className="pc-input-modern-v2" value={newGw.buttonLabel} onChange={e => setNewGw({...newGw, buttonLabel: e.target.value})} />
+                                <div className="pc-input-group-v2" style={{ marginTop: '24px' }}>
+                                    <label>{t('giveaway.accent_color')}</label>
+                                    <div className="pc-color-box-v2" style={{ width: 'fit-content' }}>
+                                        <div className="color-preview" style={{ backgroundColor: newGw.color }}>
+                                            <input type="color" value={newGw.color} onChange={e => setNewGw({...newGw, color: e.target.value})} />
+                                        </div>
+                                        <span style={{ fontSize: '0.9rem', fontWeight: 700 }}>{newGw.color.toUpperCase()}</span>
                                     </div>
-                                    <div className="pc-input-group-v2">
-                                        <label>{t('giveaway.accent_color')}</label>
-                                        <div className="pc-color-box-v2">
-                                            <div className="color-preview" style={{ backgroundColor: newGw.color }}>
-                                                <input type="color" value={newGw.color} onChange={e => setNewGw({...newGw, color: e.target.value})} />
+                                </div>
+                                <div className="pc-button-builder animate slide-up" style={{ marginTop: '24px' }}>
+                                    <div className="pc-bb-left">
+                                        <GripVertical size={20} color="rgba(255,255,255,0.2)" />
+                                    </div>
+                                    <div className="pc-bb-content">
+                                        <div className="pc-bb-top-row">
+                                            <div className={`pc-bb-preview ${newGw.buttonStyle || 'PRIMARY'}`}>
+                                                <span>{newGw.buttonEmoji || '🎉'}</span>
+                                                <span>{newGw.buttonLabel || 'Partecipa Ora'}</span>
                                             </div>
-                                            <span style={{ fontSize: '0.8rem', fontWeight: 700 }}>PICK</span>
+                                        </div>
+
+                                        <div className="pc-bb-columns">
+                                            <div className="pc-bb-col" style={{ width: '44px' }}>
+                                                <label>{t('common.emoji')}</label>
+                                                <div className="pc-bb-emoji-box">
+                                                    <EmojiInput value={newGw.buttonEmoji || '🎉'} hideInput={true} onChange={e => setNewGw({...newGw, buttonEmoji: e.target.value})} />
+                                                </div>
+                                            </div>
+                                            <div className="pc-bb-col">
+                                                <label>{t('giveaway.button_label')}</label>
+                                                <div className="pc-bb-input-box">
+                                                    <input value={newGw.buttonLabel} onChange={e => setNewGw({...newGw, buttonLabel: e.target.value})} placeholder="Partecipa Ora" />
+                                                </div>
+                                            </div>
+                                            <div className="pc-bb-col">
+                                                <label>{t('common.color')}</label>
+                                                <div className="pc-bb-color-picker">
+                                                    {['PRIMARY', 'SUCCESS', 'DANGER', 'SECONDARY'].map(styleOption => (
+                                                        <div 
+                                                            key={styleOption}
+                                                            className={`pc-bb-swatch swatch-${styleOption} ${(newGw.buttonStyle || 'PRIMARY') === styleOption ? 'active' : ''}`}
+                                                            onClick={() => setNewGw({...newGw, buttonStyle: styleOption})}
+                                                        >
+                                                            {(newGw.buttonStyle || 'PRIMARY') === styleOption && <CheckCircle2 size={12} color="#fff" />}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

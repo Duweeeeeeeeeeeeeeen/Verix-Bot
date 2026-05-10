@@ -149,7 +149,7 @@ export default function PhotoContestConfig() {
                         {config.enabled ? t('common.active') : t('common.inactive')}
                     </span>
                 </div>
-                <button className="pc-btn-primary" onClick={handleSave} disabled={saving} style={{ background: '#be185d' }}>
+                <button className="pc-btn-primary" onClick={handleSave} disabled={saving}>
                     <Save size={18} />
                     <span>{saving ? t('common.saving') : t('common.sync')}</span>
                 </button>
@@ -178,7 +178,7 @@ export default function PhotoContestConfig() {
                     <div className="v-stack" style={{ gap: '32px' }}>
                         <section className="pc-card-v2 animate slide-up">
                             <div className="card-header-v2" style={{ marginBottom: '32px' }}>
-                                <div className="header-icon" style={{ background: 'var(--bg-badge)', color: '#db2777' }}><Target size={20} /></div>
+                                <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><Target size={20} /></div>
                                 <div className="v-stack" style={{ flex: 1 }}>
                                     <h3 style={{ margin: 0 }}>{t('pc.destinations')}</h3>
                                     <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 700 }}>{t('pc.destinations_desc')}</p>
@@ -198,8 +198,8 @@ export default function PhotoContestConfig() {
                                 <div className="pc-input-group-v2" style={{ marginTop: '32px' }}>
                                     <label>{t('pc.winner_role')}</label>
                                     <DiscordSelector type="role" options={discordData.roles} value={config.winnerRoleId} onChange={v => setConfig({...config, winnerRoleId: v})} />
-                                    <div style={{ marginTop: '20px', background: 'rgba(219, 39, 119, 0.05)', padding: '24px', borderRadius: '22px', border: '1.5px solid rgba(219, 39, 119, 0.1)', display: 'flex', gap: '16px', alignItems: 'center' }}>
-                                        <Info size={24} color="#db2777" style={{ flexShrink: 0 }} />
+                                    <div style={{ marginTop: '20px', background: 'var(--primary-glow)', padding: '24px', borderRadius: '22px', border: '1.5px solid var(--primary-muted)', display: 'flex', gap: '16px', alignItems: 'center' }}>
+                                        <Info size={24} color="var(--primary)" style={{ flexShrink: 0 }} />
                                         <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 700, lineHeight: 1.6 }}>{t('pc.winner_role_desc')}</p>
                                     </div>
                                 </div>
@@ -208,7 +208,7 @@ export default function PhotoContestConfig() {
 
                         <section className="pc-card-v2 animate slide-up" style={{ animationDelay: '0.1s' }}>
                             <div className="card-header-v2" style={{ marginBottom: '32px' }}>
-                                <div className="header-icon" style={{ background: 'var(--bg-badge)', color: '#7c3aed' }}><Timer size={20} /></div>
+                                <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><Timer size={20} /></div>
                                 <div className="v-stack" style={{ flex: 1 }}>
                                     <h3 style={{ margin: 0 }}>{t('pc.timeline_title')}</h3>
                                     <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 700 }}>{t('pc.timeline_desc')}</p>
@@ -238,7 +238,7 @@ export default function PhotoContestConfig() {
                     <div className="v-stack" style={{ gap: '32px' }}>
                         <section className="pc-card-v2 animate slide-up">
                             <div className="card-header-v2" style={{ marginBottom: '32px' }}>
-                                <div className="header-icon" style={{ background: 'var(--bg-badge)', color: '#ea580c' }}><Shield size={20} /></div>
+                                <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><Shield size={20} /></div>
                                 <h3 style={{ margin: 0 }}>{t('pc.authority')}</h3>
                             </div>
                             <div className="card-body-v2">

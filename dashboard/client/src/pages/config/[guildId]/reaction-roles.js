@@ -7,9 +7,10 @@ import {
     Save, MousePointer2, Plus, Trash2, Send, Layout, Palette, Type, Layers, Smile, ChevronDown, 
     ChevronUp, AlertCircle, Settings2, Sun, Moon, Monitor, Smartphone, Power, Hash, Sparkles, 
     Trash, ChevronRight, ArrowRight, CheckCircle2, Box, Sparkle, RefreshCcw, Command,
-    Fingerprint, Zap, AlignLeft, Paintbrush
+    Fingerprint, Zap, AlignLeft, Paintbrush, GripVertical
 } from 'lucide-react';
 import { DiscordSelector, CustomSelect } from '../../../components/LazyConfigComponents';
+import EmojiInput from '../../../components/EmojiInput';
 import EmbedPreviewContainer from '../../../components/EmbedPreviewContainer';
 import Head from 'next/head';
 
@@ -314,16 +315,68 @@ export default function ReactionRolesConfig() {
                                     <div className="card-body-v2">
                                         <div className="v-stack" style={{ gap: '16px' }}>
                                             {activePanel.roles.map((role, idx) => (
-                                                <div key={idx} className="pc-sub-card-v2 animate slide-up">
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                                                        <span style={{ fontWeight: 700, fontSize: '0.8rem', color: 'var(--text-muted)' }}>SLOT #{idx + 1}</span>
-                                                        <button onClick={() => {
-                                                            const filtered = activePanel.roles.filter((_, i) => i !== idx);
-                                                            updatePanel(activePanel.id, { roles: filtered });
-                                                        }} className="pc-btn-icon-danger-v2"><Trash2 size={18} /></button>
+                                                <div key={idx} className="pc-button-builder animate slide-up">
+                                                    <div className="pc-bb-left">
+                                                        <GripVertical size={20} color="rgba(255,255,255,0.2)" style={{ cursor: 'grab' }} />
                                                     </div>
-                                                    <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 100px', gap: '16px' }}>
-                                                        <div className="pc-input-group-v2">
+                                                    <div className="pc-bb-content">
+                                                        <div className="pc-bb-top-row">
+                                                            <div className={`pc-bb-preview ${role.style || 'PRIMARY'}`}>
+                                                                <span>{role.emoji || '🎫'}</span>
+                                                                <span>{role.label || 'Select Role'}</span>
+                                                            </div>
+                                                            <div className="pc-bb-controls">
+                                                                <button onClick={() => {
+                                                                    const newRoles = activePanel.roles.filter((_, i) => i !== idx);
+                                                                    updatePanel(activePanel.id, { roles: newRoles });
+                                                                }} className="pc-bb-trash">
+                                                                    <Trash2 size={16} />
+                                                                </button>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="pc-bb-columns">
+                                                            <div className="pc-bb-col" style={{ width: '44px' }}>
+                                                                <label>{t('common.emoji')}</label>
+                                                                <div className="pc-bb-emoji-box">
+                                                                    <EmojiInput value={role.emoji || '🎫'} hideInput={true} onChange={e => {
+                                                                        const newRoles = [...activePanel.roles];
+                                                                        newRoles[idx].emoji = e.target.value;
+                                                                        updatePanel(activePanel.id, { roles: newRoles });
+                                                                    }} />
+                                                                </div>
+                                                            </div>
+                                                            <div className="pc-bb-col">
+                                                                <label>{t('rr.label')}</label>
+                                                                <div className="pc-bb-input-box">
+                                                                    <input value={role.label || ''} onChange={e => {
+                                                                        const newRoles = [...activePanel.roles];
+                                                                        newRoles[idx].label = e.target.value;
+                                                                        updatePanel(activePanel.id, { roles: newRoles });
+                                                                    }} placeholder="Select Role" />
+                                                                </div>
+                                                            </div>
+                                                            <div className="pc-bb-col">
+                                                                <label>{t('common.color')}</label>
+                                                                <div className="pc-bb-color-picker">
+                                                                    {['PRIMARY', 'SUCCESS', 'DANGER', 'SECONDARY'].map(styleOption => (
+                                                                        <div 
+                                                                            key={styleOption}
+                                                                            className={`pc-bb-swatch swatch-${styleOption} ${(role.style || 'PRIMARY') === styleOption ? 'active' : ''}`}
+                                                                            onClick={() => {
+                                                                                const newRoles = [...activePanel.roles];
+                                                                                newRoles[idx].style = styleOption;
+                                                                                updatePanel(activePanel.id, { roles: newRoles });
+                                                                            }}
+                                                                        >
+                                                                            {(role.style || 'PRIMARY') === styleOption && <CheckCircle2 size={12} color="#fff" />}
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="pc-input-group-v2" style={{ marginTop: '10px' }}>
                                                             <label>{t('rr.role')}</label>
                                                             <DiscordSelector type="role" options={roles} value={role.roleId} onChange={val => {
                                                                 const newRoles = [...activePanel.roles];
@@ -331,44 +384,7 @@ export default function ReactionRolesConfig() {
                                                                 updatePanel(activePanel.id, { roles: newRoles });
                                                             }} />
                                                         </div>
-                                                        <div className="pc-input-group-v2">
-                                                            <label>{t('rr.emoji')}</label>
-                                                            <input className="pc-input-modern-v2" style={{ textAlign: 'center', background: 'var(--bg-badge)' }} value={role.emoji} onChange={e => {
-                                                                const newRoles = [...activePanel.roles];
-                                                                newRoles[idx].emoji = e.target.value;
-                                                                updatePanel(activePanel.id, { roles: newRoles });
-                                                            }} />
-                                                        </div>
                                                     </div>
-                                                    {activePanel.type === 'BUTTON' && (
-                                                        <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '16px' }}>
-                                                            <div className="pc-input-group-v2">
-                                                                <label>{t('rr.label')}</label>
-                                                                <input className="pc-input-modern-v2" style={{ background: 'var(--bg-badge)' }} value={role.label} onChange={e => {
-                                                                    const newRoles = [...activePanel.roles];
-                                                                    newRoles[idx].label = e.target.value;
-                                                                    updatePanel(activePanel.id, { roles: newRoles });
-                                                                }} />
-                                                            </div>
-                                                            <div className="pc-input-group-v2">
-                                                                <label>{t('rr.style')}</label>
-                                                                <CustomSelect 
-                                                                    options={[
-                                                                        { value: 'PRIMARY', label: 'Blurple' },
-                                                                        { value: 'SECONDARY', label: 'Gray' },
-                                                                        { value: 'SUCCESS', label: 'Green' },
-                                                                        { value: 'DANGER', label: 'Red' }
-                                                                    ]} 
-                                                                    value={role.style || 'PRIMARY'} 
-                                                                    onChange={val => {
-                                                                        const newRoles = [...activePanel.roles];
-                                                                        newRoles[idx].style = val;
-                                                                        updatePanel(activePanel.id, { roles: newRoles });
-                                                                    }} 
-                                                                />
-                                                            </div>
-                                                        </div>
-                                                    )}
                                                 </div>
                                             ))}
                                         </div>

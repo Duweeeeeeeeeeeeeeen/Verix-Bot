@@ -217,7 +217,7 @@ export default function PollsConfig() {
                     <div className="v-stack" style={{ gap: '32px' }}>
                         <section className="pc-card-v2 animate slide-up">
                             <div className="card-header-v2" style={{ marginBottom: '32px' }}>
-                                <div className="header-icon" style={{ background: '#fffbeb', color: '#d97706' }}><MessageSquare size={18} /></div>
+                                <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><MessageSquare size={18} /></div>
                                 <h3 style={{ margin: 0 }}>{t('polls.q_timeline')}</h3>
                             </div>
                             <div className="card-body-v2">
@@ -239,7 +239,7 @@ export default function PollsConfig() {
                                     <div className="pc-input-group-v2">
                                         <label>{t('polls.duration_mins')}</label>
                                         <div className="pc-input-modern-v2">
-                                            <Timer size={18} style={{ color: 'var(--primary)' }} />
+                                            <Timer size={18} />
                                             <input type="number" style={{ width: '100%', border: 'none', background: 'transparent', fontWeight: 700, outline: 'none' }} value={newPoll.duration} onChange={e => setNewPoll({...newPoll, duration: parseInt(e.target.value)})} min="1" />
                                         </div>
                                     </div>

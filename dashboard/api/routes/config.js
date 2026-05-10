@@ -41,6 +41,7 @@ import { buildButtonRows } from '../../../src/utils/uiBuilder.js';
 import messageService from '../../../src/utils/messageService.js';
 import placeholderHelper from '../../../src/utils/placeholderHelper.js';
 import * as whiteLabelHelper from '../../../src/utils/whiteLabelHelper.js';
+import { createDefaultChannels, initializeModuleConfigs } from '../../../src/utils/setupUtils.js';
 
 // Centralized Utilities
 import { validate } from '../middleware/validate.js';
@@ -2342,6 +2343,94 @@ router.post('/:guildId/polls/create', adminCheck, validate(pollCreateSchema), as
     }
 });
 
-// --- END OF ROUTES ---
+// --- ONBOARDING ROUTES ---
+
+router.post('/:guildId/onboarding/complete', adminCheck, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const { modules, autoChannels, adminRoles, staffRole, customChannelNames } = req.body;
+
+        const client = req.discordClient;
+        const guild = await client.guilds.fetch(guildId).catch(() => null);
+
+        if (!guild) {
+            return res.status(404).json({ success: false, error: 'Server non trovato o bot non presente.' });
+        }
+
+        let createdChannels = {};
+        if (autoChannels) {
+            createdChannels = await createDefaultChannels(guild, modules, customChannelNames);
+        }
+
+        // 1. Mark setup as completed and enable modules
+        await Guild.findOneAndUpdate(
+            { guildId },
+            { 
+                $set: { 
+                    setupCompleted: true,
+                    enabledModules: modules
+                } 
+            },
+            { upsert: true }
+        );
+
+        // 2. Initialize specific module configs with channels and roles
+        await initializeModuleConfigs(guildId, createdChannels, { 
+            adminRoles, 
+            staffRole, 
+            language, 
+            prefix, 
+            nickname, 
+            ticketCategory, 
+            welcomeStyle 
+        }, guild);
+
+        await logAudit(req, guildId, 'ONBOARDING_COMPLETED', 'Onboarding Setup Finished', { modules, autoChannels });
+        
+        res.json({ success: true, message: 'Setup completato con successo!' });
+    } catch (error) {
+        console.error('[Onboarding] Error:', error);
+        res.status(500).json({ success: false, error: 'Errore durante la finalizzazione del setup.' });
+    }
+});
+
+/**
+ * LEAVE SERVER
+ * Endpoint to make the bot leave a guild.
+ * Restricted to Server Owner or Hardcoded Admins.
+ */
+router.post('/:guildId/leave', adminCheck, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        // Use the client attached by multi-bot middleware or default client
+        const client = req.discordClient;
+        const guild = client.guilds.cache.get(guildId);
+
+        if (!guild) {
+            return res.status(404).json({ success: false, message: 'Server non trovato nella cache del bot.' });
+        }
+
+        // Security check: Only owner or hardcoded super-admins
+        const isOwner = guild.ownerId === req.user.id;
+        const isHardcodedAdmin = ['361159834688552960', '314417452395626496'].includes(req.user.id);
+
+        if (!isOwner && !isHardcodedAdmin) {
+            return res.status(403).json({ 
+                success: false, 
+                message: 'Azione protetta: Solo il proprietario del server o gli sviluppatori Verix possono eseguire questa operazione.' 
+            });
+        }
+
+        await logAudit(req, guildId, 'GUILD_LEAVE', 'Il bot ha lasciato il server tramite dashboard');
+        
+        // Final action
+        await guild.leave();
+
+        res.json({ success: true, message: 'Il bot ha lasciato il server con successo.' });
+    } catch (err) {
+        console.error('[API_ERROR] Failed to leave guild:', err);
+        res.status(500).json({ success: false, message: 'Errore interno durante l\'esecuzione dell\'uscita.' });
+    }
+});
 
 export default router;

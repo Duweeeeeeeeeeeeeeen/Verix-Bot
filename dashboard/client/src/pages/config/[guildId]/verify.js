@@ -1,19 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Skeleton from '../../../components/Skeleton';
-import { DiscordSelector } from '../../../components/LazyConfigComponents';
-import { EmbedMessageManager } from '../../../components/LazyConfigComponents';
+import { DiscordSelector, CustomSelect, EmbedMessageManager } from '../../../components/LazyConfigComponents';
 import api from '../../../utils/api';
 import { useT } from '../../../contexts/LanguageContext';
 import { 
-    Save, ShieldCheck, Settings2, RefreshCcw, Power, Palette, MessageSquare, Bell, Info, 
-    MousePointer2, Type, ShieldAlert, ChevronRight, Hash, Shield, Send, Zap, MessageCircle, 
-    AlertCircle, ArrowRight, CheckCircle2, Lock, Globe
+    Save, ShieldCheck, Settings2, Palette, MousePointer2, CheckCircle2, 
+    Shield, Send, GripVertical
 } from 'lucide-react';
-import CustomSelect from '../../../components/CustomSelect';
-import { mergeConfig } from '../../../utils/defaults';
 import EmojiInput from '../../../components/EmojiInput';
-import { NotificationSettings } from '../../../components/LazyConfigComponents';
+import { mergeConfig } from '../../../utils/defaults';
 import Head from 'next/head';
 
 export default function VerifyConfig() {
@@ -213,7 +209,7 @@ export default function VerifyConfig() {
                         </section>
 
                         <div className="pc-info-banner-v2 orange">
-                            <ShieldAlert size={20} />
+                            <ShieldCheck size={20} />
                             <p>{t('verify.hierarchy_warn')}</p>
                         </div>
                     </div>
@@ -221,7 +217,7 @@ export default function VerifyConfig() {
                     <div className="v-stack" style={{ gap: '32px' }}>
                         <section className="pc-card-v2">
                             <div className="card-header-v2">
-                                <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><Bell size={18} /></div>
+                                <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><Shield size={18} /></div>
                                 <h3 style={{ margin: 0 }}>{t('verify.log_audit')}</h3>
                             </div>
                             <div className="card-body-v2">
@@ -257,32 +253,48 @@ export default function VerifyConfig() {
                             <h3 style={{ margin: 0 }}>{t('verify.button_branding')}</h3>
                         </div>
                         <div className="card-body-v2">
-                            <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 80px 1fr', gap: '24px' }}>
-                                <div className="pc-input-group-v2">
-                                    <label>{t('verify.label')}</label>
-                                    <div className="pc-input-modern-v2">
-                                        <Type size={16} />
-                                        <input value={config.buttons?.verify?.label || ''} onChange={e => setNested('buttons.verify.label', e.target.value)} placeholder={t('verify.placeholder')} />
+                            <div className="pc-button-builder animate slide-up">
+                                    <div className="pc-bb-left">
+                                        <GripVertical size={20} color="rgba(255,255,255,0.2)" />
+                                    </div>
+                                    <div className="pc-bb-content">
+                                        <div className="pc-bb-top-row">
+                                            <div className={`pc-bb-preview ${config.buttonStyle || 'PRIMARY'}`}>
+                                                <span>{config.buttonEmoji || '✅'}</span>
+                                                <span>{config.buttonLabel || t('verify.btn_default')}</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="pc-bb-columns">
+                                            <div className="pc-bb-col" style={{ width: '44px' }}>
+                                                <label>{t('common.emoji')}</label>
+                                                <div className="pc-bb-emoji-box">
+                                                    <EmojiInput value={config.buttonEmoji || '✅'} hideInput={true} onChange={e => setConfig({ ...config, buttonEmoji: e.target.value })} />
+                                                </div>
+                                            </div>
+                                            <div className="pc-bb-col">
+                                                <label>{t('verify.btn_text')}</label>
+                                                <div className="pc-bb-input-box">
+                                                    <input value={config.buttonLabel || ''} onChange={e => setConfig({ ...config, buttonLabel: e.target.value })} placeholder={t('verify.btn_default')} />
+                                                </div>
+                                            </div>
+                                            <div className="pc-bb-col">
+                                                <label>{t('common.color')}</label>
+                                                <div className="pc-bb-color-picker">
+                                                    {['PRIMARY', 'SUCCESS', 'DANGER', 'SECONDARY'].map(styleOption => (
+                                                        <div 
+                                                            key={styleOption}
+                                                            className={`pc-bb-swatch swatch-${styleOption} ${(config.buttonStyle || 'PRIMARY') === styleOption ? 'active' : ''}`}
+                                                            onClick={() => setConfig({ ...config, buttonStyle: styleOption })}
+                                                        >
+                                                            {(config.buttonStyle || 'PRIMARY') === styleOption && <CheckCircle2 size={12} color="#fff" />}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="pc-input-group-v2">
-                                    <label>{t('verify.emoji')}</label>
-                                    <EmojiInput value={config.buttons?.verify?.emoji || ''} onChange={e => setNested('buttons.verify.emoji', e.target.value)} />
-                                </div>
-                                <div className="pc-input-group-v2">
-                                    <label>{t('verify.style')}</label>
-                                    <CustomSelect 
-                                        options={[
-                                            { value: 'SUCCESS', label: 'Verde' },
-                                            { value: 'PRIMARY', label: 'Blurple' },
-                                            { value: 'SECONDARY', label: 'Grigio' },
-                                            { value: 'DANGER', label: 'Rosso' }
-                                        ]} 
-                                        value={config.buttons?.verify?.style || 'SUCCESS'} 
-                                        onChange={val => setNested('buttons.verify.style', val)} 
-                                    />
-                                </div>
-                            </div>
                         </div>
                     </section>
 

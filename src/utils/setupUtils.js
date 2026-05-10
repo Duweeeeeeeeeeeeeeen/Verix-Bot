@@ -1,0 +1,175 @@
+import { ChannelType, PermissionFlagsBits } from 'discord.js';
+import Guild from '../models/Guild.js';
+import GlobalConfig from '../models/GlobalConfig.js';
+import GiveawayConfig from '../models/GiveawayConfig.js';
+import TicketConfig from '../models/TicketConfig.js';
+import PollConfig from '../models/PollConfig.js';
+import VerifyConfig from '../models/VerifyConfig.js';
+import WhitelistConfig from '../models/WhitelistConfig.js';
+import WelcomeConfig from '../models/WelcomeConfig.js';
+
+/**
+ * Creates default channels for selected modules.
+ * @param {import('discord.js').Guild} guild 
+ * @param {string[]} modules 
+ * @param {Object} customNames
+ */
+export async function createDefaultChannels(guild, modules, customNames = {}) {
+    const createdChannels = {};
+
+    const moduleChannels = [
+        { id: 'whitelist', defaultName: '⚖️-candidature', type: ChannelType.GuildText },
+        { id: 'tickets', defaultName: '🎫-apri-ticket', type: ChannelType.GuildText },
+        { id: 'verify', defaultName: '✅-verifica', type: ChannelType.GuildText },
+        { id: 'polls', defaultName: '📊-sondaggi', type: ChannelType.GuildText },
+        { id: 'giveaway', defaultName: '🎉-giveaways', type: ChannelType.GuildText },
+        { id: 'photocontest', defaultName: '📸-foto-contest', type: ChannelType.GuildText },
+        { id: 'logs', defaultName: '📜-verix-logs', type: ChannelType.GuildText }
+    ];
+
+    for (const mod of moduleChannels) {
+        if (modules.includes(mod.id) || mod.id === 'logs') {
+            try {
+                const finalName = customNames[mod.id] || mod.defaultName;
+                // Check if channel already exists
+                let channel = guild.channels.cache.find(c => c.name === finalName && c.type === mod.type);
+                if (!channel) {
+                    channel = await guild.channels.create({
+                        name: finalName,
+                        type: mod.type,
+                        permissionOverwrites: [
+                            {
+                                id: guild.id,
+                                allow: [PermissionFlagsBits.ViewChannel],
+                                deny: mod.id === 'logs' ? [PermissionFlagsBits.ViewChannel] : []
+                            }
+                        ]
+                    });
+                }
+                createdChannels[mod.id] = channel.id;
+            } catch (err) {
+                console.error(`[SetupUtils] Error creating channel ${mod.name}:`, err);
+            }
+        }
+    }
+
+    return createdChannels;
+}
+
+/**
+ * Initializes module configurations with the created channels and roles.
+ * @param {string} guildId 
+ * @param {Object} createdChannels 
+ * @param {Object} onboardingData (adminRoles, staffRole, language, prefix, nickname, ticketCategory, welcomeStyle)
+ * @param {import('discord.js').Guild} guild
+ */
+export async function initializeModuleConfigs(guildId, createdChannels, onboardingData = {}, guild) {
+    const { adminRoles, staffRole, language, prefix, nickname, ticketCategory, welcomeStyle } = onboardingData;
+
+    // 0. Global & Guild Core
+    await Guild.findOneAndUpdate(
+        { guildId },
+        { $set: { 
+            prefix: prefix || '!',
+            setupCompleted: true,
+            customBotName: nickname || null
+        } }
+    );
+
+    await GlobalConfig.findOneAndUpdate(
+        { guildId },
+        { $set: { 
+            adminRoleIds: adminRoles || [],
+            language: language || 'it'
+        } },
+        { upsert: true }
+    );
+
+    // Update Nickname if provided
+    if (nickname && guild.members.me.permissions.has(PermissionFlagsBits.ChangeNickname)) {
+        await guild.members.me.setNickname(nickname).catch(() => {});
+    }
+
+    // 1. Giveaway
+    if (createdChannels.giveaway) {
+        await GiveawayConfig.findOneAndUpdate(
+            { guildId },
+            { $set: { giveawayChannelId: createdChannels.giveaway, enabled: true } },
+            { upsert: true }
+        );
+    }
+
+    // 2. Polls
+    if (createdChannels.polls) {
+        await PollConfig.findOneAndUpdate(
+            { guildId },
+            { $set: { channelId: createdChannels.polls, enabled: true } },
+            { upsert: true }
+        );
+    }
+
+    // 3. Tickets
+    let categoryId = null;
+    if (ticketCategory && guild.members.me.permissions.has(PermissionFlagsBits.ManageChannels)) {
+        try {
+            const category = await guild.channels.create({
+                name: ticketCategory,
+                type: ChannelType.GuildCategory
+            });
+            categoryId = category.id;
+        } catch (err) {
+            console.error('[SetupUtils] Category create error:', err);
+        }
+    }
+
+    if (createdChannels.tickets || staffRole || categoryId) {
+        const update = { enabled: true };
+        if (createdChannels.tickets) update.panelChannelId = createdChannels.tickets;
+        if (staffRole) update.staffRoleId = staffRole;
+        if (categoryId) update.categoryId = categoryId;
+
+        await TicketConfig.findOneAndUpdate(
+            { guildId },
+            { $set: update },
+            { upsert: true }
+        );
+    }
+
+    // 4. Verify
+    if (createdChannels.verify) {
+        await VerifyConfig.findOneAndUpdate(
+            { guildId },
+            { $set: { panelChannelId: createdChannels.verify, enabled: true } },
+            { upsert: true }
+        );
+    }
+
+    // 5. Whitelist (Staff Role)
+    if (staffRole) {
+        await WhitelistConfig.findOneAndUpdate(
+            { guildId },
+            { $set: { staffRoleId: staffRole, enabled: true } },
+            { upsert: true }
+        );
+    }
+
+    // 6. Welcome (Style)
+    if (welcomeStyle) {
+        await WelcomeConfig.findOneAndUpdate(
+            { guildId },
+            { $set: { 
+                enabled: true,
+                useEmbed: welcomeStyle === 'embed'
+            } },
+            { upsert: true }
+        );
+    }
+
+    // 7. Logs
+    if (createdChannels.logs) {
+        await Guild.findOneAndUpdate(
+            { guildId },
+            { $set: { logChannelId: createdChannels.logs } }
+        );
+    }
+}
