@@ -10,7 +10,7 @@ import {
     Shapes, LayoutGrid, Timer, ShieldCheck, Flag
 } from 'lucide-react';
 import { DiscordSelector, CustomSelect } from '../../../components/LazyConfigComponents';
-import EmbedPreviewContainer from '../../../components/EmbedPreviewContainer';
+import EmbedPreview from '../../../components/EmbedPreview';
 import Head from 'next/head';
 
 export default function PollsConfig() {
