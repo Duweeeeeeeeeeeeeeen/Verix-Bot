@@ -13,10 +13,11 @@ import messageRoutes from './routes/messages.js';
 import analyticsRoutes from './routes/analytics.js';
 import privateBotRoutes from './routes/privateBot.js';
 import adminRoutes from './routes/admin.js';
+import logger from '../../src/utils/logger.js';
 
 // ─── Critical startup guard ─────────────────────────────────────────────────
 if (!process.env.SESSION_SECRET) {
-    console.error('FATAL: SESSION_SECRET environment variable is not defined. Refusing to start.');
+    logger.error('FATAL: SESSION_SECRET environment variable is not defined. Refusing to start.');
     process.exit(1);
 }
 
@@ -27,8 +28,8 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI)
-    .then(() => console.log('✅ Dashboard API connected to MongoDB'))
-    .catch(err => console.error('❌ MongoDB Connection Error:', err));
+    .then(() => logger.db('Dashboard API connected to MongoDB'))
+    .catch(err => logger.error('MongoDB Connection Error:', err));
 
 // Passport Setup
 passport.serializeUser((user, done) => done(null, user));
@@ -119,7 +120,7 @@ app.use((req, res) => {
 });
 
 app.use((err, req, res, next) => {
-    console.error('❌ Server Error:', err.message);
+    logger.error('Server Error:', err);
     res.status(err.status || 500).json({
         success: false,
         error: isProduction ? 'Si è verificato un errore interno al server.' : err.message
@@ -127,6 +128,6 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`🚀 Dashboard API listening on port ${PORT}`);
+    logger.info(`Dashboard API listening on port ${PORT}`);
 });
 

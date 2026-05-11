@@ -1,9 +1,26 @@
 import crypto from 'crypto';
-import config from '../../config/config.js';
+import logger from './logger.js';
 
 const ALGORITHM = 'aes-256-cbc';
-const ENCRYPTION_KEY = Buffer.from(process.env.ENCRYPTION_KEY || '01234567890123456789012345678901').slice(0, 32); // Must be 32 bytes
+const LEGACY_ENCRYPTION_KEY = '01234567890123456789012345678901';
 const IV_LENGTH = 16;
+
+const resolveEncryptionKey = () => {
+    const rawKey = process.env.ENCRYPTION_KEY;
+
+    if (!rawKey) {
+        logger.warn('[SECURITY] ENCRYPTION_KEY is not set. Using legacy development key; set a 32+ character key before production launch.');
+        return Buffer.from(LEGACY_ENCRYPTION_KEY).slice(0, 32);
+    }
+
+    if (Buffer.byteLength(rawKey) < 32) {
+        logger.warn('[SECURITY] ENCRYPTION_KEY is shorter than 32 bytes. Pad it to at least 32 characters before production launch.');
+    }
+
+    return Buffer.from(rawKey).slice(0, 32);
+};
+
+const ENCRYPTION_KEY = resolveEncryptionKey();
 
 export const encrypt = (text) => {
     if (!text) return null;

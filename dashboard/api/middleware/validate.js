@@ -5,12 +5,12 @@
  */
 export const validate = (schema) => (req, res, next) => {
     try {
-        // 1. LOG BODY BEFORE VALIDATION
-        console.log(`[DEBUG_API] Body for ${req.method} ${req.url}:`, JSON.stringify(req.body, null, 2));
+        if (process.env.LOG_LEVEL === 'debug') {
+            console.log(`[DEBUG_API] Body for ${req.method} ${req.url}:`, JSON.stringify(req.body, null, 2));
+        }
 
         const result = schema.safeParse(req.body);
         if (!result.success) {
-            // 2. LOG FULL ZOD ERROR
             console.error(`[VALIDATION_ERROR] ${req.method} ${req.url}:`, JSON.stringify(result.error?.format() || result.error, null, 2));
             
             const errorDetails = result.error?.errors?.map(err => ({
@@ -18,7 +18,6 @@ export const validate = (schema) => (req, res, next) => {
                 message: err.message
             })) || [];
 
-            // 5. DETAILED FALLBACK RESPONSE
             return res.status(400).json({ 
                 success: false,
                 error: 'Validation failed', 
