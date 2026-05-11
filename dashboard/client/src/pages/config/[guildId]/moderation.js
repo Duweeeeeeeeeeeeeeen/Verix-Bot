@@ -170,7 +170,7 @@ export default function ModerationConfig() {
             {[
                 { id: 'antispam', icon: <Activity size={16} />, label: t('mod.tab_traffic') },
                 { id: 'safety', icon: <Globe size={16} />, label: t('mod.tab_integrity') },
-                { id: 'antiraid', icon: <ShieldEllipsis size={16} />, label: t('mod.tab_raid') },
+                { id: 'antiraid', icon: <ShieldQuestion size={16} />, label: t('mod.tab_raid') },
                 { id: 'punishments', icon: <Gavel size={16} />, label: t('mod.tab_punishments') },
                 { id: 'settings', icon: <EyeOff size={16} />, label: t('mod.tab_whitelist') },
                 { id: 'messages', icon: <Palette size={16} />, label: t('mod.tab_policy') }
@@ -312,7 +312,7 @@ export default function ModerationConfig() {
                 <div className="v-stack animate slide-up" style={{ gap: '32px' }}>
                     <section className="pc-card-v2">
                         <div className="card-header-v2">
-                            <div className="header-icon"><ShieldEllipsis size={18} /></div>
+                            <div className="header-icon"><ShieldQuestion size={18} /></div>
                             <h3 style={{ margin: 0, flex: 1 }}>{t('mod.raid_title')}</h3>
                             <label className="pc-toggle-v2">
                                 <input type="checkbox" checked={!!config.antiRaid?.enabled} onChange={e => updateNested('antiRaid.enabled', e.target.checked)} />
