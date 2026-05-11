@@ -14,6 +14,7 @@ import analyticsRoutes from './routes/analytics.js';
 import privateBotRoutes from './routes/privateBot.js';
 import adminRoutes from './routes/admin.js';
 import logger from '../../src/utils/logger.js';
+import buildHealthStatus from '../../src/utils/healthStatus.js';
 
 // ─── Critical startup guard ─────────────────────────────────────────────────
 if (!process.env.SESSION_SECRET) {
@@ -102,14 +103,7 @@ app.use('/api/admin', adminRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-    const dbState = mongoose.connection.readyState;
-    const stateMap = { 0: 'disconnected', 1: 'connected', 2: 'connecting', 3: 'disconnecting' };
-    res.json({
-        status: dbState === 1 ? 'ok' : 'degraded',
-        uptime: Math.floor(process.uptime()),
-        db: stateMap[dbState] || 'unknown',
-        timestamp: new Date().toISOString()
-    });
+    res.json(buildHealthStatus());
 });
 
 app.get('/', (req, res) => res.json({ success: true, message: 'Dashboard API is running...' }));

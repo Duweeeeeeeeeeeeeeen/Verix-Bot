@@ -8,6 +8,7 @@ import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import logger from '../utils/logger.js';
 import multiBotManager from './multiBotManager.js';
+import buildHealthStatus from '../utils/healthStatus.js';
 
 // Import Routes (Keeping existing paths for now)
 import authRoutes from '../../dashboard/api/routes/auth.js';
@@ -140,15 +141,7 @@ export function startDashboard(client) {
     app.use('/api/private-bot', privateBotRoutes);
 
     app.get('/api/health', (req, res) => {
-        const dbState = mongoose.connection.readyState;
-        const stateMap = { 0: 'disconnected', 1: 'connected', 2: 'connecting', 3: 'disconnecting' };
-        res.json({
-            status: dbState === 1 ? 'ok' : 'degraded',
-            bot: client.user?.tag || 'unknown',
-            uptime: Math.floor(process.uptime()),
-            db: stateMap[dbState] || 'unknown',
-            timestamp: new Date().toISOString()
-        });
+        res.json(buildHealthStatus(client));
     });
 
     // Catch-all 404
