@@ -153,6 +153,7 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
   };
 
   const [premiumTier, setPremiumTier] = useState('none');
+  const isPremium = premiumTier === 'premium' || premiumTier === 'platinum';
 
   useEffect(() => {
     if (guildId) {
