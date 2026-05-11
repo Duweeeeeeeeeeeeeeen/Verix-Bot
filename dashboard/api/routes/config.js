@@ -68,7 +68,62 @@ import { pollConfigSchema, pollCreateSchema } from '../validations/pollSchema.js
 
 
 const router = express.Router();
- 
+
+const hasValue = (value) => {
+    if (Array.isArray(value)) return value.length > 0;
+    if (typeof value === 'string') return value.trim().length > 0;
+    return Boolean(value);
+};
+
+const hasLegacyConfiguration = (configs) => {
+    const {
+        whitelist,
+        tickets,
+        verify,
+        global,
+        welcome,
+        socials,
+        reactionRoles,
+        polls,
+        fivem,
+        support
+    } = configs;
+
+    return Boolean(
+        hasValue(global?.adminRoleIds) ||
+        hasValue(global?.logs?.channelId) ||
+        hasValue(whitelist?.panelChannelId) ||
+        hasValue(whitelist?.categoryOpenId) ||
+        hasValue(whitelist?.staffRoleIds) ||
+        hasValue(whitelist?.logChannelId) ||
+        hasValue(tickets?.panelChannelId) ||
+        hasValue(tickets?.categoryOpenId) ||
+        hasValue(tickets?.staffRoleIds) ||
+        hasValue(tickets?.logChannelId) ||
+        hasValue(verify?.channelId) ||
+        hasValue(verify?.roleId) ||
+        hasValue(verify?.logChannelId) ||
+        welcome?.welcome?.enabled ||
+        welcome?.leave?.enabled ||
+        socials?.platforms && Object.values(socials.platforms).some(platform => hasValue(platform?.accounts) || hasValue(platform?.notificationChannelId)) ||
+        hasValue(reactionRoles?.panels) ||
+        polls?.enabled ||
+        fivem?.enabled ||
+        support?.enabled
+    );
+};
+
+const ensureLegacySetupCompleted = async (guildData, configs) => {
+    if (!guildData || guildData.setupCompleted === true || !hasLegacyConfiguration(configs)) {
+        return guildData;
+    }
+
+    guildData.setupCompleted = true;
+    guildData.markModified?.('setupCompleted');
+    await guildData.save();
+    return guildData;
+};
+
 // MiddleWare to resolve the correct Discord Client (Main or Private Bot)
 router.use('/:guildId', (req, res, next) => {
     const { guildId } = req.params;
@@ -104,6 +159,19 @@ router.get('/:guildId', adminCheck, async (req, res) => {
             ReactionRoleConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }),
             PollConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true })
         ]);
+
+        guildData = await ensureLegacySetupCompleted(guildData, {
+            whitelist: wlConfig,
+            tickets: tkConfig,
+            verify: verifyConfig,
+            global: globalConfig,
+            welcome: wlcmConfig,
+            socials: socConfig,
+            reactionRoles: rrConfig,
+            polls: pollConfig,
+            fivem: fmConfig,
+            support: suppConfig
+        });
 
         // Fetch roles and channels from Discord Client with fallback
         let client = req.discordClient;
