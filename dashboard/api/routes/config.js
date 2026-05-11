@@ -1406,6 +1406,9 @@ router.post('/:guildId/socials', adminCheck, validate(socialSchema), async (req,
                                 isLive: oldAcc.isLive,
                                 lastPostId: oldAcc.lastPostId,
                                 lastCheckAt: oldAcc.lastCheckAt,
+                                bridgeErrorCount: oldAcc.bridgeErrorCount,
+                                lastBridgeErrorAt: oldAcc.lastBridgeErrorAt,
+                                bridgeBackoffUntil: oldAcc.bridgeBackoffUntil,
                                 discordUserId: newAcc.discordUserId === undefined ? oldAcc.discordUserId : newAcc.discordUserId
                             };
                         }

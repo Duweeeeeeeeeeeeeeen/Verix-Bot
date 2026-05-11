@@ -13,6 +13,19 @@ import { t } from '../../locales/t.js';
 import axios from 'axios';
 
 const rssParser = new Parser();
+const BRIDGE_ERROR_LOG_INTERVAL_MS = 60 * 60 * 1000;
+const BRIDGE_ERROR_BASE_BACKOFF_MS = 15 * 60 * 1000;
+const BRIDGE_ERROR_MAX_BACKOFF_MS = 6 * 60 * 60 * 1000;
+const BRIDGE_ERROR_KEYWORDS = [
+    '404',
+    'bridge error',
+    'bridge returned error',
+    'httpexception',
+    'not found',
+    'rate limit',
+    'too many requests',
+    'details:'
+];
 
 export class SocialManager {
     constructor(client) {
@@ -214,7 +227,7 @@ export class SocialManager {
         let changed = false;
         try {
             for (const account of platformConfig.accounts) {
-                let username = account.username || '';
+                let username = (account.username || '').trim();
                 // Extract username if a full URL was provided
                 if (username.includes('.com/')) {
                     username = username.split('/').filter(p => p && !p.includes('.com')).pop().split('?')[0];
@@ -225,26 +238,35 @@ export class SocialManager {
                     username = username.substring(1);
                 }
 
+                if (!username) continue;
+
+                if (this.isBridgeBackoffActive(account)) {
+                    continue;
+                }
+
                 const feedUrl = urlTemplate.replace('{username}', username);
 
                 try {
                     const feed = await rssParser.parseURL(feedUrl);
                     if (feed && feed.items && feed.items.length > 0) {
                         const latestItem = feed.items[0];
+
+                        if (this.isBridgeErrorItem(latestItem)) {
+                            if (this.recordBridgeError(account, platformName, username, latestItem.title)) {
+                                changed = true;
+                            }
+                            continue;
+                        }
+
+                        if (this.clearBridgeErrorState(account)) {
+                            changed = true;
+                        }
                         
                         // ID comparison to avoid duplicates
                         const itemId = latestItem.id || latestItem.guid || latestItem.link;
 
                         if (itemId !== account.lastPostId) {
                             // NEW POST detected
-                            // 1. Filter out RSS-Bridge errors (Twitter/Instagram blocks)
-                            const title = latestItem.title || '';
-                            const errorKeywords = ['404', 'Bridge Error', 'HttpException', 'Not Found', 'Rate limit', 'Details:'];
-                            if (errorKeywords.some(kw => title.includes(kw))) {
-                                logger.debug(`[Socials/${platformName}] Skipping item due to potential error: ${title}`);
-                                continue;
-                            }
-
                             // 2. Extract thumbnail more aggressively
                             let thumbnail = latestItem.enclosure?.url || latestItem.thumbnail || '';
                             
@@ -311,13 +333,59 @@ export class SocialManager {
                         }
                     }
                 } catch (feedErr) {
-                    logger.debug(`[Socials/${platformName}] Could not fetch feed for ${username} (${feedUrl}): ${feedErr.message}`);
+                    if (this.recordBridgeError(account, platformName, username, feedErr.message)) {
+                        changed = true;
+                    }
                 }
             }
         } catch (error) {
             logger.error(`[Socials/${platformName}] Error checking guild ${guildId}:`, error);
         }
         return changed;
+    }
+
+    isBridgeBackoffActive(account) {
+        const until = account.bridgeBackoffUntil ? new Date(account.bridgeBackoffUntil).getTime() : 0;
+        return Number.isFinite(until) && until > Date.now();
+    }
+
+    isBridgeErrorItem(item) {
+        const haystack = [
+            item?.title,
+            item?.contentSnippet,
+            item?.content,
+            item?.link
+        ].filter(Boolean).join(' ').toLowerCase();
+
+        return BRIDGE_ERROR_KEYWORDS.some(keyword => haystack.includes(keyword));
+    }
+
+    recordBridgeError(account, platformName, username, reason = 'Unknown bridge error') {
+        const now = Date.now();
+        const previousErrorAt = account.lastBridgeErrorAt ? new Date(account.lastBridgeErrorAt).getTime() : 0;
+        const errorCount = Math.min((account.bridgeErrorCount || 0) + 1, 12);
+        const backoffMs = Math.min(BRIDGE_ERROR_BASE_BACKOFF_MS * 2 ** (errorCount - 1), BRIDGE_ERROR_MAX_BACKOFF_MS);
+
+        account.bridgeErrorCount = errorCount;
+        account.lastBridgeErrorAt = new Date(now);
+        account.bridgeBackoffUntil = new Date(now + backoffMs);
+
+        if (!previousErrorAt || now - previousErrorAt >= BRIDGE_ERROR_LOG_INTERVAL_MS) {
+            logger.warn(`[Socials/${platformName}] RSS bridge unavailable for ${username}; retrying in ${Math.round(backoffMs / 60000)} minutes. Reason: ${reason}`);
+        }
+
+        return true;
+    }
+
+    clearBridgeErrorState(account) {
+        if (!account.bridgeErrorCount && !account.lastBridgeErrorAt && !account.bridgeBackoffUntil) {
+            return false;
+        }
+
+        account.bridgeErrorCount = 0;
+        account.lastBridgeErrorAt = null;
+        account.bridgeBackoffUntil = null;
+        return true;
     }
 
     async handleSocialPost(guildId, platformConfig, account, postData, platform) {

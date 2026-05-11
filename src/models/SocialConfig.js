@@ -20,7 +20,10 @@ const socialPlatformSchema = new mongoose.Schema({
         discordUserId: { type: String, default: null }, // Linked Discord user (mostly used for Twitch roles)
         lastPostId: { type: String, default: null }, // Last video/stream/post ID to avoid duplicates
         isLive: { type: Boolean, default: false }, // Specific to Twitch
-        lastCheckAt: { type: Date, default: null }
+        lastCheckAt: { type: Date, default: null },
+        bridgeErrorCount: { type: Number, default: 0 },
+        lastBridgeErrorAt: { type: Date, default: null },
+        bridgeBackoffUntil: { type: Date, default: null }
     }],
     webhookToken: { type: String, default: () => Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) }
 });
