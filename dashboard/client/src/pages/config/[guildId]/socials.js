@@ -128,6 +128,42 @@ export default function SocialsConfig() {
   const currentPlatformConfig = config.platforms[activePlatform];
   const pData = PLATFORMS.find(p => p.id === activePlatform);
   const isLocked = !guildData?.isPremium && activePlatform !== 'twitch' && !['premium', 'platinum'].includes(guildData?.premiumTier);
+  const getAccountStatus = (account) => {
+    const backoffUntil = account.bridgeBackoffUntil ? new Date(account.bridgeBackoffUntil) : null;
+    const isBackoff = backoffUntil && backoffUntil.getTime() > Date.now();
+
+    if (isBackoff) {
+      return {
+        tone: 'warn',
+        label: t('socials.status_retrying'),
+        detail: `${t('socials.status_next_retry')} ${backoffUntil.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+      };
+    }
+
+    if (account.bridgeErrorCount > 0) {
+      return {
+        tone: 'warn',
+        label: t('socials.status_unstable'),
+        detail: t('socials.status_unstable_desc')
+      };
+    }
+
+    if (account.lastPostId || account.isLive || account.lastCheckAt) {
+      return {
+        tone: 'ok',
+        label: t('socials.status_monitoring'),
+        detail: account.lastCheckAt
+          ? `${t('socials.status_last_check')} ${new Date(account.lastCheckAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+          : t('socials.status_ready_desc')
+      };
+    }
+
+    return {
+      tone: 'idle',
+      label: t('socials.status_pending'),
+      detail: t('socials.status_pending_desc')
+    };
+  };
 
   return (
     <div className="pc-premium-wrapper fade-in">
@@ -264,7 +300,9 @@ export default function SocialsConfig() {
                                                  </div>
                                                  <div className="card-body-v2">
                                                      <div className="v-stack" style={{ gap: '16px' }}>
-                                                         {(currentPlatformConfig.accounts || []).map((acc, i) => (
+                                                         {(currentPlatformConfig.accounts || []).map((acc, i) => {
+                                                            const accountStatus = getAccountStatus(acc);
+                                                            return (
                                                              <div key={i} className="pc-sub-card-v2 animate slide-up">
                                                                  <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
                                                                     <div className="v-stack" style={{ flex: 1, gap: '8px' }}>
@@ -282,6 +320,14 @@ export default function SocialsConfig() {
                                                                         <Trash2 size={20} />
                                                                     </button>
                                                                  </div>
+
+                                                                 <div className={`social-account-status-v2 ${accountStatus.tone}`}>
+                                                                    <div className="status-main-v2">
+                                                                        <span className="status-dot-inline-v2"></span>
+                                                                        <strong>{accountStatus.label}</strong>
+                                                                    </div>
+                                                                    <span>{accountStatus.detail}</span>
+                                                                 </div>
                                                                  
                                                                  {activePlatform === 'twitch' && (
                                                                      <div className="v-stack animate slide-up" style={{ gap: '8px', paddingTop: '16px', borderTop: '1px solid var(--border)', marginTop: '16px' }}>
@@ -290,7 +336,8 @@ export default function SocialsConfig() {
                                                                      </div>
                                                                  )}
                                                              </div>
-                                                         ))}
+                                                            );
+                                                         })}
                                                          <button className="pc-btn-add-account-v2" onClick={addAccount}>
                                                              <Plus size={20} /> <span>{t('socials.connect_new')} {pData.name}</span>
                                                          </button>
@@ -420,6 +467,13 @@ export default function SocialsConfig() {
             
             .pc-btn-icon-danger-v2 { width: 40px; height: 40px; border-radius: 12px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
             .pc-btn-icon-danger-v2:hover { background: #ef4444; color: #fff; }
+
+            .social-account-status-v2 { margin-top: 14px; padding: 12px 14px; border-radius: 14px; display: flex; justify-content: space-between; gap: 12px; align-items: center; font-size: 0.72rem; font-weight: 700; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-muted); }
+            .social-account-status-v2.ok { border-color: rgba(16, 185, 129, 0.24); background: rgba(16, 185, 129, 0.08); color: #10b981; }
+            .social-account-status-v2.warn { border-color: rgba(245, 158, 11, 0.28); background: rgba(245, 158, 11, 0.1); color: #d97706; }
+            .social-account-status-v2.idle { color: var(--text-muted); }
+            .status-main-v2 { display: flex; align-items: center; gap: 8px; color: inherit; }
+            .status-dot-inline-v2 { width: 7px; height: 7px; border-radius: 999px; background: currentColor; flex-shrink: 0; }
 
             .pc-btn-add-account-v2 { width: 100%; padding: 20px; border: 2px dashed var(--border); background: transparent; border-radius: 20px; color: var(--text-muted); font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px; transition: 0.2s; }
             .pc-btn-add-account-v2:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-glow); }
