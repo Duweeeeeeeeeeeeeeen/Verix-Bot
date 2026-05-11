@@ -22,7 +22,7 @@ module.exports = {
     {
       name: 'verix-dashboard-client',
       cwd: '/root/Verix-Bot/dashboard/client',
-      script: 'node_modules/next/dist/bin/next',
+      script: './node_modules/next/dist/bin/next',
       args: 'start -p 3001',
       interpreter: 'node',
       exec_mode: 'fork',
