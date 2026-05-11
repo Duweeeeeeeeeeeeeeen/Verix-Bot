@@ -8,6 +8,7 @@ import logger from '../../../src/utils/logger.js';
 import SystemBroadcast from '../../../src/models/SystemBroadcast.js';
 import Guild from '../../../src/models/Guild.js';
 import { invalidateCache } from '../../../src/core/configCache.js';
+import buildHealthStatus from '../../../src/utils/healthStatus.js';
 
 const router = express.Router();
 
@@ -118,6 +119,10 @@ router.get('/status', ownerCheck, async (req, res) => {
             ping: client.ws.ping
         }
     });
+});
+
+router.get('/health', ownerCheck, async (req, res) => {
+    res.json({ success: true, data: buildHealthStatus(req.discordClient) });
 });
 
 /**

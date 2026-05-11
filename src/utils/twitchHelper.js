@@ -3,6 +3,7 @@ import logger from './logger.js';
 
 let accessToken = null;
 let tokenExpires = 0;
+const TWITCH_TIMEOUT_MS = 8000;
 
 /**
  * Fetches the Twitch App Access Token using Client ID and Secret.
@@ -27,7 +28,8 @@ async function getAccessToken() {
                 client_id: clientId,
                 client_secret: clientSecret,
                 grant_type: 'client_credentials'
-            }
+            },
+            timeout: TWITCH_TIMEOUT_MS
         });
 
         accessToken = response.data.access_token;
@@ -78,7 +80,8 @@ export async function getStreams(usernames) {
             },
             params: {
                 user_login: cleanNames
-            }
+            },
+            timeout: TWITCH_TIMEOUT_MS
         });
 
         if (!streamRes.data || !streamRes.data.data) {
@@ -112,7 +115,8 @@ export async function getUsers(usernames) {
             },
             params: {
                 login: cleanNames
-            }
+            },
+            timeout: TWITCH_TIMEOUT_MS
         });
 
         return userRes.data?.data || [];

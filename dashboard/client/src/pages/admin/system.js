@@ -12,6 +12,7 @@ export default function SystemUpdates() {
     const { user, loading: authLoading } = useAuth();
     const { t } = useT();
     const [stats, setStats] = useState(null);
+    const [health, setHealth] = useState(null);
     const [loading, setLoading] = useState(false);
     const [sending, setSending] = useState(false);
     const [history, setHistory] = useState([]);
@@ -43,6 +44,7 @@ export default function SystemUpdates() {
     useEffect(() => {
         if (isOwner) {
             fetchStats();
+            fetchHealth();
             fetchHistory();
         }
     }, [isOwner]);
@@ -87,6 +89,16 @@ export default function SystemUpdates() {
             console.error('Failed to fetch stats');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchHealth = async () => {
+        try {
+            const res = await fetch('/api/system/health');
+            const data = await res.json();
+            if (data.success) setHealth(data.data);
+        } catch (err) {
+            console.error('Failed to fetch health');
         }
     };
 
@@ -395,6 +407,40 @@ export default function SystemUpdates() {
                                         <p className="loading-stats">{t('common.loading')}</p>
                                     )}
                                     <button onClick={fetchStats} className="btn-refresh">{t('system.refresh_stats')}</button>
+                                </section>
+
+                                <section className="glass-card status-card">
+                                    <div className="card-header">
+                                        <Activity size={20} />
+                                        <h2>Runtime Health</h2>
+                                    </div>
+                                    {health ? (
+                                        <div className="stats-list">
+                                            <div className="stat-item">
+                                                <div className="stat-label"><ShieldAlert size={16} /><span>Status</span></div>
+                                                <strong style={{ color: health.status === 'ok' ? '#10b981' : '#f59e0b' }}>{health.status}</strong>
+                                            </div>
+                                            <div className="stat-item">
+                                                <div className="stat-label"><Terminal size={16} /><span>Commit</span></div>
+                                                <strong>{health.commit}</strong>
+                                            </div>
+                                            <div className="stat-item">
+                                                <div className="stat-label"><BarChart3 size={16} /><span>Database</span></div>
+                                                <strong>{health.database?.status}</strong>
+                                            </div>
+                                            <div className="stat-item">
+                                                <div className="stat-label"><Zap size={16} /><span>Memory</span></div>
+                                                <strong>{health.process?.memoryMb} MB</strong>
+                                            </div>
+                                            <div className="stat-item">
+                                                <div className="stat-label"><Crown size={16} /><span>Discord</span></div>
+                                                <strong>{health.discord?.ready ? 'ready' : 'offline'}</strong>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <p className="loading-stats">{t('common.loading')}</p>
+                                    )}
+                                    <button onClick={() => { fetchStats(); fetchHealth(); }} className="btn-refresh">{t('system.refresh_stats')}</button>
                                 </section>
 
                                 {/* Premium Management */}

@@ -180,9 +180,13 @@ export class FiveMManager {
     }
 
     async fetchFromCfx(cfxId) {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 8000);
+
         try {
             const res = await fetch(`https://servers-frontend.fivem.net/api/servers/single/${cfxId}`, {
-                headers: { 'User-Agent': 'Verix-Bot/1.0' }
+                headers: { 'User-Agent': 'Verix-Bot/1.0' },
+                signal: controller.signal
             }).catch(() => null);
 
             if (!res || !res.ok) return { online: false, players: 0, maxPlayers: 0, server: '' };
@@ -200,6 +204,8 @@ export class FiveMManager {
         } catch (error) {
             logger.warn(`[FiveM] Cfx API Error for ${cfxId}: ${error.message}`);
             return { online: false, players: 0, maxPlayers: 0, server: '' };
+        } finally {
+            clearTimeout(timeout);
         }
     }
 
