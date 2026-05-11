@@ -19,6 +19,13 @@ class PollManager {
         this.interval = setInterval(() => this.checkPolls(), 60000); // Every minute
     }
 
+    stop() {
+        if (this.interval) {
+            clearInterval(this.interval);
+            this.interval = null;
+        }
+    }
+
     async checkPolls() {
         try {
             const now = new Date();

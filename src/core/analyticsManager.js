@@ -13,6 +13,13 @@ export class AnalyticsManager {
         logger.info(`[AnalyticsManager] Started collection every ${intervalMs / 60000} minutes.`);
     }
 
+    stop() {
+        if (this.interval) {
+            clearInterval(this.interval);
+            this.interval = null;
+        }
+    }
+
     async collect() {
         try {
             const guilds = this.client.guilds.cache;

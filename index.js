@@ -18,6 +18,7 @@ import multiBotManager from './src/core/multiBotManager.js';
 import ReactionRoleManager from './src/modules/reactionRoles/manager.js';
 import PollManager from './src/modules/polls/manager.js';
 import MonitoringService from './src/services/monitoringService.js';
+import installRuntimeGuards from './src/utils/runtimeGuards.js';
 
 // Initialize Discord Client
 const client = new Client({
@@ -31,6 +32,8 @@ const client = new Client({
     ],
     partials: [Partials.Message, Partials.Channel, Partials.Reaction]
 });
+
+installRuntimeGuards(client);
 
 // Collections
 client.commands = new Collection();
@@ -124,9 +127,8 @@ if (global.botInitialized) {
         if (client.automationManager) client.automationManager.handleMessage(message);
     });
 
-    init();
+    init().catch((error) => {
+        logger.error('Fatal initialization error:', error);
+        process.exit(1);
+    });
 }
-
-process.on('unhandledRejection', (error) => {
-    logger.error('Unhandled Rejection:', error);
-});

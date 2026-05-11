@@ -45,6 +45,13 @@ export class SocialManager {
         setTimeout(() => this.checkSocials(), 10000);
     }
 
+    stop() {
+        if (this.interval) {
+            clearInterval(this.interval);
+            this.interval = null;
+        }
+    }
+
     async checkSocials() {
         if (mongoose.connection.readyState !== 1) {
             logger.warn('[Socials] Skipping checkSocials: Database not connected.');

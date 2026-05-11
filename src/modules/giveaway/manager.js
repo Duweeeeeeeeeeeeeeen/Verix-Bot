@@ -20,6 +20,13 @@ class GiveawayManager {
         this.interval = setInterval(() => this.checkGiveaways(), 60000); // Every minute
     }
 
+    stop() {
+        if (this.interval) {
+            clearInterval(this.interval);
+            this.interval = null;
+        }
+    }
+
     async checkGiveaways() {
         try {
             const now = new Date();

@@ -24,6 +24,13 @@ export class FiveMManager {
         this.checkServers();
     }
 
+    stop() {
+        if (this.interval) {
+            clearInterval(this.interval);
+            this.interval = null;
+        }
+    }
+
     async checkServers() {
         if (mongoose.connection.readyState !== 1) return;
         try {
