@@ -12,44 +12,48 @@ export default {
         logger.success(`Logged in as ${client.user.tag}!`);
         
         // Register slash commands
-        const rest = new REST({ version: '10' }).setToken(config.token);
-        const commands = Array.from(client.commands.values()).map(c => c.data.toJSON());
+        if (config.registerCommandsOnStart) {
+            const rest = new REST({ version: '10' }).setToken(config.token);
+            const commands = Array.from(client.commands.values()).map(c => c.data.toJSON());
 
-        try {
-            logger.info(`Started refreshing application (/) commands for Client: ${config.clientId}${config.devMode ? ` in Guild: ${config.guildId}` : ' (Global)'}`);
+            try {
+                logger.info(`Started refreshing application (/) commands for Client: ${config.clientId}${config.devMode ? ` in Guild: ${config.guildId}` : ' (Global)'}`);
 
-            if (config.devMode && config.guildId) {
-                try {
-                    await rest.put(
-                        Routes.applicationGuildCommands(config.clientId, config.guildId),
-                        { body: commands },
-                    );
-                    logger.success(`Successfully reloaded ${commands.length} commands for guild ${config.guildId}`);
-                } catch (guildError) {
-                    if (guildError.code === 50001) {
-                        logger.warn('Guild registration failed with Missing Access. Trying global fallback...');
+                if (config.devMode && config.guildId) {
+                    try {
                         await rest.put(
-                            Routes.applicationCommands(config.clientId),
+                            Routes.applicationGuildCommands(config.clientId, config.guildId),
                             { body: commands },
                         );
-                        logger.success(`Successfully reloaded ${commands.length} commands GLOBALLY (Fallback).`);
-                    } else {
-                        throw guildError;
+                        logger.success(`Successfully reloaded ${commands.length} commands for guild ${config.guildId}`);
+                    } catch (guildError) {
+                        if (guildError.code === 50001) {
+                            logger.warn('Guild registration failed with Missing Access. Trying global fallback...');
+                            await rest.put(
+                                Routes.applicationCommands(config.clientId),
+                                { body: commands },
+                            );
+                            logger.success(`Successfully reloaded ${commands.length} commands GLOBALLY (Fallback).`);
+                        } else {
+                            throw guildError;
+                        }
                     }
+                } else {
+                    // Global registration
+                    await rest.put(
+                        Routes.applicationCommands(config.clientId),
+                        { body: commands },
+                    );
+                    logger.success(`Successfully reloaded ${commands.length} application (/) commands globally.`);
                 }
-            } else {
-                // Global registration
-                await rest.put(
-                    Routes.applicationCommands(config.clientId),
-                    { body: commands },
-                );
-                logger.success(`Successfully reloaded ${commands.length} application (/) commands globally.`);
+            } catch (error) {
+                logger.error('Failed to register application commands:', error);
+                if (error.code === 50001) {
+                    logger.error('CRITICAL: The bot still lacks "applications.commands" scope. Please ensure you used the correct invite link.');
+                }
             }
-        } catch (error) {
-            logger.error('Failed to register application commands:', error);
-            if (error.code === 50001) {
-                logger.error('CRITICAL: The bot still lacks "applications.commands" scope. Please ensure you used the correct invite link.');
-            }
+        } else {
+            logger.info('Skipping application command registration on startup.');
         }
 
         // Recover active whitelist sessions

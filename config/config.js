@@ -8,6 +8,9 @@ const config = {
     
     // Developer settings
     devMode: String(process.env.DEV_MODE || '').toLowerCase() === 'true',
+    registerCommandsOnStart: process.env.REGISTER_COMMANDS_ON_START
+        ? String(process.env.REGISTER_COMMANDS_ON_START).toLowerCase() === 'true'
+        : process.env.NODE_ENV !== 'production',
     
     // Customizable colors for embeds
     colors: {
