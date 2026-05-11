@@ -33,9 +33,10 @@ export function AuthProvider({ children }) {
     localStorage.setItem('lastGuildId', id);
   };
 
-  const fetchUser = async () => {
+  const fetchUser = async (refresh = false) => {
     try {
-      const res = await fetch(`${BASE_API_URL}/api/auth/user`, {
+      const endpoint = refresh ? '/api/auth/user?refresh=true' : '/api/auth/user';
+      const res = await fetch(`${BASE_API_URL}${endpoint}`, {
         headers: { 'Accept': 'application/json' },
         credentials: 'include'
       });
@@ -55,6 +56,8 @@ export function AuthProvider({ children }) {
     }
   };
 
+  const refreshGuilds = () => fetchUser(true);
+
   useEffect(() => {
     fetchUser();
   }, []);
@@ -70,7 +73,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, currentGuildId, updateGuildId, fetchUser }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, currentGuildId, updateGuildId, fetchUser, refreshGuilds }}>
       {children}
     </AuthContext.Provider>
   );

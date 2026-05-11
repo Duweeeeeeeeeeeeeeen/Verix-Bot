@@ -26,7 +26,7 @@ import { useT } from '../../contexts/LanguageContext';
 
 export default function Selector() {
   const { t } = useT();
-  const { user, loading, logout, fetchUser } = useAuth();
+  const { user, loading, logout, fetchUser, refreshGuilds } = useAuth();
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState('all'); // all, active, missing
@@ -51,7 +51,7 @@ export default function Selector() {
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
-        await fetchUser();
+        await refreshGuilds();
         window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Lista server aggiornata!', type: 'success' } }));
     } catch (e) {
         console.error('Refresh failed:', e);
@@ -65,7 +65,7 @@ export default function Selector() {
 
   // Filter logic
   const filteredGuilds = user.guilds
-    .filter(g => (g.permissions & 0x8)) // Must be Admin
+    .filter(g => (g.permissions & 0x8) || (g.permissions & 0x20)) // Admin or Manage Server
     .filter(g => {
       if (filter === 'active') return g.botInGuild;
       if (filter === 'missing') return !g.botInGuild;

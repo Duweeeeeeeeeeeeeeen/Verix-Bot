@@ -19,10 +19,26 @@ router.get('/callback', passport.authenticate('discord', {
 router.get('/user', async (req, res) => {
     if (req.isAuthenticated()) {
         const client = req.discordClient;
-        
+        const { refresh } = req.query;
+
         if (!client) {
             console.error('[Dashboard_API] Discord client missing in request context!');
             return res.status(500).json({ success: false, error: 'Sistema Discord non inizializzato.' });
+        }
+
+        if (refresh === 'true' && req.user.accessToken) {
+            try {
+                console.log(`[Dashboard_API] Refreshing guilds for user ${req.user.username}...`);
+                const response = await fetch('https://discord.com/api/users/@me/guilds', {
+                    headers: { Authorization: `Bearer ${req.user.accessToken}` }
+                });
+
+                if (response.ok) {
+                    req.user.guilds = await response.json();
+                }
+            } catch (err) {
+                console.error('[Dashboard_API] Failed to refresh guilds:', err);
+            }
         }
 
         const inviteUrl = `https://discord.com/api/oauth2/authorize?client_id=${process.env.DISCORD_CLIENT_ID}&permissions=8&scope=bot%20applications.commands`;

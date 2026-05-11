@@ -58,7 +58,7 @@ const GuideSidebar = dynamic(() => import('./GuideSidebar'), {
 });
 
 export default function Layout({ children, guildId: propGuildId, hideGuide = false, isNavigating = false }) {
-  const { user, logout, currentGuildId, updateGuildId } = useAuth();
+  const { user, logout, currentGuildId, updateGuildId, fetchUser } = useAuth();
   const { t, language, setLanguage } = useT();
   const router = useRouter();
   const { theme, toggleTheme } = useTheme();
@@ -263,6 +263,7 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
         });
         const data = await res.json();
         if (data.success) {
+            await fetchUser(true);
             window.dispatchEvent(new CustomEvent('show-toast', { 
                 detail: { message: t('management.bot_left_success') || 'Il bot ha lasciato il server!', type: 'success' } 
             }));

@@ -40,6 +40,7 @@ passport.use(new DiscordStrategy({
     callbackURL: process.env.DASHBOARD_CALLBACK_URL,
     scope: ['identify', 'guilds']
 }, (accessToken, refreshToken, profile, done) => {
+    profile.accessToken = accessToken;
     process.nextTick(() => done(null, profile));
 }));
 
