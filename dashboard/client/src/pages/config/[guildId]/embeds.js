@@ -7,7 +7,7 @@ import {
   Save, Palette, Eye, Send, Plus, Trash2, FolderOpen, Zap, Info, Layers, Sparkles, 
   Smartphone, Monitor, Clock, Calendar, ChevronDown, Box, MessageSquare, Lock, Crown, 
   RefreshCw, ChevronLeft, ArrowRight, MousePointer2, LayoutTemplate, Share2, Rocket,
-  Target
+  Target, RotateCcw
 } from 'lucide-react';
 import { useT } from '../../../contexts/LanguageContext';
 import Head from 'next/head';
@@ -29,8 +29,8 @@ export default function EmbedBuilder() {
 
   // Interaction State
   const [selectedTemplateId, setSelectedTemplateId] = useState('new');
-  const [currentEmbed, setCurrentEmbed] = useState({ title: 'Nuovo Progetto', description: '...', color: '#10b981', fields: [] });
-  const [customName, setCustomName] = useState('Nuovo Progetto');
+  const [currentEmbed, setCurrentEmbed] = useState({ title: t('embeds.new_project_title'), description: '...', color: '#10b981', fields: [] });
+  const [customName, setCustomName] = useState(t('embeds.new_project_title'));
   const [selectedChannel, setSelectedChannel] = useState('');
 
   // UI State
@@ -61,7 +61,7 @@ export default function EmbedBuilder() {
         setGuildData(guildRes.data || guildRes);
       }
       setCustomTemplates(Array.isArray(templatesData) ? templatesData : []);
-      setChannels(Array.isArray(channelsData) ? channelsData : []);
+      setChannels((Array.isArray(channelsData) ? channelsData : []).filter(c => c.type === 0 || c.type === 5));
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
@@ -82,8 +82,8 @@ export default function EmbedBuilder() {
     setSelectedTemplateId(val);
 
     if (val === 'new') {
-      setCurrentEmbed({ title: 'Nuovo Progetto', description: '...', color: '#10b981', fields: [] });
-      setCustomName('Nuovo Progetto');
+      setCurrentEmbed({ title: t('embeds.new_project_title'), description: '...', color: '#10b981', fields: [] });
+      setCustomName(t('embeds.new_project_title'));
     } else {
       const template = customTemplates.find(t => t._id === val);
       if (template) {
@@ -97,7 +97,7 @@ export default function EmbedBuilder() {
     const isNew = selectedTemplateId === 'new';
     
     if (isNew && !guildData?.isPremium && customTemplates.length >= 3) {
-      showToast("Limite template raggiunto per utenti base", 'error');
+      showToast(t('embeds.toast_limit'), 'error');
       router.push(`/config/${guildId}/premium`);
       return;
     }
@@ -121,17 +121,24 @@ export default function EmbedBuilder() {
         setCustomTemplates(customTemplates.map(t => t._id === saved._id ? saved : t));
       }
 
-      showToast("Progetto archiviato con successo!");
+      showToast(t('embeds.toast_saved'));
     } catch (error) {
-        showToast("Errore durante l'archiviazione.", 'error');
+      showToast(t('embeds.toast_error'), 'error');
     } finally {
       setSaving(false);
       window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
     }
   };
 
+  const handleReset = () => {
+    if (!confirm(t('common.reset_confirm'))) return;
+    setCurrentEmbed({ title: t('embeds.new_project_title'), description: '...', color: '#10b981', fields: [] });
+    setCustomName(t('embeds.new_project_title'));
+    setSelectedTemplateId('new');
+  };
+
   const handleSend = async () => {
-    if (!selectedChannel) return showToast("Seleziona un canale di destinazione", 'error');
+    if (!selectedChannel) return showToast(t('embeds.toast_select_channel'), 'error');
     setSending(true);
     window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
     try {
@@ -153,9 +160,9 @@ export default function EmbedBuilder() {
         method: 'POST',
         body: JSON.stringify(payload)
       });
-      showToast(res.message || "Messaggio inviato correttamente!");
+      showToast(res.message || t('embeds.toast_sent'));
     } catch (error) {
-        showToast("Errore durante l'invio.", 'error');
+      showToast(t('embeds.toast_send_error'), 'error');
     } finally {
       setSending(false);
       window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
@@ -179,10 +186,10 @@ export default function EmbedBuilder() {
                     <LayoutTemplate size={28} />
                 </div>
                 <div className="pc-title-row">
-                    <h1>Embed Studio Pro</h1>
+                    <h1>{t('embeds.title_pro')}</h1>
                     <div className={`pc-status-tag-v2 ${isPremium ? 'on' : 'off'}`}>
                         <div className="status-dot-v2"></div>
-                        {isPremium ? 'MOTORE GRAFICO PREMIUM' : 'DESIGNER STANDARD'}
+                        {isPremium ? t('embeds.premium_engine') : t('embeds.standard_engine')}
                     </div>
                 </div>
             </div>
@@ -194,141 +201,143 @@ export default function EmbedBuilder() {
                         options={channels.filter(c => c.type === 0 || c.type === 5)} 
                         value={selectedChannel} 
                         onChange={setSelectedChannel} 
-                        placeholder="Canale di Trasmissione" 
+                        placeholder={t('embeds.target_channel_placeholder')} 
                     />
                 </div>
+                <button className="pc-btn-outline-v2" onClick={handleReset} title={t('common.reset_to_default')}>
+                    <RotateCcw size={18} />
+                </button>
                 <button className="pc-btn-primary" onClick={handleSend} disabled={sending || !selectedChannel}>
                     <Send size={18} className={sending ? 'spin' : ''} />
-                    <span>{sending ? 'In Trasmissione...' : 'Lancia Broadcast'}</span>
+                    <span>{sending ? t('embeds.transmitting') : t('embeds.transmit_btn')}</span>
                 </button>
             </div>
         </header>
 
         <div className="pc-content-v2">
-            <div className="pc-studio-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '32px' }}>
-                <main className="v-stack" style={{ gap: '32px' }}>
-                    <section className="pc-card-v2 animate slide-up">
-                        <div className="card-header-v2">
-                            <div className="header-icon" style={{ background: '#ecfdf5', color: '#10b981' }}><FolderOpen size={18} /></div>
-                            <div className="v-stack" style={{ flex: 1 }}>
-                                <h3 style={{ margin: 0 }}>Libreria Progetti</h3>
-                                <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 650 }}>Gestisci i tuoi template salvati e carica vecchi progetti.</p>
-                            </div>
+            <div className="v-stack" style={{ gap: '32px' }}>
+                {/* Top Section: Library & Actions */}
+                <section className="pc-card-v2 animate slide-up">
+                    <div className="card-header-v2">
+                        <div className="header-icon" style={{ background: '#ecfdf5', color: '#10b981' }}><FolderOpen size={18} /></div>
+                        <div className="v-stack" style={{ flex: 1 }}>
+                            <h3 style={{ margin: 0 }}>{t('embeds.library_title')}</h3>
+                            <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 650 }}>{t('embeds.library_desc')}</p>
                         </div>
-                        <div className="card-body-v2">
-                            <div className="pc-library-controls-v2" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 0.5fr', gap: '20px' }}>
-                                <div className="pc-input-group-v2">
-                                    <label>Origine Template</label>
-                                    <CustomSelect 
-                                        options={[
-                                            { value: 'new', label: '+ Crea Nuovo Progetto' },
-                                            ...customTemplates.map(t => ({ value: t._id, label: t.name }))
-                                        ]} 
-                                        value={selectedTemplateId} 
-                                        onChange={handleTemplateChange} 
-                                    />
-                                </div>
-                                <div className="pc-input-group-v2">
-                                    <label>Nome Identificativo</label>
-                                    <input className="pc-input-modern-v2" value={customName} onChange={e => setCustomName(e.target.value)} placeholder="Es: Regolamento Server..." />
-                                </div>
-                                <div className="pc-input-group-v2" style={{ justifyContent: 'flex-end' }}>
-                                    <button className="pc-btn-save-v2" onClick={handleSave} disabled={saving}>
-                                        <Save size={18} />
-                                        <span>{saving ? '...' : 'Archivia'}</span>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section className="pc-card-v2 animate slide-up" style={{ padding: 0, animationDelay: '0.1s' }}>
-                        <div style={{ background: 'var(--bg-badge)', padding: '24px 32px', borderBottom: '1.5px solid var(--border)', display: 'flex', alignItems: 'center', gap: '16px', borderTopLeftRadius: '32px', borderTopRightRadius: '32px' }}>
-                            <div className="header-icon" style={{ background: 'white', color: '#10b981', width: '36px', height: '36px' }}><Palette size={16} /></div>
-                            <h4 style={{ margin: 0, fontFamily: 'Inter', fontWeight: 700, color: 'var(--text-heading)' }}>Designer Visuale</h4>
-                        </div>
-                        <div className="pc-editor-wrapper-v2">
-                            <EmbedEditor 
-                                embed={currentEmbed} 
-                                onChange={setCurrentEmbed} 
-                                variables={['user', 'guild', 'time', 'date', 'member_count']} 
-                                showButtonEditor={true}
-                            />
-                        </div>
-                    </section>
-                </main>
-
-                <aside className="v-stack" style={{ gap: '32px' }}>
-                    <section className="pc-card-v2 animate slide-up" style={{ animationDelay: '0.2s' }}>
-                        <div className="card-header-v2">
-                            <div className="header-icon" style={{ background: '#fef2f2', color: '#ef4444' }}><Clock size={18} /></div>
-                            <h3>Shedulazione Invio</h3>
-                        </div>
-                        <div className="card-body-v2">
-                            <div className="pc-schedule-stack-v2" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                {[
-                                    { id: 'NOW', label: 'Immediato', icon: Zap, desc: 'Senza alcun ritardo' },
-                                    { id: 'DELAY', label: 'In Differita', icon: Clock, desc: 'Pausa di sicurezza' },
-                                    { id: 'TIME', label: 'Programmato', icon: Calendar, desc: 'Data e ora specifica' }
-                                ].map(type => (
-                                    <button key={type.id} onClick={() => setScheduleType(type.id)} className={`pc-schedule-tab-v2 ${scheduleType === type.id ? 'active' : ''}`}>
-                                        <div className="tab-icon-v2"><type.icon size={18} /></div>
-                                        <div className="v-stack">
-                                            <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>{type.label}</span>
-                                            <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)', fontWeight: 700 }}>{type.desc}</span>
-                                        </div>
-                                        {scheduleType === type.id && <div className="active-glow-v2"></div>}
-                                    </button>
-                                ))}
-                            </div>
-
-                            {scheduleType === 'DELAY' && (
-                                <div className="pc-input-group-v2 animate slide-up" style={{ marginTop: '24px' }}>
-                                    <label>Ritardo in Minuti</label>
-                                    <input type="number" className="pc-input-modern-v2" value={delayMinutes} onChange={e => setDelayMinutes(e.target.value)} />
-                                </div>
-                            )}
-                            
-                            {scheduleType === 'TIME' && (
-                                <div className="pc-input-group-v2 animate slide-up" style={{ marginTop: '24px' }}>
-                                    <label>Timestamp Programmato</label>
-                                    <input type="datetime-local" className="pc-input-modern-v2" value={specificTime} onChange={e => setSpecificTime(e.target.value)} />
-                                </div>
-                            )}
-
-                            <div className="pc-recurrence-studio-v2" style={{ marginTop: '32px', paddingTop: '24px', borderTop: '1.5px dashed var(--border)' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                                    <RefreshCw size={14} color="#6366f1" />
-                                    <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '1px' }}>Ricorrenza</label>
-                                </div>
+                    </div>
+                    <div className="card-body-v2">
+                        <div className="pc-library-controls-v2" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 0.5fr', gap: '20px' }}>
+                            <div className="pc-input-group-v2">
+                                <label>{t('embeds.template_source')}</label>
                                 <CustomSelect 
                                     options={[
-                                        { value: 'none', label: 'Invio Singolo' },
-                                        { value: 'daily', label: 'Ogni 24 Ore' },
-                                        { value: 'weekly', label: 'Ogni Settimana' },
-                                        { value: 'monthly', label: 'Ogni Mese' }
+                                        { value: 'new', label: t('embeds.new_project_btn') },
+                                        ...customTemplates.map(t => ({ value: t._id, label: t.name }))
                                     ]} 
-                                    value={recurrence} 
-                                    onChange={setRecurrence} 
+                                    value={selectedTemplateId} 
+                                    onChange={handleTemplateChange} 
                                 />
-                                <div className="pc-info-badge-v2" style={{ marginTop: '16px', background: 'var(--primary-glow)', color: 'var(--primary)', padding: '12px 16px', borderRadius: '14px', fontSize: '0.8rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                    <Sparkles size={14} />
-                                    <span>{recurrence !== 'none' ? 'Modalità Ciclica Attivata' : 'Esecuzione One-Shot'}</span>
-                                </div>
+                            </div>
+                            <div className="pc-input-group-v2">
+                                <label>{t('embeds.id_name')}</label>
+                                <input className="pc-input-modern-v2" value={customName} onChange={e => setCustomName(e.target.value)} placeholder={t('embeds.id_name_placeholder')} />
+                            </div>
+                            <div className="pc-input-group-v2" style={{ justifyContent: 'flex-end' }}>
+                                <button className="pc-btn-save-v2" onClick={handleSave} disabled={saving}>
+                                    <Save size={18} />
+                                    <span>{saving ? '...' : t('embeds.archive_btn')}</span>
+                                </button>
                             </div>
                         </div>
-                    </section>
-
-                    <div className="pc-alert-box-v2" style={{ background: 'linear-gradient(135deg, #0f172a 0%, var(--bg-card) 100%)', color: '#fff', borderRadius: '32px', padding: '28px', border: '1px solid var(--border)' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                            <Target size={20} color="#10b981" />
-                            <span style={{ fontWeight: 700, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Smart Preview</span>
-                        </div>
-                        <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-dim)', lineHeight: 1.6, fontWeight: 700 }}>
-                            Il trasmettitore Verix supporta placeholder dinamici. Usa <code>{'{user}'}</code> per menzionare chi invia o <code>{'{guild}'}</code> per il nome del server.
-                        </p>
                     </div>
-                </aside>
+                </section>
+
+                <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 560px', gap: '32px' }}>
+                    <div className="v-stack" style={{ gap: '32px' }}>
+                        {/* Visual Designer */}
+                        <section className="pc-card-v2 animate slide-up" style={{ padding: 0, animationDelay: '0.1s' }}>
+                            <div style={{ background: 'var(--bg-badge)', padding: '24px 32px', borderBottom: '1.5px solid var(--border)', display: 'flex', alignItems: 'center', gap: '16px', borderTopLeftRadius: '32px', borderTopRightRadius: '32px' }}>
+                                <div className="header-icon" style={{ background: 'rgba(16,185,129,0.08)', color: '#10b981', width: '36px', height: '36px' }}><Palette size={16} /></div>
+                                <h4 style={{ margin: 0, fontFamily: 'Inter', fontWeight: 700, color: 'var(--text-heading)' }}>{t('embeds.visual_designer')}</h4>
+                            </div>
+                            <div className="pc-editor-wrapper-v2" style={{ padding: '32px' }}>
+                                <EmbedEditor 
+                                    embed={currentEmbed} 
+                                    onChange={setCurrentEmbed} 
+                                    variables={['user', 'guild', 'time', 'date', 'member_count']} 
+                                    showButtonEditor={true}
+                                />
+                            </div>
+                        </section>
+                    </div>
+
+                    <aside className="v-stack" style={{ gap: '32px' }}>
+                        {/* Schedule Section */}
+                        <section className="pc-card-v2 animate slide-up" style={{ animationDelay: '0.2s' }}>
+                            <div className="card-header-v2">
+                                <div className="header-icon" style={{ background: '#fef2f2', color: '#ef4444' }}><Clock size={18} /></div>
+                                <h3>{t('embeds.schedule_title')}</h3>
+                            </div>
+                            <div className="card-body-v2">
+                                <div className="pc-schedule-stack-v2" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                    {[
+                                        { id: 'NOW', label: t('embeds.schedule_now'), icon: Zap, desc: t('embeds.schedule_now_desc') },
+                                        { id: 'DELAY', label: t('embeds.schedule_delay'), icon: Clock, desc: t('embeds.schedule_delay_desc') },
+                                        { id: 'TIME', label: t('embeds.schedule_time'), icon: Calendar, desc: t('embeds.schedule_time_desc') }
+                                    ].map(type => (
+                                        <button key={type.id} onClick={() => setScheduleType(type.id)} className={`pc-schedule-tab-v2 ${scheduleType === type.id ? 'active' : ''}`}>
+                                            <div className="tab-icon-v2"><type.icon size={18} /></div>
+                                            <div className="v-stack">
+                                                <span style={{ fontWeight: 700, fontSize: '0.95rem' }}>{type.label}</span>
+                                                <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)', fontWeight: 700 }}>{type.desc}</span>
+                                            </div>
+                                            {scheduleType === type.id && <div className="active-glow-v2"></div>}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                {scheduleType === 'DELAY' && (
+                                    <div className="pc-input-group-v2 animate slide-up" style={{ marginTop: '24px' }}>
+                                        <label>{t('embeds.delay_minutes')}</label>
+                                        <input type="number" className="pc-input-modern-v2" value={delayMinutes} onChange={e => setDelayMinutes(e.target.value)} />
+                                    </div>
+                                )}
+                                
+                                {scheduleType === 'TIME' && (
+                                    <div className="pc-input-group-v2 animate slide-up" style={{ marginTop: '24px' }}>
+                                        <label>{t('embeds.scheduled_timestamp')}</label>
+                                        <input type="datetime-local" className="pc-input-modern-v2" value={specificTime} onChange={e => setSpecificTime(e.target.value)} />
+                                    </div>
+                                )}
+
+                                <div className="pc-recurrence-studio-v2" style={{ marginTop: '32px', paddingTop: '24px', borderTop: '1.5px dashed var(--border)' }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                                        <RefreshCw size={14} color="#6366f1" />
+                                        <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '1px' }}>{t('embeds.recurrence_title')}</label>
+                                    </div>
+                                    <CustomSelect 
+                                        options={[
+                                            { value: 'none', label: t('embeds.recurrence_none') },
+                                            { value: 'daily', label: t('embeds.recurrence_daily') },
+                                            { value: 'weekly', label: t('embeds.recurrence_weekly') },
+                                            { value: 'monthly', label: t('embeds.recurrence_monthly') }
+                                        ]} 
+                                        value={recurrence} 
+                                        onChange={setRecurrence} 
+                                    />
+                                </div>
+                            </div>
+                        </section>
+
+                        <div className="pc-smart-preview-v2 animate slide-up">
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+                                <Target size={20} className="smart-icon" />
+                                <span className="smart-label">{t('embeds.smart_preview')}</span>
+                            </div>
+                            <p className="smart-text" dangerouslySetInnerHTML={{ __html: t('embeds.smart_preview_desc') }} />
+                        </div>
+                    </aside>
+                </div>
             </div>
         </div>
 
@@ -378,6 +387,27 @@ export default function EmbedBuilder() {
             @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
             :global(.light-theme) .pc-header-v2, :global(.light-theme) .pc-card-v2, :global(.light-theme) .pc-schedule-tab-v2, :global(.light-theme) .pc-btn-save-v2 { box-shadow: 0 8px 30px rgba(0,0,0,0.04) !important; }
+
+            /* Smart Preview - Theme Aware */
+            .pc-smart-preview-v2 { background: linear-gradient(135deg, #0f172a 0%, var(--bg-card) 100%); color: white; borderRadius: 32px; padding: 28px; border: 1px solid var(--border); }
+            .smart-icon { color: #10b981; }
+            .smart-label { fontWeight: 700; fontSize: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
+            .smart-text { margin: 0; fontSize: 0.85rem; color: rgba(255,255,255,0.7); lineHeight: 1.6; fontWeight: 700; }
+            .smart-text code { background: rgba(255,255,255,0.1); color: #fff; padding: 2px 6px; borderRadius: 6px; }
+
+            :global(.light-theme) .pc-smart-preview-v2 {
+                background: white !important;
+                color: var(--text-heading) !important;
+                border: 1px solid var(--border) !important;
+                box-shadow: var(--shadow-premium) !important;
+            }
+            :global(.light-theme) .smart-text {
+                color: var(--text-dim) !important;
+            }
+            :global(.light-theme) .smart-text code {
+                background: var(--bg-badge) !important;
+                color: var(--primary) !important;
+            }
         `}</style>
     </div>
   );

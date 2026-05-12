@@ -8,7 +8,7 @@ import {
     Trash2, MessageSquare, Zap, Terminal, Layout,
     CheckCircle2, AlertTriangle, ArrowRight, Sparkles,
     ShieldAlert, Hammer, Eraser, Command, ListChecks,
-    Activity, Layers, MousePointer2, Clock, RefreshCw
+    Activity, Layers, MousePointer2, Clock, RefreshCw, RotateCcw
 } from 'lucide-react';
 import { useT } from '../../../contexts/LanguageContext';
 import Head from 'next/head';
@@ -43,7 +43,11 @@ export default function UtilityConfig() {
             setConfig(configRes.data || configRes);
           }
           if (discordRes) {
-            setDiscordData(discordRes.data || discordRes);
+            const dData = discordRes.data || discordRes;
+            setDiscordData({
+              ...dData,
+              channels: (dData.channels || []).filter(c => c.type === 0 || c.type === 5)
+            });
           }
           setLoading(false);
         } catch (error) {
@@ -59,6 +63,26 @@ export default function UtilityConfig() {
 
   const showToast = (message, type = 'success') => {
     window.dispatchEvent(new CustomEvent('show-toast', { detail: { message, type } }));
+  };
+
+  const handleReset = async () => {
+    if (!confirm(t('common.reset_confirm'))) return;
+    
+    setLoading(true);
+    window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
+    try {
+      const res = await api.request(`/config/${guildId}/utility/reset`, { method: 'POST' });
+      if (res.success) {
+        setConfig(res.data);
+        showToast(t('common.reset_success'));
+      }
+    } catch (error) {
+      console.error("Reset error:", error);
+      showToast(t('common.reset_error'), 'error');
+    } finally {
+      setLoading(false);
+      window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
+    }
   };
 
   const handleSave = async () => {
@@ -110,7 +134,7 @@ export default function UtilityConfig() {
         {/* V2 Header */}
         <header className="pc-header-v2">
             <div className="header-info">
-                <div className="pc-icon-box" style={{ background: 'linear-gradient(135deg, var(--text-muted) 0%, #0f172a 100%)' }}>
+                <div className="pc-icon-box" style={{ background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%)' }}>
                     <Command size={28} />
                 </div>
                 <div className="pc-title-row">
@@ -147,15 +171,18 @@ export default function UtilityConfig() {
                         {config.enabled ? t('common.active') : t('common.inactive')}
                     </span>
                 </div>
+                <button className="pc-btn-outline-v2" onClick={handleReset} title={t('common.reset_to_default')}>
+                    <RotateCcw size={18} />
+                </button>
                 <button className="pc-btn-primary" onClick={handleSave} disabled={saving}>
                     <Save size={18} />
-                    <span>{saving ? t('common.saving') : t('utility.sync_studio')}</span>
+                    <span>{saving ? t('common.saving') : t('common.sync')}</span>
                 </button>
             </div>
         </header>
 
         <div className="pc-content-v2">
-            <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '32px' }}>
+            <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 420px', gap: '32px' }}>
                 <div className="v-stack" style={{ gap: '32px' }}>
                     <section className="pc-card-v2 animate slide-up">
                         <div className="card-header-v2">
@@ -240,7 +267,7 @@ export default function UtilityConfig() {
                         </div>
                     </section>
 
-                    <div className="pc-card-v2 animate slide-up" style={{ background: 'linear-gradient(135deg, var(--text-heading) 0%, #0f172a 100%)', color: 'white' }}>
+                    <div className="pc-card-v2 animate slide-up" style={{ background: 'linear-gradient(135deg, #1e1b4b 0%, #020617 100%)', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
                             <Sparkles size={18} style={{ color: '#fbbf24' }} />
                             <span style={{ fontWeight: 700, fontSize: '0.8rem' }}>{t('utility.pro_tip')}</span>

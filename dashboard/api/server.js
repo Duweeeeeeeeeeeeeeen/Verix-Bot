@@ -13,12 +13,10 @@ import messageRoutes from './routes/messages.js';
 import analyticsRoutes from './routes/analytics.js';
 import privateBotRoutes from './routes/privateBot.js';
 import adminRoutes from './routes/admin.js';
-import logger from '../../src/utils/logger.js';
-import buildHealthStatus from '../../src/utils/healthStatus.js';
 
 // ─── Critical startup guard ─────────────────────────────────────────────────
 if (!process.env.SESSION_SECRET) {
-    logger.error('FATAL: SESSION_SECRET environment variable is not defined. Refusing to start.');
+    console.error('FATAL: SESSION_SECRET environment variable is not defined. Refusing to start.');
     process.exit(1);
 }
 
@@ -29,8 +27,8 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI)
-    .then(() => logger.db('Dashboard API connected to MongoDB'))
-    .catch(err => logger.error('MongoDB Connection Error:', err));
+    .then(() => console.log('✅ Dashboard API connected to MongoDB'))
+    .catch(err => console.error('❌ MongoDB Connection Error:', err));
 
 // Passport Setup
 passport.serializeUser((user, done) => done(null, user));
@@ -42,7 +40,7 @@ passport.use(new DiscordStrategy({
     callbackURL: process.env.DASHBOARD_CALLBACK_URL,
     scope: ['identify', 'guilds']
 }, (accessToken, refreshToken, profile, done) => {
-    profile.accessToken = accessToken;
+    profile.accessToken = accessToken; // Save for guild refreshes
     process.nextTick(() => done(null, profile));
 }));
 
@@ -103,7 +101,14 @@ app.use('/api/admin', adminRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-    res.json(buildHealthStatus());
+    const dbState = mongoose.connection.readyState;
+    const stateMap = { 0: 'disconnected', 1: 'connected', 2: 'connecting', 3: 'disconnecting' };
+    res.json({
+        status: dbState === 1 ? 'ok' : 'degraded',
+        uptime: Math.floor(process.uptime()),
+        db: stateMap[dbState] || 'unknown',
+        timestamp: new Date().toISOString()
+    });
 });
 
 app.get('/', (req, res) => res.json({ success: true, message: 'Dashboard API is running...' }));
@@ -114,7 +119,7 @@ app.use((req, res) => {
 });
 
 app.use((err, req, res, next) => {
-    logger.error('Server Error:', err);
+    console.error('❌ Server Error:', err.message);
     res.status(err.status || 500).json({
         success: false,
         error: isProduction ? 'Si è verificato un errore interno al server.' : err.message
@@ -122,6 +127,6 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(PORT, () => {
-    logger.info(`Dashboard API listening on port ${PORT}`);
+    console.log(`🚀 Dashboard API listening on port ${PORT}`);
 });
 

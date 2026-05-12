@@ -258,9 +258,12 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
                     color: '#6366f1'
                   }}
                   onChange={(data) => updateMessage(activeSlug, data)}
-                  variables={activeSlugData?.variables || ['user', 'guild']}
+                  variables={slugs.find(s => s.key === activeSlug)?.variables}
                   previewButtons={extraButtons ? extraButtons(activeSlug) : null}
                 />
+                
+                {/* Render extra content specific to this slug (e.g., button branding) */}
+                {slugs.find(s => s.key === activeSlug)?.extra}
               </div>
             </div>
           )}
@@ -280,8 +283,8 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
       <style jsx>{`
         .manager-layout {
           display: grid;
-          grid-template-columns: 320px 1fr;
-          gap: 32px;
+          grid-template-columns: 240px 1fr;
+          gap: 24px;
           align-items: flex-start;
         }
 

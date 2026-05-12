@@ -7,7 +7,7 @@ import {
     Save, Settings2, Trash2, Plus, Tv, Youtube, Instagram, Twitter, Share2, Hash, 
     MessageSquare, BellRing, ChevronRight, Sparkles, Lock, Search, Zap, Users, 
     Info, Layout, ArrowRight, X, CheckCircle2, Monitor, Globe, Cpu, UserPlus, 
-    Power, Radio, Send, Bell, Palette, Globe2, Link2, Ghost
+    Power, Radio, Send, Bell, Palette, Globe2, Link2, Ghost, RotateCcw
 } from 'lucide-react';
 import { useT } from '../../../contexts/LanguageContext';
 import Head from 'next/head';
@@ -70,10 +70,34 @@ export default function SocialsConfig() {
       });
       
       setConfig(moduleConfig);
-      setDiscordData(discordRes?.data || discordRes || { roles: [], channels: [], members: [] });
+      const dData = discordRes?.data || discordRes || { roles: [], channels: [], members: [] };
+      setDiscordData({
+        ...dData,
+        channels: (dData.channels || []).filter(c => c.type === 0 || c.type === 5)
+      });
       setGuildData(guildRes?.data || guildRes);
     } catch (err) {
       console.error("Failed to load socials config", err);
+    } finally {
+      setLoading(false);
+      window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
+    }
+  };
+
+  const handleReset = async () => {
+    if (!confirm(t('common.reset_confirm'))) return;
+    
+    setLoading(true);
+    window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
+    try {
+      const res = await api.request(`/config/${guildId}/socials/reset`, { method: 'POST' });
+      if (res.success) {
+        setConfig(res.data);
+        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('common.reset_success'), type: 'success' } }));
+      }
+    } catch (error) {
+      console.error("Reset error:", error);
+      window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('common.reset_error'), type: 'error' } }));
     } finally {
       setLoading(false);
       window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
@@ -187,6 +211,9 @@ export default function SocialsConfig() {
             </div>
             
             <div className="header-controls">
+                <button className="pc-btn-outline-v2" onClick={handleReset} title={t('common.reset_to_default')}>
+                    <RotateCcw size={18} />
+                </button>
                 <button className="pc-btn-primary" onClick={handleSave} disabled={saving}>
                     <Save size={18} />
                     <span>{saving ? t('common.saving') : t('common.save')}</span>
@@ -194,7 +221,7 @@ export default function SocialsConfig() {
             </div>
         </header>
 
-        <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: '32px' }}>
+        <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '240px 1fr', gap: '24px' }}>
             {/* V2 Platform Navigator Sidebar */}
             <aside className="v-stack animate slide-up" style={{ gap: '24px' }}>
                 <div className="pc-sidebar-card-v2">
@@ -392,7 +419,7 @@ export default function SocialsConfig() {
                                              guildId={guildId}
                                              module="socials"
                                              slugs={[
-                                                 { key: pData.id, label: `${pData.name} Announcement`, description: `Design del messaggio inviato quando l'account ${pData.name} pubblica un nuovo contenuto.`, variables: ['username', 'link', 'title', 'preview_url', 'platform'], group: 'Social Studio', groupIcon: Globe2 },
+                                                 { key: pData.id, label: `${t(pData.nameKey)} ${t('socials.announcement_label')}`, description: `Design del messaggio inviato quando l'account ${t(pData.nameKey)} pubblica un nuovo contenuto.`, variables: ['username', 'link', 'title', 'preview_url', 'platform'], group: 'Social Studio', groupIcon: Globe2 },
                                              ]}
                                          />
                                      </div>
@@ -491,12 +518,6 @@ export default function SocialsConfig() {
             .pc-tier-gate-v2 { padding: 80px 40px; background: var(--bg-card); border-radius: 32px; border: 1px solid var(--border); text-align: center; box-shadow: var(--shadow-premium); }
             .gate-icon-v2 { width: 80px; height: 80px; background: var(--bg-badge); color: var(--primary); border-radius: 24px; display: flex; align-items: center; justify-content: center; margin: 0 auto 32px; }
 
-            .pc-toggle-v2 { position: relative; width: 40px; height: 20px; }
-            .pc-toggle-v2 input { opacity: 0; width: 0; height: 0; }
-            .pc-slider-v2 { position: absolute; cursor: pointer; inset: 0; background: var(--border); transition: .3s; border-radius: 34px; }
-            .pc-slider-v2:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background: #fff; transition: .3s; border-radius: 50%; }
-            input:checked + .pc-slider-v2 { background: var(--primary); }
-            input:checked + .pc-slider-v2:before { transform: translateX(20px); }
 
             .v-stack { display: flex; flex-direction: column; }
             .animate { animation: slideUp 0.4s ease-out; }

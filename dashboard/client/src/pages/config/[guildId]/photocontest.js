@@ -8,7 +8,7 @@ import {
     MessageSquare, Play, Square, Trophy, Target, Shield, Hash, Zap, Sparkles, 
     ChevronRight, Search, Info, AlertCircle, Camera, Palette, CheckCircle2, 
     X, Image, Star, Power, Layers, MousePointer2, Smartphone, Monitor,
-    Gauge, Timer, CameraIcon, Wand2, History
+    Gauge, Timer, CameraIcon, Wand2, History, RotateCcw
 } from 'lucide-react';
 import { useT } from '../../../contexts/LanguageContext';
 import { EmbedMessageManager } from '../../../components/LazyConfigComponents';
@@ -57,7 +57,11 @@ export default function PhotoContestConfig() {
         staffRoles: data?.staffRoles || [],
         notificationMode: data?.notificationMode || 'none'
       });
-      setDiscordData(discordRes?.data || discordRes || { roles: [], channels: [] });
+      const dData = discordRes?.data || discordRes || { roles: [], channels: [] };
+      setDiscordData({
+        ...dData,
+        channels: (dData.channels || []).filter(c => c.type === 0 || c.type === 5)
+      });
     } catch (err) {
       console.error("Failed to load photocontest config", err);
     } finally {
@@ -68,6 +72,26 @@ export default function PhotoContestConfig() {
 
   const showToast = (message, type = 'success') => {
     window.dispatchEvent(new CustomEvent('show-toast', { detail: { message, type } }));
+  };
+
+  const handleReset = async () => {
+    if (!confirm(t('common.reset_confirm'))) return;
+    
+    setLoading(true);
+    window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
+    try {
+      const res = await api.request(`/config/${guildId}/photocontest/reset`, { method: 'POST' });
+      if (res.success) {
+        setConfig(res.data);
+        showToast(t('common.reset_success'));
+      }
+    } catch (error) {
+      console.error("Reset error:", error);
+      showToast(t('common.reset_error'), 'error');
+    } finally {
+      setLoading(false);
+      window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
+    }
   };
 
   const handleSave = async () => {
@@ -125,30 +149,24 @@ export default function PhotoContestConfig() {
             </div>
             
             <div className="header-controls">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--bg-badge)', padding: '10px 20px', borderRadius: '14px', border: '1.5px solid var(--border)' }}>
-                    <label className="pc-toggle-v2" style={{ position: 'relative', width: '42px', height: '22px' }}>
+                <div className="pc-toggle-container-v2">
+                    <label className="pc-toggle-v2">
                         <input 
                             type="checkbox" 
-                            style={{ opacity: 0, width: 0, height: 0, position: 'absolute' }}
                             checked={config.enabled} 
                             onChange={() => setConfig({...config, enabled: !config.enabled})} 
                         />
-                        <span style={{ 
-                            position: 'absolute', cursor: 'pointer', inset: 0, 
-                            background: config.enabled ? '#10b981' : '#ef4444', 
-                            transition: '.4s', borderRadius: '34px' 
-                        }}>
-                            <span style={{
-                                position: 'absolute', content: '""', height: '16px', width: '16px', 
-                                left: config.enabled ? '23px' : '3px', bottom: '3px', 
-                                background: '#fff', transition: '.4s', borderRadius: '50%'
-                            }}></span>
-                        </span>
+                        <span className="pc-slider-v2"></span>
                     </label>
-                    <span style={{ fontWeight: 700, fontSize: '0.9rem', color: config.enabled ? '#10b981' : '#ef4444' }}>
+                    <span className={config.enabled ? 'text-active' : 'text-inactive'}>
                         {config.enabled ? t('common.active') : t('common.inactive')}
                     </span>
                 </div>
+
+                <div className="pc-header-divider" style={{ width: '1px', height: '24px', background: 'var(--border)', margin: '0 4px' }}></div>
+                <button className="pc-btn-outline-v2" onClick={handleReset} title={t('common.reset_to_default')}>
+                    <RotateCcw size={18} />
+                </button>
                 <button className="pc-btn-primary" onClick={handleSave} disabled={saving}>
                     <Save size={18} />
                     <span>{saving ? t('common.saving') : t('common.sync')}</span>
@@ -174,7 +192,7 @@ export default function PhotoContestConfig() {
 
         <div className="pc-content-v2">
             {activeTab === 'general' && (
-                <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '40px' }}>
+                <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 560px', gap: '40px' }}>
                     <div className="v-stack" style={{ gap: '32px' }}>
                         <section className="pc-card-v2 animate slide-up">
                             <div className="card-header-v2" style={{ marginBottom: '32px' }}>
@@ -261,11 +279,11 @@ export default function PhotoContestConfig() {
                             </div>
                         </section>
 
-                        <div className="pc-info-banner-pink animate slide-up" style={{ background: 'linear-gradient(135deg, #db2777 0%, #9d174d 100%)', borderRadius: '32px', padding: '40px', color: 'white', position: 'relative', overflow: 'hidden', boxShadow: '0 20px 40px rgba(219, 39, 119, 0.2)' }}>
+                        <div className="pc-info-banner-blue animate slide-up" style={{ background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%)', borderRadius: '32px', padding: '40px', color: 'white', position: 'relative', overflow: 'hidden', boxShadow: '0 20px 40px rgba(99, 102, 241, 0.2)' }}>
                             <div style={{ position: 'relative', zIndex: 2 }}>
                                 <div style={{ background: 'rgba(255,255,255,0.2)', padding: '12px', borderRadius: '14px', width: 'fit-content', marginBottom: '24px' }}><Star size={24} /></div>
-                                <h4 style={{ margin: '0 0 12px 0', fontSize: '1.4rem', fontWeight: 700, letterSpacing: '-0.5px' }}>{t('pc.social_title')}</h4>
-                                <p style={{ margin: 0, fontSize: '1rem', opacity: 0.9, lineHeight: 1.7, fontWeight: 700 }}>{t('pc.social_desc')}</p>
+                                <h4 style={{ margin: '0 0 12px 0', fontSize: '1.4rem', fontWeight: 700, letterSpacing: '-0.5px', color: 'white' }}>{t('pc.social_title')}</h4>
+                                <p style={{ margin: 0, fontSize: '1rem', opacity: 0.9, lineHeight: 1.7, fontWeight: 700, color: 'white' }}>{t('pc.social_desc')}</p>
                             </div>
                             <div style={{ position: 'absolute', right: '-40px', bottom: '-40px', opacity: 0.1 }}><CameraIcon size={180} /></div>
                         </div>
@@ -382,12 +400,6 @@ export default function PhotoContestConfig() {
             .pc-btn-delete-studio-mini:hover { background: rgba(239, 68, 68, 0.1) !important; color: #ef4444 !important; transform: rotate(8deg); }
 
             /* Toggle V2 */
-            .pc-toggle-v2 { position: relative; width: 44px; height: 22px; }
-            .pc-toggle-v2 input { opacity: 0; width: 0; height: 0; }
-            .pc-slider-v2 { position: absolute; cursor: pointer; inset: 0; background: var(--bg-badge); transition: .4s; border-radius: 34px; }
-            .pc-slider-v2:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background: #fff; transition: .4s; border-radius: 50%; }
-            input:checked + .pc-slider-v2 { background: #ec4899; }
-            input:checked + .pc-slider-v2:before { transform: translateX(22px); }
 
             .v-stack { display: flex; flex-direction: column; }
             .animate { animation: slideUp 0.4s ease-out; }

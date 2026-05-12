@@ -5,7 +5,8 @@ import HelpTooltip from '../../../components/HelpTooltip';
 import api from '../../../utils/api';
 import { 
     Save, Mic2, Users, MousePointer2, Shield, ListFilter, Info, CheckCircle, 
-    XCircle, MessageSquare, Settings2, Palette, Zap, Power, Globe, Clock, Layout, Terminal
+    XCircle, MessageSquare, Settings2, Palette, Zap, Power, Globe, Clock, Layout, Terminal,
+    RotateCcw
 } from 'lucide-react';
 import { DiscordSelector } from '../../../components/LazyConfigComponents';
 import { EmbedMessageManager } from '../../../components/LazyConfigComponents';
@@ -81,6 +82,32 @@ export default function VoiceConfig() {
     window.dispatchEvent(new CustomEvent('show-toast', { detail: { message, type } }));
   };
 
+  const handleReset = async () => {
+    if (!confirm(t('common.reset_confirm'))) return;
+    
+    setLoading(true);
+    window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
+    try {
+      const res = await api.request(`/config/${guildId}/whitelist/reset`, { method: 'POST', body: JSON.stringify({ module: 'voice' }) });
+      if (res.success) {
+        // Special case for voice as it's part of whitelist on backend
+        const wlData = res.data || {};
+        const voiceConfig = {
+            ...(wlData.voiceSettings || {}),
+            embeds: wlData.embeds || {}
+        };
+        setConfig(mergeConfig(voiceConfig, 'voice'));
+        showToast(t('common.reset_success'));
+      }
+    } catch (error) {
+      console.error("Reset error:", error);
+      showToast(t('common.reset_error'), 'error');
+    } finally {
+      setLoading(false);
+      window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
+    }
+  };
+
   const handleSave = async () => {
     setSaving(true);
     window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
@@ -125,33 +152,26 @@ export default function VoiceConfig() {
             </div>
             
             <div className="header-controls">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--bg-badge)', padding: '10px 20px', borderRadius: '14px', border: '1.5px solid var(--border)' }}>
-                    <label className="pc-toggle-v2" style={{ position: 'relative', width: '42px', height: '22px' }}>
+                <div className="pc-toggle-container-v2">
+                    <label className="pc-toggle-v2">
                         <input 
                             type="checkbox" 
-                            style={{ opacity: 0, width: 0, height: 0, position: 'absolute' }}
                             checked={config.enabled} 
                             onChange={() => setConfig({...config, enabled: !config.enabled})} 
                         />
-                        <span style={{ 
-                            position: 'absolute', cursor: 'pointer', inset: 0, 
-                            background: config.enabled ? '#10b981' : '#ef4444', 
-                            transition: '.4s', borderRadius: '34px' 
-                        }}>
-                            <span style={{
-                                position: 'absolute', content: '""', height: '16px', width: '16px', 
-                                left: config.enabled ? '23px' : '3px', bottom: '3px', 
-                                background: '#fff', transition: '.4s', borderRadius: '50%'
-                            }}></span>
-                        </span>
+                        <span className="pc-slider-v2"></span>
                     </label>
-                    <span style={{ fontWeight: 700, fontSize: '0.9rem', color: config.enabled ? '#10b981' : '#ef4444' }}>
+                    <span className={config.enabled ? 'text-active' : 'text-inactive'}>
                         {config.enabled ? t('common.active') : t('common.inactive')}
                     </span>
                 </div>
+                <div className="pc-header-divider" style={{ width: '1px', height: '24px', background: 'var(--border)', margin: '0 4px' }}></div>
+                <button className="pc-btn-outline-v2" onClick={handleReset} title={t('common.reset_to_default')}>
+                    <RotateCcw size={18} />
+                </button>
                 <button className="pc-btn-primary" onClick={handleSave} disabled={saving}>
                     <Save size={18} />
-                    <span>{saving ? 'Salvataggio...' : 'Salva Modifiche'}</span>
+                    <span>{saving ? t('common.saving') : t('common.sync')}</span>
                 </button>
             </div>
         </header>
@@ -264,7 +284,7 @@ export default function VoiceConfig() {
                                 ].map(btn => (
                                     <div key={btn.key} className="pc-sub-card-v2" style={{ background: 'var(--bg-badge)', padding: '24px', borderRadius: '28px', border: '1.5px solid var(--border)' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-                                            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', color: btn.color, boxShadow: '0 4px 10px rgba(0,0,0,0.05)' }}>
+                                            <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'var(--bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: btn.color, boxShadow: '0 4px 10px rgba(0,0,0,0.05)' }}>
                                                 <btn.icon size={16} />
                                             </div>
                                             <span style={{ fontWeight: 700, color: 'var(--text-heading)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{btn.label}</span>
@@ -374,13 +394,6 @@ export default function VoiceConfig() {
             .pc-input-modern-v2 { width: 100%; background: var(--bg-card); border: 1.5px solid var(--border); border-radius: 14px; padding: 12px 16px; font-weight: 700; color: var(--text-heading); outline: none; transition: 0.2s; }
             .pc-input-modern-v2:focus { border-color: var(--primary); }
 
-            /* Toggle V2 */
-            .pc-toggle-v2 { position: relative; width: 44px; height: 22px; }
-            .pc-toggle-v2 input { opacity: 0; width: 0; height: 0; }
-            .pc-slider-v2 { position: absolute; cursor: pointer; inset: 0; background: var(--border); transition: .4s; border-radius: 34px; }
-            .pc-slider-v2:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background: #fff; transition: .4s; border-radius: 50%; }
-            input:checked + .pc-slider-v2 { background: var(--primary); }
-            input:checked + .pc-slider-v2:before { transform: translateX(22px); }
 
             .v-stack { display: flex; flex-direction: column; }
             .animate { animation: slideUp 0.4s ease-out; }

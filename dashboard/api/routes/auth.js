@@ -1,11 +1,10 @@
 import express from 'express';
 import passport from 'passport';
 import Guild from '../../../src/models/Guild.js';
-import logger from '../../../src/utils/logger.js';
 
 const router = express.Router();
 const FRONTEND_URL = process.env.DASHBOARD_FRONTEND_URL;
-logger.info(`[AUTH] Frontend URL initialized as: ${FRONTEND_URL}`);
+console.log(`[AUTH] Frontend URL initialized as: ${FRONTEND_URL}`);
 
 // Discord Login
 router.get('/login', passport.authenticate('discord'));
@@ -21,24 +20,27 @@ router.get('/user', async (req, res) => {
     if (req.isAuthenticated()) {
         const client = req.discordClient;
         const { refresh } = req.query;
-
+        
         if (!client) {
-            logger.error('[Dashboard_API] Discord client missing in request context!');
+            console.error('[Dashboard_API] Discord client missing in request context!');
             return res.status(500).json({ success: false, error: 'Sistema Discord non inizializzato.' });
         }
 
+        // Force refresh guilds from Discord API if requested
         if (refresh === 'true' && req.user.accessToken) {
             try {
-                logger.debug(`[Dashboard_API] Refreshing guilds for user ${req.user.username}...`);
+                console.log(`[Dashboard_API] Refreshing guilds for user ${req.user.username}...`);
                 const response = await fetch('https://discord.com/api/users/@me/guilds', {
                     headers: { Authorization: `Bearer ${req.user.accessToken}` }
                 });
-
                 if (response.ok) {
-                    req.user.guilds = await response.json();
+                    const freshGuilds = await response.json();
+                    req.user.guilds = freshGuilds;
+                    // Note: passport saves the user to session automatically if req.user is modified
+                    // but we can force it with req.login or just let the session store handle it
                 }
             } catch (err) {
-                logger.error('[Dashboard_API] Failed to refresh guilds:', err);
+                console.error('[Dashboard_API] Failed to refresh guilds:', err);
             }
         }
 
@@ -47,7 +49,8 @@ router.get('/user', async (req, res) => {
         // Check if guilds exist to avoid map errors
         const guilds = req.user.guilds || [];
         
-        logger.debug(`[Dashboard_API] User ${req.user.username} (${req.user.id}) fetching guilds: ${guilds.length} found.`);
+        // Log for transparency
+        console.log(`[Dashboard_API] User ${req.user.username} (${req.user.id}) fetching guilds: ${guilds.length} found.`);
 
         const guildsWithPremium = await Promise.all(guilds.map(async (guild) => {
             const guildSettings = await Guild.findOne({ guildId: guild.id });
@@ -76,7 +79,7 @@ router.get('/user', async (req, res) => {
 
         res.json(augmentedUser);
     } else {
-        res.status(401).json({ error: 'Unauthorized' });
+        res.json(null);
     }
 });
 

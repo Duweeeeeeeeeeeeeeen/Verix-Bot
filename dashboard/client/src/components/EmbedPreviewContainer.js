@@ -25,13 +25,14 @@ export default function EmbedPreviewContainer({ data, style = {}, children }) {
             </div>
             
             <div style={{ 
-                padding: '32px', 
-                background: theme === 'dark' ? '#0f172a' : 'var(--bg-badge)', 
-                minHeight: '400px', 
+                padding: '40px 20px', 
+                background: theme === 'dark' ? 'var(--bg-dark)' : 'var(--bg-badge)', 
+                minHeight: '450px', 
                 display: 'flex', 
                 alignItems: 'center', 
                 justifyContent: 'center',
-                transition: 'background 0.3s ease'
+                transition: 'all 0.3s ease',
+                position: 'relative'
             }}>
                 <EmbedPreview data={data} isMobile={isMobile} theme={theme} />
             </div>
@@ -54,7 +55,7 @@ export default function EmbedPreviewContainer({ data, style = {}, children }) {
             <style jsx>{`
                 .view-btn-v2 { border: none; background: transparent; padding: 8px; border-radius: 8px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; transition: 0.2s; }
                 .view-btn-v2:hover { color: var(--text-main); }
-                .view-btn-v2.active { background: white; color: var(--primary); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+                .view-btn-v2.active { background: var(--bg-card); color: var(--primary); box-shadow: var(--shadow-premium); border-color: var(--primary-muted); }
                 
                 .theme-btn-v2 { border: none; background: transparent; padding: 10px; border-radius: 50%; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
                 .theme-btn-v2:hover { color: var(--text-main); background: var(--bg-badge); }
@@ -63,6 +64,7 @@ export default function EmbedPreviewContainer({ data, style = {}, children }) {
                 .header-icon-primary { color: var(--primary); }
                 
                 :global(.light-theme) .view-btn-v2.active { background: var(--bg-badge); }
+                :global(.light-theme) .view-btn-v2.active { background: white !important; }
             `}</style>
         </div>
     );

@@ -115,27 +115,16 @@ export default function SupportConfig() {
             </div>
             
             <div className="header-controls">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--bg-badge)', padding: '10px 20px', borderRadius: '14px', border: '1.5px solid var(--border)' }}>
-                    <label className="pc-toggle-v2" style={{ position: 'relative', width: '42px', height: '22px' }}>
+                <div className="pc-toggle-container-v2">
+                    <label className="pc-toggle-v2">
                         <input 
                             type="checkbox" 
-                            style={{ opacity: 0, width: 0, height: 0, position: 'absolute' }}
                             checked={config.enabled} 
                             onChange={() => setConfig({...config, enabled: !config.enabled})} 
                         />
-                        <span style={{ 
-                            position: 'absolute', cursor: 'pointer', inset: 0, 
-                            background: config.enabled ? '#10b981' : '#ef4444', 
-                            transition: '.4s', borderRadius: '34px' 
-                        }}>
-                            <span style={{
-                                position: 'absolute', content: '""', height: '16px', width: '16px', 
-                                left: config.enabled ? '23px' : '3px', bottom: '3px', 
-                                background: '#fff', transition: '.4s', borderRadius: '50%'
-                            }}></span>
-                        </span>
+                        <span className="pc-slider-v2"></span>
                     </label>
-                    <span style={{ fontWeight: 700, fontSize: '0.9rem', color: config.enabled ? '#10b981' : '#ef4444' }}>
+                    <span className={config.enabled ? 'text-active' : 'text-inactive'}>
                         {config.enabled ? t('common.active') : t('common.inactive')}
                     </span>
                 </div>
@@ -160,7 +149,7 @@ export default function SupportConfig() {
 
         <div className="pc-content-v2">
             {activeTab === 'settings' && (
-                <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 420px', gap: '32px' }}>
+                <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 560px', gap: '32px' }}>
                     <div className="v-stack" style={{ gap: '32px' }}>
                         <section className="pc-card-v2 animate slide-up">
                             <div className="card-header-v2">
@@ -205,7 +194,6 @@ export default function SupportConfig() {
                                 </div>
                             </div>
                         </section>
-
                         <section className="pc-card-v2 animate slide-up" style={{ animationDelay: '0.1s' }}>
                             <div className="card-header-v2">
                                 <div className="header-icon" style={{ background: '#fef2f2', color: '#ef4444' }}><BellRing size={18} /></div>
@@ -223,7 +211,6 @@ export default function SupportConfig() {
                                             <span className="pc-slider-v2"></span>
                                         </label>
                                     </div>
-
                                     <div className="pc-interactive-row-v2" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-badge)', padding: '24px', borderRadius: '24px', border: '1.5px solid var(--border)' }}>
                                         <div className="v-stack">
                                             <strong style={{ fontWeight: 700, color: 'var(--text-heading)' }}>Notifica Ruoli Staff</strong>
@@ -238,7 +225,6 @@ export default function SupportConfig() {
                             </div>
                         </section>
                     </div>
-
                     <div className="v-stack" style={{ gap: '32px' }}>
                         <section className="pc-card-v2">
                             <div className="card-header-v2">
@@ -257,23 +243,6 @@ export default function SupportConfig() {
                                 </div>
                             </div>
                         </section>
-
-                        <section className="pc-card-v2">
-                            <div className="card-header-v2">
-                                <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--text-muted)' }}><Hash size={18} /></div>
-                                <h3 style={{ margin: 0 }}>Analytics SOS</h3>
-                            </div>
-                            <div className="card-body-v2">
-                                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '16px 0', borderBottom: '1px solid var(--bg-badge)' }}>
-                                    <span style={{ fontWeight: 750, color: 'var(--text-muted)' }}>Interventi Totali</span>
-                                    <strong style={{ fontWeight: 700, color: 'var(--text-heading)', fontSize: '1.2rem' }}>{config.voiceSettings?.sessionCounter || 0}</strong>
-                                </div>
-                                <button className="pc-btn-outline-v2" style={{ width: '100%', marginTop: '24px', justifyContent: 'center' }} onClick={() => setNested('voiceSettings.sessionCounter', 0)}>
-                                    <RefreshCcw size={14} /> <span>Reset Statistiche</span>
-                                </button>
-                            </div>
-                        </section>
-
                         <NotificationSettings 
                             guildId={guildId}
                             value={config.voiceSettings?.notifications}
@@ -283,7 +252,6 @@ export default function SupportConfig() {
                     </div>
                 </div>
             )}
-
             {activeTab === 'design' && (
                 <div className="v-stack animate slide-up">
                     <EmbedMessageManager 
@@ -301,7 +269,6 @@ export default function SupportConfig() {
                 </div>
             )}
         </div>
-
         <style jsx>{`
             .pc-premium-wrapper { padding: 32px; max-width: 1500px; margin: 0 auto; font-family: 'Inter', sans-serif; }
             
@@ -316,42 +283,28 @@ export default function SupportConfig() {
             .pc-status-tag-v2.on { background: var(--bg-badge); color: #2563eb; }
             .pc-status-tag-v2.off { background: var(--bg-badge); color: #ef4444; }
             .status-dot-v2 { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
-
             .pc-status-toggle-v2 { display: flex; align-items: center; gap: 10px; background: var(--bg-badge); color: var(--text-muted); border: 1.5px solid var(--border); padding: 12px 24px; border-radius: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; }
             .pc-status-toggle-v2.active { background: rgba(var(--primary-rgb), 0.1); color: var(--primary); border-color: rgba(var(--primary-rgb), 0.2); }
             .pc-btn-primary { background: var(--primary); color: #fff; border: none; padding: 12px 24px; border-radius: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
             .pc-btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(var(--primary-rgb), 0.2); }
-
             /* Tabs V2 */
             .pc-tabs-v2 { display: flex; gap: 6px; background: var(--bg-badge); padding: 5px; border-radius: 18px; width: fit-content; }
             .pc-tabs-v2 button { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border: none; background: transparent; color: var(--text-muted); font-weight: 700; font-size: 0.9rem; border-radius: 14px; cursor: pointer; transition: 0.2s; }
             .pc-tabs-v2 button.active { background: var(--bg-card); color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-
             /* Card V2 */
             .pc-card-v2 { background: var(--bg-card); border: 1px solid var(--border); border-radius: 28px; padding: 32px; box-shadow: var(--shadow-premium); }
             .card-header-v2 { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
             .header-icon { width: 44px; height: 44px; background: var(--bg-badge); color: var(--primary); border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-
             /* Inputs V2 */
             .pc-input-group-v2 { display: flex; flex-direction: column; gap: 8px; }
             .pc-input-group-v2 label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; }
-
             /* Toggle V2 */
-            .pc-toggle-v2 { position: relative; width: 44px; height: 22px; }
-            .pc-toggle-v2 input { opacity: 0; width: 0; height: 0; }
-            .pc-slider-v2 { position: absolute; cursor: pointer; inset: 0; background: var(--border); transition: .4s; border-radius: 34px; }
-            .pc-slider-v2:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background: #fff; transition: .4s; border-radius: 50%; }
-            input:checked + .pc-slider-v2 { background: var(--primary); }
-            input:checked + .pc-slider-v2:before { transform: translateX(22px); }
-
             .pc-btn-outline-v2 { background: var(--bg-badge); color: var(--text-muted); border: 1.5px solid var(--border); padding: 12px 24px; border-radius: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
             .pc-btn-outline-v2:hover { background: var(--bg-card); border-color: var(--primary); color: var(--primary); }
-
             .pc-hint-v2 { font-size: 0.8rem; color: var(--text-muted); font-weight: 700; }
             .v-stack { display: flex; flex-direction: column; }
             .animate { animation: slideUp 0.4s ease-out; }
             @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
             :global(.light-theme) .pc-header-v2, :global(.light-theme) .pc-card-v2, :global(.light-theme) .pc-interactive-row-v2 { box-shadow: 0 8px 30px rgba(0,0,0,0.04) !important; }
         `}</style>
     </div>

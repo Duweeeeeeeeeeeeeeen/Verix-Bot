@@ -36,7 +36,7 @@ import React from 'react';
 
 export default function ManagementPage() {
   const { user: authUser, login } = useAuth();
-  const { t } = useT();
+  const { t, language } = useT();
   const router = useRouter();
   const { guildId } = router.query;
   const [userId, setUserId] = useState('');
@@ -118,7 +118,7 @@ export default function ManagementPage() {
   }, [searchTerm, userList]);
 
   const handleClearLogs = async () => {
-    if (!window.confirm("Sei sicuro di voler eliminare tutti i log?")) return;
+    if (!window.confirm(t('management.logs.clear_confirm'))) return;
     try {
       setLogsLoading(true);
       await api.request(`/config/${guildId}/audit-logs`, { method: 'DELETE' });
@@ -131,12 +131,12 @@ export default function ManagementPage() {
   };
 
   const getActionInfo = (action) => {
-    if (action.startsWith('UPDATE')) return { icon: RefreshCcw, color: '#6366f1', label: 'AGGIORNAMENTO' };
-    if (action.startsWith('CREATE')) return { icon: PlusCircle, color: '#10b981', label: 'CREAZIONE' };
-    if (action.startsWith('DELETE')) return { icon: Trash2, color: '#ef4444', label: 'ELIMINAZIONE' };
-    if (action.startsWith('RESET')) return { icon: XCircle, color: '#f59e0b', label: 'RESET' };
-    if (action.startsWith('SEND')) return { icon: Send, color: '#3b82f6', label: 'INVIO' };
-    return { icon: FileText, color: 'var(--text-muted)', label: 'DETTAGLI' };
+    if (action.startsWith('UPDATE')) return { icon: RefreshCcw, color: '#6366f1', label: t('management.logs.actions.update') };
+    if (action.startsWith('CREATE')) return { icon: PlusCircle, color: '#10b981', label: t('management.logs.actions.create') };
+    if (action.startsWith('DELETE')) return { icon: Trash2, color: '#ef4444', label: t('management.logs.actions.delete') };
+    if (action.startsWith('RESET')) return { icon: XCircle, color: '#f59e0b', label: t('management.logs.actions.reset') };
+    if (action.startsWith('SEND')) return { icon: Send, color: '#3b82f6', label: t('management.logs.actions.send') };
+    return { icon: FileText, color: 'var(--text-muted)', label: t('management.logs.actions.generic') };
   };
 
   const filteredLogs = logs.filter(log => 
@@ -150,10 +150,9 @@ export default function ManagementPage() {
 
   const handleSearch = async (e, manualId = null) => {
     if (e) e.preventDefault();
-    const idToSearch = (manualId || userId || '').trim();
-    
+    const idToSearch = manualId || userId;
     if (!idToSearch || idToSearch.length < 15) {
-      if (!manualId) showToast("Inserisci un ID Discord valido", 'error');
+      if (!manualId) showToast(t('management.search.error_id'), 'error');
       return;
     }
 
@@ -165,11 +164,11 @@ export default function ManagementPage() {
         setUserData(res);
         setUserId(idToSearch);
       } else {
-        showToast("Utente non trovato nel database", 'info');
+        showToast(t('management.search.not_found'), 'info');
         setUserData(null);
       }
     } catch (err) {
-      showToast(err.message || "Errore ricerca", 'error');
+      showToast(err.message || t('common.error'), 'error');
       setUserData(null);
     } finally {
       setSearching(false);
@@ -178,26 +177,26 @@ export default function ManagementPage() {
   };
 
   const handleDelete = async (type, id) => {
-    if (!confirm("Sei sicuro di voler eliminare questo record?")) return;
+    if (!confirm(t('management.delete.confirm'))) return;
     try {
       await api.request(`/management/${guildId}/records/${type}/${id}`, { method: 'DELETE' });
-      showToast("Record eliminato!");
+      showToast(t('management.delete.success'));
       handleSearch(null, userData?.user?.discordId || userId);
     } catch (err) {
-      showToast(err.message || "Errore eliminazione", 'error');
+      showToast(err.message || t('common.error'), 'error');
     }
   };
 
   const handleResetAll = async () => {
     const targetId = userData?.user?.discordId || userId;
     if (!targetId) return;
-    if (!confirm("AZONE CRITICA: Vuoi resettare TUTTI i record di questo utente?")) return;
+    if (!confirm(t('management.hero.reset_confirm'))) return;
     try {
       await api.request(`/management/${guildId}/reset-user/${targetId}`, { method: 'POST' });
-      showToast("Reset totale completato!");
+      showToast(t('common.success'));
       handleSearch(null, targetId);
     } catch (err) {
-      showToast(err.message || "Errore reset", 'error');
+      showToast(err.message || t('common.error'), 'error');
     }
   };
 
@@ -208,10 +207,10 @@ export default function ManagementPage() {
       <div className="pc-premium-wrapper animate fade-in">
         <div className="pc-empty-state-v2" style={{ padding: '100px 40px' }}>
           <Lock size={64} color="var(--primary)" style={{ marginBottom: '24px' }} />
-          <h2>Accesso Negato</h2>
-          <p>Devi effettuare il login per accedere alla gestione cittadini.</p>
+          <h2>{t('management.auth.denied_title')}</h2>
+          <p>{t('management.auth.denied_desc')}</p>
           <button onClick={login} className="pc-btn-primary" style={{ marginTop: '24px' }}>
-            Accedi Ora
+            {t('management.auth.login_btn')}
           </button>
         </div>
       </div>
@@ -227,10 +226,10 @@ export default function ManagementPage() {
                     <History size={28} />
                 </div>
                 <div className="pc-title-row">
-                    <h1>Gestione Cittadini</h1>
+                    <h1>{t('management.title')}</h1>
                     <div className="pc-status-tag-v2 on">
                         <div className="status-dot-v2"></div>
-                        AUDIT SYSTEM ACTIVE
+                        {t('management.active_tag')}
                     </div>
                 </div>
             </div>
@@ -238,10 +237,10 @@ export default function ManagementPage() {
             <div className="header-controls">
                 <nav className="pc-tabs-v2" style={{ marginBottom: 0 }}>
                     <button className={activeTab === 'users' ? 'active' : ''} onClick={() => setActiveTab('users')}>
-                        <User size={16} /> <span>Anagrafica</span>
+                        <User size={16} /> <span>{t('management.tabs.users')}</span>
                     </button>
                     <button className={activeTab === 'logs' ? 'active' : ''} onClick={() => setActiveTab('logs')}>
-                        <History size={16} /> <span>Audit Logs</span>
+                        <History size={16} /> <span>{t('management.tabs.logs')}</span>
                     </button>
                 </nav>
             </div>
@@ -251,17 +250,17 @@ export default function ManagementPage() {
             {/* Sidebar Citizen List */}
             <aside className="pc-sidebar-rr">
                 <div className="sidebar-header-v2">
-                    <span>LISTA CITTADINI ({userList.length})</span>
+                    <span>{t('management.sidebar.title')} ({userList.length})</span>
                 </div>
                 <div className="pc-search-box-v2">
                     <Search size={14} />
-                    <input placeholder="Filtra cittadini..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+                    <input placeholder={t('management.sidebar.filter')} value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
                 </div>
                 <nav className="pc-nav-rr" style={{ marginTop: '16px' }}>
                     {listLoading ? (
                         <div style={{ padding: '16px' }}><Skeleton height="40px" borderRadius="12px" /></div>
                     ) : filteredList.length === 0 ? (
-                        <div className="pc-empty-sidebar">Nessun cittadino trovato</div>
+                        <div className="pc-empty-sidebar">{t('management.sidebar.empty')}</div>
                     ) : (
                         filteredList.map(u => (
                             <button 
@@ -287,15 +286,15 @@ export default function ManagementPage() {
                     <div className="animate slide-up">
                          <form className="pc-search-v2-full" onSubmit={handleSearch}>
                             <Search size={22} color="var(--primary)" />
-                            <input placeholder="Cerca ID Discord (es: 123456789...)" value={userId} onChange={e => setUserId(e.target.value)} />
-                            <button type="submit" disabled={searching}>{searching ? '...' : 'Cerca Profile'}</button>
+                            <input placeholder={t('management.search.placeholder')} value={userId} onChange={e => setUserId(e.target.value)} />
+                            <button type="submit" disabled={searching}>{searching ? '...' : t('management.search.btn')}</button>
                          </form>
 
                          {!userData && !loading && (
                             <div className="pc-empty-state-v2" style={{ marginTop: '40px' }}>
                                 <UserCheck size={64} style={{ opacity: 0.1 }} />
-                                <h3>Seleziona un Profilo</h3>
-                                <p>Scegli un cittadino dalla lista o inserisci un ID manualmente.</p>
+                                <h3>{t('management.empty_state.title')}</h3>
+                                <p>{t('management.empty_state.desc')}</p>
                             </div>
                          )}
 
@@ -311,35 +310,35 @@ export default function ManagementPage() {
                                                 <h2 style={{ margin: 0, fontSize: '1.8rem', fontWeight: 700, fontFamily: 'Inter' }}>{userData.user?.username}</h2>
                                                 <div className="pc-status-tag-v2 on" style={{ fontSize: '0.6rem' }}>
                                                     <div className="status-dot-v2"></div>
-                                                    REGISTRATO
+                                                    {t('management.hero.registered')}
                                                 </div>
                                             </div>
                                             <p className="pc-hint-v2" style={{ fontSize: '0.9rem', marginTop: '4px' }}>ID Discord: {userData.user?.discordId}</p>
                                         </div>
-                                        <button className="pc-btn-primary" style={{ background: '#fff1f2', color: '#ef4444', border: '1px solid #fee2e2' }} onClick={handleResetAll}>
-                                            <RefreshCcw size={18} /> <span>Reset Totale</span>
+                                        <button className="pc-btn-primary" style={{ background: 'rgba(239, 68, 68, 0.08)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.1)' }} onClick={handleResetAll}>
+                                            <RefreshCcw size={18} /> <span>{t('management.hero.reset_btn')}</span>
                                         </button>
                                     </div>
                                     <div className="hero-stats-grid-v2">
                                         <div className="h-stat-v2">
                                             <ShieldCheck size={18} />
                                             <div className="h-stat-text">
-                                                <span>Whitelist</span>
+                                                <span>{t('management.hero.stats.whitelist')}</span>
                                                 <strong>{userData.whitelist?.status || 'N/A'}</strong>
                                             </div>
                                         </div>
                                         <div className="h-stat-v2">
                                             <Mic2 size={18} />
                                             <div className="h-stat-text">
-                                                <span>Provino Staff</span>
+                                                <span>{t('management.hero.stats.staff')}</span>
                                                 <strong>{userData.background?.status || 'N/A'}</strong>
                                             </div>
                                         </div>
                                         <div className="h-stat-v2">
                                             <Clock size={18} />
                                             <div className="h-stat-text">
-                                                <span>Cooldowns</span>
-                                                <strong>{userData.cooldowns?.length || 0} Attivi</strong>
+                                                <span>{t('management.hero.stats.cooldowns')}</span>
+                                                <strong>{userData.cooldowns?.length || 0} {t('management.hero.stats.active')}</strong>
                                             </div>
                                         </div>
                                     </div>
@@ -349,7 +348,7 @@ export default function ManagementPage() {
                                     <section className="pc-card-v2">
                                         <div className="card-header-v2">
                                             <div className="header-icon"><ShieldCheck size={18} /></div>
-                                            <h3>Storico Whitelist</h3>
+                                            <h3>{t('management.cards.whitelist.title')}</h3>
                                             <div className="pc-count-badge">{userData.whitelist?.history?.length || 0}</div>
                                         </div>
                                         <div className="card-body-v2">
@@ -360,13 +359,13 @@ export default function ManagementPage() {
                                                             <div className={`pc-dot-v2 ${h.status === 'ACCEPTED' ? 'green' : 'red'}`}></div>
                                                             <div className="v-stack">
                                                                 <span style={{ fontWeight: 700 }}>{h.status}</span>
-                                                                <span className="pc-hint-v2">{new Date(h.timestamp).toLocaleString()}</span>
+                                                                <span className="pc-hint-v2">{new Date(h.timestamp).toLocaleString(language === 'it' ? 'it-IT' : 'en-US')}</span>
                                                             </div>
                                                         </div>
-                                                        <button className="btn-del-mini-v2" onClick={() => handleDelete('whitelist', h._id)}><Trash size={14} /></button>
+                                                        <button className="btn-del-mini-v2" onClick={() => handleDelete('whitelist', h._id)}><Trash2 size={14} /></button>
                                                     </div>
                                                 ))}
-                                                {(!userData.whitelist?.history || userData.whitelist.history.length === 0) && <div className="pc-empty-mini">Nessun record trovato</div>}
+                                                {(!userData.whitelist?.history || userData.whitelist.history.length === 0) && <div className="pc-empty-mini">{t('management.cards.empty')}</div>}
                                             </div>
                                         </div>
                                     </section>
@@ -374,7 +373,7 @@ export default function ManagementPage() {
                                     <section className="pc-card-v2">
                                         <div className="card-header-v2">
                                             <div className="header-icon"><BookOpen size={18} /></div>
-                                            <h3>Storico Provini</h3>
+                                            <h3>{t('management.cards.staff.title')}</h3>
                                             <div className="pc-count-badge">{userData.background?.history?.length || 0}</div>
                                         </div>
                                         <div className="card-body-v2">
@@ -385,13 +384,13 @@ export default function ManagementPage() {
                                                             <div className="pc-dot-v2 blue"></div>
                                                             <div className="v-stack">
                                                                 <span style={{ fontWeight: 700 }}>SUBMITTED</span>
-                                                                <span className="pc-hint-v2">{new Date(h.timestamp).toLocaleString()}</span>
+                                                                <span className="pc-hint-v2">{new Date(h.timestamp).toLocaleString(language === 'it' ? 'it-IT' : 'en-US')}</span>
                                                             </div>
                                                         </div>
-                                                        <button className="btn-del-mini-v2" onClick={() => handleDelete('background', h._id)}><Trash size={14} /></button>
+                                                        <button className="btn-del-mini-v2" onClick={() => handleDelete('background', h._id)}><Trash2 size={14} /></button>
                                                     </div>
                                                 ))}
-                                                {(!userData.background?.history || userData.background.history.length === 0) && <div className="pc-empty-mini">Nessun record trovato</div>}
+                                                {(!userData.background?.history || userData.background.history.length === 0) && <div className="pc-empty-mini">{t('management.cards.empty')}</div>}
                                             </div>
                                         </div>
                                     </section>
@@ -404,10 +403,10 @@ export default function ManagementPage() {
                         <section className="pc-card-v2" style={{ padding: 0, overflow: 'hidden' }}>
                             <div className="pc-table-filters-v2">
                                 <Search size={18} />
-                                <input placeholder="Filtra log per admin o azione..." value={logSearch} onChange={e => setLogSearch(e.target.value)} />
+                                <input placeholder={t('management.logs.filter')} value={logSearch} onChange={e => setLogSearch(e.target.value)} />
                                 <div className="align-center">
-                                    <button className="pc-btn-outline" style={{ background: '#fff1f2', color: '#ef4444', borderColor: '#fee2e2' }} onClick={handleClearLogs}>
-                                        <Trash2 size={16} /> <span>Pulisci Tutto</span>
+                                    <button className="pc-btn-outline" style={{ background: 'rgba(239, 68, 68, 0.08)', color: '#ef4444', borderColor: 'rgba(239, 68, 68, 0.1)' }} onClick={handleClearLogs}>
+                                        <Trash2 size={16} /> <span>{t('management.logs.clear_btn')}</span>
                                     </button>
                                     <button className="pc-btn-outline" onClick={fetchLogs} disabled={logsLoading}>
                                         <RefreshCcw size={16} className={logsLoading ? 'spin' : ''} />
@@ -418,10 +417,10 @@ export default function ManagementPage() {
                                 <table className="pc-table-v2">
                                     <thead>
                                         <tr>
-                                            <th>DATA / ORA</th>
-                                            <th>AMMINISTRATORE</th>
-                                            <th>AZIONE ESEGUITA</th>
-                                            <th style={{ textAlign: 'right' }}>DETTAGLI</th>
+                                            <th>{t('management.logs.table.date')}</th>
+                                            <th>{t('management.logs.table.admin')}</th>
+                                            <th>{t('management.logs.table.action')}</th>
+                                            <th style={{ textAlign: 'right' }}>{t('management.logs.table.details')}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -431,7 +430,7 @@ export default function ManagementPage() {
                                                 <React.Fragment key={log._id}>
                                                     <tr className={expandedLog === log._id ? 'expanded' : ''}>
                                                         <td className="font-mono" style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                                                            {new Date(log.timestamp).toLocaleString('it-IT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+                                                            {new Date(log.timestamp).toLocaleString(language === 'it' ? 'it-IT' : 'en-US', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
                                                         </td>
                                                         <td>
                                                             <div className="align-center">
@@ -451,7 +450,7 @@ export default function ManagementPage() {
                                                             </button>
                                                         </td>
                                                     </tr>
-                                                    {expandedLog === log._id && (
+                                                     {expandedLog === log._id && (
                                                         <tr className="expand-row">
                                                             <td colSpan="4">
                                                                 <div className="pc-json-viewer">
@@ -523,7 +522,7 @@ export default function ManagementPage() {
             .hero-avatar-box-v2 { width: 72px; height: 72px; background: var(--primary-glow); color: var(--primary); border-radius: 20px; display: flex; align-items: center; justify-content: center; }
             .hero-info-v2 { flex: 1; }
 
-            .hero-stats-grid-v2 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; border-top: 1px solid var(--border); pt: 32px; margin-top: 32px; padding-top: 32px; }
+            .hero-stats-grid-v2 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; border-top: 1px solid var(--border); margin-top: 32px; padding-top: 32px; }
             .h-stat-v2 { background: var(--bg-card); border: 1px solid var(--border); padding: 16px; border-radius: 16px; display: flex; align-items: center; gap: 16px; }
             .h-stat-v2 svg { color: var(--primary); opacity: 0.5; }
             .h-stat-text { display: flex; flex-direction: column; }

@@ -1,18 +1,18 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Head from 'next/head';
-import { 
+import {
   Rocket, Shield, Zap, Sparkles, CheckCircle2, 
   ArrowRight, Search, LayoutGrid, Box, 
   ChevronRight, Terminal, Loader2, Server,
   ShieldCheck, Ticket, MousePointer2, ListChecks,
-  Camera, Mic2, Globe, UserPlus, Bell
+  Camera, Mic2, Globe, UserPlus, Bell, Users
 } from 'lucide-react';
 import api from '../../../utils/api';
 import { useT } from '../../../contexts/LanguageContext';
 
 export default function SetupWizard() {
-  const { t } = useT();
+  const { t, setLanguage: setGlobalLanguage } = useT();
   const router = useRouter();
   const { guildId } = router.query;
   const [phase, setPhase] = useState('welcome'); // welcome, scanner, language, presets, modules, essentials, finalizing, success
@@ -20,22 +20,22 @@ export default function SetupWizard() {
   const [scanLogs, setScanLogs] = useState([]);
   
   // Settings State
-  const [language, setLanguage] = useState('it');
+  const [language, setLanguage] = useState('en');
   const [prefix, setPrefix] = useState('!');
   const [nickname, setNickname] = useState('');
   const [selectedModules, setSelectedModules] = useState(['whitelist', 'tickets', 'verify', 'polls']);
   const [roles, setRoles] = useState([]);
   const [selectedAdminRoles, setSelectedAdminRoles] = useState([]);
   const [selectedStaffRole, setSelectedStaffRole] = useState('');
-  const [ticketCategory, setTicketCategory] = useState('--- SUPPORTO ---');
+  const [ticketCategory, setTicketCategory] = useState('--- SUPPORT ---');
   const [welcomeStyle, setWelcomeStyle] = useState('embed'); // text, embed
   const [channelNames, setChannelNames] = useState({
-    whitelist: '⚖️-candidature',
-    tickets: '🎫-apri-ticket',
-    verify: '✅-verifica',
-    polls: '📊-sondaggi',
+    whitelist: '⚖️-applications',
+    tickets: '🎫-open-ticket',
+    verify: '✅-verification',
+    polls: '📊-polls',
     giveaway: '🎉-giveaways',
-    photocontest: '📸-foto-contest',
+    photocontest: '📸-photo-contest',
     logs: '📜-verix-logs'
   });
   const [createChannels, setCreateChannels] = useState(true);
@@ -51,11 +51,45 @@ export default function SetupWizard() {
   const fetchInitialData = async () => {
     try {
       const res = await api.request(`/config/${guildId}`);
+      if (res.guild?.setupCompleted) {
+        router.push(`/config/${guildId}`);
+        return;
+      }
       setGuildInfo(res.guild);
       setRoles(res.roles || []);
       if (res.guild?.prefix) setPrefix(res.guild.prefix);
     } catch (err) {
       console.error('Error fetching initial data:', err);
+    }
+  };
+
+  const selectLanguage = (lang) => {
+    setLanguage(lang);
+    setGlobalLanguage(lang);
+    
+    // Update channel names based on language
+    if (lang === 'it') {
+        setChannelNames({
+            whitelist: '⚖️-candidature',
+            tickets: '🎫-apri-ticket',
+            verify: '✅-verifica',
+            polls: '📊-sondaggi',
+            giveaway: '🎉-giveaways',
+            photocontest: '📸-foto-contest',
+            logs: '📜-verix-logs'
+        });
+        setTicketCategory('--- SUPPORTO ---');
+    } else {
+        setChannelNames({
+            whitelist: '⚖️-applications',
+            tickets: '🎫-open-ticket',
+            verify: '✅-verification',
+            polls: '📊-polls',
+            giveaway: '🎉-giveaways',
+            photocontest: '📸-photo-contest',
+            logs: '📜-verix-logs'
+        });
+        setTicketCategory('--- SUPPORT ---');
     }
   };
 
@@ -72,7 +106,7 @@ export default function SetupWizard() {
 
   const startScanning = () => {
     setPhase('scanning');
-    const logs = [
+    const logs = language === 'it' ? [
       'Inizializzazione scansione neurale...',
       'Analisi struttura canali Discord...',
       'Verifica gerarchia ruoli...',
@@ -80,6 +114,14 @@ export default function SetupWizard() {
       'Analisi permessi amministrativi...',
       'Mappatura ecosistema server...',
       'Ottimizzazione parametri di sistema...'
+    ] : [
+      'Initializing neural scan...',
+      'Analyzing Discord channel structure...',
+      'Verifying role hierarchy...',
+      'Scanning configuration database...',
+      'Analyzing administrative permissions...',
+      'Mapping server ecosystem...',
+      'Optimizing system parameters...'
     ];
 
     let currentLog = 0;
@@ -138,22 +180,36 @@ export default function SetupWizard() {
       setTimeout(() => setPhase('success'), 1000);
     } catch (err) {
       console.error('Setup error:', err);
-      alert('Si è verificato un errore durante il setup. Riprova.');
+      alert(t('onboarding.error') || 'An error occurred during setup. Please try again.');
       setPhase('modules');
     } finally {
       setLoading(false);
     }
   };
 
+  const handleSkip = async () => {
+    try {
+      setLoading(true);
+      await api.request(`/config/${guildId}/onboarding/skip`, { method: 'POST' });
+      router.push(`/config/${guildId}`);
+    } catch (err) {
+      console.error('Skip error:', err);
+      // Fallback redirect even if API fails as guildId is available
+      router.push(`/config/${guildId}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const modules = [
-    { id: 'whitelist', label: 'Whitelist', icon: ShieldCheck, color: '#6366f1', desc: 'Sistema di candidature per l\'accesso.' },
-    { id: 'tickets', label: 'Ticket System', icon: Ticket, color: '#8b5cf6', desc: 'Supporto avanzato via ticket.' },
-    { id: 'verify', label: 'Security', icon: Shield, color: '#06b6d4', desc: 'Protezione contro bot e raid.' },
-    { id: 'polls', label: 'Poll Studio', icon: ListChecks, color: '#f59e0b', desc: 'Sondaggi interattivi e votazioni.' },
-    { id: 'reactionRoles', label: 'Reaction Roles', icon: MousePointer2, color: '#10b981', desc: 'Assegnazione ruoli automatica.' },
-    { id: 'photocontest', label: 'Photo Contest', icon: Camera, color: '#ec4899', desc: 'Gare fotografiche con votazioni.' },
-    { id: 'welcome', label: 'Welcome Hub', icon: UserPlus, color: '#6366f1', desc: 'Messaggi di benvenuto grafici.' },
-    { id: 'support', label: 'Voice Support', icon: Mic2, color: '#f43f5e', desc: 'Code vocali per assistenza.' }
+    { id: 'whitelist', label: 'Whitelist', icon: ShieldCheck, color: '#6366f1', desc: t('onboarding.module_whitelist_desc') },
+    { id: 'tickets', label: 'Ticket System', icon: Ticket, color: '#8b5cf6', desc: t('onboarding.module_tickets_desc') },
+    { id: 'verify', label: 'Security', icon: Shield, color: '#06b6d4', desc: t('onboarding.module_verify_desc') },
+    { id: 'polls', label: 'Poll Studio', icon: ListChecks, color: '#6366f1', desc: t('onboarding.module_polls_desc') },
+    { id: 'reactionRoles', label: 'Reaction Roles', icon: MousePointer2, color: '#10b981', desc: t('onboarding.module_reactionroles_desc') },
+    { id: 'photocontest', label: 'Photo Contest', icon: Camera, color: '#ec4899', desc: t('onboarding.module_photocontest_desc') },
+    { id: 'welcome', label: 'Welcome Hub', icon: UserPlus, color: '#6366f1', desc: t('onboarding.module_welcome_desc') },
+    { id: 'support', label: 'Voice Support', icon: Mic2, color: '#f43f5e', desc: t('onboarding.module_support_desc') }
   ];
 
   return (
@@ -171,30 +227,38 @@ export default function SetupWizard() {
         {phase === 'welcome' && (
           <div className="phase-welcome animate fade-in">
             <div className="icon-main">
-              <Rocket size={64} className="rocket-anim" />
+              <div className="logo-round-wrapper rocket-anim">
+                <img src="/logo.png" alt="Verix Logo" style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover' }} />
+              </div>
             </div>
-            <h1>Benvenuto in <span className="highlight">Verix Studio</span></h1>
-            <p>Abbiamo rilevato che è il primo accesso per <strong>{guildInfo?.guildName || 'questo server'}</strong>. Iniziamo una breve configurazione guidata per rendere tutto operativo in pochi istanti.</p>
+            <h1>{t('onboarding.welcome_title')} <span className="highlight">Verix Studio</span></h1>
+            <p dangerouslySetInnerHTML={{ __html: t('onboarding.welcome_desc', { guild: guildInfo?.guildName || (language === 'it' ? 'questo server' : 'this server') }) }} />
             
             <div className="setup-features-preview">
                 <div className="feature-item">
                     <Search size={20} />
-                    <span>Scansione intelligente del server</span>
+                    <span>{t('onboarding.feat_scan')}</span>
                 </div>
                 <div className="feature-item">
                     <Box size={20} />
-                    <span>Selezione moduli pre-configurati</span>
+                    <span>{t('onboarding.feat_modules')}</span>
                 </div>
                 <div className="feature-item">
                     <Zap size={20} />
-                    <span>Creazione canali automatica</span>
+                    <span>{t('onboarding.feat_channels')}</span>
                 </div>
             </div>
 
-            <button className="setup-btn-primary" onClick={startScanning}>
-              <span>Inizia Configurazione</span>
-              <ArrowRight size={20} />
-            </button>
+            <div className="setup-actions-welcome">
+              <button className="setup-btn-primary" onClick={startScanning}>
+                <span>{t('onboarding.start_btn')}</span>
+                <ArrowRight size={20} />
+              </button>
+
+              <button className="setup-btn-skip" onClick={handleSkip} disabled={loading}>
+                {loading ? <Loader2 size={18} className="spin" /> : t('onboarding.skip_btn')}
+              </button>
+            </div>
           </div>
         )}
 
@@ -207,7 +271,7 @@ export default function SetupWizard() {
               </div>
               <div className="progress-value">{progress}%</div>
             </div>
-            <h2>Analisi in corso...</h2>
+            <h2>{t('onboarding.scanning_title')}</h2>
             <div className="scan-logs">
               {scanLogs.map((log, i) => (
                 <div key={i} className="log-entry">
@@ -223,29 +287,29 @@ export default function SetupWizard() {
           <div className="phase-language animate fade-in">
             <div className="header-compact">
                 <Globe size={24} color="var(--primary)" />
-                <h2>Identità & Lingua</h2>
-                <p>Personalizziamo le basi del bot per il tuo server.</p>
+                <h2>{t('onboarding.identity_title')}</h2>
+                <p>{t('onboarding.identity_desc')}</p>
             </div>
 
             <div className="language-selection">
                 <div 
                   className={`lang-card ${language === 'it' ? 'active' : ''}`}
-                  onClick={() => setLanguage('it')}
+                  onClick={() => selectLanguage('it')}
                 >
                     <span className="flag">🇮🇹</span>
                     <div className="lang-info">
-                        <strong>Italiano</strong>
-                        <span>Traduzioni complete per server IT.</span>
+                        <strong>{t('onboarding.lang_it')}</strong>
+                        <span>{t('onboarding.lang_it_desc')}</span>
                     </div>
                 </div>
                 <div 
                   className={`lang-card ${language === 'en' ? 'active' : ''}`}
-                  onClick={() => setLanguage('en')}
+                  onClick={() => selectLanguage('en')}
                 >
                     <span className="flag">🇺🇸</span>
                     <div className="lang-info">
-                        <strong>English</strong>
-                        <span>Global standard for international servers.</span>
+                        <strong>{t('onboarding.lang_en')}</strong>
+                        <span>{t('onboarding.lang_en_desc')}</span>
                     </div>
                 </div>
             </div>
@@ -264,7 +328,7 @@ export default function SetupWizard() {
             </div>
 
             <button className="setup-btn-primary full" onClick={() => setPhase('presets')}>
-              <span>Continua</span>
+              <span>{t('common.continue') || (language === 'it' ? 'Continua' : 'Continue')}</span>
               <ChevronRight size={20} />
             </button>
           </div>
@@ -274,16 +338,16 @@ export default function SetupWizard() {
           <div className="phase-presets animate fade-in">
             <div className="header-compact">
                 <Zap size={24} color="#f59e0b" />
-                <h2>Scegli un Modello</h2>
-                <p>Seleziona il tipo di server per applicare una configurazione rapida.</p>
+                <h2>{t('onboarding.presets_title')}</h2>
+                <p>{t('onboarding.presets_desc')}</p>
             </div>
 
             <div className="presets-grid">
                 {[
-                    { id: 'social', label: 'Social & Community', icon: Users, color: '#6366f1', desc: 'Focus su engagement e giveaway.' },
-                    { id: 'security', label: 'Security & RP', icon: ShieldCheck, color: '#10b981', desc: 'Whitelist e sistemi di protezione.' },
-                    { id: 'support', label: 'Customer Support', icon: Mic2, color: '#f43f5e', desc: 'Ticket e assistenza vocale.' },
-                    { id: 'all', label: 'Full Power', icon: Sparkles, color: '#a855f7', desc: 'Attiva tutto l\'ecosistema Verix.' }
+                    { id: 'social', label: t('onboarding.preset_social'), icon: Users, color: '#6366f1', desc: t('onboarding.preset_social_desc') },
+                    { id: 'security', label: t('onboarding.preset_security'), icon: ShieldCheck, color: '#10b981', desc: t('onboarding.preset_security_desc') },
+                    { id: 'support', label: t('onboarding.preset_support'), icon: Mic2, color: '#f43f5e', desc: t('onboarding.preset_support_desc') },
+                    { id: 'all', label: t('onboarding.preset_all'), icon: Sparkles, color: '#a855f7', desc: t('onboarding.preset_all_desc') }
                 ].map(p => (
                     <div key={p.id} className="preset-card" onClick={() => applyPreset(p.id)}>
                         <div className="p-icon" style={{ background: `${p.color}15`, color: p.color }}>
@@ -297,7 +361,7 @@ export default function SetupWizard() {
                 ))}
             </div>
 
-            <div className="skip-link" onClick={() => setPhase('modules')}>O preferisco scegliere i moduli manualmente</div>
+            <div className="skip-link" onClick={() => setPhase('modules')}>{t('onboarding.manual_link')}</div>
           </div>
         )}
 
@@ -305,8 +369,8 @@ export default function SetupWizard() {
           <div className="phase-modules animate fade-in">
             <div className="header-compact">
                 <LayoutGrid size={24} className="icon-spark" />
-                <h2>Raffina i tuoi Strumenti</h2>
-                <p>Personalizza la selezione dei moduli attivi.</p>
+                <h2>{t('onboarding.modules_title')}</h2>
+                <p>{t('onboarding.modules_desc')}</p>
             </div>
 
             <div className="modules-selection-grid">
@@ -335,14 +399,14 @@ export default function SetupWizard() {
                     <input type="checkbox" checked={createChannels} onChange={(e) => setCreateChannels(e.target.checked)} />
                     <span className="toggle-slider"></span>
                     <div className="option-text">
-                        <strong>Crea canali automaticamente</strong>
-                        <span>Verix creerà i canali necessari per ogni modulo.</span>
+                        <strong>{t('onboarding.auto_channels')}</strong>
+                        <span>{t('onboarding.auto_channels_desc')}</span>
                     </div>
                 </label>
             </div>
 
             <button className="setup-btn-primary full" onClick={() => setPhase('essentials')}>
-              <span>Continua</span>
+              <span>{t('common.continue') || (language === 'it' ? 'Continua' : 'Continue')}</span>
               <ChevronRight size={20} />
             </button>
           </div>
@@ -352,13 +416,13 @@ export default function SetupWizard() {
           <div className="phase-essentials animate fade-in">
             <div className="header-compact">
                 <Shield size={24} className="icon-shield" />
-                <h2>Configurazione Avanzata</h2>
-                <p>Imposta i permessi e personalizza i dettagli finali.</p>
+                <h2>{t('onboarding.advanced_title')}</h2>
+                <p>{t('onboarding.advanced_desc')}</p>
             </div>
 
             <div className="essentials-grid">
                 <div className="essentials-section">
-                    <h4><Users size={18} /> Ruoli Amministratori</h4>
+                    <h4><Users size={18} /> {t('onboarding.admin_roles')}</h4>
                     <div className="roles-selector-scroll">
                         {roles.map(role => (
                             <div 
@@ -375,13 +439,13 @@ export default function SetupWizard() {
 
                 <div className="essentials-flex-row">
                     <div className="essentials-section">
-                        <h4><ShieldCheck size={18} /> Ruolo Staff</h4>
+                        <h4><ShieldCheck size={18} /> {t('onboarding.staff_role')}</h4>
                         <select 
                             value={selectedStaffRole} 
                             onChange={(e) => setSelectedStaffRole(e.target.value)}
                             className="setup-select"
                         >
-                            <option value="">Seleziona...</option>
+                            <option value="">{language === 'it' ? 'Seleziona...' : 'Select...'}</option>
                             {roles.map(role => (
                                 <option key={role.id} value={role.id}>{role.name}</option>
                             ))}
@@ -389,9 +453,9 @@ export default function SetupWizard() {
                     </div>
 
                     <div className="essentials-section">
-                        <h4><UserPlus size={18} /> Welcome Style</h4>
+                        <h4><UserPlus size={18} /> {t('onboarding.welcome_style')}</h4>
                         <div className="toggle-switch-v2">
-                            <button className={welcomeStyle === 'text' ? 'active' : ''} onClick={() => setWelcomeStyle('text')}>Testo</button>
+                            <button className={welcomeStyle === 'text' ? 'active' : ''} onClick={() => setWelcomeStyle('text')}>{language === 'it' ? 'Testo' : 'Text'}</button>
                             <button className={welcomeStyle === 'embed' ? 'active' : ''} onClick={() => setWelcomeStyle('embed')}>Embed</button>
                         </div>
                     </div>
@@ -399,11 +463,11 @@ export default function SetupWizard() {
 
                 {selectedModules.includes('tickets') && (
                     <div className="essentials-section">
-                        <h4><Ticket size={18} /> Categoria Ticket</h4>
+                        <h4><Ticket size={18} /> {t('tickets.categories')}</h4>
                         <input 
                           type="text" 
                           className="setup-input-v2" 
-                          placeholder="Es: --- SUPPORTO ---" 
+                          placeholder={language === 'it' ? 'Es: --- SUPPORTO ---' : 'Ex: --- SUPPORT ---'} 
                           value={ticketCategory} 
                           onChange={(e) => setTicketCategory(e.target.value)} 
                         />
@@ -412,7 +476,7 @@ export default function SetupWizard() {
 
                 {createChannels && (
                     <div className="essentials-section full-width">
-                        <h4><Bell size={18} /> Nomi Canali</h4>
+                        <h4><Bell size={18} /> {t('onboarding.channel_names')}</h4>
                         <div className="channel-names-grid">
                             {Object.keys(channelNames).map(key => {
                                 if (!selectedModules.includes(key) && key !== 'logs') return null;
@@ -433,7 +497,7 @@ export default function SetupWizard() {
             </div>
 
             <button className="setup-btn-primary full" onClick={handleComplete}>
-              <span>Finalizza Configurazione</span>
+              <span>{t('onboarding.finalize_btn')}</span>
               <ChevronRight size={20} />
             </button>
           </div>
@@ -442,8 +506,8 @@ export default function SetupWizard() {
         {phase === 'finalizing' && (
           <div className="phase-finalizing animate fade-in">
             <Loader2 size={64} className="spin-loader" />
-            <h2>Configurazione in corso...</h2>
-            <p>Stiamo scrivendo i dati sul database e preparando l'ecosistema Discord per il tuo server.</p>
+            <h2>{t('onboarding.finalizing_title')}</h2>
+            <p>{t('onboarding.finalizing_desc')}</p>
             <div className="progress-bar-container">
                 <div className="progress-bar-fill" style={{ width: `${progress}%` }}></div>
             </div>
@@ -455,10 +519,10 @@ export default function SetupWizard() {
             <div className="success-icon-wrapper">
                 <CheckCircle2 size={80} color="#10b981" />
             </div>
-            <h2>Setup Completato!</h2>
-            <p>Il tuo server è ora alimentato dalla tecnologia Verix Platinum. Benvenuto a bordo.</p>
+            <h2>{t('onboarding.success_title')}</h2>
+            <p>{t('onboarding.success_desc')}</p>
             <button className="setup-btn-success" onClick={() => router.push(`/config/${guildId}`)}>
-              <span>Accedi alla Dashboard</span>
+              <span>{t('onboarding.dashboard_btn')}</span>
               <ArrowRight size={20} />
             </button>
           </div>
@@ -510,7 +574,7 @@ export default function SetupWizard() {
         h1 { font-size: 2.8rem; font-weight: 800; color: var(--text-heading); margin-bottom: 16px; letter-spacing: -0.02em; }
         h2 { font-size: 2rem; font-weight: 800; color: var(--text-heading); margin-bottom: 12px; }
         p { color: var(--text-muted); font-size: 1.1rem; line-height: 1.6; margin-bottom: 32px; font-weight: 500; }
-        .highlight { color: var(--primary); }
+        .highlight { color: var(--primary); font-weight: 800; }
 
         /* Welcome */
         .phase-welcome { text-align: center; }
@@ -522,8 +586,15 @@ export default function SetupWizard() {
         .feature-item { display: flex; align-items: center; gap: 10px; background: var(--bg-badge); padding: 12px 20px; border-radius: 100px; color: var(--text-muted); font-weight: 700; font-size: 0.9rem; border: 1px solid var(--border); }
 
         .setup-btn-primary { background: var(--primary); color: white; border: none; padding: 20px 40px; border-radius: 20px; font-size: 1.1rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 12px; margin: 0 auto; transition: 0.3s; box-shadow: 0 10px 30px rgba(var(--primary-rgb), 0.3); }
+
         .setup-btn-primary:hover { transform: translateY(-5px) scale(1.02); box-shadow: 0 20px 40px rgba(var(--primary-rgb), 0.4); }
         .setup-btn-primary.full { width: 100%; justify-content: center; margin-top: 40px; }
+
+        .setup-actions-welcome { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+        .setup-btn-skip { background: transparent; color: var(--text-muted); border: none; padding: 10px 20px; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: 0.3s; opacity: 0.7; }
+        .setup-btn-skip:hover { opacity: 1; color: var(--primary); }
+        .setup-btn-skip:disabled { cursor: not-allowed; opacity: 0.5; }
+        .spin { animation: spin 2s linear infinite; }
 
         /* Scanning */
         .phase-scanning { text-align: center; }
@@ -539,7 +610,7 @@ export default function SetupWizard() {
 
         /* Modules */
         .header-compact { text-align: center; margin-bottom: 40px; }
-        .icon-spark { color: #f59e0b; margin-bottom: 16px; animation: pulse 2s infinite; }
+        .icon-spark { color: #6366f1; margin-bottom: 16px; animation: pulse 2s infinite; }
         .modules-selection-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 32px; }
         .mod-selector-card { display: flex; align-items: center; gap: 16px; padding: 20px; background: var(--bg-badge); border-radius: 24px; border: 2px solid var(--border); cursor: pointer; transition: 0.2s; position: relative; }
         .mod-selector-card:hover { border-color: var(--primary-muted); transform: scale(1.02); }
@@ -605,7 +676,7 @@ export default function SetupWizard() {
         .toggle-slider:before { content: ""; position: absolute; width: 20px; height: 20px; background: white; border-radius: 50%; top: 3px; left: 3px; transition: 0.3s; }
         input:checked + .toggle-slider { background: var(--primary); }
         input:checked + .toggle-slider:before { transform: translateX(24px); }
-        input { display: none; }
+        .option-toggle input { display: none; }
 
         /* Finalizing */
         .phase-finalizing { text-align: center; padding: 40px 0; }

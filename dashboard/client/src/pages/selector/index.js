@@ -2,6 +2,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { 
+  Sun,
+  Moon,
   LogOut, 
   Search, 
   Server, 
@@ -25,16 +27,19 @@ import LoadingScreen from '../../components/LoadingScreen';
 import { useT } from '../../contexts/LanguageContext';
 
 export default function Selector() {
-  const { t } = useT();
+  const { t, language, setLanguage } = useT();
   const { user, loading, logout, fetchUser, refreshGuilds } = useAuth();
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState('all'); // all, active, missing
   const [mounted, setMounted] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [theme, setTheme] = useState('dark');
 
   useEffect(() => {
     setMounted(true);
+    const savedTheme = localStorage.getItem('verix-theme') || 'dark';
+    setTheme(savedTheme);
   }, []);
 
   useEffect(() => {
@@ -52,7 +57,7 @@ export default function Selector() {
     setRefreshing(true);
     try {
         await refreshGuilds();
-        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Lista server aggiornata!', type: 'success' } }));
+        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('selector.refresh_success'), type: 'success' } }));
     } catch (e) {
         console.error('Refresh failed:', e);
     } finally {
@@ -62,6 +67,12 @@ export default function Selector() {
 
   if (!mounted || (loading && !user)) return <LoadingScreen message={t('selector.loading')} />;
   if (!user) return null;
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    localStorage.setItem('verix-theme', newTheme);
+  };
 
   // Filter logic
   const filteredGuilds = user.guilds
@@ -143,41 +154,57 @@ export default function Selector() {
   };
 
   return (
-    <div className="pc-selector-wrapper fade-in">
-        <header className="pc-selector-header-v2">
+    <div className={`pc-selector-wrapper fade-in ${theme}-mode`}>
+        {/* Background Orbs */}
+        <div className="bg-orb orb-1"></div>
+        <div className="bg-orb orb-2"></div>
+
+        <header className="pc-selector-header-v2 glass-header">
             <div className="portal-brand-v2">
                 <div className="brand-logo-v2">
                     <img src="/logo.png" alt="Verix" />
                 </div>
                 <div className="brand-text-v2">
                     <span className="portal-tag-v2">VERIX PORTAL</span>
-                    <h1>Seleziona un Server</h1>
+                    <h1 className="outfit-font">{t('selector.title')}</h1>
                 </div>
             </div>
 
             <div className="header-actions-v2">
-                <div className="user-profile-mini-v2">
-                    <img src={user?.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : 'https://cdn.discordapp.com/embed/avatars/0.png'} alt={user.username} />
-                    <div className="user-info-v2">
-                        <span className="u-name-v2">{user.username}</span>
-                        <span className="u-status-v2">Amministratore</span>
+                <div className="user-profile-premium">
+                    <div className="user-avatar-p">
+                        <img src={user?.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : 'https://cdn.discordapp.com/embed/avatars/0.png'} alt={user.username} />
+                        <div className="online-indicator"></div>
+                    </div>
+                    <div className="user-info-p">
+                        <span className="u-name-p">{user.username}</span>
+                        <div className="badge-staff-v2">STAFF</div>
                     </div>
                 </div>
-                <button 
-                  onClick={handleRefresh} 
-                  className={`pc-refresh-btn-v2 ${refreshing ? 'spinning' : ''}`}
-                  disabled={refreshing}
-                >
-                    <RefreshCw size={18} />
-                </button>
-                <button onClick={logout} className="pc-logout-btn-v2">
-                    <LogOut size={18} />
-                </button>
+                <div className="action-btns-group">
+                    <button className="theme-toggle-btn-v2 lang-toggle-v2" onClick={() => setLanguage(language === 'it' ? 'en' : 'it')}>
+                        <Globe size={18} />
+                        <span className="lang-code-v2">{language.toUpperCase()}</span>
+                    </button>
+                    <button className="theme-toggle-btn-v2" onClick={toggleTheme}>
+                        {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+                    </button>
+                    <button 
+                    onClick={handleRefresh} 
+                    className={`pc-refresh-btn-v2 ${refreshing ? 'spinning' : ''}`}
+                    disabled={refreshing}
+                    >
+                        <RefreshCw size={18} />
+                    </button>
+                    <button onClick={logout} className="pc-logout-btn-v2">
+                        <LogOut size={18} />
+                    </button>
+                </div>
             </div>
         </header>
 
         <div className="pc-selector-content-v2">
-            <div className="pc-controls-bar-v2">
+            <div className="pc-controls-bar-v2 glass-controls">
                 <div className="pc-search-box-v2">
                     <Search className="search-icon" size={20} />
                     <input 
@@ -210,10 +237,10 @@ export default function Selector() {
                 {activeGuilds.length > 0 && (filter === 'all' || filter === 'active') && (
                     <section className="guild-section-v2">
                         <div className="section-title-v2">
-                            <div className="title-icon-v2" style={{ background: '#ecfdf5', color: '#10b981' }}>
+                            <div className="title-icon-v2" style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}>
                                 <Shield size={18} />
                             </div>
-                            <h2>Server Attivi</h2>
+                            <h2 className="outfit-font">Server Attivi</h2>
                             <span className="count-pill-v2">{activeGuilds.length}</span>
                         </div>
                         <div className="pc-guilds-grid-v2">
@@ -223,12 +250,12 @@ export default function Selector() {
                 )}
 
                 {pendingGuilds.length > 0 && (filter === 'all' || filter === 'missing') && (
-                    <section className="guild-section-v2" style={{ marginTop: '48px' }}>
+                    <section className="guild-section-v2" style={{ marginTop: '64px' }}>
                         <div className="section-title-v2">
-                            <div className="title-icon-v2" style={{ background: '#f9fafb', color: '#6b7280' }}>
+                            <div className="title-icon-v2" style={{ background: 'rgba(148, 163, 184, 0.1)', color: '#94a3b8' }}>
                                 <Globe size={18} />
                             </div>
-                            <h2>Altri Server</h2>
+                            <h2 className="outfit-font">Altri Server</h2>
                             <span className="count-pill-v2">{pendingGuilds.length}</span>
                         </div>
                         <div className="pc-guilds-grid-v2">
@@ -238,11 +265,11 @@ export default function Selector() {
                 )}
 
                 {filteredGuilds.length === 0 && (
-                    <div className="pc-empty-selector-v2">
+                    <div className="pc-empty-selector-v2 glass-card">
                         <div className="empty-icon-v2"><Search size={48} /></div>
                         <h3>Nessun server trovato</h3>
                         <p>Prova a cambiare i filtri o la chiave di ricerca.</p>
-                        <button className="pc-btn-primary" onClick={() => {setSearchTerm(''); setFilter('all');}}>
+                        <button className="pc-btn-primary-v2" onClick={() => {setSearchTerm(''); setFilter('all');}}>
                             Resetta Filtri
                         </button>
                     </div>
@@ -251,90 +278,210 @@ export default function Selector() {
         </div>
 
         <style jsx global>{`
-            .pc-selector-wrapper { min-height: 100vh; padding: 40px; background: var(--bg-main); font-family: 'Inter', sans-serif; }
-            
+            @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Inter:wght@400;600;800&display=swap');
+
+            :root {
+                --bg-primary: #02040a;
+                --text-primary: #ffffff;
+                --text-secondary: #94a3b8;
+                --card-bg: rgba(15, 23, 42, 0.3);
+                --card-border: rgba(255, 255, 255, 0.04);
+                --glass-header: rgba(15, 23, 42, 0.4);
+                --accent: #6366f1;
+            }
+
+            .light-mode {
+                --bg-primary: #f8fafc;
+                --text-primary: #0f172a;
+                --text-secondary: #475569;
+                --card-bg: #ffffff;
+                --card-border: rgba(0,0,0,0.05);
+                --glass-header: rgba(255, 255, 255, 0.8);
+            }
+
+            .pc-selector-wrapper { 
+                min-height: 100vh; 
+                padding: 60px 40px; 
+                background: var(--bg-primary); 
+                color: var(--text-primary);
+                font-family: 'Inter', sans-serif;
+                position: relative;
+                overflow-x: hidden;
+                transition: background 0.3s, color 0.3s;
+            }
+
+            .outfit-font { font-family: 'Outfit', sans-serif !important; }
+
+            /* Background Orbs */
+            .bg-orb {
+                position: fixed;
+                border-radius: 50%;
+                filter: blur(150px);
+                z-index: 0;
+                opacity: 0.1;
+                pointer-events: none;
+            }
+            .orb-1 { width: 800px; height: 800px; background: #6366f1; top: -300px; left: -200px; }
+            .orb-2 { width: 600px; height: 600px; background: #ec4899; bottom: -200px; right: -100px; }
+
             /* Header */
-            .pc-selector-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 48px; max-width: 1400px; margin-left: auto; margin-right: auto; }
-            .portal-brand-v2 { display: flex; align-items: center; gap: 24px; }
-            .brand-logo-v2 { width: 56px; height: 56px; border-radius: 18px; background: var(--bg-card); padding: 8px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
-            .brand-logo-v2 img { width: 100%; height: 100%; border-radius: 10px; }
-            .brand-text-v2 h1 { font-family: 'Inter', sans-serif; font-size: 1.8rem; font-weight: 800; margin: 0; color: var(--text-heading); letter-spacing: -0.03em; }
-            .portal-tag-v2 { font-size: 0.65rem; font-weight: 800; color: var(--primary); letter-spacing: 2px; }
-
-            .header-actions-v2 { display: flex; align-items: center; gap: 24px; }
-            .user-profile-mini-v2 { display: flex; align-items: center; gap: 12px; background: var(--bg-card); padding: 8px 16px 8px 8px; border-radius: 100px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); border: 1px solid var(--border); }
-            .user-profile-mini-v2 img { width: 36px; height: 36px; border-radius: 50%; }
-            .user-info-v2 { display: flex; flex-direction: column; }
-            .u-name-v2 { font-size: 0.85rem; font-weight: 800; color: var(--text-heading); }
-            .u-status-v2 { font-size: 0.65rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+            .pc-selector-header-v2 { 
+                display: flex; 
+                justify-content: space-between; 
+                align-items: center; 
+                margin-bottom: 60px; 
+                max-width: 1400px; 
+                margin-left: auto; 
+                margin-right: auto; 
+                position: relative;
+                z-index: 10;
+            }
             
-            .pc-refresh-btn-v2 { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--border); background: var(--bg-card); color: var(--primary); cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
-            .pc-refresh-btn-v2:hover { background: var(--bg-badge); transform: scale(1.05); }
-            .pc-refresh-btn-v2.spinning :global(svg) { animation: spin 1s linear infinite; }
-            @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+            .glass-header {
+                background: var(--glass-header);
+                backdrop-filter: blur(20px);
+                padding: 24px 32px;
+                border-radius: 32px;
+                border: 1px solid var(--card-border);
+                box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+            }
 
-            .pc-logout-btn-v2 { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--border); background: var(--bg-card); color: var(--error); cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; }
-            .pc-logout-btn-v2:hover { background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.2); transform: scale(1.05); }
+            .portal-brand-v2 { display: flex; align-items: center; gap: 24px; }
+            .brand-logo-v2 { width: 60px; height: 60px; border-radius: 20px; background: rgba(255,255,255,0.03); padding: 10px; border: 1px solid var(--card-border); }
+            .brand-logo-v2 img { width: 100%; height: 100%; border-radius: 12px; }
+            .brand-text-v2 { display: flex; flex-direction: column; gap: 0; }
+            .brand-text-v2 h1 { font-size: 2rem; font-weight: 800; margin: -8px 0 0 0; color: var(--text-primary); letter-spacing: -0.04em; }
+            .portal-tag-v2 { font-size: 0.65rem; font-weight: 900; color: var(--accent); letter-spacing: 3px; line-height: 1; }
+
+            .header-actions-v2 { display: flex; align-items: center; gap: 20px; }
+            
+            .user-profile-premium { 
+                display: flex; 
+                align-items: center; 
+                gap: 16px; 
+                background: var(--card-bg); 
+                padding: 8px 20px 8px 8px; 
+                border-radius: 100px; 
+                border: 1px solid var(--card-border);
+                transition: 0.3s;
+            }
+            .user-profile-premium:hover { background: rgba(255,255,255,0.05); border-color: var(--accent); }
+            
+            .user-avatar-p { position: relative; }
+            .user-avatar-p img { width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--accent); }
+            .online-indicator { position: absolute; bottom: 2px; right: 2px; width: 12px; height: 12px; background: #10b981; border: 2px solid var(--bg-primary); border-radius: 50%; }
+            
+            .user-info-p { display: flex; flex-direction: column; }
+            .u-name-p { font-size: 0.95rem; font-weight: 800; color: var(--text-primary); }
+            .badge-staff-v2 { font-size: 0.6rem; font-weight: 900; color: var(--accent); letter-spacing: 1px; }
+            
+            .lang-toggle-v2 { width: auto !important; padding: 0 16px !important; gap: 8px; }
+            .lang-code-v2 { font-size: 0.75rem; font-weight: 900; }
+
+            .action-btns-group { display: flex; gap: 12px; }
+            .theme-toggle-btn-v2, .pc-refresh-btn-v2, .pc-logout-btn-v2 { 
+                width: 50px; height: 50px; border-radius: 50%; 
+                border: 1px solid var(--card-border); 
+                background: var(--card-bg); 
+                color: var(--text-primary); cursor: pointer; transition: 0.3s; 
+                display: flex; align-items: center; justify-content: center; 
+            }
+            .theme-toggle-btn-v2:hover { background: var(--accent); color: #fff; transform: rotate(15deg); }
+            .pc-refresh-btn-v2:hover { background: rgba(99, 102, 241, 0.1); color: var(--accent); border-color: var(--accent); transform: rotate(180deg); }
+            .pc-logout-btn-v2:hover { background: rgba(239, 68, 68, 0.1); color: #ef4444; border-color: #ef4444; transform: translateY(-3px); }
 
             /* Controls */
-            .pc-controls-bar-v2 { max-width: 1400px; margin: 0 auto 48px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 24px; }
-            .pc-search-box-v2 { flex: 1; min-width: 300px; position: relative; display: flex; align-items: center; background: var(--bg-card); border: 1.5px solid var(--border); border-radius: 20px; transition: 0.2s; padding: 0 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
-            .pc-search-box-v2:focus-within { border-color: var(--primary); box-shadow: 0 10px 20px rgba(var(--primary-rgb), 0.1); }
-            .pc-search-box-v2 input { width: 100%; background: transparent; border: none; padding: 18px 12px; font-weight: 700; color: var(--text-main); outline: none; font-size: 1rem; }
-            .search-icon { color: var(--text-dim); }
+            .pc-controls-bar-v2 { 
+                max-width: 1400px; margin: 0 auto 60px; 
+                display: flex; justify-content: space-between; align-items: center; 
+                gap: 24px; position: relative; z-index: 5;
+            }
+            .glass-controls {
+                background: var(--card-bg);
+                backdrop-filter: blur(10px);
+                padding: 12px;
+                border-radius: 24px;
+                border: 1px solid var(--card-border);
+            }
 
-            .pc-filters-row-v2 { display: flex; gap: 12px; background: var(--bg-card); padding: 8px; border-radius: 20px; border: 1.5px solid var(--border); }
-            .filter-chip-v2 { display: flex; align-items: center; gap: 10px; padding: 10px 20px; border-radius: 14px; border: none; background: transparent; color: var(--text-muted); font-weight: 800; font-size: 0.85rem; cursor: pointer; transition: 0.2s; }
-            .filter-chip-v2.active { background: var(--primary); color: white; box-shadow: 0 8px 16px rgba(var(--primary-rgb), 0.2); }
+            .pc-search-box-v2 { 
+                flex: 1; position: relative; display: flex; align-items: center; 
+                background: var(--card-bg); 
+                border: 1px solid var(--card-border); 
+                border-radius: 18px; transition: 0.3s; padding: 0 20px; 
+            }
+            .pc-search-box-v2:focus-within { border-color: var(--accent); background: rgba(255,255,255,0.04); box-shadow: 0 0 20px rgba(99, 102, 241, 0.1); }
+            .pc-search-box-v2 input { width: 100%; background: transparent; border: none; padding: 16px 12px; font-weight: 600; color: var(--text-primary); outline: none; font-size: 1rem; }
+            .search-icon { color: var(--text-secondary); }
 
-            /* Grid */
-            .pc-guilds-sections-v2 { max-width: 1400px; margin: 0 auto; }
-            .section-title-v2 { display: flex; align-items: center; gap: 16px; margin-bottom: 32px; }
-            .title-icon-v2 { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-            .section-title-v2 h2 { margin: 0; font-family: 'Inter'; font-size: 1.5rem; font-weight: 800; color: var(--text-heading); letter-spacing: -0.02em; }
-            .count-pill-v2 { background: var(--bg-badge); color: var(--text-muted); padding: 4px 10px; border-radius: 100px; font-size: 0.75rem; font-weight: 800; }
+            .pc-filters-row-v2 { display: flex; gap: 8px; background: rgba(0,0,0,0.1); padding: 6px; border-radius: 16px; }
+            .filter-chip-v2 { 
+                display: flex; align-items: center; gap: 8px; padding: 10px 18px; 
+                border-radius: 12px; border: none; background: transparent; 
+                color: var(--text-secondary); font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: 0.3s; 
+            }
+            .filter-chip-v2.active { background: var(--accent); color: white; box-shadow: 0 8px 16px rgba(99, 102, 241, 0.2); }
+            .filter-chip-v2:not(.active):hover { color: var(--text-primary); background: rgba(255,255,255,0.03); }
 
-            .pc-guilds-grid-v2 { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
+            /* Section */
+            .guild-section-v2 { position: relative; z-index: 1; margin-bottom: 80px; }
+            .section-title-v2 { display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 32px; }
+            .title-icon-v2 { width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; }
+            .section-title-v2 h2 { margin: 0; font-size: 1.8rem; font-weight: 800; color: var(--text-primary); letter-spacing: -0.03em; }
+            .count-pill-v2 { background: var(--card-bg); color: var(--text-secondary); padding: 4px 12px; border-radius: 100px; font-size: 0.8rem; font-weight: 800; border: 1px solid var(--card-border); }
+
+            .pc-guilds-grid-v2 { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; justify-content: center; max-width: 1400px; margin: 0 auto; }
             
-            /* Guild Card V2 */
-            .pc-guild-card-v2 { background: var(--bg-card); border-radius: 28px; padding: 24px; border: 1px solid var(--border); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; display: flex; flex-direction: column; position: relative; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
-            .pc-guild-card-v2:hover { transform: translateY(-8px); border-color: var(--primary); box-shadow: 0 20px 40px rgba(0,0,0,0.08); }
+            /* Card V2 */
+            .pc-guild-card-v2 { 
+                background: var(--card-bg); 
+                backdrop-filter: blur(10px);
+                border-radius: 32px; padding: 24px; 
+                border: 1px solid var(--card-border); 
+                transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+                cursor: pointer; display: flex; flex-direction: column; 
+                position: relative; overflow: hidden;
+            }
+            .pc-guild-card-v2:hover { transform: translateY(-10px) scale(1.02); border-color: var(--accent); box-shadow: 0 30px 60px rgba(0,0,0,0.1); background: var(--card-bg); }
             
             .card-top-v2 { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
-            .guild-avatar-v2 { position: relative; width: 64px; height: 64px; }
-            .guild-avatar-v2 img { width: 100%; height: 100%; border-radius: 20px; object-fit: cover; }
-            .avatar-fallback { width: 100%; height: 100%; border-radius: 20px; background: var(--bg-badge); color: var(--text-dim); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.4rem; }
-            .status-ring-v2 { position: absolute; bottom: -4px; right: -4px; width: 20px; height: 20px; border-radius: 50%; border: 4px solid var(--bg-card); }
-            .status-ring-v2.online { background: var(--success); }
-            .status-ring-v2.offline { background: var(--text-dim); }
+            .guild-avatar-v2 { position: relative; width: 72px; height: 72px; }
+            .guild-avatar-v2 img { width: 100%; height: 100%; border-radius: 22px; object-fit: cover; border: 2px solid var(--card-border); }
+            .avatar-fallback { width: 100%; height: 100%; border-radius: 22px; background: var(--card-border); color: var(--text-secondary); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.6rem; border: 2px solid var(--card-border); }
+            .status-ring-v2 { position: absolute; bottom: -4px; right: -4px; width: 22px; height: 22px; border-radius: 50%; border: 4px solid var(--bg-primary); }
+            .status-ring-v2.online { background: #10b981; box-shadow: 0 0 10px rgba(16, 185, 129, 0.5); }
+            .status-ring-v2.offline { background: #64748b; }
 
             .tier-badges-v2 { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
-            .pc-badge-platinum { background: rgba(168, 85, 247, 0.1); color: #a855f7; padding: 4px 10px; border-radius: 8px; font-size: 0.6rem; font-weight: 800; border: 1px solid rgba(168, 85, 247, 0.2); display: flex; align-items: center; gap: 6px; }
-            .pc-badge-premium { background: rgba(217, 119, 6, 0.1); color: #d97706; padding: 4px 10px; border-radius: 8px; font-size: 0.6rem; font-weight: 800; border: 1px solid rgba(217, 119, 6, 0.2); display: flex; align-items: center; gap: 6px; }
+            .pc-badge-platinum { background: rgba(168, 85, 247, 0.1); color: #a855f7; padding: 6px 12px; border-radius: 100px; font-size: 0.65rem; font-weight: 900; border: 1px solid rgba(168, 85, 247, 0.2); display: flex; align-items: center; gap: 6px; }
+            .pc-badge-premium { background: rgba(217, 119, 6, 0.1); color: #d97706; padding: 6px 12px; border-radius: 100px; font-size: 0.65rem; font-weight: 900; border: 1px solid rgba(217, 119, 6, 0.2); display: flex; align-items: center; gap: 6px; }
 
-            .card-body-v2 h3 { margin: 0 0 8px; font-family: 'Inter'; font-size: 1.25rem; font-weight: 800; color: var(--text-heading); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: -0.02em; }
+            .card-body-v2 h3 { margin: 0 0 8px; font-family: 'Outfit'; font-size: 1.4rem; font-weight: 800; color: var(--text-primary); letter-spacing: -0.02em; }
             .guild-meta-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-            .guild-id-v2 { font-size: 0.75rem; font-weight: 700; color: var(--text-dim); }
-            .status-pill-v2 { font-size: 0.65rem; font-weight: 800; letter-spacing: 0.5px; }
-            .status-pill-v2.active { color: var(--success); }
-            .status-pill-v2.missing { color: var(--text-dim); }
+            .guild-id-v2 { font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); }
+            .status-pill-v2 { font-size: 0.7rem; font-weight: 900; letter-spacing: 1px; }
+            .status-pill-v2.active { color: #10b981; }
+            .status-pill-v2.missing { color: var(--text-secondary); }
 
-            .card-footer-v2 { border-top: 1px solid var(--border); padding-top: 20px; display: flex; justify-content: space-between; align-items: center; }
-            .action-text-v2 { font-size: 0.85rem; font-weight: 800; color: var(--text-muted); }
-            .pc-guild-card-v2.active .action-text-v2 { color: var(--primary); }
-            .action-icon-v2 { width: 32px; height: 32px; border-radius: 50%; background: var(--bg-badge); display: flex; align-items: center; justify-content: center; color: var(--text-muted); transition: 0.2s; }
-            .pc-guild-card-v2:hover .action-icon-v2 { background: var(--primary); color: white; transform: rotate(-45deg); }
+            .card-footer-v2 { border-top: 1px solid var(--card-border); padding-top: 20px; display: flex; justify-content: space-between; align-items: center; }
+            .action-text-v2 { font-size: 0.9rem; font-weight: 800; color: var(--text-secondary); transition: 0.3s; }
+            .pc-guild-card-v2:hover .action-text-v2 { color: var(--text-primary); }
+            .action-icon-v2 { width: 36px; height: 36px; border-radius: 50%; background: var(--card-bg); display: flex; align-items: center; justify-content: center; color: var(--text-secondary); transition: 0.3s; }
+            .pc-guild-card-v2:hover .action-icon-v2 { background: var(--accent); color: white; transform: translateX(5px); }
 
             /* Empty State */
-            .pc-empty-selector-v2 { text-align: center; padding: 80px; background: var(--bg-card); border-radius: 40px; border: 2px dashed var(--border); margin-top: 40px; }
-            .empty-icon-v2 { width: 80px; height: 80px; background: var(--bg-badge); color: var(--text-dim); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; }
-            .pc-empty-selector-v2 h3 { font-family: 'Inter'; font-size: 1.5rem; font-weight: 800; margin-bottom: 8px; color: var(--text-heading); }
-            .pc-empty-selector-v2 p { color: var(--text-muted); margin-bottom: 32px; }
+            .pc-empty-selector-v2 { text-align: center; padding: 100px 40px; border-radius: 40px; border: 2px dashed var(--card-border); margin-top: 40px; }
+            .empty-icon-v2 { width: 90px; height: 90px; background: var(--card-bg); color: var(--text-secondary); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 32px; }
+            .pc-empty-selector-v2 h3 { font-size: 1.8rem; font-weight: 800; margin-bottom: 12px; color: var(--text-primary); }
+            .pc-empty-selector-v2 p { color: var(--text-secondary); margin-bottom: 40px; }
+            .pc-btn-primary-v2 { background: var(--accent); color: white; border: none; padding: 18px 36px; border-radius: 18px; font-weight: 800; cursor: pointer; transition: 0.3s; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2); }
+            .pc-btn-primary-v2:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(99, 102, 241, 0.3); }
 
-            .pc-btn-primary { background: var(--primary); color: white; border: none; padding: 16px 32px; border-radius: 16px; font-weight: 700; cursor: pointer; transition: 0.3s; }
-            
             @media (max-width: 768px) {
-                .pc-selector-wrapper { padding: 20px; }
+                .pc-selector-wrapper { padding: 30px 20px; }
+                .pc-selector-header-v2 { flex-direction: column; gap: 32px; align-items: stretch; text-align: center; }
+                .portal-brand-v2 { flex-direction: column; gap: 16px; }
+                .header-actions-v2 { justify-content: center; }
                 .pc-controls-bar-v2 { flex-direction: column; align-items: stretch; }
                 .pc-guilds-grid-v2 { grid-template-columns: 1fr; }
             }
@@ -342,4 +489,3 @@ export default function Selector() {
     </div>
   );
 }
-

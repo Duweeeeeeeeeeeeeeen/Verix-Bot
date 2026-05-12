@@ -10,7 +10,7 @@ import {
     Trash, Search, Settings, ShieldCheck, Lock, ChevronRight, ArrowRight, Info, AlertCircle, 
     Layout, Terminal, ShieldX, Activity, Eye, EyeOff, Globe, Layers, Palette, Users, 
     MessageCircle, Hash, Box, Filter, Sparkles, Star, MousePointer2, ShieldQuestion,
-    VolumeX, UserMinus, Network, Timer, Gauge, ShieldHalf, RefreshCw
+    VolumeX, UserMinus, Network, Timer, Gauge, ShieldHalf, RefreshCw, RotateCcw
 } from 'lucide-react';
 import { mergeConfig } from '../../../utils/defaults';
 import Head from 'next/head';
@@ -48,7 +48,11 @@ export default function ModerationConfig() {
         setConfig(mergeConfig(configRes.data || configRes, 'moderation'));
       }
       if (discordRes) {
-        setDiscordData(discordRes.data || discordRes);
+        const dData = discordRes.data || discordRes;
+        setDiscordData({
+          ...dData,
+          channels: (dData.channels || []).filter(c => c.type === 0 || c.type === 5)
+        });
       }
     } catch (error) {
       console.error("Moderation load error:", error);
@@ -60,6 +64,26 @@ export default function ModerationConfig() {
 
   const showToast = (message, type = 'success') => {
     window.dispatchEvent(new CustomEvent('show-toast', { detail: { message, type } }));
+  };
+
+  const handleReset = async () => {
+    if (!confirm(t('common.reset_confirm'))) return;
+    
+    setLoading(true);
+    window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
+    try {
+      const res = await api.request(`/config/${guildId}/moderation/reset`, { method: 'POST' });
+      if (res.success) {
+        setConfig(mergeConfig(res.data, 'moderation'));
+        showToast(t('common.reset_success'));
+      }
+    } catch (error) {
+      console.error("Reset error:", error);
+      showToast(t('common.reset_error'), 'error');
+    } finally {
+      setLoading(false);
+      window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
+    }
   };
 
   const handleSave = async () => {
@@ -134,30 +158,23 @@ export default function ModerationConfig() {
             </div>
             
             <div className="header-controls">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--bg-badge)', padding: '10px 20px', borderRadius: '14px', border: '1.5px solid var(--border)' }}>
-                    <label className="pc-toggle-v2" style={{ position: 'relative', width: '42px', height: '22px' }}>
+                <div className="pc-toggle-container-v2">
+                    <label className="pc-toggle-v2">
                         <input 
                             type="checkbox" 
-                            style={{ opacity: 0, width: 0, height: 0, position: 'absolute' }}
                             checked={config.enabled} 
                             onChange={() => setConfig({...config, enabled: !config.enabled})} 
                         />
-                        <span style={{ 
-                            position: 'absolute', cursor: 'pointer', inset: 0, 
-                            background: config.enabled ? '#10b981' : '#ef4444', 
-                            transition: '.4s', borderRadius: '34px' 
-                        }}>
-                            <span style={{
-                                position: 'absolute', content: '""', height: '16px', width: '16px', 
-                                left: config.enabled ? '23px' : '3px', bottom: '3px', 
-                                background: '#fff', transition: '.4s', borderRadius: '50%'
-                            }}></span>
-                        </span>
+                        <span className="pc-slider-v2"></span>
                     </label>
-                    <span style={{ fontWeight: 700, fontSize: '0.9rem', color: config.enabled ? '#10b981' : '#ef4444' }}>
+                    <span className={config.enabled ? 'text-active' : 'text-inactive'}>
                         {config.enabled ? t('common.active') : t('common.inactive')}
                     </span>
                 </div>
+                <div className="pc-header-divider" style={{ width: '1px', height: '24px', background: 'var(--border)', margin: '0 4px' }}></div>
+                <button className="pc-btn-outline-v2" onClick={handleReset} title={t('common.reset_to_default')}>
+                    <RotateCcw size={18} />
+                </button>
                 <button className="pc-btn-primary" onClick={handleSave} disabled={saving}>
                     <Save size={18} />
                     <span>{saving ? t('common.saving') : t('common.sync')}</span>
@@ -184,7 +201,7 @@ export default function ModerationConfig() {
         <div className="pc-content-v2">
             {activeTab === 'antispam' && (
                 <div className="v-stack animate slide-up" style={{ gap: '32px' }}>
-                    <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
+                    <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 560px', gap: '32px' }}>
                         <section className="pc-card-v2">
                             <div className="card-header-v2">
                                 <div className="header-icon"><MessageCircle size={18} /></div>
@@ -464,12 +481,6 @@ export default function ModerationConfig() {
 
             .pc-tag-v2 { display: flex; align-items: center; gap: 8px; background: var(--bg-badge); padding: 6px 12px; border-radius: 10px; border: 1.5px solid var(--border); font-size: 0.9rem; font-weight: 700; color: var(--text-heading); }
 
-            .pc-toggle-v2 { position: relative; width: 44px; height: 22px; }
-            .pc-toggle-v2 input { opacity: 0; width: 0; height: 0; }
-            .pc-slider-v2 { position: absolute; cursor: pointer; inset: 0; background: var(--border); transition: .4s; border-radius: 34px; }
-            .pc-slider-v2:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background: #fff; transition: .4s; border-radius: 50%; }
-            input:checked + .pc-slider-v2 { background: var(--primary); }
-            input:checked + .pc-slider-v2:before { transform: translateX(22px); }
 
             .v-stack { display: flex; flex-direction: column; }
             .animate { animation: slideUp 0.4s ease-out; }

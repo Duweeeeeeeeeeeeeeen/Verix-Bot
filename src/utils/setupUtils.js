@@ -13,17 +13,18 @@ import WelcomeConfig from '../models/WelcomeConfig.js';
  * @param {import('discord.js').Guild} guild 
  * @param {string[]} modules 
  * @param {Object} customNames
+ * @param {string} language
  */
-export async function createDefaultChannels(guild, modules, customNames = {}) {
+export async function createDefaultChannels(guild, modules, customNames = {}, language = 'it') {
     const createdChannels = {};
 
     const moduleChannels = [
-        { id: 'whitelist', defaultName: '⚖️-candidature', type: ChannelType.GuildText },
-        { id: 'tickets', defaultName: '🎫-apri-ticket', type: ChannelType.GuildText },
-        { id: 'verify', defaultName: '✅-verifica', type: ChannelType.GuildText },
-        { id: 'polls', defaultName: '📊-sondaggi', type: ChannelType.GuildText },
+        { id: 'whitelist', defaultName: language === 'it' ? '⚖️-candidature' : '⚖️-applications', type: ChannelType.GuildText },
+        { id: 'tickets', defaultName: language === 'it' ? '🎫-apri-ticket' : '🎫-open-ticket', type: ChannelType.GuildText },
+        { id: 'verify', defaultName: language === 'it' ? '✅-verifica' : '✅-verification', type: ChannelType.GuildText },
+        { id: 'polls', defaultName: language === 'it' ? '📊-sondaggi' : '📊-polls', type: ChannelType.GuildText },
         { id: 'giveaway', defaultName: '🎉-giveaways', type: ChannelType.GuildText },
-        { id: 'photocontest', defaultName: '📸-foto-contest', type: ChannelType.GuildText },
+        { id: 'photocontest', defaultName: language === 'it' ? '📸-foto-contest' : '📸-photo-contest', type: ChannelType.GuildText },
         { id: 'logs', defaultName: '📜-verix-logs', type: ChannelType.GuildText }
     ];
 

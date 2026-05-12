@@ -8,7 +8,7 @@ import {
     Save, Plus, Trash2, Settings2, Power, RefreshCcw, Server, Activity, Users, 
     MessageSquare, Globe, Cpu, Info, X, Crown, Lock, ChevronRight, BellRing, Palette, 
     Share2, Play, ExternalLink, Map, Zap, Layout, Terminal, Radio, Network, Wifi,
-    Link2, MousePointer2, AlertCircle, Sparkles
+    Link2, MousePointer2, AlertCircle, Sparkles, Layers, RotateCcw
 } from 'lucide-react';
 import { mergeConfig } from '../../../utils/defaults';
 import Head from 'next/head';
@@ -44,7 +44,8 @@ export default function FiveMConfig() {
       const merged = mergeConfig(data, 'fivem');
       if (!merged.servers) merged.servers = [];
       setConfig(merged);
-      setChannels(discordRes?.data?.channels || discordRes?.channels || []);
+      const rawChannels = discordRes?.data?.channels || discordRes?.channels || [];
+      setChannels(rawChannels.filter(c => c.type === 0 || c.type === 5));
       setGuildData(guildRes?.data || guildRes);
     } catch (error) {
       console.error("FiveM config load error:", error);
@@ -71,6 +72,26 @@ export default function FiveMConfig() {
         cur[parts[parts.length - 1]] = value;
         return newConfig;
     });
+  };
+
+  const handleReset = async () => {
+    if (!confirm(t('common.reset_confirm'))) return;
+    
+    setLoading(true);
+    window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
+    try {
+      const res = await api.request(`/config/${guildId}/fivem/reset`, { method: 'POST' });
+      if (res.success) {
+        setConfig(res.data);
+        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('common.reset_success'), type: 'success' } }));
+      }
+    } catch (error) {
+      console.error("Reset error:", error);
+      window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('common.reset_error'), type: 'error' } }));
+    } finally {
+      setLoading(false);
+      window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
+    }
   };
 
   const handleSave = async () => {
@@ -131,10 +152,10 @@ export default function FiveMConfig() {
                     <Radio size={28} />
                 </div>
                 <div className="pc-title-row">
-                    <h1>FiveM Network Hub</h1>
+                    <h1>{t('fivem.title')}</h1>
                     <div className={`pc-status-tag-v2 ${config.enabled ? 'on' : 'off'}`}>
                         <div className="status-dot-v2"></div>
-                        {config.enabled ? 'NETWORK MONITOR ACTIVE' : 'NETWORK STANDBY'}
+                        {config.enabled ? t('fivem.active') : t('fivem.inactive')}
                     </div>
                 </div>
             </div>
@@ -164,9 +185,12 @@ export default function FiveMConfig() {
                         {config.enabled ? t('common.active') : t('common.inactive')}
                     </span>
                 </div>
+                <button className="pc-btn-outline-v2" onClick={handleReset} title={t('common.reset_to_default')}>
+                    <RotateCcw size={18} />
+                </button>
                 <button className="pc-btn-primary" onClick={handleSave} disabled={saving}>
                     <Save size={18} />
-                    <span>{saving ? 'Saving...' : 'Sync Config'}</span>
+                    <span>{saving ? t('common.saving') : t('common.sync')}</span>
                 </button>
             </div>
         </header>
@@ -184,7 +208,7 @@ export default function FiveMConfig() {
 
         <div className="pc-content-v2">
             {activeTab === 'servers' && (
-                <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: '32px' }}>
+                <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 560px', gap: '32px' }}>
                     <div className="v-stack" style={{ gap: '32px' }}>
                         {config.servers?.length > 0 ? (
                             config.servers.map(server => (

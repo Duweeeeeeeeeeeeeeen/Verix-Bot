@@ -153,10 +153,9 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
   };
 
   const [premiumTier, setPremiumTier] = useState('none');
-  const isPremium = premiumTier === 'premium' || premiumTier === 'platinum';
 
   useEffect(() => {
-    if (guildId) {
+    if (guildId && guildId !== 'undefined') {
       const fetchTier = async () => {
         try {
           const res = await fetch(`/api/config/${guildId}/guild`);
@@ -173,10 +172,14 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
     }
   }, [guildId]);
 
+  const isPremium = premiumTier !== 'none';
+  const isPlatinum = premiumTier === 'platinum';
+
   const navigationGroups = [
     {
       items: [
         { name: t('sidebar.home'), icon: Home, path: `/config/${guildId}`, id: 'home' },
+        { name: t('hub.academy_title') || 'Verix Academy', icon: BookOpen, path: `/config/${guildId}/academy`, id: 'academy' },
         { name: t('sidebar.premium'), icon: Crown, path: `/config/${guildId}/premium`, id: 'premium' }
       ]
     },
@@ -246,7 +249,7 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
       ] : []),
 
       // Sync only for Platinum
-      ...(premiumTier === 'platinum' ? [
+      ...(isPlatinum ? [
         { name: t('common.sync') || 'Sync', icon: RefreshCcw, path: `/config/${guildId}/sync`, id: 'sync' }
       ] : []),
 
@@ -263,7 +266,7 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
         });
         const data = await res.json();
         if (data.success) {
-            await fetchUser(true);
+            await fetchUser(); // Sync user data immediately
             window.dispatchEvent(new CustomEvent('show-toast', { 
                 detail: { message: t('management.bot_left_success') || 'Il bot ha lasciato il server!', type: 'success' } 
             }));

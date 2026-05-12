@@ -35,16 +35,22 @@ export function AuthProvider({ children }) {
 
   const fetchUser = async (refresh = false) => {
     try {
-      const endpoint = refresh ? '/api/auth/user?refresh=true' : '/api/auth/user';
-      const res = await fetch(`${BASE_API_URL}${endpoint}`, {
+      const url = refresh 
+        ? `${BASE_API_URL}/api/auth/user?refresh=true` 
+        : `${BASE_API_URL}/api/auth/user`;
+
+      const res = await fetch(url, {
         headers: { 'Accept': 'application/json' },
         credentials: 'include'
       });
       if (res.ok) {
         const data = await res.json();
         setUser(data);
-        // Cache for next time
-        localStorage.setItem('verix_user_cache', JSON.stringify(data));
+        if (data) {
+          localStorage.setItem('verix_user_cache', JSON.stringify(data));
+        } else {
+          localStorage.removeItem('verix_user_cache');
+        }
       } else {
         setUser(null);
         localStorage.removeItem('verix_user_cache');

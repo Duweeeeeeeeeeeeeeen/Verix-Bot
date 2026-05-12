@@ -7,7 +7,7 @@ import { useT } from '../../../contexts/LanguageContext';
 import { 
   Save, ShieldCheck, Settings2, ListChecks, Palette, Plus, Trash2, Power, Clock, 
   RefreshCcw, Zap, Command, Mic2, Send, FileText, ChevronLeft, ChevronRight,
-  Sparkles, Award, CheckCircle2, XCircle, Layout
+  Sparkles, Award, CheckCircle2, XCircle, Layout, RotateCcw
 } from 'lucide-react';
 import Head from 'next/head';
 
@@ -21,6 +21,7 @@ export default function WhitelistConfig() {
   const [discordData, setDiscordData] = useState({ roles: [], channels: [] });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [sendingPanel, setSendingPanel] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -53,6 +54,19 @@ export default function WhitelistConfig() {
     fetchData();
   }, [guildId, mounted]);
 
+  const handleSendPanel = async () => {
+    if (!config.panelChannelId) return window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Canale non impostato!', type: 'error' } }));
+    setSendingPanel(true);
+    try {
+      await api.request(`/config/${guildId}/whitelist/send-panel`, { method: 'POST' });
+      window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('whitelist.panel_success') || 'Pannello inviato!', type: 'success' } }));
+    } catch (e) {
+      window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('whitelist.panel_error') || 'Errore invio pannello', type: 'error' } }));
+    } finally {
+      setSendingPanel(false);
+    }
+  };
+
   const handleSave = async () => {
     setSaving(true);
     window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
@@ -64,6 +78,28 @@ export default function WhitelistConfig() {
       window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('whitelist.sync_success'), type: 'success' } }));
     } catch (error) {
        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('common.save_error'), type: 'error' } }));
+    } finally {
+      setSaving(false);
+      window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
+    }
+  };
+
+  const handleReset = async () => {
+    if (!window.confirm(t('common.reset_confirm') || 'Sei sicuro di voler ripristinare questo modulo ai valori di default?')) return;
+    setSaving(true);
+    window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
+    try {
+      // Whitelist reset also resets background as they are linked in this UI
+      const res = await api.request(`/config/${guildId}/whitelist/reset`, { method: 'POST' });
+      if (res.success) {
+        setConfig(res.data);
+        // Refresh background too
+        const bgRes = await api.request(`/config/${guildId}/background`);
+        setBgConfig(bgRes?.data || bgRes);
+        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('common.reset_success') || 'Modulo ripristinato!', type: 'success' } }));
+      }
+    } catch (error) {
+      window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('common.reset_error') || 'Errore durante il reset', type: 'error' } }));
     } finally {
       setSaving(false);
       window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
@@ -101,9 +137,35 @@ export default function WhitelistConfig() {
             </div>
             
             <div className="header-controls">
+                <div className="pc-toggle-container-v2">
+                    <label className="pc-toggle-v2">
+                        <input 
+                            type="checkbox" 
+                            checked={config.enabled} 
+                            onChange={() => setConfig({...config, enabled: !config.enabled})} 
+                        />
+                        <span className="pc-slider-v2"></span>
+                    </label>
+                    <span className={config.enabled ? 'text-active' : 'text-inactive'}>
+                        {config.enabled ? t('common.active') : t('common.inactive')}
+                    </span>
+                </div>
+                <div className="pc-header-divider" style={{ width: '1px', height: '24px', background: 'var(--border)', margin: '0 4px' }}></div>
+                <button className="pc-btn-outline-v2" onClick={handleReset} title={t('common.reset_to_default')}>
+                    <RotateCcw size={18} />
+                </button>
+                <button 
+                    className="pc-btn-outline-v2" 
+                    onClick={handleSendPanel} 
+                    disabled={sendingPanel || !config.panelChannelId} 
+                    title={t('whitelist.send_panel') || 'Invia Pannello'}
+                    style={{ color: 'var(--primary)', borderColor: sendingPanel ? 'var(--border)' : 'rgba(var(--primary-rgb), 0.2)' }}
+                >
+                    {sendingPanel ? <RotateCcw size={18} className="animate-spin" /> : <Send size={18} />}
+                </button>
                 <button className="pc-btn-primary" onClick={handleSave} disabled={saving}>
                     <Save size={18} />
-                    <span>{saving ? t('common.saving') : t('whitelist.sync_config')}</span>
+                    <span>{saving ? t('common.saving') : t('common.sync')}</span>
                 </button>
             </div>
         </header>
@@ -143,11 +205,11 @@ export default function WhitelistConfig() {
                                     </div>
                                     <div className="pc-input-group-v2" style={{ marginTop: '24px' }}>
                                         <label>{t('whitelist.panel_channel')}</label>
-                                        <DiscordSelector type="channel" options={discordData.channels} value={config.panelChannelId || ''} onChange={val => setConfig({...config, panelChannelId: val})} />
+                                        <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 0 || c.type === 5)} value={config.panelChannelId || ''} onChange={val => setConfig({...config, panelChannelId: val})} />
                                     </div>
                                     <div className="pc-input-group-v2" style={{ marginTop: '24px' }}>
                                         <label>{t('whitelist.log_channel')}</label>
-                                        <DiscordSelector type="channel" options={discordData.channels} value={config.logChannelId || ''} onChange={val => setConfig({...config, logChannelId: val})} />
+                                        <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 0 || c.type === 5)} value={config.logChannelId || ''} onChange={val => setConfig({...config, logChannelId: val})} />
                                     </div>
                                 </div>
                             </div>
@@ -197,16 +259,6 @@ export default function WhitelistConfig() {
                             </div>
                         </section>
 
-                        <div className="pc-toggle-card-v2">
-                            <div className="v-stack" style={{ gap: '4px' }}>
-                                <strong>Whitelist Protocol</strong>
-                                <span>{t('onboarding.step4.notice')}</span>
-                            </div>
-                            <label className="pc-toggle-v2">
-                                <input type="checkbox" checked={config.enabled} onChange={e => setConfig({...config, enabled: e.target.checked})} />
-                                <span className="pc-slider-v2"></span>
-                            </label>
-                        </div>
                     </div>
                 </div>
             )}
@@ -284,7 +336,7 @@ export default function WhitelistConfig() {
                             </div>
                             <div className="pc-input-group-v2" style={{ marginTop: '24px' }}>
                                 <label>{t('whitelist.staff_panel_channel')}</label>
-                                <DiscordSelector type="channel" options={discordData.channels} value={bgConfig.panelChannelId || ''} onChange={val => setBgConfig({...bgConfig, panelChannelId: val})} />
+                                <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 0 || c.type === 5)} value={bgConfig.panelChannelId || ''} onChange={val => setBgConfig({...bgConfig, panelChannelId: val})} />
                             </div>
                         </div>
                     </section>
@@ -349,12 +401,6 @@ export default function WhitelistConfig() {
             .pc-toggle-card-v2 strong { font-weight: 700; color: var(--text-heading); }
             .pc-toggle-card-v2 span { font-size: 0.75rem; color: var(--text-muted); font-weight: 700; }
 
-            .pc-toggle-v2 { position: relative; width: 40px; height: 20px; }
-            .pc-toggle-v2 input { opacity: 0; width: 0; height: 0; }
-            .pc-slider-v2 { position: absolute; cursor: pointer; inset: 0; background: var(--border); transition: .3s; border-radius: 34px; }
-            .pc-slider-v2:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background: #fff; transition: .3s; border-radius: 50%; }
-            input:checked + .pc-slider-v2 { background: var(--primary); }
-            input:checked + .pc-slider-v2:before { transform: translateX(20px); }
 
             .v-stack { display: flex; flex-direction: column; }
             .animate { animation: slideUp 0.4s ease-out; }

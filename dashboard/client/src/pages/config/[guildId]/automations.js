@@ -7,7 +7,7 @@ import {
     Save, Trash2, Plus, Clock, Zap, Layout, Power, X, Hash, MessageSquare, Send, MousePointer2, 
     Settings2, Palette, ChevronLeft, Monitor, Smartphone, Lock, ArrowRight, ChevronRight, 
     Trash, CheckCircle2, AlertCircle, Globe, Cpu, Sparkles, Box, Activity, Info, Timer, MessageCircle, Star,
-    Terminal, Layers, Shield, RefreshCcw
+    Terminal, Layers, Shield, RefreshCcw, RotateCcw
 } from 'lucide-react';
 import { DiscordSelector, EmbedEditor, CustomSelect } from '../../../components/LazyConfigComponents';
 import Head from 'next/head';
@@ -46,7 +46,8 @@ export default function AutomationsConfig() {
       ]);
       
       setConfig(configRes.data || configRes);
-      setChannels(discordRes.channels || discordRes.data?.channels || []);
+      const rawChannels = discordRes.channels || discordRes.data?.channels || [];
+      setChannels(rawChannels.filter(c => c.type === 0 || c.type === 5));
       setGuildData(guildRes.data || guildRes);
     } catch (error) {
       console.error("Automations load error:", error);
@@ -58,6 +59,26 @@ export default function AutomationsConfig() {
 
   const showToast = (message, type = 'success') => {
     window.dispatchEvent(new CustomEvent('show-toast', { detail: { message, type } }));
+  };
+
+  const handleReset = async () => {
+    if (!confirm(t('common.reset_confirm'))) return;
+    
+    setLoading(true);
+    window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
+    try {
+      const res = await api.request(`/config/${guildId}/automations/reset`, { method: 'POST' });
+      if (res.success) {
+        setConfig(res.data);
+        showToast(t('common.reset_success'));
+      }
+    } catch (error) {
+      console.error("Reset error:", error);
+      showToast(t('common.reset_error'), 'error');
+    } finally {
+      setLoading(false);
+      window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
+    }
   };
 
   const handleSave = async () => {
@@ -152,9 +173,12 @@ export default function AutomationsConfig() {
             </div>
             
             <div className="header-controls">
+                <button className="pc-btn-outline-v2" onClick={handleReset} title={t('common.reset_to_default')}>
+                    <RotateCcw size={18} />
+                </button>
                 <button className="pc-btn-primary" onClick={handleSave} disabled={saving}>
                     <Save size={18} />
-                    <span>{saving ? 'Applicazione...' : 'Salva Studio'}</span>
+                    <span>{saving ? t('common.saving') : t('common.sync')}</span>
                 </button>
             </div>
         </header>
@@ -189,7 +213,7 @@ export default function AutomationsConfig() {
                     
                     <section className="pc-card-v2">
                         <div className="card-header-v2">
-                            <div className="header-icon" style={{ background: '#fef2f2', color: '#ef4444' }}><Trash2 size={18} /></div>
+                            <div className="header-icon" style={{ background: 'rgba(239,68,68,0.08)', color: '#ef4444' }}><Trash2 size={18} /></div>
                             <div className="v-stack" style={{ flex: 1 }}>
                                 <h3 style={{ margin: 0 }}>Canali in Auto-Pulizia</h3>
                                 <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 650 }}>Mantieni il tuo server pulito eliminando automaticamente messaggi obsoleti.</p>
@@ -203,13 +227,13 @@ export default function AutomationsConfig() {
                                 {(config.autoClear?.slots || []).map((slot, index) => (
                                     <div key={slot.id} className="pc-sub-card-v2 animate slide-up" style={{ background: 'var(--bg-badge)', padding: '32px', borderRadius: '28px', border: '1.5px solid var(--border)', position: 'relative' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '32px', borderBottom: '1.5px dashed var(--border)', paddingBottom: '24px' }}>
-                                            <div style={{ width: '48px', height: '48px', background: 'white', border: '1.5px solid var(--border)', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444', boxShadow: '0 4px 10px rgba(0,0,0,0.03)' }}><Hash size={20} /></div>
+                                            <div style={{ width: '48px', height: '48px', background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444', boxShadow: '0 4px 10px rgba(0,0,0,0.03)' }}><Hash size={20} /></div>
                                             <div className="v-stack">
                                                 <h4 style={{ margin: 0, fontWeight: 700, fontSize: '1.1rem', color: 'var(--text-heading)' }}>Slot Pulizia #{index + 1}</h4>
                                                 <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '1px' }}>Engine Config</span>
                                             </div>
                                             <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '20px' }}>
-                                                <div className="pc-status-tag-mini-v2" style={{ background: slot.enabled ? '#ecfdf5' : 'var(--bg-badge)', color: slot.enabled ? '#10b981' : 'var(--text-dim)' }}>{slot.enabled ? 'ATTIVO' : 'PAUSA'}</div>
+                                                <div className="pc-status-tag-mini-v2" style={{ background: slot.enabled ? 'rgba(16,185,129,0.08)' : 'var(--bg-badge)', color: slot.enabled ? '#10b981' : 'var(--text-dim)' }}>{slot.enabled ? 'ATTIVO' : 'PAUSA'}</div>
                                                 <label className="pc-toggle-v2 mini">
                                                     <input type="checkbox" checked={!!slot.enabled} onChange={e => updateClearSlot(index, 'enabled', e.target.checked)} />
                                                     <span className="pc-slider-v2"></span>
@@ -230,14 +254,14 @@ export default function AutomationsConfig() {
                                             </div>
                                             <div className="pc-input-group-v2">
                                                 <label>Intervallo (Minuti)</label>
-                                                <div className="pc-input-wrapper-v2" style={{ background: 'white', border: '1.5px solid var(--border)', borderRadius: '16px' }}>
+                                                <div className="pc-input-wrapper-v2" style={{ background: 'var(--bg-input)', border: '1.5px solid var(--border)', borderRadius: '16px', display: 'flex', alignItems: 'center' }}>
                                                     <Timer size={18} style={{ marginLeft: '16px', color: 'var(--text-dim)' }} />
                                                     <input type="number" style={{ width: '100%', border: 'none', background: 'transparent', padding: '16px', fontWeight: 700, color: 'var(--text-heading)' }} value={slot.intervalMinutes || 60} onChange={e => updateClearSlot(index, 'intervalMinutes', parseInt(e.target.value))} />
                                                 </div>
                                             </div>
                                             <div className="pc-input-group-v2">
                                                 <label>Messaggi per Ciclo</label>
-                                                <div className="pc-input-wrapper-v2" style={{ background: 'white', border: '1.5px solid var(--border)', borderRadius: '16px' }}>
+                                                <div className="pc-input-wrapper-v2" style={{ background: 'var(--bg-input)', border: '1.5px solid var(--border)', borderRadius: '16px', display: 'flex', alignItems: 'center' }}>
                                                     <Layers size={18} style={{ marginLeft: '16px', color: 'var(--text-dim)' }} />
                                                     <input type="number" style={{ width: '100%', border: 'none', background: 'transparent', padding: '16px', fontWeight: 700, color: 'var(--text-heading)' }} value={slot.amount || 100} onChange={e => updateClearSlot(index, 'amount', parseInt(e.target.value))} />
                                                 </div>
@@ -272,12 +296,12 @@ export default function AutomationsConfig() {
 
                     <section className="pc-card-v2">
                         <div className="card-header-v2">
-                            <div className="header-icon" style={{ background: '#fffbeb', color: '#f59e0b' }}><MessageCircle size={18} /></div>
+                            <div className="header-icon" style={{ background: 'rgba(245,158,11,0.08)', color: '#f59e0b' }}><MessageCircle size={18} /></div>
                             <div className="v-stack" style={{ flex: 1 }}>
                                 <h3 style={{ margin: 0 }}>Broadcast Ricorrenti</h3>
                                 <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 650 }}>Invia annunci periodici basati sul tempo o sull'attività della chat.</p>
                             </div>
-                            <button className="pc-btn-add-v2" style={{ background: '#fffbeb', color: '#d97706', border: '1.5px solid #fde68a' }} onClick={addMessageSlot}>
+                            <button className="pc-btn-add-v2" style={{ background: 'rgba(245,158,11,0.08)', color: '#d97706', border: '1.5px solid rgba(245,158,11,0.3)' }} onClick={addMessageSlot}>
                                 <Plus size={18} /> <span>Nuovo Broadcast</span>
                             </button>
                         </div>
@@ -286,7 +310,7 @@ export default function AutomationsConfig() {
                                 {(config.autoMessage?.slots || []).map((slot, index) => (
                                     <div key={slot.id} className="pc-sub-card-v2 animate slide-up" style={{ background: 'var(--bg-badge)', padding: '32px', borderRadius: '28px', border: '1.5px solid var(--border)' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '32px', borderBottom: '1.5px dashed var(--border)', paddingBottom: '24px' }}>
-                                            <div style={{ width: '48px', height: '48px', background: 'white', border: '1.5px solid var(--border)', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f59e0b', boxShadow: '0 4px 10px rgba(0,0,0,0.03)' }}><Send size={20} /></div>
+                                            <div style={{ width: '48px', height: '48px', background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f59e0b', boxShadow: '0 4px 10px rgba(0,0,0,0.03)' }}><Send size={20} /></div>
                                             <div className="v-stack">
                                                 <h4 style={{ margin: 0, fontWeight: 700, fontSize: '1.1rem', color: 'var(--text-heading)' }}>Broadcast #{index + 1}</h4>
                                                 <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '1px' }}>Studio Annunci</span>
@@ -368,7 +392,7 @@ export default function AutomationsConfig() {
                             <h2 style={{ margin: 0, fontFamily: 'Inter', fontSize: '1.8rem', fontWeight: 700, color: 'var(--text-heading)' }}>Embed Designer: Slot #{editingEmbedIndex + 1}</h2>
                             <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 700 }}>Progetta un box grafico premium per il tuo broadcast.</p>
                         </div>
-                        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '16px', background: 'white', padding: '12px 24px', borderRadius: '20px', border: '1.5px solid var(--border)' }}>
+                        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '16px', background: 'var(--bg-card)', padding: '12px 24px', borderRadius: '20px', border: '1.5px solid var(--border)' }}>
                             <div className="v-stack" style={{ alignItems: 'flex-end' }}>
                                 <span style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--text-heading)' }}>Usa Design Grafico</span>
                                 <span style={{ fontSize: '0.65rem', color: 'var(--text-dim)', fontWeight: 700 }}>SOSTITUISCE IL TESTO SEMPLICE</span>
@@ -454,19 +478,13 @@ export default function AutomationsConfig() {
             .pc-btn-delete-mini:hover { background: #ef4444; color: #fff; transform: rotate(8deg); }
 
             .pc-btn-studio-v2 { background: var(--bg-card); color: var(--text-muted); border: 1.5px solid var(--border); padding: 10px 18px; border-radius: 12px; font-weight: 700; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.2s; }
-            .pc-btn-studio-v2:hover:not(:disabled) { border-color: #7c3aed; color: #7c3aed; background: #f5f3ff; }
+            .pc-btn-studio-v2:hover:not(:disabled) { border-color: #7c3aed; color: #7c3aed; background: rgba(124,58,237,0.08); }
             .pc-btn-studio-v2.active { background: #7c3aed; color: #fff; border-color: #7c3aed; }
 
             .pc-btn-back-v2 { width: 52px; height: 52px; border-radius: 16px; border: 1.5px solid var(--border); background: var(--bg-card); color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
-            .pc-btn-back-v2:hover { border-color: var(--primary); color: var(--primary); background: #f5f3ff; }
+            .pc-btn-back-v2:hover { border-color: var(--primary); color: var(--primary); background: rgba(var(--primary-rgb), 0.08); }
 
             /* Toggle V2 */
-            .pc-toggle-v2 { position: relative; width: 44px; height: 22px; }
-            .pc-toggle-v2 input { opacity: 0; width: 0; height: 0; }
-            .pc-slider-v2 { position: absolute; cursor: pointer; inset: 0; background: var(--border); transition: .4s; border-radius: 34px; }
-            .pc-slider-v2:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background: #fff; transition: .4s; border-radius: 50%; }
-            input:checked + .pc-slider-v2 { background: var(--primary); }
-            input:checked + .pc-slider-v2:before { transform: translateX(22px); }
 
             /* Inputs V2 */
             .pc-input-group-v2 { display: flex; flex-direction: column; gap: 8px; }

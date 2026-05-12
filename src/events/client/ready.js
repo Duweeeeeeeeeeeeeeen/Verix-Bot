@@ -13,16 +13,17 @@ export default {
         
         // Register slash commands
         if (config.registerCommandsOnStart) {
-            const rest = new REST({ version: '10' }).setToken(config.token);
+            const rest = new REST({ version: '10' }).setToken(client.token || config.token);
             const commands = Array.from(client.commands.values()).map(c => c.data.toJSON());
+            const clientId = client.user.id;
 
             try {
-                logger.info(`Started refreshing application (/) commands for Client: ${config.clientId}${config.devMode ? ` in Guild: ${config.guildId}` : ' (Global)'}`);
+                logger.info(`Started refreshing application (/) commands for Client: ${clientId}${config.devMode ? ` in Guild: ${config.guildId}` : ' (Global)'}`);
 
                 if (config.devMode && config.guildId) {
                     try {
                         await rest.put(
-                            Routes.applicationGuildCommands(config.clientId, config.guildId),
+                            Routes.applicationGuildCommands(clientId, config.guildId),
                             { body: commands },
                         );
                         logger.success(`Successfully reloaded ${commands.length} commands for guild ${config.guildId}`);
@@ -30,7 +31,7 @@ export default {
                         if (guildError.code === 50001) {
                             logger.warn('Guild registration failed with Missing Access. Trying global fallback...');
                             await rest.put(
-                                Routes.applicationCommands(config.clientId),
+                                Routes.applicationCommands(clientId),
                                 { body: commands },
                             );
                             logger.success(`Successfully reloaded ${commands.length} commands GLOBALLY (Fallback).`);
@@ -41,7 +42,7 @@ export default {
                 } else {
                     // Global registration
                     await rest.put(
-                        Routes.applicationCommands(config.clientId),
+                        Routes.applicationCommands(clientId),
                         { body: commands },
                     );
                     logger.success(`Successfully reloaded ${commands.length} application (/) commands globally.`);

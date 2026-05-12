@@ -29,33 +29,44 @@ export default function EmbedPreview({ data, isMobile = false, theme = 'dark' })
    */
   const resolveColor = (color) => {
     if (!color) return '#1e1f22'; // Discord fallback
-    if (color.startsWith('#')) return color;
     
-    // Semantic naming mapping
-    const mapping = {
-      'primary': '#818cf8',
-      'success': '#10b981',
-      'error': '#f43f5e',
-      'warning': '#f59e0b',
-      'info': '#3b82f6'
-    };
+    // Handle numeric/decimal colors from Discord API
+    if (typeof color === 'number') {
+      return '#' + color.toString(16).padStart(6, '0');
+    }
 
-    return mapping[color.toLowerCase()] || color;
+    if (typeof color === 'string') {
+      if (color.startsWith('#')) return color;
+      
+      const mapping = {
+        'primary': '#818cf8',
+        'success': '#10b981',
+        'error': '#f43f5e',
+        'warning': '#f59e0b',
+        'info': '#3b82f6'
+      };
+
+      return mapping[color.toLowerCase()] || color;
+    }
+
+    return '#1e1f22';
   };
 
   return (
     <div className={`discord-preview ${isMobile ? 'mobile-view' : ''}`} style={{
       background: colors.bg_message,
-      padding: '20px',
-      borderRadius: '12px',
-      fontFamily: '"gg sans", "Whitney", "Helvetica Neue", Helvetica, Arial, sans-serif',
+      padding: '24px',
+      borderRadius: '24px',
+      fontFamily: '"Inter", "gg sans", "Whitney", "Helvetica Neue", Helvetica, Arial, sans-serif',
       color: colors.text_normal,
-      fontSize: '1rem',
+      fontSize: '0.95rem',
       maxWidth: isMobile ? '360px' : '100%',
-      boxShadow: '0 10px 30px rgba(0,0,0,0.4)',
-      border: '1px solid var(--border)',
-      transition: 'var(--transition-normal)',
-      margin: '0 auto'
+      boxShadow: 'var(--shadow-premium)',
+      border: '1.5px solid var(--border)',
+      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      margin: '0 auto',
+      position: 'relative',
+      overflow: 'hidden'
     }}>
       <div style={{ display: 'flex', gap: '16px' }}>
          {/* Avatar Simulation */}
@@ -97,16 +108,19 @@ export default function EmbedPreview({ data, isMobile = false, theme = 'dark' })
  
             {/* The Embed Skeleton */}
             <div className="embed-container" style={{
-                background: colors.bg_embed,
-                borderLeft: `4px solid ${resolveColor(data.color)}`,
-                borderRadius: '4px',
-                padding: '12px 16px',
-                marginTop: '8px',
+                background: theme === 'dark' ? 'rgba(43, 45, 49, 0.8)' : 'rgba(242, 243, 245, 0.8)',
+                backdropFilter: 'blur(10px)',
+                borderRadius: '8px',
+                padding: '16px 20px',
+                marginTop: '12px',
                 maxWidth: '520px',
                 position: 'relative',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '8px'
+                gap: '12px',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+                border: '1px solid rgba(255,255,255,0.05)',
+                borderLeft: `4px solid ${resolveColor(data.color)}`
             }}>
                 {/* Author Field */}
                 {data.author && (

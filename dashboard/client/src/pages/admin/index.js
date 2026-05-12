@@ -41,7 +41,7 @@ export default function AdminDashboard() {
         fetchStats();
     }, []);
 
-    if (loading) return <Skeleton type="admin" height="600px" />;
+    if (loading || !stats) return <Skeleton type="admin" height="600px" />;
 
     return (
         <div className="admin-page animate">

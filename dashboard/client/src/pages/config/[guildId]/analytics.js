@@ -8,7 +8,7 @@ import {
     ArrowUpRight, Target, Clock, Star, AlertCircle,
     TrendingDown, CheckCircle2, ChevronLeft, Layout,
     PieChart, MousePointer2, Sparkles, LineChart,
-    Users2, ShieldCheck, EyeOff
+    Users2, ShieldCheck, EyeOff, RefreshCcw
 } from 'lucide-react';
 import Skeleton from '../../../components/Skeleton';
 import api from '../../../utils/api';
@@ -157,8 +157,14 @@ export default function AnalyticsPage() {
                     </div>
                     <div className="s-footer-v2">
                         <div className="s-tier-action-v2">
-                            <span>{isPro ? 'Accesso Completo Attivo' : 'Sblocca Studio Hub'}</span>
-                            <ChevronRight size={16} />
+                            {isPro ? (
+                                <span>Accesso Completo Attivo</span>
+                            ) : (
+                                <>
+                                    <span>Sblocca Studio Hub</span>
+                                    <ChevronRight size={16} />
+                                </>
+                            )}
                         </div>
                     </div>
                 </section>
@@ -166,8 +172,8 @@ export default function AnalyticsPage() {
 
             <div className="pc-analytics-engine-v2">
                 {!isPro ? (
-                    <div className="pc-pro-gate-box-v2" style={{ background: 'white', border: '1px solid var(--border-light)', borderRadius: '48px', padding: '120px 40px', textAlign: 'center', maxWidth: '1000px', margin: '0 auto', boxShadow: 'var(--shadow-premium)' }}>
-                         <div className="gate-icon-glow-v2" style={{ width: '100px', height: '100px', background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)', color: '#f59e0b', borderRadius: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 40px', boxShadow: '0 20px 40px rgba(245, 158, 11, 0.2)' }}>
+                    <div className="pc-pro-gate-box-v2" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-light)', borderRadius: '48px', padding: '120px 40px', textAlign: 'center', maxWidth: '1000px', margin: '0 auto', boxShadow: 'var(--shadow-premium)' }}>
+                         <div className="gate-icon-glow-v2" style={{ width: '100px', height: '100px', background: 'rgba(245,158,11,0.1)', color: '#f59e0b', borderRadius: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 40px', boxShadow: '0 20px 40px rgba(245, 158, 11, 0.2)' }}>
                             <LineChart size={52} />
                          </div>
                          <h2 style={{ fontFamily: 'Inter', fontWeight: 700, fontSize: '3rem', color: 'var(--text-heading)', marginBottom: '20px', letterSpacing: '-1.5px' }}>Intelligence Visual Studio</h2>
@@ -278,17 +284,17 @@ export default function AnalyticsPage() {
                                 </div>
                             </section>
 
-                            <div className="pc-sync-alert-v2" style={{ background: 'linear-gradient(135deg, #0f172a 0%, var(--text-heading) 100%)', color: 'white', borderRadius: '32px', padding: '32px', position: 'relative', overflow: 'hidden' }}>
+                            <div className="pc-sync-alert-v2 animate slide-up">
                                  <div className="align-center" style={{ gap: '16px', position: 'relative', zIndex: 2 }}>
-                                     <div style={{ width: '48px', height: '48px', background: 'rgba(255,255,255,0.1)', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                     <div className="sync-icon-wrapper">
                                         <RefreshCcw size={20} className="spin" />
                                      </div>
                                      <div className="v-stack">
-                                         <span style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', color: 'var(--text-dim)', letterSpacing: '1px' }}>Frequenza Aggiornamento</span>
-                                         <span style={{ fontSize: '1rem', fontWeight: 700 }}>Ciclo 6 Ore</span>
+                                         <span className="sync-label-v2">Frequenza Aggiornamento</span>
+                                         <span className="sync-value-v2">Ciclo 6 Ore</span>
                                      </div>
                                  </div>
-                                 <div style={{ position: 'absolute', bottom: '-20px', right: '-20px', opacity: 0.1 }}>
+                                 <div className="sync-bg-icon">
                                     <Activity size={100} />
                                  </div>
                             </div>
@@ -304,7 +310,7 @@ export default function AnalyticsPage() {
             /* Header V2 */
             .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-card); padding: 24px; border-radius: 28px; box-shadow: var(--shadow-premium); border: 1px solid var(--border); }
             .header-info { display: flex; align-items: center; gap: 16px; }
-            .pc-icon-box { width: 52px; height: 52px; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: #fff; box-shadow: 0 12px 24px rgba(245, 158, 11, 0.25); }
+            .pc-icon-box { width: 52px; height: 52px; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: #fff; box-shadow: 0 12px 24px rgba(99, 102, 241, 0.2); }
             .pc-title-row { display: flex; flex-direction: column; gap: 6px; }
             .pc-title-row h1 { font-family: 'Inter', sans-serif; font-size: 1.8rem; font-weight: 700; margin: 0; color: var(--text-heading); letter-spacing: normal; }
             
@@ -354,6 +360,31 @@ export default function AnalyticsPage() {
             @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
             :global(.light-theme) .pc-header-v2, :global(.light-theme) .pc-card-v2, :global(.light-theme) .pc-stat-card-v2, :global(.light-theme) .pc-pro-gate-box-v2 { box-shadow: 0 8px 30px rgba(0,0,0,0.04) !important; }
+
+            /* Sync Alert V2 - Theme Aware */
+            .pc-sync-alert-v2 { background: linear-gradient(135deg, #1e1b4b 0%, #020617 100%); color: white; border-radius: 32px; padding: 32px; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
+            .sync-icon-wrapper { width: 48px; height: 48px; background: rgba(255,255,255,0.1); border-radius: 16px; display: flex; align-items: center; justify-content: center; }
+            .sync-label-v2 { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: rgba(255,255,255,0.5); letter-spacing: 1px; }
+            .sync-value-v2 { font-size: 1rem; font-weight: 700; }
+            .sync-bg-icon { position: absolute; bottom: -20px; right: -20px; opacity: 0.1; pointer-events: none; }
+
+            :global(.light-theme) .pc-sync-alert-v2 {
+                background: white !important;
+                color: var(--text-heading) !important;
+                border: 1px solid var(--border) !important;
+                box-shadow: var(--shadow-premium) !important;
+            }
+            :global(.light-theme) .sync-icon-wrapper {
+                background: var(--bg-badge) !important;
+                color: var(--primary) !important;
+            }
+            :global(.light-theme) .sync-label-v2 {
+                color: var(--text-dim) !important;
+            }
+            :global(.light-theme) .sync-bg-icon {
+                color: var(--primary) !important;
+                opacity: 0.05 !important;
+            }
         `}</style>
     </div>
   );

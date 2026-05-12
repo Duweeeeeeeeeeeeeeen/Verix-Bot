@@ -3,7 +3,7 @@ import Head from 'next/head';
 import Layout from '../../components/Layout';
 import { useAuth } from '../../contexts/AuthContext';
 import { useT } from '../../contexts/LanguageContext';
-import { Rocket, Send, ShieldAlert, History, BarChart3, Terminal, Eye, EyeOff, Search, Crown, Zap, RefreshCcw, FileText } from 'lucide-react';
+import { Rocket, Send, ShieldAlert, History, BarChart3, Terminal, Eye, EyeOff, Search, Crown, Zap, RefreshCcw, FileText, Activity } from 'lucide-react';
 import EmbedPreview from '../../components/EmbedPreview';
 
 const OWNER_IDS = ['361159834688552960', '314417452395626496'];

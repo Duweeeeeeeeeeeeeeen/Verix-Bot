@@ -1,5 +1,6 @@
 import { Events } from 'discord.js';
 import User from '../../models/User.js';
+import Guild from '../../models/Guild.js';
 import logger from '../../utils/logger.js';
 
 const xpCooldowns = new Set();
@@ -9,7 +10,43 @@ export default {
     async execute(message) {
         if (message.author.bot || !message.guild) return;
 
-        // XP Cooldown to prevent spam (1 minute)
+        // --- 1. COMMAND HANDLER (Legacy Prefix Support) ---
+        try {
+            const guildData = await Guild.findOne({ guildId: message.guild.id });
+            const prefix = guildData?.prefix || '!';
+
+            if (message.content.startsWith(prefix)) {
+                const args = message.content.slice(prefix.length).trim().split(/ +/);
+                const commandName = args.shift().toLowerCase();
+
+                const command = message.client.commands.get(commandName);
+                if (command) {
+                    logger.cmd(`[Prefix] ${message.author.tag} executed ${commandName} in ${message.guild.name}`);
+                    
+                    // Create a pseudo-interaction to reuse slash command logic if possible
+                    // Or just handle the help command specifically for now as it's the most requested
+                    if (commandName === 'help') {
+                        return command.execute({
+                            guild: message.guild,
+                            client: message.client,
+                            user: message.author,
+                            reply: (opt) => message.reply(opt),
+                            // Basic mock for other interaction properties
+                            replied: false,
+                            deferred: false,
+                            isRepliable: () => true,
+                            displayAvatarURL: () => message.author.displayAvatarURL(),
+                            member: message.member,
+                            createdAt: message.createdAt
+                        });
+                    }
+                }
+            }
+        } catch (error) {
+            logger.error('Error in messageCreate command handler:', error);
+        }
+
+        // --- 2. XP SYSTEM ---
         if (xpCooldowns.has(message.author.id)) return;
 
         try {
@@ -31,8 +68,6 @@ export default {
                 userData.xp = 0;
                 await userData.save();
                 
-                // Optional: Send level up message
-                // message.reply(`Congratulazioni ${message.author}! Sei salito al livello **${userData.level}**!`);
                 logger.info(`${message.author.username} leveled up to ${userData.level}`);
             }
 

@@ -64,17 +64,17 @@ export const syncGlobalStatus = async (client, force = false) => {
                 'customStatuses.0': { $exists: true } 
             });
         } else {
-            // Main bot (Verix) picks the most recently updated global premium config
-            premiumConfig = await Guild.findOne({ 
-                isPremium: true, 
-                'customStatuses.0': { $exists: true } 
-            }).sort({ updatedAt: -1 });
+            // Main bot (Verix) always uses the default status
+            premiumConfig = null;
         }
 
         // --- RESET TO DEFAULT IF NO PREMIUM CONFIG ---
         if (!premiumConfig) {
+            const guildData = client.isPrivateBot ? await Guild.findOne({ guildId: client.ownerGuildId }) : null;
+            const prefix = guildData?.prefix || '!';
+            
             const defaultType = ActivityType.Watching;
-            const defaultText = client.isPrivateBot ? 'Private Bot | /help' : 'verixbot.com | /help';
+            const defaultText = client.isPrivateBot ? `Private Bot | ${prefix}help` : `verixbot.com | /help`;
             
             // Apply default status
             client.user.setActivity(defaultText, { type: defaultType });

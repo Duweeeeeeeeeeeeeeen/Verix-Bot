@@ -81,7 +81,7 @@ export default function GuildHome() {
       
       await fetchData();
       window.dispatchEvent(new CustomEvent('show-toast', { 
-          detail: { message: `Modulo ${moduleName.toUpperCase()} ${!currentStatus ? 'attivato' : 'disattivato'}!`, type: 'success' } 
+          detail: { message: t(!currentStatus ? 'hub.module_activated' : 'hub.module_disabled', { name: moduleName.toUpperCase() }), type: 'success' } 
       }));
     } catch (error) {
         console.error('Toggle error:', error);
@@ -155,7 +155,7 @@ export default function GuildHome() {
         {/* V2 Metric Engine */}
         <div className="pc-metric-grid-v2">
             {[
-                { label: t('hub.open_tickets'), value: stats?.openTickets || 0, icon: Ticket, color: '#6366f1', trend: `+12% ${t('hub.week_trend')}` },
+                { label: t('hub.open_tickets'), value: stats?.openTickets || 0, icon: Ticket, color: '#6366f1', trend: t('hub.live_status') },
                 { label: t('hub.whitelist_req'), value: stats?.pendingWhitelist || 0, icon: ShieldCheck, color: '#f59e0b', trend: t('hub.pending_review') },
                 { label: t('hub.sos_sessions'), value: stats?.activeVoiceSessions || 0, icon: Activity, color: '#10b981', trend: t('hub.sos_active') }
             ].map((stat, idx) => (
@@ -263,7 +263,7 @@ export default function GuildHome() {
                     
                     <div className="panel-divider-v2"></div>
                     
-                    <button className="pc-btn-danger-v2" onClick={() => confirm("ATTENZIONE: Questa azione ripristinerà TUTTI i moduli ai valori di fabbrica. Procedere?")}>
+                    <button className="pc-btn-danger-v2" onClick={() => confirm(t('hub.factory_reset_confirm'))}>
                         <RefreshCcw size={16} />
                         <span>{t('hub.factory_reset')}</span>
                     </button>
@@ -274,7 +274,7 @@ export default function GuildHome() {
                     <div className="help-text-v2">
                         <strong>{t('hub.academy_title')}</strong>
                         <p>{t('hub.academy_desc')}</p>
-                        <button onClick={() => window.open('https://docs.verixbot.com', '_blank')}>{t('hub.read_docs')}</button>
+                        <button onClick={() => router.push(`/config/${guildId}/academy`)}>{t('hub.read_docs')}</button>
                     </div>
                 </div>
             </aside>

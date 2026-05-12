@@ -178,14 +178,14 @@ export default function DiscordSelector({
           display: flex;
           align-items: center;
           gap: 8px;
-          background: white;
-          border: 1px solid var(--border-light);
+          background: var(--bg-badge);
+          border: 1px solid var(--border);
           padding: 4px 6px 4px 10px;
           border-radius: 10px;
           font-size: 0.85rem;
           font-weight: 700;
           box-shadow: 0 4px 10px rgba(0,0,0,0.02);
-          color: var(--text-main);
+          color: var(--text-heading);
         }
         .ds-tag-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
         
@@ -216,10 +216,10 @@ export default function DiscordSelector({
           top: calc(100% + 8px);
           left: 0;
           right: 0;
-          background: white;
-          border: 1px solid var(--border-light);
+          background: var(--bg-card);
+          border: 1px solid var(--border);
           border-radius: 20px;
-          box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+          box-shadow: var(--shadow-premium);
           z-index: 1000;
           overflow: hidden;
           padding: 12px;
@@ -262,8 +262,8 @@ export default function DiscordSelector({
         .ds-options-list::-webkit-scrollbar-track { background: transparent; }
         .ds-options-list::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 10px; }
 
-        :global(.light-theme) .ds-dropdown-v2 { background: #ffffff !important; box-shadow: 0 20px 50px rgba(0,0,0,0.08) !important; }
-        :global(.light-theme) .ds-tag-v2 { background: #ffffff !important; border-color: #f1f5f9 !important; }
+        :global(.light-theme) .ds-dropdown-v2 { background: #ffffff !important; box-shadow: 0 20px 50px rgba(0,0,0,0.08) !important; border-color: var(--border-light) !important; }
+        :global(.light-theme) .ds-tag-v2 { background: #ffffff !important; border-color: #f1f5f9 !important; color: var(--text-main) !important; }
         :global(.light-theme) .ds-option-v2:hover { background: #f8fafc !important; }
       `}</style>
     </div>

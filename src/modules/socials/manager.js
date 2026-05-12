@@ -41,8 +41,15 @@ export class SocialManager {
     start(ms) {
         if (this.interval) clearInterval(this.interval);
         this.interval = setInterval(() => this.checkSocials(), ms);
+        
         // Initial check after a short delay
-        setTimeout(() => this.checkSocials(), 10000);
+        setTimeout(() => {
+            this.checkSocials();
+            this.maintainWebSubSubscriptions();
+        }, 10000);
+        
+        // Maintain WebSub subscriptions every 24 hours
+        setInterval(() => this.maintainWebSubSubscriptions(), 24 * 60 * 60 * 1000);
     }
 
     stop() {
@@ -207,6 +214,11 @@ export class SocialManager {
                         const latestVideo = feed.items[0];
                         
                         if (latestVideo.id !== account.lastPostId) {
+                            // Attempt to fetch profile image if missing
+                            if (!account.cachedProfileImage) {
+                                account.cachedProfileImage = await this.fetchYouTubeProfileImage(username);
+                            }
+
                             // NEW VIDEO detected
                             const videoId = latestVideo.id.replace('yt:video:', '');
                             await this.handleSocialPost(guildId, platformConfig, account, {
@@ -214,7 +226,8 @@ export class SocialManager {
                                 url: latestVideo.link,
                                 author: feed.title,
                                 thumbnail: `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`,
-                                fallbackThumbnail: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`
+                                fallbackThumbnail: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+                                profileImage: account.cachedProfileImage
                             }, 'YouTube');
                             account.lastPostId = latestVideo.id;
                             changed = true;
@@ -309,9 +322,10 @@ export class SocialManager {
                             // Last resort for Instagram/Twitter: if we have a link, try to use a proxy for the image if it's missing
                             if (!thumbnail && latestItem.link) {
                                 if (latestItem.link.includes('instagram.com')) {
+                                    // ddinstagram often breaks for images, so we use ig.vxtwitter.com or ddinstagram
                                     thumbnail = latestItem.link.replace('instagram.com', 'ddinstagram.com').replace('/p/', '/p/show/');
                                 } else if (latestItem.link.includes('twitter.com') || latestItem.link.includes('x.com')) {
-                                    thumbnail = latestItem.link.replace(/(twitter\.com|x\.com)/, 'fxtwitter.com').replace('/status/', '/status/show/');
+                                    thumbnail = latestItem.link.replace(/(twitter\.com|x\.com)/, 'fixupx.com').replace('/status/', '/status/show/');
                                 }
                             }
 
@@ -420,8 +434,8 @@ export class SocialManager {
 
             // Optimize URL for preview/shareability
             let optimizedUrl = postData.url || '';
-            if (optimizedUrl.includes('twitter.com')) optimizedUrl = optimizedUrl.replace('twitter.com', 'fxtwitter.com');
-            else if (optimizedUrl.includes('x.com')) optimizedUrl = optimizedUrl.replace('x.com', 'fxtwitter.com');
+            if (optimizedUrl.includes('twitter.com')) optimizedUrl = optimizedUrl.replace('twitter.com', 'vxtwitter.com');
+            else if (optimizedUrl.includes('x.com')) optimizedUrl = optimizedUrl.replace('x.com', 'vxtwitter.com');
             else if (optimizedUrl.includes('instagram.com')) optimizedUrl = optimizedUrl.replace('instagram.com', 'ddinstagram.com');
 
             const formatText = (text) => {
@@ -620,6 +634,98 @@ export class SocialManager {
         } catch (error) {
             logger.debug(`[YouTubeResolver] Failed to resolve handle ${handle}: ${error.message}`);
             return null;
+        }
+    }
+
+    async fetchYouTubeProfileImage(channelIdOrHandle) {
+        try {
+            const isHandle = channelIdOrHandle.startsWith('@') || !channelIdOrHandle.startsWith('UC');
+            const cleanHandle = isHandle && !channelIdOrHandle.startsWith('@') ? `@${channelIdOrHandle}` : channelIdOrHandle;
+            const url = isHandle ? `https://www.youtube.com/${cleanHandle}` : `https://www.youtube.com/channel/${channelIdOrHandle}`;
+            
+            const response = await axios.get(url, {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                    'Accept-Language': 'en-US,en;q=0.9'
+                },
+                timeout: 5000
+            });
+
+            // Extract from meta tags (og:image)
+            const metaMatch = response.data.match(/<meta property="og:image" content="([^"]+)"/);
+            if (metaMatch && metaMatch[1]) {
+                return metaMatch[1].replace('s900-c', 's288-c'); // use smaller optimized avatar if available
+            }
+            
+            return null;
+        } catch (error) {
+            logger.debug(`[YouTubeResolver] Failed to fetch profile image for ${channelIdOrHandle}: ${error.message}`);
+            return null;
+        }
+    }
+
+    async maintainWebSubSubscriptions() {
+        if (mongoose.connection.readyState !== 1) return;
+        
+        try {
+            logger.info('[WebSub] Starting YouTube WebSub subscription maintenance...');
+            const configs = await SocialConfig.find({ 'platforms.youtube.enabled': true });
+            if (!configs.length) return;
+
+            const subscribedChannels = new Set();
+            const hubUrl = 'https://pubsubhubbub.appspot.com/subscribe';
+
+            // We need the API_URL from env for the callback
+            const apiUrl = process.env.API_URL || 'https://verixbot.com/api';
+
+            for (const config of configs) {
+                const accounts = config.platforms?.youtube?.accounts || [];
+                for (const account of accounts) {
+                    let channelId = account.username || '';
+                    if (channelId.includes('youtube.com/')) {
+                        channelId = channelId.split('/').pop().split('?')[0];
+                    }
+
+                    // Resolve handles if necessary
+                    if (!channelId.startsWith('UC')) {
+                        const resolvedId = await this.resolveYouTubeHandle(channelId);
+                        if (resolvedId) channelId = resolvedId;
+                    }
+
+                    if (!channelId || !channelId.startsWith('UC') || subscribedChannels.has(channelId)) continue;
+                    
+                    subscribedChannels.add(channelId);
+
+                    const topicUrl = `https://www.youtube.com/xml/feeds/videos.xml?channel_id=${channelId}`;
+                    const callbackUrl = `${apiUrl}/webhooks/youtube/${channelId}`;
+
+                    try {
+                        const response = await axios.post(hubUrl, null, {
+                            params: {
+                                'hub.callback': callbackUrl,
+                                'hub.topic': topicUrl,
+                                'hub.verify': 'async',
+                                'hub.mode': 'subscribe',
+                                'hub.verify_token': channelId // used internally
+                            }
+                        });
+                        
+                        if (response.status === 202 || response.status === 204) {
+                            logger.info(`[WebSub] Sent subscription request for channel ${channelId}`);
+                        } else {
+                            logger.warn(`[WebSub] Unexpected status ${response.status} when subscribing to ${channelId}`);
+                        }
+                    } catch (subErr) {
+                        logger.error(`[WebSub] Failed to subscribe to ${channelId}:`, subErr.message);
+                    }
+                    
+                    // Small delay to avoid hammering Google Hub
+                    await new Promise(r => setTimeout(r, 1000));
+                }
+            }
+            logger.info(`[WebSub] Finished subscription maintenance for ${subscribedChannels.size} unique channels.`);
+        } catch (error) {
+            logger.error('[WebSub] Error during subscription maintenance:', error);
         }
     }
 }

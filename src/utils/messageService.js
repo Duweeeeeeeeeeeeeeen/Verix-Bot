@@ -59,9 +59,10 @@ class MessageService {
 
         try {
             const config = await Guild.findOne({ guildId });
+            const isPremiumTier = config?.isPremium || ['premium', 'platinum'].includes(config?.premiumTier);
             const data = {
-                isPremium: config?.isPremium || false,
-                hideBranding: config?.isPremium && config?.hideBranding || false
+                isPremium: isPremiumTier,
+                hideBranding: isPremiumTier && config?.hideBranding || false
             };
             this.guildCache.set(guildId, data);
             this.guildTimestamps.set(guildId, Date.now());
@@ -149,10 +150,15 @@ class MessageService {
         if (!defaultEmbed) return dbEmbed;
 
         // --- MERGE LOGIC ---
-        // If the DB version has "Senza Titolo" or empty fields, we fall back to defaults for those fields
-        const isPlaceholder = (val) => !val || (typeof val === 'string' && (val.trim() === '' || val === 'Senza Titolo' || val === 'Nessun contenuto impostato.'));
+        // If the DB version has placeholders or empty fields, we fall back to defaults for those fields
+        const isPlaceholder = (val) => {
+            if (!val || (typeof val === 'string' && val.trim() === '')) return true;
+            const placeholders = ['Senza Titolo', 'Nessun contenuto impostato.', 'Untitled', 'No content set.'];
+            return placeholders.includes(val);
+        };
 
-        const merged = { ...dbEmbed };
+        // Ensure we have a plain object if dbEmbed is a Mongoose document
+        const merged = dbEmbed.toObject ? dbEmbed.toObject() : JSON.parse(JSON.stringify(dbEmbed));
         
         if (isPlaceholder(merged.title)) merged.title = defaultEmbed.title;
         if (isPlaceholder(merged.description)) merged.description = defaultEmbed.description;
@@ -161,7 +167,7 @@ class MessageService {
         if (isPlaceholder(merged.thumbnail)) merged.thumbnail = defaultEmbed.thumbnail;
         
         // Only override color if DB has default or invalid color
-        if (!merged.color || merged.color === '#5865f2' || merged.color === '#000000') {
+        if (!merged.color || merged.color === '#5865f2' || merged.color === '#000000' || merged.color === '#9146FF') {
             merged.color = defaultEmbed.color || merged.color;
         }
 

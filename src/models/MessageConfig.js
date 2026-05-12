@@ -8,7 +8,8 @@ const embedSchema = new mongoose.Schema({
     footer: { type: String, default: '' },
     image: { type: String, default: '' },
     thumbnail: { type: String, default: '' },
-    timestamp: { type: Boolean, default: true }
+    timestamp: { type: Boolean, default: true },
+    fields: { type: Array, default: [] }
 }, { _id: false });
 
 const messageConfigSchema = new mongoose.Schema({

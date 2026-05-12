@@ -12,11 +12,11 @@ import api from '../../../utils/api';
 import Head from 'next/head';
 import { 
     Key, AlertTriangle, ExternalLink, CheckCircle, Timer,
-    Eye, ChevronLeft, Gem, X
+    Eye, ChevronLeft, Gem, X, Lock
 } from 'lucide-react';
 
 export default function WhiteLabelPage() {
-  const { t } = useT();
+  const { t, language } = useT();
   const router = useRouter();
   const { guildId } = router.query;
   const [config, setConfig] = useState(null);
@@ -54,8 +54,8 @@ export default function WhiteLabelPage() {
         setStatuses(data.customStatuses || []);
         setRotationInterval(data.statusRotationInterval || 60);
         
-        if (botRes && botRes.bot) {
-            setBotData(botRes.bot);
+        if (botRes && botRes.success && botRes.data && botRes.data.bot) {
+            setBotData(botRes.data.bot);
         }
     } catch (err) {
         console.error('Failed to fetch config:', err);
@@ -117,11 +117,11 @@ export default function WhiteLabelPage() {
             data: { token: token || undefined, enabled: botData ? botData.enabled : true }
         });
         setToken('');
-        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Token salvato!', type: 'success' } }));
+        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('wl.token_saved'), type: 'success' } }));
         fetchData();
     } catch (err) {
         console.error('Token save failed:', err);
-        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Errore nel salvataggio token', type: 'error' } }));
+        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('wl.token_error'), type: 'error' } }));
     } finally {
         setSaving(false);
         window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
@@ -133,7 +133,7 @@ export default function WhiteLabelPage() {
     try {
         const res = await api.request(`/private-bot/${guildId}/toggle`, { method: 'POST' });
         setBotData({ ...botData, enabled: res.enabled });
-        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: res.enabled ? 'Bot attivata' : 'Bot disattivata', type: 'success' } }));
+        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: res.enabled ? t('wl.bot_enabled') : t('wl.bot_disabled'), type: 'success' } }));
     } catch (err) {
         console.error('Toggle failed:', err);
     }
@@ -144,7 +144,7 @@ export default function WhiteLabelPage() {
     setRestarting(true);
     try {
         await api.request(`/private-bot/${guildId}/restart`, { method: 'POST' });
-        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Riavvio in corso...', type: 'warning' } }));
+        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('wl.restarting'), type: 'warning' } }));
         setTimeout(fetchData, 3000);
     } catch (err) {
         console.error('Restart failed:', err);
@@ -157,7 +157,7 @@ export default function WhiteLabelPage() {
 
   const isPremium = config?.isPremium || ['premium', 'platinum'].includes(config?.premiumTier);
   const isPlatinum = config?.premiumTier === 'platinum';
-  const langPath = t('lang.code') === 'it' ? '' : '/en';
+  const langPath = language === 'it' ? '' : '/en';
 
   return (
     <div className="pc-premium-wrapper fade-in">
@@ -198,20 +198,20 @@ export default function WhiteLabelPage() {
                             <Sparkles size={48} />
                         </div>
                         <h1>Identity <span className="text-gradient">White-Label</span></h1>
-                        <p>Trasforma Verix in un'estensione nativa del tuo brand. Elimina ogni branding esterno e personalizza l'identità del bot per la tua community.</p>
+                        <p>{t('wl.gate.desc')}</p>
                     </div>
                     
                     <div className="gate-comparison-grid">
                         {/* Standard Card */}
                         <div className="gate-card standard">
-                            <div className="card-badge">STANDARD BOT</div>
+                            <div className="card-badge">{t('wl.gate.standard_badge')}</div>
                             <div className="card-mockup legacy">
                                 <div className="mock-avatar"></div>
                                 <div className="mock-text">
                                     <Shield size={14} />
                                     <span>Powered by Verix</span>
                                 </div>
-                                <p>Branding Verix visibile ovunque.</p>
+                                <p>{t('wl.gate.standard_desc')}</p>
                             </div>
                             <div className="card-status-icon negative">
                                 <XCircle size={24} />
@@ -220,11 +220,11 @@ export default function WhiteLabelPage() {
 
                         {/* Platinum Card */}
                         <div className="gate-card platinum">
-                            <div className="card-badge highlight">PLATINUM STUDIO</div>
+                            <div className="card-badge highlight">{t('wl.gate.platinum_badge')}</div>
                             <div className="card-mockup modern">
                                 <div className="mock-avatar primary"></div>
                                 <div className="mock-text-bold">{config?.name || 'Your Global Brand'}</div>
-                                <p className="text-primary-bright">Ghost Mode: Zero Branding.</p>
+                                <p className="text-primary-bright">{t('wl.gate.platinum_desc')}</p>
                             </div>
                             <div className="card-status-icon positive">
                                 <ShieldCheck size={28} />
@@ -235,12 +235,12 @@ export default function WhiteLabelPage() {
 
                     <button className="gate-btn-platinum" onClick={() => router.push(`/config/${guildId}/premium`)}>
                         <Crown size={22} />
-                        <span>Attiva Platinum Studio</span>
+                        <span>{t('wl.gate.activate_btn')}</span>
                         <ArrowRight size={20} />
                     </button>
                 </div>
             ) : (
-                <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 440px', gap: '40px' }}>
+                <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 560px', gap: '32px' }}>
                     <div className="v-stack" style={{ gap: '32px' }}>
                         <section className="pc-card-v2 animate slide-up">
                             <div className="card-header-v2" style={{ marginBottom: '32px' }}>
@@ -248,121 +248,141 @@ export default function WhiteLabelPage() {
                                 <h3 style={{ margin: 0 }}>{t('wl.identity_global')}</h3>
                             </div>
                             <div className="card-body-v2">
-                                <div className="pc-input-group-v2">
-                                    <label>{t('wl.custom_nick')}</label>
-                                    <div className="pc-input-wrapper-v2" style={{ background: 'var(--bg-badge)', border: '1.5px solid var(--border)', borderRadius: '22px', display: 'flex', alignItems: 'center', transition: '0.3s' }}>
-                                        <Bot size={22} style={{ marginLeft: '24px', color: 'var(--text-dim)' }} />
-                                        <input 
-                                            type="text" 
-                                            style={{ width: '100%', border: 'none', background: 'transparent', padding: '24px', fontWeight: 700, color: 'var(--text-heading)', fontSize: '1.2rem', outline: 'none' }}
-                                            value={config.customBotName || ''} 
-                                            onChange={(e) => setConfig({...config, customBotName: e.target.value})}
-                                            placeholder={t('wl.nick_placeholder')}
-                                        />
+                                    <div className="pc-input-group-v2">
+                                        <label>{t('wl.custom_nick')}</label>
+                                        <div className="pc-input-wrapper-v2" style={{ background: 'var(--bg-badge)', border: '1.5px solid var(--border)', borderRadius: '22px', display: 'flex', alignItems: 'center', transition: '0.3s' }}>
+                                            <Bot size={22} style={{ marginLeft: '24px', color: 'var(--primary)' }} />
+                                            <input 
+                                                type="text" 
+                                                style={{ width: '100%', border: 'none', background: 'transparent', padding: '24px', fontWeight: 700, color: 'var(--text-heading)', fontSize: '1.2rem', outline: 'none' }}
+                                                value={config.customBotName || ''} 
+                                                onChange={(e) => setConfig({...config, customBotName: e.target.value})}
+                                                placeholder={t('wl.nick_placeholder')}
+                                            />
+                                        </div>
+                                        <div style={{ marginTop: '24px', background: 'rgba(99, 102, 241, 0.05)', padding: '24px', borderRadius: '22px', border: '1.5px solid rgba(99, 102, 241, 0.2)', display: 'flex', gap: '20px', alignItems: 'center' }}>
+                                            <Info size={24} color="#6366f1" style={{ flexShrink: 0 }} />
+                                            <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 600, lineHeight: 1.6 }} dangerouslySetInnerHTML={{ __html: t('wl.nick_desc') }} />
+                                        </div>
                                     </div>
-                                    <div style={{ marginTop: '24px', background: 'rgba(99, 102, 241, 0.03)', padding: '24px', borderRadius: '22px', border: '1.5px solid var(--border)', display: 'flex', gap: '20px', alignItems: 'center' }}>
-                                        <Info size={24} color="#6366f1" style={{ flexShrink: 0 }} />
-                                        <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 700, lineHeight: 1.6 }}>{t('wl.nick_desc')}</p>
-                                    </div>
-                                </div>
                             </div>
                         </section>
 
-                        <section className="pc-card-v2 animate slide-up" style={{ animationDelay: '0.1s' }}>
-                            <div className="card-header-v2" style={{ marginBottom: '32px' }}>
-                                <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><RefreshCw size={18} /></div>
-                                <div style={{ flex: 1 }}>
-                                    <h3 style={{ margin: 0 }}>{t('wl.rotation_studio')}</h3>
-                                    <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 700 }}>{t('wl.rotation_desc')}</p>
+                        {botData?.clientName ? (
+                            <section className="pc-card-v2 animate slide-up" style={{ animationDelay: '0.1s' }}>
+                                <div className="card-header-v2" style={{ marginBottom: '32px' }}>
+                                    <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><RefreshCw size={18} /></div>
+                                    <div style={{ flex: 1 }}>
+                                        <h3 style={{ margin: 0 }}>{t('wl.rotation_studio')}</h3>
+                                        <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 700 }}>{t('wl.rotation_desc')}</p>
+                                    </div>
+                                    <button className="pc-btn-add-studio-v2" style={{ background: 'var(--bg-badge)', color: 'var(--primary)', border: '1.5px solid var(--border)', padding: '12px 24px', borderRadius: '14px', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', transition: '0.3s' }} onClick={addStatus}>
+                                        <Plus size={18} /> <span>{t('wl.add_status')}</span>
+                                    </button>
                                 </div>
-                                <button className="pc-btn-add-studio-v2" style={{ background: 'var(--bg-badge)', color: 'var(--primary)', border: '1.5px solid var(--border)', padding: '12px 24px', borderRadius: '14px', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', transition: '0.3s' }} onClick={addStatus}>
-                                    <Plus size={18} /> <span>{t('wl.add_status')}</span>
-                                </button>
-                            </div>
-                            <div className="card-body-v2">
-                                <div className="v-stack" style={{ gap: '18px' }}>
-                                    {statuses.map((s, index) => (
-                                        <div key={index} className="pc-status-card-v2 animate slide-up" style={{ display: 'flex', gap: '20px', background: 'var(--bg-badge)', padding: '20px', borderRadius: '24px', border: '1.5px solid var(--border)', alignItems: 'center', transition: '0.3s', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
-                                            <div className="pc-select-wrapper-v2" style={{ background: 'white', borderRadius: '16px', border: '1.5px solid var(--border)', padding: '0 16px' }}>
-                                                    <select 
-                                                        style={{ border: 'none', background: 'transparent', padding: '14px 0', color: '#6366f1', fontWeight: 700, outline: 'none', fontSize: '0.9rem', cursor: 'pointer', minWidth: '110px' }}
-                                                    value={s.type || 0}
-                                                    onChange={(e) => updateStatus(index, 'type', parseInt(e.target.value))}
-                                                >
-                                                    <option value="0">Playing</option>
-                                                    <option value="3">Watching</option>
-                                                    <option value="2">Listening</option>
-                                                    <option value="5">Competing</option>
-                                                    <option value="4">Custom</option>
-                                                </select>
+                                <div className="card-body-v2">
+                                    <div className="v-stack" style={{ gap: '18px' }}>
+                                        {statuses.map((s, index) => (
+                                            <div key={index} className="pc-status-card-v2 animate slide-up" style={{ display: 'flex', gap: '20px', background: 'var(--bg-badge)', padding: '20px', borderRadius: '24px', border: '1.5px solid var(--border)', alignItems: 'center', transition: '0.3s', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
+                                                <div className="pc-select-wrapper-v2" style={{ background: 'var(--bg-card)', borderRadius: '16px', border: '1.5px solid var(--border)', padding: '0 16px' }}>
+                                                        <select 
+                                                            style={{ border: 'none', background: 'transparent', padding: '14px 0', color: '#6366f1', fontWeight: 700, outline: 'none', fontSize: '0.9rem', cursor: 'pointer', minWidth: '110px' }}
+                                                        value={s.type || 0}
+                                                        onChange={(e) => updateStatus(index, 'type', parseInt(e.target.value))}
+                                                    >
+                                                        <option value="0">Playing</option>
+                                                        <option value="3">Watching</option>
+                                                        <option value="2">Listening</option>
+                                                        <option value="5">Competing</option>
+                                                        <option value="4">Custom</option>
+                                                    </select>
+                                                </div>
+                                                <input 
+                                                    type="text" 
+                                                    style={{ flex: 1, background: 'var(--bg-input)', border: '1.5px solid var(--border)', padding: '14px 24px', borderRadius: '16px', color: 'var(--text-heading)', fontWeight: 700, outline: 'none', fontSize: '1.05rem' }}
+                                                    value={s.text || ''} 
+                                                    onChange={(e) => updateStatus(index, 'text', e.target.value)}
+                                                    placeholder={t('wl.status_placeholder')}
+                                                />
+                                                <button className="pc-btn-delete-studio-v2" style={{ width: '48px', height: '48px', borderRadius: '14px', background: 'rgba(239,68,68,0.08)', color: '#ef4444', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => removeStatus(index)}><Trash2 size={22} /></button>
+                                            </div>
+                                        ))}
+                                        {statuses.length === 0 && (
+                                            <div style={{ textAlign: 'center', padding: '100px 40px', color: 'var(--border)', background: 'var(--bg-badge)', borderRadius: '32px', border: '2px dashed var(--border)' }}>
+                                                <Activity size={64} style={{ margin: '0 auto 24px', opacity: 0.3 }} />
+                                                <p style={{ fontWeight: 700, color: 'var(--text-dim)', fontSize: '1.1rem' }}>{t('wl.empty_status')}</p>
+                                            </div>
+                                        )}
+                                    </div>
+    
+                                    {statuses.length > 1 && (
+                                        <div style={{ marginTop: '40px', padding: '36px', background: 'linear-gradient(135deg, var(--bg-badge) 0%, var(--bg-badge) 100%)', borderRadius: '32px', border: '1.5px solid var(--border)' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '32px' }}>
+                                                <div style={{ width: '48px', height: '48px', background: 'rgba(99,102,241,0.1)', color: '#6366f1', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(0,0,0,0.03)' }}><Timer size={22} /></div>
+                                                <div className="v-stack">
+                                                    <span style={{ fontWeight: 700, color: 'var(--text-heading)', fontSize: '1.1rem', letterSpacing: '-0.3px' }}>{t('wl.rotation_freq')}</span>
+                                                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t('wl.rotation_freq_desc')}</span>
+                                                </div>
+                                                <div style={{ marginLeft: 'auto', background: 'var(--bg-card)', padding: '10px 24px', borderRadius: '16px', border: '1.5px solid var(--border)', color: '#6366f1', fontWeight: 700, fontSize: '1.3rem' }}>
+                                                    {rotationInterval}s
+                                                </div>
                                             </div>
                                             <input 
-                                                type="text" 
-                                                style={{ flex: 1, background: 'white', border: '1.5px solid var(--border)', padding: '14px 24px', borderRadius: '16px', color: 'var(--text-heading)', fontWeight: 700, outline: 'none', fontSize: '1.05rem' }}
-                                                value={s.text || ''} 
-                                                onChange={(e) => updateStatus(index, 'text', e.target.value)}
-                                                placeholder={t('wl.status_placeholder')}
+                                                type="range" 
+                                                min="15" 
+                                                max="3600" 
+                                                step="15"
+                                                style={{ width: '100%', accentColor: '#6366f1', height: '10px', cursor: 'pointer' }}
+                                                value={rotationInterval} 
+                                                onChange={(e) => setRotationInterval(parseInt(e.target.value))}
                                             />
-                                            <button className="pc-btn-delete-studio-v2" style={{ width: '48px', height: '48px', borderRadius: '14px', background: '#fef2f2', color: '#ef4444', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => removeStatus(index)}><Trash2 size={22} /></button>
-                                        </div>
-                                    ))}
-                                    {statuses.length === 0 && (
-                                        <div style={{ textAlign: 'center', padding: '100px 40px', color: 'var(--border)', background: 'var(--bg-badge)', borderRadius: '32px', border: '2px dashed var(--border)' }}>
-                                            <Activity size={64} style={{ margin: '0 auto 24px', opacity: 0.3 }} />
-                                            <p style={{ fontWeight: 700, color: 'var(--text-dim)', fontSize: '1.1rem' }}>{t('wl.empty_status')}</p>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase' }}>
+                                                <span>Ultra High (15s)</span>
+                                                <span>Slow (1h)</span>
+                                            </div>
                                         </div>
                                     )}
                                 </div>
-
-                                {statuses.length > 1 && (
-                                    <div style={{ marginTop: '40px', padding: '36px', background: 'linear-gradient(135deg, var(--bg-badge) 0%, var(--bg-badge) 100%)', borderRadius: '32px', border: '1.5px solid var(--border)' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '32px' }}>
-                                            <div style={{ width: '48px', height: '48px', background: '#f5f3ff', color: '#6366f1', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(0,0,0,0.03)' }}><Timer size={22} /></div>
-                                            <div className="v-stack">
-                                                <span style={{ fontWeight: 700, color: 'var(--text-heading)', fontSize: '1.1rem', letterSpacing: '-0.3px' }}>{t('wl.rotation_freq')}</span>
-                                                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t('wl.rotation_freq_desc')}</span>
-                                            </div>
-                                            <div style={{ marginLeft: 'auto', background: 'white', padding: '10px 24px', borderRadius: '16px', border: '1.5px solid var(--border)', color: '#6366f1', fontWeight: 700, fontSize: '1.3rem' }}>
-                                                {rotationInterval}s
-                                            </div>
-                                        </div>
-                                        <input 
-                                            type="range" 
-                                            min="15" 
-                                            max="3600" 
-                                            step="15"
-                                            style={{ width: '100%', accentColor: '#6366f1', height: '10px', cursor: 'pointer' }}
-                                            value={rotationInterval} 
-                                            onChange={(e) => setRotationInterval(parseInt(e.target.value))}
-                                        />
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase' }}>
-                                            <span>Ultra High (15s)</span>
-                                            <span>Slow (1h)</span>
-                                        </div>
+                            </section>
+                        ) : (
+                            <section className="pc-card-v2 animate slide-up" style={{ opacity: 0.8, filter: 'grayscale(0.3)', animationDelay: '0.1s' }}>
+                                <div className="card-header-v2" style={{ marginBottom: '32px' }}>
+                                    <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--text-muted)' }}><Lock size={18} /></div>
+                                    <div style={{ flex: 1 }}>
+                                        <h3 style={{ margin: 0, color: 'var(--text-dim)' }}>{t('wl.rotation_studio_locked')}</h3>
+                                        <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 700 }}>{t('wl.rotation_locked_desc')}</p>
                                     </div>
-                                )}
-                            </div>
-                        </section>
+                                </div>
+                                <div className="card-body-v2">
+                                     <div style={{ padding: '60px 40px', textAlign: 'center', background: 'rgba(0,0,0,0.02)', borderRadius: '32px', border: '2px dashed var(--border)' }}>
+                                         <Bot size={48} style={{ margin: '0 auto 20px', opacity: 0.2 }} />
+                                         <p style={{ color: 'var(--text-dim)', fontWeight: 600 }}>{t('wl.rotation_locked_desc')}</p>
+                                     </div>
+                                </div>
+                            </section>
+                        )}
 
                         {/* Platinum Guide Section */}
                         {isPlatinum && (
                             <section className="pc-card-v2 animate slide-up" style={{ animationDelay: '0.2s' }}>
                                 <div className="card-header-v2">
-                                    <div className="header-icon"><Layout size={18} /></div>
-                                    <h3>Guida al Setup Private Bot</h3>
+                                    <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><Layout size={18} /></div>
+                                    <h3 style={{ margin: 0 }}>{t('private_bot.guide_title')}</h3>
                                 </div>
                                 <div className="card-body-v2">
                                     <div className="pc-stepper-v2">
-                                        {[1,2,3,4].map(step => (
+                                        {[1,2,3,4,5,6].map(step => (
                                             <div key={step} className="pc-step-item-v2">
                                                 <div className="step-num">{step}</div>
                                                 <div className="step-content">
                                                     <h4 className="step-title">{t(`private_bot.step${step}_title`)}</h4>
                                                     <p className="step-desc" dangerouslySetInnerHTML={{ __html: t(`private_bot.step${step}_desc`) }}></p>
-                                                    <div className="step-media-v2" onClick={() => setSelectedImage({ src: `/img/guide${langPath}/step${step}.png`, title: t(`private_bot.step${step}_title`) })}>
-                                                        <img src={`/img/guide${langPath}/step${step}.png`} alt={`Step ${step}`} />
-                                                        <div className="media-overlay"><Sparkles size={16} /> Ingrandisci</div>
-                                                    </div>
+                                                    {step < 6 && (
+                                                        <div className="step-media-v2" onClick={() => setSelectedImage({ src: `/img/guide${langPath}/step${step}.png`, title: t(`private_bot.step${step}_title`) })}>
+                                                            <img src={`/img/guide${langPath}/step${step}.png`} alt={`Step ${step}`} />
+                                                            <div className="media-overlay"><Sparkles size={16} /> {t('common.zoom')}</div>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         ))}
@@ -377,8 +397,8 @@ export default function WhiteLabelPage() {
                         {isPlatinum && (
                             <section className="pc-card-v2 status-monitor-v2 animate slide-up">
                                 <div className="card-header-v2">
-                                    <div className="header-icon"><Power size={18} /></div>
-                                    <h3>Stato Istanza Privata</h3>
+                                    <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><Power size={18} /></div>
+                                    <h3 style={{ margin: 0 }}>{t('wl.instance_status')}</h3>
                                 </div>
                                 <div className="card-body-v2">
                                     {botData ? (
@@ -396,8 +416,8 @@ export default function WhiteLabelPage() {
 
                                             <div className="pc-action-row-v2">
                                                 <div className="v-stack">
-                                                    <span className="action-label">Abilitato</span>
-                                                    <span className="action-desc">Ricevi comandi</span>
+                                                    <span className="action-label">{t('wl.enabled')}</span>
+                                                    <span className="action-desc">{t('wl.enabled_desc')}</span>
                                                 </div>
                                                 <label className="pc-toggle-mini">
                                                     <input type="checkbox" checked={!!botData.enabled} onChange={handleToggleBot} />
@@ -407,11 +427,11 @@ export default function WhiteLabelPage() {
 
                                             <button className="pc-btn-outline" style={{ width: '100%', height: '56px' }} onClick={handleRestartBot} disabled={restarting}>
                                                 <RefreshCw size={18} className={restarting ? 'animate-spin' : ''} />
-                                                <span>{restarting ? 'Riavvio...' : 'Riavvia Istanza'}</span>
+                                                <span>{restarting ? t('wl.restarting_btn') : t('wl.restart_btn')}</span>
                                             </button>
                                         </div>
                                     ) : (
-                                        <div className="pc-empty-mini">Configura il token sotto per avviare l'istanza.</div>
+                                        <div className="pc-empty-mini">{t('wl.token_setup_hint')}</div>
                                     )}
                                 </div>
                             </section>
@@ -421,12 +441,12 @@ export default function WhiteLabelPage() {
                         {isPlatinum && (
                             <section className="pc-card-v2 animate slide-up" style={{ animationDelay: '0.1s' }}>
                                 <div className="card-header-v2">
-                                    <div className="header-icon"><Key size={18} /></div>
-                                    <h3>Credenziali Private</h3>
+                                    <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><Key size={18} /></div>
+                                    <h3 style={{ margin: 0 }}>{t('wl.credentials')}</h3>
                                 </div>
                                 <div className="card-body-v2">
                                     <div className="pc-input-group-v2">
-                                        <label>Discord Bot Token</label>
+                                        <label>{t('wl.token_label')}</label>
                                         <div className="pc-input-wrapper-v2" style={{ background: 'var(--bg-badge)', border: '1.5px solid var(--border)', borderRadius: '16px', overflow: 'hidden', display: 'flex' }}>
                                             <input 
                                                 type={showToken ? 'text' : 'password'} 
@@ -446,7 +466,7 @@ export default function WhiteLabelPage() {
                                             disabled={saving || (!token && !botData)}
                                         >
                                             <Save size={18} />
-                                            <span>Salva Token</span>
+                                            <span>{t('wl.save_token_btn')}</span>
                                         </button>
                                     </div>
                                 </div>
@@ -455,7 +475,7 @@ export default function WhiteLabelPage() {
 
                         <section className="pc-card-v2 animate slide-up">
                             <div className="card-header-v2" style={{ marginBottom: '32px' }}>
-                                <div className="header-icon" style={{ background: '#fef2f2', color: '#ef4444' }}><EyeOff size={18} /></div>
+                                <div className="header-icon" style={{ background: 'rgba(239,68,68,0.08)', color: '#ef4444' }}><EyeOff size={18} /></div>
                                 <h3 style={{ margin: 0 }}>{t('wl.ghost_protocol')}</h3>
                             </div>
                             <div className="card-body-v2">
@@ -478,36 +498,48 @@ export default function WhiteLabelPage() {
                             </div>
                         </section>
 
-                        <div className="pc-variable-card-v2 animate slide-up" style={{ background: 'linear-gradient(135deg, var(--text-heading) 0%, #0f172a 100%)', borderRadius: '32px', padding: '40px', color: 'white', position: 'relative', overflow: 'hidden' }}>
+                        <div className="pc-variable-card-v2 animate slide-up">
                             <div style={{ position: 'relative', zIndex: 2 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
-                                    <div style={{ background: 'rgba(255,255,255,0.1)', padding: '12px', borderRadius: '16px', color: '#38bdf8' }}><Globe size={24} /></div>
+                                    <div className="placeholder-icon-wrapper"><Globe size={24} /></div>
                                     <span style={{ fontWeight: 700, fontSize: '0.95rem', textTransform: 'uppercase', letterSpacing: '1px' }}>{t('wl.placeholders')}</span>
                                 </div>
                                 <p style={{ margin: 0, fontSize: '1rem', fontWeight: 600, opacity: 0.8, lineHeight: 1.7, marginBottom: '32px' }}>{t('wl.placeholders_desc')}</p>
                                 <div className="v-stack" style={{ gap: '16px' }}>
-                                    <div style={{ background: 'rgba(255,255,255,0.05)', padding: '16px 20px', borderRadius: '18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid rgba(255,255,255,0.1)' }}>
-                                        <code style={{ background: '#38bdf8', color: '#0f172a', padding: '6px 14px', borderRadius: '10px', fontWeight: 700, fontSize: '0.9rem' }}>{`{players}`}</code>
+                                    <div className="placeholder-item-v2">
+                                        <code>{`{players}`}</code>
                                         <span style={{ fontSize: '0.9rem', fontWeight: 700 }}>Online Count</span>
                                     </div>
-                                    <div style={{ background: 'rgba(255,255,255,0.05)', padding: '16px 20px', borderRadius: '18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid rgba(255,255,255,0.1)' }}>
-                                        <code style={{ background: '#38bdf8', color: '#0f172a', padding: '6px 14px', borderRadius: '10px', fontWeight: 700, fontSize: '0.9rem' }}>{`{max_players}`}</code>
+                                    <div className="placeholder-item-v2">
+                                        <code>{`{max_players}`}</code>
                                         <span style={{ fontSize: '0.9rem', fontWeight: 700 }}>Total Slots</span>
                                     </div>
                                 </div>
                             </div>
-                            <div style={{ position: 'absolute', right: '-40px', bottom: '-40px', opacity: 0.05 }}><Cpu size={200} /></div>
+                            <div className="placeholder-bg-icon"><Cpu size={200} /></div>
                         </div>
                     </aside>
                 </div>
             )}
         </div>
 
+        {selectedImage && (
+            <div className="pc-lightbox-v2 fade-in" onClick={() => setSelectedImage(null)}>
+                <div className="lightbox-content-v2 animate slide-up" onClick={e => e.stopPropagation()}>
+                    <div className="lightbox-header-v2">
+                        <span>{selectedImage.title}</span>
+                        <button onClick={() => setSelectedImage(null)}><X size={24} /></button>
+                    </div>
+                    <img src={selectedImage.src} alt={selectedImage.title} />
+                </div>
+            </div>
+        )}
+
         <style jsx>{`
             .pc-premium-wrapper { padding: 32px; max-width: 1500px; margin: 0 auto; font-family: 'Inter', sans-serif; }
             
             /* Onboarding Gate Redesign */
-            .pc-onboarding-gate { padding: 80px 40px; background: white; border-radius: 40px; border: 1px solid var(--border); text-align: center; box-shadow: var(--shadow-premium); max-width: 1200px; margin: 0 auto; position: relative; overflow: hidden; }
+            .pc-onboarding-gate { padding: 80px 40px; background: var(--bg-card); border-radius: 40px; border: 1px solid var(--border); text-align: center; box-shadow: var(--shadow-premium); max-width: 1200px; margin: 0 auto; position: relative; overflow: hidden; }
             .gate-header { margin-bottom: 60px; }
             .gate-icon-main { width: 100px; height: 100px; background: rgba(99, 102, 241, 0.1); color: #6366f1; border-radius: 32px; display: flex; align-items: center; justify-content: center; margin: 0 auto 32px; box-shadow: 0 20px 40px rgba(99, 102, 241, 0.1); }
             .gate-header h1 { font-size: 3.5rem; font-weight: 900; color: var(--text-heading); margin-bottom: 20px; letter-spacing: -2px; }
@@ -515,15 +547,15 @@ export default function WhiteLabelPage() {
             .text-gradient { background: linear-gradient(to right, #6366f1, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
             .gate-comparison-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; max-width: 1000px; margin: 0 auto 60px; }
-            .gate-card { position: relative; background: white; border: 1.5px solid var(--border); padding: 40px; border-radius: 32px; text-align: left; transition: 0.3s; }
-            .gate-card.platinum { border-color: #ddd6fe; background: linear-gradient(135deg, #f5f3ff 0%, #fff 100%); }
+            .gate-card { position: relative; background: var(--bg-card); border: 1.5px solid var(--border); padding: 40px; border-radius: 32px; text-align: left; transition: 0.3s; }
+            .gate-card.platinum { border-color: var(--primary-muted); background: linear-gradient(135deg, var(--bg-badge) 0%, var(--bg-card) 100%); }
             .gate-card:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.05); }
 
             .card-badge { font-size: 0.7rem; font-weight: 800; padding: 6px 16px; border-radius: 100px; background: var(--bg-badge); color: var(--text-muted); letter-spacing: 1px; width: fit-content; margin-bottom: 32px; }
             .card-badge.highlight { background: #6366f1; color: white; }
 
             .card-mockup { background: var(--bg-badge); border: 1.5px solid var(--border); border-radius: 20px; padding: 24px; position: relative; }
-            .gate-card.platinum .card-mockup { background: white; border-color: #ddd6fe; box-shadow: 0 10px 30px rgba(99, 102, 241, 0.05); }
+            .gate-card.platinum .card-mockup { background: var(--bg-badge); border-color: var(--primary-muted); box-shadow: 0 10px 30px rgba(var(--primary-rgb), 0.05); }
             .mock-avatar { width: 32px; height: 32px; border-radius: 10px; background: var(--border); margin-bottom: 16px; }
             .mock-avatar.primary { background: #6366f1; }
             .mock-text { display: flex; align-items: center; gap: 8px; color: var(--text-dim); font-weight: 700; font-size: 0.85rem; }
@@ -596,26 +628,26 @@ export default function WhiteLabelPage() {
 
             /* Status monitor */
             .pc-bot-identity-v2 { display: flex; align-items: center; gap: 20px; background: var(--bg-badge); padding: 20px; border-radius: 24px; }
-            .bot-avatar { width: 64px; height: 64px; border-radius: 50%; border: 3px solid white; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+            .bot-avatar { width: 64px; height: 64px; border-radius: 50%; border: 3px solid var(--border-strong); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
             .bot-info { display: flex; flex-direction: column; gap: 4px; }
             .bot-name { font-weight: 800; font-size: 1.2rem; color: var(--text-heading); }
 
-            .pc-action-row-v2 { display: flex; justify-content: space-between; align-items: center; padding: 20px; background: white; border: 1.5px solid var(--border); border-radius: 20px; }
+            .pc-action-row-v2 { display: flex; justify-content: space-between; align-items: center; padding: 20px; background: var(--bg-card); border: 1.5px solid var(--border); border-radius: 20px; }
             .action-label { font-weight: 700; color: var(--text-heading); font-size: 0.95rem; }
             .action-desc { font-size: 0.8rem; color: var(--text-muted); }
 
-            .pc-btn-outline { display: flex; align-items: center; justify-content: center; gap: 12px; background: white; border: 1.5px solid var(--border); border-radius: 18px; font-weight: 700; color: var(--text-heading); cursor: pointer; transition: 0.3s; }
+            .pc-btn-outline { display: flex; align-items: center; justify-content: center; gap: 12px; background: var(--bg-card); border: 1.5px solid var(--border); border-radius: 18px; font-weight: 700; color: var(--text-heading); cursor: pointer; transition: 0.3s; }
             .pc-btn-outline:hover { background: var(--bg-badge); transform: translateY(-2px); }
 
             .pc-toggle-mini { position: relative; width: 50px; height: 26px; }
             .pc-toggle-mini input { opacity: 0; width: 0; height: 0; }
             .pc-slider-mini { position: absolute; cursor: pointer; inset: 0; background: var(--border); transition: .4s; border-radius: 34px; }
-            .pc-slider-mini:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background: white; transition: .4s; border-radius: 50%; }
+            .pc-slider-mini:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background: var(--bg-card); transition: .4s; border-radius: 50%; }
             input:checked + .pc-slider-mini { background: #10b981; }
             input:checked + .pc-slider-mini:before { transform: translateX(24px); }
 
             .pc-lightbox-v2 { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 10000; display: flex; align-items: center; justify-content: center; padding: 40px; backdrop-filter: blur(10px); }
-            .lightbox-content-v2 { background: white; border-radius: 32px; overflow: hidden; max-width: 1000px; width: 100%; box-shadow: 0 40px 100px rgba(0,0,0,0.5); }
+            .lightbox-content-v2 { background: var(--bg-card); border-radius: 32px; overflow: hidden; max-width: 1000px; width: 100%; box-shadow: 0 40px 100px rgba(0,0,0,0.5); }
             .lightbox-header-v2 { padding: 24px 32px; border-bottom: 1.5px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 1.2rem; color: var(--text-heading); }
             .lightbox-header-v2 button { background: transparent; border: none; color: var(--text-dim); cursor: pointer; transition: 0.2s; }
             .lightbox-header-v2 button:hover { color: #ef4444; transform: rotate(90deg); }
@@ -627,6 +659,37 @@ export default function WhiteLabelPage() {
             @media (max-width: 900px) {
                 .gate-comparison-grid { grid-template-columns: 1fr; }
                 .gate-header h1 { font-size: 2.5rem; }
+            }
+
+            /* Variable Placeholders Card - Theme Aware */
+            .pc-variable-card-v2 { background: linear-gradient(135deg, #1e1b4b 0%, #020617 100%); border-radius: 32px; padding: 40px; color: white; position: relative; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
+            .placeholder-icon-wrapper { background: rgba(255,255,255,0.1); padding: 12px; border-radius: 16px; color: #38bdf8; }
+            .placeholder-item-v2 { background: rgba(255,255,255,0.05); padding: 16px 20px; border-radius: 18px; display: flex; justify-content: space-between; alignItems: center; border: 1px solid rgba(255,255,255,0.1); }
+            .placeholder-item-v2 code { background: #38bdf8; color: #0f172a; padding: 6px 14px; border-radius: 10px; fontWeight: 700; fontSize: 0.9rem; }
+            .placeholder-bg-icon { position: absolute; right: -40px; bottom: -40px; opacity: 0.05; pointer-events: none; }
+
+            :global(.light-theme) .pc-variable-card-v2 {
+                background: white !important;
+                color: var(--text-heading) !important;
+                border: 1px solid var(--border) !important;
+                box-shadow: var(--shadow-premium) !important;
+            }
+            :global(.light-theme) .placeholder-icon-wrapper {
+                background: var(--bg-badge) !important;
+                color: var(--primary) !important;
+            }
+            :global(.light-theme) .placeholder-item-v2 {
+                background: var(--bg-badge) !important;
+                border: 1.5px solid var(--border) !important;
+                color: var(--text-main) !important;
+            }
+            :global(.light-theme) .placeholder-item-v2 code {
+                background: var(--primary) !important;
+                color: white !important;
+            }
+            :global(.light-theme) .placeholder-bg-icon {
+                color: var(--primary) !important;
+                opacity: 0.03 !important;
             }
         `}</style>
     </div>

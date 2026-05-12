@@ -4,11 +4,10 @@ import Skeleton from '../../../components/Skeleton';
 import api from '../../../utils/api';
 import { useT } from '../../../contexts/LanguageContext';
 import { 
-  Save, Ticket, Clock, Plus, Trash2, Power, Settings2, Info, ChevronRight, MessageSquare, 
-  Type, Hash, Shield, Palette, Layers, Archive, FileText, XCircle, CheckCircle2, Zap, Send, 
-  Users, ShieldAlert, BarChart3, Lock, Crown, Trash, ArrowRight, Sparkles, Star, Layout, 
-  Terminal, BellRing, Globe, MessageCircle, Timer, Activity, MousePointer2, Play,
-  Settings, LineChart, ShieldCheck, Mail, History, LifeBuoy, GripVertical
+  Save, ShieldCheck, Settings2, Palette, MousePointer2, CheckCircle2, 
+  Shield, Send, GripVertical, RotateCcw, Ticket, Plus, Trash2, MessageSquare, 
+  Type, Hash, BarChart3, Mail, Layers, ShieldAlert, Play, MessageCircle, 
+  Timer, Activity, Users
 } from 'lucide-react';
 import { DiscordSelector, CustomSelect, EmbedMessageManager } from '../../../components/LazyConfigComponents';
 import EmojiInput from '../../../components/EmojiInput';
@@ -99,6 +98,24 @@ export default function TicketConfig() {
       setSendingPanel(false);
     }
   };
+  
+  const handleReset = async () => {
+    if (!window.confirm(t('common.reset_confirm'))) return;
+    setSaving(true);
+    window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
+    try {
+      const res = await api.request(`/config/${guildId}/tickets/reset`, { method: 'POST' });
+      if (res.success) {
+        setConfig(res.data);
+        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('common.reset_success'), type: 'success' } }));
+      }
+    } catch (error) {
+      window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('common.reset_error'), type: 'error' } }));
+    } finally {
+      setSaving(false);
+      window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
+    }
+  };
 
   const setGlobalNested = (path, value) => {
     setGlobalConfig(prev => {
@@ -175,33 +192,35 @@ export default function TicketConfig() {
             </div>
             
             <div className="header-controls">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--bg-badge)', padding: '10px 20px', borderRadius: '14px', border: '1.5px solid var(--border)' }}>
-                    <label className="pc-toggle-v2" style={{ position: 'relative', width: '42px', height: '22px' }}>
+                <div className="pc-toggle-container-v2">
+                    <label className="pc-toggle-v2">
                         <input 
                             type="checkbox" 
-                            style={{ opacity: 0, width: 0, height: 0, position: 'absolute' }}
                             checked={config.enabled} 
                             onChange={() => setConfig({...config, enabled: !config.enabled})} 
                         />
-                        <span style={{ 
-                            position: 'absolute', cursor: 'pointer', inset: 0, 
-                            background: config.enabled ? '#10b981' : '#ef4444', 
-                            transition: '.4s', borderRadius: '34px' 
-                        }}>
-                            <span style={{
-                                position: 'absolute', content: '""', height: '16px', width: '16px', 
-                                left: config.enabled ? '23px' : '3px', bottom: '3px', 
-                                background: '#fff', transition: '.4s', borderRadius: '50%'
-                            }}></span>
-                        </span>
+                        <span className="pc-slider-v2"></span>
                     </label>
-                    <span style={{ fontWeight: 700, fontSize: '0.9rem', color: config.enabled ? '#10b981' : '#ef4444' }}>
+                    <span className={config.enabled ? 'text-active' : 'text-inactive'}>
                         {config.enabled ? t('common.active') : t('common.inactive')}
                     </span>
                 </div>
+                <div className="pc-header-divider" style={{ width: '1px', height: '24px', background: 'var(--border)', margin: '0 4px' }}></div>
+                <button className="pc-btn-outline-v2" onClick={handleReset} title={t('common.reset_to_default')}>
+                    <RotateCcw size={18} />
+                </button>
+                <button 
+                    className="pc-btn-outline-v2" 
+                    onClick={handleSendPanel} 
+                    disabled={sendingPanel || !config.panelChannelId} 
+                    title={t('tickets.send_panel')}
+                    style={{ color: 'var(--primary)', borderColor: sendingPanel ? 'var(--border)' : 'rgba(var(--primary-rgb), 0.2)' }}
+                >
+                    {sendingPanel ? <RotateCcw size={18} className="animate-spin" /> : <Send size={18} />}
+                </button>
                 <button className="pc-btn-primary" onClick={handleSave} disabled={saving}>
                     <Save size={18} />
-                    <span>{saving ? t('common.saving') : t('tickets.sync_studio')}</span>
+                    <span>{saving ? t('common.saving') : t('common.sync')}</span>
                 </button>
             </div>
         </header>
@@ -213,8 +232,7 @@ export default function TicketConfig() {
                 { id: 'categories', icon: <Layers size={18} />, label: t('tickets.categories'), count: Object.keys(config.typesConfig || {}).length },
                 { id: 'responses', icon: <MessageSquare size={18} />, label: t('tickets.canned'), count: config.cannedResponses?.length },
                 { id: 'blacklist', icon: <ShieldAlert size={18} />, label: t('tickets.blacklist') },
-                { id: 'design', icon: <Palette size={18} />, label: t('tickets.design') },
-                { id: 'stats', icon: <BarChart3 size={18} />, label: t('tickets.stats') }
+                { id: 'design', icon: <Palette size={18} />, label: t('tickets.design') }
             ].map(tab => (
                 <button key={tab.id} className={activeTab === tab.id ? 'active' : ''} onClick={() => setActiveTab(tab.id)}>
                     {tab.icon} <span>{tab.label}</span>
@@ -225,7 +243,7 @@ export default function TicketConfig() {
 
         <div className="pc-content-v2">
             {activeTab === 'settings' && (
-                <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '32px' }}>
+                <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 560px', gap: '32px' }}>
                     <div className="v-stack" style={{ gap: '32px' }}>
                         <section className="pc-card-v2">
                             <div className="card-header-v2">
@@ -236,11 +254,11 @@ export default function TicketConfig() {
                                 <div className="pc-input-grid-v2">
                                     <div className="pc-input-group-v2">
                                         <label>{t('tickets.public_panel')}</label>
-                                        <DiscordSelector type="channel" options={discordData.channels} value={config.panelChannelId || ''} onChange={val => setConfig({...config, panelChannelId: val})} />
+                                        <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 0 || c.type === 5)} value={config.panelChannelId || ''} onChange={val => setConfig({...config, panelChannelId: val})} />
                                     </div>
                                     <div className="pc-input-group-v2" style={{ marginTop: '24px' }}>
                                         <label>{t('tickets.log_transcript')}</label>
-                                        <DiscordSelector type="channel" options={discordData.channels} value={config.logChannelId || ''} onChange={val => setConfig({...config, logChannelId: val})} />
+                                        <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 0 || c.type === 5)} value={config.logChannelId || ''} onChange={val => setConfig({...config, logChannelId: val})} />
                                     </div>
                                     <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginTop: '24px' }}>
                                         <div className="pc-input-group-v2">
@@ -285,26 +303,7 @@ export default function TicketConfig() {
                     </div>
 
                     <div className="v-stack" style={{ gap: '32px' }}>
-                        <div className="pc-card-v2" style={{ textAlign: 'center', background: 'var(--bg-badge)' }}>
-                            <Mail size={32} style={{ color: 'var(--primary)', marginBottom: '16px' }} />
-                            <h3 style={{ margin: '0 0 8px 0' }}>{t('tickets.panel_dist')}</h3>
-                            <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginBottom: '24px' }}>{t('tickets.panel_dist_desc')}</p>
-                            <button className="pc-btn-primary" style={{ width: '100%', justifyContent: 'center' }} onClick={handleSendPanel} disabled={sendingPanel}>
-                                <Send size={18} />
-                                <span>{sendingPanel ? t('common.sending') : t('tickets.send_panel')}</span>
-                            </button>
-                        </div>
-
-                        <div className="pc-toggle-card-v2">
-                            <div className="v-stack" style={{ gap: '4px' }}>
-                                <strong>{t('tickets.title')}</strong>
-                                <span>{t('tickets.service_active')}</span>
-                            </div>
-                            <label className="pc-toggle-v2">
-                                <input type="checkbox" checked={config.enabled} onChange={e => setConfig({...config, enabled: e.target.checked})} />
-                                <span className="pc-slider-v2"></span>
-                            </label>
-                        </div>
+                        {/* Removed redundant panels */}
                     </div>
                 </div>
             )}
@@ -499,57 +498,6 @@ export default function TicketConfig() {
                 </div>
             )}
 
-            {activeTab === 'stats' && (
-                <div className="v-stack animate slide-up" style={{ gap: '32px' }}>
-                    <section className="pc-card-v2">
-                        <div className="card-header-v2" style={{ marginBottom: '32px' }}>
-                            <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><BarChart3 size={20} /></div>
-                            <div className="v-stack" style={{ flex: 1 }}>
-                                <h3 style={{ margin: 0 }}>{t('tickets.stats')}</h3>
-                                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: '4px 0 0 0' }}>{t('tickets.stats_desc')}</p>
-                            </div>
-                        </div>
-                        <div className="card-body-v2">
-                            {ticketStats ? (
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '24px' }}>
-                                    <div style={{ background: 'var(--bg-badge)', padding: '24px', borderRadius: '20px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase' }}>
-                                            <Layers size={16} /> {t('admin.total_tickets')}
-                                        </div>
-                                        <div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--text-heading)' }}>{ticketStats.total || 0}</div>
-                                    </div>
-                                    <div style={{ background: 'var(--bg-badge)', padding: '24px', borderRadius: '20px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase' }}>
-                                            <MessageCircle size={16} /> {t('tickets.stats_open')}
-                                        </div>
-                                        <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#10b981' }}>{ticketStats.open || 0}</div>
-                                    </div>
-                                    <div style={{ background: 'var(--bg-badge)', padding: '24px', borderRadius: '20px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase' }}>
-                                            <CheckCircle2 size={16} /> {t('tickets.stats_closed')}
-                                        </div>
-                                        <div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--text-heading)' }}>{ticketStats.closed || 0}</div>
-                                    </div>
-                                    <div style={{ background: 'var(--bg-badge)', padding: '24px', borderRadius: '20px', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase' }}>
-                                            <Timer size={16} /> {t('tickets.stats_avg_time')}
-                                        </div>
-                                        <div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--text-heading)' }}>
-                                            {ticketStats.avgResponseMs ? `${Math.round(ticketStats.avgResponseMs / 60000)}m` : 'N/A'}
-                                        </div>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div style={{ textAlign: 'center', padding: '60px 0' }}>
-                                    <Activity size={48} style={{ color: 'var(--primary)', opacity: 0.5, marginBottom: '16px' }} />
-                                    <h4 style={{ color: 'var(--text-heading)', fontSize: '1.2rem', margin: '0 0 8px 0' }}>{t('common.no_results')}</h4>
-                                    <p style={{ color: 'var(--text-muted)' }}>{t('tickets.stats_empty')}</p>
-                                </div>
-                            )}
-                        </div>
-                    </section>
-                </div>
-            )}
         </div>
 
         <style jsx>{`
@@ -600,12 +548,6 @@ export default function TicketConfig() {
             .pc-toggle-card-v2 strong { font-weight: 700; color: var(--text-heading); }
             .pc-toggle-card-v2 span { font-size: 0.75rem; color: var(--text-muted); font-weight: 700; }
 
-            .pc-toggle-v2 { position: relative; width: 40px; height: 20px; }
-            .pc-toggle-v2 input { opacity: 0; width: 0; height: 0; }
-            .pc-slider-v2 { position: absolute; cursor: pointer; inset: 0; background: var(--border); transition: .3s; border-radius: 34px; }
-            .pc-slider-v2:before { position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px; background: #fff; transition: .3s; border-radius: 50%; }
-            input:checked + .pc-slider-v2 { background: var(--primary); }
-            input:checked + .pc-slider-v2:before { transform: translateX(20px); }
 
             .v-stack { display: flex; flex-direction: column; }
             .animate { animation: slideUp 0.4s ease-out; }

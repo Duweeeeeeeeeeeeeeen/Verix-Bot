@@ -513,7 +513,7 @@ export default {
         }
     },
     welcome: {
-        join: {
+        welcome: {
             title: '✈️ New Arrival in the City',
             description: 'Welcome **{user}** to **{guild}**! We are happy to see you here. Make sure to read the rules.',
             color: '#2ecc71'

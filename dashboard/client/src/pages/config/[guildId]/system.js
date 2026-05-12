@@ -49,7 +49,7 @@ export default function SystemConfig() {
         {/* V2 Header */}
         <header className="pc-header-v2">
             <div className="header-info">
-                <div className="pc-icon-box" style={{ background: 'linear-gradient(135deg, var(--text-muted) 0%, var(--text-heading) 100%)' }}>
+                <div className="pc-icon-box" style={{ background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%)' }}>
                     <Settings size={28} />
                 </div>
                 <div className="pc-title-row">

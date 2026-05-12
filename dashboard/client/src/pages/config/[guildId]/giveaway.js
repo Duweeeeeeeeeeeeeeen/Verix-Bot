@@ -7,7 +7,7 @@ import {
     Save, Gift, Trophy, Clock, Users, Trash2, Plus, RefreshCcw, Settings2, Shield, Power, Palette, Zap, 
     Info, MessageSquare, ExternalLink, History, X, Calendar, ChevronRight, AlertCircle, Square, 
     Monitor, Smartphone, Sun, Moon, ArrowRight, Search, Sparkles, Layout, CheckCircle2, Box, Send, Star,
-    MousePointer2, Timer, Award, UserCheck, ShieldAlert, Layers, Target, Eye, EyeOff, Wand2, RefreshCw, GripVertical
+    MousePointer2, Timer, Award, UserCheck, ShieldAlert, Layers, Target, Eye, EyeOff, Wand2, RefreshCw, GripVertical, RotateCcw
 } from 'lucide-react';
 import { DiscordSelector, CustomSelect } from '../../../components/LazyConfigComponents';
 import EmojiInput from '../../../components/EmojiInput';
@@ -69,7 +69,7 @@ export default function GiveawayConfig() {
   };
 
   useEffect(() => {
-    if (guildId && mounted) fetchData();
+    if (guildId && guildId !== 'undefined' && mounted) fetchData();
   }, [guildId, mounted]);
 
   const fetchData = async () => {
@@ -84,14 +84,14 @@ export default function GiveawayConfig() {
         api.request('/config/' + guildId + '/giveaways/logs').catch(() => ({ data: [] }))
       ]);
       
-      setConfig(configRes.data || configRes || { enabled: false });
+      setConfig(configRes?.data || configRes || { enabled: false });
       if (discordRes) {
         setRoles(discordRes.roles || []);
         setChannels(discordRes.channels?.filter(c => c.type === 0 || c.type === 5) || []);
       }
-      setActiveGiveaways(activeRes.data || activeRes || []);
-      setScheduledGiveaways(scheduledRes.data || scheduledRes || []);
-      setLogs(logsRes.data || logsRes || []);
+      setActiveGiveaways(activeRes?.data || activeRes || []);
+      setScheduledGiveaways(scheduledRes?.data || scheduledRes || []);
+      setLogs(logsRes?.data || logsRes || []);
     } catch (e) {
       console.error("Giveaway load error:", e);
     } finally {
@@ -111,6 +111,24 @@ export default function GiveawayConfig() {
       showToast(t('giveaway.studio_sync_success'));
     } catch (e) {
       showToast(t('common.error'), 'error');
+    } finally {
+      setSaving(false);
+      window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
+    }
+  };
+
+  const handleReset = async () => {
+    if (!confirm(t('common.reset_confirm') || 'Sei sicuro di voler ripristinare questo modulo ai valori di default?')) return;
+    setSaving(true);
+    window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
+    try {
+      const res = await api.request('/config/' + guildId + '/giveaway/reset', { method: 'POST' });
+      if (res.success) {
+        setConfig(res.data);
+        showToast(t('common.reset_success') || 'Modulo ripristinato!');
+      }
+    } catch (e) {
+      showToast(t('common.reset_error') || 'Errore durante il reset', 'error');
     } finally {
       setSaving(false);
       window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
@@ -185,30 +203,23 @@ export default function GiveawayConfig() {
             </div>
             
             <div className="header-controls">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--bg-badge)', padding: '10px 20px', borderRadius: '14px', border: '1.5px solid var(--border)' }}>
-                    <label className="pc-toggle-v2" style={{ position: 'relative', width: '42px', height: '22px' }}>
+                <div className="pc-toggle-container-v2">
+                    <label className="pc-toggle-v2">
                         <input 
                             type="checkbox" 
-                            style={{ opacity: 0, width: 0, height: 0, position: 'absolute' }}
                             checked={config.enabled} 
                             onChange={() => setConfig({...config, enabled: !config.enabled})} 
                         />
-                        <span style={{ 
-                            position: 'absolute', cursor: 'pointer', inset: 0, 
-                            background: config.enabled ? '#10b981' : '#ef4444', 
-                            transition: '.4s', borderRadius: '34px' 
-                        }}>
-                            <span style={{
-                                position: 'absolute', content: '""', height: '16px', width: '16px', 
-                                left: config.enabled ? '23px' : '3px', bottom: '3px', 
-                                background: '#fff', transition: '.4s', borderRadius: '50%'
-                            }}></span>
-                        </span>
+                        <span className="pc-slider-v2"></span>
                     </label>
-                    <span style={{ fontWeight: 700, fontSize: '0.9rem', color: config.enabled ? '#10b981' : '#ef4444' }}>
+                    <span className={config.enabled ? 'text-active' : 'text-inactive'}>
                         {config.enabled ? t('common.active') : t('common.inactive')}
                     </span>
                 </div>
+                <div className="pc-header-divider" style={{ width: '1px', height: '24px', background: 'var(--border)', margin: '0 4px' }}></div>
+                <button className="pc-btn-outline-v2" onClick={handleReset} title={t('common.reset_to_default')}>
+                    <RotateCcw size={18} />
+                </button>
                 <button className="pc-btn-primary" onClick={handleSaveConfig} disabled={saving}>
                     <Save size={18} />
                     <span>{saving ? t('common.saving') : t('common.sync')}</span>
@@ -233,7 +244,7 @@ export default function GiveawayConfig() {
 
         <div className="pc-content-v2">
             {activeTab === 'create' && (
-                <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '32px' }}>
+                <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 560px', gap: '32px' }}>
                     <div className="v-stack" style={{ gap: '32px' }}>
                         <section className="pc-card-v2 animate slide-up">
                             <div className="card-header-v2">
@@ -475,8 +486,6 @@ export default function GiveawayConfig() {
             .pc-tag-v2 { background: var(--bg-badge); color: var(--text-muted); padding: 4px 12px; border-radius: 100px; border: 1.5px solid var(--border); font-size: 0.8rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
             .pc-tag-v2.active { background: var(--primary-glow); color: var(--primary); border-color: var(--primary); }
 
-            .pc-btn-icon-v2 { background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 8px; border-radius: 10px; }
-            .pc-btn-icon-v2.active { background: var(--bg-card); color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
             .pc-btn-icon-danger-v2 { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: none; cursor: pointer; padding: 10px; border-radius: 12px; }
 
             .v-stack { display: flex; flex-direction: column; }

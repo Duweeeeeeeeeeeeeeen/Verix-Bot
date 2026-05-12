@@ -40,7 +40,7 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
 
   const addField = () => {
     const fields = [...(embed?.fields || [])];
-    fields.push({ name: 'Nuovo Campo', value: 'Valore...', inline: false });
+    fields.push({ name: t('embeds.editor.field_name_placeholder') || 'Nuovo Campo', value: t('embeds.editor.field_value') || 'Valore...', inline: false });
     updateEmbed('fields', fields);
   };
 
@@ -63,24 +63,24 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
           <section className="pc-card-v2">
             <div className="card-header-v2">
                 <div className="header-icon"><AlignLeft size={20} /></div>
-                <h3>Contenuto Embed</h3>
+                <h3>{t('embeds.editor.content_title')}</h3>
             </div>
             <div className="card-body-v2">
                 <div className="pc-input-group-v2">
-                    <label>Titolo dell'Embed</label>
+                    <label>{t('embeds.editor.title_label')}</label>
                     <div className="pc-input-wrapper-v2">
                         <Type size={16} className="input-icon" />
-                        <input value={embed?.title || ''} onChange={e => updateEmbed('title', e.target.value)} placeholder="Inserisci titolo..." />
+                        <input value={embed?.title || ''} onChange={e => updateEmbed('title', e.target.value)} placeholder={t('embeds.editor.title_placeholder')} />
                     </div>
                 </div>
                 <div className="pc-input-group-v2" style={{ marginTop: '20px' }}>
-                    <label>Descrizione / Testo Principale</label>
+                    <label>{t('embeds.editor.desc_label')}</label>
                     <textarea 
                         className="pc-textarea-v2" 
                         rows="5" 
                         value={embed?.description || ''} 
                         onChange={e => updateEmbed('description', e.target.value)} 
-                        placeholder="Inserisci il contenuto del messaggio..."
+                        placeholder={t('embeds.editor.desc_placeholder')}
                     />
                 </div>
             </div>
@@ -88,38 +88,38 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
 
           {/* Style & Fields Card */}
           <section className="pc-card-v2">
-            <div className="card-header-v2">
-                <div className="header-icon"><Palette size={20} /></div>
-                <h3>Stile & Campi</h3>
-            </div>
-            <div className="card-body-v2">
-                <div className="pc-row-v2">
-                    <div className="pc-input-group-v2">
-                        <label>Colore Laterale</label>
-                        <div className="pc-color-picker-wrapper-v2">
-                            <input type="color" value={embed?.color?.startsWith('#') ? embed.color : '#6366f1'} onChange={e => updateEmbed('color', e.target.value)} />
-                            <input className="hex-input-v2" value={embed?.color || ''} onChange={e => updateEmbed('color', e.target.value)} placeholder="#HEX" />
-                        </div>
-                    </div>
-                    <div className="pc-input-group-v2">
-                        <label>Testo Footer</label>
-                        <div className="pc-input-wrapper-v2">
-                            <Hash size={16} className="input-icon" />
-                            <input value={embed?.footer || ''} onChange={e => updateEmbed('footer', e.target.value)} placeholder="Testo piccolo in basso..." />
-                        </div>
-                    </div>
+                <div className="card-header-v2">
+                    <div className="header-icon"><Palette size={20} /></div>
+                    <h3>{t('embeds.editor.style_title')}</h3>
                 </div>
+                <div className="card-body-v2">
+                    <div className="pc-row-v2">
+                        <div className="pc-input-group-v2">
+                            <label>{t('embeds.editor.side_color')}</label>
+                            <div className="pc-color-picker-wrapper-v2">
+                                <input type="color" value={embed?.color?.startsWith('#') ? embed.color : '#6366f1'} onChange={e => updateEmbed('color', e.target.value)} />
+                                <input className="hex-input-v2" value={embed?.color || ''} onChange={e => updateEmbed('color', e.target.value)} placeholder="#HEX" />
+                            </div>
+                        </div>
+                        <div className="pc-input-group-v2">
+                            <label>{t('embeds.editor.footer_label')}</label>
+                            <div className="pc-input-wrapper-v2">
+                                <Hash size={16} className="input-icon" />
+                                <input value={embed?.footer || ''} onChange={e => updateEmbed('footer', e.target.value)} placeholder={t('embeds.editor.footer_placeholder')} />
+                            </div>
+                        </div>
+                    </div>
 
                 <div className="pc-fields-manager-v2">
                     <div className="fields-header-v2">
-                        <div className="align-center"><Code2 size={18} /> <span>Campi Dinamici</span></div>
+                        <div className="align-center"><Code2 size={18} /> <span>{t('embeds.editor.fields_title')}</span></div>
                         <button className="btn-add-mini-v2" onClick={addField}><Plus size={16} /></button>
                     </div>
                     <div className="fields-list-v2">
                         {embed?.fields?.map((f, i) => (
                             <div key={i} className="field-entry-v2">
-                                <input placeholder="Nome" value={f.name} onChange={e => updateFieldEntry(i, 'name', e.target.value)} />
-                                <input placeholder="Valore" value={f.value} onChange={e => updateFieldEntry(i, 'value', e.target.value)} />
+                                <input placeholder={t('embeds.editor.field_name_placeholder') || 'Nome'} value={f.name} onChange={e => updateFieldEntry(i, 'name', e.target.value)} />
+                                <input placeholder={t('embeds.editor.field_value') || 'Valore'} value={f.value} onChange={e => updateFieldEntry(i, 'value', e.target.value)} />
                                 <button className="btn-del-mini-v2" onClick={() => removeField(i)}><Trash2 size={14} /></button>
                             </div>
                         ))}
@@ -132,19 +132,23 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
           <section className="pc-card-v2">
             <div className="card-header-v2">
                 <div className="header-icon"><ImageIcon size={20} /></div>
-                <h3>Media & Immagini</h3>
+                <h3>{t('embeds.editor.media_title')}</h3>
             </div>
             <div className="card-body-v2">
                 <div className="pc-row-v2">
                     <div className="pc-input-group-v2">
-                        <label>Miniatura (Thumbnail)</label>
+                        <label>{t('embeds.editor.thumbnail_label')}</label>
                         <input className="pc-input-modern" value={embed?.thumbnail || ''} onChange={e => updateEmbed('thumbnail', e.target.value)} placeholder="https://..." />
                     </div>
                     <div className="pc-input-group-v2">
-                        <label>Immagine Grande</label>
+                        <label>{t('embeds.editor.image_label')}</label>
                         <input className="pc-input-modern" value={embed?.image || ''} onChange={e => updateEmbed('image', e.target.value)} placeholder="https://..." />
                     </div>
                 </div>
+                <p className="pc-hint-v2" style={{ marginTop: '16px' }}>
+                    <Info size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
+                    {t('embeds.editor.media_hint').replace('{link}', 'ImgBB')}
+                </p>
             </div>
           </section>
         </div>
@@ -155,7 +159,7 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
                 {renderPreviewFooter && <div className="render-footer-v2" style={{ marginBottom: '16px' }}>{renderPreviewFooter}</div>}
 
                 <div className="variable-hints-v2" style={{ margin: 0, border: 'none' }}>
-                    <div className="hint-header-v2"><Info size={14} /> <span>Tag Disponibili</span></div>
+                    <div className="hint-header-v2"><Info size={14} /> <span>{t('embeds.editor.tags_title')}</span></div>
                     <div className="tags-grid-v2">
                         {variables.map(v => <code key={v}>{`{${v}}`}</code>)}
                     </div>
@@ -166,11 +170,11 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
 
       <style jsx>{`
         .pc-embed-editor-v2 { width: 100%; }
-        .pc-editor-layout-v2 { display: grid; grid-template-columns: 1fr 420px; gap: 32px; align-items: start; }
+        .pc-editor-layout-v2 { display: grid; grid-template-columns: 1fr 560px; gap: 32px; align-items: start; }
         
         .pc-editor-form-v2 { display: flex; flex-direction: column; gap: 32px; }
 
-        .pc-card-v2 { background: white; border: 1px solid var(--border-light); border-radius: 28px; padding: 24px; box-shadow: var(--shadow-premium); }
+        .pc-card-v2 { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 28px; padding: 24px; box-shadow: var(--shadow-premium); }
         .card-header-v2 { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
         .header-icon { width: 36px; height: 36px; background: var(--bg-badge); color: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
         .card-header-v2 h3 { margin: 0; font-size: 1.05rem; font-weight: 800; }
@@ -198,19 +202,19 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
         
         .fields-list-v2 { display: flex; flex-direction: column; gap: 8px; }
         .field-entry-v2 { display: grid; grid-template-columns: 1fr 1fr 32px; gap: 8px; align-items: center; }
-        .field-entry-v2 input { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; font-size: 0.85rem; font-weight: 700; color: var(--text-main); outline: none; }
-        .btn-del-mini-v2 { width: 32px; height: 32px; border-radius: 8px; border: none; background: #fff1f2; color: var(--error); cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .field-entry-v2 input { background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; font-size: 0.85rem; font-weight: 700; color: var(--text-main); outline: none; }
+        .btn-del-mini-v2 { width: 32px; height: 32px; border-radius: 8px; border: none; background: rgba(239, 68, 68, 0.1); color: var(--error); cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
         .pc-preview-sidebar-v2 { position: sticky; top: 20px; }
-        .preview-header-v2 { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: white; border-radius: 16px 16px 0 0; border: 1px solid var(--border-light); border-bottom: none; font-size: 0.85rem; font-weight: 800; }
+        .preview-header-v2 { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: var(--bg-card); border-radius: 16px 16px 0 0; border: 1px solid var(--border); border-bottom: none; font-size: 0.85rem; font-weight: 800; }
         .preview-controls-v2 { display: flex; gap: 4px; background: var(--bg-badge); padding: 4px; border-radius: 10px; }
         .preview-controls-v2 button { border: none; background: transparent; padding: 6px; border-radius: 6px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; }
-        .preview-controls-v2 button.active { background: white; color: var(--primary); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .preview-controls-v2 button.active { background: var(--bg-badge); color: var(--primary); box-shadow: var(--shadow-premium); border-color: var(--primary-muted); }
         .divider-v2 { width: 1px; background: var(--border-light); margin: 0 4px; }
 
         .preview-content-v2 { background: var(--bg-badge); padding: 16px; border: 1px solid var(--border-light); border-radius: 0 0 16px 16px; min-height: 400px; }
         
-        .variable-hints-v2 { margin-top: 24px; padding: 16px; background: white; border-radius: 16px; border: 1px solid var(--border-light); }
+        .variable-hints-v2 { margin-top: 24px; padding: 16px; background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border-light); }
         .hint-header-v2 { display: flex; align-items: center; gap: 8px; font-size: 0.75rem; font-weight: 900; color: var(--text-main); margin-bottom: 12px; }
         .tags-grid-v2 { display: flex; flex-wrap: wrap; gap: 6px; }
         .tags-grid-v2 code { font-size: 0.65rem; background: var(--bg-badge); color: var(--primary); padding: 4px 8px; border-radius: 6px; font-weight: 700; border: 1px solid var(--primary-muted); }
@@ -219,8 +223,24 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
         .pc-input-modern:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }
 
         @media (max-width: 1300px) { .pc-editor-layout-v2 { grid-template-columns: 1fr; } .pc-preview-sidebar-v2 { position: static; } }
-        :global(.light-theme) .pc-card-v2, :global(.light-theme) .preview-header-v2, :global(.light-theme) .variable-hints-v2 { background: #ffffff !important; box-shadow: 0 10px 30px rgba(0,0,0,0.04) !important; }
+        
+        /* White Mode Specific Fixes */
+        :global(.light-theme) .pc-card-v2, 
+        :global(.light-theme) .preview-header-v2, 
+        :global(.light-theme) .variable-hints-v2 { 
+            background: #ffffff !important; 
+            border-color: #e2e8f0 !important;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.04) !important; 
+        }
         :global(.light-theme) .field-entry-v2 input { background: #f8fafc !important; }
+        :global(.light-theme) .variable-hints-v2 .tags-grid-v2 code {
+            background: #f1f5f9 !important;
+            color: var(--primary) !important;
+            border-color: #e2e8f0 !important;
+        }
+        :global(.light-theme) .variable-hints-v2 .hint-header-v2 {
+            color: #1e293b !important;
+        }
       `}</style>
     </div>
   );

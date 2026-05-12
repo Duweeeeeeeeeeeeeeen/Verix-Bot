@@ -702,8 +702,6 @@ router.post('/:guildId/background/send-panel', adminCheck, async (req, res) => {
             return res.status(400).json({ success: false, error: 'Canale non specificato.' });
         }
 
-        const panelData = await messageService.getRaw(guildId, 'background', 'panel');
-
         const client = req.discordClient;
         const guild = await client.guilds.fetch(guildId);
         const channel = await guild.channels.fetch(targetChannelId);
@@ -712,13 +710,7 @@ router.post('/:guildId/background/send-panel', adminCheck, async (req, res) => {
             return res.status(404).json({ success: false, error: 'Canale non trovato su Discord.' });
         }
 
-        const embed = new EmbedBuilder()
-            .setTitle(panelData.title)
-            .setDescription(panelData.description)
-            .setColor(panelData.color === 'primary' ? '#5865F2' : (panelData.color?.startsWith('#') ? panelData.color : '#5865F2'));
-
-        if (panelData.thumbnail) embed.setThumbnail(panelData.thumbnail);
-        if (panelData.image) embed.setImage(panelData.image);
+        const embed = await messageService.get(guildId, 'background', 'panel', { guild });
 
         // Background Submission Button
         const btnData = config?.embeds?.panel?.button || { label: 'Invia Background', emoji: '📖', style: 'PRIMARY' };
@@ -816,8 +808,6 @@ router.post('/:guildId/whitelist/send-panel', adminCheck, async (req, res) => {
             return res.status(400).json({ success: false, error: 'Canale non specificato nella richiesta e non configurato nel database.' });
         }
 
-        const panelData = await messageService.getRaw(guildId, 'whitelist', 'panel');
-
         const client = req.discordClient;
         const guild = await client.guilds.fetch(guildId);
         const channel = await guild.channels.fetch(targetChannelId);
@@ -826,17 +816,7 @@ router.post('/:guildId/whitelist/send-panel', adminCheck, async (req, res) => {
             return res.status(404).json({ success: false, error: 'Canale non trovato su Discord.' });
         }
 
-        const embed = new EmbedBuilder()
-            .setTitle(panelData.title)
-            .setDescription(panelData.description)
-            .setColor(panelData.color?.startsWith('#') ? panelData.color : '#5865F2');
-
-        if (panelData.thumbnail) embed.setThumbnail(panelData.thumbnail);
-        if (panelData.image) embed.setImage(panelData.image);
-        if (panelData.fields && Array.isArray(panelData.fields)) {
-            embed.addFields(panelData.fields.filter(f => f.name && f.value));
-        }
-        if (panelData.footer) embed.setFooter({ text: panelData.footer });
+        const embed = await messageService.get(guildId, 'whitelist', 'panel', { guild });
 
         // Whitelist Start Button
         const btnData = config?.embeds?.panel?.button || { label: 'Inizia Whitelist', emoji: '📝', style: 'PRIMARY' };
@@ -953,16 +933,7 @@ router.post('/:guildId/tickets/send-panel', adminCheck, async (req, res) => {
             return res.status(404).json({ success: false, error: 'Canale pannello non trovato su Discord.' });
         }
 
-        const panelData = await messageService.getRaw(guildId, 'tickets', 'panel');
-
-        const embed = new EmbedBuilder()
-            .setTitle(panelData.title || '🎫 Centro Assistenza')
-            .setDescription(panelData.description || 'Apri un ticket selezionando una categoria.')
-            .setColor(panelData.color?.startsWith('#') ? panelData.color : '#3498db');
-
-        if (panelData.thumbnail) embed.setThumbnail(panelData.thumbnail);
-        if (panelData.image) try { embed.setImage(panelData.image); } catch (e) {}
-        if (panelData.footer) embed.setFooter({ text: panelData.footer });
+        const embed = await messageService.get(guildId, 'tickets', 'panel', { guild });
 
         let components = [];
         const inputType = config.inputType || 'BUTTONS';
@@ -1184,14 +1155,7 @@ router.post('/:guildId/verify/send-panel', adminCheck, async (req, res) => {
             return res.status(404).json({ success: false, error: 'Canale di verifica non trovato su Discord.' });
         }
 
-        const panelData = await messageService.getRaw(guildId, 'verify', 'panel');
-
-        const embed = new EmbedBuilder()
-            .setTitle(panelData.title || '✅ Verifica Account')
-            .setDescription(panelData.description || 'Clicca il bottone qui sotto per verificarti.')
-            .setColor(panelData.color?.startsWith('#') ? panelData.color : '#2ecc71')
-            .setTimestamp()
-            .setFooter({ text: guild.name, iconURL: guild.iconURL() });
+        const embed = await messageService.get(guildId, 'verify', 'panel', { guild });
 
         const btnData = config.buttons?.verify || { label: 'Verificati Ora', emoji: '✅', style: 'SUCCESS' };
         const isLink = btnData.style === 'LINK' && btnData.url;
@@ -2419,7 +2383,18 @@ router.post('/:guildId/polls/create', adminCheck, validate(pollCreateSchema), as
 router.post('/:guildId/onboarding/complete', adminCheck, async (req, res) => {
     try {
         const { guildId } = req.params;
-        const { modules, autoChannels, adminRoles, staffRole, customChannelNames } = req.body;
+        const { 
+            modules, 
+            autoChannels, 
+            adminRoles, 
+            staffRole, 
+            customChannelNames,
+            language,
+            prefix,
+            nickname,
+            ticketCategory,
+            welcomeStyle
+        } = req.body;
 
         const client = req.discordClient;
         const guild = await client.guilds.fetch(guildId).catch(() => null);
@@ -2430,7 +2405,7 @@ router.post('/:guildId/onboarding/complete', adminCheck, async (req, res) => {
 
         let createdChannels = {};
         if (autoChannels) {
-            createdChannels = await createDefaultChannels(guild, modules, customChannelNames);
+            createdChannels = await createDefaultChannels(guild, modules, customChannelNames, language);
         }
 
         // 1. Mark setup as completed and enable modules
@@ -2501,6 +2476,73 @@ router.post('/:guildId/leave', adminCheck, async (req, res) => {
     } catch (err) {
         console.error('[API_ERROR] Failed to leave guild:', err);
         res.status(500).json({ success: false, message: 'Errore interno durante l\'esecuzione dell\'uscita.' });
+    }
+});
+
+// Generic Reset Route
+router.post('/:guildId/:module/reset', adminCheck, async (req, res) => {
+    try {
+        const { guildId, module } = req.params;
+        const modelMap = {
+            whitelist: WhitelistConfig,
+            tickets: TicketConfig,
+            photocontest: PhotoContestConfig,
+            verify: VerifyConfig,
+            welcome: WelcomeConfig,
+            utility: UtilityConfig,
+            fivem: FiveMConfig,
+            socials: SocialConfig,
+            automations: AutomationConfig,
+            moderation: ModerationConfig,
+            support: SupportConfig,
+            reactionroles: ReactionRoleConfig,
+            polls: PollConfig,
+            tempvoice: TempVoiceConfig,
+            background: BackgroundConfig,
+            giveaway: GiveawayConfig
+        };
+
+        const targetModule = module.toLowerCase();
+        const Model = modelMap[targetModule];
+        
+        if (!Model) {
+            return res.status(400).json({ success: false, error: 'Modulo non valido o non supportato per il reset.' });
+        }
+
+        // Delete existing config
+        await Model.deleteOne({ guildId });
+        
+        // Re-create with defaults
+        const newConfig = await Model.findOneAndUpdate(
+            { guildId },
+            {},
+            { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
+        );
+
+        invalidateCache(guildId, targetModule);
+        
+        const lang = await messageService.getGuildLanguage(guildId);
+        const data = mergeModuleDefaults(targetModule, newConfig, lang);
+
+        await logAudit(req, guildId, `${targetModule.toUpperCase()}_RESET`, `Modulo ${targetModule} reimpostato ai valori di default`);
+
+        res.json({ success: true, data });
+    } catch (error) {
+        console.error('[RESET_ERROR]:', error);
+        res.status(500).json({ success: false, error: 'Errore durante il ripristino del modulo.' });
+    }
+});
+
+router.post('/:guildId/onboarding/skip', adminCheck, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        await Guild.findOneAndUpdate({ guildId }, { $set: { setupCompleted: true } }, { upsert: true });
+        invalidateCache(guildId);
+        await logAudit(req, guildId, 'ONBOARDING_SKIPPED', 'User skipped onboarding setup');
+        res.json({ success: true, message: 'Onboarding saltato con successo!' });
+    } catch (error) {
+        console.error('[Onboarding_Skip] Error:', error);
+        res.status(500).json({ success: false, error: 'Errore durante il salto dell\'onboarding.' });
     }
 });
 

@@ -88,6 +88,7 @@ router.get('/:guildId/channels', adminCheck, async (req, res) => {
             .map(c => ({
                 id: c.id,
                 name: c.name,
+                type: c.type,
                 position: c.position
             }))
             .sort((a, b) => a.position - b.position);

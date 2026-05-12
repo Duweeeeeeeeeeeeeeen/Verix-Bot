@@ -113,7 +113,7 @@ export default function PremiumHub() {
 
                         {!isPremium && (
                             <div className="hero-actions-v2">
-                                <button className="pc-btn-primary invite-pulse" style={{ background: 'white', color: 'var(--primary)' }}>
+                                <button className="pc-btn-primary invite-pulse" style={{ background: 'var(--bg-card)', color: 'var(--primary)' }}>
                                     <Rocket size={18} />
                                     <span>{t('ph.explore')}</span>
                                 </button>

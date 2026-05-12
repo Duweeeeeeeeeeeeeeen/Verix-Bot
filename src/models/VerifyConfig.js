@@ -45,7 +45,8 @@ const verifyConfigSchema = new mongoose.Schema({
             color: { type: String, default: '#9146FF' },
             image: { type: String, default: '' },
             thumbnail: { type: String, default: '' },
-            footer: { type: String, default: 'Dipartimento di Sicurezza Nazionale | Verix RP' }
+            footer: { type: String, default: 'Dipartimento di Sicurezza Nazionale | Verix RP' },
+            fields: { type: Array, default: [] }
         },
         dm: {
             title: { type: String, default: '✅ Identità Confermata' },
@@ -53,7 +54,8 @@ const verifyConfigSchema = new mongoose.Schema({
             color: { type: String, default: '#2ecc71' },
             image: { type: String, default: '' },
             thumbnail: { type: String, default: '' },
-            footer: { type: String, default: 'Dipartimento Doganale | Verix RP' }
+            footer: { type: String, default: 'Dipartimento Doganale | Verix RP' },
+            fields: { type: Array, default: [] }
         }
     },
     buttons: {

@@ -67,14 +67,17 @@ class GiveawayManager {
                 || await guild.channels.fetch(giveaway.channelId).catch(() => null);
             if (!channel) return;
 
-            const title = giveaway.customTitle || `🎉 GIVEAWAY: ${giveaway.prize}`;
+            let title = giveaway.customTitle || `🎉 GIVEAWAY: ${giveaway.prize}`;
             let description = giveaway.customDescription || `Clicca il tasto qui sotto per partecipare!\n\n⌛ **Termina:** <t:${Math.floor(giveaway.endTime.getTime() / 1000)}:R>`;
             
             // Global placeholder replacement
-            description = placeholderHelper.replace(description, {
+            const placeholders = {
                 prize: giveaway.prize,
                 endtime: `<t:${Math.floor(giveaway.endTime.getTime() / 1000)}:R>`
-            });
+            };
+
+            title = placeholderHelper.replace(title, placeholders);
+            description = placeholderHelper.replace(description, placeholders);
 
             const embed = new EmbedBuilder()
                 .setTitle(title)

@@ -6,7 +6,7 @@ import api from '../../../utils/api';
 import { useT } from '../../../contexts/LanguageContext';
 import { 
     Save, ShieldCheck, Settings2, Palette, MousePointer2, CheckCircle2, 
-    Shield, Send, GripVertical
+    Shield, Send, GripVertical, RotateCcw
 } from 'lucide-react';
 import EmojiInput from '../../../components/EmojiInput';
 import { mergeConfig } from '../../../utils/defaults';
@@ -44,7 +44,7 @@ export default function VerifyConfig() {
       const dData = discordRes.data || discordRes || {};
       setDiscordData({
         roles: dData.roles || [],
-        channels: dData.channels || [],
+        channels: (dData.channels || []).filter(c => c.type === 0 || c.type === 5),
         botHighestPosition: dData.botHighestPosition || 0
       });
     } catch (error) {
@@ -85,6 +85,26 @@ export default function VerifyConfig() {
         current[keys[keys.length - 1]] = value;
         return newConfig;
     });
+  };
+
+  const handleReset = async () => {
+    if (!confirm(t('common.reset_confirm'))) return;
+    
+    setLoading(true);
+    window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
+    try {
+      const res = await api.request(`/config/${guildId}/verify/reset`, { method: 'POST' });
+      if (res.success) {
+        setConfig(mergeConfig(res.data, 'verify'));
+        showToast(t('common.reset_success'));
+      }
+    } catch (error) {
+      console.error("Reset error:", error);
+      showToast(t('common.reset_error'), 'error');
+    } finally {
+      setLoading(false);
+      window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
+    }
   };
 
   const handleSave = async () => {
@@ -139,33 +159,35 @@ export default function VerifyConfig() {
             </div>
             
             <div className="header-controls">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--bg-badge)', padding: '10px 20px', borderRadius: '14px', border: '1.5px solid var(--border)' }}>
-                    <label className="pc-toggle-v2" style={{ position: 'relative', width: '42px', height: '22px' }}>
+                <div className="pc-toggle-container-v2">
+                    <label className="pc-toggle-v2">
                         <input 
                             type="checkbox" 
-                            style={{ opacity: 0, width: 0, height: 0, position: 'absolute' }}
                             checked={config.enabled} 
                             onChange={() => setConfig({...config, enabled: !config.enabled})} 
                         />
-                        <span style={{ 
-                            position: 'absolute', cursor: 'pointer', inset: 0, 
-                            background: config.enabled ? '#10b981' : '#ef4444', 
-                            transition: '.4s', borderRadius: '34px' 
-                        }}>
-                            <span style={{
-                                position: 'absolute', content: '""', height: '16px', width: '16px', 
-                                left: config.enabled ? '23px' : '3px', bottom: '3px', 
-                                background: '#fff', transition: '.4s', borderRadius: '50%'
-                            }}></span>
-                        </span>
+                        <span className="pc-slider-v2"></span>
                     </label>
-                    <span style={{ fontWeight: 700, fontSize: '0.9rem', color: config.enabled ? '#10b981' : '#ef4444' }}>
+                    <span className={config.enabled ? 'text-active' : 'text-inactive'}>
                         {config.enabled ? t('common.active') : t('common.inactive')}
                     </span>
                 </div>
+                <div className="pc-header-divider" style={{ width: '1px', height: '24px', background: 'var(--border)', margin: '0 4px' }}></div>
+                <button className="pc-btn-outline-v2" onClick={handleReset} title={t('common.reset_to_default')}>
+                    <RotateCcw size={18} />
+                </button>
+                <button 
+                    className="pc-btn-outline-v2" 
+                    onClick={handleSendPanel} 
+                    disabled={sendingPanel || !config.channelId} 
+                    title={t('verify.send_panel')}
+                    style={{ color: 'var(--primary)', borderColor: sendingPanel ? 'var(--border)' : 'rgba(var(--primary-rgb), 0.2)' }}
+                >
+                    {sendingPanel ? <RotateCcw size={18} className="animate-spin" /> : <Send size={18} />}
+                </button>
                 <button className="pc-btn-primary" onClick={handleSave} disabled={saving}>
                     <Save size={18} />
-                    <span>{saving ? t('common.saving') : t('whitelist.sync_config')}</span>
+                    <span>{saving ? t('common.saving') : t('common.sync')}</span>
                 </button>
             </div>
         </header>
@@ -182,7 +204,7 @@ export default function VerifyConfig() {
 
         <div className="pc-content-v2">
             {activeTab === 'settings' && (
-                <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: '32px' }}>
+                <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 560px', gap: '32px' }}>
                     <div className="v-stack" style={{ gap: '32px' }}>
                         <section className="pc-card-v2 animate slide-up">
                             <div className="card-header-v2">
@@ -237,75 +259,87 @@ export default function VerifyConfig() {
                             </div>
                         </section>
 
-                        <button className="pc-btn-primary" style={{ width: '100%', justifyContent: 'center' }} onClick={handleSendPanel} disabled={sendingPanel || !config.channelId}>
-                            <Send size={18} />
-                            <span>{sendingPanel ? t('common.sending') : t('verify.send_panel')}</span>
-                        </button>
+                        <div className="pc-card-v2" style={{ textAlign: 'center', background: 'var(--bg-badge)', border: '1.5px dashed var(--border)' }}>
+                            <Send size={32} style={{ color: 'var(--primary)', marginBottom: '16px', opacity: 0.5 }} />
+                            <h4 style={{ margin: '0 0 8px 0', color: 'var(--text-heading)' }}>{t('verify.send_panel')}</h4>
+                            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0' }}>
+                                Puoi inviare il pannello direttamente dall'header in alto per una gestione più rapida.
+                            </p>
+                        </div>
                     </div>
                 </div>
             )}
 
             {activeTab === 'design' && (
                 <div className="v-stack animate slide-up" style={{ gap: '32px' }}>
-                    <section className="pc-card-v2">
-                        <div className="card-header-v2">
-                            <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><MousePointer2 size={18} /></div>
-                            <h3 style={{ margin: 0 }}>{t('verify.button_branding')}</h3>
-                        </div>
-                        <div className="card-body-v2">
-                            <div className="pc-button-builder animate slide-up">
-                                    <div className="pc-bb-left">
-                                        <GripVertical size={20} color="rgba(255,255,255,0.2)" />
-                                    </div>
-                                    <div className="pc-bb-content">
-                                        <div className="pc-bb-top-row">
-                                            <div className={`pc-bb-preview ${config.buttonStyle || 'PRIMARY'}`}>
-                                                <span>{config.buttonEmoji || '✅'}</span>
-                                                <span>{config.buttonLabel || t('verify.btn_default')}</span>
-                                            </div>
-                                        </div>
-
-                                        <div className="pc-bb-columns">
-                                            <div className="pc-bb-col" style={{ width: '44px' }}>
-                                                <label>{t('common.emoji')}</label>
-                                                <div className="pc-bb-emoji-box">
-                                                    <EmojiInput value={config.buttonEmoji || '✅'} hideInput={true} onChange={e => setConfig({ ...config, buttonEmoji: e.target.value })} />
-                                                </div>
-                                            </div>
-                                            <div className="pc-bb-col">
-                                                <label>{t('verify.btn_text')}</label>
-                                                <div className="pc-bb-input-box">
-                                                    <input value={config.buttonLabel || ''} onChange={e => setConfig({ ...config, buttonLabel: e.target.value })} placeholder={t('verify.btn_default')} />
-                                                </div>
-                                            </div>
-                                            <div className="pc-bb-col">
-                                                <label>{t('common.color')}</label>
-                                                <div className="pc-bb-color-picker">
-                                                    {['PRIMARY', 'SUCCESS', 'DANGER', 'SECONDARY'].map(styleOption => (
-                                                        <div 
-                                                            key={styleOption}
-                                                            className={`pc-bb-swatch swatch-${styleOption} ${(config.buttonStyle || 'PRIMARY') === styleOption ? 'active' : ''}`}
-                                                            onClick={() => setConfig({ ...config, buttonStyle: styleOption })}
-                                                        >
-                                                            {(config.buttonStyle || 'PRIMARY') === styleOption && <CheckCircle2 size={12} color="#fff" />}
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                        </div>
-                    </section>
-
                     <EmbedMessageManager 
                         guildId={guildId}
                         module="verify"
                         slugs={[
-                            { key: 'panel', label: 'Embed Panel', description: 'Messaggio iniziale.', variables: ['guild'], group: 'UI', groupIcon: ShieldCheck },
+                            { 
+                                key: 'panel', 
+                                label: 'Panel di Identificazione', 
+                                description: 'Il messaggio principale che gli utenti vedono per iniziare la verifica.', 
+                                variables: ['user', 'guild'], 
+                                group: 'UI', 
+                                groupIcon: Palette,
+                                extra: (
+                                    <section className="pc-card-v2 animate slide-up" style={{ marginTop: '32px' }}>
+                                        <div className="card-header-v2">
+                                            <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><MousePointer2 size={18} /></div>
+                                            <h3 style={{ margin: 0 }}>{t('verify.button_branding')}</h3>
+                                        </div>
+                                        <div className="card-body-v2">
+                                            <div className="pc-button-builder">
+                                                <div className="pc-bb-left">
+                                                    <GripVertical size={20} color="rgba(255,255,255,0.2)" />
+                                                </div>
+                                                <div className="pc-bb-content">
+                                                    <div className="pc-bb-top-row">
+                                                        <div className={`pc-bb-preview ${config.buttons?.verify?.style || 'PRIMARY'}`}>
+                                                            <span>{config.buttons?.verify?.emoji || '✅'}</span>
+                                                            <span>{config.buttons?.verify?.label || t('verify.btn_default')}</span>
+                                                        </div>
+                                                    </div>
+
+                                                    <div className="pc-bb-columns" style={{ display: 'grid', gridTemplateColumns: '80px 1fr 1fr', gap: '20px' }}>
+                                                        <div className="pc-bb-col">
+                                                            <label>{t('common.emoji')}</label>
+                                                            <div className="pc-bb-emoji-box">
+                                                                <EmojiInput value={config.buttons?.verify?.emoji || '✅'} hideInput={true} onChange={e => setNested('buttons.verify.emoji', e.target.value)} />
+                                                            </div>
+                                                        </div>
+                                                        <div className="pc-bb-col">
+                                                            <label>{t('verify.btn_text')}</label>
+                                                            <div className="pc-bb-input-box">
+                                                                <input value={config.buttons?.verify?.label || ''} onChange={e => setNested('buttons.verify.label', e.target.value)} placeholder={t('verify.btn_default')} />
+                                                            </div>
+                                                        </div>
+                                                        <div className="pc-bb-col">
+                                                            <label>{t('common.color')}</label>
+                                                            <div className="pc-bb-color-picker">
+                                                                {['PRIMARY', 'SUCCESS', 'DANGER', 'SECONDARY'].map(styleOption => (
+                                                                    <div 
+                                                                        key={styleOption}
+                                                                        className={`pc-bb-swatch swatch-${styleOption} ${(config.buttons?.verify?.style || 'PRIMARY') === styleOption ? 'active' : ''}`}
+                                                                        onClick={() => setNested('buttons.verify.style', styleOption)}
+                                                                    >
+                                                                        {(config.buttons?.verify?.style || 'PRIMARY') === styleOption && <CheckCircle2 size={12} color="#fff" />}
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </section>
+                                )
+                            },
                             { key: 'success', label: 'DM Successo', description: 'Inviato alla verifica.', variables: ['user', 'guild'], group: 'UI', groupIcon: CheckCircle2 }
                         ]}
                     />
+
                 </div>
             )}
         </div>
@@ -347,12 +381,6 @@ export default function VerifyConfig() {
             .pc-toggle-card-v2:hover { border-color: var(--primary); }
             .pc-toggle-card-v2 strong { font-weight: 700; color: var(--text-heading); }
             
-            .pc-toggle-v2 { position: relative; width: 44px; height: 22px; }
-            .pc-toggle-v2 input { opacity: 0; width: 0; height: 0; }
-            .pc-slider-v2 { position: absolute; cursor: pointer; inset: 0; background: var(--border); transition: .4s; border-radius: 34px; }
-            .pc-slider-v2:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background: #fff; transition: .4s; border-radius: 50%; }
-            input:checked + .pc-slider-v2 { background: var(--primary); }
-            input:checked + .pc-slider-v2:before { transform: translateX(22px); }
 
             .pc-info-banner-v2 { display: flex; align-items: center; gap: 16px; padding: 20px; border-radius: 20px; border: 1.5px solid transparent; font-size: 0.9rem; font-weight: 700; }
             .pc-info-banner-v2.orange { background: rgba(255, 171, 0, 0.1); color: #ffab00; border-color: rgba(255, 171, 0, 0.2); }

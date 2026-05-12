@@ -45,11 +45,11 @@ export function buildEmbed(embedConfig, placeholders = {}, fullConfig = {}) {
         // White-label: Hide Branding
         if (fullConfig.hideBranding) {
             // Strip common branding suffixes and standalone mentions
-            footerText = footerText.replace(/ \| Verix RP| \| Verix Bot|Powered by Verix Bot|Powered by Verix/gi, '').trim();
+            footerText = footerText.replace(/ \| Verix RP| \| Verix Bot| \| Verix Studio|Powered by Verix Bot|Powered by Verix Studio|Powered by Verix/gi, '').trim();
             
             // If the footer becomes empty after stripping, we can either leave it empty or use the guild name
             if (footerText.length === 0 && placeholders.guild) {
-                footerText = typeof placeholders.guild === 'string' ? placeholders.guild : placeholders.guild.name;
+                footerText = typeof placeholders.guild === 'string' ? placeholders.guild : (placeholders.guild.name || placeholders.guild.toString());
             }
         }
 

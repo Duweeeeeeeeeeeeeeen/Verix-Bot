@@ -7,7 +7,7 @@ import {
     Save, MousePointer2, Plus, Trash2, Send, Layout, Palette, Type, Layers, Smile, ChevronDown, 
     ChevronUp, AlertCircle, Settings2, Sun, Moon, Monitor, Smartphone, Power, Hash, Sparkles, 
     Trash, ChevronRight, ArrowRight, CheckCircle2, Box, Sparkle, RefreshCcw, Command,
-    Fingerprint, Zap, AlignLeft, Paintbrush, GripVertical
+    Fingerprint, Zap, AlignLeft, Paintbrush, GripVertical, RotateCcw
 } from 'lucide-react';
 import { DiscordSelector, CustomSelect } from '../../../components/LazyConfigComponents';
 import EmojiInput from '../../../components/EmojiInput';
@@ -80,6 +80,26 @@ export default function ReactionRolesConfig() {
     fetchData();
   }, [guildId, mounted]);
 
+  const handleReset = async () => {
+    if (!confirm(t('common.reset_confirm'))) return;
+    
+    setLoading(true);
+    window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
+    try {
+      const res = await api.request(`/config/${guildId}/reaction-roles/reset`, { method: 'POST' });
+      if (res.success) {
+        setConfig(res.data);
+        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('common.reset_success'), type: 'success' } }));
+      }
+    } catch (error) {
+      console.error("Reset error:", error);
+      window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('common.reset_error'), type: 'error' } }));
+    } finally {
+      setLoading(false);
+      window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
+    }
+  };
+
   const handleSave = async () => {
     setSaving(true);
     window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
@@ -134,7 +154,7 @@ export default function ReactionRolesConfig() {
   };
 
   const removePanel = (id) => {
-      if (!confirm("Sei sicuro di voler eliminare definitivamente questo pannello dallo Studio?")) return;
+      if (!confirm(t('rr.delete_confirm'))) return;
       const filtered = config.panels.filter(p => p.id !== id);
       setConfig({ ...config, panels: filtered });
       if (activePanelId === id) setActivePanelId(filtered[0]?.id || null);
@@ -180,33 +200,37 @@ export default function ReactionRolesConfig() {
             </div>
             
             <div className="header-controls">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--bg-badge)', padding: '10px 20px', borderRadius: '14px', border: '1.5px solid var(--border)' }}>
-                    <label className="pc-toggle-v2" style={{ position: 'relative', width: '42px', height: '22px' }}>
+                <div className="pc-toggle-container-v2">
+                    <label className="pc-toggle-v2">
                         <input 
                             type="checkbox" 
-                            style={{ opacity: 0, width: 0, height: 0, position: 'absolute' }}
                             checked={config.enabled} 
                             onChange={() => setConfig({...config, enabled: !config.enabled})} 
                         />
-                        <span style={{ 
-                            position: 'absolute', cursor: 'pointer', inset: 0, 
-                            background: config.enabled ? '#10b981' : '#ef4444', 
-                            transition: '.4s', borderRadius: '34px' 
-                        }}>
-                            <span style={{
-                                position: 'absolute', content: '""', height: '16px', width: '16px', 
-                                left: config.enabled ? '23px' : '3px', bottom: '3px', 
-                                background: '#fff', transition: '.4s', borderRadius: '50%'
-                            }}></span>
-                        </span>
+                        <span className="pc-slider-v2"></span>
                     </label>
-                    <span style={{ fontWeight: 700, fontSize: '0.9rem', color: config.enabled ? '#10b981' : '#ef4444' }}>
+                    <span className={config.enabled ? 'text-active' : 'text-inactive'}>
                         {config.enabled ? t('common.active') : t('common.inactive')}
                     </span>
                 </div>
+                <div className="pc-header-divider" style={{ width: '1px', height: '24px', background: 'var(--border)', margin: '0 4px' }}></div>
+                <button className="pc-btn-outline-v2" onClick={handleReset} title={t('common.reset_to_default')}>
+                    <RotateCcw size={18} />
+                </button>
+                {activePanel && (
+                    <button 
+                        className="pc-btn-outline-v2" 
+                        onClick={() => handleDeploy(activePanel.id)} 
+                        disabled={saving || !activePanel.channelId} 
+                        title={t('rr.launch_panel') || 'Invia Pannello'}
+                        style={{ color: 'var(--primary)', borderColor: 'rgba(var(--primary-rgb), 0.2)' }}
+                    >
+                        <Send size={18} />
+                    </button>
+                )}
                 <button className="pc-btn-primary" onClick={handleSave} disabled={saving}>
                     <Save size={18} />
-                    <span>{saving ? t('common.saving') : t('rr.sync_studio')}</span>
+                    <span>{saving ? t('common.saving') : t('common.sync')}</span>
                 </button>
             </div>
         </header>
@@ -243,17 +267,14 @@ export default function ReactionRolesConfig() {
             <main className="pc-studio-content-v2">
                 {activePanel ? (
                     <div className="v-stack animate slide-up" style={{ gap: '32px' }}>
-                        <div className="pc-card-v2" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div className="pc-card-v2">
                             <div className="v-stack" style={{ gap: '4px' }}>
                                 <h2 style={{ margin: 0, fontFamily: 'Inter', fontWeight: 700, fontSize: '1.6rem', color: 'var(--text-heading)' }}>{activePanel.name}</h2>
                                 <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>ID: {activePanel.id}</span>
                             </div>
-                            <button className="pc-btn-primary" onClick={() => handleDeploy(activePanel.id)}>
-                                <Send size={18} /> <span>{t('rr.launch_panel')}</span>
-                            </button>
                         </div>
 
-                        <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: '32px' }}>
+                        <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 560px', gap: '32px' }}>
                             <div className="v-stack" style={{ gap: '32px' }}>
                                 <section className="pc-card-v2">
                                     <div className="card-header-v2">
@@ -322,7 +343,7 @@ export default function ReactionRolesConfig() {
                                                     <div className="pc-bb-content">
                                                         <div className="pc-bb-top-row">
                                                             <div className={`pc-bb-preview ${role.style || 'PRIMARY'}`}>
-                                                                <span>{role.emoji || '🎫'}</span>
+                                                                <span>{role.emoji}</span>
                                                                 <span>{role.label || 'Select Role'}</span>
                                                             </div>
                                                             <div className="pc-bb-controls">
@@ -339,7 +360,7 @@ export default function ReactionRolesConfig() {
                                                             <div className="pc-bb-col" style={{ width: '44px' }}>
                                                                 <label>{t('common.emoji')}</label>
                                                                 <div className="pc-bb-emoji-box">
-                                                                    <EmojiInput value={role.emoji || '🎫'} hideInput={true} onChange={e => {
+                                                                    <EmojiInput value={role.emoji} hideInput={true} onChange={e => {
                                                                         const newRoles = [...activePanel.roles];
                                                                         newRoles[idx].emoji = e.target.value;
                                                                         updatePanel(activePanel.id, { roles: newRoles });
@@ -416,7 +437,7 @@ export default function ReactionRolesConfig() {
                         <h2 style={{ fontFamily: 'Inter', fontWeight: 700, fontSize: '2rem', color: 'var(--text-heading)' }}>{t('rr.no_panel_title')}</h2>
                         <p style={{ color: 'var(--text-muted)', marginBottom: '32px' }}>{t('rr.no_panel_desc')}</p>
                         <button onClick={addPanel} className="pc-btn-primary" style={{ margin: '0 auto' }}>
-                            <Plus size={20} /> <span>Nuovo Pannello</span>
+                            <Plus size={20} /> <span>{t('rr.new_panel')}</span>
                         </button>
                     </div>
                 )}
@@ -465,7 +486,7 @@ export default function ReactionRolesConfig() {
             .pc-input-modern-v2 { width: 100%; background: var(--bg-badge); border: 1.5px solid var(--border); border-radius: 14px; padding: 12px 16px; font-weight: 700; color: var(--text-heading); outline: none; transition: 0.2s; }
             .pc-input-modern-v2:focus { border-color: var(--primary); }
 
-            .pc-btn-danger-studio-v2 { width: 100%; padding: 16px; background: rgba(239, 68, 68, 0.05); color: #ef4444; border: 1.5px solid rgba(239, 68, 68, 0.1); border-radius: 20px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s; }
+            .pc-btn-danger-studio-v2 { width: 100%; padding: 16px; background: rgba(239, 68, 68, 0.08); color: #ef4444; border: 1.5px solid rgba(239, 68, 68, 0.1); border-radius: 20px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s; }
             .pc-btn-danger-studio-v2:hover { background: #ef4444; color: #fff; }
 
             .v-stack { display: flex; flex-direction: column; }

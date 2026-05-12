@@ -132,12 +132,19 @@ class ReactionRoleManager {
                     currentRow = new ActionRowBuilder();
                 }
 
+                const styleMap = {
+                    'PRIMARY': ButtonStyle.Primary,
+                    'SECONDARY': ButtonStyle.Secondary,
+                    'SUCCESS': ButtonStyle.Success,
+                    'DANGER': ButtonStyle.Danger
+                };
+
                 const btn = new ButtonBuilder()
                     .setCustomId(`rr_toggle_${panel.id}_${r.roleId}`)
                     .setLabel(r.label || 'Role')
-                    .setStyle(ButtonStyle[r.style] || ButtonStyle.Primary);
+                    .setStyle(styleMap[r.style] || ButtonStyle.Primary);
                 
-                if (r.emoji) btn.setEmoji(r.emoji);
+                if (r.emoji && r.emoji.trim()) btn.setEmoji(r.emoji);
                 
                 currentRow.addComponents(btn);
             });

@@ -168,7 +168,7 @@ export default function GlobalSync() {
                         </div>
                     </div>
                 ) : (
-                    <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '380px 1fr', gap: '32px' }}>
+                    <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 560px', gap: '32px' }}>
                         <div className="v-stack" style={{ gap: '32px' }}>
                             <section className="pc-card-v2">
                                 <div className="card-header-v2">
@@ -193,7 +193,7 @@ export default function GlobalSync() {
                                         </div>
                                     </div>
 
-                                    <div className="pc-alert-banner-v2" style={{ marginTop: '24px', background: '#fff1f2', border: '1px solid #fee2e2', borderRadius: '20px', padding: '20px', display: 'flex', gap: '16px', color: '#ef4444' }}>
+                                    <div className="pc-alert-banner-v2" style={{ marginTop: '24px', background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '20px', padding: '20px', display: 'flex', gap: '16px', color: '#ef4444' }}>
                                         <AlertTriangle size={20} style={{ flexShrink: 0 }} />
                                         <div className="alert-text-v2">
                                             <strong style={{ display: 'block', fontSize: '0.9rem', fontWeight: 700, marginBottom: '4px' }}>Attenzione</strong>
@@ -229,7 +229,7 @@ export default function GlobalSync() {
                                                 style={{ padding: '20px', borderRadius: '20px', border: '1.5px solid var(--border)', background: 'var(--bg-badge)', cursor: 'pointer', transition: '0.2s', display: 'flex', alignItems: 'center', gap: '16px' }}
                                                 onClick={() => toggleModule(mod.id)}
                                             >
-                                                <div className="sync-icon-box" style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
+                                                <div className="sync-icon-box" style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'var(--bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', border: '1px solid var(--border)' }}>
                                                     <mod.icon size={20} />
                                                 </div>
                                                 <div className="v-stack" style={{ flex: 1 }}>

@@ -31,7 +31,11 @@ router.get('/:guildId/:module', adminCheck, async (req, res) => {
             const db = dbMessages[key] || {};
 
             // Helper to check if a value is a generic placeholder
-            const isPlaceholder = (val) => !val || val.trim() === '' || val === 'Senza Titolo' || val === 'Nessun contenuto impostato.';
+            const isPlaceholder = (val) => {
+                if (!val || (typeof val === 'string' && val.trim() === '')) return true;
+                const placeholders = ['Senza Titolo', 'Nessun contenuto impostato.', 'Untitled', 'No content set.'];
+                return placeholders.includes(val);
+            };
 
             mergedMessages[key] = {
                 ...def,
