@@ -30,7 +30,7 @@ export default function OnboardingWizard({ config, guildId }) {
   
   // Onboarding State
   const [formData, setFormData] = useState({
-    language: 'it',
+    language: 'en',
     adminRoleIds: [],
     logChannelId: '',
     modules: {
@@ -59,7 +59,7 @@ export default function OnboardingWizard({ config, guildId }) {
     if (config) {
       setFormData(prev => ({
         ...prev,
-        language: config.globalConfig?.language || 'it',
+        language: config.globalConfig?.language || 'en',
         adminRoleIds: config.globalConfig?.adminRoleIds || [],
         logChannelId: config.globalConfig?.logs?.channelId || '',
         modules: {

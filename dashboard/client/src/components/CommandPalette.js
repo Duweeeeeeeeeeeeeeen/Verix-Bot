@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
-import { Search, Command, X, ChevronRight, Zap, Sparkles } from 'lucide-react';
+import { Search, ChevronRight, Zap } from 'lucide-react';
 import { useT } from '../contexts/LanguageContext';
 
 export default function CommandPalette({ isOpen, onClose, items, guildId, enabledModules = {} }) {
@@ -99,7 +99,6 @@ export default function CommandPalette({ isOpen, onClose, items, guildId, enable
                         <div className={`status-dot-mini ${enabledModules[item.id] ? 'on' : 'off'}`} />
                       )}
                     </div>
-                    <span className="item-path">{item.path}</span>
                   </div>
                   {index === selectedIndex && (
                     <div className="item-action">
@@ -118,20 +117,6 @@ export default function CommandPalette({ isOpen, onClose, items, guildId, enable
           )}
         </div>
 
-        <div className="palette-footer">
-          <div className="footer-tips">
-            <div className="tip">
-              <kbd>↑↓</kbd> <span>{t('common.navigate') || 'Naviga'}</span>
-            </div>
-            <div className="tip">
-              <kbd>↵</kbd> <span>{t('common.select') || 'Seleziona'}</span>
-            </div>
-          </div>
-          <div className="footer-brand">
-            <Sparkles size={14} />
-            <span>Verix Platinum</span>
-          </div>
-        </div>
       </div>
 
       <style jsx>{`
@@ -256,8 +241,8 @@ export default function CommandPalette({ isOpen, onClose, items, guildId, enable
 
         .item-info {
           display: flex;
-          flex-direction: column;
-          gap: 2px;
+          align-items: center;
+          min-width: 0;
           flex: 1;
         }
 
@@ -280,13 +265,6 @@ export default function CommandPalette({ isOpen, onClose, items, guildId, enable
         }
         .status-dot-mini.on { background: #10b981; box-shadow: 0 0 6px rgba(16, 185, 129, 0.4); }
         .status-dot-mini.off { background: var(--text-dim); opacity: 0.3; }
-
-        .item-path {
-          font-size: 0.75rem;
-          color: var(--text-dim);
-          font-family: var(--font-mono);
-          opacity: 0.5;
-        }
 
         .item-action {
           display: flex;
@@ -313,47 +291,6 @@ export default function CommandPalette({ isOpen, onClose, items, guildId, enable
           font-weight: 500;
         }
 
-        .palette-footer {
-          padding: 16px 24px;
-          background: var(--bg-secondary);
-          border-top: 1px solid var(--border);
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-
-        .footer-tips {
-          display: flex;
-          gap: 20px;
-        }
-
-        .tip {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          font-size: 0.75rem;
-          color: var(--text-dim);
-        }
-
-        .tip kbd {
-          background: var(--bg-badge);
-          border: 1px solid var(--border);
-          padding: 1px 5px;
-          border-radius: 4px;
-          font-weight: 800;
-        }
-
-        .footer-brand {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          color: var(--primary);
-          font-weight: 800;
-          font-size: 0.75rem;
-          text-transform: uppercase;
-          letter-spacing: 1px;
-          opacity: 0.8;
-        }
       `}</style>
     </div>
   );

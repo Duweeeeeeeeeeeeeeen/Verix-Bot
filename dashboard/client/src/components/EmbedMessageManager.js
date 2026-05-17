@@ -29,7 +29,7 @@ import defaultMessagesMap from '../locales';
  */
 export default function EmbedMessageManager({ guildId, module, slugs = [], extraButtons }) {
   const { t, language } = useT();
-  const defaultMessages = defaultMessagesMap[language] || defaultMessagesMap['it'];
+  const defaultMessages = defaultMessagesMap[language] || defaultMessagesMap['en'];
   const [messages, setMessages] = useState({});
   const [activeSlug, setActiveSlug] = useState(slugs[0]?.key || null);
   const [loading, setLoading] = useState(true);

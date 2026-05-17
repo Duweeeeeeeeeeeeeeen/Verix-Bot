@@ -22,7 +22,7 @@ export default {
             if (!config || !config.enabled) return;
 
             const globalConfig = await GlobalConfig.findOne({ guildId: guild.id });
-            const lang = globalConfig?.language || 'it';
+            const lang = globalConfig?.language || 'en';
 
             const role = guild.roles.cache.get(config.roleId);
             if (!role) {
@@ -103,7 +103,7 @@ export default {
 
         } catch (error) {
             logger.error('[Verify] Interaction Error:', error);
-            const errLang = typeof lang !== 'undefined' ? lang : 'it';
+            const errLang = typeof lang !== 'undefined' ? lang : 'en';
             const errMsg = config?.messages?.errorResponse || t(errLang, 'general.error');
             await messageService.reply(interaction, 'verify', 'error', {}, { ephemeral: true }).catch(() => {});
         }

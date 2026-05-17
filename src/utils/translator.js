@@ -31,7 +31,7 @@ try {
  * @param {object} variables Oggetto contenente le key delle variabili ({ user: '<@123>' })
  * @returns {string} Stringa tradotta, o la chiave se non esiste
  */
-export function t(lang = 'it', key, variables = {}) {
+export function t(lang = 'en', key, variables = {}) {
     // 1. Cerca nella lingua richiesta
     // 2. Altrimenti usa l'inglese come safe fallback globale
     // 3. Fallback sulla chiave stessa

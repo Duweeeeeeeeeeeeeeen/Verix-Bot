@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Skeleton from '../../../components/Skeleton';
-import { DiscordSelector, CustomSelect, EmbedMessageManager, SystemMessagesSection } from '../../../components/LazyConfigComponents';
+import { DiscordSelector, CustomSelect, EmbedMessageManager, SystemMessagesSection, HelpTooltip } from '../../../components/LazyConfigComponents';
 import api from '../../../utils/api';
 import { useT } from '../../../contexts/LanguageContext';
 import { 

@@ -2389,3 +2389,112 @@ h1, h2, h3, h4, h5, h6 {
   opacity: 0.6;
 }
 
+/* Dashboard UI normalization */
+.dashboard-container .pc-card-v2 {
+  border-radius: 16px !important;
+  box-shadow: none !important;
+}
+
+.dashboard-container .pc-card-v2:hover {
+  box-shadow: none !important;
+}
+
+.dashboard-container .pc-header-v2 {
+  border-radius: 16px !important;
+  padding: 20px 24px !important;
+}
+
+.dashboard-container .card-header-v2,
+.dashboard-container .pc-header-v2 .header-info {
+  display: flex !important;
+  align-items: center !important;
+  min-width: 0;
+}
+
+.dashboard-container .card-header-v2 {
+  gap: 12px !important;
+}
+
+.dashboard-container .header-icon,
+.dashboard-container .pc-icon-box,
+.dashboard-container .card-header-v2 .header-icon {
+  width: 42px !important;
+  height: 42px !important;
+  min-width: 42px !important;
+  border-radius: 12px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+}
+
+.dashboard-container .header-icon svg,
+.dashboard-container .pc-icon-box svg,
+.dashboard-container .card-header-v2 .header-icon svg {
+  width: 18px !important;
+  height: 18px !important;
+  flex-shrink: 0 !important;
+}
+
+.dashboard-container .pc-btn-primary,
+.dashboard-container .pc-btn-outline-v2,
+.dashboard-container .pc-btn-secondary,
+.dashboard-container .pc-btn-danger {
+  min-height: 42px !important;
+  border-radius: 12px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  line-height: 1 !important;
+}
+
+.dashboard-container .pc-btn-outline-v2:not(:has(span)) {
+  width: 42px !important;
+  height: 42px !important;
+  padding: 0 !important;
+}
+
+.dashboard-container .pc-tabs-v2 button,
+.dashboard-container .pc-studio-tab-v2 {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.dashboard-container .pc-tabs-v2 button svg,
+.dashboard-container .pc-studio-tab-v2 svg {
+  width: 16px !important;
+  height: 16px !important;
+  flex-shrink: 0 !important;
+}
+
+.dashboard-container .pc-status-tag-v2,
+.dashboard-container .status-badge,
+.dashboard-container .premium-badge-mini {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  line-height: 1 !important;
+  letter-spacing: 0 !important;
+}
+
+.dashboard-container .nav-link-icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 22px !important;
+  min-width: 22px !important;
+}
+
+.dashboard-container .nav-link-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dashboard-container .nav-status-dot {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+

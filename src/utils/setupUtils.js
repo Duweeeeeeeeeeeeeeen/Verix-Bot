@@ -16,7 +16,7 @@ import { getDefaultMessages } from '../locales/t.js';
  * @param {Object} customNames
  * @param {string} language
  */
-export async function createDefaultChannels(guild, modules, customNames = {}, language = 'it') {
+export async function createDefaultChannels(guild, modules, customNames = {}, language = 'en') {
     const createdChannels = {};
 
     const moduleChannels = [
@@ -78,14 +78,14 @@ export async function initializeModuleConfigs(guildId, createdChannels, onboardi
         } }
     );
 
-    const messages = getDefaultMessages(language || 'it');
+    const messages = getDefaultMessages(language || 'en');
 
     await GlobalConfig.findOneAndUpdate(
         { guildId },
         { 
             $set: { 
                 adminRoleIds: adminRoles || [],
-                language: language || 'it',
+                language: language || 'en',
                 'ui.whitelistButtons': [
                     { customId: 'start_wl', label: language === 'it' ? 'Inizia Candidatura' : 'Start Application', emoji: '⚖️', style: 'PRIMARY', enabled: true },
                     { customId: 'confirm_wl', label: language === 'it' ? 'Conferma' : 'Confirm', emoji: '✅', style: 'SUCCESS', enabled: true },

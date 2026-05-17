@@ -5,6 +5,6 @@ const defaultMessages = { it, en };
 
 export default defaultMessages;
 
-export function getMessages(lang = 'it') {
-    return defaultMessages[lang] || defaultMessages['it'];
+export function getMessages(lang = 'en') {
+    return defaultMessages[lang] || defaultMessages['en'];
 }

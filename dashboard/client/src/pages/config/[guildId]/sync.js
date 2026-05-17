@@ -202,19 +202,6 @@ export default function GlobalSync() {
                                     </div>
                                 </div>
                             </section>
-
-                            <section className="pc-card-v2" style={{ background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%)', color: '#ffffff', border: 'none', boxShadow: '0 15px 35px rgba(var(--primary-rgb), 0.2)', position: 'relative', overflow: 'hidden' }}>
-                                <div style={{ position: 'absolute', top: '-20px', right: '-20px', opacity: 0.1, color: 'white', transform: 'rotate(15deg)' }}>
-                                    <Sparkles size={120} />
-                                </div>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px', position: 'relative', zIndex: 1 }}>
-                                    <Info size={22} style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }} />
-                                    <h4 style={{ margin: 0, fontWeight: 800, color: '#ffffff', textShadow: '0 2px 4px rgba(0,0,0,0.2)', fontSize: '1.1rem' }}>{t('sync.platinum_tip')}</h4>
-                                </div>
-                                <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 600, opacity: 1, lineHeight: 1.6, color: '#ffffff', textShadow: '0 1px 2px rgba(0,0,0,0.1)', position: 'relative', zIndex: 1 }}>
-                                    {t('sync.platinum_tip_desc')}
-                                </p>
-                            </section>
                         </div>
 
                         <div className="v-stack" style={{ gap: '32px' }}>

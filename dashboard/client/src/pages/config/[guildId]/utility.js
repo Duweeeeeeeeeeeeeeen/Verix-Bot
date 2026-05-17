@@ -6,7 +6,7 @@ import api from '../../../utils/api';
 import { 
     Save, Cpu, Settings2, Power, Info, Shield,
     Trash2, MessageSquare, Zap, Terminal, Layout,
-    CheckCircle2, AlertTriangle, ArrowRight, Sparkles,
+    CheckCircle2, AlertTriangle, ArrowRight,
     ShieldAlert, Hammer, Eraser, Command, ListChecks,
     Activity, Layers, MousePointer2, Clock, RefreshCw, RotateCcw
 } from 'lucide-react';
@@ -277,14 +277,6 @@ export default function UtilityConfig() {
                                 </div>
                             </div>
                         </section>
-
-                        <div className="pc-card-v2 animate slide-up" style={{ background: 'linear-gradient(135deg, #1e1b4b 0%, #020617 100%)', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-                                <Sparkles size={18} style={{ color: '#fbbf24' }} />
-                                <span style={{ fontWeight: 700, fontSize: '0.8rem' }}>{t('utility.pro_tip')}</span>
-                            </div>
-                            <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 700, opacity: 0.8 }}>{t('utility.pro_tip_desc')}</p>
-                        </div>
                     </div>
                 </div>
             )}

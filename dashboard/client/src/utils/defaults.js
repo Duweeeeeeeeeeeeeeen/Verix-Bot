@@ -16,10 +16,10 @@ export const defaultDesign = {
 export function mergeConfig(dbConfig, moduleName, lang) {
     // If no lang is provided, try to get from localStorage (client side only)
     if (!lang && typeof window !== 'undefined') {
-        lang = localStorage.getItem('verix-language') || 'it';
+        lang = localStorage.getItem('verix-language') || 'en';
     }
     
-    const defaultMessages = getMessages(lang || 'it');
+    const defaultMessages = getMessages(lang || 'en');
     const defaults = {
         ...defaultDesign,
         ...(defaultMessages[moduleName] || {})

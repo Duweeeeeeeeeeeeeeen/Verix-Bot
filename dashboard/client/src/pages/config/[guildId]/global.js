@@ -3,9 +3,9 @@ import { useRouter } from 'next/router';
 import Skeleton from '../../../components/Skeleton';
 import api from '../../../utils/api';
 import {
-  Save, Settings2, Palette, Bell, FileText, Tag, Plus, Trash2, Hash, RefreshCcw, Eye, 
-  ChevronRight, ChevronDown, Monitor, Mic2, Ticket, Shield, AlertCircle, Check, Zap, 
-  Info, Globe, ShieldAlert, Layers, User, Lock, Crown, Key, Bot, Activity, Layout, 
+  Save, Settings2, Palette, Bell, FileText, Tag, Plus, Trash2, Hash, RefreshCcw, Eye,
+  ChevronRight, ChevronDown, Monitor, Mic2, Ticket, Shield, AlertCircle, Check, Zap,
+  Info, Globe, ShieldAlert, Layers, User, Lock, Crown, Key, Bot, Activity, Layout,
   Sparkles, Terminal, Globe2, BellRing, Settings, CheckCircle2, Languages, ShieldCheck,
   MousePointer2, Palette as PaletteIcon, EyeOff, RefreshCw, RotateCcw
 } from 'lucide-react';
@@ -56,7 +56,7 @@ export default function GlobalConfigPage() {
 
   const handleReset = async () => {
     if (!confirm(t('common.reset_confirm'))) return;
-    
+
     setLoading(true);
     window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
     try {
@@ -82,7 +82,7 @@ export default function GlobalConfigPage() {
         method: 'POST',
         body: JSON.stringify(config)
       });
-      
+
       if (config.language) {
           setDashboardLanguage(config.language);
       }
@@ -135,7 +135,7 @@ export default function GlobalConfigPage() {
                     </div>
                 </div>
             </div>
-            
+
             <div className="header-controls">
                 <button className="pc-btn-outline-v2" onClick={handleReset} title={t('common.reset_to_default')}>
                     <RotateCcw size={18} />
@@ -174,16 +174,16 @@ export default function GlobalConfigPage() {
                             <div className="card-body-v2">
                                 <div className="pc-input-group-v2">
                                     <label>{t('global.primary_language')}</label>
-                                    <CustomSelect 
+                                    <CustomSelect
                                         options={[
                                             { value: 'it', label: 'Italiano' },
                                             { value: 'en', label: 'English' },
-                                            { value: 'fr', label: 'Français' },
-                                            { value: 'es', label: 'Español' },
+                                            { value: 'fr', label: 'FranÃ§ais' },
+                                            { value: 'es', label: 'EspaÃ±ol' },
                                             { value: 'de', label: 'Deutsch' }
-                                        ]} 
-                                        value={config.language || 'it'} 
-                                        onChange={v => setNested('language', v)} 
+                                        ]}
+                                        value={config.language || 'en'}
+                                        onChange={v => setNested('language', v)}
                                     />
                                     <p className="pc-hint-v2" style={{ marginTop: '12px' }}>{t('global.lang_hint')}</p>
                                 </div>
@@ -291,12 +291,12 @@ export default function GlobalConfigPage() {
 
         <style jsx>{`
             .pc-premium-wrapper { padding: 32px; max-width: 1500px; margin: 0 auto; font-family: 'Inter', sans-serif; }
-            
+
             .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-card); padding: 24px; border-radius: 28px; box-shadow: var(--shadow-premium); border: 1px solid var(--border); }
             .header-info { display: flex; align-items: center; gap: 16px; }
             .pc-icon-box { width: 52px; height: 52px; color: #fff; border-radius: 16px; display: flex; align-items: center; justify-content: center; }
             .pc-title-row h1 { font-family: 'Inter'; font-size: 1.8rem; font-weight: 700; margin: 0; color: var(--text-heading); letter-spacing: normal; }
-            
+
             .pc-status-tag-v2 { display: flex; align-items: center; gap: 6px; font-size: 0.6rem; font-weight: 700; padding: 4px 10px; border-radius: 100px;  width: fit-content; }
             .pc-status-tag-v2.on { background: rgba(var(--primary-rgb), 0.1); color: var(--primary); }
             .status-dot-v2 { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
@@ -320,7 +320,7 @@ export default function GlobalConfigPage() {
 
             .pc-toggle-card-v2 { background: var(--bg-badge); padding: 20px; border-radius: 20px; border: 1.5px solid var(--border); display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
             .pc-toggle-card-v2 strong { font-weight: 700; color: var(--text-heading); }
-            
+
             .pc-toggle-v2 { position: relative; width: 44px; height: 22px; }
             .pc-toggle-v2 input { opacity: 0; width: 0; height: 0; }
             .pc-slider-v2 { position: absolute; cursor: pointer; inset: 0; background: var(--border); transition: .4s; border-radius: 34px; }

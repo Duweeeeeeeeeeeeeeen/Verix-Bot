@@ -215,7 +215,7 @@ export class FiveMManager {
             if (!channel) return null;
 
             const globalConf = await GlobalConfig.findOne({ guildId: guild.id });
-            const lang = globalConf?.language || 'it';
+            const lang = globalConf?.language || 'en';
 
             const placeholders = {
                 guild: guild.name,

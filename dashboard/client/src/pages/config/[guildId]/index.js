@@ -5,12 +5,11 @@ import api from '../../../utils/api';
 import { useT } from '../../../contexts/LanguageContext';
 import { useAuth } from '../../../contexts/AuthContext';
 import { 
-  Shield, Ticket, Users, Mic2, ArrowRight, RefreshCcw, Zap, Activity, ShieldCheck,
-  ExternalLink, Info, Camera, Globe, ShieldAlert, Power, UserPlus, Layout as LayoutIcon,
-  ChevronRight, Box, Settings2, TrendingUp, Plus, MousePointer2, ListChecks, Crown,
-  History, LayoutTemplate, CheckCircle2, AlertTriangle, Sparkles, Layers, Award,
-  Cpu, MessageSquare, Terminal, Heart, Share2, Filter, Search, MoreHorizontal, Bell,
-  Target, Rocket, Command, HelpCircle
+  Shield, Ticket, Mic2, RefreshCcw, Activity, ShieldCheck,
+  Camera, Globe, UserPlus,
+  ChevronRight, Box, Settings2, TrendingUp, MousePointer2, ListChecks, Crown,
+  History, LayoutTemplate, AlertTriangle, Sparkles,
+  Cpu, Rocket, Command
 } from 'lucide-react';
 import Head from 'next/head';
 
@@ -295,19 +294,11 @@ export default function GuildHome() {
                     </button>
                 </section>
 
-                <div className="pc-help-banner-v2">
-                    <div className="help-icon-v2"><HelpCircle size={24} /></div>
-                    <div className="help-text-v2">
-                        <strong>{t('hub.academy_title')}</strong>
-                        <p>{t('hub.academy_desc')}</p>
-                        <button onClick={() => router.push(`/config/${guildId}/academy`)}>{t('hub.read_docs')}</button>
-                    </div>
-                </div>
             </aside>
         </div>
 
         <style jsx>{`
-            .pc-premium-wrapper { padding: 32px; max-width: 1500px; margin: 0 auto; font-family: 'Inter', sans-serif; }
+            .pc-premium-wrapper { padding: 24px; max-width: 1500px; margin: 0 auto; font-family: 'Inter', sans-serif; }
             
             /* Hero Studio V2 */
             .pc-hero-studio-v2 { 
@@ -315,21 +306,20 @@ export default function GuildHome() {
                 justify-content: space-between; 
                 align-items: center; 
                 background: var(--bg-card); 
-                padding: 32px 40px; 
-                border-radius: 36px; 
-                box-shadow: var(--shadow-premium); 
+                padding: 24px 28px;
+                border-radius: 18px;
                 border: 1px solid var(--border); 
-                margin-bottom: 32px; 
+                margin-bottom: 24px;
                 position: relative;
                 overflow: hidden;
             }
             .hero-visuals-v2 { display: flex; align-items: center; gap: 24px; position: relative; z-index: 1; }
-            .server-avatar-container-v2 { position: relative; width: 80px; height: 80px; }
-            .server-icon-v2 { width: 100%; height: 100%; border-radius: 24px; object-fit: cover; border: 3px solid var(--bg-card); box-shadow: 0 10px 20px rgba(0,0,0,0.15); }
-            .avatar-placeholder-v2 { width: 100%; height: 100%; border-radius: 24px; background: linear-gradient(135deg, var(--primary), #4338ca); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 700; }
+            .server-avatar-container-v2 { position: relative; width: 60px; height: 60px; }
+            .server-icon-v2 { width: 100%; height: 100%; border-radius: 16px; object-fit: cover; border: 2px solid var(--bg-card); }
+            .avatar-placeholder-v2 { width: 100%; height: 100%; border-radius: 16px; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 700; }
             .premium-crown-v2 { position: absolute; bottom: -4px; right: -4px; width: 28px; height: 28px; background: linear-gradient(135deg, #f59e0b, #fbbf24); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid var(--bg-card); box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3); }
             
-            .hero-text-v2 h1 { font-size: 2.2rem; font-weight: 700; margin: 0; color: var(--text-heading); letter-spacing: normal; }
+            .hero-text-v2 h1 { font-size: 1.7rem; font-weight: 700; margin: 0; color: var(--text-heading); letter-spacing: normal; }
             .user-name-v2 { font-weight: 800; background: linear-gradient(135deg, var(--primary) 0%, #a78bfa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
             .hero-text-v2 p { margin: 4px 0 0 0; color: var(--text-dim); font-size: 1rem; font-weight: 600; }
             .status-row-v2 { display: flex; gap: 8px; margin-bottom: 8px; }
@@ -341,16 +331,16 @@ export default function GuildHome() {
             .tier-badge-v2.standard { background: var(--bg-badge); color: var(--text-muted); border: 1px solid var(--border); }
 
             .hero-controls-v2 { display: flex; gap: 16px; position: relative; z-index: 1; }
-            .pc-btn-invite-v2 { background: var(--primary); color: #fff; border: none; padding: 18px 36px; border-radius: 24px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: 0.3s; box-shadow: 0 12px 30px rgba(var(--primary-rgb), 0.3); }
-            .pc-btn-refresh-v2 { width: 60px; height: 60px; border-radius: 22px; border: 1.5px solid var(--border); background: var(--bg-card); color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
-            .pc-btn-refresh-v2:hover { transform: rotate(180deg); color: var(--primary); border-color: var(--primary); }
+            .pc-btn-invite-v2 { background: var(--primary); color: #fff; border: none; padding: 13px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; }
+            .pc-btn-refresh-v2 { width: 46px; height: 46px; border-radius: 12px; border: 1.5px solid var(--border); background: var(--bg-card); color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+            .pc-btn-refresh-v2:hover { color: var(--primary); border-color: var(--primary); }
 
             /* Metrics V2 */
-            .pc-metric-grid-v2 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 32px; }
-            .pc-metric-card-v2 { background: var(--bg-card); border-radius: 32px; padding: 24px; border: 1px solid var(--border); position: relative; overflow: hidden; transition: 0.4s; box-shadow: var(--shadow-premium); }
-            .pc-metric-card-v2:hover { transform: translateY(-8px); box-shadow: 0 20px 50px rgba(0,0,0,0.1); }
-            .metric-header-v2 { display: flex; gap: 16px; align-items: center; margin-bottom: 20px; }
-            .metric-icon-v2 { width: 56px; height: 56px; border-radius: 18px; display: flex; align-items: center; justify-content: center; background: var(--bg-badge); }
+            .pc-metric-grid-v2 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
+            .pc-metric-card-v2 { background: var(--bg-card); border-radius: 16px; padding: 18px; border: 1px solid var(--border); position: relative; overflow: hidden; transition: 0.2s; }
+            .pc-metric-card-v2:hover { transform: translateY(-2px); }
+            .metric-header-v2 { display: flex; gap: 14px; align-items: center; margin-bottom: 14px; }
+            .metric-icon-v2 { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: var(--bg-badge); }
             .metric-value-v2 { display: flex; flex-direction: column; }
             .count-v2 { font-size: 1.8rem; font-weight: 700; color: var(--text-heading); line-height: 1; letter-spacing: normal; }
             .label-v2 { font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-top: 4px; letter-spacing: 0.5px; }
@@ -358,8 +348,8 @@ export default function GuildHome() {
             .metric-glow-v2 { position: absolute; bottom: 0; left: 0; width: 100%; height: 4px; opacity: 0.2; }
 
             /* Workspace V2 */
-            .pc-workspace-v2 { display: grid; grid-template-columns: 1fr 400px; gap: 48px; }
-            .deck-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
+            .pc-workspace-v2 { display: grid; grid-template-columns: 1fr 320px; gap: 24px; }
+            .deck-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
             .title-group-v2 { display: flex; align-items: center; gap: 14px; }
             .title-group-v2 h3 { margin: 0; font-size: 1.6rem; font-weight: 700; color: var(--text-heading); letter-spacing: normal; }
             .deck-stats-v2 { display: flex; align-items: center; gap: 24px; }
@@ -368,9 +358,9 @@ export default function GuildHome() {
             .progress-bar-v2 .fill { height: 100%; background: linear-gradient(to right, var(--primary), #a78bfa); border-radius: 100px; transition: 1s; }
 
             /* Module Studio Cards V2 */
-            .pc-module-grid-v2 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-            .pc-module-studio-card-v2 { background: var(--bg-card); border-radius: 32px; padding: 24px; border: 1px solid var(--border); transition: 0.4s; position: relative; overflow: hidden; box-shadow: var(--shadow-premium); }
-            .pc-module-studio-card-v2:hover { transform: translateY(-6px); border-color: var(--primary-muted); }
+            .pc-module-grid-v2 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+            .pc-module-studio-card-v2 { background: var(--bg-card); border-radius: 16px; padding: 18px; border: 1px solid var(--border); transition: 0.2s; position: relative; overflow: hidden; }
+            .pc-module-studio-card-v2:hover { transform: translateY(-2px); border-color: var(--primary-muted); }
             .pc-module-studio-card-v2.on { border-color: var(--primary-muted); }
             
             .card-top-v2 { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
@@ -379,36 +369,30 @@ export default function GuildHome() {
             .card-body-v2 h4 { margin: 0 0 8px 0; font-size: 1.2rem; font-weight: 700; color: var(--text-heading); letter-spacing: normal; }
             .card-body-v2 p { margin: 0; font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; font-weight: 600; }
             
-            .card-footer-v2 { display: flex; justify-content: space-between; align-items: center; margin-top: 32px; padding-top: 24px; border-top: 1.5px solid var(--border); }
+            .card-footer-v2 { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 16px; border-top: 1.5px solid var(--border); }
             .status-pill-v2 { font-size: 0.7rem; font-weight: 700; padding: 6px 16px; border-radius: 100px; background: var(--bg-badge); color: var(--text-muted); border: 1px solid var(--border); }
             .on .status-pill-v2 { background: rgba(16, 185, 129, 0.1); color: #10b981; border-color: rgba(16, 185, 129, 0.2); }
             
-            .pc-btn-enter-v2 { width: 48px; height: 48px; border-radius: 18px; background: var(--bg-badge); color: var(--text-muted); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
+            .pc-btn-enter-v2 { width: 38px; height: 38px; border-radius: 12px; background: var(--bg-badge); color: var(--text-muted); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
             .pc-btn-enter-v2:hover { background: var(--primary); color: #fff; }
 
             /* Side Panel V2 */
-            .side-panel-v2 { padding: 40px; border-radius: 48px; background: var(--bg-card) !important; border: 1px solid var(--border); }
-            .panel-header-v2 { display: flex; align-items: center; gap: 14px; margin-bottom: 32px; }
-            .panel-header-v2 h4 { margin: 0; font-size: 1.4rem; font-weight: 700; color: var(--text-heading); letter-spacing: normal; }
+            .side-panel-v2 { padding: 20px; border-radius: 16px; background: var(--bg-card) !important; border: 1px solid var(--border); }
+            .panel-header-v2 { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+            .panel-header-v2 h4 { margin: 0; font-size: 1.05rem; font-weight: 700; color: var(--text-heading); letter-spacing: normal; }
             
             .panel-nav-v2 { display: flex; flex-direction: column; gap: 12px; }
-            .nav-btn-v2 { display: flex; align-items: center; gap: 18px; padding: 16px; background: var(--bg-badge); border: 1px solid var(--border); border-radius: 24px; cursor: pointer; transition: 0.3s; text-align: left; }
-            .nav-btn-v2:hover { transform: translateX(10px); border-color: var(--primary); background: var(--bg-card); }
-            .nav-icon-v2 { width: 56px; height: 56px; border-radius: 18px; background: var(--bg-card); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-            .nav-text-v2 { display: flex; flex-direction: column; gap: 4px; }
-            .main-v2 { font-weight: 700; font-size: 1rem; color: var(--text-heading); }
-            .sub-v2 { font-size: 0.8rem; font-weight: 750; color: var(--text-muted); }
+            .nav-btn-v2 { display: flex; align-items: center; gap: 12px; padding: 11px; background: var(--bg-badge); border: 1px solid var(--border); border-radius: 12px; cursor: pointer; transition: 0.2s; text-align: left; }
+            .nav-btn-v2:hover { border-color: var(--primary); background: var(--bg-card); }
+            .nav-icon-v2 { width: 38px; height: 38px; border-radius: 10px; background: var(--bg-card); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+            .nav-text-v2 { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+            .main-v2 { font-weight: 700; font-size: 0.9rem; color: var(--text-heading); }
+            .sub-v2 { font-size: 0.72rem; font-weight: 700; color: var(--text-muted); }
             .arrow-v2 { margin-left: auto; color: var(--text-muted); }
 
-            .panel-divider-v2 { height: 1.5px; background: var(--border); margin: 32px 0; }
-            .pc-btn-danger-v2 { width: 100%; display: flex; align-items: center; justify-content: center; gap: 14px; padding: 18px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 22px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: 0.3s; }
+            .panel-divider-v2 { height: 1.5px; background: var(--border); margin: 16px 0; }
+            .pc-btn-danger-v2 { width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 12px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 12px; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: 0.2s; }
             .pc-btn-danger-v2:hover { background: #ef4444; color: #fff; }
-
-            .pc-help-banner-v2 { margin-top: 40px; padding: 36px; background: var(--primary-glow); border: 1px solid var(--primary-muted); border-radius: 40px; display: flex; gap: 24px; }
-            .help-icon-v2 { width: 60px; height: 60px; background: var(--bg-card); color: var(--primary); border-radius: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-            .help-text-v2 strong { display: block; font-size: 1.25rem; font-weight: 700; color: var(--primary); margin-bottom: 8px; }
-            .help-text-v2 p { margin: 0 0 20px 0; font-size: 0.95rem; font-weight: 700; color: var(--text-muted); line-height: 1.5; }
-            .help-text-v2 button { background: var(--primary); color: #fff; border: none; padding: 12px 24px; border-radius: 14px; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: 0.3s; }
 
             /* Common V2 Toggles */
             .pc-toggle-v2 { position: relative; width: 52px; height: 26px; }

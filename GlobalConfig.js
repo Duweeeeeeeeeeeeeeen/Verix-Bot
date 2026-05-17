@@ -31,34 +31,34 @@ const notificationEventSchema = new mongoose.Schema({
 const globalConfigSchema = new mongoose.Schema({
     guildId: { type: String, required: true, unique: true, match: discordIdRegex },
     adminRoleIds: { type: [String], default: [] },
-    language: { type: String, enum: ['it', 'en'], default: 'it' },
+    language: { type: String, enum: ['it', 'en'], default: 'en' },
 
     // ── UI SYSTEM ──────────────────────────────
     ui: {
         whitelistButtons: {
             type: [buttonConfigSchema],
             default: [
-                { customId: 'start_wl', label: 'Inizia Candidatura', emoji: '⚖️', style: 'PRIMARY', enabled: true },
-                { customId: 'confirm_wl', label: 'Conferma', emoji: '✅', style: 'SUCCESS', enabled: true },
-                { customId: 'cancel_wl', label: 'Annulla', emoji: '❌', style: 'DANGER', enabled: true }
+                { customId: 'start_wl', label: 'Start Application', emoji: '⚖️', style: 'PRIMARY', enabled: true },
+                { customId: 'confirm_wl', label: 'Confirm', emoji: '✅', style: 'SUCCESS', enabled: true },
+                { customId: 'cancel_wl', label: 'Cancel', emoji: '❌', style: 'DANGER', enabled: true }
             ]
         },
         ticketButtons: {
             type: [buttonConfigSchema],
             default: [
-                { customId: 'tk_claim', label: 'Assumi', emoji: '🙋‍♂️', style: 'SUCCESS', enabled: true },
-                { customId: 'tk_close', label: 'Chiudi', emoji: '🔒', style: 'DANGER', enabled: true },
-                { customId: 'tk_quick_reply', label: 'Risposte Rapide', emoji: '📝', style: 'PRIMARY', enabled: true },
-                { customId: 'tk_tag', label: 'Tagga', emoji: '🏷️', style: 'SECONDARY', enabled: true },
+                { customId: 'tk_claim', label: 'Claim', emoji: '🙋‍♂️', style: 'SUCCESS', enabled: true },
+                { customId: 'tk_close', label: 'Close', emoji: '🔒', style: 'DANGER', enabled: true },
+                { customId: 'tk_quick_reply', label: 'Quick Replies', emoji: '📝', style: 'PRIMARY', enabled: true },
+                { customId: 'tk_tag', label: 'Tag', emoji: '🏷️', style: 'SECONDARY', enabled: true },
                 { customId: 'tk_transcript', label: 'Logs', emoji: '📄', style: 'SECONDARY', enabled: true }
             ]
         },
         voiceButtons: {
             type: [buttonConfigSchema],
             default: [
-                { customId: 'approve_voice', label: 'Accetta', emoji: '✅', style: 'SUCCESS', enabled: true },
-                { customId: 'deny_voice', label: 'Rifiuta', emoji: '❌', style: 'DANGER', enabled: true },
-                { customId: 'reset_timer_voice', label: 'Riavvia Timer', emoji: '⏱️', style: 'SECONDARY', enabled: true }
+                { customId: 'approve_voice', label: 'Approve', emoji: '✅', style: 'SUCCESS', enabled: true },
+                { customId: 'deny_voice', label: 'Deny', emoji: '❌', style: 'DANGER', enabled: true },
+                { customId: 'reset_timer_voice', label: 'Reset Timer', emoji: '⏱️', style: 'SECONDARY', enabled: true }
             ]
         }
     },
@@ -88,7 +88,7 @@ const globalConfigSchema = new mongoose.Schema({
 
     // ── NAMING SYSTEM ──────────────────────────
     naming: {
-        voiceChannel: { type: String, default: 'wl-{user}' },
+        voiceChannel: { type: String, default: 'apply-{user}' },
         ticket:       { type: String, default: '{emoji}-{type}-{user}' }
     }
 

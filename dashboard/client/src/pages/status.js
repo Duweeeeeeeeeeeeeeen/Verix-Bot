@@ -12,8 +12,7 @@ import {
   ShieldCheck, 
   AlertCircle,
   ArrowLeft,
-  RefreshCw,
-  Server
+  RefreshCw
 } from 'lucide-react';
 
 export default function StatusPage() {
@@ -134,7 +133,7 @@ export default function StatusPage() {
         ) : (
           <>
             {privateBot && (
-              <div className="platinum-bot-hero animate fade-in">
+              <div className="private-bot-card animate fade-in">
                 <div className="platinum-badge">
                   <span className="sparkle">✨</span> PLATINUM EXCLUSIVE
                 </div>
@@ -247,7 +246,7 @@ export default function StatusPage() {
 
         .status-nav {
           max-width: 1000px;
-          margin: 0 auto 60px;
+          margin: 0 auto 32px;
           display: flex;
           justify-content: space-between;
           align-items: center;
@@ -312,15 +311,14 @@ export default function StatusPage() {
         .status-hero {
           background: var(--bg-card);
           border: 1px solid var(--border);
-          padding: 50px;
-          border-radius: 32px;
+          padding: 34px;
+          border-radius: 18px;
           display: flex;
           align-items: center;
           gap: 40px;
           margin-bottom: 32px;
           position: relative;
           overflow: hidden;
-          box-shadow: var(--shadow-premium);
         }
 
         .status-hero::before {
@@ -333,10 +331,10 @@ export default function StatusPage() {
         }
 
         .status-icon {
-          width: 80px;
-          height: 80px;
+          width: 64px;
+          height: 64px;
           background: var(--bg-badge);
-          border-radius: 24px;
+          border-radius: 16px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -346,7 +344,7 @@ export default function StatusPage() {
         }
 
         .status-text h1 {
-          font-size: 2.2rem;
+          font-size: 1.8rem;
           font-weight: 800;
           margin: 0 0 8px 0;
           color: var(--text-heading);
@@ -368,12 +366,12 @@ export default function StatusPage() {
           background: var(--bg-card);
           border: 1px solid var(--border);
           padding: 28px;
-          border-radius: 24px;
-          transition: all 0.3s ease;
+          border-radius: 16px;
+          transition: all 0.2s ease;
         }
 
         .status-card:hover {
-          transform: translateY(-5px);
+          transform: translateY(-2px);
           border-color: var(--primary);
           background: var(--bg-badge);
         }
@@ -429,24 +427,27 @@ export default function StatusPage() {
           font-size: 0.9rem;
         }
 
-        .platinum-bot-hero {
-          background: linear-gradient(135deg, rgba(30, 27, 75, 0.4) 0%, rgba(15, 23, 42, 0.6) 100%);
-          border: 1px solid rgba(139, 92, 246, 0.2);
-          border-radius: 32px;
-          padding: 32px;
+        .private-bot-card {
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: 16px;
+          padding: 20px;
           margin-bottom: 32px;
           position: relative;
           overflow: hidden;
-          box-shadow: 0 8px 32px 0 rgba(139, 92, 246, 0.1);
-          backdrop-filter: blur(12px);
           animation: slideDown 0.4s ease-out;
         }
 
-        .platinum-bot-hero::before {
+        .private-bot-card::before {
           content: '';
           position: absolute;
-          top: 0; left: 0; right: 0; height: 1px;
-          background: linear-gradient(90deg, transparent, rgba(167, 139, 250, 0.4), transparent);
+          top: 0; left: 0; width: 4px; height: 100%;
+          background: #8b5cf6;
+        }
+
+        .private-bot-card .platinum-badge,
+        .private-bot-card .bot-id {
+          display: none;
         }
 
         .platinum-badge {
@@ -467,22 +468,21 @@ export default function StatusPage() {
         .platinum-bot-content {
           display: flex;
           align-items: center;
-          gap: 24px;
+          gap: 16px;
         }
 
         .platinum-bot-avatar {
           position: relative;
-          width: 80px;
-          height: 80px;
-          border-radius: 50%;
-          border: 2px solid rgba(167, 139, 250, 0.3);
-          box-shadow: 0 0 20px rgba(167, 139, 250, 0.15);
+          width: 52px;
+          height: 52px;
+          border-radius: 14px;
+          border: 1px solid var(--border);
         }
 
         .platinum-bot-avatar img {
           width: 100%;
           height: 100%;
-          border-radius: 50%;
+          border-radius: 13px;
           object-fit: cover;
         }
 
@@ -499,13 +499,10 @@ export default function StatusPage() {
         .avatar-status-dot.offline { background: #ef4444; box-shadow: 0 0 10px #ef4444; }
 
         .platinum-bot-info h2 {
-          font-size: 1.6rem;
+          font-size: 1.05rem;
           font-weight: 800;
-          margin: 0 0 4px 0;
-          color: #ffffff;
-          background: linear-gradient(90deg, #ffffff 0%, #e2e8f0 100%);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
+          margin: 0 0 10px 0;
+          color: var(--text-heading);
         }
 
         .bot-id {
@@ -564,7 +561,7 @@ export default function StatusPage() {
         }
 
         @media (max-width: 768px) {
-          .platinum-bot-hero {
+          .private-bot-card {
             padding: 24px;
           }
           .platinum-bot-content {

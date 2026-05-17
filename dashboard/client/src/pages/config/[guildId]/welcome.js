@@ -313,7 +313,7 @@ export default function WelcomeConfig() {
                             <div style={{ marginTop: '40px', paddingTop: '40px', borderTop: '2px dashed var(--border)' }}>
                                 <button className="pc-btn-reset-v2" style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(239,68,68,0.08)', color: '#ef4444', border: 'none', width: '100%', padding: '16px', borderRadius: '18px', fontWeight: 700, cursor: 'pointer', justifyContent: 'center', transition: '0.2s' }} onClick={() => {
                                     if (window.confirm(t('welcome.reset_confirm_params'))) {
-                                        const defaults = defaultMessagesMap[language] || defaultMessagesMap['it'];
+                                        const defaults = defaultMessagesMap[language] || defaultMessagesMap['en'];
                                         const fallback = (defaults['welcome'] && defaults['welcome'][activeEmbedKey]) || { title: 'Verix Welcome', description: 'Welcome!', color: '#6366f1' };
                                         updateEmbed(activeEmbedKey, fallback);
                                     }

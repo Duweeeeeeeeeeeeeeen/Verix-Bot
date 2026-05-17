@@ -6,19 +6,13 @@ import {
   Moon,
   LogOut, 
   Search, 
-  Server, 
   Shield, 
-  ExternalLink, 
   Plus,
   LayoutGrid,
-  Filter,
   CheckCircle2,
   Crown,
   Sparkles,
-  ChevronRight,
   ArrowRight,
-  Zap,
-  Layout,
   Globe,
   RefreshCw
 } from 'lucide-react';
@@ -128,7 +122,6 @@ export default function Selector() {
         <div className="card-body-v2">
             <h3>{guild.name}</h3>
             <div className="guild-meta-v2">
-                <span className="guild-id-v2">ID: {guild.id}</span>
                 <div className={`status-pill-v2 ${guild.botInGuild ? 'active' : 'missing'}`}>
                     {guild.botInGuild ? t('selector.status_active') : t('selector.status_missing')}
                 </div>
@@ -149,10 +142,6 @@ export default function Selector() {
 
   return (
     <div className={`pc-selector-wrapper fade-in ${theme}-mode`}>
-        {/* Background Orbs */}
-        <div className="bg-orb orb-1"></div>
-        <div className="bg-orb orb-2"></div>
-
         <header className="pc-selector-header-v2 glass-header">
             <div className="portal-brand-v2">
                 <div className="brand-logo-v2">
@@ -244,7 +233,7 @@ export default function Selector() {
                 )}
 
                 {pendingGuilds.length > 0 && (filter === 'all' || filter === 'missing') && (
-                    <section className="guild-section-v2" style={{ marginTop: '64px' }}>
+                    <section className="guild-section-v2">
                         <div className="section-title-v2">
                             <div className="title-icon-v2" style={{ background: 'rgba(148, 163, 184, 0.1)', color: '#94a3b8' }}>
                                 <Globe size={18} />
@@ -293,9 +282,9 @@ export default function Selector() {
                 --glass-header: rgba(255, 255, 255, 0.8);
             }
 
-            .pc-selector-wrapper { 
-                min-height: 100vh; 
-                padding: 60px 40px; 
+            .pc-selector-wrapper {
+                min-height: 100vh;
+                padding: 32px;
                 background: var(--bg-primary); 
                 color: var(--text-primary);
                 font-family: 'Inter', sans-serif;
@@ -306,24 +295,12 @@ export default function Selector() {
 
             .outfit-font { font-family: 'Outfit', sans-serif !important; }
 
-            /* Background Orbs */
-            .bg-orb {
-                position: fixed;
-                border-radius: 50%;
-                filter: blur(150px);
-                z-index: 0;
-                opacity: 0.1;
-                pointer-events: none;
-            }
-            .orb-1 { width: 800px; height: 800px; background: #6366f1; top: -300px; left: -200px; }
-            .orb-2 { width: 600px; height: 600px; background: #ec4899; bottom: -200px; right: -100px; }
-
             /* Header */
             .pc-selector-header-v2 { 
                 display: flex; 
                 justify-content: space-between; 
                 align-items: center; 
-                margin-bottom: 60px; 
+                margin-bottom: 28px;
                 max-width: 1400px; 
                 margin-left: auto; 
                 margin-right: auto; 
@@ -333,19 +310,18 @@ export default function Selector() {
             
             .glass-header {
                 background: var(--glass-header);
-                backdrop-filter: blur(20px);
-                padding: 24px 32px;
-                border-radius: 32px;
+                backdrop-filter: blur(14px);
+                padding: 18px 24px;
+                border-radius: 18px;
                 border: 1px solid var(--card-border);
-                box-shadow: 0 20px 50px rgba(0,0,0,0.1);
             }
 
-            .portal-brand-v2 { display: flex; align-items: center; gap: 24px; }
-            .brand-logo-v2 { width: 60px; height: 60px; border-radius: 20px; background: rgba(255,255,255,0.03); padding: 10px; border: 1px solid var(--card-border); }
-            .brand-logo-v2 img { width: 100%; height: 100%; border-radius: 12px; }
+            .portal-brand-v2 { display: flex; align-items: center; gap: 16px; }
+            .brand-logo-v2 { width: 48px; height: 48px; border-radius: 14px; background: rgba(255,255,255,0.03); padding: 8px; border: 1px solid var(--card-border); }
+            .brand-logo-v2 img { width: 100%; height: 100%; border-radius: 9px; }
             .brand-text-v2 { display: flex; flex-direction: column; gap: 0; }
-            .brand-text-v2 h1 { font-size: 2rem; font-weight: 800; margin: -8px 0 0 0; color: var(--text-primary); letter-spacing: -0.04em; }
-            .portal-tag-v2 { font-size: 0.65rem; font-weight: 900; color: var(--accent); letter-spacing: 3px; line-height: 1; }
+            .brand-text-v2 h1 { font-size: 1.55rem; font-weight: 800; margin: -4px 0 0 0; color: var(--text-primary); letter-spacing: 0; }
+            .portal-tag-v2 { font-size: 0.62rem; font-weight: 900; color: var(--accent); letter-spacing: 1px; line-height: 1; }
 
             .header-actions-v2 { display: flex; align-items: center; gap: 20px; }
             
@@ -354,47 +330,47 @@ export default function Selector() {
                 align-items: center; 
                 gap: 16px; 
                 background: var(--card-bg); 
-                padding: 8px 20px 8px 8px; 
-                border-radius: 100px; 
+                padding: 7px 14px 7px 7px;
+                border-radius: 14px;
                 border: 1px solid var(--card-border);
-                transition: 0.3s;
+                transition: 0.2s;
             }
             .user-profile-premium:hover { background: rgba(255,255,255,0.05); border-color: var(--accent); }
             
             .user-avatar-p { position: relative; }
-            .user-avatar-p img { width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--accent); }
+            .user-avatar-p img { width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--card-border); }
             .online-indicator { position: absolute; bottom: 2px; right: 2px; width: 12px; height: 12px; background: #10b981; border: 2px solid var(--bg-primary); border-radius: 50%; }
             
             .user-info-p { display: flex; flex-direction: column; }
             .u-name-p { font-size: 0.95rem; font-weight: 800; color: var(--text-primary); }
-            .badge-staff-v2 { font-size: 0.6rem; font-weight: 900; color: var(--accent); letter-spacing: 1px; }
+            .badge-staff-v2 { font-size: 0.6rem; font-weight: 900; color: var(--accent); letter-spacing: 0; }
             
             .lang-toggle-v2 { width: auto !important; padding: 0 16px !important; gap: 8px; }
             .lang-code-v2 { font-size: 0.75rem; font-weight: 900; }
 
             .action-btns-group { display: flex; gap: 12px; }
-            .theme-toggle-btn-v2, .pc-refresh-btn-v2, .pc-logout-btn-v2 { 
-                width: 50px; height: 50px; border-radius: 50%; 
+            .theme-toggle-btn-v2, .pc-refresh-btn-v2, .pc-logout-btn-v2 {
+                width: 42px; height: 42px; border-radius: 12px;
                 border: 1px solid var(--card-border); 
                 background: var(--card-bg); 
                 color: var(--text-primary); cursor: pointer; transition: 0.3s; 
                 display: flex; align-items: center; justify-content: center; 
             }
-            .theme-toggle-btn-v2:hover { background: var(--accent); color: #fff; transform: rotate(15deg); }
-            .pc-refresh-btn-v2:hover { background: rgba(99, 102, 241, 0.1); color: var(--accent); border-color: var(--accent); transform: rotate(180deg); }
-            .pc-logout-btn-v2:hover { background: rgba(239, 68, 68, 0.1); color: #ef4444; border-color: #ef4444; transform: translateY(-3px); }
+            .theme-toggle-btn-v2:hover { background: var(--accent); color: #fff; }
+            .pc-refresh-btn-v2:hover { background: rgba(99, 102, 241, 0.1); color: var(--accent); border-color: var(--accent); }
+            .pc-logout-btn-v2:hover { background: rgba(239, 68, 68, 0.1); color: #ef4444; border-color: #ef4444; }
 
             /* Controls */
             .pc-controls-bar-v2 { 
-                max-width: 1400px; margin: 0 auto 60px; 
+                max-width: 1400px; margin: 0 auto 28px;
                 display: flex; justify-content: space-between; align-items: center; 
                 gap: 24px; position: relative; z-index: 5;
             }
             .glass-controls {
                 background: var(--card-bg);
                 backdrop-filter: blur(10px);
-                padding: 12px;
-                border-radius: 24px;
+                padding: 10px;
+                border-radius: 16px;
                 border: 1px solid var(--card-border);
             }
 
@@ -402,46 +378,46 @@ export default function Selector() {
                 flex: 1; position: relative; display: flex; align-items: center; 
                 background: var(--card-bg); 
                 border: 1px solid var(--card-border); 
-                border-radius: 18px; transition: 0.3s; padding: 0 20px; 
+                border-radius: 12px; transition: 0.2s; padding: 0 16px;
             }
-            .pc-search-box-v2:focus-within { border-color: var(--accent); background: rgba(255,255,255,0.04); box-shadow: 0 0 20px rgba(99, 102, 241, 0.1); }
-            .pc-search-box-v2 input { width: 100%; background: transparent; border: none; padding: 16px 12px; font-weight: 600; color: var(--text-primary); outline: none; font-size: 1rem; }
+            .pc-search-box-v2:focus-within { border-color: var(--accent); background: rgba(255,255,255,0.04); }
+            .pc-search-box-v2 input { width: 100%; background: transparent; border: none; padding: 13px 10px; font-weight: 600; color: var(--text-primary); outline: none; font-size: 0.95rem; }
             .search-icon { color: var(--text-secondary); }
 
-            .pc-filters-row-v2 { display: flex; gap: 8px; background: rgba(0,0,0,0.1); padding: 6px; border-radius: 16px; }
+            .pc-filters-row-v2 { display: flex; gap: 6px; background: rgba(0,0,0,0.1); padding: 5px; border-radius: 12px; }
             .filter-chip-v2 { 
-                display: flex; align-items: center; gap: 8px; padding: 10px 18px; 
-                border-radius: 12px; border: none; background: transparent; 
-                color: var(--text-secondary); font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: 0.3s; 
+                display: flex; align-items: center; gap: 8px; padding: 9px 14px;
+                border-radius: 9px; border: none; background: transparent;
+                color: var(--text-secondary); font-weight: 700; font-size: 0.82rem; cursor: pointer; transition: 0.2s;
             }
-            .filter-chip-v2.active { background: var(--accent); color: white; box-shadow: 0 8px 16px rgba(99, 102, 241, 0.2); }
+            .filter-chip-v2.active { background: var(--accent); color: white; }
             .filter-chip-v2:not(.active):hover { color: var(--text-primary); background: rgba(255,255,255,0.03); }
 
             /* Section */
-            .guild-section-v2 { position: relative; z-index: 1; margin-bottom: 80px; }
-            .section-title-v2 { display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 32px; }
-            .title-icon-v2 { width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; }
-            .section-title-v2 h2 { margin: 0; font-size: 1.8rem; font-weight: 800; color: var(--text-primary); letter-spacing: -0.03em; }
+            .guild-section-v2 { position: relative; z-index: 1; margin-bottom: 44px; }
+            .section-title-v2 { max-width: 1400px; margin: 0 auto 16px; display: flex; align-items: center; gap: 12px; }
+            .title-icon-v2 { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+            .section-title-v2 h2 { margin: 0; font-size: 1.25rem; font-weight: 800; color: var(--text-primary); letter-spacing: 0; }
             .count-pill-v2 { background: var(--card-bg); color: var(--text-secondary); padding: 4px 12px; border-radius: 100px; font-size: 0.8rem; font-weight: 800; border: 1px solid var(--card-border); }
 
-            .pc-guilds-grid-v2 { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; justify-content: center; max-width: 1400px; margin: 0 auto; }
+            .pc-guilds-grid-v2 { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; justify-content: center; max-width: 1400px; margin: 0 auto; }
             
             /* Card V2 */
             .pc-guild-card-v2 { 
                 background: var(--card-bg); 
                 backdrop-filter: blur(10px);
-                border-radius: 32px; padding: 24px; 
+                border-radius: 14px; padding: 18px;
                 border: 1px solid var(--card-border); 
-                transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+                transition: 0.2s;
                 cursor: pointer; display: flex; flex-direction: column; 
                 position: relative; overflow: hidden;
             }
-            .pc-guild-card-v2:hover { transform: translateY(-10px) scale(1.02); border-color: var(--accent); box-shadow: 0 30px 60px rgba(0,0,0,0.1); background: var(--card-bg); }
+            .pc-guild-card-v2:hover { transform: translateY(-2px); border-color: var(--accent); background: var(--card-bg); }
             
-            .card-top-v2 { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
-            .guild-avatar-v2 { position: relative; width: 72px; height: 72px; }
-            .guild-avatar-v2 img { width: 100%; height: 100%; border-radius: 22px; object-fit: cover; border: 2px solid var(--card-border); }
-            .avatar-fallback { width: 100%; height: 100%; border-radius: 22px; background: var(--card-border); color: var(--text-secondary); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.6rem; border: 2px solid var(--card-border); }
+            .card-top-v2 { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 18px; }
+            .guild-avatar-v2 { position: relative; width: 56px; height: 56px; }
+            .guild-avatar-v2 img { width: 100%; height: 100%; border-radius: 14px; object-fit: cover; border: 1px solid var(--card-border); }
+            .avatar-fallback { width: 100%; height: 100%; border-radius: 14px; background: var(--card-border); color: var(--text-secondary); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.2rem; border: 1px solid var(--card-border); }
             .status-ring-v2 { position: absolute; bottom: -4px; right: -4px; width: 22px; height: 22px; border-radius: 50%; border: 4px solid var(--bg-primary); }
             .status-ring-v2.online { background: #10b981; box-shadow: 0 0 10px rgba(16, 185, 129, 0.5); }
             .status-ring-v2.offline { background: #64748b; }
@@ -450,17 +426,16 @@ export default function Selector() {
             .pc-badge-platinum { background: rgba(168, 85, 247, 0.1); color: #a855f7; padding: 6px 12px; border-radius: 100px; font-size: 0.65rem; font-weight: 900; border: 1px solid rgba(168, 85, 247, 0.2); display: flex; align-items: center; gap: 6px; }
             .pc-badge-premium { background: rgba(217, 119, 6, 0.1); color: #d97706; padding: 6px 12px; border-radius: 100px; font-size: 0.65rem; font-weight: 900; border: 1px solid rgba(217, 119, 6, 0.2); display: flex; align-items: center; gap: 6px; }
 
-            .card-body-v2 h3 { margin: 0 0 8px; font-family: 'Outfit'; font-size: 1.4rem; font-weight: 800; color: var(--text-primary); letter-spacing: -0.02em; }
-            .guild-meta-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-            .guild-id-v2 { font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); }
-            .status-pill-v2 { font-size: 0.7rem; font-weight: 900; letter-spacing: 1px; }
+            .card-body-v2 h3 { margin: 0 0 8px; font-family: 'Outfit'; font-size: 1.15rem; font-weight: 800; color: var(--text-primary); letter-spacing: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+            .guild-meta-v2 { display: flex; justify-content: flex-start; align-items: center; margin-bottom: 18px; }
+            .status-pill-v2 { font-size: 0.7rem; font-weight: 900; letter-spacing: 0; }
             .status-pill-v2.active { color: #10b981; }
             .status-pill-v2.missing { color: var(--text-secondary); }
 
-            .card-footer-v2 { border-top: 1px solid var(--card-border); padding-top: 20px; display: flex; justify-content: space-between; align-items: center; }
+            .card-footer-v2 { border-top: 1px solid var(--card-border); padding-top: 14px; display: flex; justify-content: space-between; align-items: center; }
             .action-text-v2 { font-size: 0.9rem; font-weight: 800; color: var(--text-secondary); transition: 0.3s; }
             .pc-guild-card-v2:hover .action-text-v2 { color: var(--text-primary); }
-            .action-icon-v2 { width: 36px; height: 36px; border-radius: 50%; background: var(--card-bg); display: flex; align-items: center; justify-content: center; color: var(--text-secondary); transition: 0.3s; }
+            .action-icon-v2 { width: 32px; height: 32px; border-radius: 10px; background: var(--card-bg); display: flex; align-items: center; justify-content: center; color: var(--text-secondary); transition: 0.2s; }
             .pc-guild-card-v2:hover .action-icon-v2 { background: var(--accent); color: white; transform: translateX(5px); }
 
             /* Empty State */

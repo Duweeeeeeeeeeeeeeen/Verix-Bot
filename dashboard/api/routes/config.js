@@ -75,6 +75,71 @@ import { pollConfigSchema, pollCreateSchema } from '../validations/pollSchema.js
 
 const router = express.Router();
 
+router.get('/:guildId/module-status', adminCheck, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const [
+            guild,
+            verify,
+            welcome,
+            reactionRoles,
+            socials,
+            giveaway,
+            photocontest,
+            polls,
+            tickets,
+            support,
+            tempvoice,
+            moderation,
+            fivem,
+            whitelist,
+            leveling
+        ] = await Promise.all([
+            Guild.findOne({ guildId }).select('isPremium premiumTier').lean(),
+            VerifyConfig.findOne({ guildId }).select('enabled').lean(),
+            WelcomeConfig.findOne({ guildId }).select('enabled').lean(),
+            ReactionRoleConfig.findOne({ guildId }).select('enabled').lean(),
+            SocialConfig.findOne({ guildId }).select('enabled').lean(),
+            GiveawayConfig.findOne({ guildId }).select('enabled').lean(),
+            PhotoContestConfig.findOne({ guildId }).select('enabled').lean(),
+            PollConfig.findOne({ guildId }).select('enabled').lean(),
+            TicketConfig.findOne({ guildId }).select('enabled').lean(),
+            SupportConfig.findOne({ guildId }).select('enabled').lean(),
+            TempVoiceConfig.findOne({ guildId }).select('enabled').lean(),
+            ModerationConfig.findOne({ guildId }).select('enabled').lean(),
+            FiveMConfig.findOne({ guildId }).select('enabled').lean(),
+            WhitelistConfig.findOne({ guildId }).select('enabled').lean(),
+            LevelingConfig.findOne({ guildId }).select('enabled').lean()
+        ]);
+
+        res.json({
+            success: true,
+            data: {
+                premiumTier: guild?.premiumTier || (guild?.isPremium ? 'premium' : 'none'),
+                enabledModules: {
+                    verify: !!verify?.enabled,
+                    welcome: !!welcome?.enabled,
+                    'reaction-roles': !!reactionRoles?.enabled,
+                    socials: !!socials?.enabled,
+                    giveaway: !!giveaway?.enabled,
+                    photocontest: !!photocontest?.enabled,
+                    polls: !!polls?.enabled,
+                    tickets: !!tickets?.enabled,
+                    support: !!support?.enabled,
+                    tempvoice: !!tempvoice?.enabled,
+                    moderation: !!moderation?.enabled,
+                    fivem: !!fivem?.enabled,
+                    whitelist: !!whitelist?.enabled,
+                    leveling: !!leveling?.enabled
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching module status:', error);
+        res.status(500).json({ success: false, error: 'Impossibile caricare lo stato dei moduli.' });
+    }
+});
+
 const hasValue = (value) => {
     if (Array.isArray(value)) return value.length > 0;
     if (typeof value === 'string') return value.trim().length > 0;
@@ -216,7 +281,7 @@ router.get('/:guildId', adminCheck, async (req, res) => {
             console.error('Error fetching Discord data for guild:', discordError);
         }
 
-        const lang = globalConfig?.language || 'it';
+        const lang = globalConfig?.language || 'en';
         const discordGuild = guild;
 
         res.json({

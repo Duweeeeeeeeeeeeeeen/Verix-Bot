@@ -470,13 +470,6 @@ export default function LevelingConfigPage() {
                             </div>
                         </section>
                     </div>
-
-                    <div className="v-stack" style={{ gap: '32px' }}>
-                        <div className="pc-info-banner-v2 orange">
-                            <Star size={20} />
-                            <p>{t('leveling.pro_tip_desc')}</p>
-                        </div>
-                    </div>
                 </div>
             )}
 

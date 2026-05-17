@@ -12,7 +12,7 @@ function _methodOf(options) {
 
 function _isCacheable(endpoint, options) {
   if (typeof window === 'undefined' || _methodOf(options) !== 'GET') return false;
-  return /\/config\/[^/]+\/(discord-data|guild|global)$/.test(endpoint);
+  return /\/config\/[^/]+\/(discord-data|guild|global|module-status)$/.test(endpoint);
 }
 
 function _guildFromEndpoint(endpoint) {

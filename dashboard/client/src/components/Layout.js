@@ -194,35 +194,18 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
 
   useEffect(() => {
     if (guildId && guildId !== 'undefined') {
-      const fetchConfig = async () => {
+      const fetchModuleStatus = async () => {
         try {
-          const response = await api.request(`/config/${guildId}`);
+          const response = await api.request(`/config/${guildId}/module-status`);
           if (response) {
-            setEnabledModules({
-              verify: response.verify?.enabled,
-              welcome: response.welcome?.enabled,
-              'reaction-roles': response.reactionRoles?.enabled,
-              socials: response.socials?.enabled,
-              giveaway: response.giveaway?.enabled,
-              photocontest: response.photocontest?.enabled,
-              polls: response.polls?.enabled,
-              tickets: response.tickets?.enabled,
-              support: response.support?.enabled,
-              tempvoice: response.tempvoice?.enabled,
-              moderation: response.moderation?.enabled,
-              fivem: response.fivem?.enabled,
-              whitelist: response.whitelist?.enabled,
-              leveling: response.leveling?.enabled
-            });
-            if (response.guild) {
-              setPremiumTier(response.guild.premiumTier || (response.guild.isPremium ? 'premium' : 'none'));
-            }
+            setEnabledModules(response.enabledModules || {});
+            setPremiumTier(response.premiumTier || 'none');
           }
         } catch (err) {
           console.error("Failed to fetch sidebar status", err);
         }
       };
-      fetchConfig();
+      fetchModuleStatus();
     }
   }, [guildId]);
 

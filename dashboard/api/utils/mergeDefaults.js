@@ -7,7 +7,7 @@ import { getDefaultMessages } from '../../../src/locales/t.js';
  * @param {string} lang - Language code ('it' or 'en')
  * @returns {Object} - Merged configuration
  */
-export function mergeModuleDefaults(moduleName, dbConfig, lang = 'it') {
+export function mergeModuleDefaults(moduleName, dbConfig, lang = 'en') {
     const defaultMessages = getDefaultMessages(lang);
     if (!dbConfig) return defaultMessages[moduleName] || {};
     

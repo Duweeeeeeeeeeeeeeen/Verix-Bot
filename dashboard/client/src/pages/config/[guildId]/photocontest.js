@@ -5,10 +5,10 @@ import { DiscordSelector, SystemMessagesSection } from '../../../components/Lazy
 import api from '../../../utils/api';
 import { 
     Save, Settings2, Trash2, Plus, Calendar, Clock, Users, Bell, Layout, Type, 
-    MessageSquare, Play, Square, Trophy, Target, Shield, Hash, Zap, Sparkles, 
+    MessageSquare, Play, Square, Trophy, Target, Shield, Hash, Zap,
     ChevronRight, Search, Info, AlertCircle, Camera, Palette, CheckCircle2, 
-    X, Image, Star, Power, Layers, MousePointer2, Smartphone, Monitor,
-    Gauge, Timer, CameraIcon, Wand2, History, RotateCcw
+    X, Image, Power, Layers, MousePointer2, Smartphone, Monitor,
+    Gauge, Timer, Wand2, History, RotateCcw
 } from 'lucide-react';
 import { useT } from '../../../contexts/LanguageContext';
 import { EmbedMessageManager } from '../../../components/LazyConfigComponents';
@@ -281,15 +281,6 @@ export default function PhotoContestConfig() {
                                 </div>
                             </div>
                         </section>
-
-                        <div className="pc-info-banner-blue animate slide-up" style={{ background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%)', borderRadius: '32px', padding: '40px', color: 'white', position: 'relative', overflow: 'hidden', boxShadow: '0 20px 40px rgba(99, 102, 241, 0.2)' }}>
-                            <div style={{ position: 'relative', zIndex: 2 }}>
-                                <div style={{ background: 'rgba(255,255,255,0.2)', padding: '12px', borderRadius: '14px', width: 'fit-content', marginBottom: '24px' }}><Star size={24} /></div>
-                                <h4 style={{ margin: '0 0 12px 0', fontSize: '1.4rem', fontWeight: 700, letterSpacing: '-0.5px', color: 'white' }}>{t('pc.social_title')}</h4>
-                                <p style={{ margin: 0, fontSize: '1rem', opacity: 0.9, lineHeight: 1.7, fontWeight: 700, color: 'white' }}>{t('pc.social_desc')}</p>
-                            </div>
-                            <div style={{ position: 'absolute', right: '-40px', bottom: '-40px', opacity: 0.1 }}><CameraIcon size={180} /></div>
-                        </div>
                     </div>
                 </div>
             )}
