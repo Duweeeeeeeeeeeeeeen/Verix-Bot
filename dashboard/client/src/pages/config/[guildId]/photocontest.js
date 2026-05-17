@@ -63,7 +63,9 @@ export default function PhotoContestConfig() {
         channels: (dData.channels || []).filter(c => c.type === 0 || c.type === 5)
       });
     } catch (err) {
-      console.error("Failed to load photocontest config", err);
+      if (!api.isAuthError(err)) {
+        console.error("Failed to load photocontest config", err);
+      }
     } finally {
       setLoading(false);
       window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
@@ -86,7 +88,9 @@ export default function PhotoContestConfig() {
         showToast(t('common.reset_success'));
       }
     } catch (error) {
-      console.error("Reset error:", error);
+      if (!api.isAuthError(error)) {
+        console.error("Reset error:", error);
+      }
       showToast(t('common.reset_error'), 'error');
     } finally {
       setLoading(false);

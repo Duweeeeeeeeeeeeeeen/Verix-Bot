@@ -43,7 +43,11 @@ export default function GlobalConfigPage() {
             setChannels((discordRes?.channels || []).filter(c => c.type === 0 || c.type === 5));
             setRoles(discordRes?.roles || []);
             setGuildData(guildRes?.data || guildRes);
-        }).catch(console.error).finally(() => {
+        }).catch((error) => {
+            if (!api.isAuthError(error)) {
+                console.error(error);
+            }
+        }).finally(() => {
             setLoading(false);
             window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
         });
@@ -66,7 +70,9 @@ export default function GlobalConfigPage() {
         showToast(t('common.reset_success'));
       }
     } catch (error) {
-      console.error("Reset error:", error);
+      if (!api.isAuthError(error)) {
+        console.error("Reset error:", error);
+      }
       showToast(t('common.reset_error'), 'error');
     } finally {
       setLoading(false);

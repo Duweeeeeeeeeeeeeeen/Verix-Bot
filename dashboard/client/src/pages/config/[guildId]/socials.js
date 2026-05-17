@@ -77,7 +77,9 @@ export default function SocialsConfig() {
       });
       setGuildData(guildRes?.data || guildRes);
     } catch (err) {
-      console.error("Failed to load socials config", err);
+      if (!api.isAuthError(err)) {
+        console.error("Failed to load socials config", err);
+      }
     } finally {
       setLoading(false);
       window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
@@ -96,7 +98,9 @@ export default function SocialsConfig() {
         window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('common.reset_success'), type: 'success' } }));
       }
     } catch (error) {
-      console.error("Reset error:", error);
+      if (!api.isAuthError(error)) {
+        console.error("Reset error:", error);
+      }
       window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('common.reset_error'), type: 'error' } }));
     } finally {
       setLoading(false);

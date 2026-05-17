@@ -48,7 +48,9 @@ export default function VerifyConfig() {
         botHighestPosition: dData.botHighestPosition || 0
       });
     } catch (error) {
-      console.error("Verify config load error:", error);
+      if (!api.isAuthError(error)) {
+        console.error("Verify config load error:", error);
+      }
     } finally {
       setLoading(false);
       window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
@@ -99,7 +101,9 @@ export default function VerifyConfig() {
         showToast(t('common.reset_success'));
       }
     } catch (error) {
-      console.error("Reset error:", error);
+      if (!api.isAuthError(error)) {
+        console.error("Reset error:", error);
+      }
       showToast(t('common.reset_error'), 'error');
     } finally {
       setLoading(false);

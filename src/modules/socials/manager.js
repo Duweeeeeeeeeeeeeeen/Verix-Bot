@@ -9,8 +9,7 @@ import placeholderHelper from '../../utils/placeholderHelper.js';
 import Parser from 'rss-parser';
 import Guild from '../../models/Guild.js';
 import { t } from '../../locales/t.js';
-
-import axios from 'axios';
+import { axiosWithRetry } from '../../utils/httpClient.js';
 
 const rssParser = new Parser();
 const BRIDGE_ERROR_LOG_INTERVAL_MS = 60 * 60 * 1000;
@@ -26,6 +25,22 @@ const BRIDGE_ERROR_KEYWORDS = [
     'too many requests',
     'details:'
 ];
+const RSS_TIMEOUT_MS = 8000;
+const WEB_SUB_TIMEOUT_MS = 8000;
+const YOUTUBE_RESOLVE_TIMEOUT_MS = 7000;
+
+async function parseRssUrl(url) {
+    const response = await axiosWithRetry({
+        method: 'GET',
+        url,
+        responseType: 'text',
+        headers: {
+            'User-Agent': 'VerixBot/1.0 (+https://verixbot.com)'
+        },
+        timeout: RSS_TIMEOUT_MS
+    });
+    return rssParser.parseString(response.data);
+}
 
 export class SocialManager {
     constructor(client) {
@@ -209,7 +224,7 @@ export class SocialManager {
                 }
 
                 try {
-                    const feed = await rssParser.parseURL(feedUrl);
+                    const feed = await parseRssUrl(feedUrl);
                     if (feed && feed.items && feed.items.length > 0) {
                         const latestVideo = feed.items[0];
                         
@@ -267,7 +282,7 @@ export class SocialManager {
                 const feedUrl = urlTemplate.replace('{username}', username);
 
                 try {
-                    const feed = await rssParser.parseURL(feedUrl);
+                    const feed = await parseRssUrl(feedUrl);
                     if (feed && feed.items && feed.items.length > 0) {
                         const latestItem = feed.items[0];
 
@@ -590,10 +605,13 @@ export class SocialManager {
             const cleanHandle = handle.startsWith('@') ? handle : `@${handle}`;
             const url = `https://www.youtube.com/${cleanHandle}`;
             
-            const response = await axios.get(url, {
+            const response = await axiosWithRetry({
+                method: 'GET',
+                url,
                 headers: {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-                }
+                },
+                timeout: YOUTUBE_RESOLVE_TIMEOUT_MS
             });
 
             // Regex to find "channelId":"UC..." or "externalId":"UC..."
@@ -623,12 +641,14 @@ export class SocialManager {
             const cleanHandle = isHandle && !channelIdOrHandle.startsWith('@') ? `@${channelIdOrHandle}` : channelIdOrHandle;
             const url = isHandle ? `https://www.youtube.com/${cleanHandle}` : `https://www.youtube.com/channel/${channelIdOrHandle}`;
             
-            const response = await axios.get(url, {
+            const response = await axiosWithRetry({
+                method: 'GET',
+                url,
                 headers: {
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
                     'Accept-Language': 'en-US,en;q=0.9'
                 },
-                timeout: 5000
+                timeout: YOUTUBE_RESOLVE_TIMEOUT_MS
             });
 
             // Extract from meta tags (og:image)
@@ -680,14 +700,17 @@ export class SocialManager {
                     const callbackUrl = `${apiUrl}/webhooks/youtube/${channelId}`;
 
                     try {
-                        const response = await axios.post(hubUrl, null, {
+                        const response = await axiosWithRetry({
+                            method: 'POST',
+                            url: hubUrl,
                             params: {
                                 'hub.callback': callbackUrl,
                                 'hub.topic': topicUrl,
                                 'hub.verify': 'async',
                                 'hub.mode': 'subscribe',
-                                'hub.verify_token': channelId // used internally
-                            }
+                                'hub.verify_token': channelId
+                            },
+                            timeout: WEB_SUB_TIMEOUT_MS
                         });
                         
                         if (response.status === 202 || response.status === 204) {

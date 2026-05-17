@@ -58,7 +58,9 @@ export default function WelcomeConfig() {
       }
       setLoading(false);
     } catch (error) {
-      console.error("Welcome config load error:", error);
+      if (!api.isAuthError(error)) {
+        console.error("Welcome config load error:", error);
+      }
       setLoading(false);
     } finally {
         window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
@@ -81,7 +83,9 @@ export default function WelcomeConfig() {
         showToast(t('common.reset_success'));
       }
     } catch (error) {
-      console.error("Reset error:", error);
+      if (!api.isAuthError(error)) {
+        console.error("Reset error:", error);
+      }
       showToast(t('common.reset_error'), 'error');
     } finally {
       setLoading(false);

@@ -52,6 +52,11 @@ export function AuthProvider({ children }) {
           localStorage.removeItem('verix_user_cache');
         }
       } else {
+        if (res.status === 401) {
+          localStorage.removeItem('verix_user_cache');
+          setUser(null);
+          return;
+        }
         setUser(null);
         localStorage.removeItem('verix_user_cache');
       }

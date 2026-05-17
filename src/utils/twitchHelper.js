@@ -1,5 +1,5 @@
-import axios from 'axios';
 import logger from './logger.js';
+import { axiosWithRetry } from './httpClient.js';
 
 let accessToken = null;
 let tokenExpires = 0;
@@ -23,7 +23,9 @@ async function getAccessToken() {
     }
 
     try {
-        const response = await axios.post('https://id.twitch.tv/oauth2/token', null, {
+        const response = await axiosWithRetry({
+            method: 'POST',
+            url: 'https://id.twitch.tv/oauth2/token',
             params: {
                 client_id: clientId,
                 client_secret: clientSecret,
@@ -73,7 +75,9 @@ export async function getStreams(usernames) {
     if (!token) return [];
 
     try {
-        const streamRes = await axios.get('https://api.twitch.tv/helix/streams', {
+        const streamRes = await axiosWithRetry({
+            method: 'GET',
+            url: 'https://api.twitch.tv/helix/streams',
             headers: {
                 'Client-ID': process.env.TWITCH_CLIENT_ID,
                 'Authorization': `Bearer ${token}`
@@ -108,7 +112,9 @@ export async function getUsers(usernames) {
     if (!token) return [];
 
     try {
-        const userRes = await axios.get('https://api.twitch.tv/helix/users', {
+        const userRes = await axiosWithRetry({
+            method: 'GET',
+            url: 'https://api.twitch.tv/helix/users',
             headers: {
                 'Client-ID': process.env.TWITCH_CLIENT_ID,
                 'Authorization': `Bearer ${token}`

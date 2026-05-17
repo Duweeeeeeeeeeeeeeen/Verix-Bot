@@ -70,7 +70,9 @@ export default function ReactionRolesConfig() {
       setRoles(discordRes.roles || discordRes.data?.roles || []);
       setChannels((discordRes.channels || discordRes.data?.channels || []).filter(c => c.type === 0 || c.type === 5));
     } catch (e) {
-      console.error("RR config load error:", e);
+      if (!api.isAuthError(e)) {
+        console.error("RR config load error:", e);
+      }
     } finally {
       setLoading(false);
       window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
@@ -93,7 +95,9 @@ export default function ReactionRolesConfig() {
         window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('common.reset_success'), type: 'success' } }));
       }
     } catch (error) {
-      console.error("Reset error:", error);
+      if (!api.isAuthError(error)) {
+        console.error("Reset error:", error);
+      }
       window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('common.reset_error'), type: 'error' } }));
     } finally {
       setLoading(false);

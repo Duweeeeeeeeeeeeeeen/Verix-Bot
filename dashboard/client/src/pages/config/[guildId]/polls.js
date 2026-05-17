@@ -59,7 +59,9 @@ export default function PollsConfig() {
       setChannels((discordRes.channels || discordRes.data?.channels || []).filter(c => c.type === 0 || c.type === 5));
       setActivePolls(pollsRes.data || pollsRes || []);
     } catch (e) {
-      console.error("Polls load error:", e);
+      if (!api.isAuthError(e)) {
+        console.error("Polls load error:", e);
+      }
     } finally {
       setLoading(false);
       window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
@@ -86,7 +88,9 @@ export default function PollsConfig() {
         showToast(t('common.reset_success'));
       }
     } catch (error) {
-      console.error("Reset error:", error);
+      if (!api.isAuthError(error)) {
+        console.error("Reset error:", error);
+      }
       showToast(t('common.reset_error'), 'error');
     } finally {
       setLoading(false);

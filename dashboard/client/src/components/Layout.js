@@ -202,7 +202,9 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
             setPremiumTier(response.premiumTier || 'none');
           }
         } catch (err) {
-          console.error("Failed to fetch sidebar status", err);
+          if (!api.isAuthError(err)) {
+            console.error("Failed to fetch sidebar status", err);
+          }
         }
       };
       fetchModuleStatus();

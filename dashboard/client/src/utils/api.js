@@ -6,6 +6,20 @@ const CACHE_TTL = 45 * 1000;
 const _cache = new Map();
 const _inFlight = new Map();
 
+export class ApiError extends Error {
+  constructor(message, { status, code, data } = {}) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.code = code;
+    this.data = data;
+  }
+}
+
+export function isAuthError(error) {
+  return error?.code === 'UNAUTHORIZED' || error?.status === 401 || error?.message === 'Unauthorized';
+}
+
 function _methodOf(options) {
   return String(options.method || 'GET').toUpperCase();
 }
@@ -99,7 +113,17 @@ export async function apiRequest(endpoint, options = {}) {
                 detail: { message: 'Sessione scaduta. Riconnettiti.', type: 'error' } 
             }));
         }
-        throw new Error('Unauthorized');
+        throw new ApiError('Unauthorized', { status: 401, code: 'UNAUTHORIZED' });
+    }
+
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      const body = await response.text();
+      throw new ApiError('Invalid API response', {
+        status: response.status,
+        code: 'INVALID_API_RESPONSE',
+        data: { preview: body.slice(0, 160) }
+      });
     }
 
     const result = await response.json();
@@ -111,7 +135,11 @@ export async function apiRequest(endpoint, options = {}) {
           detail: { message: result.error || 'Si è verificato un errore API.', type: 'error' } 
         }));
       }
-      throw new Error(result.error || `HTTP ${response.status}`);
+      throw new ApiError(result.error || `HTTP ${response.status}`, {
+        status: response.status,
+        code: result.code,
+        data: result
+      });
     }
 
     // Return the data object directly if it follows the success: true, data: ... pattern.
@@ -123,7 +151,7 @@ export async function apiRequest(endpoint, options = {}) {
     return data;
 
     } catch (error) {
-    if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
+    if (!isAuthError(error) && (error.message === 'Failed to fetch' || error.name === 'TypeError')) {
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('show-toast', { 
           detail: { message: 'Errore di connessione al server.', type: 'error' } 
@@ -146,5 +174,6 @@ export async function apiRequest(endpoint, options = {}) {
 }
 
 export default {
-    request: apiRequest
+    request: apiRequest,
+    isAuthError
 };

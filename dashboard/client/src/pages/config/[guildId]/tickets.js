@@ -52,7 +52,9 @@ export default function TicketConfig() {
         });
       }
     } catch (e) {
-      console.error("Ticket config load error:", e);
+      if (!api.isAuthError(e)) {
+        console.error("Ticket config load error:", e);
+      }
     } finally {
       setLoading(false);
       window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
