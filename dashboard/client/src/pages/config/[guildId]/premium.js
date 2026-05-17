@@ -42,6 +42,23 @@ export default function PremiumHub() {
     }
   };
 
+  const handleCheckout = async (planType) => {
+    try {
+      setLoading(true);
+      const res = await api.request(`/stripe/checkout`, {
+          method: 'POST',
+          data: { guildId, planType }
+      });
+      if (res && res.url) {
+        window.location.href = res.url;
+      }
+    } catch (error) {
+      console.error("Errore di checkout:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchData();
   }, [guildId, mounted]);
@@ -172,7 +189,12 @@ export default function PremiumHub() {
                             <li><CheckCircle2 size={16} color="#3b82f6" style={{ opacity: 0.5 }} /> {t('ph.lite_feat5')}</li>
                         </ul>
                     </div>
-                    <button className="pc-btn-price-v2 premium" style={{ background: '#3b82f6', boxShadow: '0 10px 20px rgba(59, 130, 246, 0.2)' }} disabled={premiumTier === 'lite'}>
+                    <button 
+                        className="pc-btn-price-v2 premium" 
+                        style={{ background: '#3b82f6', boxShadow: '0 10px 20px rgba(59, 130, 246, 0.2)' }} 
+                        disabled={premiumTier === 'lite'}
+                        onClick={() => handleCheckout('lite')}
+                    >
                         {premiumTier === 'lite' ? t('ph.active') : t('ph.activate_lt')}
                     </button>
                 </div>
@@ -193,7 +215,11 @@ export default function PremiumHub() {
                             <li><CheckCircle2 size={16} color="#f59e0b" /> {t('ph.premium_feat5')}</li>
                         </ul>
                     </div>
-                    <button className="pc-btn-price-v2 premium" disabled={premiumTier === 'premium'}>
+                    <button 
+                        className="pc-btn-price-v2 premium" 
+                        disabled={premiumTier === 'premium'}
+                        onClick={() => handleCheckout('premium')}
+                    >
                         {premiumTier === 'premium' ? t('ph.active') : t('ph.activate_pr')}
                     </button>
                 </div>
@@ -214,7 +240,11 @@ export default function PremiumHub() {
                             <li><CheckCircle2 size={16} color="#a855f7" /> {t('ph.platinum_feat5')}</li>
                         </ul>
                     </div>
-                    <button className="pc-btn-price-v2 platinum" disabled={isPlatinum}>
+                    <button 
+                        className="pc-btn-price-v2 platinum" 
+                        disabled={isPlatinum}
+                        onClick={() => handleCheckout('platinum')}
+                    >
                         {isPlatinum ? t('ph.active') : t('ph.activate_pl')}
                     </button>
                 </div>

@@ -22,6 +22,7 @@ import systemRoutes from '../../dashboard/api/routes/system.js';
 import privateBotRoutes from '../../dashboard/api/routes/privateBot.js';
 import adminRoutes from '../../dashboard/api/routes/admin.js';
 import analyticsRoutes from '../../dashboard/api/routes/analytics.js';
+import stripeRoutes from '../../dashboard/api/routes/stripe.js';
 
 /**
  * Initializes and starts the Web Dashboard API hosted by the Bot process.
@@ -53,6 +54,9 @@ export function startDashboard(client) {
     }));
 
 
+    // 1.5 Stripe routes MUST be loaded before global express.json()
+    // because Stripe webhooks require the raw body to verify signatures.
+    app.use('/api/stripe', stripeRoutes);
 
     // 2. Body Parsers & JSON Error Handling
     app.use(express.json({ limit: '50mb' }));
