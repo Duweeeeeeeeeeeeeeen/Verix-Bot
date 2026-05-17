@@ -59,7 +59,8 @@ export default function AnalyticsPage() {
 
   if (!mounted || loading) return <Skeleton height="600px" />;
 
-  const isPro = analytics?.isPro || guildData?.isPremium || ['premium', 'platinum'].includes(guildData?.premiumTier);
+  const currentTier = guildData?.premiumTier || 'none';
+  const isPro = ['premium', 'platinum'].includes(currentTier) || analytics?.isPro;
   const stats = analytics?.data || {};
 
   return (
@@ -144,7 +145,7 @@ export default function AnalyticsPage() {
                     </div>
                 </section>
 
-                <section className={`pc-stat-card-v2 animate slide-up tier-aware-v2 ${isPro ? 'pro' : 'base'}`} style={{ animationDelay: '0.2s' }} onClick={() => !isPro && router.push(`/config/${guildId}/premium`)}>
+                <section className={`pc-stat-card-v2 animate slide-up tier-aware-v2 ${isPro ? (currentTier === 'platinum' ? 'platinum-tier' : 'premium-tier') : 'base'}`} style={{ animationDelay: '0.2s' }} onClick={() => !isPro && router.push(`/config/${guildId}/premium`)}>
                     <div className="s-card-glow-v2"></div>
                     <div className="s-header-v2">
                         <div className="s-icon-box-v2">
@@ -152,7 +153,9 @@ export default function AnalyticsPage() {
                         </div>
                         <div className="v-stack">
                             <span className="s-label-v2">{t('analytics.intelligence_level')}</span>
-                            <h3 className="s-value-v2" style={{ fontSize: '1.4rem' }}>{isPro ? 'PLATINUM' : 'STANDARD'}</h3>
+                            <h3 className="s-value-v2" style={{ fontSize: '1.4rem' }}>
+                                {isPro ? (currentTier !== 'none' ? currentTier.toUpperCase() : 'PREMIUM') : 'STANDARD'}
+                            </h3>
                         </div>
                     </div>
                     <div className="s-footer-v2">
@@ -392,9 +395,13 @@ export default function AnalyticsPage() {
             .s-lock-badge-v2 { display: flex; align-items: center; gap: 8px; font-size: 0.7rem; color: var(--text-dim); font-weight: 700; text-transform: uppercase; }
 
             .tier-aware-v2.base { cursor: pointer; background: var(--bg-badge); }
-            .tier-aware-v2.pro { background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%); border: none; color: #fff; }
-            .tier-aware-v2.pro .s-label-v2, .tier-aware-v2.pro .s-value-v2, .tier-aware-v2.pro .s-tier-action-v2 { color: #fff; }
-            .tier-aware-v2.pro .s-icon-box-v2 { background: rgba(255,255,255,0.2); color: #fff; }
+            .tier-aware-v2.premium-tier { background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%); border: none; color: #fff; }
+            .tier-aware-v2.premium-tier .s-label-v2, .tier-aware-v2.premium-tier .s-value-v2, .tier-aware-v2.premium-tier .s-tier-action-v2 { color: #fff; }
+            .tier-aware-v2.premium-tier .s-icon-box-v2 { background: rgba(255,255,255,0.2); color: #fff; }
+
+            .tier-aware-v2.platinum-tier { background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%); border: none; color: #fff; }
+            .tier-aware-v2.platinum-tier .s-label-v2, .tier-aware-v2.platinum-tier .s-value-v2, .tier-aware-v2.platinum-tier .s-tier-action-v2 { color: #fff; }
+            .tier-aware-v2.platinum-tier .s-icon-box-v2 { background: rgba(255,255,255,0.2); color: #fff; }
             .s-tier-action-v2 { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; font-weight: 700; }
 
             /* Card V2 */
