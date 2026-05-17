@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Skeleton from '../../../components/Skeleton';
-import { DiscordSelector, CustomSelect, EmbedMessageManager } from '../../../components/LazyConfigComponents';
+import { DiscordSelector, CustomSelect, EmbedMessageManager, SystemMessagesSection } from '../../../components/LazyConfigComponents';
 import api from '../../../utils/api';
 import { useT } from '../../../contexts/LanguageContext';
 import { 
@@ -67,7 +67,7 @@ export default function VerifyConfig() {
     if (!roleId) return null;
     const role = discordData.roles.find(r => r.id === roleId);
     if (role && role.position >= discordData.botHighestPosition) {
-        return "Gerarchia insufficiente: sposta il ruolo di Verix sopra questo ruolo nelle impostazioni del server.";
+        return t('verify.hierarchy_error');
     }
     return null;
   };
@@ -112,9 +112,9 @@ export default function VerifyConfig() {
     window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
     try {
       await api.request(`/config/${guildId}/verify`, { method: 'POST', body: JSON.stringify(config) });
-      showToast("Configurazione verifica salvata!");
+      showToast(t('verify.sync_success'));
     } catch (error) {
-      showToast("Errore durante il salvataggio.", 'error');
+      showToast(t('common.save_error'), 'error');
     } finally {
       setSaving(false);
       window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
@@ -122,14 +122,14 @@ export default function VerifyConfig() {
   };
 
   const handleSendPanel = async () => {
-    if (!config.channelId) return showToast("Seleziona un canale per il panel!", 'error');
+    if (!config.channelId) return showToast(t('verify.select_channel_error'), 'error');
     setSendingPanel(true);
     try {
         await handleSave();
         await api.request(`/config/${guildId}/verify/send-panel`, { method: 'POST' });
-        showToast("Panel di verifica inviato con successo!");
+        showToast(t('verify.panel_sent_success'));
     } catch (error) {
-        showToast("Errore nell'invio del panel.", 'error');
+        showToast(t('verify.panel_sent_error'), 'error');
     } finally {
         setSendingPanel(false);
     }
@@ -153,7 +153,7 @@ export default function VerifyConfig() {
                     <h1>{t('verify.title')}</h1>
                     <div className={`pc-status-tag-v2 ${config.enabled ? 'on' : 'off'}`}>
                         <div className="status-dot-v2"></div>
-                        {config.enabled ? t('verify.active_tag') : t('verify.disabled_tag')}
+                        {config.enabled ? t('common.active_system') : t('common.inactive_system')}
                     </div>
                 </div>
             </div>
@@ -172,7 +172,7 @@ export default function VerifyConfig() {
                         {config.enabled ? t('common.active') : t('common.inactive')}
                     </span>
                 </div>
-                <div className="pc-header-divider" style={{ width: '1px', height: '24px', background: 'var(--border)', margin: '0 4px' }}></div>
+                <div className="pc-header-divider"></div>
                 <button className="pc-btn-outline-v2" onClick={handleReset} title={t('common.reset_to_default')}>
                     <RotateCcw size={18} />
                 </button>
@@ -200,6 +200,9 @@ export default function VerifyConfig() {
             <button className={activeTab === 'design' ? 'active' : ''} onClick={() => setActiveTab('design')}>
                 <Palette size={16} /> <span>{t('verify.design_studio')}</span>
             </button>
+            <button className={activeTab === 'system_messages' ? 'active' : ''} onClick={() => setActiveTab('system_messages')}>
+                <Settings2 size={16} /> <span>{t('common.tab_system_messages')}</span>
+            </button>
         </nav>
 
         <div className="pc-content-v2">
@@ -208,22 +211,28 @@ export default function VerifyConfig() {
                     <div className="v-stack" style={{ gap: '32px' }}>
                         <section className="pc-card-v2 animate slide-up">
                             <div className="card-header-v2">
-                                <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><Shield size={18} /></div>
+                                <div className="header-icon"><Shield size={18} /></div>
                                 <h3 style={{ margin: 0 }}>{t('whitelist.auto_roles')}</h3>
                             </div>
                             <div className="card-body-v2">
                                 <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
                                     <div className="pc-input-group-v2">
-                                        <label>{t('verify.role_to_assign')}</label>
+                                        <div className="pc-label-row">
+                                            <label>{t('verify.role_to_assign')}</label>
+                                            <HelpTooltip text={t('verify.role_to_assign_help')} />
+                                        </div>
                                         <DiscordSelector type="role" options={discordData.roles} value={config.roleId} onChange={v => setNested('roleId', v)} error={getRoleError(config.roleId)} />
                                     </div>
                                     <div className="pc-input-group-v2">
-                                        <label>{t('verify.publish_channel')}</label>
+                                        <div className="pc-label-row">
+                                            <label>{t('verify.publish_channel')}</label>
+                                            <HelpTooltip text={t('verify.publish_channel_help')} />
+                                        </div>
                                         <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 0 || c.type === 5)} value={config.channelId} onChange={v => setNested('channelId', v)} />
                                     </div>
                                     <div className="pc-input-group-v2" style={{ gridColumn: 'span 2', marginTop: '16px' }}>
                                         <label>{t('verify.role_to_remove')}</label>
-                                        <DiscordSelector type="role" options={discordData.roles} value={config.removeRoleId} onChange={v => setNested('removeRoleId', v)} placeholder="Nessuno" />
+                                        <DiscordSelector type="role" options={discordData.roles} value={config.removeRoleId} onChange={v => setNested('removeRoleId', v)} placeholder={t('common.none')} />
                                         <p className="pc-hint-v2" style={{ marginTop: '8px' }}>{t('verify.remove_hint')}</p>
                                     </div>
                                 </div>
@@ -239,7 +248,7 @@ export default function VerifyConfig() {
                     <div className="v-stack" style={{ gap: '32px' }}>
                         <section className="pc-card-v2">
                             <div className="card-header-v2">
-                                <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><Shield size={18} /></div>
+                                <div className="header-icon"><Shield size={18} /></div>
                                 <h3 style={{ margin: 0 }}>{t('verify.log_audit')}</h3>
                             </div>
                             <div className="card-body-v2">
@@ -263,7 +272,7 @@ export default function VerifyConfig() {
                             <Send size={32} style={{ color: 'var(--primary)', marginBottom: '16px', opacity: 0.5 }} />
                             <h4 style={{ margin: '0 0 8px 0', color: 'var(--text-heading)' }}>{t('verify.send_panel')}</h4>
                             <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0' }}>
-                                Puoi inviare il pannello direttamente dall'header in alto per una gestione più rapida.
+                                {t('verify.header_send_hint')}
                             </p>
                         </div>
                     </div>
@@ -278,15 +287,15 @@ export default function VerifyConfig() {
                         slugs={[
                             { 
                                 key: 'panel', 
-                                label: 'Panel di Identificazione', 
-                                description: 'Il messaggio principale che gli utenti vedono per iniziare la verifica.', 
+                                label: t('verify.panel_id_label'), 
+                                description: t('verify.panel_id_desc'), 
                                 variables: ['user', 'guild'], 
                                 group: 'UI', 
                                 groupIcon: Palette,
                                 extra: (
                                     <section className="pc-card-v2 animate slide-up" style={{ marginTop: '32px' }}>
                                         <div className="card-header-v2">
-                                            <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><MousePointer2 size={18} /></div>
+                                            <div className="header-icon"><MousePointer2 size={18} /></div>
                                             <h3 style={{ margin: 0 }}>{t('verify.button_branding')}</h3>
                                         </div>
                                         <div className="card-body-v2">
@@ -302,7 +311,7 @@ export default function VerifyConfig() {
                                                         </div>
                                                     </div>
 
-                                                    <div className="pc-bb-columns" style={{ display: 'grid', gridTemplateColumns: '80px 1fr 1fr', gap: '20px' }}>
+                                                    <div className="pc-bb-columns">
                                                         <div className="pc-bb-col">
                                                             <label>{t('common.emoji')}</label>
                                                             <div className="pc-bb-emoji-box">
@@ -336,56 +345,33 @@ export default function VerifyConfig() {
                                     </section>
                                 )
                             },
-                            { key: 'success', label: 'DM Successo', description: 'Inviato alla verifica.', variables: ['user', 'guild'], group: 'UI', groupIcon: CheckCircle2 }
+                            { key: 'success', label: t('verify.success_label'), description: t('verify.success_desc'), variables: ['user', 'guild'], group: 'UI', groupIcon: CheckCircle2 }
                         ]}
                     />
 
+                </div>
+            )}
+
+            {activeTab === 'system_messages' && (
+                <div className="v-stack animate slide-up">
+                    <SystemMessagesSection 
+                        config={config}
+                        onUpdate={setConfig}
+                        messages={[
+                            { key: 'success', label: t('verify.msg_success'), placeholder: t('verify.msg_success_placeholder') },
+                            { key: 'error', label: t('verify.msg_error'), placeholder: t('verify.msg_error_placeholder') },
+                            { key: 'pending', label: t('verify.msg_pending'), placeholder: t('verify.msg_pending_placeholder') }
+                        ]}
+                    />
                 </div>
             )}
         </div>
 
         <style jsx>{`
             .pc-premium-wrapper { padding: 32px; max-width: 1500px; margin: 0 auto; font-family: 'Inter', sans-serif; }
-            
-            .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-card); padding: 24px; border-radius: 28px; box-shadow: var(--shadow-premium); border: 1px solid var(--border); }
             .header-info { display: flex; align-items: center; gap: 16px; }
-            .pc-icon-box { width: 52px; height: 52px; color: #fff; border-radius: 16px; display: flex; align-items: center; justify-content: center; }
-            .pc-title-row h1 { font-family: 'Inter'; font-size: 1.8rem; font-weight: 700; margin: 0; color: var(--text-heading); letter-spacing: normal; }
-            
-            .pc-status-tag-v2 { display: flex; align-items: center; gap: 6px; font-size: 0.6rem; font-weight: 700; padding: 4px 10px; border-radius: 100px;  width: fit-content; }
-            .pc-status-tag-v2.on { background: rgba(16, 185, 129, 0.1); color: #10b981; }
-            .pc-status-tag-v2.off { background: var(--bg-badge); color: #ef4444; }
-            .status-dot-v2 { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
-
             .pc-status-toggle-v2 { display: flex; align-items: center; gap: 10px; background: var(--bg-badge); color: var(--text-muted); border: 1.5px solid var(--border); padding: 12px 24px; border-radius: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; }
             .pc-status-toggle-v2.active { background: rgba(var(--primary-rgb), 0.1); color: var(--primary); border-color: rgba(var(--primary-rgb), 0.2); }
-
-            .pc-btn-primary { background: var(--primary); color: #fff; border: none; padding: 12px 24px; border-radius: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
-            .pc-btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(var(--primary-rgb), 0.2); }
-
-            .pc-tabs-v2 { display: flex; gap: 6px; background: var(--bg-badge); padding: 5px; border-radius: 18px; width: fit-content; }
-            .pc-tabs-v2 button { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border: none; background: transparent; color: var(--text-muted); font-weight: 700; font-size: 0.9rem; border-radius: 14px; cursor: pointer; transition: 0.2s; }
-            .pc-tabs-v2 button.active { background: var(--bg-card); color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-
-            .pc-card-v2 { background: var(--bg-card); border: 1px solid var(--border); border-radius: 28px; padding: 32px; box-shadow: var(--shadow-premium); }
-            .card-header-v2 { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
-            .header-icon { width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: var(--bg-badge); color: var(--primary); }
-            .card-header-v2 h3 { margin: 0; font-family: 'Inter'; font-size: 1.3rem; font-weight: 700; color: var(--text-heading); }
-
-            .pc-input-group-v2 label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; display: block; letter-spacing: 0.8px; }
-            .pc-input-modern-v2 { display: flex; align-items: center; gap: 12px; background: var(--bg-badge); padding: 12px 16px; border-radius: 14px; border: 1.5px solid var(--border); transition: 0.2s; }
-            .pc-input-modern-v2:focus-within { border-color: var(--primary); }
-            .pc-input-modern-v2 input { border: none; background: transparent; width: 100%; font-weight: 700; font-size: 1rem; outline: none; color: var(--text-heading); }
-
-            .pc-toggle-card-v2 { background: var(--bg-badge); padding: 20px; border-radius: 20px; border: 1.5px solid var(--border); display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
-            .pc-toggle-card-v2:hover { border-color: var(--primary); }
-            .pc-toggle-card-v2 strong { font-weight: 700; color: var(--text-heading); }
-            
-
-            .pc-info-banner-v2 { display: flex; align-items: center; gap: 16px; padding: 20px; border-radius: 20px; border: 1.5px solid transparent; font-size: 0.9rem; font-weight: 700; }
-            .pc-info-banner-v2.orange { background: rgba(255, 171, 0, 0.1); color: #ffab00; border-color: rgba(255, 171, 0, 0.2); }
-
-            .pc-hint-v2 { font-size: 0.8rem; color: var(--text-muted); font-weight: 700; }
             .v-stack { display: flex; flex-direction: column; }
             .animate { animation: slideUp 0.4s ease-out; }
             @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }

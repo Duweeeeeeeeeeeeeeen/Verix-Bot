@@ -1,4 +1,7 @@
 import Giveaway from '../../../models/Giveaway.js';
+import UserExperience from '../../../models/UserExperience.js';
+import LevelingConfig from '../../../models/LevelingConfig.js';
+import { addXp } from '../../../handlers/levelingHandler.js';
 import messageService from '../../../utils/messageService.js';
 import { MessageFlags } from 'discord.js';
 
@@ -35,6 +38,23 @@ export default {
                 return;
             }
 
+            // Gating Check: Check if user meets minimum level requirement
+            const minLevel = giveaway.minLevel || 0;
+            if (minLevel > 0) {
+                const userExp = await UserExperience.findOne({ guildId: interaction.guildId, userId: voterId });
+                const currentLevel = userExp ? userExp.level : 0;
+
+                if (currentLevel < minLevel) {
+                    return messageService.reply(
+                        interaction, 
+                        'giveaway', 
+                        'level_required', 
+                        { minLevel, currentLevel }, 
+                        { ephemeral: true }
+                    );
+                }
+            }
+
             // Join
             giveaway.participants.push(voterId);
             await giveaway.save();
@@ -48,6 +68,12 @@ export default {
             };
 
             await interaction.update({ embeds: [newEmbed] });
+
+            // Reward Entry XP
+            const levelingConfig = await LevelingConfig.findOne({ guildId: interaction.guildId });
+            if (levelingConfig && levelingConfig.enabled && levelingConfig.giveawayEntryXp > 0) {
+                await addXp(interaction.guild, interaction.member, levelingConfig.giveawayEntryXp, 'giveaway_entry');
+            }
         } catch (error) {
             console.error('[Giveaway] Error joining:', error);
         }

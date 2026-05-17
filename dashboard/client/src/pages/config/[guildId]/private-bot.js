@@ -108,10 +108,10 @@ export default function PrivateBotPage() {
                     <Bot size={28} />
                 </div>
                 <div className="pc-title-row">
-                    <h1>White-Label Bot</h1>
+                    <h1>{t('private_bot.title')}</h1>
                     <div className={`pc-status-tag-v2 ${isPlatinum ? 'on' : 'off'}`}>
                         <div className="status-dot-v2"></div>
-                        {isPlatinum ? 'PLATINUM ACTIVE' : 'NON DISPONIBILE'}
+                        {isPlatinum ? t('private_bot.platinum_active') : t('private_bot.not_available')}
                     </div>
                 </div>
             </div>
@@ -120,7 +120,7 @@ export default function PrivateBotPage() {
                 {isPlatinum && (
                     <button className="pc-btn-primary" onClick={handleSave} disabled={saving || (!token && !botData)}>
                         <Save size={18} />
-                        <span>{saving ? 'Salvataggio...' : 'Salva Token'}</span>
+                        <span>{saving ? t('common.saving') : t('private_bot.save_token')}</span>
                     </button>
                 )}
             </div>
@@ -133,21 +133,21 @@ export default function PrivateBotPage() {
                         <div className="gate-icon-v2" style={{ background: 'var(--platinum-glow)', color: '#a855f7' }}>
                             <Gem size={40} />
                         </div>
-                        <h2>Bot Privato & Identità</h2>
-                        <p>Crea il tuo bot personalizzato con il tuo nome, avatar e stato. Nessun riferimento a Verix, solo il tuo brand.</p>
+                        <h2>{t('private_bot.identity_title')}</h2>
+                        <p>{t('private_bot.identity_desc')}</p>
                         <div className="gate-features-v2">
                             <div className="gf-item">
-                                <Check size={16} /> <span>White-Label Bot</span>
+                                <CheckCircle2 size={16} /> <span>{t('private_bot.feat_white_label')}</span>
                             </div>
                             <div className="gf-item">
-                                <Check size={16} /> <span>Custom Status & Presence</span>
+                                <CheckCircle2 size={16} /> <span>{t('private_bot.feat_status')}</span>
                             </div>
                             <div className="gf-item">
-                                <Check size={16} /> <span>Setup Dedicato</span>
+                                <CheckCircle2 size={16} /> <span>{t('private_bot.feat_dedicated')}</span>
                             </div>
                         </div>
                         <button className="pc-btn-primary platinum" onClick={() => router.push(`/config/${guildId}/premium`)}>
-                            Passa a Platinum
+                            {t('common.pass_to_platinum')}
                         </button>
                     </div>
                 </div>
@@ -157,19 +157,19 @@ export default function PrivateBotPage() {
                         <section className="pc-card-v2">
                             <div className="card-header-v2">
                                 <div className="header-icon"><Key size={18} /></div>
-                                <h3>Configurazione Credenziali</h3>
+                                <h3>{t('private_bot.credentials')}</h3>
                             </div>
                             <div className="card-body-v2">
                                 <div className="pc-alert-v2 warning" style={{ marginBottom: '32px' }}>
                                     <AlertTriangle size={20} />
                                     <div className="v-stack">
-                                        <span className="alert-title">Importante per la sicurezza</span>
-                                        <span className="alert-desc">Non condividere mai il tuo bot token. Inseriscilo qui per avviare la tua istanza privata su Verix Ops.</span>
+                                        <span className="alert-title">{t('private_bot.security_title')}</span>
+                                        <span className="alert-desc">{t('private_bot.security_desc')}</span>
                                     </div>
                                 </div>
 
                                 <div className="pc-input-group-v2">
-                                    <label>Discord Bot Token</label>
+                                    <label>{t('private_bot.token_label')}</label>
                                     <div className="pc-input-wrapper-v2">
                                         <Key size={16} className="input-icon" />
                                         <input 
@@ -183,7 +183,7 @@ export default function PrivateBotPage() {
                                         </button>
                                     </div>
                                     <p className="pc-hint-v2" style={{ marginTop: '12px' }}>
-                                        Puoi ottenere il token nel <a href="https://discord.com/developers/applications" target="_blank" rel="noreferrer" className="pc-link-v2">Developer Portal</a>
+                                        {t('private_bot.token_hint')} <a href="https://discord.com/developers/applications" target="_blank" rel="noreferrer" className="pc-link-v2">{t('private_bot.dev_portal')}</a>
                                     </p>
                                 </div>
                             </div>
@@ -192,7 +192,7 @@ export default function PrivateBotPage() {
                         <section className="pc-card-v2">
                              <div className="card-header-v2">
                                 <div className="header-icon"><Layout size={18} /></div>
-                                <h3>Guida al Setup</h3>
+                                <h3>{t('private_bot.setup_guide')}</h3>
                             </div>
                             <div className="card-body-v2">
                                 <div className="pc-stepper-v2">
@@ -218,7 +218,7 @@ export default function PrivateBotPage() {
                         <section className="pc-card-v2 status-monitor-v2">
                             <div className="card-header-v2">
                                 <div className="header-icon"><Power size={18} /></div>
-                                <h3>Stato Istanza</h3>
+                                <h3>{t('private_bot.instance_status')}</h3>
                             </div>
                             <div className="card-body-v2">
                                 {botData ? (
@@ -236,8 +236,8 @@ export default function PrivateBotPage() {
 
                                         <div className="pc-action-row-v2">
                                             <div className="v-stack">
-                                                <span className="action-label">Abilitato</span>
-                                                <span className="action-desc">Ricevi comandi</span>
+                                                <span className="action-label">{t('private_bot.enabled_label')}</span>
+                                                <span className="action-desc">{t('private_bot.enabled_desc')}</span>
                                             </div>
                                             <label className="pc-toggle-mini">
                                                 <input type="checkbox" checked={!!botData.enabled} onChange={handleToggle} />
@@ -247,11 +247,11 @@ export default function PrivateBotPage() {
 
                                         <button className="pc-btn-outline" style={{ width: '100%', height: '56px' }} onClick={handleRestart} disabled={restarting}>
                                             <RefreshCcw size={18} className={restarting ? 'animate-spin' : ''} />
-                                            <span>{restarting ? 'Riavvio...' : 'Riavvia Istanza'}</span>
+                                            <span>{restarting ? t('private_bot.restarting') : t('private_bot.restart_btn')}</span>
                                         </button>
                                     </div>
                                 ) : (
-                                    <div className="pc-empty-mini">Configura il token per avviare l'istanza.</div>
+                                    <div className="pc-empty-mini">{t('private_bot.empty_config')}</div>
                                 )}
                             </div>
                         </section>
@@ -259,12 +259,10 @@ export default function PrivateBotPage() {
                         <section className="pc-card-v2 help-card-v2">
                              <div className="v-stack" style={{ gap: '16px' }}>
                                  <div className="icon-glow"><Info size={24} /></div>
-                                 <h3 style={{ margin: 0 }}>Bisogno di Aiuto?</h3>
-                                 <p style={{ margin: 0, fontSize: '0.9rem', opacity: 0.7, lineHeight: 1.5 }}>
-                                     Il setup del bot privato richiede il <strong style={{ color: 'white' }}>Server Members Intent</strong> abilitato nel developer portal.
-                                 </p>
+                                 <h3 style={{ margin: 0 }}>{t('support.help_title')}</h3>
+                                 <p style={{ margin: 0, fontSize: '0.9rem', opacity: 0.7, lineHeight: 1.5 }} dangerouslySetInnerHTML={{ __html: t('support.help_desc') }}></p>
                                  <button className="pc-btn-primary" style={{ background: 'rgba(255,255,255,0.1)', color: 'white', border: '1px solid rgba(255,255,255,0.2)' }}>
-                                     Leggi Documentazione
+                                     {t('support.doc_btn')}
                                  </button>
                              </div>
                         </section>

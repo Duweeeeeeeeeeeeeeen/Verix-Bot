@@ -1,4 +1,15 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
+import fs from 'fs';
+import path from 'path';
+
+// Load base .env
+dotenv.config();
+
+// Load .env.local if it exists (for local development overrides)
+const localEnvPath = path.resolve(process.cwd(), '.env.local');
+if (fs.existsSync(localEnvPath)) {
+    dotenv.config({ path: localEnvPath, override: true });
+}
 
 const config = {
     token: process.env.DISCORD_TOKEN,

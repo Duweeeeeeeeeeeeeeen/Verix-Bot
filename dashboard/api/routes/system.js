@@ -1,4 +1,5 @@
 import express from 'express';
+import fsSync from 'fs';
 import fs from 'fs/promises';
 import path from 'path';
 import { ownerCheck } from '../middleware/ownerCheck.js';
@@ -9,6 +10,39 @@ import SystemBroadcast from '../../../src/models/SystemBroadcast.js';
 import Guild from '../../../src/models/Guild.js';
 import { invalidateCache } from '../../../src/core/configCache.js';
 import buildHealthStatus from '../../../src/utils/healthStatus.js';
+import multer from 'multer';
+import { v4 as uuidv4 } from 'uuid';
+
+// Ensure uploads directory exists
+const uploadDir = path.join(process.cwd(), 'uploads');
+if (!fsSync.existsSync(uploadDir)) {
+    fsSync.mkdirSync(uploadDir, { recursive: true });
+}
+
+// Multer configuration for image uploads
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'uploads/');
+    },
+    filename: (req, file, cb) => {
+        const ext = path.extname(file.originalname);
+        const fileName = `${uuidv4()}${ext}`;
+        cb(null, fileName);
+    }
+});
+
+const upload = multer({ 
+    storage,
+    limits: { fileSize: 15 * 1024 * 1024 }, // 15MB limit
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        if (allowedTypes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Formato file non supportato. Carica un\'immagine (JPG, PNG, GIF, WEBP).'));
+        }
+    }
+});
 
 const router = express.Router();
 
@@ -104,6 +138,44 @@ router.post('/broadcast', ownerCheck, async (req, res) => {
 });
 
 /**
+ * GET /api/system/history
+ * Returns the list of past broadcasts (only for owner)
+ */
+router.get('/history', ownerCheck, async (req, res) => {
+    try {
+        const history = await SystemBroadcast.find().sort({ sentAt: -1 }).limit(50);
+        res.json({ success: true, data: history });
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'Errore nel recupero della cronologia.' });
+    }
+});
+
+/**
+ * POST /api/system/upload
+ * Handles internal image uploads.
+ */
+router.post('/upload', ownerCheck, upload.single('image'), (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ success: false, error: 'Nessun file caricato.' });
+        }
+
+        const fileName = req.file.filename;
+        const baseUrl = (process.env.API_URL || 'http://localhost:5001/api').replace(/\/$/, '');
+        const url = `${baseUrl}/uploads/${fileName}`;
+
+        res.json({
+            success: true,
+            url: url,
+            fileName: fileName
+        });
+    } catch (error) {
+        logger.error('[System_API] Upload Error:', error);
+        res.status(500).json({ success: false, error: 'Errore durante il caricamento dell\'immagine.' });
+    }
+});
+
+/**
  * GET /api/system/status
  * Returns global bot stats (only for owner)
  */
@@ -123,19 +195,6 @@ router.get('/status', ownerCheck, async (req, res) => {
 
 router.get('/health', ownerCheck, async (req, res) => {
     res.json({ success: true, data: buildHealthStatus(req.discordClient) });
-});
-
-/**
- * GET /api/system/history
- * Returns the list of past broadcasts (only for owner)
- */
-router.get('/history', ownerCheck, async (req, res) => {
-    try {
-        const history = await SystemBroadcast.find().sort({ sentAt: -1 }).limit(50);
-        res.json({ success: true, data: history });
-    } catch (error) {
-        res.status(500).json({ success: false, error: 'Errore nel recupero della cronologia.' });
-    }
 });
 
 /**

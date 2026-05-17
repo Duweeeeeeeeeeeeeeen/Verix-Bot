@@ -79,141 +79,61 @@ export default {
     },
     whitelist: {
         panel: {
-            title: '🛂 Ufficio Immigrazione - Ingresso in Città',
-            description: 'Benvenuto nel portale di accesso. Per risiedere stabilmente in città, devi sottoporti a una valutazione d\'idoneità civile.\n\nAssicurati di rispondere onestamente ai protocolli che ti verranno sottoposti.',
+            title: '📋 Sistema di Candidatura',
+            description: 'Benvenuto nel portale di accesso. Per ottenere l\'accesso completo o richiedere un ruolo specifico, devi compilare la domanda di partecipazione.\n\nAssicurati di rispondere onestamente alle domande che ti verranno sottoposte.',
             color: '#3BA4FF',
-            footer: 'Dipartimento Civile | Verix RP'
+            footer: 'Gestione Candidature | {guild}'
         },
         start: {
-            title: '📄 Pratica d\'Ingresso: {user_name}',
-            description: 'Benvenuto cittadino. Per essere ammesso ufficialmente, dobbiamo compilare il tuo dossier informativo.\n\n**DIRETTIVE MINISTERIALI:**\n• Rispondi onestamente e con dovizia di particolari.\n• Rispetta i protocolli di tempo per evitare l\'annullamento dell\'istanza.',
+            title: '📄 Nuova Candidatura: {user_name}',
+            description: 'Benvenuto. Per procedere con la tua richiesta, dobbiamo raccogliere alcune informazioni necessarie alla valutazione.\n\n**ISTRUZIONI:**\n• Rispondi onestamente e con dovizia di particolari.\n• Rispetta i tempi previsti per evitare l\'annullamento della sessione.',
             color: '#3BA4FF',
-            footer: 'Ufficio Accoglienza | Verix RP'
+            footer: 'Ufficio Valutazioni | {guild}'
         },
         question: {
-            title: '❓ Interrogatorio: Domanda {current_index} di {total_questions}',
+            title: '❓ Domanda: {current_index} di {total_questions}',
             description: '>>> {question}',
             color: '#3BA4FF'
         },
         review: {
-            title: '📋 Validazione Finale del Dossier',
-            description: 'Rileggi attentamente le tue dichiarazioni istituzionali. Una volta confermate, la tua istanza passerà alla Commissione Superiore per il verdetto finale.',
+            title: '📋 Revisione Finale',
+            description: 'Rileggi attentamente le tue dichiarazioni. Una volta confermate, la tua domanda passerà alla revisione dello staff per il verdetto finale.',
             color: '#2ecc71'
         },
         not_configured: {
             title: '⏳ Configurazione Incompleta',
-            description: 'La procedura per entrare in città non è ancora stata ultimata dallo staff. Per favore, pazienta ancora un po\'.',
+            description: 'La procedura di candidatura non è ancora stata configurata correttamente dallo staff. Per favore, riprova più tardi.',
             color: '#f1c40f'
         },
-        active_session: {
-            title: '📄 Pratica in Corso',
-            description: 'Risulta già un dossier aperto a tuo nome nel canale <#{channelId}>. Concludi quella procedura prima di iniziarne una nuova.',
+        already_exists: {
+            title: '📄 Sessione in Corso',
+            description: 'Risulta già una sessione di candidatura aperta o sottomessa a tuo nome. Concludi quella procedura prima di iniziarne una nuova.',
             color: '#3498db'
         },
-        already_submitted: {
-            title: '📂 Dossier in Valutazione',
-            description: 'La tua documentazione è già stata consegnata e si trova attualmente sulla scrivania dello staff. Riceverai un esito a breve.',
-            color: '#3498db'
+        cooldown_error: {
+            title: '⚠️ Tempo di Attesa',
+            description: 'La tua ultima richiesta è stata respinta recentemente. Per motivi organizzativi, devi attendere **{time}** prima di poter presentare una nuova domanda.',
+            color: '#e74c3c'
         },
-        already_passed: {
-            title: '✅ Cittadinanza Già Ottenuta',
-            description: 'I nostri registri indicano che sei già un cittadino regolare di **{guild}**. Non è necessario ripetere la procedura.',
+        blacklist_error: {
+            title: '🚫 Accesso Negato',
+            description: 'Il tuo account è stato inserito nella blacklist del sistema whitelist. Non puoi procedere con la candidatura.',
+            color: '#e74c3c'
+        },
+        test_passed: {
+            title: '✅ Test Superato',
+            description: 'Ottimo lavoro! Hai superato la fase scritta. Segui le istruzioni per procedere.',
             color: '#2ecc71'
         },
-        cooldown: {
-            title: '⚠️ Protocollo Cooldown',
-            description: 'La tua ultima richiesta è stata respinta recentemente. Per ragioni burocratiche, devi attendere **{time}** prima di poter presentare un nuovo dossier.',
+        test_failed: {
+            title: '❌ Test Fallito',
+            description: 'Spiacente, le tue risposte non hanno raggiunto lo standard richiesto.',
             color: '#e74c3c'
         },
         start_success: {
-            title: '✅ Percorso Avviato',
-            description: 'Il tuo dossier è stato aperto correttamente. Dirigiti nel canale <#{channelId}> per iniziare il colloquio scritto.',
+            title: '✅ Sessione Avviata',
+            description: 'La tua sessione è stata aperta correttamente. Dirigiti nel canale <#{channelId}> per iniziare la compilazione.',
             color: '#2ecc71'
-        },
-        session_completed: {
-            title: '📝 Colloquio Trascritto',
-            description: 'Hai risposto a tutte le domande del colloquio. Lo staff analizzerà la tua candidatura a breve.\n\nControlla le tue risposte qui sopra e usa i pulsanti per confermare o annullare l\'invio.',
-            color: '#3498db'
-        },
-        min_length_error: {
-            title: '⚠️ Dettagli Insufficienti',
-            description: 'La tua risposta deve contenere almeno **{minLength}** caratteri per essere considerata valida. Prova a spiegarti un po\' meglio.',
-            color: '#f1c40f'
-        },
-        dm_accepted: {
-            title: '✅ Idoneità Confermata',
-            description: 'Congratulazioni cittadino! La tua candidatura presso **{guild}** è stata approvata dalla Commissione.\n\nOra puoi accedere ai canali ufficiali e iniziare la tua esperienza.',
-            color: '#2ecc71'
-        },
-        dm_rejected: {
-            title: '❌ Esito Negativo',
-            description: 'Spiacente, ma la valutazione del tuo dossier presso **{guild}** non ha dato esito positivo.\n\n**MOTIVAZIONE:**\n{reason}\n\nPotrai riprovare a presentare una nuova istanza dopo il periodo di cooldown.',
-            color: '#e74c3c'
-        },
-        dm_voice_rejected: {
-            title: '⚠️ Protocollo Orale Respinto',
-            description: 'Non hai superato la valutazione orale presso **{guild}**. Ti invitiamo a ripassare i protocolli cittadini prima di ripresentarti.',
-            color: '#e74c3c'
-        },
-        dm_text_pass: {
-            title: '📝 Scritto Superato',
-            description: 'Hai superato la prova scritta su **{guild}**! Ora puoi recarti nel canale vocale d\'attesa per il colloquio finale.',
-            color: '#f1c40f'
-        },
-        staff_received: {
-            title: '📩 Nuova Pratica Whitelist',
-            description: 'L\'utente **{user_name}** ha sottomesso il proprio dossier per la valutazione.\n\n**INFO:**\n• Discord: <@{user_id}>\n• ID Pratica: `{app_id}`',
-            color: '#3498db'
-        },
-        dm_submitted: {
-            title: '📋 Dossier Ricevuto',
-            description: 'La tua candidatura per entrare in **{guild}** è stata acquisita dai nostri sistemi.\n\nUn membro della Commissione la revisionerà il prima possibile. Verrai avvisato qui non appena ci sarà un esito.',
-            color: '#3498db'
-        },
-        submission_confirmed: {
-            title: '✅ Dossier Sottomesso',
-            description: 'La tua documentazione è stata inviata correttamente agli uffici competenti. Verrai avvisato a breve dell\'esito.',
-            color: '#2ecc71'
-        },
-        voice_procedural_error: {
-            title: '❌ Errore Procedurale',
-            description: 'Spiacente cittadino, ma lo Stato non prevede colloqui orali per il tipo di visto da te richiesto.',
-            color: '#e74c3c'
-        },
-        queue_log: {
-            title: '📢 Protocollo Coda: Nuovo Ingresso',
-            description: 'Un nuovo cittadino è in attesa per il colloquio.\n\n**SOGGETTO:** {user}\n**ID:** `{user_id}`\n**CODA ATTUALE:** `{waiting_count}`',
-            color: '#3498db'
-        },
-        promote_vip_success: {
-            title: '💎 Priorità VIP',
-            description: 'L\'utente **{user}** è stato spostato in testa alla coda ministeriale.',
-            color: '#2ecc71'
-        },
-        pause_success: {
-            title: '⏸️ Sistema in Pausa',
-            description: 'I protocolli di accesso vocale sono stati sospesi. Nessun nuovo cittadino potrà unirsi alla coda.',
-            color: '#f1c40f'
-        },
-        resume_success: {
-            title: '▶️ Sistema Riattivato',
-            description: 'I protocolli di accesso vocale sono stati ripristinati. Gli uffici sono nuovamente operativi.',
-            color: '#2ecc71'
-        },
-        skip_success: {
-            title: '⏭️ Sessione Saltata',
-            description: 'La sessione corrente è stata archiviata forzatamente. Il prossimo cittadino in coda verrà invitato.',
-            color: '#3498db'
-        },
-        skip_error_no_session: {
-            title: '❌ Nessuna Sessione',
-            description: 'Non risultano sessioni attive da poter saltare al momento.',
-            color: '#e74c3c'
-        },
-        app_not_found: {
-            title: '❌ Candidatura Non Trovata',
-            description: 'Il dossier richiesto non risulta presente nei nostri archivi digitali.',
-            color: '#e74c3c'
         }
     },
     background: {
@@ -228,6 +148,10 @@ export default {
             description: 'Stai iniziando la stesura del tuo background. Assicurati di descrivere accuratamente le origini e le ambizioni del tuo personaggio.\n\n**REQUISITI:**\n• Coerenza con il setting della città.\n• Rispetto delle linee guida narrative.',
             color: '#3498db'
         },
+        modal_title: 'Dettagli Background',
+        link_label: 'Link al Background (es. Google Doc)',
+        desc_label: 'Breve Descrizione (Opzionale)',
+        desc_placeholder: 'Riassumi qui la storia del tuo personaggio...',
         dm_accepted: {
             title: '📜 Background Approvato',
             description: 'Il tuo background è stato ufficialmente depositato negli archivi di **{guild}**. La tua storia è ora parte integrante della città.',
@@ -239,8 +163,8 @@ export default {
             color: '#e74c3c'
         },
         staff_received: {
-            title: '📑 Nuovo Background Ricevuto',
-            description: 'L\'utente **<@{userId}>** ha inviato il proprio background per la revisione.\n\n**INFO:**\n• Link: {bg_link}\n• Desc: {bg_desc}\n• Allegato: {bg_attachment}',
+            title: '📖 Nuovo Background Ricevuto',
+            description: 'Un utente ha inviato un background per la revisione.\n\n**Utente:** <@{userId}>\n**Link:** [Apri Documento]({bg_link})\n**Descrizione:** {bg_desc}\n**ID:** `{app_id}`',
             color: '#3498db'
         },
         submission_confirmed: {
@@ -258,15 +182,50 @@ export default {
             description: 'Il tuo dossier per **{guild}** è stato correttamente archiviato nei nostri sistemi. Un ufficiale della commissione lo revisionerà a breve.',
             color: '#2ecc71'
         },
-        cooldown: {
+        cooldown_error: {
             title: '⚠️ Protocollo Cooldown',
-            description: 'Hai inviato un background troppo recentemente. Potrai sottomettere una nuova versione {time_left}.\n\nUsa questo tempo per perfezionare la tua storia.',
+            description: 'Hai inviato un background troppo recentemente. Potrai sottomettere una nuova versione tra **{time}**.',
             color: '#f1c40f'
         },
-        upload_success: {
-            title: '✅ Allegato Registrato',
-            description: 'Il file è stato acquisito correttamente dai sistemi.\n\n**DOCUMENTO:** [{filename}]({url})',
+        already_exists: {
+            title: '📄 Dossier Già Esistente',
+            description: 'Risulta già un background in corso o sottomesso per questo utente.',
+            color: '#3498db'
+        },
+        submission_success: {
+            title: '✅ Dossier Sottomesso',
+            description: 'La tua documentazione è stata inviata correttamente agli uffici competenti.',
             color: '#2ecc71'
+        },
+        approve_btn: 'Accetta',
+        deny_btn: 'Rifiuta',
+        accepted_title: '✅ Dossier APPROVATO',
+        rejected_title: '❌ Dossier RESPINTO',
+        staff_tag: '👮 Ufficiale',
+        subject_tag: '👤 Soggetto',
+        outcome_tag: 'Esito Staff'
+    },
+    staffapps: {
+        panel: {
+            title: '🛡️ Reclutamento Staff - Portale Candidature',
+            description: 'Vuoi entrare a far parte del nostro team? Inviando la tua candidatura verrai valutato dai responsabili HR.\n\nAssicurati di rispondere in modo esaustivo a tutte le domande.',
+            color: '#a855f7',
+            footer: 'Dipartimento HR | {guild}'
+        },
+        dm_accepted: {
+            title: '🎊 Candidatura Accettata!',
+            description: 'Ottime notizie {user}! La tua candidatura per lo staff di {guild} è stata approvata. Benvenuto nel team!',
+            color: '#2ecc71'
+        },
+        dm_rejected: {
+            title: '❌ Candidatura Respinta',
+            description: 'Siamo spiacenti {user}, ma la tua candidatura per {guild} non è stata approvata.\n\n**Motivazione:**\n>>> {reason}',
+            color: '#ff4757'
+        },
+        staff_received: {
+            title: '🛡️ Nuova Candidatura Staff',
+            description: 'L\'utente **<@{userId}>** ha inviato una nuova candidatura per il team staff.',
+            color: '#a855f7'
         }
     },
     tickets: {
@@ -286,10 +245,20 @@ export default {
             description: 'Il tuo ticket è stato aperto con successo.\n\n**Canale:** {channel}',
             color: '#2ecc71'
         },
+        created_success: {
+            title: '✅ Ticket Creato',
+            description: 'Il tuo ticket è stato aperto con successo in <#{channelId}>.',
+            color: '#2ecc71'
+        },
         close: {
             title: '🔒 Ticket Chiuso',
             description: 'Questo ticket è stato chiuso e archiviato correttamente.',
             color: '#E74C3C'
+        },
+        close_started: {
+            title: '🔒 Chiusura in Corso',
+            description: 'Il ticket sta per essere chiuso e archiviato. Attendere...',
+            color: '#e67e22'
         },
         already_exists: {
             title: '⚠️ Ticket Esistente',
@@ -300,6 +269,11 @@ export default {
             title: '⚙️ Presa in Carico',
             description: 'Lo staffer **{staff}** ha preso in gestione il tuo ticket e ti assisterà a breve.',
             color: '#3498db'
+        },
+        claim_already: {
+            title: '⚠️ Già Gestito',
+            description: 'Questo ticket è già stato preso in carico da <@{staffId}>.',
+            color: '#f1c40f'
         },
         status_updated: {
             title: '🔄 Stato Aggiornato',
@@ -315,7 +289,108 @@ export default {
             title: '🎫 Richiesta di Assistenza',
             description: 'Benvenuto nel centro supporto. Uno staffer sarà qui a breve.\n\nMotivo: **{reason}**',
             color: '#5865F2'
-        }
+        },
+        priority_select: {
+            title: '⚡ Selezione Priorità',
+            description: 'Per favore, seleziona il livello di priorità per questa pratica prima di procedere.',
+            color: '#f1c40f'
+        },
+        quick_reply_menu: {
+            title: '📝 Risposte Rapide',
+            description: 'Seleziona un template di risposta da inviare nel ticket.',
+            color: '#3498db'
+        },
+        tag_menu: {
+            title: '🏷️ Gestione Tag',
+            description: 'Seleziona un tag da aggiungere o rimuovere da questo ticket.',
+            color: '#3498db'
+        },
+        staff_only: {
+            title: '⚠️ Accesso Riservato',
+            description: 'Spiacente, ma solo i membri dello staff possono utilizzare queste funzioni di gestione.',
+            color: '#e74c3c'
+        },
+        blacklist_error: {
+            title: '🚫 Accesso Negato',
+            description: 'Il tuo account è stato inserito nella blacklist del sistema ticket. Non puoi aprire nuove richieste.',
+            color: '#e74c3c'
+        },
+        note_success: {
+            title: '✅ Nota Aggiunta',
+            description: 'La nota interna è stata registrata con successo nel database del ticket.',
+            color: '#2ecc71'
+        },
+        config_not_found: {
+            title: '❌ Configurazione Mancante',
+            description: 'Il sistema ticket non è ancora stato configurato per questo server. Contatta gli amministratori.',
+            color: '#e74c3c'
+        },
+        category_not_available: {
+            title: '❌ Categoria Non Disponibile',
+            description: 'La categoria selezionata non risulta più disponibile o è stata rimossa dallo staff.',
+            color: '#e74c3c'
+        },
+        staff_ticket_log: {
+            title: '📂 Log Ticket Chiuso',
+            description: '>>> **Utente:** {user}\n**Tipo:** `{type}`\n**Operatore:** {staff}',
+            color: '#3498db'
+        },
+        intelligence: {
+            title: '🔍 Intelligence: {user}',
+            prev_tickets: '🎫 Ticket Precedenti',
+            sessions_closed: '`{count}` sessioni chiuse',
+            whitelist: '📋 Whitelist',
+            status: 'Stato: `{status}`',
+            no_app: 'Nessuna domanda',
+            last_wl: '📅 Ultima Whitelist',
+            background: '📖 Background',
+            no_dossier: 'Nessuna istanza',
+            footer: 'Modulo Intelligence Staff',
+            field_name: '🔍 Intelligence Utente'
+        },
+        claim_success: {
+            title: '✅ Presa in Carico',
+            description: 'Il ticket è stato preso in carico con successo.',
+            color: '#2ecc71'
+        },
+        status_updated_msg: {
+            title: '🔄 Stato Aggiornato',
+            description: 'Lo stato del ticket è stato aggiornato a: **{status}**',
+            color: '#3498db'
+        },
+        new_ticket_ping: {
+            title: '🔔 Nuovo Ticket',
+            description: '{ping} - Nuova istanza di tipo **{type}** aperta.',
+            color: '#3498db'
+        },
+        cooldown: {
+            title: '⚠️ Traffico Elevato',
+            description: 'Attendi qualche minuto prima di aprire un nuovo ticket.',
+            color: '#f1c40f'
+        },
+        note_modal_title: 'Aggiungi Nota Interna',
+        note_input_label: 'Contenuto della nota',
+        note_input_placeholder: 'Scrivi qui una nota visibile solo allo staff...',
+        report_modal_title: 'Modulo Segnalazione',
+        report_subject_label: 'Soggetto',
+        report_desc_label: 'Descrizione',
+        no_quick_replies: '❌ Nessuna risposta rapida configurata.',
+        quick_reply_placeholder: 'Scegli un template...',
+        tag_placeholder: 'Seleziona un tag...',
+        waiting_staff: '_In attesa..._',
+        priority_placeholder: 'Seleziona la priorità...',
+        priority_normal: 'Normale',
+        priority_important: 'Importante',
+        priority_urgent: 'Urgente',
+        claim_btn: 'Assumi',
+        close_btn: 'Chiudi',
+        quick_reply_btn: 'Risposte Rapide',
+        note_btn: 'Nota',
+        status_placeholder: 'Cambia stato...',
+        status_processing: 'In Lavorazione',
+        status_waiting: 'In Attesa (Utente)',
+        assigned_staff_label: '👤 Operatore Assegnato',
+        internal_notes_label: '📝 Note Interne'
     },
     verify: {
         panel: {
@@ -371,7 +446,40 @@ export default {
             color: '#e74c3c'
         }
     },
+    welcome: {
+        join: {
+            title: '👋 Benvenuto nel Server!',
+            description: 'Ciao **{user}**, benvenuto su **{guild}**! Siamo felici di averti con noi.\n\nAssicurati di leggere il regolamento per una permanenza piacevole.',
+            color: '#2ecc71'
+        },
+        leave: {
+            title: '👋 Arrivederci!',
+            description: '**{user}** ha lasciato il server. Speriamo di rivederti presto!',
+            color: '#e74c3c'
+        }
+    },
+    voice: {
+        control_panel: {
+            title: '🎙️ Pannello di Controllo Vocale',
+            description: 'Benvenuto <@{user}>! Questo è il tuo canale temporaneo.\nUsa i tasti qui sotto per gestirlo rapidamente.',
+            color: '#5865F2'
+        },
+        status_none: 'Nessuno',
+        owner_field: '👑 Proprietario',
+        limit_field: '👥 Limite'
+    },
     moderation: {
+        no_reason: 'Nessun motivo fornito',
+        error: {
+            title: '❌ Errore Moderazione',
+            description: 'Si è verificato un errore durante l\'esecuzione del comando.',
+            color: '#e74c3c'
+        },
+        command_ban: {
+            title: '✅ Ban Eseguito',
+            description: 'L\'utente **{user}** è stato bannato con successo.\n\n**Motivo:** {reason}',
+            color: '#2ecc71'
+        },
         warn: {
             title: '🛡️ Avvertimento Ufficiale',
             description: 'Attenzione **{user}**, hai ricevuto un avvertimento per violazione delle regole.\n\n**Motivo:**\n>>> {reason}',
@@ -409,6 +517,11 @@ export default {
             title: '⚠️ Giveaway Terminato',
             description: 'Spiacente, questo giveaway si è già concluso.',
             color: '#f1c40f'
+        },
+        level_required: {
+            title: '🛡️ Requisito di Livello Non Soddisfatto',
+            description: 'Devi essere almeno di **Livello {minLevel}** per partecipare a questo giveaway!\nIl tuo livello attuale è **Livello {currentLevel}**.',
+            color: '#e74c3c'
         }
     },
     photocontest: {
@@ -422,5 +535,89 @@ export default {
             description: 'Una nuova foto è stata caricata per il contest.\n\n**Tema:** `{theme}`\n**Scadenza:** {endTime}',
             color: '#3498db'
         }
+    },
+    logs: {
+        message_deleted: {
+            title: '🗑️ Messaggio Eliminato',
+            author: 'Autore',
+            channel: 'Canale',
+            content: 'Contenuto',
+            no_text: '*Nessun testo (forse un embed o file)*',
+            color: '#e74c3c'
+        },
+        message_updated: {
+            title: '📝 Messaggio Modificato',
+            author: 'Autore',
+            channel: 'Canale',
+            before: 'Prima',
+            after: 'Dopo',
+            color: '#3498db'
+        }
+    },
+    admin: {
+        embed_editor: {
+            title: '🛠️ Editor Embed',
+            description: 'Stai modificando un messaggio predefinito. Usa i pulsanti per cambiare i campi.',
+            color: '#F1C40F'
+        }
+    },
+    socials: {
+        default_titles: {
+            Twitch: '📡 **{streamer}** è in diretta!',
+            YouTube: '🎥 Nuovo video di **{streamer}**!',
+            Twitter: '𝕏 (Twitter) Nuovo post di **{streamer}**',
+            Instagram: '📸 Nuovo post di **{streamer}**',
+            TikTok: '🎵 Nuovo TikTok di **{streamer}**'
+        },
+        default_descriptions: {
+            Twitch: '### {title}\n\nEhi! **{streamer}** ha appena acceso la camera su Twitch. Non perderti lo show!\n\n[Entra in Live]({url})',
+            YouTube: '### {title}\n\nÈ appena uscito un nuovo video sul canale! Corri a lasciare un like.',
+            Twitter: '{description}',
+            Instagram: '### {title}\n\nNuovo contenuto caricato su Instagram! Passa a dare un\'occhiata.',
+            TikTok: '### {title}\n\nÈ appena stato pubblicato un nuovo video su TikTok! Guarda subito.'
+        },
+        button_labels: {
+            Twitch: 'Guarda la Live',
+            YouTube: 'Guarda il Video',
+            Twitter: 'Vedi su 𝕏',
+            X: 'Vedi su 𝕏',
+            Instagram: 'Vedi su Instagram',
+            TikTok: 'Vedi su TikTok',
+            default: 'Apri Link'
+        },
+        footer: 'Notifiche Social | Verix'
+    },
+    leveling: {
+        disabled: {
+            title: '📡 Modulo Disattivato',
+            description: 'Il modulo **Leveling & Rewards** è attualmente disattivato in questo server. Contatta lo staff per maggiori informazioni.',
+            color: '#f1c40f'
+        },
+        rank: {
+            title: '✨ Scheda Livello - {username}',
+            level: '📊 Livello',
+            rank: '🏆 Posizione',
+            xp: '🧪 Progresso XP',
+            progress: '📈 Progressione',
+            messages: '💬 Messaggi Totali',
+            daily_limit: '📅 Limite Giornaliero',
+            color: '#5865f2'
+        },
+        leaderboard: {
+            title: '🏆 Classifica del Server',
+            empty_title: '⚠️ Classifica Vuota',
+            empty_desc: 'La classifica è attualmente vuota. Inizia a scrivere messaggi per guadagnare XP!',
+            entry: '{pos} <@{userId}> • **Liv {level}** ({xp} XP)',
+            footer: 'Tua Posizione: {rank} | Community Attiva',
+            unranked: 'Non Classificato',
+            color: '#5865f2'
+        }
+    },
+    common: {
+        no_reason: 'Nessuna motivazione fornita',
+        none: 'Nessuno',
+        loading: 'Caricamento in corso...',
+        error: 'Si è verificato un errore.',
+        immediately: 'subito'
     }
 };

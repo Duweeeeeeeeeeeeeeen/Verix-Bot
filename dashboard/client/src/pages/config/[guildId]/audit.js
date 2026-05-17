@@ -64,11 +64,11 @@ export default function AuditPage() {
 
   const getActionStyles = (action) => {
       const a = action?.toUpperCase() || '';
-      if (a.includes('UPDATE')) return { bg: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', label: 'EDIT PROTOCOL', icon: Settings };
-      if (a.includes('DELETE') || a.includes('RESET') || a.includes('REMOVE')) return { bg: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', label: 'DESTRUCTION', icon: Trash2 };
-      if (a.includes('SAVE') || a.includes('CREATE') || a.includes('ADD')) return { bg: 'rgba(16, 185, 129, 0.1)', color: '#10b981', label: 'DEPLOYMENT', icon: Zap };
-      if (a.includes('SEND')) return { bg: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6', label: 'DISPATCH', icon: ExternalLink };
-      return { bg: 'var(--bg-badge)', color: 'var(--text-muted)', label: 'GENERAL', icon: FileText };
+      if (a.includes('UPDATE')) return { bg: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', label: t('audit_studio.label_update'), icon: Settings };
+      if (a.includes('DELETE') || a.includes('RESET') || a.includes('REMOVE')) return { bg: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', label: t('audit_studio.label_delete'), icon: Trash2 };
+      if (a.includes('SAVE') || a.includes('CREATE') || a.includes('ADD')) return { bg: 'rgba(16, 185, 129, 0.1)', color: '#10b981', label: t('audit_studio.label_save'), icon: Zap };
+      if (a.includes('SEND')) return { bg: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6', label: t('audit_studio.label_send'), icon: ExternalLink };
+      return { bg: 'var(--bg-badge)', color: 'var(--text-muted)', label: t('audit_studio.label_general'), icon: FileText };
   };
 
   if (!mounted || loading) return <Skeleton height="600px" />;
@@ -78,7 +78,7 @@ export default function AuditPage() {
   return (
     <div className="pc-premium-wrapper fade-in">
         <Head>
-            <title>Audit Studio Pro | Verix Dashboard</title>
+            <title>{t('audit_studio.title')} | Verix Dashboard</title>
         </Head>
 
         {/* V2 Header */}
@@ -88,10 +88,10 @@ export default function AuditPage() {
                     <Fingerprint size={28} />
                 </div>
                 <div className="pc-title-row">
-                    <h1>Audit Studio Pro</h1>
+                    <h1>{t('audit_studio.title')}</h1>
                     <div className={`pc-status-tag-v2 ${isPremium ? 'on' : 'off'}`}>
                         <div className="status-dot-v2"></div>
-                        {isPremium ? 'MONITORAGGIO LIVE ATTIVO' : 'ACCESSO LIMITATO'}
+                        {isPremium ? t('audit_studio.status_on') : t('audit_studio.status_off')}
                     </div>
                 </div>
             </div>
@@ -100,11 +100,11 @@ export default function AuditPage() {
                 {isPremium && (
                     <button className="pc-btn-outline-v2" onClick={() => {}}>
                         <Download size={18} />
-                        <span>Esporta JSON</span>
+                        <span>{t('audit_studio.export_json')}</span>
                     </button>
                 )}
                 <button className="pc-btn-primary" onClick={() => router.push(`/config/${guildId}`)} style={{ background: 'var(--primary)' }}>
-                    <LayoutGrid size={18} /> <span>Home Guild</span>
+                    <LayoutGrid size={18} /> <span>{t('audit_studio.home_guild')}</span>
                 </button>
             </div>
         </header>
@@ -115,14 +115,14 @@ export default function AuditPage() {
                     <div className="gate-icon-glow-v2">
                         <ShieldCheck size={56} />
                     </div>
-                    <h2>Audit Studio Professional</h2>
-                    <p>Prendi il controllo totale della tua infrastruttura. Monitora ogni azione dello staff, previeni vulnerabilità e mantieni l'integrità del server.</p>
+                    <h2>{t('audit_studio.gate_title')}</h2>
+                    <p>{t('audit_studio.gate_desc')}</p>
                     
                     <div className="gate-features-grid-v2">
                         {[
-                            { icon: <Terminal size={24} />, title: "Live Traceability", desc: "Traccia ogni singolo comando e cambio di configurazione in tempo reale." },
-                            { icon: <Shield size={24} />, title: "Staff Security", desc: "Monitora le attività critiche per prevenire abusi di potere amministrativo." },
-                            { icon: <Database size={24} />, title: "Archivio Storico", desc: "Accesso a mesi di log dettagliati esportabili per reportistica esterna." }
+                            { icon: <Terminal size={24} />, title: t('audit_studio.gate_f1_title'), desc: t('audit_studio.gate_f1_desc') },
+                            { icon: <Shield size={24} />, title: t('audit_studio.gate_f2_title'), desc: t('audit_studio.gate_f2_desc') },
+                            { icon: <Database size={24} />, title: t('audit_studio.gate_f3_title'), desc: t('audit_studio.gate_f3_desc') }
                         ].map((f, i) => (
                             <div key={i} className="gate-feature-card-v2">
                                 <div className="feature-icon-box-v2">{f.icon}</div>
@@ -134,7 +134,7 @@ export default function AuditPage() {
 
                     <button className="pc-btn-primary gate-btn-v2" onClick={() => router.push(`/config/${guildId}/premium`)}>
                         <Sparkles size={24} />
-                        <span>Sblocca Audit Studio</span>
+                        <span>{t('audit_studio.unlock_btn')}</span>
                     </button>
                 </div>
             ) : (
@@ -144,7 +144,7 @@ export default function AuditPage() {
                             <Search size={22} style={{ color: 'var(--text-muted)' }} />
                             <input 
                                 type="text" 
-                                placeholder="Cerca nello storico per staff, operazione o identità..." 
+                                placeholder={t('audit_studio.search_placeholder')} 
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
@@ -152,11 +152,11 @@ export default function AuditPage() {
                         <div className="pc-filter-v2">
                             <Filter size={22} style={{ color: 'var(--text-muted)' }} />
                             <select value={filterAction} onChange={(e) => setFilterAction(e.target.value)}>
-                                <option value="ALL">Visualizza Tutti</option>
-                                <option value="UPDATE_CONFIG">Configurazione Moduli</option>
-                                <option value="UPDATE_WHITELIST">Modifiche Accessi</option>
-                                <option value="SAVE_TEMPLATE">Design & Visual Studio</option>
-                                <option value="SEND_PANEL">Emissione Pannelli</option>
+                                <option value="ALL">{t('audit_studio.filter_all')}</option>
+                                <option value="UPDATE_CONFIG">{t('audit_studio.filter_config')}</option>
+                                <option value="UPDATE_WHITELIST">{t('audit_studio.filter_whitelist')}</option>
+                                <option value="SAVE_TEMPLATE">{t('audit_studio.filter_design')}</option>
+                                <option value="SEND_PANEL">{t('audit_studio.filter_panels')}</option>
                             </select>
                         </div>
                     </div>
@@ -166,10 +166,10 @@ export default function AuditPage() {
                             <table className="pc-table-v2">
                                 <thead>
                                     <tr>
-                                        <th>Staff / Responsible</th>
-                                        <th>Action Taxonomy</th>
-                                        <th>Studio Timeline</th>
-                                        <th style={{ textAlign: 'right' }}>Identity</th>
+                                        <th>{t('audit_studio.table_staff')}</th>
+                                        <th>{t('audit_studio.table_action')}</th>
+                                        <th>{t('audit_studio.table_timeline')}</th>
+                                        <th style={{ textAlign: 'right' }}>{t('audit_studio.table_identity')}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -215,8 +215,8 @@ export default function AuditPage() {
                                             <td colSpan="4">
                                                 <div className="pc-empty-state-v2">
                                                     <div className="empty-icon-v2"><FileText size={48} /></div>
-                                                    <h3>Database Protocol Clear</h3>
-                                                    <p>Nessuna operazione registrata per questi parametri.</p>
+                                                    <h3>{t('audit_studio.empty_title')}</h3>
+                                                    <p>{t('audit_studio.empty_desc')}</p>
                                                 </div>
                                             </td>
                                         </tr>

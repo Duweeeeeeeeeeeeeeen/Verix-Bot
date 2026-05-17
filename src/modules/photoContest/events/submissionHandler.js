@@ -2,6 +2,8 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, AttachmentBuilder } from 
 import PhotoContestConfig from '../../../models/PhotoContestConfig.js';
 import PhotoContest from '../../../models/PhotoContest.js';
 import PhotoSubmission from '../../../models/PhotoSubmission.js';
+import LevelingConfig from '../../../models/LevelingConfig.js';
+import { addXp } from '../../../handlers/levelingHandler.js';
 import logger from '../../../utils/logger.js';
 import messageService from '../../../utils/messageService.js';
 
@@ -121,6 +123,12 @@ export default {
             });
 
             await message.delete().catch(() => null);
+
+            // Reward Submission XP
+            const levelingConfig = await LevelingConfig.findOne({ guildId: message.guildId });
+            if (levelingConfig && levelingConfig.enabled && levelingConfig.photoContestEntryXp > 0) {
+                await addXp(message.guild, message.member, levelingConfig.photoContestEntryXp, 'photo_contest_submission', message.channel);
+            }
 
         } catch (error) {
             logger.error('[PhotoContest] Error handling submission:', error);

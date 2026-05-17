@@ -7,9 +7,9 @@ import {
     Save, MousePointer2, Plus, Trash2, Send, Layout, Palette, Type, Layers, Smile, ChevronDown, 
     ChevronUp, AlertCircle, Settings2, Sun, Moon, Monitor, Smartphone, Power, Hash, Sparkles, 
     Trash, ChevronRight, ArrowRight, CheckCircle2, Box, Sparkle, RefreshCcw, Command,
-    Fingerprint, Zap, AlignLeft, Paintbrush, GripVertical, RotateCcw
+    Fingerprint, Zap, AlignLeft, Paintbrush, GripVertical, RotateCcw, MessageSquare
 } from 'lucide-react';
-import { DiscordSelector, CustomSelect } from '../../../components/LazyConfigComponents';
+import { DiscordSelector, CustomSelect, SystemMessagesSection } from '../../../components/LazyConfigComponents';
 import EmojiInput from '../../../components/EmojiInput';
 import EmbedPreviewContainer from '../../../components/EmbedPreviewContainer';
 import Head from 'next/head';
@@ -24,6 +24,7 @@ export default function ReactionRolesConfig() {
   const [roles, setRoles] = useState([]);
   const [channels, setChannels] = useState([]);
   const [activePanelId, setActivePanelId] = useState(null);
+  const [activeTab, setActiveTab] = useState('settings');
   const [previewTheme, setPreviewTheme] = useState('dark');
   const [isPreviewMobile, setIsPreviewMobile] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -46,18 +47,18 @@ export default function ReactionRolesConfig() {
       if (!rrConfig.panels || rrConfig.panels.length === 0) {
           const defaultPanel = {
               id: 'panel-' + Math.random().toString(36).substr(2, 4),
-              name: 'Main Roles Panel',
+              name: t('rr.panel_default_name'),
               channelId: '',
               messageId: null,
               type: 'BUTTON',
               roles: [
-                  { roleId: '', emoji: '✨', label: 'Assign Role', style: 'PRIMARY' }
+                  { roleId: '', emoji: '✨', label: t('rr.slot_default_label'), style: 'PRIMARY' }
               ],
               embed: {
-                  title: '✨ SELECT YOUR ROLES',
-                  description: 'Interact with the components below to customize your experience on the server.',
+                  title: t('rr.panel_default_title'),
+                  description: t('rr.panel_default_desc'),
                   color: '#6366f1',
-                  footer: 'Powered by Verix Studio'
+                  footer: t('rr.panel_default_footer')
               }
           };
           rrConfig.panels = [defaultPanel];
@@ -194,7 +195,7 @@ export default function ReactionRolesConfig() {
                     <h1>{t('rr.title')}</h1>
                     <div className={`pc-status-tag-v2 ${config.enabled ? 'on' : 'off'}`}>
                         <div className="status-dot-v2"></div>
-                        {config.enabled ? t('rr.active_tag') : t('rr.standby_tag')}
+                        {config.enabled ? t('common.active_system') : t('common.inactive_system')}
                     </div>
                 </div>
             </div>
@@ -213,7 +214,7 @@ export default function ReactionRolesConfig() {
                         {config.enabled ? t('common.active') : t('common.inactive')}
                     </span>
                 </div>
-                <div className="pc-header-divider" style={{ width: '1px', height: '24px', background: 'var(--border)', margin: '0 4px' }}></div>
+                <div className="pc-header-divider"></div>
                 <button className="pc-btn-outline-v2" onClick={handleReset} title={t('common.reset_to_default')}>
                     <RotateCcw size={18} />
                 </button>
@@ -235,7 +236,7 @@ export default function ReactionRolesConfig() {
             </div>
         </header>
 
-        <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '360px 1fr', gap: '32px' }}>
+        <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: '32px' }}>
             {/* Sidebar Navigator V2 */}
             <aside className="v-stack animate slide-up" style={{ gap: '24px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -262,20 +263,21 @@ export default function ReactionRolesConfig() {
                     ))}
                 </div>
             </aside>
-
+            
             {/* Main Studio Area V2 */}
             <main className="pc-studio-content-v2">
-                {activePanel ? (
-                    <div className="v-stack animate slide-up" style={{ gap: '32px' }}>
-                        <div className="pc-card-v2">
-                            <div className="v-stack" style={{ gap: '4px' }}>
-                                <h2 style={{ margin: 0, fontFamily: 'Inter', fontWeight: 700, fontSize: '1.6rem', color: 'var(--text-heading)' }}>{activePanel.name}</h2>
-                                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>ID: {activePanel.id}</span>
-                            </div>
-                        </div>
+                <nav className="pc-tabs-v2" style={{ marginBottom: '32px' }}>
+                    <button className={activeTab === 'settings' ? 'active' : ''} onClick={() => setActiveTab('settings')}>
+                        <Layout size={16} /> <span>{t('rr.tab_studio')}</span>
+                    </button>
+                    <button className={activeTab === 'system_messages' ? 'active' : ''} onClick={() => setActiveTab('system_messages')}>
+                        <MessageSquare size={16} /> <span>{t('common.tab_system_messages')}</span>
+                    </button>
+                </nav>
 
-                        <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 560px', gap: '32px' }}>
-                            <div className="v-stack" style={{ gap: '32px' }}>
+                {activeTab === 'settings' && activePanel && (
+                    <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '32px' }}>
+                        <div className="v-stack animate slide-up" style={{ gap: '32px' }}>
                                 <section className="pc-card-v2">
                                     <div className="card-header-v2">
                                         <div className="header-icon"><Settings2 size={18} /></div>
@@ -357,44 +359,48 @@ export default function ReactionRolesConfig() {
                                                         </div>
 
                                                         <div className="pc-bb-columns">
-                                                            <div className="pc-bb-col" style={{ width: '44px' }}>
+                                                            <div className="pc-bb-col">
                                                                 <label>{t('common.emoji')}</label>
                                                                 <div className="pc-bb-emoji-box">
-                                                                    <EmojiInput value={role.emoji} hideInput={true} onChange={e => {
+                                                                    <EmojiInput hideInput={true} value={role.emoji} onChange={e => {
                                                                         const newRoles = [...activePanel.roles];
                                                                         newRoles[idx].emoji = e.target.value;
                                                                         updatePanel(activePanel.id, { roles: newRoles });
                                                                     }} />
                                                                 </div>
                                                             </div>
-                                                            <div className="pc-bb-col">
-                                                                <label>{t('rr.label')}</label>
-                                                                <div className="pc-bb-input-box">
-                                                                    <input value={role.label || ''} onChange={e => {
-                                                                        const newRoles = [...activePanel.roles];
-                                                                        newRoles[idx].label = e.target.value;
-                                                                        updatePanel(activePanel.id, { roles: newRoles });
-                                                                    }} placeholder="Select Role" />
-                                                                </div>
-                                                            </div>
-                                                            <div className="pc-bb-col">
-                                                                <label>{t('common.color')}</label>
-                                                                <div className="pc-bb-color-picker">
-                                                                    {['PRIMARY', 'SUCCESS', 'DANGER', 'SECONDARY'].map(styleOption => (
-                                                                        <div 
-                                                                            key={styleOption}
-                                                                            className={`pc-bb-swatch swatch-${styleOption} ${(role.style || 'PRIMARY') === styleOption ? 'active' : ''}`}
-                                                                            onClick={() => {
+                                                            {role.type !== 'REACTION' && (
+                                                                <>
+                                                                    <div className="pc-bb-col">
+                                                                        <label>{t('rr.label')}</label>
+                                                                        <div className="pc-bb-input-box">
+                                                                            <input value={role.label || ''} onChange={e => {
                                                                                 const newRoles = [...activePanel.roles];
-                                                                                newRoles[idx].style = styleOption;
+                                                                                newRoles[idx].label = e.target.value;
                                                                                 updatePanel(activePanel.id, { roles: newRoles });
-                                                                            }}
-                                                                        >
-                                                                            {(role.style || 'PRIMARY') === styleOption && <CheckCircle2 size={12} color="#fff" />}
+                                                                            }} placeholder="Select Role" />
                                                                         </div>
-                                                                    ))}
-                                                                </div>
-                                                            </div>
+                                                                    </div>
+                                                                    <div className="pc-bb-col">
+                                                                        <label>{t('common.color')}</label>
+                                                                        <div className="pc-bb-color-picker">
+                                                                            {['PRIMARY', 'SUCCESS', 'DANGER', 'SECONDARY'].map(styleOption => (
+                                                                                <div 
+                                                                                    key={styleOption}
+                                                                                    className={`pc-bb-swatch swatch-${styleOption} ${(role.style || 'PRIMARY') === styleOption ? 'active' : ''}`}
+                                                                                    onClick={() => {
+                                                                                        const newRoles = [...activePanel.roles];
+                                                                                        newRoles[idx].style = styleOption;
+                                                                                        updatePanel(activePanel.id, { roles: newRoles });
+                                                                                    }}
+                                                                                >
+                                                                                    {(role.style || 'PRIMARY') === styleOption && <CheckCircle2 size={12} color="#fff" />}
+                                                                                </div>
+                                                                            ))}
+                                                                        </div>
+                                                                    </div>
+                                                                </>
+                                                            )}
                                                         </div>
 
                                                         <div className="pc-input-group-v2" style={{ marginTop: '10px' }}>
@@ -421,17 +427,24 @@ export default function ReactionRolesConfig() {
                                 <EmbedPreviewContainer 
                                     data={{
                                         ...activePanel.embed,
+                                        type: activePanel.type,
                                         buttons: activePanel.type === 'BUTTON' ? activePanel.roles.map(r => ({
                                             label: r.label,
                                             emoji: r.emoji,
                                             style: r.style
+                                        })) : [],
+                                        reactions: activePanel.type === 'REACTION' ? activePanel.roles.map(r => ({
+                                            emoji: r.emoji
                                         })) : []
                                     }} 
                                 />
+                                
+
                             </aside>
                         </div>
-                    </div>
-                ) : (
+                )}
+
+                {activeTab === 'settings' && !activePanel && (
                     <div style={{ textAlign: 'center', padding: '100px 32px' }}>
                         <Fingerprint size={64} style={{ color: 'var(--primary)', marginBottom: '24px', opacity: 0.5 }} />
                         <h2 style={{ fontFamily: 'Inter', fontWeight: 700, fontSize: '2rem', color: 'var(--text-heading)' }}>{t('rr.no_panel_title')}</h2>
@@ -439,6 +452,20 @@ export default function ReactionRolesConfig() {
                         <button onClick={addPanel} className="pc-btn-primary" style={{ margin: '0 auto' }}>
                             <Plus size={20} /> <span>{t('rr.new_panel')}</span>
                         </button>
+                    </div>
+                )}
+
+                {activeTab === 'system_messages' && (
+                    <div className="v-stack animate slide-up">
+                        <SystemMessagesSection 
+                            config={config}
+                            onUpdate={setConfig}
+                            messages={[
+                                { key: 'role_added', label: t('rr.msg_role_added'), placeholder: t('rr.msg_role_added_placeholder') },
+                                { key: 'role_removed', label: t('rr.msg_role_removed'), placeholder: t('rr.msg_role_removed_placeholder') },
+                                { key: 'error', label: t('rr.msg_error'), placeholder: t('rr.msg_error_placeholder') }
+                            ]}
+                        />
                     </div>
                 )}
             </main>
@@ -474,20 +501,16 @@ export default function ReactionRolesConfig() {
             .pc-panel-nav-btn-v2 .nav-name { font-weight: 700; color: var(--text-heading); font-size: 1rem; }
             .pc-panel-nav-btn-v2 .nav-meta { font-size: 0.7rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; }
 
-            .pc-card-v2 { background: var(--bg-card); border: 1px solid var(--border); border-radius: 28px; padding: 32px; box-shadow: var(--shadow-premium); }
-            .card-header-v2 { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
-            .header-icon { width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: var(--bg-badge); }
-            .card-header-v2 h3 { margin: 0; font-family: 'Inter'; font-size: 1.3rem; font-weight: 700; color: var(--text-heading); }
-
-            .pc-sub-card-v2 { background: var(--bg-badge); padding: 24px; border-radius: 20px; border: 1.5px solid var(--border); }
-            .pc-btn-icon-danger-v2 { width: 36px; height: 36px; border-radius: 10px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-
-            .pc-input-group-v2 label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; display: block; }
-            .pc-input-modern-v2 { width: 100%; background: var(--bg-badge); border: 1.5px solid var(--border); border-radius: 14px; padding: 12px 16px; font-weight: 700; color: var(--text-heading); outline: none; transition: 0.2s; }
-            .pc-input-modern-v2:focus { border-color: var(--primary); }
-
             .pc-btn-danger-studio-v2 { width: 100%; padding: 16px; background: rgba(239, 68, 68, 0.08); color: #ef4444; border: 1.5px solid rgba(239, 68, 68, 0.1); border-radius: 20px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s; }
             .pc-btn-danger-studio-v2:hover { background: #ef4444; color: #fff; }
+
+            .pc-bb-emoji-box { width: 72px; height: 72px; flex-shrink: 0; }
+            .pc-bb-input-box { flex: 1; }
+            .pc-bb-columns { display: flex; gap: 20px; align-items: flex-end; }
+            .pc-bb-col { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+            .pc-bb-col label { font-size: 0.65rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+            .pc-bb-input-box input { width: 100%; background: var(--bg-badge); border: 1.5px solid var(--border); padding: 12px 16px; border-radius: 14px; font-weight: 700; color: var(--text-heading); outline: none; }
+            .pc-bb-input-box input:focus { border-color: var(--primary); }
 
             .v-stack { display: flex; flex-direction: column; }
             .animate { animation: slideUp 0.4s ease-out; }

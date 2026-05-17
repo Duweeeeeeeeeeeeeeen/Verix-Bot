@@ -30,12 +30,15 @@ router.get('/:guildId/templates', adminCheck, async (req, res) => {
 // POST save/update a template
 router.post('/:guildId/templates', adminCheck, validate(templateSchema), async (req, res) => {
     try {
-        const { id, name, data } = req.validatedData;
+        const { id, name, targetChannelId, data } = req.validatedData;
         const guildId = req.params.guildId;
         let template;
+        
+        const updateFields = { name, data };
+        if (targetChannelId !== undefined) updateFields.targetChannelId = targetChannelId;
 
         if (id) {
-            template = await EmbedTemplate.findByIdAndUpdate(id, { name, data }, { returnDocument: 'after' });
+            template = await EmbedTemplate.findByIdAndUpdate(id, { $set: updateFields }, { returnDocument: 'after' });
             await logAudit(req, 'UPDATE_TEMPLATE', { name, id });
         } else {
             const isPremium = (await Guild.findOne({ guildId }))?.isPremium;
@@ -45,7 +48,7 @@ router.post('/:guildId/templates', adminCheck, validate(templateSchema), async (
                 return res.status(403).json({ success: false, error: 'Free tier limit: 3 Templates. Upgrade to PRO for more.' });
             }
 
-            template = await EmbedTemplate.create({ guildId, name, data });
+            template = await EmbedTemplate.create({ guildId, name, targetChannelId, data });
             await logAudit(req, 'CREATE_TEMPLATE', { name });
         }
 

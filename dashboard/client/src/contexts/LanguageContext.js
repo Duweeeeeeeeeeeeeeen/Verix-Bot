@@ -42,7 +42,9 @@ export function LanguageProvider({ children }) {
             return key;
         }
 
-        return val.replace(/\{(\w+)\}/g, (_, name) => vars[name] ?? `{${name}}`);
+        return val.replace(/\{\{?(\w+)\}\}?/g, (match, name) => {
+            return vars[name] !== undefined ? vars[name] : match;
+        });
     }, [language]);
 
     return (

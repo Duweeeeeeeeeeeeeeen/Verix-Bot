@@ -28,7 +28,9 @@ const ticketConfigSchema = new mongoose.Schema({
             style: { type: String, default: 'PRIMARY' },
             url: { type: String, default: null },
             image: { type: String, default: null },
-            pingRoleId: { type: String, default: null }
+            pingRoleId: { type: String, default: null },
+            order: { type: Number, default: 0 },
+            welcomeMessage: { type: String, default: null }
         },
         default: {
             'supporto': { label: 'Supporto Generale', color: '#6366f1', emoji: '🎫' },
@@ -70,11 +72,16 @@ const ticketConfigSchema = new mongoose.Schema({
         }
     },
     messages: {
-        cooldown: { type: String, default: '⚠️ **TRAFFICO ELEVATO:** Attendi qualche minuto prima di presentare una nuova istanza allo sportello.' },
-        alreadyExists: { type: String, default: '❌ **PRATICA PENDENTE:** Hai già un faldone di tipo **{type}** aperto.' },
-        successOpen: { type: String, default: '✅ **RICHIESTA PROTOCOLLATA:** Recati allo sportello {channel}.' },
-        successClose: { type: String, default: '🛡️ **ARCHIVIAZIONE IN CORSO...**' },
-        staffClaimed: { type: String, default: '✅ **{staff}** ha preso in carico la gestione della pratica.' }
+        cooldown: { type: String, default: null },
+        alreadyExists: { type: String, default: null },
+        successOpen: { type: String, default: null },
+        successClose: { type: String, default: null },
+        staffClaimed: { type: String, default: null }
+    },
+    systemMessages: {
+        type: Map,
+        of: String,
+        default: {}
     },
     buttons: {
         claim: { 

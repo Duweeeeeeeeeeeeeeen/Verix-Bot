@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Skeleton from '../../../components/Skeleton';
-import { DiscordSelector } from '../../../components/LazyConfigComponents';
+import { DiscordSelector, SystemMessagesSection } from '../../../components/LazyConfigComponents';
 import api from '../../../utils/api';
 import { 
     Save, Cpu, Settings2, Power, Info, Shield,
@@ -93,9 +93,9 @@ export default function UtilityConfig() {
         method: 'POST',
         body: JSON.stringify(config)
       });
-      showToast("Protocollo Utility sincronizzato!");
+      showToast(t('utility.sync_success'));
     } catch (error) {
-        showToast("Errore durante il salvataggio.", 'error');
+        showToast(t('common.save_error'), 'error');
     }
     finally { 
         setSaving(false); 
@@ -104,10 +104,10 @@ export default function UtilityConfig() {
   };
 
   const handleQuickClear = async () => {
-    if (!quickClear.channelId) return showToast("Seleziona un canale target!", 'error');
-    if (quickClear.amount < 1 || quickClear.amount > 100) return showToast("Quantità non valida (1-100)!", 'error');
+    if (!quickClear.channelId) return showToast(t('utility.select_channel_error'), 'error');
+    if (quickClear.amount < 1 || quickClear.amount > 100) return showToast(t('utility.invalid_amount_error'), 'error');
 
-    if (!confirm(`Sei sicuro di voler eliminare ${quickClear.amount} messaggi dal canale selezionato?`)) return;
+    if (!confirm(t('utility.purge_confirm', { amount: quickClear.amount }))) return;
 
     setClearing(true);
     try {
@@ -115,9 +115,9 @@ export default function UtilityConfig() {
         method: 'POST',
         body: JSON.stringify(quickClear)
       });
-      showToast(res.message || "Canale purificato con successo!");
+      showToast(res.message || t('utility.purge_success'));
     } catch (error) {
-      showToast(error.message || "Errore durante la pulizia.", 'error');
+      showToast(error.message || t('utility.purge_error'), 'error');
     } finally {
       setClearing(false);
     }
@@ -141,7 +141,7 @@ export default function UtilityConfig() {
                     <h1>{t('utility.title')}</h1>
                     <div className={`pc-status-tag-v2 ${config.enabled ? 'on' : 'off'}`}>
                         <div className="status-dot-v2"></div>
-                        {config.enabled ? t('utility.active_tag') : t('utility.standby_tag')}
+                        {config.enabled ? t('common.active_system') : t('common.inactive_system')}
                     </div>
                 </div>
             </div>
@@ -181,101 +181,126 @@ export default function UtilityConfig() {
             </div>
         </header>
 
+        <nav className="pc-tabs-v2" style={{ marginBottom: '32px' }}>
+            {[
+                { id: 'settings', icon: <Settings2 size={16} />, label: t('common.tab_settings') },
+                { id: 'system_messages', icon: <MessageSquare size={16} />, label: t('common.tab_system_messages') }
+            ].map(tab => (
+                <button key={tab.id} className={(activeTab || 'settings') === tab.id ? 'active' : ''} onClick={() => setActiveTab(tab.id)}>
+                    {tab.icon} <span>{tab.label}</span>
+                </button>
+            ))}
+        </nav>
         <div className="pc-content-v2">
-            <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 420px', gap: '32px' }}>
-                <div className="v-stack" style={{ gap: '32px' }}>
-                    <section className="pc-card-v2 animate slide-up">
-                        <div className="card-header-v2">
-                            <div className="header-icon"><Shield size={18} /></div>
-                            <h3 style={{ margin: 0 }}>{t('utility.management_perms')}</h3>
-                        </div>
-                        <div className="card-body-v2">
-                            <div className="pc-input-group-v2">
-                                <label>{t('utility.auth_roles')}</label>
-                                <DiscordSelector 
-                                    type="role" 
-                                    multiple={true}
-                                    options={discordData.roles} 
-                                    value={config.allowedRoles || []} 
-                                    onChange={v => setConfig({...config, allowedRoles: v})} 
-                                />
+            {(activeTab === 'settings' || !activeTab) && (
+                <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 420px', gap: '32px' }}>
+                    <div className="v-stack" style={{ gap: '32px' }}>
+                        <section className="pc-card-v2 animate slide-up">
+                            <div className="card-header-v2">
+                                <div className="header-icon"><Shield size={18} /></div>
+                                <h3 style={{ margin: 0 }}>{t('utility.management_perms')}</h3>
                             </div>
-                        </div>
-                    </section>
-
-                    <section className="pc-card-v2 animate slide-up" style={{ animationDelay: '0.1s' }}>
-                        <div className="card-header-v2">
-                            <div className="header-icon" style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444' }}><Eraser size={18} /></div>
-                            <h3 style={{ margin: 0 }}>{t('utility.quick_purge')}</h3>
-                        </div>
-                        <div className="card-body-v2">
-                            <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                            <div className="card-body-v2">
                                 <div className="pc-input-group-v2">
-                                    <label>{t('utility.target_channel')}</label>
+                                    <label>{t('utility.auth_roles')}</label>
                                     <DiscordSelector 
-                                        type="channel" 
-                                        options={discordData.channels} 
-                                        value={quickClear.channelId} 
-                                        onChange={v => setQuickClear({...quickClear, channelId: v})} 
-                                    />
-                                </div>
-                                <div className="pc-input-group-v2">
-                                    <label>{t('utility.amount_max')}</label>
-                                    <input 
-                                        className="pc-input-modern-v2"
-                                        type="number" 
-                                        min="1" 
-                                        max="100" 
-                                        value={quickClear.amount} 
-                                        onChange={e => setQuickClear({...quickClear, amount: parseInt(e.target.value)})} 
+                                        type="role" 
+                                        multiple={true}
+                                        options={discordData.roles} 
+                                        value={config.allowedRoles || []} 
+                                        onChange={v => setConfig({...config, allowedRoles: v})} 
                                     />
                                 </div>
                             </div>
-                            
-                            <button 
-                                onClick={handleQuickClear} 
-                                className="pc-btn-primary" 
-                                style={{ marginTop: '24px', width: '100%', background: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)' }}
-                                disabled={clearing}
-                            >
-                                <Zap size={18} />
-                                <span>{clearing ? t('utility.purging') : t('utility.execute_purge')}</span>
-                            </button>
-                        </div>
-                    </section>
-                </div>
+                        </section>
 
-                <div className="v-stack" style={{ gap: '32px' }}>
-                    <section className="pc-card-v2 animate slide-up" style={{ animationDelay: '0.2s' }}>
-                        <div className="card-header-v2">
-                            <div className="header-icon"><ListChecks size={18} /></div>
-                            <h3 style={{ margin: 0 }}>{t('utility.system_notes')}</h3>
-                        </div>
-                        <div className="card-body-v2">
-                            <div className="v-stack" style={{ gap: '16px' }}>
-                                {[
-                                    { icon: <Clock size={16} />, text: t('utility.note_14days') },
-                                    { icon: <Shield size={16} />, text: t('utility.note_manage_msgs') },
-                                    { icon: <Activity size={16} />, text: t('utility.note_irreversible') }
-                                ].map((item, i) => (
-                                    <div key={i} className="pc-tag-v2" style={{ padding: '12px', border: 'none' }}>
-                                        <div style={{ color: 'var(--primary)' }}>{item.icon}</div>
-                                        <span>{item.text}</span>
+                        <section className="pc-card-v2 animate slide-up" style={{ animationDelay: '0.1s' }}>
+                            <div className="card-header-v2">
+                                <div className="header-icon" style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444' }}><Eraser size={18} /></div>
+                                <h3 style={{ margin: 0 }}>{t('utility.quick_purge')}</h3>
+                            </div>
+                            <div className="card-body-v2">
+                                <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                                    <div className="pc-input-group-v2">
+                                        <label>{t('utility.target_channel')}</label>
+                                        <DiscordSelector 
+                                            type="channel" 
+                                            options={discordData.channels} 
+                                            value={quickClear.channelId} 
+                                            onChange={v => setQuickClear({...quickClear, channelId: v})} 
+                                        />
                                     </div>
-                                ))}
+                                    <div className="pc-input-group-v2">
+                                        <label>{t('utility.amount_max')}</label>
+                                        <input 
+                                            className="pc-input-modern-v2"
+                                            type="number" 
+                                            min="1" 
+                                            max="100" 
+                                            value={quickClear.amount} 
+                                            onChange={e => setQuickClear({...quickClear, amount: parseInt(e.target.value)})} 
+                                        />
+                                    </div>
+                                </div>
+                                
+                                <button 
+                                    onClick={handleQuickClear} 
+                                    className="pc-btn-primary" 
+                                    style={{ marginTop: '24px', width: '100%', background: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)' }}
+                                    disabled={clearing}
+                                >
+                                    <Zap size={18} />
+                                    <span>{clearing ? t('utility.purging') : t('utility.execute_purge')}</span>
+                                </button>
                             </div>
-                        </div>
-                    </section>
+                        </section>
+                    </div>
 
-                    <div className="pc-card-v2 animate slide-up" style={{ background: 'linear-gradient(135deg, #1e1b4b 0%, #020617 100%)', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
-                            <Sparkles size={18} style={{ color: '#fbbf24' }} />
-                            <span style={{ fontWeight: 700, fontSize: '0.8rem' }}>{t('utility.pro_tip')}</span>
+                    <div className="v-stack" style={{ gap: '32px' }}>
+                        <section className="pc-card-v2 animate slide-up" style={{ animationDelay: '0.2s' }}>
+                            <div className="card-header-v2">
+                                <div className="header-icon"><ListChecks size={18} /></div>
+                                <h3 style={{ margin: 0 }}>{t('utility.system_notes')}</h3>
+                            </div>
+                            <div className="card-body-v2">
+                                <div className="v-stack" style={{ gap: '16px' }}>
+                                    {[
+                                        { icon: <Clock size={16} />, text: t('utility.note_14days') },
+                                        { icon: <Shield size={16} />, text: t('utility.note_manage_msgs') },
+                                        { icon: <Activity size={16} />, text: t('utility.note_irreversible') }
+                                    ].map((item, i) => (
+                                        <div key={i} className="pc-tag-v2" style={{ padding: '12px', border: 'none' }}>
+                                            <div style={{ color: 'var(--primary)' }}>{item.icon}</div>
+                                            <span>{item.text}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </section>
+
+                        <div className="pc-card-v2 animate slide-up" style={{ background: 'linear-gradient(135deg, #1e1b4b 0%, #020617 100%)', color: 'white', border: '1px solid rgba(255,255,255,0.1)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+                                <Sparkles size={18} style={{ color: '#fbbf24' }} />
+                                <span style={{ fontWeight: 700, fontSize: '0.8rem' }}>{t('utility.pro_tip')}</span>
+                            </div>
+                            <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 700, opacity: 0.8 }}>{t('utility.pro_tip_desc')}</p>
                         </div>
-                        <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 700, opacity: 0.8 }}>{t('utility.pro_tip_desc')}</p>
                     </div>
                 </div>
-            </div>
+            )}
+
+            {(activeTab === 'system_messages') && (
+                <div className="v-stack animate slide-up">
+                    <SystemMessagesSection 
+                        config={config}
+                        onUpdate={setConfig}
+                        messages={[
+                            { key: 'clear_success', label: t('utility.msg_clear_success'), placeholder: t('utility.msg_clear_success_placeholder') },
+                            { key: 'no_perms', label: t('utility.msg_no_perms'), placeholder: t('utility.msg_no_perms_placeholder') }
+                        ]}
+                    />
+                </div>
+            )}
         </div>
 
         <style jsx>{`

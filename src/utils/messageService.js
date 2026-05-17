@@ -5,6 +5,28 @@ import Guild from '../models/Guild.js';
 import { getDefaultMessages } from '../locales/t.js';
 import { buildEmbed } from './embedHelper.js';
 import logger from './logger.js';
+import mongoose from 'mongoose';
+
+const MODULE_MODEL_MAP = {
+    'tickets': 'TicketConfig',
+    'whitelist': 'WhitelistConfig',
+    'background': 'BackgroundConfig',
+    'moderation': 'ModerationConfig',
+    'verify': 'VerifyConfig',
+    'welcome': 'WelcomeConfig',
+    'fivem': 'FiveMConfig',
+    'giveaway': 'GiveawayConfig',
+    'poll': 'PollConfig',
+    'photocontest': 'PhotoContestConfig',
+    'socials': 'SocialConfig',
+    'utility': 'UtilityConfig',
+    'antispam': 'AntiSpamConfig',
+    'autoclear': 'AutoClearConfig',
+    'automation': 'AutomationConfig',
+    'reactionroles': 'ReactionRoleConfig',
+    'tempvoice': 'TempVoiceConfig',
+    'support': 'SupportConfig'
+};
 
 class MessageService {
     constructor() {
@@ -140,6 +162,32 @@ class MessageService {
             }
         }
         
+        // --- NEW: Module-Specific System Messages Override ---
+        const modelName = MODULE_MODEL_MAP[module];
+        if (modelName) {
+            try {
+                const Model = mongoose.model(modelName);
+                const modConfig = await Model.findOne({ guildId });
+                
+                if (modConfig?.systemMessages) {
+                    const override = modConfig.systemMessages instanceof Map 
+                        ? modConfig.systemMessages.get(slug)
+                        : modConfig.systemMessages[slug];
+                        
+                    if (override && override.trim() !== '') {
+                        // Return as a simple embed object that buildEmbed will handle
+                        return { 
+                            description: override, 
+                            color: modConfig.colors?.primary || '#5865f2' 
+                        };
+                    }
+                }
+            } catch (err) {
+                // Ignore if model not registered or error
+                logger.debug(`[MessageService] No module config found for ${module} override check`);
+            }
+        }
+
         const lang = await this.getGuildLanguage(guildId);
         const defaults = getDefaultMessages(lang);
 

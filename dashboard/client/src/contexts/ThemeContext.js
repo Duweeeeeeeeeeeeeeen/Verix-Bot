@@ -11,6 +11,10 @@ export function ThemeProvider({ children }) {
         applyTheme(savedTheme);
     }, []);
 
+    useEffect(() => {
+        applyTheme(theme);
+    }, [theme]);
+
     const applyTheme = (newTheme) => {
         if (newTheme === 'light') {
             document.body.classList.add('light-theme');

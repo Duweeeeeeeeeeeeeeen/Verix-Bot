@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Skeleton from '../../../components/Skeleton';
-import { DiscordSelector } from '../../../components/LazyConfigComponents';
+import { DiscordSelector, SystemMessagesSection } from '../../../components/LazyConfigComponents';
 import { EmbedEditor } from '../../../components/LazyConfigComponents';
 import api from '../../../utils/api';
 import { useT } from '../../../contexts/LanguageContext';
@@ -152,7 +152,7 @@ export default function WelcomeConfig() {
                     <h1>{t('welcome.header_title')}</h1>
                     <div className={`pc-status-tag-v2 ${config.enabled ? 'on' : 'off'}`}>
                         <div className="status-dot-v2"></div>
-                        {config.enabled ? t('welcome.header_subtitle_on') : t('welcome.header_subtitle_off')}
+                        {config.enabled ? t('common.active_system') : t('common.inactive_system')}
                     </div>
                 </div>
             </div>
@@ -171,9 +171,9 @@ export default function WelcomeConfig() {
                         {config.enabled ? t('common.active') : t('common.inactive')}
                     </span>
                 </div>
-                <div className="pc-header-divider" style={{ width: '1px', height: '24px', background: 'var(--border)', margin: '0 4px' }}></div>
+                <div className="pc-header-divider"></div>
                 <button className="pc-btn-outline-v2" onClick={handleReset} title={t('common.reset_to_default')}>
-                    <RefreshCw size={18} />
+                    <RotateCcw size={18} />
                 </button>
                 <button 
                     className="pc-btn-outline-v2" 
@@ -192,21 +192,22 @@ export default function WelcomeConfig() {
         </header>
 
         {/* V2 Navigation Tabs */}
-        <nav className="pc-tabs-container-v2" style={{ marginBottom: '40px' }}>
-            <div className="pc-tabs-v2">
-                <button className={activeTab === 'settings' ? 'active' : ''} onClick={() => setActiveTab('settings')}>
-                    <Settings2 size={16} /> <span>{t('welcome.tab_channels')}</span>
+        <nav className="pc-tabs-v2" style={{ marginBottom: '32px' }}>
+            {[
+                { id: 'settings', icon: Settings2, label: t('welcome.tab_channels') },
+                { id: 'personalization', icon: Palette, label: t('welcome.tab_creative') },
+                { id: 'system_messages', icon: MessageCircle, label: t('common.tab_system_messages') }
+            ].map(tab => (
+                <button key={tab.id} className={activeTab === tab.id ? 'active' : ''} onClick={() => setActiveTab(tab.id)}>
+                    <tab.icon size={16} /> <span>{tab.label}</span>
                 </button>
-                <button className={activeTab === 'personalization' ? 'active' : ''} onClick={() => setActiveTab('personalization')}>
-                    <Palette size={16} /> <span>{t('welcome.tab_creative')}</span>
-                </button>
-            </div>
+            ))}
         </nav>
 
         <div className="pc-content-v2">
             {activeTab === 'settings' && (
                 <div className="v-stack animate slide-up" style={{ gap: '32px' }}>
-                    <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 560px', gap: '32px' }}>
+                    <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '32px' }}>
                         {/* Welcome Card */}
                         <section className="pc-card-v2">
                             <div className="card-header-v2" style={{ marginBottom: '24px' }}>
@@ -224,6 +225,7 @@ export default function WelcomeConfig() {
                                 <div className="pc-input-group-v2">
                                     <label>{t('welcome.channel_label')}</label>
                                     <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 0 || c.type === 5)} value={config.welcome?.channelId || ''} onChange={v => updateMessageConfig('welcome', 'channelId', v)} />
+                                    <p style={{ margin: '8px 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t('welcome.channel_help')}</p>
                                 </div>
                                 <div style={{ marginTop: '24px', background: 'var(--bg-badge)', padding: '16px', borderRadius: '14px', border: '1.5px solid var(--border)', textAlign: 'center' }}>
                                     <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)', fontWeight: 700 }}>{t('welcome.test_header_hint')}</span>
@@ -248,6 +250,7 @@ export default function WelcomeConfig() {
                                 <div className="pc-input-group-v2">
                                     <label>{t('welcome.channel_label')}</label>
                                     <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 0 || c.type === 5)} value={config.leave?.channelId || ''} onChange={v => updateMessageConfig('leave', 'channelId', v)} />
+                                    <p style={{ margin: '8px 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t('welcome.channel_help')}</p>
                                 </div>
                                 <div style={{ marginTop: '24px', background: 'var(--bg-badge)', padding: '16px', borderRadius: '14px', border: '1.5px solid var(--border)', textAlign: 'center' }}>
                                     <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)', fontWeight: 700 }}>{t('welcome.test_leave_hint')}</span>
@@ -330,6 +333,19 @@ export default function WelcomeConfig() {
                     </div>
                 </div>
             )}
+
+            {activeTab === 'system_messages' && (
+                <div className="v-stack animate slide-up">
+                    <SystemMessagesSection 
+                        config={config}
+                        onUpdate={setConfig}
+                        messages={[
+                            { key: 'test_success', label: t('welcome.msg_test_success'), placeholder: t('welcome.placeholder_test_success') },
+                            { key: 'test_error', label: t('welcome.msg_test_error'), placeholder: t('welcome.placeholder_test_error') }
+                        ]}
+                    />
+                </div>
+            )}
         </div>
 
         <style jsx>{`
@@ -346,6 +362,16 @@ export default function WelcomeConfig() {
             .pc-status-tag-v2.on { background: rgba(16, 185, 129, 0.1); color: #10b981; }
             .pc-status-tag-v2.off { background: var(--bg-badge); color: #ef4444; }
             .status-dot-v2 { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+            .header-controls { display: flex; align-items: center; gap: 12px; }
+            .pc-header-divider { width: 1.5px; height: 24px; background: var(--border); margin: 0 4px; }
+            
+            .text-active { color: #10b981; }
+            .text-inactive { color: #ef4444; }
+
+            .pc-btn-outline-v2 { background: var(--bg-badge); color: var(--text-muted); border: 1.5px solid var(--border); width: 44px; height: 44px; border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+            .pc-btn-outline-v2:hover:not(:disabled) { background: var(--bg-card); border-color: var(--primary); color: var(--primary); transform: translateY(-2px); }
+            .pc-btn-outline-v2:disabled { opacity: 0.5; cursor: not-allowed; }
 
             /* Card V2 */
             .pc-card-v2 { background: var(--bg-card); border: 1px solid var(--border); border-radius: 28px; padding: 32px; box-shadow: var(--shadow-premium); }

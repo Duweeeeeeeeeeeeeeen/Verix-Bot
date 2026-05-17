@@ -14,6 +14,8 @@ import { checkBotPermissions, formatMissingPermissions } from '../../../utils/pe
 import placeholderHelper from '../../../utils/placeholderHelper.js';
 import messageService from '../../../utils/messageService.js';
 import StaffStatsService from '../../../services/staffStatsService.js';
+import { t } from '../../../locales/t.js';
+import { resolveSystemMessage } from '../../../utils/messageResolver.js';
 
 export default {
     name: Events.InteractionCreate,
@@ -31,14 +33,17 @@ export default {
         // Special case: Priority selection for 'segnalazione' triggers a modal.
         // Modals MUST be shown BEFORE deferReply and cannot be deferred.
         if (interaction.isStringSelectMenu() && customId.startsWith('ticket_priority_select_')) {
+            const config = await TicketConfig.findOne({ guildId: interaction.guildId });
+            const globalConfig = await GlobalConfig.findOne({ guildId: interaction.guildId });
+            const lang = globalConfig?.language || 'en';
             const type = customId.replace('ticket_priority_select_', '');
             const priority = interaction.values[0];
 
             if (type === 'segnalazione') {
-                const modal = new ModalBuilder().setCustomId(`ticket_modal_report_${priority}`).setTitle('Modulo Segnalazione');
+                const modal = new ModalBuilder().setCustomId(`ticket_modal_report_${priority}`).setTitle(resolveSystemMessage(config, 'tickets', 'report_modal_title', lang));
                 modal.addComponents(
-                    new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('report_subject').setLabel('Soggetto').setStyle(TextInputStyle.Short).setRequired(true)),
-                    new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('report_desc').setLabel('Descrizione').setStyle(TextInputStyle.Paragraph).setRequired(true))
+                    new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('report_subject').setLabel(resolveSystemMessage(config, 'tickets', 'report_subject_label', lang)).setStyle(TextInputStyle.Short).setRequired(true)),
+                    new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('report_desc').setLabel(resolveSystemMessage(config, 'tickets', 'report_desc_label', lang)).setStyle(TextInputStyle.Paragraph).setRequired(true))
                 );
                 return interaction.showModal(modal);
             }
@@ -86,21 +91,26 @@ export default {
 
                 const existing = await Ticket.findOne({ userId: interaction.user.id, guildId: interaction.guild.id, type, status: { $ne: 'CLOSED' } });
                 if (existing) {
-                    const embed = await messageService.get(interaction.guild.id, 'tickets', 'already_exists', {
-                        type: type.toUpperCase(),
-                        channelId: existing.channelId
+                    return interaction.editReply({ 
+                        content: resolveSystemMessage(config, 'tickets', 'already_exists', lang, {
+                            type: type.toUpperCase(),
+                            channelId: existing.channelId,
+                            channel: `<#${existing.channelId}>`
+                        }) 
                     });
-                    return interaction.editReply({ embeds: [embed] });
                 }
+
+                const globalConfig = await GlobalConfig.findOne({ guildId: interaction.guildId });
+                const lang = globalConfig?.language || 'en';
 
                 const priorityMenu = new ActionRowBuilder().addComponents(
                     new StringSelectMenuBuilder()
                         .setCustomId(`ticket_priority_select_${type}`)
-                        .setPlaceholder('Seleziona la priorità del tuo ticket...')
+                        .setPlaceholder(resolveSystemMessage(config, 'tickets', 'priority_placeholder', lang))
                         .addOptions([
-                            { label: 'Normale', value: 'NORMALE', emoji: '🟢' },
-                            { label: 'Importante', value: 'IMPORTANTE', emoji: '🟡' },
-                            { label: 'Urgente', value: 'URGENTE', emoji: '🔴' }
+                            { label: resolveSystemMessage(config, 'tickets', 'priority_normal', lang), value: 'NORMALE', emoji: '🟢' },
+                            { label: resolveSystemMessage(config, 'tickets', 'priority_important', lang), value: 'IMPORTANTE', emoji: '🟡' },
+                            { label: resolveSystemMessage(config, 'tickets', 'priority_urgent', lang), value: 'URGENTE', emoji: '🔴' }
                         ])
                 );
 
@@ -153,7 +163,7 @@ export default {
 
             if (interaction.isButton() || interaction.isStringSelectMenu()) {
                 if (!ticket) {
-                    if (interaction.deferred) return interaction.editReply({ content: '❌ Errore: Questo canale non è associato a un ticket attivo nel database.' });
+                    if (interaction.deferred) return messageService.reply(interaction, 'tickets', 'generic_error', { reason: 'Ticket non trovato nel database.' }, { ephemeral: true });
                     return;
                 }
 
@@ -177,16 +187,19 @@ export default {
                     return messageService.reply(interaction, 'tickets', 'staff_only', {}, { ephemeral: true });
                 }
 
+                const globalConfig = await GlobalConfig.findOne({ guildId: interaction.guildId });
+                const lang = globalConfig?.language || 'en';
+
                 // QUICK REPLIES
                 if (customId === 'tk_quick_reply') {
                     if (!config.cannedResponses || !config.cannedResponses.length) {
-                        return interaction.editReply({ content: '❌ Nessuna risposta rapida configurata nella dashboard.' });
+                        return interaction.editReply({ content: resolveSystemMessage(config, 'tickets', 'no_quick_replies', lang) });
                     }
 
                     const menu = new ActionRowBuilder().addComponents(
                         new StringSelectMenuBuilder()
                             .setCustomId('tk_quick_reply_send')
-                            .setPlaceholder('Scegli un template da inviare...')
+                            .setPlaceholder(resolveSystemMessage(config, 'tickets', 'quick_reply_placeholder', lang))
                             .addOptions(config.cannedResponses.map(r => ({ label: r.label, value: r.label })))
                     );
                     const embed = await messageService.get(interaction.guild.id, 'tickets', 'quick_reply_menu', {});
@@ -212,7 +225,7 @@ export default {
                         .setColor('var(--primary)' || '#5865F2');
 
                     await interaction.channel.send({ embeds: [embed] });
-                    return interaction.editReply({ content: `✅ Risposta rapida inviata: \`${label}\``, components: [] });
+                    return messageService.reply(interaction, 'tickets', 'success_open', { channel: 'Risposta inviata' }, { ephemeral: true });
                 }
 
                 // TAGGING
@@ -221,7 +234,7 @@ export default {
                     const menu = new ActionRowBuilder().addComponents(
                         new StringSelectMenuBuilder()
                             .setCustomId('tk_tag_select')
-                            .setPlaceholder('Seleziona un protocollo...')
+                            .setPlaceholder(resolveSystemMessage(config, 'tickets', 'tag_placeholder', lang))
                             .addOptions(tags.map(t => ({ label: t, value: t })))
                     );
                     const embed = await messageService.get(interaction.guild.id, 'tickets', 'tag_menu', {});
@@ -235,7 +248,7 @@ export default {
 
                     const staffRoles = (config.staffRoleIds || []).map(id => interaction.guild.roles.cache.get(id)).filter(r => r);
                     await renderTicketDashboard(interaction.channel, ticket, config, config.typesConfig.get(ticket.type), interaction.user, staffRoles, true);
-                    return interaction.editReply({ content: `✅ Tag \`${tag}\` aggiunto con successo.` });
+                    return messageService.reply(interaction, 'tickets', 'note_success', { reason: 'Tag aggiunto' }, { ephemeral: true });
                 }
 
                 // CLAIM & STATUS
@@ -250,7 +263,7 @@ export default {
                     // Record Stats
                     await StaffStatsService.recordClaim(interaction.guildId, interaction.user.id);
 
-                    await interaction.editReply({ content: '✅ Ticket preso in carico correttamente.' });
+                    await messageService.reply(interaction, 'tickets', 'claim_success', {});
                     
                     interaction.channel.setName(`⚙️-${interaction.channel.name}`).catch(() => {});
                     const staffRoles = (config.staffRoleIds || []).map(id => interaction.guild.roles.cache.get(id)).filter(r => r);
@@ -261,7 +274,7 @@ export default {
                     ticket.status = interaction.values[0];
                     await ticket.save();
                     
-                    await interaction.editReply({ content: `✅ Stato del ticket aggiornato a: **${ticket.status}**` });
+                    await messageService.reply(interaction, 'tickets', 'status_updated_msg', { status: ticket.status });
                     
                     const embed = await messageService.get(interaction.guild.id, 'tickets', 'status_updated', {
                         status: ticket.status
@@ -345,13 +358,13 @@ export default {
                 if (interaction.customId === 'tk_note') {
                     const modal = new ModalBuilder()
                         .setCustomId('tk_note_modal')
-                        .setTitle('Aggiungi Nota Interna');
+                        .setTitle(resolveSystemMessage(config, 'tickets', 'note_modal_title', lang));
 
                     const noteInput = new TextInputBuilder()
                         .setCustomId('note_content')
-                        .setLabel('Contenuto della nota')
+                        .setLabel(resolveSystemMessage(config, 'tickets', 'note_input_label', lang))
                         .setStyle(TextInputStyle.Paragraph)
-                        .setPlaceholder('Scrivi qui una nota visibile solo allo staff...')
+                        .setPlaceholder(resolveSystemMessage(config, 'tickets', 'note_input_placeholder', lang))
                         .setRequired(true);
 
                     modal.addComponents(new ActionRowBuilder().addComponents(noteInput));
@@ -491,7 +504,10 @@ async function createTicket(interaction, type, config, metadata = {}) {
 
         if (pingRoleId) {
             const embed = new EmbedBuilder()
-                .setDescription(`${pingContent} - Nuova istanza di tipo **${typeConfig.label || type}** aperta.`)
+                .setDescription(resolveSystemMessage(config, 'tickets', 'new_ticket_ping', lang, { 
+                    ping: pingContent, 
+                    type: typeConfig.label || type 
+                }))
                 .setColor(typeConfig.color || '#3498db');
 
             await channel.send({ content: pingContent, embeds: [embed] })
@@ -518,31 +534,47 @@ async function renderTicketDashboard(channel, ticket, config, typeConfig, user, 
     const permCheck = checkBotPermissions(channel);
     if (!permCheck.hasPermission) return logger.error(`[TICKET] Missing permissions to render dashboard in ${channel.name}`);
 
+    const globalConfig = await GlobalConfig.findOne({ guildId: channel.guildId });
+    const lang = globalConfig?.language || 'en';
+
     // Fetch Intelligence Data
     const intelEmbed = await generateIntelligenceEmbed(channel.guild, ticket.userId);
 
     const embed = await messageService.get(channel.guildId, 'tickets', 'ticket', {
-        type: ticket.type.toUpperCase(),
+        type: typeConfig?.label?.toUpperCase() || ticket.type.toUpperCase(),
         user_id: ticket.userId,
         priority: ticket.priority,
         status: ticket.status,
-        assignedStaff: ticket.assignedStaffId ? `<@${ticket.assignedStaffId}>` : '_In attesa..._',
-        tags: ticket.tags.length > 0 ? ticket.tags.map(t => `\`${t}\``).join(' ') : '_Nessuna_'
+        assignedStaff: ticket.assignedStaffId ? `<@${ticket.assignedStaffId}>` : resolveSystemMessage(config, 'tickets', 'waiting_staff', lang),
+        tags: ticket.tags.length > 0 ? ticket.tags.map(t => `\`${t}\``).join(' ') : resolveSystemMessage(config, 'tickets', 'none', lang)
     });
 
+    if (typeConfig?.welcomeMessage) {
+        embed.setDescription(placeholderHelper.replace(typeConfig.welcomeMessage, {
+            type: typeConfig?.label?.toUpperCase() || ticket.type.toUpperCase(),
+            user_id: ticket.userId,
+            priority: ticket.priority,
+            status: ticket.status,
+            assignedStaff: ticket.assignedStaffId ? `<@${ticket.assignedStaffId}>` : resolveSystemMessage(config, 'tickets', 'waiting_staff', lang),
+            tags: ticket.tags.length > 0 ? ticket.tags.map(t => `\`${t}\``).join(' ') : resolveSystemMessage(config, 'tickets', 'none', lang),
+            user: user,
+            guild: channel.guild
+        }));
+    }
+
     if (ticket.assignedStaffId) {
-        embed.addFields({ name: '👤 Operatore Assegnato', value: `<@${ticket.assignedStaffId}>`, inline: true });
+        embed.addFields({ name: resolveSystemMessage(config, 'tickets', 'assigned_staff_label', lang), value: `<@${ticket.assignedStaffId}>`, inline: true });
     }
     
     // Add Intelligence directly into the main embed (Compact)
-    if (intelEmbed && intelEmbed.data.fields) {
+    if (intelEmbed && intelEmbed.data.fields && intelEmbed.data.fields.length > 1) {
         const stats = intelEmbed.data.fields.map(f => `${f.name}: ${f.value}`).join('\n');
-        embed.addFields({ name: '🔍 Intelligence Utente', value: stats, inline: false });
+        embed.addFields({ name: t('tickets.intelligence.field_name', lang), value: stats, inline: false });
     }
 
     if (ticket.internalNotes && ticket.internalNotes.length > 0) {
         const notes = ticket.internalNotes.map(n => `• **<@${n.staffId}>**: ${n.content}`).join('\n');
-        embed.addFields({ name: '📝 Note Interne', value: notes.substring(0, 1024), inline: false });
+        embed.addFields({ name: resolveSystemMessage(config, 'tickets', 'internal_notes_label', lang), value: notes.substring(0, 1024), inline: false });
     }
 
     if (typeConfig?.image) embed.setImage(typeConfig.image);
@@ -551,23 +583,23 @@ async function renderTicketDashboard(channel, ticket, config, typeConfig, user, 
     const btnRow = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
             .setCustomId('tk_claim')
-            .setLabel(buttons.claim?.label || 'Assumi')
+            .setLabel(buttons.claim?.label || resolveSystemMessage(config, 'tickets', 'claim_btn', lang))
             .setEmoji(buttons.claim?.emoji || '🙋‍♂️')
             .setStyle(getButtonStyle(buttons.claim?.style))
             .setDisabled(!!ticket.assignedStaffId),
         new ButtonBuilder()
             .setCustomId('tk_close')
-            .setLabel(buttons.close?.label || 'Chiudi')
+            .setLabel(buttons.close?.label || resolveSystemMessage(config, 'tickets', 'close_btn', lang))
             .setEmoji(buttons.close?.emoji || '🔒')
             .setStyle(ButtonStyle.Danger),
         new ButtonBuilder()
             .setCustomId('tk_quick_reply')
-            .setLabel(buttons.quickReply?.label || 'Risposte Rapide')
+            .setLabel(buttons.quickReply?.label || resolveSystemMessage(config, 'tickets', 'quick_reply_btn', lang))
             .setEmoji(buttons.quickReply?.emoji || '📝')
             .setStyle(ButtonStyle.Primary),
         new ButtonBuilder()
             .setCustomId('tk_note')
-            .setLabel('Nota')
+            .setLabel(resolveSystemMessage(config, 'tickets', 'note_btn', lang))
             .setEmoji('📌')
             .setStyle(ButtonStyle.Secondary)
     );
@@ -575,10 +607,10 @@ async function renderTicketDashboard(channel, ticket, config, typeConfig, user, 
     const statusMenu = new ActionRowBuilder().addComponents(
         new StringSelectMenuBuilder()
             .setCustomId('tk_status_select')
-            .setPlaceholder('Cambia stato...')
+            .setPlaceholder(resolveSystemMessage(config, 'tickets', 'status_placeholder', lang))
             .addOptions([
-                { label: 'In Lavorazione', value: 'PROCESSING', emoji: '⚙️' },
-                { label: 'In Attesa (Utente)', value: 'WAITING', emoji: '⏳' }
+                { label: resolveSystemMessage(config, 'tickets', 'status_processing', lang), value: 'PROCESSING', emoji: '⚙️' },
+                { label: resolveSystemMessage(config, 'tickets', 'status_waiting', lang), value: 'WAITING', emoji: '⏳' }
             ])
     );
 

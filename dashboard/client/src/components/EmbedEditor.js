@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { 
   Type, 
@@ -18,7 +18,8 @@ import {
   Zap,
   AlignLeft,
   ChevronDown,
-  Hash
+  Hash,
+  Upload
 } from 'lucide-react';
 import HelpTooltip from './HelpTooltip';
 import CustomSelect from './CustomSelect';
@@ -33,6 +34,52 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
   const { t } = useT();
   const [isPreviewMobile, setIsPreviewMobile] = useState(false);
   const [previewTheme, setPreviewTheme] = useState('dark');
+  const [isUploading, setIsUploading] = useState(false);
+  
+  const thumbInputRef = useRef(null);
+  const imageInputRef = useRef(null);
+
+  const handleFileUpload = async (e, type) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validazione base lato client
+    if (file.size > 5 * 1024 * 1024) {
+        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Il file è troppo grande (max 5MB)', type: 'error' } }));
+        return;
+    }
+
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+        // Usa la stessa logica di api.js per determinare l'URL dell'API
+        const isLocal = typeof window !== 'undefined' && 
+            (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+        
+        const baseUrl = isLocal ? 'http://localhost:5001/api' : '/api';
+        
+        const response = await fetch(`${baseUrl}/system/upload`, {
+            method: 'POST',
+            body: formData,
+            credentials: 'include' // IMPORTANTE: per inviare i cookie di sessione
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            updateEmbed(type, result.url);
+            window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Immagine caricata con successo!', type: 'success' } }));
+        } else {
+            throw new Error(result.error || 'Errore durante il caricamento');
+        }
+    } catch (error) {
+      console.error('Upload error:', error);
+      alert('Errore di connessione durante il caricamento.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const updateEmbed = (key, value) => {
     onChange({ ...embed, [key]: value });
@@ -138,16 +185,28 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
                 <div className="pc-row-v2">
                     <div className="pc-input-group-v2">
                         <label>{t('embeds.editor.thumbnail_label')}</label>
-                        <input className="pc-input-modern" value={embed?.thumbnail || ''} onChange={e => updateEmbed('thumbnail', e.target.value)} placeholder="https://..." />
+                        <div className="pc-input-with-button-v2">
+                            <input className="pc-input-modern" value={embed?.thumbnail || ''} onChange={e => updateEmbed('thumbnail', e.target.value)} placeholder="https://..." />
+                            <button className="pc-btn-upload-v2" onClick={() => thumbInputRef.current.click()} disabled={isUploading} title="Carica Immagine">
+                                <Upload size={16} />
+                            </button>
+                            <input type="file" ref={thumbInputRef} style={{ display: 'none' }} onChange={e => handleFileUpload(e, 'thumbnail')} accept="image/*" />
+                        </div>
                     </div>
                     <div className="pc-input-group-v2">
                         <label>{t('embeds.editor.image_label')}</label>
-                        <input className="pc-input-modern" value={embed?.image || ''} onChange={e => updateEmbed('image', e.target.value)} placeholder="https://..." />
+                        <div className="pc-input-with-button-v2">
+                            <input className="pc-input-modern" value={embed?.image || ''} onChange={e => updateEmbed('image', e.target.value)} placeholder="https://..." />
+                            <button className="pc-btn-upload-v2" onClick={() => imageInputRef.current.click()} disabled={isUploading} title="Carica Immagine">
+                                <Upload size={16} />
+                            </button>
+                            <input type="file" ref={imageInputRef} style={{ display: 'none' }} onChange={e => handleFileUpload(e, 'image')} accept="image/*" />
+                        </div>
                     </div>
                 </div>
                 <p className="pc-hint-v2" style={{ marginTop: '16px' }}>
                     <Info size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
-                    {t('embeds.editor.media_hint').replace('{link}', 'ImgBB')}
+                    {t('embeds.editor.media_hint')}
                 </p>
             </div>
           </section>
@@ -221,6 +280,30 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
 
         .pc-input-modern { width: 100%; background: var(--bg-input); border: 1.5px solid var(--border); border-radius: 12px; padding: 10px 14px; font-weight: 700; outline: none; color: var(--text-main); font-size: 0.9rem; transition: 0.2s; }
         .pc-input-modern:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }
+
+        .pc-input-with-button-v2 { display: flex; gap: 8px; align-items: center; }
+        .pc-btn-upload-v2 { 
+            width: 44px; 
+            height: 44px; 
+            background: var(--bg-badge); 
+            border: 1.5px solid var(--border); 
+            border-radius: 12px; 
+            color: var(--primary); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            cursor: pointer; 
+            transition: 0.2s; 
+            flex-shrink: 0;
+        }
+        .pc-btn-upload-v2:hover:not(:disabled) { 
+            background: var(--primary); 
+            color: white; 
+            border-color: var(--primary); 
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-premium);
+        }
+        .pc-btn-upload-v2:disabled { opacity: 0.5; cursor: not-allowed; }
 
         @media (max-width: 1300px) { .pc-editor-layout-v2 { grid-template-columns: 1fr; } .pc-preview-sidebar-v2 { position: static; } }
         

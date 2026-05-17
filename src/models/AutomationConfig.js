@@ -19,7 +19,18 @@ const autoMessageSlotSchema = new mongoose.Schema({
     triggerValue: { type: Number, required: true, min: 1 },
     enabled: { type: Boolean, default: true },
     lastTriggeredAt: { type: Date, default: null },
-    messageCountSinceLast: { type: Number, default: 0 }
+    messageCountSinceLast: { type: Number, default: 0 },
+    ignoredChannels: { type: [String], default: [] },
+    colors: {
+        primary: { type: String, default: '#5865F2' },
+        success: { type: String, default: '#2ecc71' },
+        error: { type: String, default: '#ff4757' }
+    },
+    systemMessages: {
+        type: Map,
+        of: String,
+        default: {}
+    }
 }, { _id: false });
 
 const automationConfigSchema = new mongoose.Schema({

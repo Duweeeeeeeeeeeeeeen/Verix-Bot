@@ -1,7 +1,4 @@
-import { EmbedBuilder } from 'discord.js';
-import WelcomeConfig from '../../../models/WelcomeConfig.js';
-import placeholderHelper from '../../../utils/placeholderHelper.js';
-import logger from '../../../utils/logger.js';
+import messageService from '../../../utils/messageService.js';
 
 export default {
     name: 'guildMemberRemove',
@@ -10,7 +7,7 @@ export default {
             const config = await WelcomeConfig.findOne({ guildId: member.guild.id });
             if (!config || !config.enabled || !config.leave.enabled || !config.leave.channelId) return;
 
-            const channel = member.guild.channels.cache.get(config.leave.channelId);
+            const channel = await member.guild.channels.fetch(config.leave.channelId).catch(() => null);
             if (!channel) return;
 
             const placeholders = {
@@ -25,19 +22,18 @@ export default {
             const lEmbed = config.leave.embed || {};
             const isPlaceholder = (val) => !val || (typeof val === 'string' && (val.trim() === '' || val === 'Senza Titolo' || val === 'Nessun contenuto impostato.'));
 
-            const rawTitle = isPlaceholder(lEmbed.title) ? '🚗 Partenza Cittadina' : lEmbed.title;
-            const rawDesc = isPlaceholder(lEmbed.description) ? 'Il cittadino **{user}** ha lasciato la città. Speriamo di rivederlo presto nei nostri registri.' : lEmbed.description;
+            // Use messageService for fallback to localized defaults
+            const embed = await messageService.get(member.guild.id, 'welcome', 'leave', placeholders);
 
-            const embed = new EmbedBuilder()
-                .setTitle(placeholderHelper.replace(rawTitle, placeholders))
-                .setDescription(placeholderHelper.replace(rawDesc, placeholders))
-                .setColor(lEmbed.color && lEmbed.color !== '#000000' ? lEmbed.color : '#e74c3c')
-                .setThumbnail(placeholders.user_avatar) // Set default thumbnail to user avatar
-                .setTimestamp();
-
+            // Override with DB values if they are NOT placeholders
+            if (!isPlaceholder(lEmbed.title)) embed.setTitle(placeholderHelper.replace(lEmbed.title, placeholders));
+            if (!isPlaceholder(lEmbed.description)) embed.setDescription(placeholderHelper.replace(lEmbed.description, placeholders));
+            if (lEmbed.color && lEmbed.color !== '#000000' && lEmbed.color !== '#e74c3c') embed.setColor(lEmbed.color);
             if (lEmbed.footer) embed.setFooter({ text: placeholderHelper.replace(lEmbed.footer, placeholders), iconURL: member.guild.iconURL() });
             if (lEmbed.thumbnail && !isPlaceholder(lEmbed.thumbnail)) {
                 embed.setThumbnail(placeholderHelper.replace(lEmbed.thumbnail, placeholders));
+            } else {
+                embed.setThumbnail(placeholders.user_avatar);
             }
             if (lEmbed.image) embed.setImage(placeholderHelper.replace(lEmbed.image, placeholders));
 

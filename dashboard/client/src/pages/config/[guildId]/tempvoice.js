@@ -18,7 +18,7 @@ import {
     ChevronRight,
     Palette
 } from 'lucide-react';
-import { DiscordSelector } from '../../../components/LazyConfigComponents';
+import { DiscordSelector, SystemMessagesSection } from '../../../components/LazyConfigComponents';
 import { useT } from '../../../contexts/LanguageContext';
 import Head from 'next/head';
 
@@ -33,6 +33,10 @@ export default function TempVoiceConfig() {
   const [categories, setCategories] = useState([]);
   const [activeTab, setActiveTab] = useState('settings');
   const [mounted, setMounted] = useState(false);
+  const [activeRooms, setActiveRooms] = useState([]);
+  const [editingRoomId, setEditingRoomId] = useState(null);
+  const [editName, setEditName] = useState('');
+  const [editLimit, setEditLimit] = useState(0);
 
   useEffect(() => {
     setMounted(true);
@@ -48,9 +52,10 @@ export default function TempVoiceConfig() {
     setLoading(true);
     window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
     try {
-      const [configRes, discordRes] = await Promise.all([
+      const [configRes, discordRes, activeRes] = await Promise.all([
         api.request(`/config/${guildId}/tempvoice`),
-        api.request(`/config/${guildId}/discord-data`)
+        api.request(`/config/${guildId}/discord-data`),
+        api.request(`/config/${guildId}/tempvoice/active`).catch(() => ({ data: [] }))
       ]);
       
       if (configRes) setConfig(configRes.data || configRes);
@@ -59,6 +64,9 @@ export default function TempVoiceConfig() {
         const chanData = discordData.channels || [];
         setChannels(chanData.filter(c => c.type === 2)); // Voice
         setCategories(chanData.filter(c => c.type === 4)); // Category
+      }
+      if (activeRes) {
+        setActiveRooms(activeRes.data || activeRes || []);
       }
     } catch (e) {
       console.error(e);
@@ -98,6 +106,60 @@ export default function TempVoiceConfig() {
     setConfig(newConfig);
   };
 
+  const handleRename = async (channelId) => {
+    if (!editName) return;
+    window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
+    try {
+      await api.request(`/config/${guildId}/tempvoice/active/${channelId}/rename`, {
+        method: 'POST',
+        body: JSON.stringify({ name: editName })
+      });
+      window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('common.save_success'), type: 'success' } }));
+      setEditingRoomId(null);
+      const activeRes = await api.request(`/config/${guildId}/tempvoice/active`).catch(() => ({ data: [] }));
+      setActiveRooms(activeRes.data || activeRes || []);
+    } catch (e) {
+      window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('common.save_error'), type: 'error' } }));
+    } finally {
+      window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
+    }
+  };
+
+  const handleLimit = async (channelId) => {
+    window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
+    try {
+      await api.request(`/config/${guildId}/tempvoice/active/${channelId}/limit`, {
+        method: 'POST',
+        body: JSON.stringify({ limit: editLimit })
+      });
+      window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('common.save_success'), type: 'success' } }));
+      setEditingRoomId(null);
+      const activeRes = await api.request(`/config/${guildId}/tempvoice/active`).catch(() => ({ data: [] }));
+      setActiveRooms(activeRes.data || activeRes || []);
+    } catch (e) {
+      window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('common.save_error'), type: 'error' } }));
+    } finally {
+      window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
+    }
+  };
+
+  const handleDisconnect = async (channelId) => {
+    if (!confirm(t('common.delete_confirm') || 'Are you sure you want to disconnect all users and delete this channel?')) return;
+    window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
+    try {
+      await api.request(`/config/${guildId}/tempvoice/active/${channelId}`, {
+        method: 'DELETE'
+      });
+      window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('common.save_success'), type: 'success' } }));
+      const activeRes = await api.request(`/config/${guildId}/tempvoice/active`).catch(() => ({ data: [] }));
+      setActiveRooms(activeRes.data || activeRes || []);
+    } catch (e) {
+      window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('common.save_error'), type: 'error' } }));
+    } finally {
+      window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
+    }
+  };
+
   if (!mounted || loading || !config) return <Skeleton height="600px" />;
 
   return (
@@ -113,10 +175,10 @@ export default function TempVoiceConfig() {
                     <Mic2 size={28} />
                 </div>
                 <div className="pc-title-row">
-                    <h1>Canali Vocali Temporanei</h1>
+                    <h1>{t('tempvoice.title')}</h1>
                     <div className={`pc-status-tag-v2 ${config.enabled ? 'on' : 'off'}`}>
                         <div className="status-dot-v2"></div>
-                        {config.enabled ? 'SISTEMA OPERATIVO' : 'SISTEMA DISABILITATO'}
+                        {config.enabled ? t('tempvoice.active_tag') : t('tempvoice.inactive_tag')}
                     </div>
                 </div>
             </div>
@@ -137,7 +199,7 @@ export default function TempVoiceConfig() {
                 </div>
                 <button className="pc-btn-primary" onClick={handleSave} disabled={saving}>
                     <Save size={18} />
-                    <span>{saving ? 'Salvataggio...' : 'Salva Modifiche'}</span>
+                    <span>{saving ? t('common.saving') : t('common.save_changes')}</span>
                 </button>
             </div>
         </header>
@@ -146,10 +208,17 @@ export default function TempVoiceConfig() {
         <nav className="pc-tabs-container-v2" style={{ marginBottom: '40px' }}>
             <div className="pc-tabs-v2">
                 <button className={activeTab === 'settings' ? 'active' : ''} onClick={() => setActiveTab('settings')}>
-                    <Settings2 size={16} /> <span>Configurazione Canali</span>
+                    <Settings2 size={16} /> <span>{t('tempvoice.tab_settings')}</span>
                 </button>
                 <button className={activeTab === 'design' ? 'active' : ''} onClick={() => setActiveTab('design')}>
-                    <Palette size={16} /> <span>Design & Template</span>
+                    <Palette size={16} /> <span>{t('tempvoice.tab_design')}</span>
+                </button>
+                <button className={activeTab === 'active_rooms' ? 'active' : ''} onClick={() => setActiveTab('active_rooms')}>
+                    <Users size={16} /> <span>{t('tempvoice.tab_active')}</span>
+                    {activeRooms.length > 0 && <span className="pc-tab-badge-v2" style={{ background: 'var(--primary)', color: '#fff', fontSize: '0.7rem', padding: '2px 8px', borderRadius: '100px', marginLeft: '8px' }}>{activeRooms.length}</span>}
+                </button>
+                <button className={activeTab === 'system_messages' ? 'active' : ''} onClick={() => setActiveTab('system_messages')}>
+                    <MessageSquare size={16} /> <span>{t('common.tab_system_messages')}</span>
                 </button>
             </div>
         </nav>
@@ -161,32 +230,34 @@ export default function TempVoiceConfig() {
                         <div className="card-header-v2">
                             <div className="header-icon" style={{ background: '#f0f9ff', color: '#0ea5e9' }}><Zap size={18} /></div>
                             <div className="v-stack" style={{ flex: 1 }}>
-                                <h3 style={{ margin: 0 }}>Canale Generatore</h3>
-                                <p style={{ margin: '4px 0 0 0', fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>Il canale che gli utenti devono joinare per creare la propria stanza.</p>
+                                <h3 style={{ margin: 0 }}>{t('tempvoice.generator_title')}</h3>
+                                <p style={{ margin: '4px 0 0 0', fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t('tempvoice.generator_desc')}</p>
                             </div>
                         </div>
                         <div className="card-body-v2">
                             <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
                                 <div className="pc-input-group-v2">
-                                    <label>Canale Sorgente (Join to Create)</label>
+                                    <label>{t('tempvoice.generator_channel')}</label>
                                     <DiscordSelector 
                                         type="channel" 
                                         options={channels} 
                                         value={config.creatorChannelId || ''} 
                                         onChange={val => setNested('creatorChannelId', val)} 
                                     />
+                                    <p style={{ margin: '8px 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t('tempvoice.generator_help')}</p>
                                 </div>
                                 <div className="pc-input-group-v2">
-                                    <label>Categoria di Destinazione</label>
+                                    <label>{t('tempvoice.category')}</label>
                                     <DiscordSelector 
                                         type="channel" 
                                         options={categories} 
                                         value={config.categoryId || ''} 
                                         onChange={val => setNested('categoryId', val)} 
                                     />
+                                    <p style={{ margin: '8px 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t('tempvoice.category_help')}</p>
                                 </div>
                             </div>
-                            <p className="pc-hint-v2" style={{ marginTop: '24px' }}>Tutte le stanze create verranno posizionate sotto la categoria selezionata.</p>
+                            <p className="pc-hint-v2" style={{ marginTop: '24px' }}>{t('tempvoice.category_hint')}</p>
                         </div>
                     </section>
                 </div>
@@ -198,14 +269,14 @@ export default function TempVoiceConfig() {
                         <div className="card-header-v2">
                             <div className="header-icon" style={{ background: '#f5f3ff', color: '#6366f1' }}><Layout size={18} /></div>
                             <div className="v-stack" style={{ flex: 1 }}>
-                                <h3 style={{ margin: 0 }}>Aspetto e Limiti</h3>
-                                <p style={{ margin: '4px 0 0 0', fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>Personalizza come appaiono le stanze create dagli utenti.</p>
+                                <h3 style={{ margin: 0 }}>{t('tempvoice.appearance_title')}</h3>
+                                <p style={{ margin: '4px 0 0 0', fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t('tempvoice.appearance_desc')}</p>
                             </div>
                         </div>
                         <div className="card-body-v2">
                             <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
                                 <div className="pc-input-group-v2">
-                                    <label>Template Nome Canale</label>
+                                    <label>{t('tempvoice.name_template')}</label>
                                     <div className="pc-input-wrapper-v2" style={{ background: 'var(--bg-badge)', border: '1.5px solid var(--border)', borderRadius: '14px' }}>
                                         <MessageSquare size={16} className="input-icon-v2" style={{ marginLeft: '16px', color: 'var(--text-dim)' }} />
                                         <input 
@@ -213,13 +284,13 @@ export default function TempVoiceConfig() {
                                             style={{ width: '100%', border: 'none', background: 'transparent', padding: '14px 16px', fontWeight: 700 }}
                                             value={config.channelNameTemplate || ''} 
                                             onChange={e => setNested('channelNameTemplate', e.target.value)} 
-                                            placeholder="es: Stanza di {user}"
+                                            placeholder={t('tempvoice.name_placeholder')}
                                         />
                                     </div>
-                                    <p className="pc-hint-v2" style={{ marginTop: '8px' }}>Usa <code>{`{user}`}</code> per inserire il nome del creatore.</p>
+                                    <p className="pc-hint-v2" style={{ marginTop: '8px' }}>{t('tempvoice.name_hint')}</p>
                                 </div>
                                 <div className="pc-input-group-v2">
-                                    <label>Limite Membri Predefinito</label>
+                                    <label>{t('tempvoice.user_limit')}</label>
                                     <div className="pc-input-wrapper-v2" style={{ background: 'var(--bg-badge)', border: '1.5px solid var(--border)', borderRadius: '14px' }}>
                                         <Users size={16} className="input-icon-v2" style={{ marginLeft: '16px', color: 'var(--text-dim)' }} />
                                         <input 
@@ -229,9 +300,134 @@ export default function TempVoiceConfig() {
                                             onChange={e => setNested('defaultUserLimit', parseInt(e.target.value))} 
                                         />
                                     </div>
-                                    <p className="pc-hint-v2" style={{ marginTop: '8px' }}>0 per nessun limite (max 99).</p>
+                                    <p className="pc-hint-v2" style={{ marginTop: '8px' }}>{t('tempvoice.limit_hint')}</p>
                                 </div>
                             </div>
+                        </div>
+                    </section>
+                </div>
+            )}
+
+            {activeTab === 'system_messages' && (
+                <div className="v-stack animate slide-up">
+                    <SystemMessagesSection 
+                        config={config}
+                        onUpdate={setConfig}
+                        messages={[
+                            { key: 'not_owner', label: t('tempvoice.msg_not_owner'), placeholder: t('tempvoice.msg_not_owner') },
+                            { key: 'no_perms', label: t('tempvoice.msg_no_perms'), placeholder: t('tempvoice.msg_no_perms') },
+                            { key: 'cooldown', label: t('tempvoice.msg_cooldown'), placeholder: t('tempvoice.msg_cooldown') }
+                        ]}
+                    />
+                </div>
+            )}
+
+            {activeTab === 'active_rooms' && (
+                <div className="v-stack animate slide-up" style={{ gap: '32px' }}>
+                    <section className="pc-card-v2">
+                        <div className="card-header-v2">
+                            <div className="header-icon" style={{ background: '#ecfdf5', color: '#10b981' }}><Users size={18} /></div>
+                            <div className="v-stack" style={{ flex: 1 }}>
+                                <h3 style={{ margin: 0 }}>{t('tempvoice.tab_active')}</h3>
+                                <p style={{ margin: '4px 0 0 0', fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t('tempvoice.active_desc') || 'Manage and monitor all active voice rooms in real-time.'}</p>
+                            </div>
+                        </div>
+                        <div className="card-body-v2">
+                            {activeRooms.length === 0 ? (
+                                <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-dim)', fontWeight: 600 }}>
+                                    <Mic2 size={36} style={{ marginBottom: '12px', opacity: 0.5 }} />
+                                    <p>{t('tempvoice.no_active_rooms')}</p>
+                                </div>
+                            ) : (
+                                <div className="v-stack" style={{ gap: '16px' }}>
+                                    {activeRooms.map(room => (
+                                        <div key={room.channelId} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-badge)', padding: '16px 24px', borderRadius: '18px', border: '1px solid var(--border)', flexWrap: 'wrap', gap: '16px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                                                <div style={{ width: '40px', height: '40px', background: 'var(--bg-card)', color: 'var(--primary)', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--border)' }}>
+                                                    <Mic2 size={16} />
+                                                </div>
+                                                <div className="v-stack">
+                                                    {editingRoomId === room.channelId ? (
+                                                        <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginTop: '4px' }}>
+                                                            <div className="pc-input-wrapper-v2" style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: '10px', width: '200px' }}>
+                                                                <input 
+                                                                    type="text" 
+                                                                    style={{ width: '100%', border: 'none', background: 'transparent', padding: '8px 12px', fontSize: '0.9rem', fontWeight: 700 }}
+                                                                    value={editName} 
+                                                                    onChange={e => setEditName(e.target.value)} 
+                                                                    placeholder={t('tempvoice.room_name')}
+                                                                />
+                                                            </div>
+                                                            <div className="pc-input-wrapper-v2" style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: '10px', width: '80px' }}>
+                                                                <input 
+                                                                    type="number" 
+                                                                    style={{ width: '100%', border: 'none', background: 'transparent', padding: '8px 12px', fontSize: '0.9rem', fontWeight: 700 }}
+                                                                    value={editLimit} 
+                                                                    onChange={e => setEditLimit(parseInt(e.target.value) || 0)} 
+                                                                    min="0"
+                                                                    max="99"
+                                                                />
+                                                            </div>
+                                                            <button className="pc-btn-primary" style={{ padding: '8px 16px', borderRadius: '10px', fontSize: '0.8rem' }} onClick={() => {
+                                                                handleRename(room.channelId);
+                                                                handleLimit(room.channelId);
+                                                            }}>
+                                                                {t('common.save') || 'Save'}
+                                                            </button>
+                                                            <button className="pc-btn-secondary" style={{ padding: '8px 16px', borderRadius: '10px', fontSize: '0.8rem', background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-muted)' }} onClick={() => setEditingRoomId(null)}>
+                                                                {t('common.cancel') || 'Cancel'}
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <>
+                                                            <span style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-heading)' }}>{room.name}</span>
+                                                            <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)', fontWeight: 600, display: 'flex', gap: '8px', marginTop: '4px' }}>
+                                                                <span>ID: {room.channelId}</span>
+                                                                <span>•</span>
+                                                                <span>{t('tempvoice.room_owner')}: <strong style={{ color: 'var(--text-muted)' }}>{room.ownerName || room.ownerId}</strong></span>
+                                                            </span>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                                                <div style={{ display: 'flex', gap: '8px' }}>
+                                                    <span className="pc-tag-v2" style={{ fontSize: '0.75rem', fontWeight: 700 }}>
+                                                        {t('tempvoice.room_users')}: {room.userCount || 0}
+                                                    </span>
+                                                    <span className="pc-tag-v2" style={{ fontSize: '0.75rem', fontWeight: 700, background: room.userLimit ? 'rgba(245, 158, 11, 0.1)' : 'rgba(16, 185, 129, 0.1)', color: room.userLimit ? '#f59e0b' : '#10b981' }}>
+                                                        {room.userLimit ? `${t('tempvoice.action_limit')}: ${room.userLimit}` : '∞ Unlimited'}
+                                                    </span>
+                                                </div>
+
+                                                {editingRoomId !== room.channelId && (
+                                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                                        <button 
+                                                            className="pc-tag-v2" 
+                                                            style={{ cursor: 'pointer', background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--primary)' }} 
+                                                            onClick={() => {
+                                                                setEditingRoomId(room.channelId);
+                                                                setEditName(room.name);
+                                                                setEditLimit(room.userLimit || 0);
+                                                            }}
+                                                        >
+                                                            {t('tempvoice.action_rename')}
+                                                        </button>
+                                                        <button 
+                                                            className="pc-tag-v2" 
+                                                            style={{ cursor: 'pointer', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)' }} 
+                                                            onClick={() => handleDisconnect(room.channelId)}
+                                                        >
+                                                            {t('tempvoice.action_disconnect')}
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </section>
                 </div>

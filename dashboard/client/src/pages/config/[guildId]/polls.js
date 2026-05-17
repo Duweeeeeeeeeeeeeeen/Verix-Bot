@@ -9,7 +9,7 @@ import {
     Trash, ArrowRight, Layout, Layers, Box, Sparkles, MessageSquare, PieChart, Vote, Activity,
     Shapes, LayoutGrid, Timer, ShieldCheck, Flag, RotateCcw
 } from 'lucide-react';
-import { DiscordSelector, CustomSelect } from '../../../components/LazyConfigComponents';
+import { DiscordSelector, CustomSelect, SystemMessagesSection } from '../../../components/LazyConfigComponents';
 import EmbedPreview from '../../../components/EmbedPreview';
 import Head from 'next/head';
 
@@ -36,8 +36,8 @@ export default function PollsConfig() {
       channelId: '',
       question: '',
       options: [
-          { emoji: '1️⃣', label: 'Option 1' },
-          { emoji: '2️⃣', label: 'Option 2' }
+          { emoji: '1️⃣', label: t('polls.option_1') },
+          { emoji: '2️⃣', label: t('polls.option_2') }
       ],
       duration: 60,
       mode: 'SINGLE',
@@ -102,9 +102,9 @@ export default function PollsConfig() {
         method: 'POST',
         body: JSON.stringify(config)
       });
-      showToast("Protocollo Sondaggi sincronizzato!");
+      showToast(t('polls.sync_success'));
     } catch (e) {
-      showToast("Errore durante il salvataggio.", 'error');
+      showToast(t('common.save_error'), 'error');
     } finally {
       setSaving(false);
       window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
@@ -112,8 +112,8 @@ export default function PollsConfig() {
   };
 
   const handleCreatePoll = async () => {
-    if (!newPoll.question || !newPoll.channelId) return showToast("Configura domanda e canale di lancio!", 'error');
-    if (newPoll.options.some(o => !o.label)) return showToast("Tutte le opzioni richiedono un testo!", 'error');
+    if (!newPoll.question || !newPoll.channelId) return showToast(t('polls.config_error'), 'error');
+    if (newPoll.options.some(o => !o.label)) return showToast(t('polls.options_error'), 'error');
 
     setCreating(true);
     window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
@@ -123,13 +123,13 @@ export default function PollsConfig() {
         body: JSON.stringify(newPoll)
       });
       if (res.success || res) {
-          showToast("Votazione lanciata con successo nello Studio!");
+          showToast(t('polls.launch_success'));
           setActiveTab('active');
           fetchData();
           setNewPoll({ ...newPoll, question: '', options: [{ emoji: '1️⃣', label: 'Option 1' }, { emoji: '2️⃣', label: 'Option 2' }] });
       }
     } catch (e) {
-      showToast("Errore durante il lancio del sondaggio.", 'error');
+      showToast(t('polls.launch_error'), 'error');
     } finally {
       setCreating(false);
       window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
@@ -137,14 +137,14 @@ export default function PollsConfig() {
   };
 
   const addOption = () => {
-      if (newPoll.options.length >= 10) return showToast("Limite massimo raggiunto (10 scelte).", 'error');
+      if (newPoll.options.length >= 10) return showToast(t('polls.limit_error'), 'error');
       const emojis = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
       const nextEmoji = emojis[newPoll.options.length] || '🔘';
       setNewPoll({ ...newPoll, options: [...newPoll.options, { emoji: nextEmoji, label: `Choice ${newPoll.options.length + 1}` }] });
   };
 
   const removeOption = (index) => {
-      if (newPoll.options.length <= 2) return showToast('Minimo 2 opzioni richieste per lo Studio.', 'error');
+      if (newPoll.options.length <= 2) return showToast(t('polls.min_options_error'), 'error');
       setNewPoll({ ...newPoll, options: newPoll.options.filter((_, i) => i !== index) });
   };
 
@@ -155,7 +155,7 @@ export default function PollsConfig() {
       title: `📊 POLL STUDIO: ${newPoll.question || '...' }`,
       description: newPoll.options.map(o => `${o.emoji} **${o.label}**`).join('\n\n'),
       color: newPoll.color,
-      footer: `Votazione termina tra ${newPoll.duration} minuti • Verix Studio`,
+      footer: t('polls.footer_text', { duration: newPoll.duration }),
       timestamp: true,
       buttons: newPoll.options.map((o, i) => ({
           emoji: o.emoji,
@@ -232,6 +232,9 @@ export default function PollsConfig() {
                 <button className={activeTab === 'settings' ? 'active' : ''} onClick={() => setActiveTab('settings')}>
                     <ShieldCheck size={16} /> <span>{t('polls.tab_security')}</span>
                 </button>
+                <button className={activeTab === 'system_messages' ? 'active' : ''} onClick={() => setActiveTab('system_messages')}>
+                    <MessageSquare size={16} /> <span>{t('common.tab_system_messages')}</span>
+                </button>
             </div>
         </nav>
 
@@ -254,11 +257,13 @@ export default function PollsConfig() {
                                         onChange={e => setNewPoll({...newPoll, question: e.target.value})} 
                                         placeholder={t('polls.q_placeholder')} 
                                     />
+                                    <p style={{ margin: '8px 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t('polls.question_help')}</p>
                                 </div>
                                 <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '32px', marginTop: '32px' }}>
                                     <div className="pc-input-group-v2">
                                         <label>{t('polls.launch_channel')}</label>
                                         <DiscordSelector type="channel" options={channels} value={newPoll.channelId} onChange={v => setNewPoll({...newPoll, channelId: v})} />
+                                        <p style={{ margin: '8px 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t('polls.launch_channel_help')}</p>
                                     </div>
                                     <div className="pc-input-group-v2">
                                         <label>{t('polls.duration_mins')}</label>
@@ -281,20 +286,20 @@ export default function PollsConfig() {
                                     </div>
                                     <div className="v-stack" style={{ gap: '16px' }}>
                                         {newPoll.options.map((opt, idx) => (
-                                            <div key={idx} className="pc-poll-option-v2 animate slide-up" style={{ display: 'flex', gap: '18px', alignItems: 'center', background: 'var(--bg-badge)', padding: '18px', borderRadius: '24px', border: '1.5px solid var(--border)', transition: '0.3s', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
-                                                <div style={{ width: '56px', height: '56px', background: 'var(--bg-card)', borderRadius: '14px', border: '1.5px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 8px rgba(0,0,0,0.03)' }}>
-                                                    <input style={{ width: '100%', border: 'none', background: 'transparent', textAlign: 'center', fontSize: '1.5rem', outline: 'none' }} value={opt.emoji} onChange={e => {
+                                            <div key={idx} className="pc-poll-option-v2 animate slide-up" style={{ display: 'flex', gap: '12px', alignItems: 'center', background: 'var(--bg-badge)', padding: '12px', borderRadius: '16px', border: '1.5px solid var(--border)', transition: '0.3s', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
+                                                <div style={{ width: '42px', height: '42px', background: 'var(--bg-card)', borderRadius: '12px', border: '1.5px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 4px 8px rgba(0,0,0,0.03)' }}>
+                                                    <input style={{ width: '100%', border: 'none', background: 'transparent', textAlign: 'center', fontSize: '1.2rem', outline: 'none' }} value={opt.emoji} onChange={e => {
                                                         const newOpts = [...newPoll.options];
                                                         newOpts[idx].emoji = e.target.value;
                                                         setNewPoll({...newPoll, options: newOpts});
                                                     }} />
                                                 </div>
-                                                <input style={{ flex: 1, border: 'none', background: 'transparent', fontWeight: 700, color: 'var(--text-heading)', outline: 'none', fontSize: '1.1rem' }} value={opt.label} onChange={e => {
+                                                <input style={{ flex: 1, border: 'none', background: 'transparent', fontWeight: 700, color: 'var(--text-heading)', outline: 'none', fontSize: '1rem' }} value={opt.label} onChange={e => {
                                                     const newOpts = [...newPoll.options];
                                                     newOpts[idx].label = e.target.value;
                                                     setNewPoll({...newPoll, options: newOpts});
                                                 }} placeholder={t('polls.choice_placeholder', { idx: idx + 1 })} />
-                                                <button onClick={() => removeOption(idx)} className="pc-btn-delete-studio-v2" style={{ width: '48px', height: '48px', borderRadius: '14px', background: 'rgba(239,68,68,0.08)', color: '#ef4444', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Trash2 size={22} /></button>
+                                                <button onClick={() => removeOption(idx)} className="pc-btn-delete-studio-v2" style={{ width: '38px', height: '38px', borderRadius: '10px', background: 'rgba(239,68,68,0.08)', color: '#ef4444', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}><Trash2 size={18} /></button>
                                             </div>
                                         ))}
                                     </div>
@@ -303,17 +308,17 @@ export default function PollsConfig() {
                                 <div className="pc-input-group-v2" style={{ marginTop: '48px' }}>
                                     <label>{t('polls.voting_policy')}</label>
                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginTop: '16px' }}>
-                                        <button onClick={() => setNewPoll({...newPoll, mode: 'SINGLE'})} className={`pc-mode-btn-v2 ${newPoll.mode === 'SINGLE' ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '24px', background: newPoll.mode === 'SINGLE' ? 'rgba(99,102,241,0.08)' : 'var(--bg-badge)', border: newPoll.mode === 'SINGLE' ? '2.5px solid var(--primary)' : '2.5px solid var(--border)', borderRadius: '24px', cursor: 'pointer', transition: '0.3s', textAlign: 'left' }}>
-                                            <div className="mode-icon-v2" style={{ width: '48px', height: '48px', borderRadius: '14px', background: newPoll.mode === 'SINGLE' ? 'var(--primary)' : 'var(--bg-badge)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: newPoll.mode === 'SINGLE' ? 'white' : 'var(--border)', boxShadow: '0 4px 10px rgba(0,0,0,0.03)' }}><CheckCircle2 size={24} /></div>
+                                        <button onClick={() => setNewPoll({...newPoll, mode: 'SINGLE'})} className={`pc-mode-btn-v2 ${newPoll.mode === 'SINGLE' ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px', background: newPoll.mode === 'SINGLE' ? 'rgba(99,102,241,0.08)' : 'var(--bg-badge)', border: newPoll.mode === 'SINGLE' ? '2px solid var(--primary)' : '2px solid var(--border)', borderRadius: '16px', cursor: 'pointer', transition: '0.3s', textAlign: 'left' }}>
+                                            <div className="mode-icon-v2" style={{ width: '36px', height: '36px', borderRadius: '10px', background: newPoll.mode === 'SINGLE' ? 'var(--primary)' : 'var(--bg-badge)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: newPoll.mode === 'SINGLE' ? 'white' : 'var(--border)', flexShrink: 0, boxShadow: '0 4px 10px rgba(0,0,0,0.03)' }}><CheckCircle2 size={20} /></div>
                                             <div className="v-stack">
-                                                <span className="mode-title-v2" style={{ fontWeight: 700, fontSize: '1.1rem', color: newPoll.mode === 'SINGLE' ? 'var(--primary-hover)' : 'var(--text-heading)' }}>{t('polls.mode_exclusive')}</span>
+                                                <span className="mode-title-v2" style={{ fontWeight: 700, fontSize: '1rem', color: newPoll.mode === 'SINGLE' ? 'var(--primary-hover)' : 'var(--text-heading)' }}>{t('polls.mode_exclusive')}</span>
                                                 <small style={{ fontSize: '0.75rem', fontWeight: 700, opacity: 0.8, color: newPoll.mode === 'SINGLE' ? 'var(--primary)' : 'var(--text-muted)' }}>{t('polls.mode_exclusive_desc')}</small>
                                             </div>
                                         </button>
-                                        <button onClick={() => setNewPoll({...newPoll, mode: 'MULTIPLE'})} className={`pc-mode-btn-v2 ${newPoll.mode === 'MULTIPLE' ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '24px', background: newPoll.mode === 'MULTIPLE' ? 'rgba(99,102,241,0.08)' : 'var(--bg-badge)', border: newPoll.mode === 'MULTIPLE' ? '2.5px solid var(--primary)' : '2.5px solid var(--border)', borderRadius: '24px', cursor: 'pointer', transition: '0.3s', textAlign: 'left' }}>
-                                            <div className="mode-icon-v2" style={{ width: '48px', height: '48px', borderRadius: '14px', background: newPoll.mode === 'MULTIPLE' ? 'var(--primary)' : 'var(--bg-badge)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: newPoll.mode === 'MULTIPLE' ? 'white' : 'var(--border)', boxShadow: '0 4px 10px rgba(0,0,0,0.03)' }}><Layers size={24} /></div>
+                                        <button onClick={() => setNewPoll({...newPoll, mode: 'MULTIPLE'})} className={`pc-mode-btn-v2 ${newPoll.mode === 'MULTIPLE' ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px', background: newPoll.mode === 'MULTIPLE' ? 'rgba(99,102,241,0.08)' : 'var(--bg-badge)', border: newPoll.mode === 'MULTIPLE' ? '2px solid var(--primary)' : '2px solid var(--border)', borderRadius: '16px', cursor: 'pointer', transition: '0.3s', textAlign: 'left' }}>
+                                            <div className="mode-icon-v2" style={{ width: '36px', height: '36px', borderRadius: '10px', background: newPoll.mode === 'MULTIPLE' ? 'var(--primary)' : 'var(--bg-badge)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: newPoll.mode === 'MULTIPLE' ? 'white' : 'var(--border)', flexShrink: 0, boxShadow: '0 4px 10px rgba(0,0,0,0.03)' }}><Layers size={20} /></div>
                                             <div className="v-stack">
-                                                <span className="mode-title-v2" style={{ fontWeight: 700, fontSize: '1.1rem', color: newPoll.mode === 'MULTIPLE' ? 'var(--primary-hover)' : 'var(--text-heading)' }}>{t('polls.mode_multiple')}</span>
+                                                <span className="mode-title-v2" style={{ fontWeight: 700, fontSize: '1rem', color: newPoll.mode === 'MULTIPLE' ? 'var(--primary-hover)' : 'var(--text-heading)' }}>{t('polls.mode_multiple')}</span>
                                                 <small style={{ fontSize: '0.75rem', fontWeight: 700, opacity: 0.8, color: newPoll.mode === 'MULTIPLE' ? 'var(--primary)' : 'var(--text-muted)' }}>{t('polls.mode_multiple_desc')}</small>
                                             </div>
                                         </button>
@@ -408,6 +413,20 @@ export default function PollsConfig() {
                             </div>
                         </div>
                     </section>
+                </div>
+            )}
+
+            {activeTab === 'system_messages' && (
+                <div className="v-stack animate slide-up">
+                    <SystemMessagesSection 
+                        config={config}
+                        onUpdate={setConfig}
+                        messages={[
+                            { key: 'voted', label: t('polls.msg_voted_label'), placeholder: t('polls.msg_voted_placeholder') },
+                            { key: 'already_voted', label: t('polls.msg_already_voted_label'), placeholder: t('polls.msg_already_voted_placeholder') },
+                            { key: 'ended', label: t('polls.msg_ended_label'), placeholder: t('polls.msg_ended_placeholder') }
+                        ]}
+                    />
                 </div>
             )}
         </div>

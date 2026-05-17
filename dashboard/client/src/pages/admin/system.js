@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Head from 'next/head';
 import Layout from '../../components/Layout';
 import { useAuth } from '../../contexts/AuthContext';
 import { useT } from '../../contexts/LanguageContext';
-import { Rocket, Send, ShieldAlert, History, BarChart3, Terminal, Eye, EyeOff, Search, Crown, Zap, RefreshCcw, FileText, Activity } from 'lucide-react';
+import { Rocket, Send, ShieldAlert, History, BarChart3, Terminal, Eye, EyeOff, Search, Crown, Zap, RefreshCcw, FileText, Activity, Upload, Info } from 'lucide-react';
 import EmbedPreview from '../../components/EmbedPreview';
+import api from '../../utils/api';
 
 const OWNER_IDS = ['361159834688552960', '314417452395626496'];
 
@@ -26,6 +27,67 @@ export default function SystemUpdates() {
         image: ''
     });
     const [previewTheme, setPreviewTheme] = useState('dark');
+    const [isUploading, setIsUploading] = useState(false);
+    
+    const thumbInputRef = useRef(null);
+    const imageInputRef = useRef(null);
+    
+    // Persistence
+    useEffect(() => {
+        const savedForm = localStorage.getItem('verix_broadcast_form');
+        if (savedForm) {
+            try {
+                setForm(JSON.parse(savedForm));
+            } catch (e) {
+                console.error("Failed to parse saved form", e);
+            }
+        }
+    }, []);
+
+    useEffect(() => {
+        if (form.title || form.description || form.version || form.thumbnail) {
+            localStorage.setItem('verix_broadcast_form', JSON.stringify(form));
+        }
+    }, [form]);
+
+    const handleFileUpload = async (e, type) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Il file è troppo grande (max 5MB)');
+            return;
+        }
+
+        setIsUploading(true);
+        const formData = new FormData();
+        formData.append('image', file);
+
+        try {
+            const isLocal = typeof window !== 'undefined' && 
+                (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+            
+            const baseUrl = isLocal ? 'http://localhost:5001/api' : '/api';
+            
+            const response = await fetch(`${baseUrl}/system/upload`, {
+                method: 'POST',
+                body: formData,
+                credentials: 'include'
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                setForm(prev => ({ ...prev, [type]: result.url }));
+            } else {
+                throw new Error(result.error || 'Errore durante il caricamento');
+            }
+        } catch (error) {
+            console.error('Upload error:', error);
+            alert('Errore durante il caricamento dell\'immagine.');
+        } finally {
+            setIsUploading(false);
+        }
+    };
 
     // Guild Management State
     const [searchGuildId, setSearchGuildId] = useState('');
@@ -52,10 +114,9 @@ export default function SystemUpdates() {
     const fetchLogs = async () => {
         setFetchingLogs(true);
         try {
-            const res = await fetch('/api/system/logs');
-            const data = await res.json();
-            if (data.success) {
-                setBotLogs(data.data);
+            const data = await api.request('/system/logs');
+            if (data) {
+                setBotLogs(data);
             }
         } catch (err) {
             console.error('Failed to fetch logs');
@@ -82,9 +143,8 @@ export default function SystemUpdates() {
     const fetchStats = async () => {
         setLoading(true);
         try {
-            const res = await fetch('/api/system/status');
-            const data = await res.json();
-            if (data.success) setStats(data.data);
+            const data = await api.request('/system/status');
+            if (data) setStats(data);
         } catch (err) {
             console.error('Failed to fetch stats');
         } finally {
@@ -94,9 +154,8 @@ export default function SystemUpdates() {
 
     const fetchHealth = async () => {
         try {
-            const res = await fetch('/api/system/health');
-            const data = await res.json();
-            if (data.success) setHealth(data.data);
+            const data = await api.request('/system/health');
+            if (data) setHealth(data);
         } catch (err) {
             console.error('Failed to fetch health');
         }
@@ -104,9 +163,8 @@ export default function SystemUpdates() {
 
     const fetchHistory = async () => {
         try {
-            const res = await fetch('/api/system/history');
-            const data = await res.json();
-            if (data.success) setHistory(data.data);
+            const data = await api.request('/system/history');
+            if (data) setHistory(data);
         } catch (err) {
             console.error('Failed to fetch history');
         }
@@ -119,24 +177,24 @@ export default function SystemUpdates() {
         setSending(true);
         try {
             const changesArray = form.changes.split('\n').filter(c => c.trim() !== '');
-            const res = await fetch('/api/system/broadcast', {
+            const result = await api.request('/system/broadcast', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
+                data: {
                     ...form,
                     changes: changesArray
-                })
+                }
             });
 
-            const data = await res.json();
-            if (data.success) {
-                alert(t('system.broadcast_sent', { success: data.stats.success, failed: data.stats.failed }));
+            if (result) {
+                alert(t('system.broadcast_sent', { success: result.stats?.success || 0, failed: result.stats?.failed || 0 }));
                 setForm({ title: '', version: '', description: '', type: 'standard', changes: '', thumbnail: '', image: '' });
+                localStorage.removeItem('verix_broadcast_form');
                 fetchHistory(); // Refresh history
             } else {
-                alert(t('common.save_error') + ': ' + data.error);
+                alert(t('common.save_error'));
             }
         } catch (err) {
+            console.error('Broadcast error:', err);
             alert(t('system.error_connection'));
         } finally {
             setSending(false);
@@ -148,10 +206,9 @@ export default function SystemUpdates() {
         setSearching(true);
         setFoundGuild(null);
         try {
-            const res = await fetch(`/api/system/guild/${searchGuildId}`);
-            const data = await res.json();
-            if (data.success) {
-                setFoundGuild(data.data);
+            const data = await api.request(`/system/guild/${searchGuildId}`);
+            if (data) {
+                setFoundGuild(data);
             } else {
                 alert(t('admin.guild_not_found'));
             }
@@ -168,13 +225,11 @@ export default function SystemUpdates() {
         if (!foundGuild) return;
         setUpdatingTier(true);
         try {
-            const res = await fetch(`/api/system/guild/${searchGuildId}/tier`, {
+            const data = await api.request(`/system/guild/${searchGuildId}/tier`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ tier: newTier })
+                data: { tier: newTier }
             });
-            const data = await res.json();
-            if (data.success) {
+            if (data) {
                 setFoundGuild({ 
                     ...foundGuild, 
                     premiumTier: newTier, 
@@ -289,21 +344,33 @@ export default function SystemUpdates() {
                                     <div className="form-row">
                                         <div className="form-group">
                                             <label>{t('system.thumbnail_url')}</label>
-                                            <input 
-                                                type="text" 
-                                                placeholder="https://...png" 
-                                                value={form.thumbnail}
-                                                onChange={e => setForm({ ...form, thumbnail: e.target.value })}
-                                            />
+                                            <div className="input-with-button">
+                                                <input 
+                                                    type="text" 
+                                                    placeholder="https://...png" 
+                                                    value={form.thumbnail}
+                                                    onChange={e => setForm({ ...form, thumbnail: e.target.value })}
+                                                />
+                                                <button type="button" className="btn-upload-v2" onClick={() => thumbInputRef.current.click()} disabled={isUploading}>
+                                                    <Upload size={16} />
+                                                </button>
+                                                <input type="file" ref={thumbInputRef} style={{ display: 'none' }} onChange={e => handleFileUpload(e, 'thumbnail')} accept="image/*" />
+                                            </div>
                                         </div>
                                         <div className="form-group">
                                             <label>{t('system.image_url')}</label>
-                                            <input 
-                                                type="text" 
-                                                placeholder="https://...jpg" 
-                                                value={form.image}
-                                                onChange={e => setForm({ ...form, image: e.target.value })}
-                                            />
+                                            <div className="input-with-button">
+                                                <input 
+                                                    type="text" 
+                                                    placeholder="https://...jpg" 
+                                                    value={form.image}
+                                                    onChange={e => setForm({ ...form, image: e.target.value })}
+                                                />
+                                                <button type="button" className="btn-upload-v2" onClick={() => imageInputRef.current.click()} disabled={isUploading}>
+                                                    <Upload size={16} />
+                                                </button>
+                                                <input type="file" ref={imageInputRef} style={{ display: 'none' }} onChange={e => handleFileUpload(e, 'image')} accept="image/*" />
+                                            </div>
                                         </div>
                                     </div>
                                     <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '16px' }}>
@@ -781,6 +848,39 @@ export default function SystemUpdates() {
                 .btn-send:hover:not(:disabled) {
                     transform: translateY(-2px) scale(1.02);
                     box-shadow: 0 8px 20px rgba(79, 70, 229, 0.4);
+                }
+
+                .input-with-button {
+                    display: flex;
+                    gap: 8px;
+                    align-items: center;
+                }
+
+                .btn-upload-v2 {
+                    width: 48px;
+                    height: 48px;
+                    background: var(--bg-input);
+                    border: 1px solid var(--border-color);
+                    border-radius: 12px;
+                    color: var(--primary);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    transition: 0.2s;
+                    flex-shrink: 0;
+                }
+
+                .btn-upload-v2:hover:not(:disabled) {
+                    background: var(--primary);
+                    color: white;
+                    border-color: var(--primary);
+                    transform: translateY(-2px);
+                }
+
+                .btn-upload-v2:disabled {
+                    opacity: 0.5;
+                    cursor: not-allowed;
                 }
 
                 .preview-container {

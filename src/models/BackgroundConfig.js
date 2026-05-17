@@ -118,6 +118,11 @@ const backgroundConfigSchema = new mongoose.Schema({
             image: { type: String, default: null },
             thumbnail: { type: String, default: null }
         }
+    },
+    systemMessages: {
+        type: Map,
+        of: String,
+        default: {}
     }
 });
 

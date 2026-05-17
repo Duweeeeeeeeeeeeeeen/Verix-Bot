@@ -199,7 +199,7 @@ export default function EmbedPreview({ data, isMobile = false, theme = 'dark' })
             </div>
 
             {/* Simulated Discord Buttons */}
-            {(data.button || data.buttons) && (
+            {data.type !== 'REACTION' && (data.button || data.buttons) && (
                 <div style={{ marginTop: '8px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                     {data.buttons ? (
                         data.buttons.map((btn, i) => (
@@ -221,7 +221,7 @@ export default function EmbedPreview({ data, isMobile = false, theme = 'dark' })
                                 {btn.style === 'LINK' && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>}
                             </button>
                         ))
-                    ) : (
+                    ) : data.button && (
                         <button style={{
                             background: data.button.style === 'SUCCESS' ? '#248046' : (data.button.style === 'DANGER' ? '#da373c' : (data.button.style === 'SECONDARY' || data.button.style === 'LINK' ? '#4e5058' : '#5865f2')),
                             color: 'white',
@@ -240,6 +240,40 @@ export default function EmbedPreview({ data, isMobile = false, theme = 'dark' })
                             {data.button.style === 'LINK' && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>}
                         </button>
                     )}
+                </div>
+            )}
+
+            {/* Simulated Discord Reactions (Classic) */}
+            {data.type === 'REACTION' && data.reactions && data.reactions.length > 0 && (
+                <div style={{ marginTop: '8px', display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                    {data.reactions.map((r, i) => (
+                        <div key={i} style={{
+                            background: 'rgba(88, 101, 242, 0.1)',
+                            border: '1px solid rgba(88, 101, 242, 0.3)',
+                            padding: '2px 6px',
+                            borderRadius: '6px',
+                            fontSize: '0.85rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            cursor: 'default'
+                        }}>
+                            <span>{r.emoji}</span>
+                            <span style={{ color: '#5865f2', fontWeight: '700', fontSize: '0.75rem' }}>1</span>
+                        </div>
+                    ))}
+                    <div style={{
+                        background: 'rgba(255, 255, 255, 0.05)',
+                        padding: '2px 8px',
+                        borderRadius: '6px',
+                        fontSize: '0.9rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'var(--text-muted)'
+                    }}>
+                        +
+                    </div>
                 </div>
             )}
          </div>

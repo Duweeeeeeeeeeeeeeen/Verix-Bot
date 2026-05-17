@@ -24,6 +24,26 @@ router.get('/:guildId', async (req, res) => {
 
         const botData = bot.toObject();
         delete botData.token;
+
+        // Fetch live status & wsPing from multiBotManager
+        const multiBotManager = req.discordClient.multiBotManager;
+        if (multiBotManager) {
+            const instance = multiBotManager.instances.get(guildId);
+            if (instance) {
+                botData.wsPing = instance.ws.ping;
+                botData.status = 'online';
+            } else if (botData.enabled) {
+                botData.status = botData.status === 'error' ? 'error' : 'offline';
+                botData.wsPing = null;
+            } else {
+                botData.status = 'offline';
+                botData.wsPing = null;
+            }
+        } else {
+            botData.status = botData.enabled ? 'online' : 'offline';
+            botData.wsPing = null;
+        }
+
         res.json({ success: true, data: { bot: botData } });
     } catch (error) {
         res.status(500).json({ success: false, error: 'Failed to fetch private bot config' });

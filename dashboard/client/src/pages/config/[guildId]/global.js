@@ -243,10 +243,17 @@ export default function GlobalConfigPage() {
                                 <div className="pc-input-group-v2">
                                     <label>{t('global.mod_logs')}</label>
                                     <DiscordSelector type="channel" options={channels} value={config.modLogChannelId} onChange={v => setNested('modLogChannelId', v)} placeholder={t('global.select_channel')} />
+                                    <p style={{ margin: '8px 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t('global.mod_logs_help') || 'Channel for moderation logs.'}</p>
                                 </div>
                                 <div className="pc-input-group-v2">
                                     <label>{t('global.admin_logs')}</label>
                                     <DiscordSelector type="channel" options={channels} value={config.adminLogChannelId} onChange={v => setNested('adminLogChannelId', v)} placeholder={t('global.select_channel')} />
+                                    <p style={{ margin: '8px 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t('global.admin_logs_help') || 'Channel for administration logs.'}</p>
+                                </div>
+                                <div className="pc-input-group-v2" style={{ gridColumn: 'span 2', marginTop: '16px' }}>
+                                    <label>{t('global.fallback_channel')}</label>
+                                    <DiscordSelector type="channel" options={channels} value={config.fallbackChannelId} onChange={v => setNested('fallbackChannelId', v)} placeholder={t('global.select_channel')} />
+                                    <p style={{ margin: '8px 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t('global.fallback_channel_help')}</p>
                                 </div>
                             </div>
                         </div>

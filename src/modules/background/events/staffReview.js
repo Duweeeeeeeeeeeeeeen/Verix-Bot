@@ -7,10 +7,15 @@ import { buildEmbed } from '../../../utils/embedHelper.js';
 import { sendUserNotification } from '../../../utils/notificationService.js';
 import logger from '../../../utils/logger.js';
 import messageService from '../../../utils/messageService.js';
+import GlobalConfig from '../../../models/GlobalConfig.js';
+import { t } from '../../../locales/t.js';
 
 export default {
     name: Events.InteractionCreate,
     async execute(interaction, client) {
+        const globalConfig = await GlobalConfig.findOne({ guildId: interaction.guild?.id });
+        const lang = globalConfig?.language || 'en';
+
         // Handle Approval/Denial Buttons
         if (interaction.isButton() && (interaction.customId.startsWith('approve_bg_') || interaction.customId.startsWith('deny_bg_'))) {
             const parts = interaction.customId.split('_');
@@ -18,7 +23,7 @@ export default {
             const appId = parts[2];
 
             const app = await Background.findById(appId);
-            if (!app) return messageService.reply(interaction, 'background', 'error', { reason: 'Richiesta non trovata.' }, { ephemeral: true });
+            if (!app) return messageService.reply(interaction, 'background', 'error', { reason: t('common.none', lang) }, { ephemeral: true });
 
             const config = await BackgroundConfig.findOne({ guildId: interaction.guild.id });
             if (!config) return;
@@ -26,7 +31,7 @@ export default {
             // Permission Check
             if (config.staffRoleIds && config.staffRoleIds.length > 0) {
                 if (!interaction.member.roles.cache.some(role => config.staffRoleIds.includes(role.id))) {
-                    return messageService.reply(interaction, 'background', 'error', { reason: 'Non hai i permessi necessari per gestire i background.' }, { ephemeral: true });
+                    return messageService.reply(interaction, 'background', 'error', { reason: t('background.error_no_permission', lang) }, { ephemeral: true });
                 }
             }
 
@@ -38,9 +43,9 @@ export default {
                 let nextStep = "";
                 if (wlConfig && wlConfig.enabled) {
                     const m = wlConfig.mode;
-                    if (m === 'BG_ONLY') nextStep = "\n\n✅ **Percorso Completato:** Il tuo background è stato archiviato con successo!";
-                    else if (m === 'BG_TEXT' || m === 'FULL') nextStep = "\n\n➡️ **Prossimo Step:** Ora puoi procedere con la **Whitelist Scritta**!";
-                    else if (m === 'BG_VOICE') nextStep = "\n\n➡️ **Prossimo Step:** Ora puoi recarti nel canale vocale per il **Colloquio Orale**!";
+                    if (m === 'BG_ONLY') nextStep = t('whitelist.written_finish', lang);
+                    else if (m === 'BG_TEXT' || m === 'FULL') nextStep = t('whitelist.next_step_written', lang);
+                    else if (m === 'BG_VOICE') nextStep = t('whitelist.next_step_voice', lang);
                 }
 
                 app.status = 'ACCEPTED';
@@ -78,7 +83,7 @@ export default {
                     const startButton = new ActionRowBuilder().addComponents(
                         new ButtonBuilder()
                             .setCustomId('start_whitelist_from_bg')
-                            .setLabel('Inizia Test Scritto')
+                            .setLabel(t('whitelist.start_written', lang))
                             .setStyle(ButtonStyle.Success)
                             .setEmoji('📝')
                     );
@@ -90,17 +95,17 @@ export default {
                 const originalEmbed = interaction.message.embeds[0];
                 if (originalEmbed) {
                     const updatedEmbed = EmbedBuilder.from(originalEmbed)
-                        .setTitle('✅ Dossier APPROVATO')
+                        .setTitle(t('background.accepted_title', lang))
                         .setColor('#2ecc71')
                         .addFields(
-                            { name: '👤 Soggetto', value: citizen?.toString() || `<@${app.userId}>`, inline: true },
-                            { name: '👮 Ufficiale', value: interaction.user.toString(), inline: true },
-                            { name: 'Esito Staff', value: `✅ Approvato da ${interaction.user.tag}` }
+                            { name: t('background.subject_tag', lang), value: citizen?.toString() || `<@${app.userId}>`, inline: true },
+                            { name: t('background.staff_tag', lang), value: interaction.user.toString(), inline: true },
+                            { name: t('background.outcome_tag', lang), value: `${t('background.accepted_title', lang)} by ${interaction.user.tag}` }
                         );
                     
                     await interaction.update({ embeds: [updatedEmbed], components: [] });
                 } else {
-                    await interaction.update({ content: `✅ Background approvato da ${interaction.user.tag}`, embeds: [], components: [] });
+                    await interaction.update({ content: `✅ Background approved by ${interaction.user.tag}`, embeds: [], components: [] });
                 }
 
                 // Notification to User
@@ -121,11 +126,11 @@ export default {
             if (action === 'deny') {
                 const modal = new ModalBuilder()
                     .setCustomId(`deny_bg_modal_${app._id}`)
-                    .setTitle('Motivo Rifiuto Background');
+                    .setTitle(t('background.modal_deny_title', lang));
 
                 const reasonInput = new TextInputBuilder()
                     .setCustomId('bg_rejection_reason')
-                    .setLabel('Inserisci il motivo del rifiuto')
+                    .setLabel(t('background.modal_deny_label', lang))
                     .setStyle(TextInputStyle.Paragraph)
                     .setRequired(true)
                     .setMinLength(10);
@@ -141,7 +146,7 @@ export default {
             const reason = interaction.fields.getTextInputValue('bg_rejection_reason');
 
             const app = await Background.findById(appId);
-            if (!app) return messageService.reply(interaction, 'background', 'error', { reason: 'Richiesta non trovata.' }, { ephemeral: true });
+            if (!app) return messageService.reply(interaction, 'background', 'error', { reason: t('common.none', lang) }, { ephemeral: true });
 
             const config = await BackgroundConfig.findOne({ guildId: interaction.guild.id });
             const user = await client.users.fetch(app.userId).catch(() => null);
@@ -157,7 +162,7 @@ export default {
             // --- PROGRESSION FEEDBACK ---
             const cooldownHrs = config.correctionCooldown !== undefined ? config.correctionCooldown : 2;
             const nextAttemptDate = new Date(Date.now() + cooldownHrs * 60 * 60 * 1000);
-            const nextAttemptStr = cooldownHrs === 0 ? "subito" : `<t:${Math.floor(nextAttemptDate.getTime() / 1000)}:R>`;
+            const nextAttemptStr = cooldownHrs === 0 ? t('common.immediately', lang) : `<t:${Math.floor(nextAttemptDate.getTime() / 1000)}:R>`;
 
             if (userChannel) {
                 const rejectEmbed = buildEmbed(config.embeds.integrated_rejected, {
@@ -179,18 +184,18 @@ export default {
             const originalEmbed = interaction.message.embeds[0];
             if (originalEmbed) {
                 const updatedEmbed = EmbedBuilder.from(originalEmbed)
-                    .setTitle('❌ Dossier RESPINTO')
+                    .setTitle(t('background.rejected_title', lang))
                     .setColor('#e74c3c')
                     .addFields(
-                        { name: '👤 Soggetto', value: citizen?.toString() || `<@${app.userId}>`, inline: true },
-                        { name: '👮 Ufficiale', value: interaction.user.toString(), inline: true },
-                        { name: 'Esito Staff', value: `❌ Respinto da ${interaction.user.tag}` },
-                        { name: 'Motivo', value: reason || 'Nessuna motivazione' }
+                        { name: t('background.subject_tag', lang), value: citizen?.toString() || `<@${app.userId}>`, inline: true },
+                        { name: t('background.staff_tag', lang), value: interaction.user.toString(), inline: true },
+                        { name: t('background.outcome_tag', lang), value: `${t('background.rejected_title', lang)} by ${interaction.user.tag}` },
+                        { name: t('common.no_reason', lang), value: reason || t('common.none', lang) }
                     );
                 
                 await interaction.update({ embeds: [updatedEmbed], components: [] });
             } else {
-                await interaction.update({ content: `❌ Background rifiutato da ${interaction.user.tag} per: ${reason}`, embeds: [], components: [] });
+                await interaction.update({ content: `❌ Background rejected by ${interaction.user.tag} for: ${reason}`, embeds: [], components: [] });
             }
 
             // Notification to User

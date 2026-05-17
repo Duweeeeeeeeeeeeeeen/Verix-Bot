@@ -44,6 +44,10 @@ export async function generateTranscription(channel, ticketData = {}) {
     return new AttachmentBuilder(buffer, { name: `transcript-${channel.name}.txt` });
 }
 
+import { t } from '../../../locales/t.js';
+import Guild from '../../../models/Guild.js';
+import GlobalConfig from '../../../models/GlobalConfig.js';
+
 /**
  * Genera l'embed di "Intelligence" per lo staff.
  * @param {Guild} guild 
@@ -52,24 +56,52 @@ export async function generateTranscription(channel, ticketData = {}) {
  */
 export async function generateIntelligenceEmbed(guild, userId) {
     const user = await guild.client.users.fetch(userId).catch(() => null);
-    const wlApp = await WhitelistApp.findOne({ userId, guildId: guild.id }).sort({ createdAt: -1 });
-    const bgApp = await Background.findOne({ userId, guildId: guild.id }).sort({ createdAt: -1 });
+    
+    // Fetch DB configs
+    const guildData = await Guild.findOne({ guildId: guild.id });
+    const globalConfig = await GlobalConfig.findOne({ guildId: guild.id });
+    const lang = globalConfig?.language || 'en';
+    
+    const enabledModules = guildData?.enabledModules || [];
+    
     const previousTickets = await Ticket.countDocuments({ userId, guildId: guild.id, status: 'CLOSED' });
 
     const embed = new EmbedBuilder()
-        .setTitle(`🔍 Intelligence: ${user?.tag || userId}`)
+        .setTitle(t('tickets.intelligence.title', lang, { user: user?.tag || userId }))
         .setColor('#2f3136')
         .setThumbnail(user?.displayAvatarURL())
-        .addFields(
-            { name: '🎫 Ticket Precedenti', value: `\`${previousTickets}\` sessioni chiuse`, inline: true },
-            { name: '📋 Whitelist', value: wlApp ? `Stato: \`${wlApp.status}\`` : 'Nessuna domanda', inline: true },
-            { name: '📖 Background', value: bgApp ? `Stato: \`${bgApp.status}\`` : 'Nessun dossier', inline: true }
-        )
-        .setFooter({ text: 'Modulo Intelligence Staff' });
+        .addFields({ 
+            name: t('tickets.intelligence.prev_tickets', lang), 
+            value: t('tickets.intelligence.sessions_closed', lang, { count: previousTickets }), 
+            inline: true 
+        });
 
-    if (wlApp) {
-        embed.addFields({ name: '📅 Ultima Whitelist', value: wlApp.submittedAt ? wlApp.submittedAt.toLocaleDateString() : 'N/A', inline: true });
+    if (enabledModules.includes('whitelist')) {
+        const wlApp = await WhitelistApp.findOne({ userId, guildId: guild.id }).sort({ createdAt: -1 });
+        embed.addFields({ 
+            name: t('tickets.intelligence.whitelist', lang), 
+            value: wlApp ? t('tickets.intelligence.status', lang, { status: wlApp.status }) : t('tickets.intelligence.no_app', lang), 
+            inline: true 
+        });
+        if (wlApp) {
+            embed.addFields({ 
+                name: t('tickets.intelligence.last_wl', lang), 
+                value: wlApp.submittedAt ? wlApp.submittedAt.toLocaleDateString() : 'N/A', 
+                inline: true 
+            });
+        }
     }
+
+    if (enabledModules.includes('background')) {
+        const bgApp = await Background.findOne({ userId, guildId: guild.id }).sort({ createdAt: -1 });
+        embed.addFields({ 
+            name: t('tickets.intelligence.background', lang), 
+            value: bgApp ? t('tickets.intelligence.status', lang, { status: bgApp.status }) : t('tickets.intelligence.no_dossier', lang), 
+            inline: true 
+        });
+    }
+
+    embed.setFooter({ text: t('tickets.intelligence.footer', lang) });
 
     return embed;
 }

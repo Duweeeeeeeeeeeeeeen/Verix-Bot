@@ -4,26 +4,19 @@ import { Sun, Moon, ShieldCheck, Ticket, Mic2, Layout, Camera, Tv, LogIn, Extern
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
+import { useTheme } from '../contexts/ThemeContext';
 
 import LoadingScreen from '../components/LoadingScreen';
 
 export default function Home() {
   const { user, login, loading } = useAuth();
   const { t, language, setLanguage } = useT();
+  const { theme, toggleTheme } = useTheme();
   const router = useRouter();
-  const [theme, setTheme] = useState('dark');
 
   useEffect(() => {
     if (user) router.push('/selector');
-    const savedTheme = localStorage.getItem('verix-theme') || 'dark';
-    setTheme(savedTheme);
   }, [user]);
-
-  const toggleTheme = () => {
-    const newTheme = theme === 'dark' ? 'light' : 'dark';
-    setTheme(newTheme);
-    localStorage.setItem('verix-theme', newTheme);
-  };
 
   const features = [
     { 

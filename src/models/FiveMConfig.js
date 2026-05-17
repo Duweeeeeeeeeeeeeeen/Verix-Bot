@@ -45,7 +45,17 @@ const fiveMConfigSchema = new mongoose.Schema({
         mode: { type: String, enum: ['DM', 'CHANNEL', 'BOTH', 'NONE'], default: 'DM' },
         channelId: { type: String, default: null }
     },
-    servers: { type: [serverTrackerSchema], default: [] }
+    servers: { type: [serverTrackerSchema], default: [] },
+    colors: {
+        primary: { type: String, default: '#5865F2' },
+        success: { type: String, default: '#2ecc71' },
+        error: { type: String, default: '#ff4757' }
+    },
+    systemMessages: {
+        type: Map,
+        of: String,
+        default: {}
+    }
 }, { timestamps: true });
 
 export default mongoose.model('FiveMConfig', fiveMConfigSchema);

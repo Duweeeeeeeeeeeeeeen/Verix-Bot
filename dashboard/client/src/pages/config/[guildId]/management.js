@@ -49,6 +49,7 @@ export default function ManagementPage() {
   const [mounted, setMounted] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('users');
+  const [enabled, setEnabled] = useState(true);
   
   // Audit Logs State
   const [logs, setLogs] = useState([]);
@@ -227,14 +228,28 @@ export default function ManagementPage() {
                 </div>
                 <div className="pc-title-row">
                     <h1>{t('management.title')}</h1>
-                    <div className="pc-status-tag-v2 on">
+                    <div className={`pc-status-tag-v2 ${enabled ? 'on' : 'off'}`}>
                         <div className="status-dot-v2"></div>
-                        {t('management.active_tag')}
+                        {enabled ? t('management.active_tag') : t('management.inactive_tag')}
                     </div>
                 </div>
             </div>
             
             <div className="header-controls">
+                <div className="pc-toggle-container-v2">
+                    <label className="pc-toggle-v2">
+                        <input 
+                            type="checkbox" 
+                            checked={enabled} 
+                            onChange={() => setEnabled(!enabled)} 
+                        />
+                        <span className="pc-slider-v2"></span>
+                    </label>
+                    <span className={enabled ? 'text-active' : 'text-inactive'}>
+                        {enabled ? t('common.active') : t('common.inactive')}
+                    </span>
+                </div>
+                <div className="pc-header-divider"></div>
                 <nav className="pc-tabs-v2" style={{ marginBottom: 0 }}>
                     <button className={activeTab === 'users' ? 'active' : ''} onClick={() => setActiveTab('users')}>
                         <User size={16} /> <span>{t('management.tabs.users')}</span>

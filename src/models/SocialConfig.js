@@ -36,6 +36,16 @@ const socialConfigSchema = new mongoose.Schema({
         instagram: { type: socialPlatformSchema, default: () => ({ embed: { color: '#e1306c', title: '📸 Nuovo post di {streamer}', description: '### {title}\n\nNuovo contenuto caricato su Instagram! Passa a dare un\'occhiata.' } }) },
         tiktok: { type: socialPlatformSchema, default: () => ({ embed: { color: '#000000', title: '🎵 Nuovo TikTok di {streamer}', description: '### {title}\n\nÈ appena stato pubblicato un nuovo video su TikTok! Guarda subito.' } }) },
         twitter: { type: socialPlatformSchema, default: () => ({ embed: { color: '#1da1f2', title: '🐦 Nuovo Tweet di {streamer}', description: '{description}' } }) }
+    },
+    colors: {
+        primary: { type: String, default: '#5865F2' },
+        success: { type: String, default: '#2ecc71' },
+        error: { type: String, default: '#ff4757' }
+    },
+    systemMessages: {
+        type: Map,
+        of: String,
+        default: {}
     }
 }, { timestamps: true });
 

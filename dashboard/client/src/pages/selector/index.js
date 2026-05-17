@@ -25,21 +25,20 @@ import {
 
 import LoadingScreen from '../../components/LoadingScreen';
 import { useT } from '../../contexts/LanguageContext';
+import { useTheme } from '../../contexts/ThemeContext';
 
 export default function Selector() {
   const { t, language, setLanguage } = useT();
   const { user, loading, logout, fetchUser, refreshGuilds } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [filter, setFilter] = useState('all'); // all, active, missing
   const [mounted, setMounted] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [theme, setTheme] = useState('dark');
 
   useEffect(() => {
     setMounted(true);
-    const savedTheme = localStorage.getItem('verix-theme') || 'dark';
-    setTheme(savedTheme);
   }, []);
 
   useEffect(() => {
@@ -68,11 +67,6 @@ export default function Selector() {
   if (!mounted || (loading && !user)) return <LoadingScreen message={t('selector.loading')} />;
   if (!user) return null;
 
-  const toggleTheme = () => {
-    const newTheme = theme === 'dark' ? 'light' : 'dark';
-    setTheme(newTheme);
-    localStorage.setItem('verix-theme', newTheme);
-  };
 
   // Filter logic
   const filteredGuilds = user.guilds
@@ -136,14 +130,14 @@ export default function Selector() {
             <div className="guild-meta-v2">
                 <span className="guild-id-v2">ID: {guild.id}</span>
                 <div className={`status-pill-v2 ${guild.botInGuild ? 'active' : 'missing'}`}>
-                    {guild.botInGuild ? 'COLLEGATO' : 'NON PRESENTE'}
+                    {guild.botInGuild ? t('selector.status_active') : t('selector.status_missing')}
                 </div>
             </div>
         </div>
 
         <div className="card-footer-v2">
             <span className="action-text-v2">
-                {guild.botInGuild ? 'Gestisci Server' : 'Aggiungi al Server'}
+                {guild.botInGuild ? t('selector.manage_btn') : t('selector.add_btn')}
             </span>
             <div className="action-icon-v2">
                 <ArrowRight size={16} />
@@ -178,7 +172,7 @@ export default function Selector() {
                     </div>
                     <div className="user-info-p">
                         <span className="u-name-p">{user.username}</span>
-                        <div className="badge-staff-v2">STAFF</div>
+                        <div className="badge-staff-v2">{t('sidebar.administrator')}</div>
                     </div>
                 </div>
                 <div className="action-btns-group">
@@ -209,7 +203,7 @@ export default function Selector() {
                     <Search className="search-icon" size={20} />
                     <input 
                       type="text" 
-                      placeholder="Cerca tra i tuoi server..." 
+                      placeholder={t('selector.search_placeholder')} 
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -217,9 +211,9 @@ export default function Selector() {
 
                 <div className="pc-filters-row-v2">
                     {[
-                        { id: 'all', label: 'Tutti', icon: LayoutGrid },
-                        { id: 'active', label: 'Attivi', icon: CheckCircle2 },
-                        { id: 'missing', label: 'Da Aggiungere', icon: Plus }
+                        { id: 'all', label: t('selector.filter.all'), icon: LayoutGrid },
+                        { id: 'active', label: t('selector.filter.active'), icon: CheckCircle2 },
+                        { id: 'missing', label: t('selector.filter.missing'), icon: Plus }
                     ].map(f => (
                         <button 
                           key={f.id} 
@@ -240,7 +234,7 @@ export default function Selector() {
                             <div className="title-icon-v2" style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981' }}>
                                 <Shield size={18} />
                             </div>
-                            <h2 className="outfit-font">Server Attivi</h2>
+                            <h2 className="outfit-font">{t('selector.active_servers')}</h2>
                             <span className="count-pill-v2">{activeGuilds.length}</span>
                         </div>
                         <div className="pc-guilds-grid-v2">
@@ -255,7 +249,7 @@ export default function Selector() {
                             <div className="title-icon-v2" style={{ background: 'rgba(148, 163, 184, 0.1)', color: '#94a3b8' }}>
                                 <Globe size={18} />
                             </div>
-                            <h2 className="outfit-font">Altri Server</h2>
+                            <h2 className="outfit-font">{t('selector.other_servers')}</h2>
                             <span className="count-pill-v2">{pendingGuilds.length}</span>
                         </div>
                         <div className="pc-guilds-grid-v2">
@@ -267,10 +261,10 @@ export default function Selector() {
                 {filteredGuilds.length === 0 && (
                     <div className="pc-empty-selector-v2 glass-card">
                         <div className="empty-icon-v2"><Search size={48} /></div>
-                        <h3>Nessun server trovato</h3>
-                        <p>Prova a cambiare i filtri o la chiave di ricerca.</p>
+                        <h3>{t('selector.no_servers')}</h3>
+                        <p>{t('selector.no_servers_desc')}</p>
                         <button className="pc-btn-primary-v2" onClick={() => {setSearchTerm(''); setFilter('all');}}>
-                            Resetta Filtri
+                            {t('selector.reset_filters')}
                         </button>
                     </div>
                 )}

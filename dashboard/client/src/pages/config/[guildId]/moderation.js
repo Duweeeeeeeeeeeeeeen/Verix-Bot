@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Skeleton from '../../../components/Skeleton';
-import { DiscordSelector, CustomSelect, EmbedMessageManager, NotificationSettings } from '../../../components/LazyConfigComponents';
+import { DiscordSelector, CustomSelect, EmbedMessageManager, NotificationSettings, SystemMessagesSection } from '../../../components/LazyConfigComponents';
 import api from '../../../utils/api';
 import { useT } from '../../../contexts/LanguageContext';
 import { 
@@ -152,7 +152,7 @@ export default function ModerationConfig() {
                     <h1>{t('mod.title')}</h1>
                     <div className={`pc-status-tag-v2 ${config.enabled ? 'on' : 'off'}`}>
                         <div className="status-dot-v2"></div>
-                        {config.enabled ? t('mod.active') : t('mod.standby')}
+                        {config.enabled ? t('common.active_system') : t('common.inactive_system')}
                     </div>
                 </div>
             </div>
@@ -171,7 +171,7 @@ export default function ModerationConfig() {
                         {config.enabled ? t('common.active') : t('common.inactive')}
                     </span>
                 </div>
-                <div className="pc-header-divider" style={{ width: '1px', height: '24px', background: 'var(--border)', margin: '0 4px' }}></div>
+                <div className="pc-header-divider"></div>
                 <button className="pc-btn-outline-v2" onClick={handleReset} title={t('common.reset_to_default')}>
                     <RotateCcw size={18} />
                 </button>
@@ -185,15 +185,20 @@ export default function ModerationConfig() {
         {/* V2 Navigation Tabs */}
         <nav className="pc-tabs-v2" style={{ marginBottom: '32px' }}>
             {[
-                { id: 'antispam', icon: <Activity size={16} />, label: t('mod.tab_traffic') },
-                { id: 'safety', icon: <Globe size={16} />, label: t('mod.tab_integrity') },
-                { id: 'antiraid', icon: <ShieldQuestion size={16} />, label: t('mod.tab_raid') },
-                { id: 'punishments', icon: <Gavel size={16} />, label: t('mod.tab_punishments') },
-                { id: 'settings', icon: <EyeOff size={16} />, label: t('mod.tab_whitelist') },
-                { id: 'messages', icon: <Palette size={16} />, label: t('mod.tab_policy') }
+                { id: 'antispam', icon: Activity, label: t('mod.tab_traffic'), status: config.antispam?.enabled },
+                { id: 'safety', icon: Globe, label: t('mod.tab_integrity'), status: config.antiLink?.enabled },
+                { id: 'antiraid', icon: ShieldQuestion, label: t('mod.tab_raid'), status: config.antiRaid?.enabled },
+                { id: 'punishments', icon: Gavel, label: t('mod.tab_punishments') },
+                { id: 'settings', icon: EyeOff, label: t('mod.tab_whitelist') },
+                { id: 'system_messages', icon: MessageSquare, label: t('common.tab_system_messages') },
+                { id: 'messages', icon: Palette, label: t('mod.tab_policy') }
             ].map(tab => (
                 <button key={tab.id} className={activeTab === tab.id ? 'active' : ''} onClick={() => setActiveTab(tab.id)}>
-                    {tab.icon} <span>{tab.label}</span>
+                    <tab.icon size={16} /> 
+                    <span>{tab.label}</span>
+                    {tab.status !== undefined && (
+                        <div className={`nav-status-dot-mini ${tab.status ? 'on' : 'off'}`} />
+                    )}
                 </button>
             ))}
         </nav>
@@ -201,7 +206,7 @@ export default function ModerationConfig() {
         <div className="pc-content-v2">
             {activeTab === 'antispam' && (
                 <div className="v-stack animate slide-up" style={{ gap: '32px' }}>
-                    <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 560px', gap: '32px' }}>
+                    <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '32px' }}>
                         <section className="pc-card-v2">
                             <div className="card-header-v2">
                                 <div className="header-icon"><MessageCircle size={18} /></div>
@@ -346,9 +351,9 @@ export default function ModerationConfig() {
                                     <label>{t('mod.defense_protocol')}</label>
                                     <CustomSelect 
                                         options={[
-                                            { value: 'notify', label: 'Notify Staff' },
-                                            { value: 'lockdown', label: 'Lockdown Server' },
-                                            { value: 'quarantine', label: 'Quarantine New Users' }
+                                            { value: 'notify', label: t('mod.protocol_notify') },
+                                            { value: 'lockdown', label: t('mod.protocol_lockdown') },
+                                            { value: 'quarantine', label: t('mod.protocol_quarantine') }
                                         ]} 
                                         value={config.antiRaid?.action || 'notify'} 
                                         onChange={v => updateNested('antiRaid.action', v)} 
@@ -381,10 +386,10 @@ export default function ModerationConfig() {
                                                 <label>{t('mod.action')}</label>
                                                 <CustomSelect 
                                                     options={[
-                                                        { value: 'warn', label: 'Warn' },
-                                                        { value: 'timeout', label: 'Timeout' },
-                                                        { value: 'kick', label: 'Kick' },
-                                                        { value: 'ban', label: 'Ban' }
+                                                        { value: 'warn', label: t('mod.action_warn') },
+                                                        { value: 'timeout', label: t('mod.action_timeout') },
+                                                        { value: 'kick', label: t('mod.action_kick') },
+                                                        { value: 'ban', label: t('mod.action_ban') }
                                                     ]} 
                                                     value={p.action} 
                                                     onChange={v => updatePunishment(idx, 'action', v)} 
@@ -411,6 +416,7 @@ export default function ModerationConfig() {
 
             {activeTab === 'settings' && (
                 <div className="v-stack animate slide-up">
+                    <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '32px' }}>
                     <section className="pc-card-v2">
                         <div className="card-header-v2">
                             <div className="header-icon"><EyeOff size={18} /></div>
@@ -421,14 +427,22 @@ export default function ModerationConfig() {
                                 <div className="pc-input-group-v2">
                                     <label>{t('mod.immune_roles')}</label>
                                     <DiscordSelector type="role" multiple options={discordData.roles} value={config.ignoredRoles || []} onChange={v => setConfig({...config, ignoredRoles: v})} />
+                                    <p style={{ margin: '8px 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t('moderation.ignored_roles_help')}</p>
                                 </div>
                                 <div className="pc-input-group-v2">
                                     <label>{t('mod.safe_channels')}</label>
                                     <DiscordSelector type="channel" multiple options={discordData.channels} value={config.ignoredChannels || []} onChange={v => setConfig({...config, ignoredChannels: v})} />
+                                    <p style={{ margin: '8px 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t('moderation.ignored_channels_help')}</p>
+                                </div>
+                                <div className="pc-input-group-v2" style={{ gridColumn: 'span 2', marginTop: '24px' }}>
+                                    <label>{t('moderation.log_channel')}</label>
+                                    <DiscordSelector type="channel" options={discordData.channels} value={config.logChannelId} onChange={v => setConfig({...config, logChannelId: v})} />
+                                    <p style={{ margin: '8px 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t('moderation.log_channel_help')}</p>
                                 </div>
                             </div>
                         </div>
                     </section>
+                    </div>
                 </div>
             )}
 
@@ -438,9 +452,27 @@ export default function ModerationConfig() {
                         guildId={guildId}
                         module="moderation"
                         slugs={[
-                            { key: 'warn', label: 'Warn Template', description: 'User DM for warnings.', variables: ['user', 'reason', 'warn_count'], group: 'Policy', groupIcon: ShieldAlert },
-                            { key: 'timeout', label: 'Timeout Template', description: 'User DM for mutes.', variables: ['user', 'duration', 'reason'], group: 'Policy', groupIcon: VolumeX },
-                            { key: 'ban', label: 'Ban Template', description: 'User DM for bans.', variables: ['user', 'reason'], group: 'Policy', groupIcon: UserMinus }
+                            { key: 'warn', label: t('mod.warn_template_label'), description: t('mod.warn_template_desc'), variables: ['user', 'reason', 'warn_count'], group: 'Policy', groupIcon: ShieldAlert },
+                            { key: 'timeout', label: t('mod.timeout_template_label'), description: t('mod.timeout_template_desc'), variables: ['user', 'duration', 'reason'], group: 'Policy', groupIcon: VolumeX },
+                            { key: 'ban', label: t('mod.ban_template_label'), description: t('mod.ban_template_desc'), variables: ['user', 'reason'], group: 'Policy', groupIcon: UserMinus }
+                        ]}
+                    />
+                </div>
+            )}
+
+            {activeTab === 'system_messages' && (
+                <div className="v-stack animate slide-up">
+                    <SystemMessagesSection 
+                        config={config}
+                        onUpdate={setConfig}
+                        messages={[
+                            { key: 'no_reason', label: t('moderation.msg_no_reason'), placeholder: t('mod.msg_no_reason') },
+                            { key: 'error', label: t('moderation.msg_error'), placeholder: t('mod.msg_error') },
+                            { key: 'command_ban', label: t('moderation.msg_command_ban'), placeholder: t('mod.msg_command_ban') },
+                            { key: 'warn', label: t('moderation.msg_warn'), placeholder: t('mod.msg_warn') },
+                            { key: 'timeout', label: t('moderation.msg_timeout'), placeholder: t('mod.msg_timeout') },
+                            { key: 'kick', label: t('moderation.msg_kick'), placeholder: t('mod.msg_kick') },
+                            { key: 'ban', label: t('moderation.msg_ban'), placeholder: t('mod.msg_ban') }
                         ]}
                     />
                 </div>
@@ -455,10 +487,21 @@ export default function ModerationConfig() {
             .pc-icon-box { width: 52px; height: 52px; color: #fff; border-radius: 16px; display: flex; align-items: center; justify-content: center; }
             .pc-title-row h1 { font-family: 'Inter'; font-size: 1.8rem; font-weight: 700; margin: 0; color: var(--text-heading); letter-spacing: normal; }
             
-            .pc-status-tag-v2 { display: flex; align-items: center; gap: 6px; font-size: 0.6rem; font-weight: 700; padding: 4px 10px; border-radius: 100px;  width: fit-content; }
-            .pc-status-tag-v2.on { background: rgba(16, 185, 129, 0.1); color: #10b981; }
             .pc-status-tag-v2.off { background: var(--bg-badge); color: #ef4444; }
             .status-dot-v2 { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+            .nav-status-dot-mini { width: 5px; height: 5px; border-radius: 50%; margin-left: 4px; transition: 0.2s; }
+            .nav-status-dot-mini.on { background: #10b981; box-shadow: 0 0 6px rgba(16, 185, 129, 0.4); }
+            .nav-status-dot-mini.off { background: var(--text-dim); opacity: 0.3; }
+
+            .header-controls { display: flex; align-items: center; gap: 12px; }
+            .pc-header-divider { width: 1.5px; height: 24px; background: var(--border); margin: 0 4px; }
+            
+            .text-active { color: #10b981; }
+            .text-inactive { color: #ef4444; }
+
+            .pc-btn-outline-v2 { background: var(--bg-badge); color: var(--text-muted); border: 1.5px solid var(--border); width: 44px; height: 44px; border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+            .pc-btn-outline-v2:hover:not(:disabled) { background: var(--bg-card); border-color: var(--primary); color: var(--primary); transform: translateY(-2px); }
+            .pc-btn-outline-v2:disabled { opacity: 0.5; cursor: not-allowed; }
 
             .pc-btn-primary { background: var(--primary); color: #fff; border: none; padding: 12px 24px; border-radius: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
             .pc-btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(var(--primary-rgb), 0.2); }

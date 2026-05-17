@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Skeleton from '../../../components/Skeleton';
-import { DiscordSelector, CustomSelect, EmbedMessageManager, NotificationSettings } from '../../../components/LazyConfigComponents';
+import { DiscordSelector, CustomSelect, EmbedMessageManager, NotificationSettings, SystemMessagesSection } from '../../../components/LazyConfigComponents';
 import api from '../../../utils/api';
 import { useT } from '../../../contexts/LanguageContext';
 import { 
@@ -111,7 +111,7 @@ export default function FiveMConfig() {
   const addServer = () => {
     const newServers = [...(config.servers || []), { 
         id: Date.now().toString(), 
-        name: 'New Roleplay Instance', 
+        name: t('fivem.new_instance'), 
         serverIp: '', 
         statusChannelId: '',
         enabled: true,
@@ -131,7 +131,7 @@ export default function FiveMConfig() {
 
   const addButton = (serverId) => {
     const server = config.servers.find(s => s.id === serverId);
-    const newButtons = [...(server.buttons || []), { label: 'Connect Now', url: '', style: 'LINK' }];
+    const newButtons = [...(server.buttons || []), { label: t('fivem.connect_now'), url: '', style: 'LINK' }];
     updateServer(serverId, 'buttons', newButtons);
   };
 
@@ -142,7 +142,7 @@ export default function FiveMConfig() {
   return (
     <div className="pc-premium-wrapper fade-in">
         <Head>
-            <title>FiveM Monitoring | Verix Studio</title>
+            <title>{t('fivem.title')} | Verix Studio</title>
         </Head>
 
         {/* V2 Header */}
@@ -198,11 +198,14 @@ export default function FiveMConfig() {
         {/* V2 Navigation Tabs */}
         <nav className="pc-tabs-v2" style={{ marginBottom: '32px' }}>
             <button className={activeTab === 'servers' ? 'active' : ''} onClick={() => setActiveTab('servers')}>
-                <Server size={16} /> <span>Instance Fleet</span>
+                <Server size={16} /> <span>{t('fivem.instance_fleet')}</span>
                 {config.servers?.length > 0 && <span className="pc-tab-badge-v2">{config.servers.length}</span>}
             </button>
             <button className={activeTab === 'design' ? 'active' : ''} onClick={() => setActiveTab('design')}>
-                <Palette size={16} /> <span>Visual Studio</span>
+                <Palette size={16} /> <span>{t('fivem.visual_studio')}</span>
+            </button>
+            <button className={activeTab === 'system_messages' ? 'active' : ''} onClick={() => setActiveTab('system_messages')}>
+                <Settings2 size={16} /> <span>{t('common.tab_system_messages')}</span>
             </button>
         </nav>
 
@@ -220,7 +223,7 @@ export default function FiveMConfig() {
                                                 className="pc-input-ghost-v2" 
                                                 value={server.name} 
                                                 onChange={e => updateServer(server.id, 'name', e.target.value)} 
-                                                placeholder="Instance Name..."
+                                                placeholder={t('fivem.instance_name')}
                                             />
                                             <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)' }}>ID: {server.id}</span>
                                         </div>
@@ -229,11 +232,11 @@ export default function FiveMConfig() {
                                     <div className="card-body-v2">
                                         <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                                             <div className="pc-input-group-v2">
-                                                <label>Status Channel</label>
+                                                <label>{t('fivem.status_channel')}</label>
                                                 <DiscordSelector type="channel" options={channels} value={server.statusChannelId || ''} onChange={val => updateServer(server.id, 'statusChannelId', val)} />
                                             </div>
                                             <div className="pc-input-group-v2">
-                                                <label>Endpoint IP/Domain</label>
+                                                <label>{t('fivem.endpoint_ip')}</label>
                                                 <div className="pc-input-modern-v2">
                                                     <Globe size={16} />
                                                     <input placeholder="play.verix.gg" value={server.serverIp || ''} onChange={e => updateServer(server.id, 'serverIp', e.target.value)} />
@@ -243,8 +246,8 @@ export default function FiveMConfig() {
 
                                         <div className="pc-sub-card-v2" style={{ marginTop: '24px' }}>
                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                                                <strong>Interactive Actions</strong>
-                                                <button className="pc-btn-primary" style={{ padding: '6px 12px', fontSize: '0.8rem' }} onClick={() => addButton(server.id)}><Plus size={16} /> <span>Add</span></button>
+                                                <strong>{t('fivem.actions_title')}</strong>
+                                                <button className="pc-btn-primary" style={{ padding: '6px 12px', fontSize: '0.8rem' }} onClick={() => addButton(server.id)}><Plus size={16} /> <span>{t('fivem.add_btn')}</span></button>
                                             </div>
                                             <div className="v-stack" style={{ gap: '12px' }}>
                                                 {(server.buttons || []).map((btn, idx) => (
@@ -253,12 +256,12 @@ export default function FiveMConfig() {
                                                             const newBtns = [...server.buttons];
                                                             newBtns[idx].label = e.target.value;
                                                             updateServer(server.id, 'buttons', newBtns);
-                                                        }} placeholder="Label" />
+                                                        }} placeholder={t('fivem.label_placeholder')} />
                                                         <input className="pc-input-modern-v2" style={{ flex: 2 }} value={btn.url || ''} onChange={e => {
                                                             const newBtns = [...server.buttons];
                                                             newBtns[idx].url = e.target.value;
                                                             updateServer(server.id, 'buttons', newBtns);
-                                                        }} placeholder="URL" />
+                                                        }} placeholder={t('fivem.url_placeholder')} />
                                                         <button className="pc-btn-icon-danger-v2" onClick={() => {
                                                             const newBtns = server.buttons.filter((_, i) => i !== idx);
                                                             updateServer(server.id, 'buttons', newBtns);
@@ -273,9 +276,9 @@ export default function FiveMConfig() {
                         ) : (
                             <div className="pc-card-v2" style={{ textAlign: 'center', padding: '100px 32px' }}>
                                 <Network size={64} style={{ color: 'var(--primary)', marginBottom: '24px', opacity: 0.5 }} />
-                                <h2 style={{ fontFamily: 'Inter', fontWeight: 700, fontSize: '2rem', color: 'var(--text-heading)' }}>Network Deployment</h2>
-                                <p style={{ color: 'var(--text-muted)', marginBottom: '32px' }}>Inizia a monitorare i tuoi server FiveM.</p>
-                                <button className="pc-btn-primary" style={{ margin: '0 auto' }} onClick={addServer}><Plus size={20} /> <span>Deploy First Instance</span></button>
+                                <h2 style={{ fontFamily: 'Inter', fontWeight: 700, fontSize: '2rem', color: 'var(--text-heading)' }}>{t('fivem.deployment_title')}</h2>
+                                <p style={{ color: 'var(--text-muted)', marginBottom: '32px' }}>{t('fivem.deployment_desc')}</p>
+                                <button className="pc-btn-primary" style={{ margin: '0 auto' }} onClick={addServer}><Plus size={20} /> <span>{t('fivem.deploy_first')}</span></button>
                             </div>
                         )}
                     </div>
@@ -284,11 +287,11 @@ export default function FiveMConfig() {
                         <section className="pc-card-v2">
                             <div className="card-header-v2">
                                 <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><Layers size={18} /></div>
-                                <h3 style={{ margin: 0 }}>Fleet Management</h3>
+                                <h3 style={{ margin: 0 }}>{t('fivem.fleet_mgmt')}</h3>
                             </div>
                             <div className="card-body-v2">
                                 <button className="pc-btn-primary" style={{ width: '100%', justifyContent: 'center' }} onClick={addServer}>
-                                    <Plus size={20} /> <span>Add New Instance</span>
+                                    <Plus size={20} /> <span>{t('fivem.add_new')}</span>
                                 </button>
                             </div>
                         </section>
@@ -298,7 +301,7 @@ export default function FiveMConfig() {
                                 guildId={guildId}
                                 value={config.notifications}
                                 onChange={val => setNested('notifications', val)}
-                                title="Network Alerts"
+                                title={t('fivem.network_alerts')}
                             />
                         </div>
                     </div>
@@ -311,8 +314,21 @@ export default function FiveMConfig() {
                         guildId={guildId}
                         module="fivem"
                         slugs={[
-                            { key: 'status_embed', label: 'Status Online', description: 'Template quando il server è attivo.', variables: ['server_name', 'players', 'max_players', 'ip'], group: 'Network UI', groupIcon: Activity },
-                            { key: 'offline_embed', label: 'Status Offline', description: 'Template quando il server è spento.', variables: ['server_name', 'ip'], group: 'Network UI', groupIcon: Power }
+                            { key: 'status_embed', label: t('fivem.status_online_label'), description: t('fivem.status_online_desc'), variables: ['server_name', 'players', 'max_players', 'ip'], group: t('fivem.network_ui'), groupIcon: Activity },
+                            { key: 'offline_embed', label: t('fivem.status_offline_label'), description: t('fivem.status_offline_desc'), variables: ['server_name', 'ip'], group: t('fivem.network_ui'), groupIcon: Power }
+                        ]}
+                    />
+                </div>
+            )}
+
+            {activeTab === 'system_messages' && (
+                <div className="v-stack animate slide-up">
+                    <SystemMessagesSection 
+                        config={config}
+                        onUpdate={setConfig}
+                        messages={[
+                            { key: 'error', label: t('fivem.msg_error'), placeholder: t('fivem.msg_error') },
+                            { key: 'ip_copied', label: t('fivem.msg_ip_copied'), placeholder: t('fivem.msg_ip_copied') }
                         ]}
                     />
                 </div>

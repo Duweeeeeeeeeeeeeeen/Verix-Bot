@@ -5,6 +5,7 @@ import VoiceQueue from '../models/VoiceQueue.js';
 import SupportQueue from '../models/SupportQueue.js';
 import Background from '../models/Background.js';
 import TicketConfig from '../models/TicketConfig.js';
+import TempVoice from '../models/TempVoice.js';
 import logger from '../utils/logger.js';
 import messageService from '../utils/messageService.js';
 
@@ -35,7 +36,8 @@ class CleanupManager {
                 this.cleanupVoice(now),
                 this.cleanupBackground(now),
                 this.cleanupSupport(now),
-                this.cleanupAutoClose(now)
+                this.cleanupAutoClose(now),
+                this.cleanupTempVoice(now)
             ]);
         } catch (error) {
             logger.error('[CleanupManager] General Execution Error:', error);
@@ -177,6 +179,37 @@ class CleanupManager {
             await this.deleteChannel(session.guildId, session.voiceChannelId, `Support Session Finished Cleanup (${session.userId})`);
             session.deletionScheduledAt = null;
             await session.save();
+        }
+    }
+
+    async cleanupTempVoice(now) {
+        try {
+            const tempChannels = await TempVoice.find({});
+            for (const temp of tempChannels) {
+                if (this.client.multiBotManager && !this.client.multiBotManager.shouldHandle(temp.guildId, this.client)) continue;
+
+                const guild = this.client.guilds.cache.get(temp.guildId)
+                    || await this.client.guilds.fetch(temp.guildId).catch(() => null);
+                if (!guild) {
+                    await TempVoice.deleteOne({ _id: temp._id });
+                    logger.info(`[CleanupManager] Cleaned up stale TempVoice DB record for channel ${temp.channelId} (guild not found)`);
+                    continue;
+                }
+
+                const channel = guild.channels.cache.get(temp.channelId)
+                    || await guild.channels.fetch(temp.channelId).catch(() => null);
+
+                if (!channel) {
+                    await TempVoice.deleteOne({ _id: temp._id });
+                    logger.info(`[CleanupManager] Cleaned up stale TempVoice DB record for channel ${temp.channelId} (channel not found)`);
+                } else if (channel.members.size === 0) {
+                    await this.deleteChannel(temp.guildId, temp.channelId, 'TempVoice empty cleanup');
+                    await TempVoice.deleteOne({ _id: temp._id });
+                    logger.info(`[CleanupManager] Deleted empty orphaned TempVoice channel ${temp.channelId}`);
+                }
+            }
+        } catch (error) {
+            logger.error('[CleanupManager] Error cleaning up TempVoice channels:', error);
         }
     }
 

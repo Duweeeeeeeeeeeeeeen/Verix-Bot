@@ -1,6 +1,9 @@
 import { PermissionFlagsBits } from 'discord.js';
 import TempVoiceConfig from '../../../models/TempVoiceConfig.js';
 import TempVoice from '../../../models/TempVoice.js';
+import GlobalConfig from '../../../models/GlobalConfig.js';
+import messageService from '../../../utils/messageService.js';
+import { t } from '../../../locales/t.js';
 import logger from '../../../utils/logger.js';
 
 export default {
@@ -11,6 +14,9 @@ export default {
 
         const config = await TempVoiceConfig.findOne({ guildId: guild.id, enabled: true });
         if (!config || !config.creatorChannelId) return;
+
+        const globalConfig = await GlobalConfig.findOne({ guildId: guild.id });
+        const lang = globalConfig?.language || 'en';
 
         // 1. User joins the Creator Channel
         if (newState.channelId === config.creatorChannelId) {
@@ -45,29 +51,25 @@ export default {
                 // Move user
                 await member.voice.setChannel(newChannel).catch(() => null);
 
-                // Send Control Panel
-                const controlEmbed = {
-                    title: '🎙️ Pannello di Controllo Vocale',
-                    description: `Benvenuto <@${member.id}>! Questo è il tuo canale temporaneo.\nUsa i tasti qui sotto per gestirlo rapidamente.`,
-                    color: 0x5865F2,
-                    fields: [
-                        { name: '👑 Proprietario', value: `<@${member.id}>`, inline: true },
-                        { name: '👥 Limite', value: `${config.defaultUserLimit || 'Nessuno'}`, inline: true }
-                    ]
-                };
+                // Send Control Panel (Localized)
+                const embed = await messageService.get(guild.id, 'voice', 'control_panel', { user: member.id });
+                embed.addFields(
+                    { name: t('voice.owner_field', lang), value: `<@${member.id}>`, inline: true },
+                    { name: t('voice.limit_field', lang), value: `${config.defaultUserLimit || t('voice.status_none', lang)}`, inline: true }
+                );
 
                 const controlRow = {
                     type: 1,
                     components: [
-                        { type: 2, style: 2, label: 'Lucchetto', custom_id: 'tv_lock', emoji: { name: '🔒' } },
-                        { type: 2, style: 2, label: 'Sblocca', custom_id: 'tv_unlock', emoji: { name: '🔓' } },
-                        { type: 2, style: 2, label: '+1 Posto', custom_id: 'tv_inc', emoji: { name: '➕' } },
-                        { type: 2, style: 2, label: '-1 Posto', custom_id: 'tv_dec', emoji: { name: '➖' } },
-                        { type: 2, style: 1, label: 'Rinomina', custom_id: 'tv_rename', emoji: { name: '📝' } }
+                        { type: 2, style: 2, label: lang === 'it' ? 'Lucchetto' : 'Lock', custom_id: 'tv_lock', emoji: { name: '🔒' } },
+                        { type: 2, style: 2, label: lang === 'it' ? 'Sblocca' : 'Unlock', custom_id: 'tv_unlock', emoji: { name: '🔓' } },
+                        { type: 2, style: 2, label: lang === 'it' ? '+1 Posto' : '+1 Slot', custom_id: 'tv_inc', emoji: { name: '➕' } },
+                        { type: 2, style: 2, label: lang === 'it' ? '-1 Posto' : '-1 Slot', custom_id: 'tv_dec', emoji: { name: '➖' } },
+                        { type: 2, style: 1, label: lang === 'it' ? 'Rinomina' : 'Rename', custom_id: 'tv_rename', emoji: { name: '📝' } }
                     ]
                 };
 
-                await newChannel.send({ embeds: [controlEmbed], components: [controlRow] });
+                await newChannel.send({ embeds: [embed], components: [controlRow] });
 
                 // Track in DB
                 await TempVoice.create({

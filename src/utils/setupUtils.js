@@ -7,6 +7,7 @@ import PollConfig from '../models/PollConfig.js';
 import VerifyConfig from '../models/VerifyConfig.js';
 import WhitelistConfig from '../models/WhitelistConfig.js';
 import WelcomeConfig from '../models/WelcomeConfig.js';
+import { getDefaultMessages } from '../locales/t.js';
 
 /**
  * Creates default channels for selected modules.
@@ -77,12 +78,34 @@ export async function initializeModuleConfigs(guildId, createdChannels, onboardi
         } }
     );
 
+    const messages = getDefaultMessages(language || 'it');
+
     await GlobalConfig.findOneAndUpdate(
         { guildId },
-        { $set: { 
-            adminRoleIds: adminRoles || [],
-            language: language || 'it'
-        } },
+        { 
+            $set: { 
+                adminRoleIds: adminRoles || [],
+                language: language || 'it',
+                'ui.whitelistButtons': [
+                    { customId: 'start_wl', label: language === 'it' ? 'Inizia Candidatura' : 'Start Application', emoji: '⚖️', style: 'PRIMARY', enabled: true },
+                    { customId: 'confirm_wl', label: language === 'it' ? 'Conferma' : 'Confirm', emoji: '✅', style: 'SUCCESS', enabled: true },
+                    { customId: 'cancel_wl', label: language === 'it' ? 'Annulla' : 'Cancel', emoji: '❌', style: 'DANGER', enabled: true }
+                ],
+                'ui.ticketButtons': [
+                    { customId: 'tk_claim', label: language === 'it' ? 'Assumi' : 'Claim', emoji: '🙋‍♂️', style: 'SUCCESS', enabled: true },
+                    { customId: 'tk_close', label: language === 'it' ? 'Chiudi' : 'Close', emoji: '🔒', style: 'DANGER', enabled: true },
+                    { customId: 'tk_quick_reply', label: language === 'it' ? 'Risposte Rapide' : 'Quick Replies', emoji: '📝', style: 'PRIMARY', enabled: true },
+                    { customId: 'tk_tag', label: language === 'it' ? 'Tagga' : 'Tag', emoji: '🏷️', style: 'SECONDARY', enabled: true },
+                    { customId: 'tk_transcript', label: 'Logs', emoji: '📄', style: 'SECONDARY', enabled: true }
+                ],
+                'ui.voiceButtons': [
+                    { customId: 'approve_voice', label: language === 'it' ? 'Accetta' : 'Approve', emoji: '✅', style: 'SUCCESS', enabled: true },
+                    { customId: 'deny_voice', label: language === 'it' ? 'Rifiuta' : 'Deny', emoji: '❌', style: 'DANGER', enabled: true },
+                    { customId: 'reset_timer_voice', label: language === 'it' ? 'Riavvia Timer' : 'Reset Timer', emoji: '⏱️', style: 'SECONDARY', enabled: true }
+                ],
+                'naming.voiceChannel': language === 'it' ? 'candidatura-{user}' : 'apply-{user}'
+            } 
+        },
         { upsert: true }
     );
 

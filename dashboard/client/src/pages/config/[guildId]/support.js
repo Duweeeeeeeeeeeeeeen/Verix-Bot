@@ -82,9 +82,9 @@ export default function SupportConfig() {
         method: 'POST',
         body: JSON.stringify(config)
       });
-      showToast("Configurazione SOS salvata!");
+      showToast(t('support.sync_success'));
     } catch (error) {
-       showToast("Errore durante il salvataggio.", 'error');
+       showToast(t('common.save_error'), 'error');
     } finally {
       setSaving(false);
       window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
@@ -96,7 +96,7 @@ export default function SupportConfig() {
   return (
     <div className="pc-premium-wrapper fade-in">
         <Head>
-            <title>Supporto Vocale SOS | Verix Dashboard</title>
+            <title>{t('support.title')} | Verix Dashboard</title>
         </Head>
 
         {/* V2 Header */}
@@ -106,10 +106,10 @@ export default function SupportConfig() {
                     <Mic2 size={28} />
                 </div>
                 <div className="pc-title-row">
-                    <h1>Supporto Vocale (SOS)</h1>
+                    <h1>{t('support.title')}</h1>
                     <div className={`pc-status-tag-v2 ${config.enabled ? 'on' : 'off'}`}>
                         <div className="status-dot-v2"></div>
-                        {config.enabled ? 'SISTEMA ASSISTENZA ATTIVO' : 'SISTEMA DISABILITATO'}
+                        {config.enabled ? t('support.active_tag') : t('support.inactive_tag')}
                     </div>
                 </div>
             </div>
@@ -130,7 +130,7 @@ export default function SupportConfig() {
                 </div>
                 <button className="pc-btn-primary" onClick={handleSave} disabled={saving}>
                     <Save size={18} />
-                    <span>{saving ? 'Salvataggio...' : 'Salva Modifiche'}</span>
+                    <span>{saving ? t('common.saving') : t('common.save_changes')}</span>
                 </button>
             </div>
         </header>
@@ -139,10 +139,10 @@ export default function SupportConfig() {
         <nav className="pc-tabs-container-v2" style={{ marginBottom: '40px' }}>
             <div className="pc-tabs-v2">
                 <button className={activeTab === 'settings' ? 'active' : ''} onClick={() => setActiveTab('settings')}>
-                    <Settings2 size={16} /> <span>Configurazione Canale</span>
+                    <Settings2 size={16} /> <span>{t('support.tab_settings')}</span>
                 </button>
                 <button className={activeTab === 'design' ? 'active' : ''} onClick={() => setActiveTab('design')}>
-                    <Palette size={16} /> <span>Design & Studio</span>
+                    <Palette size={16} /> <span>{t('support.tab_design')}</span>
                 </button>
             </div>
         </nav>
@@ -154,7 +154,7 @@ export default function SupportConfig() {
                         <section className="pc-card-v2 animate slide-up">
                             <div className="card-header-v2">
                                 <div className="header-icon" style={{ background: '#eff6ff', color: '#3b82f6' }}><Volume2 size={18} /></div>
-                                <h3 style={{ margin: 0 }}>Automazione SOS</h3>
+                                <h3 style={{ margin: 0 }}>{t('support.sos_automation')}</h3>
                                 <div style={{ marginLeft: 'auto' }}>
                                     <label className="pc-toggle-v2 mini">
                                         <input type="checkbox" checked={!config.voiceSettings?.paused} onChange={e => setNested('voiceSettings.paused', !e.target.checked)} />
@@ -165,31 +165,35 @@ export default function SupportConfig() {
                             <div className="card-body-v2">
                                 <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
                                     <div className="pc-input-group-v2">
-                                        <label>Canale Trigger (Entrata)</label>
+                                        <label>{t('support.trigger_channel')}</label>
                                         <DiscordSelector type="channel" options={channels.filter(c => c.type === 2)} value={config.voiceSettings?.joinChannelId || ''} onChange={val => setNested('voiceSettings.joinChannelId', val)} />
+                                        <p style={{ margin: '8px 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t('support.trigger_channel_help')}</p>
                                     </div>
                                     <div className="pc-input-group-v2">
-                                        <label>Categoria Destinazione</label>
+                                        <label>{t('support.target_category')}</label>
                                         <DiscordSelector type="channel" options={channels.filter(c => c.type === 4)} value={config.voiceSettings?.categoryId || ''} onChange={val => setNested('voiceSettings.categoryId', val)} />
+                                        <p style={{ margin: '8px 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t('support.target_category_help')}</p>
                                     </div>
                                     <div className="pc-input-group-v2">
-                                        <label>Canale Logs SOS</label>
+                                        <label>{t('support.log_channel')}</label>
                                         <DiscordSelector type="channel" options={channels.filter(c => c.type === 0 || c.type === 5)} value={config.logChannelId || ''} onChange={val => setConfig({...config, logChannelId: val})} />
+                                        <p style={{ margin: '8px 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t('support.log_channel_help')}</p>
                                     </div>
                                     <div className="pc-input-group-v2">
-                                        <label>Capacità Massima Istanze</label>
+                                        <label>{t('support.max_instances')}</label>
                                         <div className="pc-input-wrapper-v2" style={{ display: 'flex', alignItems: 'center', background: 'var(--bg-badge)', border: '1.5px solid var(--border)', borderRadius: '16px' }}>
                                             <Layers size={16} style={{ marginLeft: '16px', color: 'var(--text-dim)' }} />
                                             <input type="number" style={{ width: '100%', border: 'none', background: 'transparent', padding: '14px 16px', fontWeight: 700, outline: 'none' }} min="1" max="15" value={config.voiceSettings?.maxConcurrent || 1} onChange={e => setNested('voiceSettings.maxConcurrent', parseInt(e.target.value))} />
                                         </div>
+                                        <p style={{ margin: '8px 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t('support.max_instances_help')}</p>
                                     </div>
                                     <div className="pc-input-group-v2" style={{ gridColumn: 'span 2' }}>
-                                        <label>Naming Template Canale</label>
+                                        <label>{t('support.naming_template')}</label>
                                         <div className="pc-input-wrapper-v2" style={{ display: 'flex', alignItems: 'center', background: 'var(--bg-badge)', border: '1.5px solid var(--border)', borderRadius: '16px' }}>
                                             <Activity size={16} style={{ marginLeft: '16px', color: 'var(--text-dim)' }} />
                                             <input type="text" style={{ width: '100%', border: 'none', background: 'transparent', padding: '14px 16px', fontWeight: 700, outline: 'none' }} value={config.voiceSettings?.channelNameTemplate || ''} onChange={e => setNested('voiceSettings.channelNameTemplate', e.target.value)} placeholder="es: 🆘 SOS - {user}" />
                                         </div>
-                                        <p className="pc-hint-v2" style={{ marginTop: '12px' }}>Variabili: <code>{`{user}`}</code>, <code>{`{id}`}</code></p>
+                                        <p className="pc-hint-v2" style={{ marginTop: '12px' }}>{t('support.naming_hint')}</p>
                                     </div>
                                 </div>
                             </div>
@@ -197,14 +201,14 @@ export default function SupportConfig() {
                         <section className="pc-card-v2 animate slide-up" style={{ animationDelay: '0.1s' }}>
                             <div className="card-header-v2">
                                 <div className="header-icon" style={{ background: '#fef2f2', color: '#ef4444' }}><BellRing size={18} /></div>
-                                <h3 style={{ margin: 0 }}>Logica di Gestione</h3>
+                                <h3 style={{ margin: 0 }}>{t('support.management_logic')}</h3>
                             </div>
                             <div className="card-body-v2">
                                 <div className="v-stack" style={{ gap: '16px' }}>
                                     <div className="pc-interactive-row-v2" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-badge)', padding: '24px', borderRadius: '24px', border: '1.5px solid var(--border)' }}>
                                         <div className="v-stack">
-                                            <strong style={{ fontWeight: 700, color: 'var(--text-heading)' }}>Auto-Cleanup Stanze</strong>
-                                            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 650 }}>Elimina il canale quando l'ultimo partecipante esce.</span>
+                                            <strong style={{ fontWeight: 700, color: 'var(--text-heading)' }}>{t('support.auto_cleanup')}</strong>
+                                            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 650 }}>{t('support.auto_cleanup_desc')}</span>
                                         </div>
                                         <label className="pc-toggle-v2">
                                             <input type="checkbox" checked={!!config.voiceSettings?.autoDelete} onChange={e => setNested('voiceSettings.autoDelete', e.target.checked)} />
@@ -213,8 +217,8 @@ export default function SupportConfig() {
                                     </div>
                                     <div className="pc-interactive-row-v2" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--bg-badge)', padding: '24px', borderRadius: '24px', border: '1.5px solid var(--border)' }}>
                                         <div className="v-stack">
-                                            <strong style={{ fontWeight: 700, color: 'var(--text-heading)' }}>Notifica Ruoli Staff</strong>
-                                            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 650 }}>Menziona il team di supporto alla creazione della stanza.</span>
+                                            <strong style={{ fontWeight: 700, color: 'var(--text-heading)' }}>{t('support.ping_staff')}</strong>
+                                            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 650 }}>{t('support.ping_staff_desc')}</span>
                                         </div>
                                         <label className="pc-toggle-v2">
                                             <input type="checkbox" checked={!!config.voiceSettings?.pingStaffOnJoin} onChange={e => setNested('voiceSettings.pingStaffOnJoin', e.target.checked)} />
@@ -229,17 +233,17 @@ export default function SupportConfig() {
                         <section className="pc-card-v2">
                             <div className="card-header-v2">
                                 <div className="header-icon" style={{ background: '#fdf4ff', color: '#d946ef' }}><ShieldCheck size={18} /></div>
-                                <h3 style={{ margin: 0 }}>Team Operativo</h3>
+                                <h3 style={{ margin: 0 }}>{t('support.operative_team')}</h3>
                             </div>
                             <div className="card-body-v2">
                                 <div className="pc-input-group-v2">
-                                    <label>Ruoli Supporto / Staff</label>
+                                    <label>{t('support.staff_roles')}</label>
                                     <DiscordSelector type="role" multiple={true} options={roles} value={config.staffRoleIds || []} onChange={val => setConfig({...config, staffRoleIds: val})} />
                                 </div>
                                 <div className="pc-input-group-v2" style={{ marginTop: '24px' }}>
-                                    <label>Ruolo Priorità VIP</label>
+                                    <label>{t('support.vip_role')}</label>
                                     <DiscordSelector type="role" options={roles} value={config.voiceSettings?.vipRoleId || ''} onChange={val => setNested('voiceSettings.vipRoleId', val)} />
-                                    <p className="pc-hint-v2" style={{ marginTop: '12px' }}>Gli utenti VIP avranno priorità di risposta in caso di coda piena.</p>
+                                    <p className="pc-hint-v2" style={{ marginTop: '12px' }}>{t('support.vip_hint')}</p>
                                 </div>
                             </div>
                         </section>
@@ -247,7 +251,7 @@ export default function SupportConfig() {
                             guildId={guildId}
                             value={config.voiceSettings?.notifications}
                             onChange={val => setNested('voiceSettings.notifications', val)}
-                            title="Notifiche Feedback"
+                            title={t('support.notifications')}
                         />
                     </div>
                 </div>
@@ -258,12 +262,12 @@ export default function SupportConfig() {
                         guildId={guildId}
                         module="support"
                         slugs={[
-                            { key: 'sessionStart', label: 'Benvenuto in SOS', description: 'Inviato all\'utente quando la stanza viene creata.', variables: ['user', 'guild', 'channel'], group: 'User UI', groupIcon: Zap },
-                            { key: 'queueFull', label: 'Avviso Coda Piena', description: 'Inviato se il numero massimo di stanze è attivo.', variables: ['user', 'guild', 'position'], group: 'User UI', groupIcon: Users },
-                            { key: 'paused', label: 'Sistema in Pausa', description: 'Inviato se un utente tenta l\'accesso durante una manutenzione.', variables: ['user', 'guild'], group: 'Status UI', groupIcon: Power },
-                            { key: 'cooldown', label: 'Avviso Cooldown', description: 'Inviato se l\'utente abusa del sistema SOS.', variables: ['user', 'guild'], group: 'Status UI', groupIcon: Clock },
-                            { key: 'staffLog', label: 'Log Apertura SOS', description: 'Menziona lo staff nel canale logs prescelto.', variables: ['user', 'voice_channel'], group: 'Staff UI', groupIcon: ShieldCheck },
-                            { key: 'queue_log', label: 'Log Attesa Utente', description: 'Traccia gli utenti che entrano in coda.', variables: ['user', 'user_id', 'position', 'vip_text'], group: 'Staff UI', groupIcon: Terminal }
+                            { key: 'sessionStart', label: t('support.msg_session_start'), description: t('support.msg_session_start_desc'), variables: ['user', 'guild', 'channel'], group: 'User UI', groupIcon: Zap },
+                            { key: 'queueFull', label: t('support.msg_queue_full'), description: t('support.msg_queue_full_desc'), variables: ['user', 'guild', 'position'], group: 'User UI', groupIcon: Users },
+                            { key: 'paused', label: t('support.msg_paused'), description: t('support.msg_paused_desc'), variables: ['user', 'guild'], group: 'Status UI', groupIcon: Power },
+                            { key: 'cooldown', label: t('support.msg_cooldown'), description: t('support.msg_cooldown_desc'), variables: ['user', 'guild'], group: 'Status UI', groupIcon: Clock },
+                            { key: 'staffLog', label: t('support.msg_staff_log_start'), description: t('support.msg_staff_log_start_desc'), variables: ['user', 'voice_channel'], group: 'Staff UI', groupIcon: ShieldCheck },
+                            { key: 'queue_log', label: t('support.msg_queue_log'), description: t('support.msg_queue_log_desc'), variables: ['user', 'user_id', 'position', 'vip_text'], group: 'Staff UI', groupIcon: Terminal }
                         ]}
                     />
                 </div>

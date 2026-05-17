@@ -65,7 +65,7 @@ export default function AnalyticsPage() {
   return (
     <div className="pc-premium-wrapper fade-in">
         <Head>
-            <title>Analytics & Reports | Verix Studio</title>
+            <title>{t('analytics.hub_title')} | Verix Studio</title>
         </Head>
 
         {/* V2 Header */}
@@ -75,10 +75,10 @@ export default function AnalyticsPage() {
                     <BarChart3 size={28} />
                 </div>
                 <div className="pc-title-row">
-                    <h1>Intelligence Hub</h1>
+                    <h1>{t('analytics.hub_title')}</h1>
                     <div className="pc-status-tag-v2 on">
                         <div className="status-dot-v2"></div>
-                        DATA SYNC LIVE
+                        {t('analytics.sync_live')}
                     </div>
                 </div>
             </div>
@@ -86,11 +86,11 @@ export default function AnalyticsPage() {
             <div className="header-controls">
                 {isPro && (
                     <button className="pc-btn-outline-v2" onClick={() => {}}>
-                        <Download size={18} /> <span>Export Dataset</span>
+                        <Download size={18} /> <span>{t('analytics.export_dataset')}</span>
                     </button>
                 )}
                 <button className="pc-btn-primary" onClick={fetchData}>
-                    <RefreshCw size={18} /> <span>Refresh Engine</span>
+                    <RefreshCw size={18} /> <span>{t('analytics.refresh_engine')}</span>
                 </button>
             </div>
         </header>
@@ -105,7 +105,7 @@ export default function AnalyticsPage() {
                             <MessageSquare size={20} />
                         </div>
                         <div className="v-stack">
-                            <span className="s-label-v2">Operations Flow</span>
+                            <span className="s-label-v2">{t('analytics.operations_flow')}</span>
                             <h3 className="s-value-v2">{stats?.tickets?.total || 0}</h3>
                         </div>
                     </div>
@@ -113,10 +113,10 @@ export default function AnalyticsPage() {
                         {isPro ? (
                             <div className="s-trend-box-v2 positive">
                                 <ArrowUpRight size={14} />
-                                <span>+{stats?.tickets?.new7d || 0} Ticket (7d)</span>
+                                <span>{t('analytics.ticket_7d', { count: stats?.tickets?.new7d || 0 })}</span>
                             </div>
                         ) : (
-                            <div className="s-lock-badge-v2"><Lock size={12} /> Pro-Trends Locked</div>
+                            <div className="s-lock-badge-v2"><Lock size={12} /> {t('analytics.pro_trends_locked')}</div>
                         )}
                     </div>
                 </section>
@@ -128,7 +128,7 @@ export default function AnalyticsPage() {
                             <Shield size={20} />
                         </div>
                         <div className="v-stack">
-                            <span className="s-label-v2">Security Impact</span>
+                            <span className="s-label-v2">{t('analytics.security_impact')}</span>
                             <h3 className="s-value-v2">{stats?.moderation?.total || 0}</h3>
                         </div>
                     </div>
@@ -136,10 +136,10 @@ export default function AnalyticsPage() {
                         {isPro ? (
                             <div className="s-trend-box-v2 neutral">
                                 <Activity size={14} />
-                                <span>{stats?.moderation?.activeMutes || 0} Sanzioni Attive</span>
+                                <span>{t('analytics.active_sanctions', { count: stats?.moderation?.activeMutes || 0 })}</span>
                             </div>
                         ) : (
-                            <div className="s-lock-badge-v2"><Lock size={12} /> Impact Locked</div>
+                            <div className="s-lock-badge-v2"><Lock size={12} /> {t('analytics.impact_locked')}</div>
                         )}
                     </div>
                 </section>
@@ -151,17 +151,17 @@ export default function AnalyticsPage() {
                             <Crown size={20} />
                         </div>
                         <div className="v-stack">
-                            <span className="s-label-v2">Intelligence Level</span>
+                            <span className="s-label-v2">{t('analytics.intelligence_level')}</span>
                             <h3 className="s-value-v2" style={{ fontSize: '1.4rem' }}>{isPro ? 'PLATINUM' : 'STANDARD'}</h3>
                         </div>
                     </div>
                     <div className="s-footer-v2">
                         <div className="s-tier-action-v2">
                             {isPro ? (
-                                <span>Accesso Completo Attivo</span>
+                                <span>{t('analytics.full_access_active')}</span>
                             ) : (
                                 <>
-                                    <span>Sblocca Studio Hub</span>
+                                    <span>{t('analytics.unlock_studio_hub')}</span>
                                     <ChevronRight size={16} />
                                 </>
                             )}
@@ -176,14 +176,14 @@ export default function AnalyticsPage() {
                          <div className="gate-icon-glow-v2" style={{ width: '100px', height: '100px', background: 'rgba(245,158,11,0.1)', color: '#f59e0b', borderRadius: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 40px', boxShadow: '0 20px 40px rgba(245, 158, 11, 0.2)' }}>
                             <LineChart size={52} />
                          </div>
-                         <h2 style={{ fontFamily: 'Inter', fontWeight: 700, fontSize: '3rem', color: 'var(--text-heading)', marginBottom: '20px', letterSpacing: '-1.5px' }}>Intelligence Visual Studio</h2>
-                         <p style={{ color: 'var(--text-muted)', fontSize: '1.25rem', maxWidth: '700px', margin: '0 auto 60px', fontWeight: 650, lineHeight: 1.6 }}>Analizza l'andamento del tuo server con grafici di crescita, heatmap di attività staff e performance dettagliate in tempo reale.</p>
+                         <h2 style={{ fontFamily: 'Inter', fontWeight: 700, fontSize: '3rem', color: 'var(--text-heading)', marginBottom: '20px', letterSpacing: '-1.5px' }}>{t('analytics.gate_title')}</h2>
+                         <p style={{ color: 'var(--text-muted)', fontSize: '1.25rem', maxWidth: '700px', margin: '0 auto 60px', fontWeight: 650, lineHeight: 1.6 }}>{t('analytics.gate_desc')}</p>
                          
                          <div className="gate-feature-matrix-v2" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', textAlign: 'left', maxWidth: '850px', margin: '0 auto 64px' }}>
                             {[
-                                { icon: <Activity size={18} />, text: 'Staff Performance Heatmap' },
-                                { icon: <Users2 size={18} />, text: 'Real-time Growth Engine' },
-                                { icon: <ShieldCheck size={18} />, text: 'Security Impact Reports' }
+                                { icon: <Activity size={18} />, text: t('analytics.feat_heatmap') },
+                                { icon: <Users2 size={18} />, text: t('analytics.feat_growth') },
+                                { icon: <ShieldCheck size={18} />, text: t('analytics.feat_security') }
                             ].map((p, i) => (
                                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '14px', background: 'var(--bg-badge)', padding: '18px', borderRadius: '20px', border: '1.5px solid var(--border)', fontWeight: 700, color: 'var(--text-muted)', fontSize: '0.85rem' }}>
                                     <div style={{ color: '#f59e0b' }}>{p.icon}</div>
@@ -194,7 +194,7 @@ export default function AnalyticsPage() {
 
                          <button className="pc-btn-platinum-v2" style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #ea580c 100%)', color: 'white', border: 'none', padding: '22px 56px', borderRadius: '22px', fontWeight: 700, fontSize: '1.15rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '14px', margin: '0 auto', boxShadow: '0 15px 35px rgba(245, 158, 11, 0.3)', transition: '0.3s' }} onClick={() => router.push(`/config/${guildId}/premium`)}>
                             <Sparkles size={22} />
-                            <span>Upgrade a Platinum Studio</span>
+                            <span>{t('analytics.upgrade_platinum')}</span>
                          </button>
                     </div>
                 ) : (
@@ -205,22 +205,73 @@ export default function AnalyticsPage() {
                                 <div className="card-header-v2">
                                     <div className="header-icon" style={{ background: '#ecfdf5', color: '#10b981' }}><Activity size={18} /></div>
                                     <div className="v-stack" style={{ flex: 1 }}>
-                                        <h3 style={{ margin: 0 }}>Traffic Distribution (24h)</h3>
-                                        <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 650 }}>Heatmap dell'attività globale rilevata sul server.</p>
+                                        <h3 style={{ margin: 0 }}>{t('analytics.heatmap_title')}</h3>
+                                        <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 650 }}>{t('analytics.heatmap_desc')}</p>
                                     </div>
                                 </div>
                                 <div className="card-body-v2">
-                                    <div className="pc-heatmap-engine-v2" style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', height: '220px', paddingBottom: '32px' }}>
-                                        {(stats?.heatmap || Array(24).fill(0)).map((val, hour) => {
-                                            const max = Math.max(...(stats?.heatmap || [1]));
-                                            const height = max > 0 ? (val / max) * 100 : 0;
-                                            return (
-                                                <div key={hour} className="h-column-v2" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', height: '100%', position: 'relative' }} title={`${hour}:00 - ${val} eventi`}>
-                                                    <div className="h-fill-v2" style={{ width: '100%', background: 'linear-gradient(to top, #10b981, #34d399)', borderRadius: '10px', height: `${Math.max(height, 4)}%`, transition: '1.5s cubic-bezier(0.4, 0, 0.2, 1)', opacity: height > 0 ? 1 : 0.3, boxShadow: '0 4px 12px rgba(16, 185, 129, 0.2)' }}></div>
-                                                    <span style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-dim)' }}>{hour}h</span>
-                                                </div>
-                                            );
-                                        })}
+                                    <div className="pc-heatmap-grid-v2" style={{ display: 'grid', gridTemplateColumns: 'auto repeat(24, 1fr)', gap: '4px', paddingBottom: '20px' }}>
+                                        <div className="h-grid-label"></div>
+                                        {Array.from({ length: 24 }).map((_, h) => (
+                                            <div key={h} className="h-grid-hour-label" style={{ fontSize: '0.6rem', textAlign: 'center', fontWeight: 700, color: 'var(--text-dim)' }}>{h}</div>
+                                        ))}
+                                        
+                                        {t('analytics.heatmap_days', { defaultValue: 'D,L,M,Me,G,V,S' }).split(',').map((dayName, day) => (
+                                            <>
+                                                <div key={dayName} className="h-grid-day-label" style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)', paddingRight: '8px', display: 'flex', alignItems: 'center' }}>{dayName}</div>
+                                                {Array.from({ length: 24 }).map((_, hour) => {
+                                                    const val = stats?.heatmap?.[day]?.[hour] || 0;
+                                                    const max = Math.max(...(stats?.heatmap?.flat() || [1]));
+                                                    const opacity = max > 0 ? (val / max) : 0;
+                                                    return (
+                                                        <div 
+                                                            key={`${day}-${hour}`} 
+                                                            className="h-grid-cell-v2" 
+                                                            style={{ 
+                                                                aspectRatio: '1/1', 
+                                                                background: val > 0 ? `rgba(16, 185, 129, ${0.1 + opacity * 0.9})` : 'var(--bg-badge)', 
+                                                                borderRadius: '4px',
+                                                                transition: '0.3s'
+                                                            }} 
+                                                            title={`${dayName} ${hour}:00 - ${val} ${val === 1 ? t('analytics.action') : t('analytics.actions')}`}
+                                                        ></div>
+                                                    );
+                                                })}
+                                            </>
+                                        ))}
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* Leveling & Engagement Studio */}
+                            <section className="pc-card-v2 animate slide-up" style={{ animationDelay: '0.05s' }}>
+                                <div className="card-header-v2">
+                                    <div className="header-icon" style={{ background: '#eff6ff', color: '#3b82f6' }}><Sparkles size={18} /></div>
+                                    <div className="v-stack" style={{ flex: 1 }}>
+                                        <h3 style={{ margin: 0 }}>{t('analytics.leveling_stats_title')}</h3>
+                                        <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 650 }}>{t('analytics.leveling_stats_desc')}</p>
+                                    </div>
+                                </div>
+                                <div className="card-body-v2">
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
+                                        <div style={{ background: 'var(--bg-badge)', padding: '20px', borderRadius: '18px', border: '1px solid var(--border)' }}>
+                                            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase' }}>{t('analytics.total_server_xp')}</span>
+                                            <h4 style={{ margin: '8px 0 0 0', fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-heading)' }}>
+                                                {stats?.leveling?.totalXp?.toLocaleString() || stats?.leveling?.totalXp || 0}
+                                            </h4>
+                                        </div>
+                                        <div style={{ background: 'var(--bg-badge)', padding: '20px', borderRadius: '18px', border: '1px solid var(--border)' }}>
+                                            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase' }}>{t('analytics.total_messages_logged')}</span>
+                                            <h4 style={{ margin: '8px 0 0 0', fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-heading)' }}>
+                                                {stats?.leveling?.totalMessages?.toLocaleString() || stats?.leveling?.totalMessages || 0}
+                                            </h4>
+                                        </div>
+                                        <div style={{ background: 'var(--bg-badge)', padding: '20px', borderRadius: '18px', border: '1px solid var(--border)' }}>
+                                            <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase' }}>{t('analytics.highly_active_users')}</span>
+                                            <h4 style={{ margin: '8px 0 0 0', fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-heading)' }}>
+                                                {stats?.leveling?.activeUsers?.toLocaleString() || stats?.leveling?.activeUsers || 0}
+                                            </h4>
+                                        </div>
                                     </div>
                                 </div>
                             </section>
@@ -230,8 +281,8 @@ export default function AnalyticsPage() {
                                 <div className="card-header-v2">
                                     <div className="header-icon" style={{ background: '#eff6ff', color: '#2563eb' }}><LineChart size={18} /></div>
                                     <div className="v-stack" style={{ flex: 1 }}>
-                                        <h3 style={{ margin: 0 }}>Community Growth Trend</h3>
-                                        <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 650 }}>Analisi storica dei membri acquisiti.</p>
+                                        <h3 style={{ margin: 0 }}>{t('analytics.growth_trend_title')}</h3>
+                                        <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 650 }}>{t('analytics.growth_trend_desc')}</p>
                                     </div>
                                 </div>
                                 <div className="card-body-v2" style={{ height: '300px', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -249,8 +300,8 @@ export default function AnalyticsPage() {
                                     ) : (
                                         <div className="pc-empty-state-v2" style={{ textAlign: 'center', color: 'var(--text-dim)' }}>
                                             <EyeOff size={48} style={{ marginBottom: '16px', opacity: 0.5 }} />
-                                            <p style={{ fontWeight: 700 }}>Data Points Insufficienti</p>
-                                            <span style={{ fontSize: '0.8rem' }}>Attendi la prossima scansione del sistema.</span>
+                                            <p style={{ fontWeight: 700 }}>{t('analytics.growth_insufficient')}</p>
+                                            <span style={{ fontSize: '0.8rem' }}>{t('analytics.growth_wait_scan')}</span>
                                         </div>
                                     )}
                                 </div>
@@ -261,14 +312,14 @@ export default function AnalyticsPage() {
                             <section className="pc-card-v2 animate slide-up" style={{ animationDelay: '0.2s' }}>
                                 <div className="card-header-v2">
                                     <div className="header-icon" style={{ background: '#f5f3ff', color: '#7c3aed' }}><Target size={18} /></div>
-                                    <h3 style={{ margin: 0 }}>Staff Power</h3>
+                                    <h3 style={{ margin: 0 }}>{t('analytics.staff_power')}</h3>
                                 </div>
                                 <div className="card-body-v2">
                                     <div className="pc-staff-engine-v2" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                                         {(stats?.staff || []).length > 0 ? stats.staff.map((s, i) => (
                                             <div key={i} className="pc-rank-bar-v2">
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                                                    <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-heading)' }}>Moderator {s.id.slice(-4)}</span>
+                                                    <span style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-heading)' }}>{t('analytics.moderator', { id: s.id.slice(-4) })}</span>
                                                     <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#7c3aed' }}>{s.closed}</span>
                                                 </div>
                                                 <div style={{ height: '10px', background: 'var(--bg-badge)', borderRadius: '10px', overflow: 'hidden' }}>
@@ -277,7 +328,7 @@ export default function AnalyticsPage() {
                                             </div>
                                         )) : (
                                             <div style={{ textAlign: 'center', padding: '20px', background: 'var(--bg-badge)', borderRadius: '20px', color: 'var(--text-dim)', fontSize: '0.8rem', fontWeight: 700 }}>
-                                                Nessun dato staffer rilevato.
+                                                {t('analytics.no_staff_data')}
                                             </div>
                                         )}
                                     </div>
@@ -290,8 +341,8 @@ export default function AnalyticsPage() {
                                         <RefreshCcw size={20} className="spin" />
                                      </div>
                                      <div className="v-stack">
-                                         <span className="sync-label-v2">Frequenza Aggiornamento</span>
-                                         <span className="sync-value-v2">Ciclo 6 Ore</span>
+                                         <span className="sync-label-v2">{t('analytics.sync_frequency')}</span>
+                                         <span className="sync-value-v2">{t('analytics.sync_cycle_6h')}</span>
                                      </div>
                                  </div>
                                  <div className="sync-bg-icon">

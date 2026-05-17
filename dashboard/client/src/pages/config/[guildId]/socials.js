@@ -151,7 +151,10 @@ export default function SocialsConfig() {
 
   const currentPlatformConfig = config.platforms[activePlatform];
   const pData = PLATFORMS.find(p => p.id === activePlatform);
-  const isLocked = !guildData?.isPremium && activePlatform !== 'twitch' && !['premium', 'platinum'].includes(guildData?.premiumTier);
+  const isLocked = !guildData?.isPremium && 
+    activePlatform !== 'twitch' && 
+    !(activePlatform === 'youtube' && guildData?.premiumTier === 'lite') && 
+    !['premium', 'platinum'].includes(guildData?.premiumTier);
   const getAccountStatus = (account) => {
     const backoffUntil = account.bridgeBackoffUntil ? new Date(account.bridgeBackoffUntil) : null;
     const isBackoff = backoffUntil && backoffUntil.getTime() > Date.now();
@@ -205,7 +208,7 @@ export default function SocialsConfig() {
                     <h1>{t('socials.studio_title')}</h1>
                     <div className="pc-status-tag-v2 on">
                         <div className="status-dot-v2"></div>
-                        {t('socials.sync_active')}
+                        {t('common.active_system')}
                     </div>
                 </div>
             </div>
@@ -228,7 +231,10 @@ export default function SocialsConfig() {
                     <span className="sidebar-label-v2">{t('socials.repository')}</span>
                     <nav className="pc-nav-stack-v2">
                         {PLATFORMS.map(p => {
-                            const locked = !guildData?.isPremium && p.id !== 'twitch' && !['premium', 'platinum'].includes(guildData?.premiumTier);
+                            const locked = !guildData?.isPremium && 
+                                p.id !== 'twitch' && 
+                                !(p.id === 'youtube' && guildData?.premiumTier === 'lite') && 
+                                !['premium', 'platinum'].includes(guildData?.premiumTier);
                             const active = activePlatform === p.id;
                             const isEnabled = config.platforms[p.id]?.enabled;
                             return (
@@ -241,8 +247,11 @@ export default function SocialsConfig() {
                                         {locked ? <Lock size={18} /> : <p.icon size={20} />}
                                     </div>
                                     <div className="v-stack" style={{ flex: 1, textAlign: 'left' }}>
-                                        <div className="p-name-v2">{t(p.nameKey)}</div>
-                                        {isEnabled && <div className="nav-sync-tag-v2"><div className="dot"></div><span>{t('socials.synchronized')}</span></div>}
+                                        <div className="p-name-v2" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            {t(p.nameKey)}
+                                            <div className={`nav-status-dot-mini ${isEnabled ? 'on' : 'off'}`} />
+                                        </div>
+                                        {isEnabled && <div className="nav-sync-tag-v2"><span>{t('socials.synchronized')}</span></div>}
                                     </div>
                                     {active && <ChevronRight size={16} color="var(--primary)" style={{ opacity: 0.5 }} />}
                                     {locked && <div className="lock-badge-v2"><Sparkles size={8} /></div>}
@@ -269,10 +278,10 @@ export default function SocialsConfig() {
                             <Lock size={40} />
                         </div>
                         <h2>{t('premium.slot_locked')}</h2>
-                        <p>Il monitoraggio professionale di <strong>{pData.name}</strong> è riservato ai partner con abbonamento Platinum.</p>
+                        <p>{t('socials.tier_gate_desc', { platform: pData.name })}</p>
                         <button className="pc-btn-primary" onClick={() => router.push(`/config/${guildId}/premium`)}>
                             <Sparkles size={20} />
-                            <span>Effettua Upgrade Ora</span>
+                            <span>{t('socials.upgrade_now')}</span>
                         </button>
                     </div>
                 ) : (
@@ -383,17 +392,19 @@ export default function SocialsConfig() {
                                                     <div className="pc-input-group-v2">
                                                         <label>{t('socials.target_channel')}</label>
                                                         <DiscordSelector type="channel" options={discordData.channels} value={currentPlatformConfig.notificationChannelId || ''} onChange={val => updatePlatform('notificationChannelId', val)} />
+                                                        <p style={{ margin: '8px 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t('socials.target_channel_help')}</p>
                                                     </div>
                                                     <div className="pc-input-group-v2" style={{ marginTop: '24px' }}>
                                                         <label>{t('socials.target_role')}</label>
                                                         <DiscordSelector type="role" options={discordData.roles} value={currentPlatformConfig.roleId || ''} onChange={val => updatePlatform('roleId', val)} />
+                                                        <p style={{ margin: '8px 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t('socials.target_role_help')}</p>
                                                     </div>
 
                                                     {activePlatform === 'twitch' && (
                                                         <div className="pc-input-group-v2 animate slide-up" style={{ marginTop: '24px' }}>
                                                             <label>{t('socials.twitch_live_role')}</label>
                                                             <DiscordSelector type="role" options={discordData.roles} value={currentPlatformConfig.liveRoleId || ''} onChange={val => updatePlatform('liveRoleId', val)} />
-                                                            <p className="input-hint-v2">Ruolo assegnato automaticamente agli utenti linkati quando sono in diretta.</p>
+                                                            <p className="input-hint-v2">{t('socials.twitch_live_role_hint')}</p>
                                                         </div>
                                                     )}
 
@@ -419,7 +430,7 @@ export default function SocialsConfig() {
                                              guildId={guildId}
                                              module="socials"
                                              slugs={[
-                                                 { key: pData.id, label: `${t(pData.nameKey)} ${t('socials.announcement_label')}`, description: `Design del messaggio inviato quando l'account ${t(pData.nameKey)} pubblica un nuovo contenuto.`, variables: ['username', 'link', 'title', 'preview_url', 'platform'], group: 'Social Studio', groupIcon: Globe2 },
+                                                 { key: pData.id, label: `${t(pData.nameKey)} ${t('socials.announcement_label')}`, description: t('socials.announcement_desc', { platform: t(pData.nameKey) }), variables: ['username', 'link', 'title', 'preview_url', 'platform'], group: t('socials.studio_title'), groupIcon: Globe2 },
                                              ]}
                                          />
                                      </div>
@@ -444,6 +455,9 @@ export default function SocialsConfig() {
             .pc-status-tag-v2.on { background: rgba(16, 185, 129, 0.1); color: #10b981; }
             .pc-status-tag-v2.off { background: var(--bg-badge); color: #ef4444; }
             .status-dot-v2 { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+            .nav-status-dot-mini { width: 6px; height: 6px; border-radius: 50%; transition: 0.2s; }
+            .nav-status-dot-mini.on { background: #10b981; box-shadow: 0 0 6px rgba(16, 185, 129, 0.4); }
+            .nav-status-dot-mini.off { background: var(--text-dim); opacity: 0.3; }
 
             .pc-btn-primary { background: var(--primary); color: #fff; border: none; padding: 12px 24px; border-radius: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
             .pc-btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(var(--primary-rgb), 0.2); }

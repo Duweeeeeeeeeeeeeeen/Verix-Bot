@@ -1,9 +1,10 @@
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { useAuth } from '../contexts/AuthContext';
 import { useT } from '../contexts/LanguageContext';
+import api from '../utils/api';
 import { 
   ShieldCheck, 
   Bot,
@@ -47,7 +48,11 @@ import {
   Coins,
   Sun,
   Moon,
-  Trash2
+  Trophy,
+  Trash2,
+  MessageSquare,
+  Activity,
+  Search
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import ConfirmModal from './ConfirmModal';
@@ -55,6 +60,10 @@ import ConfirmModal from './ConfirmModal';
 const GuideSidebar = dynamic(() => import('./GuideSidebar'), {
   ssr: false,
   loading: () => <aside className="guide-sidebar loading" />
+});
+
+const CommandPalette = dynamic(() => import('./CommandPalette'), {
+  ssr: false
 });
 
 export default function Layout({ children, guildId: propGuildId, hideGuide = false, isNavigating = false }) {
@@ -82,6 +91,33 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
   const [isActivity, setIsActivity] = useState(false);
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+  const helpTimeoutRef = useRef(null);
+
+  const handleHelpEnter = () => {
+    if (helpTimeoutRef.current) clearTimeout(helpTimeoutRef.current);
+    setIsHelpOpen(true);
+  };
+
+  const handleHelpLeave = () => {
+    helpTimeoutRef.current = setTimeout(() => {
+      setIsHelpOpen(false);
+    }, 300); // 300ms delay to bridge the gap
+  };
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsPaletteOpen(prev => !prev);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Persistence for Guide Sidebar
   useEffect(() => {
@@ -103,7 +139,7 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
         if (g.premiumTier) setPremiumTier(g.premiumTier);
       }
     } else if (!guildId) {
-      setServerInfo({ name: 'Verix System', icon: null });
+      setServerInfo({ name: t('common.loading_verix'), icon: null });
     }
   }, [guildId, user]);
 
@@ -154,21 +190,39 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
 
   const [premiumTier, setPremiumTier] = useState('none');
 
+  const [enabledModules, setEnabledModules] = useState({});
+
   useEffect(() => {
     if (guildId && guildId !== 'undefined') {
-      const fetchTier = async () => {
+      const fetchConfig = async () => {
         try {
-          const res = await fetch(`/api/config/${guildId}/guild`);
-          const response = await res.json();
-          if (response.success && response.data) {
-            const guildData = response.data;
-            setPremiumTier(guildData.premiumTier || (guildData.isPremium ? 'premium' : 'none'));
+          const response = await api.request(`/config/${guildId}`);
+          if (response) {
+            setEnabledModules({
+              verify: response.verify?.enabled,
+              welcome: response.welcome?.enabled,
+              'reaction-roles': response.reactionRoles?.enabled,
+              socials: response.socials?.enabled,
+              giveaway: response.giveaway?.enabled,
+              photocontest: response.photocontest?.enabled,
+              polls: response.polls?.enabled,
+              tickets: response.tickets?.enabled,
+              support: response.support?.enabled,
+              tempvoice: response.tempvoice?.enabled,
+              moderation: response.moderation?.enabled,
+              fivem: response.fivem?.enabled,
+              whitelist: response.whitelist?.enabled,
+              leveling: response.leveling?.enabled
+            });
+            if (response.guild) {
+              setPremiumTier(response.guild.premiumTier || (response.guild.isPremium ? 'premium' : 'none'));
+            }
           }
         } catch (err) {
-          console.error("Failed to fetch tier", err);
+          console.error("Failed to fetch sidebar status", err);
         }
       };
-      fetchTier();
+      fetchConfig();
     }
   }, [guildId]);
 
@@ -177,10 +231,9 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
 
   const navigationGroups = [
     {
+      title: t('sidebar.group_general'),
       items: [
-        { name: t('sidebar.home'), icon: Home, path: `/config/${guildId}`, id: 'home' },
-        { name: t('hub.academy_title') || 'Verix Academy', icon: BookOpen, path: `/config/${guildId}/academy`, id: 'academy' },
-        { name: t('sidebar.premium'), icon: Crown, path: `/config/${guildId}/premium`, id: 'premium' }
+        { name: t('sidebar.home'), icon: Home, path: `/config/${guildId}`, id: 'home' }
       ]
     },
     {
@@ -188,6 +241,7 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
       items: [
         { name: t('sidebar.verify'), icon: CheckCircle, path: `/config/${guildId}/verify`, id: 'verify' },
         { name: t('sidebar.welcome'), icon: UserPlus, path: `/config/${guildId}/welcome`, id: 'welcome' },
+        { name: t('sidebar.leveling') || 'Leveling & Rewards', icon: Trophy, path: `/config/${guildId}/leveling`, id: 'leveling' },
         { name: t('sidebar.reactionroles') || 'Reaction Roles', icon: MousePointer2, path: `/config/${guildId}/reaction-roles`, id: 'reaction-roles' }
       ]
     },
@@ -204,8 +258,7 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
       title: t('sidebar.group_management'),
       items: [
         { name: t('sidebar.tickets'), icon: Ticket, path: `/config/${guildId}/tickets`, id: 'tickets' },
-        { name: t('sidebar.support'), icon: Mic2, path: `/config/${guildId}/support`, id: 'support' },
-        { name: t('sidebar.tempvoice'), icon: Mic2, path: `/config/${guildId}/tempvoice`, id: 'tempvoice' }
+        { name: t('sidebar.voice_interviste') || 'Voice & Interviste', icon: Mic2, path: `/config/${guildId}/voice`, id: 'voice' }
       ]
     },
     {
@@ -230,7 +283,7 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
       ]
     },
     {
-      title: t('sidebar.group_management'),
+      title: t('sidebar.group_administration') || 'Amministrazione',
       items: [
         { name: t('sidebar.management'), icon: History, path: `/config/${guildId}/management`, id: 'management' },
         { name: t('management.audit_logs_title'), icon: Shield, path: `/config/${guildId}/audit`, id: 'audit' }
@@ -245,7 +298,7 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
       
       // Unified White-Label for both Premium and Platinum
       ...(isPremium ? [
-        { name: t('sidebar.white_label'), icon: Sparkles, path: `/config/${guildId}/white-label`, id: 'white_label' }
+        { name: t('sidebar.branding') || 'Branding & Identità', icon: Sparkles, path: `/config/${guildId}/white-label`, id: 'white_label' }
       ] : []),
 
       // Sync only for Platinum
@@ -253,7 +306,7 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
         { name: t('common.sync') || 'Sync', icon: RefreshCcw, path: `/config/${guildId}/sync`, id: 'sync' }
       ] : []),
 
-      { name: t('sidebar.system_ops') || 'System Ops', icon: Terminal, path: '/admin/system', id: 'system_ops', adminOnly: true }
+      { name: t('sidebar.system_ops'), icon: Terminal, path: '/admin/system', id: 'system_ops', adminOnly: true }
     ]
   };
 
@@ -319,55 +372,86 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
           </button>
         </div>
 
-        <nav className="nav-group">
-           {navigationGroups.map((group, gIdx) => (
-            <div key={gIdx} className={`nav-section ${!group.title ? 'nav-section-top' : 'nav-section-module'}`}>
-              {group.title && (
-                !isCollapsed ? (
-                  <div className="nav-group-title animate fade-in">{group.title}</div>
-                ) : (
-                  <div className="nav-divider"></div>
-                )
-              )}
-              
-              {group.items.map((item) => {
-                // Admin Only Check
-                if (item.adminOnly && (!user || !['361159834688552960', '314417452395626496'].includes(user.id))) {
-                  return null;
-                }
-
-                const Icon = item.icon;
-                const isActive = router.asPath === item.path;
-                
-                return (
-                  <Link 
-                    key={item.id} 
-                    href={item.path} 
-                    className={`nav-link ${isActive ? 'active' : ''}`}
-                    title={isCollapsed ? item.name : ''}
-                  >
-                    <div className="nav-link-icon">
-                       <Icon size={18} strokeWidth={2.5} />
-                    </div>
-                    {!isCollapsed && <span className="nav-link-text animate fade-in">{item.name}</span>}
-                    {isActive && !isCollapsed && <ChevronRight size={14} className="active-arrow" />}
-                  </Link>
-                );
-              })}
+        {/* New Module Search */}
+        {!isCollapsed && (
+          <div className="sidebar-search animate fade-in">
+            <div className="search-wrapper">
+              <Search size={14} className="search-icon" />
+              <input 
+                type="text" 
+                placeholder={t('common.search_hint') || `${t('common.search')} (Ctrl+K)`} 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
             </div>
-          ))}
+          </div>
+        )}
+
+        <nav className="nav-group">
+           {navigationGroups.map((group, gIdx) => {
+             const filteredItems = group.items.filter(item => 
+               item.name.toLowerCase().includes(searchQuery.toLowerCase())
+             );
+             
+             if (filteredItems.length === 0 && searchQuery) return null;
+
+             return (
+              <div key={gIdx} className={`nav-section ${!group.title ? 'nav-section-top' : 'nav-section-module'}`}>
+                {group.title && (
+                  !isCollapsed ? (
+                    <div className="nav-group-title animate fade-in">{group.title}</div>
+                  ) : (
+                    <div className="nav-divider"></div>
+                  )
+                )}
+                
+                {filteredItems.map((item) => {
+                  // Admin Only Check
+                  if (item.adminOnly && (!user || !['361159834688552960', '314417452395626496'].includes(user.id))) {
+                    return null;
+                  }
+
+                  const Icon = item.icon;
+                  const isActive = router.asPath === item.path;
+                  
+                  return (
+                    <Link 
+                      key={item.id} 
+                      href={item.path} 
+                      className={`nav-link ${isActive ? 'active' : ''}`}
+                      title={isCollapsed ? item.name : ''}
+                    >
+                      <div className="nav-link-icon">
+                         <Icon size={18} strokeWidth={2.5} />
+                      </div>
+                      {!isCollapsed && <span className="nav-link-text animate fade-in">{item.name}</span>}
+                      
+                      {/* New Status Indicator Dot */}
+                      {enabledModules[item.id] !== undefined && (
+                        <div className={`nav-status-dot ${isCollapsed ? 'collapsed' : ''} ${enabledModules[item.id] ? 'on' : 'off'}`} />
+                      )}
+
+                      {isActive && !isCollapsed && <ChevronRight size={14} className="active-arrow" />}
+                    </Link>
+                  );
+                })}
+              </div>
+             );
+           })}
         </nav>
 
         <div className="sidebar-footer">
           {/* Fixed System Section */}
           <div className="nav-section">
-              {!isCollapsed ? (
-                <div className="nav-group-title animate fade-in">{systemGroup.title}</div>
-              ) : (
-                <div className="nav-divider" style={{ margin: '0 16px 8px 16px' }}></div>
+              {(!searchQuery || systemGroup.items.some(i => i.name.toLowerCase().includes(searchQuery.toLowerCase()))) && (
+                !isCollapsed ? (
+                  <div className="nav-group-title animate fade-in">{systemGroup.title}</div>
+                ) : (
+                  <div className="nav-divider" style={{ margin: '0 16px 8px 16px' }}></div>
+                )
               )}
               
-              {systemGroup.items.map((item) => {
+              {systemGroup.items.filter(item => item.name.toLowerCase().includes(searchQuery.toLowerCase())).map((item) => {
                 if (item.adminOnly && (!user || !['361159834688552960', '314417452395626496'].includes(user.id))) {
                   return null;
                 }
@@ -420,10 +504,10 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
              </Link>
              <div className="header-divider"></div>
              <div 
-               className="server-crumb interactive" 
-               onClick={() => setShowLeaveModal(true)}
-               title={t('management.leave_server') || 'Fai uscire il bot dal server'}
-             >
+                className="server-crumb interactive" 
+                onClick={() => setShowLeaveModal(true)}
+                title={t('management.leave_hint')}
+              >
                 {serverInfo.icon && (
                   <img 
                     src={`https://cdn.discordapp.com/icons/${guildId}/${serverInfo.icon}.png`} 
@@ -432,6 +516,28 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
                 )}
                 <span>{serverInfo.name}</span>
                 <Trash2 size={12} className="leave-icon" />
+             </div>
+             
+             {/* New Breadcrumbs Component */}
+             <div className="pc-breadcrumbs-v2 animate fade-in">
+                <ChevronRight size={14} className="bc-separator" />
+                 <span className="bc-item active">
+                    <div className="flex items-center gap-2">
+                        {[...navigationGroups.flatMap(g => g.items), ...systemGroup.items]
+                          .filter(i => i.id !== 'home')
+                          .find(i => router.asPath.includes(i.path))?.name || 
+                         t('sidebar.home')}
+                        {/* Status dot in breadcrumbs */}
+                        {(() => {
+                            const activeItem = [...navigationGroups.flatMap(g => g.items), ...systemGroup.items]
+                                .find(i => router.asPath.includes(i.path));
+                            if (activeItem && enabledModules[activeItem.id] !== undefined) {
+                                return <div className={`nav-status-dot mini ${enabledModules[activeItem.id] ? 'on' : 'off'}`} style={{ position: 'static', marginLeft: '6px' }} />;
+                            }
+                            return null;
+                        })()}
+                    </div>
+                 </span>
              </div>
           </div>
 
@@ -454,6 +560,60 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
                   <button className="icon-action theme-toggle" onClick={toggleTheme} title={theme === 'dark' ? t('theme.light') : t('theme.dark')}>
                     {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
                   </button>
+                  
+                  {/* Help Center Dropdown */}
+                  <div className="help-center-wrapper" onMouseEnter={handleHelpEnter} onMouseLeave={handleHelpLeave}>
+                    <button 
+                        className={`icon-action help-btn ${isHelpOpen ? 'active' : ''}`} 
+                        onClick={() => setIsHelpOpen(!isHelpOpen)}
+                        title={t('common.help_center') || 'Help Center'}
+                    >
+                      <BookOpen size={18} strokeWidth={2} className="text-primary" />
+                    </button>
+                    
+                    {isHelpOpen && (
+                        <div className="help-dropdown fade-in">
+                            <div className="dropdown-header">
+                                <span>{t('common.help_center') || 'Centro Assistenza'}</span>
+                            </div>
+                            <div className="dropdown-body">
+                                <Link href={`/config/${guildId}/academy`} legacyBehavior>
+                                    <a className="dropdown-item">
+                                        <div className="item-icon"><Sparkles size={16} /></div>
+                                        <div className="item-text">
+                                            <span className="title">{t('hub.academy_title') || 'Verix Academy'}</span>
+                                            <span className="desc">Guide e documentazione completa</span>
+                                        </div>
+                                    </a>
+                                </Link>
+                                <a href="https://discord.com/invite/Ck3rGpSV7U" target="_blank" rel="noreferrer" className="dropdown-item">
+                                    <div className="item-icon" style={{ color: '#5865F2' }}><MessageSquare size={16} /></div>
+                                    <div className="item-text">
+                                        <span className="title">Supporto Discord</span>
+                                        <span className="desc">Chiedi aiuto alla community</span>
+                                    </div>
+                                </a>
+                                <Link href={`/status?from=${encodeURIComponent(router.asPath)}`} legacyBehavior>
+                                    <a className="dropdown-item">
+                                        <div className="item-icon" style={{ color: '#10b981' }}><Activity size={16} /></div>
+                                        <div className="item-text">
+                                            <span className="title">{t('status_page.title') || 'Status Sistema'}</span>
+                                            <span className="desc">Monitora l'operatività di Verix</span>
+                                        </div>
+                                    </a>
+                                </Link>
+                            </div>
+                        </div>
+                    )}
+                  </div>
+
+                  <Link href={`/config/${guildId}/premium`} legacyBehavior>
+                    <a className={`icon-action premium-btn ${premiumTier !== 'none' ? 'is-premium' : ''}`} title={t('sidebar.premium')}>
+                      <Crown size={18} strokeWidth={2} className={premiumTier === 'platinum' ? 'text-platinum' : premiumTier === 'premium' ? 'text-gold' : 'text-dim'} />
+                      {premiumTier !== 'none' && <span className="premium-badge-dot"></span>}
+                    </a>
+                  </Link>
+
                  {!hideGuide && !isGuideOpen && (
                    <button className="icon-action help-toggle" onClick={() => setIsGuideOpen(true)} title="Show Guide">
                      <HelpCircle size={18} strokeWidth={2} className="text-amber" />
@@ -495,7 +655,7 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
       <div
         className={`verix-activity-indicator ${isActivity ? 'visible' : ''}`}
         aria-hidden={!isActivity}
-        aria-label="Caricamento"
+        aria-label={t('common.activity_loading')}
       >
           <span className="activity-dot"></span>
       </div>
@@ -504,10 +664,18 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
         isOpen={showLeaveModal}
         onClose={() => setShowLeaveModal(false)}
         onConfirm={handleLeaveServer}
-        title={t('management.leave_title') || 'Sei sicuro?'}
-        message={t('management.leave_confirm') || 'Il bot lascerà questo server e non potrai più configurarlo finché non lo inviti nuovamente.'}
-        confirmText={isLeaving ? t('common.processing') : (t('management.leave_btn') || 'Lascia Server')}
+        title={t('management.leave_confirm_title')}
+        message={t('management.leave_confirm_desc')}
+        confirmText={isLeaving ? t('common.processing') : t('management.leave_btn')}
         type="danger"
+      />
+
+      <CommandPalette 
+        isOpen={isPaletteOpen}
+        onClose={() => setIsPaletteOpen(false)}
+        items={navigationGroups.concat(systemGroup)}
+        guildId={guildId}
+        enabledModules={enabledModules}
       />
 
       <style jsx>{`
@@ -540,9 +708,33 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
           white-space: nowrap;
         }
 
+        .nav-status-dot {
+          width: 6px;
+          height: 6px;
+          border-radius: 50%;
+          margin-left: auto;
+          transition: 0.2s;
+        }
+        .nav-status-dot.collapsed {
+          position: absolute;
+          top: 6px;
+          right: 6px;
+          width: 4px;
+          height: 4px;
+          border: 1px solid var(--bg-card);
+        }
+        .nav-status-dot.mini {
+          width: 5px;
+          height: 5px;
+        }
+        .nav-status-dot.on { background: #10b981; box-shadow: 0 0 8px rgba(16, 185, 129, 0.4); }
+        .nav-status-dot.off { background: var(--text-dim); opacity: 0.3; }
+
+        .active .nav-status-dot.off { opacity: 0.5; }
+
         /* Content Area */
         .content-container {
-          padding: 96px 48px 48px 48px;
+          padding: 80px 32px 32px 32px;
           width: 100% !important;
           max-width: none !important;
           margin: 0 !important;
@@ -572,6 +764,37 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
         .server-crumb.interactive:hover .leave-icon {
           opacity: 1;
           transform: scale(1.1);
+        }
+
+        .header-actions {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-left: auto;
+        }
+
+        .icon-action {
+          width: 38px;
+          height: 38px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 10px;
+          color: var(--text-muted);
+          background: var(--bg-secondary);
+          border: 1px solid var(--border);
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          cursor: pointer;
+          position: relative;
+          padding: 0;
+        }
+
+        .icon-action:hover {
+          color: var(--text-main);
+          background: var(--hover-bg);
+          border-color: var(--border-strong);
+          transform: translateY(-2px);
+          box-shadow: var(--shadow-sm);
         }
 
         .language-selector {
@@ -604,6 +827,132 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
           background: var(--primary);
           color: white;
           box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
+        }
+
+        .bc-item.active {
+          color: var(--text-heading);
+        }
+
+        .premium-btn.is-premium {
+          background: rgba(255, 215, 0, 0.1);
+          border-color: rgba(255, 215, 0, 0.2);
+        }
+
+        .premium-btn.is-premium:hover {
+          background: rgba(255, 215, 0, 0.2);
+        }
+
+        .text-gold { color: #ffd700; filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.4)); }
+        .text-platinum { color: #e5e4e2; filter: drop-shadow(0 0 8px rgba(229, 228, 226, 0.4)); }
+        .text-dim { color: var(--text-dim); }
+
+        .premium-badge-dot {
+          position: absolute;
+          top: 6px;
+          right: 6px;
+          width: 5px;
+          height: 5px;
+          background: #ffd700;
+          border-radius: 50%;
+          box-shadow: 0 0 10px #ffd700;
+        }
+
+        .help-center-wrapper {
+          position: relative;
+        }
+
+        .help-dropdown {
+          position: absolute;
+          top: 100%;
+          right: 0;
+          margin-top: 12px;
+          width: 280px;
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: 16px;
+          box-shadow: var(--shadow-premium);
+          z-index: 1000;
+          overflow: hidden;
+        }
+
+        .help-dropdown::before {
+          content: '';
+          position: absolute;
+          top: -24px;
+          left: -20px;
+          right: -20px;
+          height: 30px;
+          background: transparent;
+        }
+
+        .dropdown-header {
+          padding: 16px 20px;
+          border-bottom: 1px solid var(--border);
+          background: var(--bg-secondary);
+        }
+
+        .dropdown-header span {
+          font-size: 0.7rem;
+          font-weight: 800;
+          color: var(--text-muted);
+          text-transform: uppercase;
+          letter-spacing: 1px;
+        }
+
+        .dropdown-body {
+          padding: 8px;
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+
+        .dropdown-item {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 12px;
+          border-radius: 12px;
+          text-decoration: none;
+          transition: all 0.2s;
+          cursor: pointer;
+        }
+
+        .dropdown-item:hover {
+          background: var(--hover-bg);
+          transform: translateX(4px);
+        }
+
+        .item-icon {
+          width: 36px;
+          height: 36px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: var(--bg-badge);
+          border-radius: 10px;
+          color: var(--primary);
+        }
+
+        .item-text {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+        }
+
+        .item-text .title {
+          font-size: 0.85rem;
+          font-weight: 700;
+          color: var(--text-main);
+        }
+
+        .item-text .desc {
+          font-size: 0.7rem;
+          color: var(--text-dim);
+        }
+
+        .help-btn.active {
+          background: var(--primary-glow);
+          color: var(--primary);
         }
 
         .help-toggle {

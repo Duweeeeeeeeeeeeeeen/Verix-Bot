@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { Search, ChevronDown, Hash, Shield, Check, AlertCircle, X } from 'lucide-react';
+import { useT } from '../contexts/LanguageContext';
 
 /**
  * Premium Discord Selector Component V2
@@ -9,10 +10,12 @@ export default function DiscordSelector({
   value = '', 
   onChange, 
   type = 'role', 
-  placeholder = 'Seleziona...',
+  placeholder,
   error = '',
   multiple = false
 }) {
+  const { t } = useT();
+  const displayPlaceholder = placeholder || t('common.select_placeholder');
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
   const containerRef = useRef(null);
@@ -98,7 +101,7 @@ export default function DiscordSelector({
               )}
             </div>
           ) : (
-            <span className="ds-placeholder">{placeholder}</span>
+            <span className="ds-placeholder">{displayPlaceholder}</span>
           )}
         </div>
         <div className="ds-trigger-arrow">
@@ -112,7 +115,7 @@ export default function DiscordSelector({
             <Search size={16} />
             <input 
               autoFocus
-              placeholder="Cerca..." 
+              placeholder={t('common.search_placeholder')} 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onClick={(e) => e.stopPropagation()}
@@ -146,7 +149,7 @@ export default function DiscordSelector({
                 );
               })
             ) : (
-              <div className="ds-no-results">Nessun risultato trovato</div>
+              <div className="ds-no-results">{t('common.no_results')}</div>
             )}
           </div>
         </div>

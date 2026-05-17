@@ -41,6 +41,17 @@ const welcomeConfigSchema = new mongoose.Schema({
                 color: '#ED4245'
             }
         })
+    },
+
+    colors: {
+        primary: { type: String, default: '#5865F2' },
+        success: { type: String, default: '#2ecc71' },
+        error: { type: String, default: '#ff4757' }
+    },
+    systemMessages: {
+        type: Map,
+        of: String,
+        default: {}
     }
 
 }, { timestamps: true });

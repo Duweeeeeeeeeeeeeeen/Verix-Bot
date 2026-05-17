@@ -1,5 +1,5 @@
 const API_BASE_URL = typeof window !== 'undefined'
-  ? '/api'
+  ? (window.location.hostname === 'localhost' ? 'http://localhost:5001/api' : '/api')
   : 'http://localhost:5001/api';
 
 const CACHE_TTL = 45 * 1000;
@@ -114,8 +114,9 @@ export async function apiRequest(endpoint, options = {}) {
       throw new Error(result.error || `HTTP ${response.status}`);
     }
 
-    // Return the data object directly if it follows the success: true, data: ... pattern
-    const data = result.success ? result.data : result;
+    // Return the data object directly if it follows the success: true, data: ... pattern.
+    // If 'data' is missing but success is true, return the whole result.
+    const data = (result.success && result.data !== undefined) ? result.data : result;
     if (cacheKey) {
       _cache.set(cacheKey, { data: _cloneData(data), timestamp: Date.now() });
     }

@@ -33,6 +33,16 @@ const supportConfigSchema = new mongoose.Schema({
             description: { type: String, default: 'L\'utente {user} ha richiesto assistenza vocale ed è in attesa nel canale: {voice_channel}.' },
             color: { type: String, default: '#f1c40f' }
         }
+    },
+    colors: {
+        primary: { type: String, default: '#5865F2' },
+        success: { type: String, default: '#2ecc71' },
+        error: { type: String, default: '#ff4757' }
+    },
+    systemMessages: {
+        type: Map,
+        of: String,
+        default: {}
     }
 });
 

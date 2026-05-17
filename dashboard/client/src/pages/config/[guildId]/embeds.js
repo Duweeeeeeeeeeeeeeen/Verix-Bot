@@ -89,6 +89,7 @@ export default function EmbedBuilder() {
       if (template) {
         setCurrentEmbed(template.data);
         setCustomName(template.name);
+        setSelectedChannel(template.targetChannelId || '');
       }
     }
   };
@@ -110,6 +111,7 @@ export default function EmbedBuilder() {
         body: JSON.stringify({
           id: isNew ? undefined : selectedTemplateId,
           name: customName,
+          targetChannelId: selectedChannel,
           data: currentEmbed
         })
       });

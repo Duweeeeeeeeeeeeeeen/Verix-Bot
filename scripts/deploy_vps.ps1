@@ -19,6 +19,7 @@ scp -o BatchMode=yes -r dashboard/client/src/locales "${vps}:${remotePath}/dashb
 scp -o BatchMode=yes -r dashboard/client/src/components "${vps}:${remotePath}/dashboard/client/src/"
 scp -o BatchMode=yes -r dashboard/client/src/contexts "${vps}:${remotePath}/dashboard/client/src/"
 scp -o BatchMode=yes -r dashboard/client/src/styles "${vps}:${remotePath}/dashboard/client/src/"
+scp -o BatchMode=yes -r dashboard/client/src/utils "${vps}:${remotePath}/dashboard/client/src/"
 
 # Sync ALL pages (handling brackets via tar)
 Write-Output "Syncing all dashboard pages..."

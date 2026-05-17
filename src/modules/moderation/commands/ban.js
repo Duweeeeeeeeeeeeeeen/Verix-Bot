@@ -1,8 +1,10 @@
 import { MessageFlags, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js';
 import ModerationConfig from '../../../models/ModerationConfig.js';
+import GlobalConfig from '../../../models/GlobalConfig.js';
 import { sendUserNotification } from '../../../utils/notificationService.js';
 import logger from '../../../utils/logger.js';
 import messageService from '../../../utils/messageService.js';
+import { t } from '../../../locales/t.js';
 
 export default {
     data: new SlashCommandBuilder()
@@ -13,7 +15,9 @@ export default {
         .setDefaultMemberPermissions(PermissionFlagsBits.BanMembers),
     async execute(interaction) {
         const user = interaction.options.getUser('target');
-        const reason = interaction.options.getString('reason') || 'Nessun motivo fornito';
+        const globalConfig = await GlobalConfig.findOne({ guildId: interaction.guildId });
+        const lang = globalConfig?.language || 'en';
+        const reason = interaction.options.getString('reason') || t('moderation.no_reason', lang);
 
         try {
             // Notify User

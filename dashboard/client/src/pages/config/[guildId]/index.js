@@ -59,7 +59,7 @@ export default function GuildHome() {
       setStats(statsData?.data || statsData);
     } catch (err) {
       console.error('Fetch error:', err);
-      setError(err.message || "Errore di connessione");
+      setError(err.message || t('admin.connection_error'));
     } finally {
       setLoading(false);
       window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
@@ -91,14 +91,40 @@ export default function GuildHome() {
     }
   };
 
+  const handleFactoryReset = async () => {
+    if (!window.confirm(t('hub.factory_reset_confirm'))) return;
+    
+    setLoading(true);
+    window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
+    try {
+      await api.request(`/config/${guildId}/factory-reset`, {
+        method: 'POST'
+      });
+      
+      window.dispatchEvent(new CustomEvent('show-toast', { 
+          detail: { message: t('hub.factory_reset_success'), type: 'success' } 
+      }));
+      
+      router.push(`/config/${guildId}/setup`);
+    } catch (error) {
+      console.error('Factory Reset error:', error);
+      window.dispatchEvent(new CustomEvent('show-toast', { 
+          detail: { message: t('hub.reset_error'), type: 'error' } 
+      }));
+      setLoading(false);
+    } finally {
+      window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
+    }
+  };
+
    if (!mounted || loading) return <Skeleton height="600px" />;
 
   if (error) return (
     <div className="pc-error-view-v2 animate fade-in" style={{ padding: '80px', textAlign: 'center', background: 'var(--bg-card)', borderRadius: '32px', boxShadow: 'var(--shadow-premium)', border: '1px solid var(--border)', maxWidth: '600px', margin: '40px auto' }}>
       <AlertTriangle size={48} color="#ef4444" style={{ marginBottom: '24px' }} />
-      <h2 style={{ fontWeight: 700, marginBottom: '12px', color: 'var(--text-heading)' }}>Connessione Fallita</h2>
+      <h2 style={{ fontWeight: 700, marginBottom: '12px', color: 'var(--text-heading)' }}>{t('dashboard.connection_failed')}</h2>
       <p style={{ color: 'var(--text-muted)', marginBottom: '32px' }}>{error}</p>
-      <button onClick={fetchData} className="pc-btn-primary" style={{ margin: '0 auto' }}>Riprova</button>
+      <button onClick={fetchData} className="pc-btn-primary" style={{ margin: '0 auto' }}>{t('dashboard.retry')}</button>
     </div>
   );
 
@@ -194,15 +220,15 @@ export default function GuildHome() {
 
                 <div className="pc-module-grid-v2">
                     {[
-                        { id: 'whitelist', label: 'Whitelist', icon: ShieldCheck, color: '#6366f1', path: 'whitelist', desc: t('dashboard.module_whitelist_desc_v2') },
-                        { id: 'tickets', label: 'Ticket System', icon: Ticket, color: '#8b5cf6', path: 'tickets', desc: t('dashboard.module_tickets_desc_v2') },
-                        { id: 'reactionRoles', label: 'Reaction Roles', icon: MousePointer2, color: '#10b981', path: 'reaction-roles', desc: t('dashboard.module_reactionroles_desc_v2') },
-                        { id: 'polls', label: 'Poll Studio', icon: ListChecks, color: '#f59e0b', path: 'polls', desc: t('dashboard.module_polls_desc_v2') },
-                        { id: 'verify', label: 'Security Center', icon: Shield, color: '#06b6d4', path: 'verify', desc: t('dashboard.module_verify_desc_v2') },
-                        { id: 'photocontest', label: 'Photo Contest', icon: Camera, color: '#ec4899', path: 'photocontest', desc: t('dashboard.module_photocontest_desc_v2') },
-                        { id: 'support', label: 'Voice Support', icon: Mic2, color: '#f43f5e', path: 'support', desc: t('dashboard.module_support_desc_v2') },
-                        { id: 'fivem', label: 'FiveM Bridge', icon: Globe, color: '#14b8a6', path: 'fivem', desc: t('dashboard.module_fivem_desc_v2') },
-                        { id: 'welcome', label: 'Welcome Hub', icon: UserPlus, color: '#6366f1', path: 'welcome', desc: t('dashboard.module_welcome_desc_v2') }
+                        { id: 'whitelist', label: t('sidebar.whitelist'), icon: ShieldCheck, color: '#6366f1', path: 'whitelist', desc: t('dashboard.module_whitelist_desc_v2') },
+                        { id: 'tickets', label: t('sidebar.tickets'), icon: Ticket, color: '#8b5cf6', path: 'tickets', desc: t('dashboard.module_tickets_desc_v2') },
+                        { id: 'reactionRoles', label: t('sidebar.reactionroles'), icon: MousePointer2, color: '#10b981', path: 'reaction-roles', desc: t('dashboard.module_reactionroles_desc_v2') },
+                        { id: 'polls', label: t('sidebar.polls'), icon: ListChecks, color: '#f59e0b', path: 'polls', desc: t('dashboard.module_polls_desc_v2') },
+                        { id: 'verify', label: t('sidebar.verify'), icon: Shield, color: '#06b6d4', path: 'verify', desc: t('dashboard.module_verify_desc_v2') },
+                        { id: 'photocontest', label: t('sidebar.photocontest'), icon: Camera, color: '#ec4899', path: 'photocontest', desc: t('dashboard.module_photocontest_desc_v2') },
+                        { id: 'support', label: t('sidebar.support'), icon: Mic2, color: '#f43f5e', path: 'support', desc: t('dashboard.module_support_desc_v2') },
+                        { id: 'fivem', label: t('sidebar.fivem'), icon: Globe, color: '#14b8a6', path: 'fivem', desc: t('dashboard.module_fivem_desc_v2') },
+                        { id: 'welcome', label: t('sidebar.welcome'), icon: UserPlus, color: '#6366f1', path: 'welcome', desc: t('dashboard.module_welcome_desc_v2') }
                     ].map(module => {
                         const isEnabled = config?.[module.id]?.enabled;
                         return (
@@ -242,11 +268,11 @@ export default function GuildHome() {
                     </div>
                     <div className="panel-nav-v2">
                         {[
-                            { label: 'Embed Designer', path: 'embeds', icon: LayoutTemplate, color: '#10b981', sub: t('hub.nav_embeds') },
-                            { label: 'Automations', path: 'automations', icon: Cpu, color: '#f59e0b', sub: t('hub.nav_automations') },
-                            { label: 'White Label', path: 'white-label', icon: Sparkles, color: '#6366f1', sub: t('hub.nav_whitelabel') },
-                            { label: 'Audit Registry', path: 'audit', icon: History, color: 'var(--text-muted)', sub: t('hub.nav_audit') },
-                            { label: 'Global Settings', path: 'global', icon: Settings2, color: 'var(--text-heading)', sub: t('hub.nav_global') }
+                            { label: t('hub.nav_embed_designer'), path: 'embeds', icon: LayoutTemplate, color: '#10b981', sub: t('hub.nav_embeds') },
+                            { label: t('hub.nav_automations_title'), path: 'automations', icon: Cpu, color: '#f59e0b', sub: t('hub.nav_automations') },
+                            { label: t('hub.nav_whitelabel_title'), path: 'white-label', icon: Sparkles, color: '#6366f1', sub: t('hub.nav_whitelabel') },
+                            { label: t('hub.nav_audit_title'), path: 'audit', icon: History, color: 'var(--text-muted)', sub: t('hub.nav_audit') },
+                            { label: t('hub.nav_global_title'), path: 'global', icon: Settings2, color: 'var(--text-heading)', sub: t('hub.nav_global') }
                         ].map(nav => (
                             <button key={nav.path} onClick={() => router.push(`/config/${guildId}/${nav.path}`)} className="nav-btn-v2">
                                 <div className="nav-icon-v2" style={{ background: `${nav.color}10`, color: nav.color }}>
@@ -263,8 +289,8 @@ export default function GuildHome() {
                     
                     <div className="panel-divider-v2"></div>
                     
-                    <button className="pc-btn-danger-v2" onClick={() => confirm(t('hub.factory_reset_confirm'))}>
-                        <RefreshCcw size={16} />
+                    <button className="pc-btn-danger-v2" onClick={handleFactoryReset} disabled={loading}>
+                        <RefreshCcw size={16} className={loading ? 'spin' : ''} />
                         <span>{t('hub.factory_reset')}</span>
                     </button>
                 </section>
@@ -289,28 +315,28 @@ export default function GuildHome() {
                 justify-content: space-between; 
                 align-items: center; 
                 background: var(--bg-card); 
-                padding: 48px; 
-                border-radius: 48px; 
+                padding: 32px 40px; 
+                border-radius: 36px; 
                 box-shadow: var(--shadow-premium); 
                 border: 1px solid var(--border); 
-                margin-bottom: 40px; 
+                margin-bottom: 32px; 
                 position: relative;
                 overflow: hidden;
             }
-            .hero-visuals-v2 { display: flex; align-items: center; gap: 32px; position: relative; z-index: 1; }
-            .server-avatar-container-v2 { position: relative; width: 120px; height: 120px; }
-            .server-icon-v2 { width: 100%; height: 100%; border-radius: 36px; object-fit: cover; border: 4px solid var(--bg-card); box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
-            .avatar-placeholder-v2 { width: 100%; height: 100%; border-radius: 36px; background: linear-gradient(135deg, var(--primary), #4338ca); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 3rem; font-weight: 700; }
-            .premium-crown-v2 { position: absolute; bottom: -6px; right: -6px; width: 40px; height: 40px; background: linear-gradient(135deg, #f59e0b, #fbbf24); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 4px solid var(--bg-card); box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4); }
+            .hero-visuals-v2 { display: flex; align-items: center; gap: 24px; position: relative; z-index: 1; }
+            .server-avatar-container-v2 { position: relative; width: 80px; height: 80px; }
+            .server-icon-v2 { width: 100%; height: 100%; border-radius: 24px; object-fit: cover; border: 3px solid var(--bg-card); box-shadow: 0 10px 20px rgba(0,0,0,0.15); }
+            .avatar-placeholder-v2 { width: 100%; height: 100%; border-radius: 24px; background: linear-gradient(135deg, var(--primary), #4338ca); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 2rem; font-weight: 700; }
+            .premium-crown-v2 { position: absolute; bottom: -4px; right: -4px; width: 28px; height: 28px; background: linear-gradient(135deg, #f59e0b, #fbbf24); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid var(--bg-card); box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3); }
             
-            .hero-text-v2 h1 { font-size: 3rem; font-weight: 700; margin: 0; color: var(--text-heading); letter-spacing: normal; }
+            .hero-text-v2 h1 { font-size: 2.2rem; font-weight: 700; margin: 0; color: var(--text-heading); letter-spacing: normal; }
             .user-name-v2 { font-weight: 800; background: linear-gradient(135deg, var(--primary) 0%, #a78bfa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-            .hero-text-v2 p { margin: 8px 0 0 0; color: var(--text-dim); font-size: 1.2rem; font-weight: 700; }
-            .status-row-v2 { display: flex; gap: 12px; margin-bottom: 12px; }
-            .live-tag-v2 { font-size: 0.7rem; font-weight: 700; color: #10b981; background: rgba(16, 185, 129, 0.1); padding: 6px 16px; border-radius: 100px; display: flex; align-items: center; gap: 8px; letter-spacing: 1px; }
-            .pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: #10b981; animation: pulse 2s infinite; }
+            .hero-text-v2 p { margin: 4px 0 0 0; color: var(--text-dim); font-size: 1rem; font-weight: 600; }
+            .status-row-v2 { display: flex; gap: 8px; margin-bottom: 8px; }
+            .live-tag-v2 { font-size: 0.65rem; font-weight: 700; color: #10b981; background: rgba(16, 185, 129, 0.1); padding: 4px 12px; border-radius: 100px; display: flex; align-items: center; gap: 6px; letter-spacing: 0.5px; }
+            .pulse-dot { width: 6px; height: 6px; border-radius: 50%; background: #10b981; animation: pulse 2s infinite; }
             @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.5; } 100% { transform: scale(1); opacity: 1; } }
-            .tier-badge-v2 { font-size: 0.7rem; font-weight: 700; padding: 6px 16px; border-radius: 100px; letter-spacing: 1px; }
+            .tier-badge-v2 { font-size: 0.65rem; font-weight: 700; padding: 4px 12px; border-radius: 100px; letter-spacing: 0.5px; }
             .tier-badge-v2.premium { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
             .tier-badge-v2.standard { background: var(--bg-badge); color: var(--text-muted); border: 1px solid var(--border); }
 
@@ -320,16 +346,16 @@ export default function GuildHome() {
             .pc-btn-refresh-v2:hover { transform: rotate(180deg); color: var(--primary); border-color: var(--primary); }
 
             /* Metrics V2 */
-            .pc-metric-grid-v2 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; margin-bottom: 48px; }
-            .pc-metric-card-v2 { background: var(--bg-card); border-radius: 40px; padding: 36px; border: 1px solid var(--border); position: relative; overflow: hidden; transition: 0.4s; box-shadow: var(--shadow-premium); }
-            .pc-metric-card-v2:hover { transform: translateY(-10px); box-shadow: 0 30px 70px rgba(0,0,0,0.1); }
-            .metric-header-v2 { display: flex; gap: 24px; align-items: center; margin-bottom: 28px; }
-            .metric-icon-v2 { width: 72px; height: 72px; border-radius: 24px; display: flex; align-items: center; justify-content: center; background: var(--bg-badge); }
+            .pc-metric-grid-v2 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 32px; }
+            .pc-metric-card-v2 { background: var(--bg-card); border-radius: 32px; padding: 24px; border: 1px solid var(--border); position: relative; overflow: hidden; transition: 0.4s; box-shadow: var(--shadow-premium); }
+            .pc-metric-card-v2:hover { transform: translateY(-8px); box-shadow: 0 20px 50px rgba(0,0,0,0.1); }
+            .metric-header-v2 { display: flex; gap: 16px; align-items: center; margin-bottom: 20px; }
+            .metric-icon-v2 { width: 56px; height: 56px; border-radius: 18px; display: flex; align-items: center; justify-content: center; background: var(--bg-badge); }
             .metric-value-v2 { display: flex; flex-direction: column; }
-            .count-v2 { font-size: 2.6rem; font-weight: 700; color: var(--text-heading); line-height: 1; letter-spacing: normal; }
-            .label-v2 { font-size: 0.9rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-top: 6px; letter-spacing: 0.8px; }
-            .metric-footer-v2 { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; font-weight: 750; color: var(--text-muted); border-top: 1.5px solid var(--border); padding-top: 20px; }
-            .metric-glow-v2 { position: absolute; bottom: 0; left: 0; width: 100%; height: 6px; opacity: 0.3; }
+            .count-v2 { font-size: 1.8rem; font-weight: 700; color: var(--text-heading); line-height: 1; letter-spacing: normal; }
+            .label-v2 { font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-top: 4px; letter-spacing: 0.5px; }
+            .metric-footer-v2 { display: flex; align-items: center; gap: 8px; font-size: 0.75rem; font-weight: 750; color: var(--text-muted); border-top: 1.5px solid var(--border); padding-top: 16px; }
+            .metric-glow-v2 { position: absolute; bottom: 0; left: 0; width: 100%; height: 4px; opacity: 0.2; }
 
             /* Workspace V2 */
             .pc-workspace-v2 { display: grid; grid-template-columns: 1fr 400px; gap: 48px; }
@@ -342,16 +368,16 @@ export default function GuildHome() {
             .progress-bar-v2 .fill { height: 100%; background: linear-gradient(to right, var(--primary), #a78bfa); border-radius: 100px; transition: 1s; }
 
             /* Module Studio Cards V2 */
-            .pc-module-grid-v2 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
-            .pc-module-studio-card-v2 { background: var(--bg-card); border-radius: 40px; padding: 36px; border: 1px solid var(--border); transition: 0.4s; position: relative; overflow: hidden; box-shadow: var(--shadow-premium); }
-            .pc-module-studio-card-v2:hover { transform: translateY(-8px); border-color: var(--primary-muted); }
+            .pc-module-grid-v2 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+            .pc-module-studio-card-v2 { background: var(--bg-card); border-radius: 32px; padding: 24px; border: 1px solid var(--border); transition: 0.4s; position: relative; overflow: hidden; box-shadow: var(--shadow-premium); }
+            .pc-module-studio-card-v2:hover { transform: translateY(-6px); border-color: var(--primary-muted); }
             .pc-module-studio-card-v2.on { border-color: var(--primary-muted); }
             
-            .card-top-v2 { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
-            .module-icon-v2 { width: 56px; height: 56px; border-radius: 20px; background: var(--bg-badge); display: flex; align-items: center; justify-content: center; }
+            .card-top-v2 { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+            .module-icon-v2 { width: 44px; height: 44px; border-radius: 14px; background: var(--bg-badge); display: flex; align-items: center; justify-content: center; }
             
-            .card-body-v2 h4 { margin: 0 0 10px 0; font-size: 1.4rem; font-weight: 700; color: var(--text-heading); letter-spacing: normal; }
-            .card-body-v2 p { margin: 0; font-size: 1rem; color: var(--text-muted); line-height: 1.5; font-weight: 700; }
+            .card-body-v2 h4 { margin: 0 0 8px 0; font-size: 1.2rem; font-weight: 700; color: var(--text-heading); letter-spacing: normal; }
+            .card-body-v2 p { margin: 0; font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; font-weight: 600; }
             
             .card-footer-v2 { display: flex; justify-content: space-between; align-items: center; margin-top: 32px; padding-top: 24px; border-top: 1.5px solid var(--border); }
             .status-pill-v2 { font-size: 0.7rem; font-weight: 700; padding: 6px 16px; border-radius: 100px; background: var(--bg-badge); color: var(--text-muted); border: 1px solid var(--border); }

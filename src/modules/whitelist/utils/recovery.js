@@ -3,6 +3,8 @@ import WhitelistConfig from '../../../models/WhitelistConfig.js';
 import logger from '../../../utils/logger.js';
 import { EmbedBuilder } from 'discord.js';
 import mongoose from 'mongoose';
+import GlobalConfig from '../../../models/GlobalConfig.js';
+import { t } from '../../../locales/t.js';
 
 /**
  * Recupera e gestisce le sessioni di whitelist attive dopo un riavvio del bot.
@@ -33,6 +35,9 @@ export async function recoverWhitelistSessions(client) {
                 continue;
             }
 
+            const globalConfig = await GlobalConfig.findOne({ guildId: app.guildId });
+            const lang = globalConfig?.language || 'en';
+
             const now = Date.now();
             const startTime = app.startTime.getTime();
             const timeLimitMs = config.timeLimit * 60 * 1000;
@@ -57,8 +62,8 @@ export async function recoverWhitelistSessions(client) {
                 if (channel) {
                     const timeoutEmbed = new EmbedBuilder()
                         .setColor('#ff4757')
-                        .setTitle('⏳ SESSIONE SCADUTA')
-                        .setDescription('Questa sessione è scaduta durante la manutenzione del sistema.\nIl canale verrà rimosso tra breve.');
+                        .setTitle(t('whitelist.session_expired_title', lang))
+                        .setDescription(t('whitelist.session_expired_desc', lang));
                     
                     await channel.send({ embeds: [timeoutEmbed] }).catch(() => {});
                     setTimeout(() => channel.delete().catch(() => {}), 10000);
@@ -75,8 +80,8 @@ export async function recoverWhitelistSessions(client) {
                         if (lateChannel) {
                             const timeoutEmbed = new EmbedBuilder()
                                 .setColor('#ff4757')
-                                .setTitle('⏳ TEMPO SCADUTO')
-                                .setDescription('La tua sessione di whitelist è terminata per inattività.\nPotrai riprovare una volta scaduto il cooldown.');
+                                .setTitle(t('whitelist.time_expired_title', lang))
+                                .setDescription(t('whitelist.time_expired_desc', lang));
                             
                             await lateChannel.send({ embeds: [timeoutEmbed] }).catch(() => {});
                             setTimeout(() => lateChannel.delete().catch(() => {}), 10000);

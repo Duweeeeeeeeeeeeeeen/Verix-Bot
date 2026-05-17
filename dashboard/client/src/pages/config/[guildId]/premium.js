@@ -146,13 +146,35 @@ export default function PremiumHub() {
                     </div>
                     <div className="price-body-v2">
                         <ul className="feature-list-v2">
-                            <li><CheckCircle2 size={16} /> Moderazione Base</li>
-                            <li><CheckCircle2 size={16} /> 2 Slots Automazioni</li>
-                            <li><CheckCircle2 size={16} /> 1 Server FiveM</li>
-                            <li><XCircle size={16} style={{ opacity: 0.4 }} /> White-Label Bot</li>
+                            <li><CheckCircle2 size={16} /> {t('ph.standard_feat1')}</li>
+                            <li><CheckCircle2 size={16} /> {t('ph.standard_feat2')}</li>
+                            <li><CheckCircle2 size={16} /> {t('ph.standard_feat3')}</li>
+                            <li><CheckCircle2 size={16} /> {t('ph.standard_feat4')}</li>
+                            <li><CheckCircle2 size={16} style={{ opacity: 0.5 }} /> {t('ph.standard_feat5')}</li>
                         </ul>
                     </div>
                     <button className="pc-btn-price-v2" disabled={!isPremium}>{t('ph.your_plan')}</button>
+                </div>
+
+                {/* Lite Plan */}
+                <div className="pc-price-card-v2 lite">
+                    <div className="lite-tag-v2">{t('ph.lite')}</div>
+                    <div className="price-header-v2">
+                        <div className="price-title-v2" style={{ color: '#3b82f6' }}>{t('ph.lite')}</div>
+                        <div className="price-val-v2">€2.49<span>/{t('ph.month')}</span></div>
+                    </div>
+                    <div className="price-body-v2">
+                        <ul className="feature-list-v2">
+                            <li><CheckCircle2 size={16} color="#3b82f6" /> {t('ph.lite_feat1')}</li>
+                            <li><CheckCircle2 size={16} color="#3b82f6" /> {t('ph.lite_feat2')}</li>
+                            <li><CheckCircle2 size={16} color="#3b82f6" /> {t('ph.lite_feat3')}</li>
+                            <li><CheckCircle2 size={16} color="#3b82f6" /> {t('ph.lite_feat4')}</li>
+                            <li><CheckCircle2 size={16} color="#3b82f6" style={{ opacity: 0.5 }} /> {t('ph.lite_feat5')}</li>
+                        </ul>
+                    </div>
+                    <button className="pc-btn-price-v2 premium" style={{ background: '#3b82f6', boxShadow: '0 10px 20px rgba(59, 130, 246, 0.2)' }} disabled={premiumTier === 'lite'}>
+                        {premiumTier === 'lite' ? t('ph.active') : t('ph.activate_lt')}
+                    </button>
                 </div>
 
                 {/* Premium Plan */}
@@ -160,14 +182,15 @@ export default function PremiumHub() {
                     <div className="popular-tag-v2">{t('common.best_seller')}</div>
                     <div className="price-header-v2">
                         <div className="price-title-v2" style={{ color: '#f59e0b' }}>{t('ph.premium')}</div>
-                        <div className="price-val-v2">€9.99<span>/{t('ph.month')}</span></div>
+                        <div className="price-val-v2">€4.99<span>/{t('ph.month')}</span></div>
                     </div>
                     <div className="price-body-v2">
                         <ul className="feature-list-v2">
-                            <li><CheckCircle2 size={16} color="#f59e0b" /> 10 Slots Automazioni</li>
-                            <li><CheckCircle2 size={16} color="#f59e0b" /> Analytics Live</li>
-                            <li><CheckCircle2 size={16} color="#f59e0b" /> Nessun Logo Verix</li>
-                            <li><CheckCircle2 size={16} color="#f59e0b" /> Supporto Prioritario</li>
+                            <li><CheckCircle2 size={16} color="#f59e0b" /> {t('ph.premium_feat1')}</li>
+                            <li><CheckCircle2 size={16} color="#f59e0b" /> {t('ph.premium_feat2')}</li>
+                            <li><CheckCircle2 size={16} color="#f59e0b" /> {t('ph.premium_feat3')}</li>
+                            <li><CheckCircle2 size={16} color="#f59e0b" /> {t('ph.premium_feat4')}</li>
+                            <li><CheckCircle2 size={16} color="#f59e0b" /> {t('ph.premium_feat5')}</li>
                         </ul>
                     </div>
                     <button className="pc-btn-price-v2 premium" disabled={premiumTier === 'premium'}>
@@ -180,14 +203,15 @@ export default function PremiumHub() {
                     <div className="elite-tag-v2">{t('common.elite_engine')}</div>
                     <div className="price-header-v2">
                         <div className="price-title-v2" style={{ color: '#a855f7' }}>{t('ph.platinum')}</div>
-                        <div className="price-val-v2">€19.99<span>/{t('ph.month')}</span></div>
+                        <div className="price-val-v2">€9.99<span>/{t('ph.month')}</span></div>
                     </div>
                     <div className="price-body-v2">
                         <ul className="feature-list-v2">
-                            <li><CheckCircle2 size={16} color="#a855f7" /> <strong>White-Label Bot (Token)</strong></li>
-                            <li><CheckCircle2 size={16} color="#a855f7" /> Slots Illimitati</li>
-                            <li><CheckCircle2 size={16} color="#a855f7" /> 25+ FiveM Servers</li>
-                            <li><CheckCircle2 size={16} color="#a855f7" /> API Developer Access</li>
+                            <li><CheckCircle2 size={16} color="#a855f7" /> <strong>{t('ph.platinum_feat1')}</strong></li>
+                            <li><CheckCircle2 size={16} color="#a855f7" /> {t('ph.platinum_feat2')}</li>
+                            <li><CheckCircle2 size={16} color="#a855f7" /> {t('ph.platinum_feat3')}</li>
+                            <li><CheckCircle2 size={16} color="#a855f7" /> {t('ph.platinum_feat4')}</li>
+                            <li><CheckCircle2 size={16} color="#a855f7" /> {t('ph.platinum_feat5')}</li>
                         </ul>
                     </div>
                     <button className="pc-btn-price-v2 platinum" disabled={isPlatinum}>
@@ -207,20 +231,22 @@ export default function PremiumHub() {
                         <div className="hub-row-v2 header">
                             <div className="hub-col-v2 feat">{t('ph.feat_col')}</div>
                             <div className="hub-col-v2 val">{t('ph.standard')}</div>
+                            <div className="hub-col-v2 val" style={{ color: '#3b82f6' }}>{t('ph.lite')}</div>
                             <div className="hub-col-v2 val">{t('ph.premium')}</div>
                             <div className="hub-col-v2 val highlight">{t('ph.platinum')}</div>
                         </div>
                         {[
-                            { name: 'Branding Personalizzato', s: false, p: true, pl: true },
-                            { name: 'Vanity Bot Identity (Token)', s: false, p: false, pl: true },
-                            { name: 'Analytics in Tempo Reale', s: false, p: true, pl: true },
-                            { name: 'Automazioni Studio', s: '2 Slots', p: '10 Slots', pl: 'Illimitati' },
-                            { name: 'Integrazione FiveM API', s: 'Limitata', p: 'Full Access', pl: 'Elite Access' },
-                            { name: 'Supporto Dedicato', s: 'Community', p: 'Prioritario', pl: 'One-to-One' }
+                            { name: t('ph.matrix_branding'), s: false, l: false, p: true, pl: true },
+                            { name: t('ph.matrix_vanity'), s: false, l: false, p: false, pl: true },
+                            { name: t('ph.matrix_analytics'), s: false, l: false, p: true, pl: true },
+                            { name: t('ph.matrix_automations'), s: '2 Slots', l: '5 Slots', p: '10 Slots', pl: t('ph.unlimited') },
+                            { name: t('ph.matrix_fivem'), s: '1 Server', l: '2 Servers', p: '3 Servers', pl: t('ph.unlimited') },
+                            { name: t('ph.matrix_support'), s: t('ph.support_comm'), l: t('ph.support_comm'), p: t('ph.support_prio'), pl: t('ph.support_dedi') }
                         ].map((row, i) => (
                             <div key={i} className="hub-row-v2">
                                 <div className="hub-col-v2 feat">{row.name}</div>
                                 <div className="hub-col-v2 val">{typeof row.s === 'boolean' ? (row.s ? <CheckCircle size={16} color="#10b981" /> : <XCircle size={16} color="var(--text-muted)" />) : row.s}</div>
+                                <div className="hub-col-v2 val" style={{ color: '#3b82f6' }}>{typeof row.l === 'boolean' ? (row.l ? <CheckCircle size={16} color="#3b82f6" /> : <XCircle size={16} color="var(--text-muted)" />) : row.l}</div>
                                 <div className="hub-col-v2 val">{typeof row.p === 'boolean' ? (row.p ? <CheckCircle size={16} color="#f59e0b" /> : <XCircle size={16} color="var(--text-muted)" />) : row.p}</div>
                                 <div className="hub-col-v2 val highlight">{typeof row.pl === 'boolean' ? (row.pl ? <CheckCircle size={16} color="#a855f7" /> : <XCircle size={16} color="var(--text-muted)" />) : row.pl}</div>
                             </div>
@@ -284,23 +310,26 @@ export default function PremiumHub() {
             .tier-label-v2 { margin-top: 16px; font-size: 1.5rem; font-weight: 700; letter-spacing: 4px; text-shadow: 0 10px 30px rgba(0,0,0,0.3); opacity: 0.9; }
 
             /* Pricing Grid V2 */
-            .pc-pricing-grid-v2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 32px; }
-            .pc-price-card-v2 { background: var(--bg-card); border-radius: 48px; padding: 60px 48px; border: 1.5px solid var(--border); position: relative; transition: 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); display: flex; flex-direction: column; box-shadow: var(--shadow-premium); }
+            .pc-pricing-grid-v2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+            .pc-price-card-v2 { background: var(--bg-card); border-radius: 32px; padding: 40px 32px; border: 1.5px solid var(--border); position: relative; transition: 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); display: flex; flex-direction: column; box-shadow: var(--shadow-premium); }
             .pc-price-card-v2:hover { transform: translateY(-12px); box-shadow: 0 40px 100px rgba(0,0,0,0.1); border-color: var(--primary); }
             
+            .pc-price-card-v2.lite { border: 2.5px solid #3b82f6; }
             .pc-price-card-v2.active-border { border: 2.5px solid #f59e0b; }
             .pc-price-card-v2.platinum { border: 2.5px solid #a855f7; }
             
+            .lite-tag-v2 { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); background: #3b82f6; color: #fff; padding: 8px 24px; border-radius: 100px; font-size: 0.75rem; font-weight: 700; letter-spacing: 1.5px; box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3); }
             .popular-tag-v2 { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); background: #f59e0b; color: #fff; padding: 8px 24px; border-radius: 100px; font-size: 0.75rem; font-weight: 700; letter-spacing: 1.5px; box-shadow: 0 10px 20px rgba(245, 158, 11, 0.3); }
             .elite-tag-v2 { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); background: #a855f7; color: #fff; padding: 8px 24px; border-radius: 100px; font-size: 0.75rem; font-weight: 700; letter-spacing: 1.5px; box-shadow: 0 10px 20px rgba(168, 85, 247, 0.3); }
 
-            .price-header-v2 { margin-bottom: 48px; }
-            .price-title-v2 { font-size: 0.9rem; font-weight: 700; letter-spacing: 3px; color: var(--text-muted); margin-bottom: 16px; text-transform: uppercase; }
-            .price-val-v2 { font-size: 3.5rem; font-weight: 700; color: var(--text-heading); line-height: 0.9; letter-spacing: -2px; }
-            .price-val-v2 span { font-size: 1.2rem; color: var(--text-muted); font-weight: 700; margin-left: 6px; }
+            .price-header-v2 { margin-bottom: 32px; }
+            .price-title-v2 { font-size: 0.9rem; font-weight: 700; letter-spacing: 3px; color: var(--text-muted); margin-bottom: 12px; text-transform: uppercase; }
+            .price-val-v2 { font-size: 2.8rem; font-weight: 700; color: var(--text-heading); line-height: 0.9; letter-spacing: -1.5px; }
+            .price-val-v2 span { font-size: 1.1rem; color: var(--text-muted); font-weight: 700; margin-left: 6px; }
 
-            .feature-list-v2 { list-style: none; padding: 0; margin: 0 0 56px 0; display: flex; flex-direction: column; gap: 20px; flex: 1; }
-            .feature-list-v2 li { display: flex; align-items: center; gap: 16px; font-size: 1.05rem; font-weight: 700; color: var(--text-dim); }
+            .price-body-v2 { flex: 1; display: flex; flex-direction: column; }
+            .feature-list-v2 { list-style: none; padding: 0; margin: 0 0 32px 0; display: flex; flex-direction: column; gap: 16px; flex: 1; }
+            .feature-list-v2 li { display: flex; align-items: center; gap: 12px; font-size: 1rem; font-weight: 700; color: var(--text-dim); }
 
             .pc-btn-price-v2 { width: 100%; padding: 22px; border-radius: 24px; font-weight: 700; font-size: 1.15rem; cursor: pointer; transition: 0.3s; border: 1.5px solid var(--border); background: var(--bg-badge); color: var(--text-muted); }
             .pc-btn-price-v2.premium { background: #f59e0b; color: #fff; border: none; }
@@ -312,16 +341,16 @@ export default function PremiumHub() {
             .pc-status-tag-v2.platinum-v2 { background: #6366f1 !important; color: #fff !important; }
             .pc-status-tag-v2.platinum-v2 .status-dot-v2 { background: #fff !important; box-shadow: 0 0 10px rgba(255,255,255,0.5); }
             
-            .pc-card-v2 { background: var(--bg-card); border: 1px solid var(--border); border-radius: 48px; padding: 56px; box-shadow: var(--shadow-premium); }
-            .card-header-v2 { display: flex; align-items: center; gap: 24px; margin-bottom: 56px; }
-            .header-icon { width: 64px; height: 64px; background: var(--bg-badge); color: var(--primary); border-radius: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-            .card-header-v2 h3 { margin: 0; font-size: 1.8rem; font-weight: 700; color: var(--text-heading); letter-spacing: normal; }
+            .pc-card-v2 { background: var(--bg-card); border: 1px solid var(--border); border-radius: 32px; padding: 40px; box-shadow: var(--shadow-premium); }
+            .card-header-v2 { display: flex; align-items: center; gap: 24px; margin-bottom: 32px; }
+            .header-icon { width: 52px; height: 52px; background: var(--bg-badge); color: var(--primary); border-radius: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+            .card-header-v2 h3 { margin: 0; font-size: 1.5rem; font-weight: 700; color: var(--text-heading); letter-spacing: normal; }
 
             .pc-comparison-hub-v2 { display: flex; flex-direction: column; }
-            .hub-row-v2 { display: grid; grid-template-columns: 1fr 180px 180px 220px; align-items: center; padding: 28px 0; border-bottom: 1.5px solid var(--border); }
-            .hub-row-v2.header { border-bottom: 2px solid var(--border-strong); padding-bottom: 32px; }
-            .hub-row-v2.header .hub-col-v2 { font-size: 0.85rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; }
-            .hub-col-v2.feat { font-weight: 700; color: var(--text-heading); font-size: 1.15rem; }
+            .hub-row-v2 { display: grid; grid-template-columns: 1fr 140px 140px 140px 180px; align-items: center; padding: 18px 0; border-bottom: 1.5px solid var(--border); }
+            .hub-row-v2.header { border-bottom: 2px solid var(--border-strong); padding-bottom: 24px; }
+            .hub-row-v2.header .hub-col-v2 { font-size: 0.8rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; }
+            .hub-col-v2.feat { font-weight: 700; color: var(--text-heading); font-size: 1rem; }
             .hub-col-v2.val { text-align: center; font-weight: 700; color: var(--text-dim); }
             .hub-col-v2.highlight { color: #a855f7; font-weight: 700; }
 
@@ -339,7 +368,7 @@ export default function PremiumHub() {
                 .premium-badge-v2 { margin-left: auto; margin-right: auto; }
                 .hero-stats-row-v2 { justify-content: center; gap: 32px; }
                 .hero-actions-v2 { justify-content: center; }
-                .hub-row-v2 { grid-template-columns: 1fr 100px 100px 120px; }
+                .hub-row-v2 { grid-template-columns: 1fr 80px 80px 80px 100px; }
                 .pc-pricing-grid-v2 { grid-template-columns: 1fr; }
             }
         `}</style>

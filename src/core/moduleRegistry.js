@@ -10,6 +10,7 @@ import ModerationConfig from '../models/ModerationConfig.js';
 import SupportConfig from '../models/SupportConfig.js';
 import ReactionRoleConfig from '../models/ReactionRoleConfig.js';
 import PollConfig from '../models/PollConfig.js';
+import LevelingConfig from '../models/LevelingConfig.js';
 
 /**
  * Registry of all bot modules with their identifying prefixes and associated models.
@@ -80,6 +81,11 @@ export const registry = {
         name: 'Sondaggi',
         prefixes: ['poll_'],
         model: PollConfig
+    },
+    leveling: {
+        name: 'Leveling',
+        prefixes: [],
+        model: LevelingConfig
     }
 };
 

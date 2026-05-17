@@ -6,6 +6,7 @@ import passport from 'passport';
 import { Strategy as DiscordStrategy } from 'passport-discord';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
+import path from 'path';
 import logger from '../utils/logger.js';
 import multiBotManager from './multiBotManager.js';
 import buildHealthStatus from '../utils/healthStatus.js';
@@ -19,6 +20,8 @@ import messageRoutes from '../../dashboard/api/routes/messages.js';
 import managementRoutes from '../../dashboard/api/routes/management.js';
 import systemRoutes from '../../dashboard/api/routes/system.js';
 import privateBotRoutes from '../../dashboard/api/routes/privateBot.js';
+import adminRoutes from '../../dashboard/api/routes/admin.js';
+import analyticsRoutes from '../../dashboard/api/routes/analytics.js';
 
 /**
  * Initializes and starts the Web Dashboard API hosted by the Bot process.
@@ -52,7 +55,8 @@ export function startDashboard(client) {
 
 
     // 2. Body Parsers & JSON Error Handling
-    app.use(express.json());
+    app.use(express.json({ limit: '50mb' }));
+    app.use(express.urlencoded({ limit: '50mb', extended: true }));
     app.use((err, req, res, next) => {
         if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
             console.error('[JSON_ERROR] Malformed JSON in request:', err.message);
@@ -123,7 +127,10 @@ export function startDashboard(client) {
     app.use('/api/config', apiLimiter);
     app.use('/api/messages', apiLimiter);
 
-    // 6. Request context — attach Discord client
+    // 6. Static Files (Internal Image Hosting)
+    app.use('/api/uploads', express.static(path.join(process.cwd(), 'uploads')));
+
+    // 7. Request context — attach Discord client
     app.use((req, res, next) => {
         req.discordClient = client;
         req.mainClient = client;
@@ -139,12 +146,12 @@ export function startDashboard(client) {
     app.use('/api/webhooks', webhooksRoutes);
     app.use('/api/system', systemRoutes);
     app.use('/api/private-bot', privateBotRoutes);
+    app.use('/api/admin', adminRoutes);
+    app.use('/api/analytics', analyticsRoutes);
 
     app.get('/api/health', (req, res) => {
         res.json(buildHealthStatus(client));
     });
-
-    // Catch-all 404
     app.use((req, res) => {
         res.status(404).json({
             success: false,

@@ -79,55 +79,55 @@ export default {
     },
     whitelist: {
         panel: {
-            title: '🛂 Immigration Office - City Entry',
-            description: 'Welcome to the access portal. To reside permanently in the city, you must undergo a civil suitability assessment.\n\nMake sure to answer honestly to the protocols presented to you.',
+            title: '📋 Application System',
+            description: 'Welcome to the access portal. To obtain full access or request a specific role, you must complete the application form.\n\nMake sure to answer honestly to the questions presented to you.',
             color: '#3BA4FF',
-            footer: 'Civil Department | Verix RP'
+            footer: 'Application Management | {guild}'
         },
         start: {
-            title: '📄 Entry Application: {user_name}',
-            description: 'Welcome citizen. To be officially admitted, we must complete your information dossier.\n\n**DEPARTMENTAL DIRECTIVES:**\n• Answer honestly and with plenty of detail.\n• Respect time protocols to avoid cancellation of the request.',
+            title: '📄 New Application: {user_name}',
+            description: 'Welcome. To proceed with your request, we must collect some information necessary for evaluation.\n\n**INSTRUCTIONS:**\n• Answer honestly and with plenty of detail.\n• Respect time protocols to avoid cancellation of the session.',
             color: '#3BA4FF',
-            footer: 'Welcome Office | Verix RP'
+            footer: 'Evaluation Office | {guild}'
         },
         question: {
-            title: '❓ Examination: Question {current_index} of {total_questions}',
+            title: '❓ Question: {current_index} of {total_questions}',
             description: '>>> {question}',
             color: '#3BA4FF'
         },
         review: {
-            title: '📋 Final Dossier Validation',
-            description: 'Carefully review your institutional statements. Once confirmed, your request will pass to the Superior Commission for the final verdict.',
+            title: '📋 Final Review',
+            description: 'Carefully review your statements. Once confirmed, your application will pass to the staff for the final verdict.',
             color: '#2ecc71'
         },
         not_configured: {
             title: '⏳ Incomplete Configuration',
-            description: 'The city entry procedure has not yet been finalized by staff. Please be patient for a little longer.',
+            description: 'The application procedure has not yet been finalized by staff. Please try again later.',
             color: '#f1c40f'
         },
         active_session: {
-            title: '📄 Ongoing Application',
-            description: 'There is already an open dossier in your name in channel <#{channelId}>. Conclude that procedure before starting a new one.',
+            title: '📄 Ongoing Session',
+            description: 'There is already an open application session in your name in channel <#{channelId}>. Conclude that procedure before starting a new one.',
             color: '#3498db'
         },
         already_submitted: {
-            title: '📂 Dossier Under Evaluation',
+            title: '📂 Under Evaluation',
             description: 'Your documentation has already been delivered and is currently on the staff\'s desk. You will receive a result shortly.',
             color: '#3498db'
         },
         already_passed: {
-            title: '✅ Citizenship Already Obtained',
-            description: 'Our records indicate that you are already a regular citizen of **{guild}**. It is not necessary to repeat the procedure.',
+            title: '✅ Access Already Obtained',
+            description: 'Our records indicate that you are already an approved member of **{guild}**. It is not necessary to repeat the procedure.',
             color: '#2ecc71'
         },
         cooldown: {
-            title: '⚠️ Cooldown Protocol',
-            description: 'Your last request was recently rejected. For bureaucratic reasons, you must wait **{time}** before submitting a new dossier.',
+            title: '⚠️ Waiting Period',
+            description: 'Your last request was recently rejected. For organizational reasons, you must wait **{time}** before submitting a new application.',
             color: '#e74c3c'
         },
         start_success: {
-            title: '✅ Path Started',
-            description: 'Your dossier has been correctly opened. Head to channel <#{channelId}> to start the written interview.',
+            title: '✅ Session Started',
+            description: 'Your application has been correctly opened. Head to channel <#{channelId}> to start providing your information.',
             color: '#2ecc71'
         },
         session_completed: {
@@ -188,30 +188,64 @@ export default {
     },
     background: {
         panel: {
-            title: '📜 Historical Archive: Background Deposit',
+            title: '📜 Historical Archive: Character Story Deposit',
             description: 'Start writing your character\'s story to get final background approval.\n\nClick the button below to start the deposit protocol.',
             color: '#5865f2',
-            footer: 'Registry Office | Verix RP'
+            footer: 'Registry Office | {guild}'
         },
         instructions: {
-            title: '✍️ Background Drafting',
-            description: 'You are starting to draft your background. Make sure to accurately describe your character\'s origins and ambitions.\n\n**REQUIREMENTS:**\n• Consistency with the city setting.\n• Respect for narrative guidelines.',
+            title: '✍️ Character Story Drafting',
+            description: 'You are starting to draft your story. Make sure to accurately describe your character\'s origins and ambitions.\n\n**REQUIREMENTS:**\n• Consistency with the city setting.\n• Respect for narrative guidelines.',
             color: '#3498db'
         },
+        modal_title: 'Story Details',
+        link_label: 'Link to Story (e.g. Google Doc)',
+        desc_label: 'Short Description (Optional)',
+        desc_placeholder: 'Summarize your character story here...',
         dm_accepted: {
-            title: '📜 Background Approved',
-            description: 'Your background has been officially deposited in the archives of **{guild}**. Your story is now an integral part of the city.',
+            title: '📜 Story Approved',
+            description: 'Your story has been officially deposited in the archives of **{guild}**. Your character is now an integral part of the city.',
             color: '#2ecc71'
         },
         dm_rejected: {
             title: '⚠️ Revision Requested',
-            description: 'Your background proposal for **{guild}** has been rejected or requires revisions.\n\n**STAFF NOTES:**\n{reason}',
+            description: 'Your story proposal for **{guild}** has been rejected or requires revisions.\n\n**STAFF NOTES:**\n{reason}',
             color: '#e74c3c'
         },
         staff_received: {
-            title: '📑 New Background Received',
-            description: 'User **<@{userId}>** has sent their background for review.\n\n**INFO:**\n• Link: {bg_link}\n• Desc: {bg_desc}\n• Attachment: {bg_attachment}',
+            title: '📖 New Story Received',
+            description: 'A user has submitted a story for review.\n\n**User:** <@{userId}>\n**Link:** [Open Document]({bg_link})\n**Description:** {bg_desc}\n**ID:** `{app_id}`',
             color: '#3498db'
+        },
+        approve_btn: 'Approve',
+        deny_btn: 'Reject',
+        accepted_title: '✅ Story APPROVED',
+        rejected_title: '❌ Story REJECTED',
+        staff_tag: '👮 Staff Member',
+        subject_tag: '👤 Subject',
+        outcome_tag: 'Staff Outcome'
+    },
+    staffapps: {
+        panel: {
+            title: '🛡️ Staff Recruitment - Application Portal',
+            description: 'Do you want to join our team? By submitting your application, you will be evaluated by the HR managers.\n\nMake sure to answer all questions comprehensively.',
+            color: '#a855f7',
+            footer: 'HR Department | {guild}'
+        },
+        dm_accepted: {
+            title: '🎊 Application Accepted!',
+            description: 'Great news {user}! Your application for the staff of {guild} has been approved. Welcome to the team!',
+            color: '#2ecc71'
+        },
+        dm_rejected: {
+            title: '❌ Application Rejected',
+            description: 'We are sorry {user}, but your application for {guild} was not approved.\n\n**Reason:**\n>>> {reason}',
+            color: '#ff4757'
+        },
+        staff_received: {
+            title: '🛡️ New Staff Application',
+            description: 'User **<@{userId}>** has submitted a new application for the staff team.',
+            color: '#a855f7'
         }
     },
     tickets: {
@@ -231,10 +265,20 @@ export default {
             description: 'Your ticket has been successfully opened.\n\n**Channel:** {channel}',
             color: '#2ecc71'
         },
+        created_success: {
+            title: '✅ Ticket Created',
+            description: 'Your ticket has been successfully opened in <#{channelId}>.',
+            color: '#2ecc71'
+        },
         close: {
             title: '🔒 Ticket Closed',
             description: 'This ticket has been correctly closed and archived.',
             color: '#E74C3C'
+        },
+        close_started: {
+            title: '🔒 Closing in Progress',
+            description: 'The ticket is being closed and archived. Please wait...',
+            color: '#e67e22'
         },
         already_exists: {
             title: '⚠️ Existing Ticket',
@@ -245,6 +289,11 @@ export default {
             title: '⚙️ Claimed',
             description: 'Staff member **{staff}** has taken over your ticket and will assist you shortly.',
             color: '#3498db'
+        },
+        claim_already: {
+            title: '⚠️ Already Claimed',
+            description: 'This ticket has already been claimed by <@{staffId}>.',
+            color: '#f1c40f'
         },
         status_updated: {
             title: '🔄 Status Updated',
@@ -260,6 +309,101 @@ export default {
             title: '🎫 Assistance Request',
             description: 'Welcome to the support center. A staff member will be here shortly.\n\nReason: **{reason}**',
             color: '#5865F2'
+        },
+        priority_select: {
+            title: '⚡ Priority Selection',
+            description: 'Please select the priority level for this ticket before proceeding.',
+            color: '#f1c40f'
+        },
+        quick_reply_menu: {
+            title: '📝 Quick Replies',
+            description: 'Select a response template to send in the ticket.',
+            color: '#3498db'
+        },
+        tag_menu: {
+            title: '🏷️ Tag Management',
+            description: 'Select a tag to add or remove from this ticket.',
+            color: '#3498db'
+        },
+        staff_only: {
+            title: '⚠️ Restricted Access',
+            description: 'Sorry, but only staff members can use these management features.',
+            color: '#e74c3c'
+        },
+        blacklist_error: {
+            title: '🚫 Access Denied',
+            description: 'Your account has been blacklisted from the ticket system. You cannot open new requests.',
+            color: '#e74c3c'
+        },
+        note_success: {
+            title: '✅ Note Added',
+            description: 'The internal note has been successfully recorded in the ticket database.',
+            color: '#2ecc71'
+        },
+        config_not_found: {
+            title: '❌ Configuration Missing',
+            description: 'The ticket system has not been configured for this server yet. Contact administrators.',
+            color: '#e74c3c'
+        },
+        category_not_available: {
+            title: '❌ Category Not Available',
+            description: 'The selected category is no longer available or has been removed by staff.',
+            color: '#e74c3c'
+        },
+        staff_ticket_log: {
+            title: '📂 Closed Ticket Log',
+            description: '>>> **User:** {user}\n**Type:** `{type}`\n**Staff:** {staff}',
+            color: '#3498db'
+        },
+        intelligence: {
+            title: '🔍 Intelligence: {user}',
+            prev_tickets: '🎫 Previous Tickets',
+            sessions_closed: '`{count}` closed sessions',
+            whitelist: '📋 Whitelist',
+            status: 'Status: `{status}`',
+            no_app: 'No application',
+            last_wl: '📅 Last Whitelist',
+            background: '📖 Background',
+            no_dossier: 'No dossiers',
+            footer: 'Staff Intelligence Module',
+            field_name: '🔍 User Intelligence'
+        },
+        system_messages: {
+            priority_placeholder: 'Select priority...',
+            priority_normal: 'Normal',
+            priority_important: 'Important',
+            priority_urgent: 'Urgent',
+            claim_btn: 'Claim',
+            close_btn: 'Close',
+            quick_reply_btn: 'Quick Replies',
+            note_btn: 'Note',
+            status_placeholder: 'Change status...',
+            status_processing: 'Processing',
+            status_waiting: 'Waiting (User)',
+            note_modal_title: 'Add Internal Note',
+            note_input_label: 'Note content',
+            note_input_placeholder: 'Write a note visible only to staff...',
+            report_modal_title: 'Report Form',
+            report_subject_label: 'Subject',
+            report_desc_label: 'Description',
+            no_quick_replies: '❌ No quick replies configured.',
+            quick_reply_placeholder: 'Choose a template...',
+            tag_placeholder: 'Select a tag...',
+            claim_success: '✅ Ticket claimed successfully.',
+            status_updated_msg: '✅ Ticket status updated to: **{status}**',
+            assigned_staff_label: '👤 Assigned Staff',
+            internal_notes_label: '📝 Internal Notes',
+            waiting_staff: '_Waiting..._',
+            none: '_None_',
+            new_ticket_ping: '{ping} - New **{type}** ticket opened.',
+            cooldown: '⚠️ **HIGH TRAFFIC:** Wait a few minutes before opening a new ticket.',
+            already_exists: '❌ **ERROR:** You already have a **{type}** ticket open.',
+            success_open: '✅ **TICKET OPENED:** Go to channel {channel}.',
+            success_close: '🛡️ **ARCHIVING IN PROGRESS...**',
+            staff_claimed: '✅ **{staff}** has claimed the ticket.',
+            claim_already: '❌ This ticket has already been claimed by <@{staffId}>.',
+            staff_only: '⚠️ Restricted access for staff members only.',
+            blacklist_error: '🚫 You have been blacklisted from the ticket system.'
         }
     },
     verify: {
@@ -316,7 +460,28 @@ export default {
             color: '#e74c3c'
         }
     },
+    voice: {
+        control_panel: {
+            title: '🎙️ Voice Control Panel',
+            description: 'Welcome <@{user}>! This is your temporary channel.\nUse the buttons below to manage it quickly.',
+            color: '#5865F2'
+        },
+        status_none: 'None',
+        owner_field: '👑 Owner',
+        limit_field: '👥 Limit'
+    },
     moderation: {
+        no_reason: 'No reason provided',
+        error: {
+            title: '❌ Moderation Error',
+            description: 'An error occurred while executing the command.',
+            color: '#e74c3c'
+        },
+        command_ban: {
+            title: '✅ Ban Executed',
+            description: 'User **{user}** has been successfully banned.\n\n**Reason:** {reason}',
+            color: '#2ecc71'
+        },
         warn: {
             title: '🛡️ Official Warning',
             description: 'Attention **{user}**, you have received an official warning for violating the rules.\n\n**Reason:**\n>>> {reason}',
@@ -354,6 +519,11 @@ export default {
             title: '⚠️ Giveaway Already Ended',
             description: 'Sorry, this giveaway has already concluded.',
             color: '#f1c40f'
+        },
+        level_required: {
+            title: '🛡️ Level Requirement Unmet',
+            description: 'You must be at least **Level {minLevel}** to join this giveaway!\nYour current level is **Level {currentLevel}**.',
+            color: '#e74c3c'
         }
     },
     photocontest: {
@@ -367,5 +537,89 @@ export default {
             description: 'A new photo has been uploaded for the contest.\n\n**Theme:** `{theme}`\n**Deadline:** {endTime}',
             color: '#3498db'
         }
+    },
+    logs: {
+        message_deleted: {
+            title: '🗑️ Message Deleted',
+            author: 'Author',
+            channel: 'Channel',
+            content: 'Content',
+            no_text: '*No text (maybe an embed or file)*',
+            color: '#e74c3c'
+        },
+        message_updated: {
+            title: '📝 Message Updated',
+            author: 'Author',
+            channel: 'Channel',
+            before: 'Before',
+            after: 'After',
+            color: '#3498db'
+        }
+    },
+    admin: {
+        embed_editor: {
+            title: '🛠️ Embed Editor',
+            description: 'You are editing a default message. Use the buttons to change fields.',
+            color: '#F1C40F'
+        }
+    },
+    socials: {
+        default_titles: {
+            Twitch: '📡 **{streamer}** is live!',
+            YouTube: '🎥 New video from **{streamer}**!',
+            Twitter: '𝕏 (Twitter) New post from **{streamer}**',
+            Instagram: '📸 New post from **{streamer}**',
+            TikTok: '🎵 New TikTok from **{streamer}**'
+        },
+        default_descriptions: {
+            Twitch: '### {title}\n\nHey! **{streamer}** just turned on the camera on Twitch. Don\'t miss the show!\n\n[Join Live]({url})',
+            YouTube: '### {title}\n\nA new video just dropped on the channel! Go check it out.',
+            Twitter: '{description}',
+            Instagram: '### {title}\n\nNew content uploaded to Instagram! Go take a look.',
+            TikTok: '### {title}\n\nA new video was just published on TikTok! Watch now.'
+        },
+        button_labels: {
+            Twitch: 'Watch Live',
+            YouTube: 'Watch Video',
+            Twitter: 'View on 𝕏',
+            X: 'View on 𝕏',
+            Instagram: 'View on Instagram',
+            TikTok: 'View on TikTok',
+            default: 'Open Link'
+        },
+        footer: 'Social Notifications | Verix'
+    },
+    leveling: {
+        disabled: {
+            title: '📡 Module Disabled',
+            description: 'The **Leveling & Rewards** module is currently disabled on this server. Contact staff for more information.',
+            color: '#f1c40f'
+        },
+        rank: {
+            title: '✨ Rank Card - {username}',
+            level: '📊 Level',
+            rank: '🏆 Rank',
+            xp: '🧪 XP Progress',
+            progress: '📈 Progression',
+            messages: '💬 Total Messages',
+            daily_limit: '📅 Daily Limit',
+            color: '#5865f2'
+        },
+        leaderboard: {
+            title: '🏆 Server Leaderboard',
+            empty_title: '⚠️ Leaderboard Empty',
+            empty_desc: 'The leaderboard is currently empty. Start messaging to earn XP!',
+            entry: '{pos} <@{userId}> • **Lvl {level}** ({xp} XP)',
+            footer: 'Your Rank: {rank} | Active Community',
+            unranked: 'Unranked',
+            color: '#5865f2'
+        }
+    },
+    common: {
+        no_reason: 'No reason provided',
+        none: 'None',
+        loading: 'Loading...',
+        error: 'An error occurred.',
+        immediately: 'immediately'
     }
 };

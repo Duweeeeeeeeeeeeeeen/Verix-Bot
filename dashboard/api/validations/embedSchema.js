@@ -4,6 +4,7 @@ import { discordId, embedDataSchema } from './common.js';
 export const templateSchema = z.object({
     id: z.string().optional(),
     name: z.string().min(1).max(50),
+    targetChannelId: z.string().optional().nullable(),
     data: embedDataSchema
 }).strict();
 

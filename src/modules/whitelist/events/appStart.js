@@ -91,7 +91,7 @@ export default {
                         });
                         
                         if (existingBG) {
-                            const embed = await messageService.get(interaction.guild.id, 'whitelist', 'active_session', {
+                            const embed = await messageService.get(interaction.guild.id, 'background', 'already_exists', {
                                 channelId: existingBG.channelId
                             });
                             return interaction.editReply({ embeds: [embed] });
@@ -175,18 +175,18 @@ export default {
                         existingApp.status = 'CANCELLED';
                         await existingApp.save();
                     } else {
-                        const embed = await messageService.get(interaction.guild.id, 'whitelist', 'active_session', {
+                        const embed = await messageService.get(interaction.guild.id, 'whitelist', 'already_exists', {
                             channelId: existingApp.channelId
                         });
                         return interaction.editReply({ embeds: [embed] });
                     }
                 } else if (existingApp.status === 'SUBMITTED') {
-                    const embed = await messageService.get(interaction.guild.id, 'whitelist', 'already_submitted', {
+                    const embed = await messageService.get(interaction.guild.id, 'whitelist', 'already_exists', {
                         guild: interaction.guild.name
                     });
                     return interaction.editReply({ embeds: [embed] });
                 } else if (existingApp.status === 'ACCEPTED' || existingApp.status === 'WAITING_VOICE') {
-                    const embed = await messageService.get(interaction.guild.id, 'whitelist', 'already_passed', {
+                    const embed = await messageService.get(interaction.guild.id, 'whitelist', 'already_exists', {
                         guild: interaction.guild.name
                     });
                     return interaction.editReply({ embeds: [embed] });
@@ -208,7 +208,7 @@ export default {
                     const hours = Math.floor(timeLeft / (1000 * 60 * 60));
                     const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
                     
-                    const embed = await messageService.get(interaction.guild.id, 'whitelist', 'cooldown', {
+                    const embed = await messageService.get(interaction.guild.id, 'whitelist', 'cooldown_error', {
                         time: `${hours}h ${minutes}m`
                     });
                     return interaction.editReply({ embeds: [embed] });

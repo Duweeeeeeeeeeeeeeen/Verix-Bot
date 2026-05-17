@@ -22,6 +22,8 @@ import DashboardAuditLog from '../../../src/models/DashboardAuditLog.js';
 import WelcomeConfig from '../../../src/models/WelcomeConfig.js';
 import UtilityConfig from '../../../src/models/UtilityConfig.js';
 import BackgroundConfig from '../../../src/models/BackgroundConfig.js';
+import StaffAppConfig from '../../../src/models/StaffAppConfig.js';
+import StaffApp from '../../../src/models/StaffApp.js';
 import SocialConfig from '../../../src/models/SocialConfig.js';
 import AutoClearConfig from '../../../src/models/AutoClearConfig.js';
 import AutomationConfig from '../../../src/models/AutomationConfig.js';
@@ -29,6 +31,9 @@ import ModerationConfig from '../../../src/models/ModerationConfig.js';
 import SupportConfig from '../../../src/models/SupportConfig.js';
 import ReactionRoleConfig from '../../../src/models/ReactionRoleConfig.js';
 import PollConfig from '../../../src/models/PollConfig.js';
+import LevelingConfig from '../../../src/models/LevelingConfig.js';
+import UserExperience from '../../../src/models/UserExperience.js';
+import TempVoice from '../../../src/models/TempVoice.js';
 
 import { getButtonStyle } from '../../../src/utils/uiBuilder.js';
 import multiBotManager from '../../../src/core/multiBotManager.js';
@@ -58,6 +63,7 @@ import { welcomeSchema } from '../validations/welcomeSchema.js';
 import { fivemSchema } from '../validations/fivemSchema.js';
 import { utilitySchema } from '../validations/utilitySchema.js';
 import { backgroundSchema } from '../validations/backgroundSchema.js';
+import { staffAppSchema } from '../validations/staffAppSchema.js';
 import { socialSchema } from '../validations/socialSchema.js';
 import { onboardingSchema } from '../validations/onboardingSchema.js';
 import { moderationSchema } from '../validations/moderationSchema.js';
@@ -136,13 +142,24 @@ router.use('/:guildId', (req, res, next) => {
     next();
 });
 
+router.use('/:guildId', (req, res, next) => {
+    const { guildId } = req.params;
+    if (guildId && multiBotManager.instances.has(guildId)) {
+        req.discordClient = multiBotManager.instances.get(guildId);
+        // console.log(`[Dashboard_API] Using Private Bot for guild: ${guildId}`);
+    } else {
+        // console.log(`[Dashboard_API] Using Main Bot for guild: ${guildId}`);
+    }
+    next();
+});
+
 // GET all configs for a guild
 router.get('/:guildId', adminCheck, async (req, res) => {
     try {
         const { guildId } = req.params;
         
         // Fetch or create all configurations atomically in parallel using upsert
-        let [wlConfig, tkConfig, photoConfig, verifyConfig, guildData, globalConfig, wlcmConfig, utilConfig, fmConfig, socConfig, autoClearConfig, modConfig, suppConfig, rrConfig, pollConfig] = await Promise.all([
+        let [wlConfig, tkConfig, photoConfig, verifyConfig, guildData, globalConfig, wlcmConfig, utilConfig, fmConfig, socConfig, autoClearConfig, modConfig, suppConfig, rrConfig, pollConfig, bgConfig, staffConfig] = await Promise.all([
             WhitelistConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }),
             TicketConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }),
             PhotoContestConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }),
@@ -157,7 +174,9 @@ router.get('/:guildId', adminCheck, async (req, res) => {
             ModerationConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }),
             SupportConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }),
             ReactionRoleConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }),
-            PollConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true })
+            PollConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }),
+            BackgroundConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }),
+            StaffAppConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true })
         ]);
 
         guildData = await ensureLegacySetupCompleted(guildData, {
@@ -224,6 +243,8 @@ router.get('/:guildId', adminCheck, async (req, res) => {
                 support: mergeModuleDefaults('support', suppConfig, lang),
                 reactionRoles: rrConfig,
                 polls: pollConfig,
+                background: mergeModuleDefaults('background', bgConfig, lang),
+                staffapps: mergeModuleDefaults('staffapps', staffConfig, lang),
                 roles,
                 channels
             }
@@ -309,14 +330,17 @@ router.post('/:guildId/automations', adminCheck, async (req, res) => {
         const { guildId } = req.params;
         const { autoClear, autoMessage } = req.body;
 
-        const isPremium = (await Guild.findOne({ guildId }))?.isPremium;
+        const guild = await Guild.findOne({ guildId });
+        const tier = guild?.premiumTier || (guild?.isPremium ? 'premium' : 'none');
 
-        if (!isPremium) {
-            if ((autoClear?.slots || []).length > 5) {
-                return res.status(403).json({ success: false, error: 'Free tier limit: 5 Auto-Clear slots. Upgrade to PRO for more.' });
+        // Enforcement based on Matrix: Standard (2), Premium (10), Platinum (Unlimited)
+        if (tier !== 'platinum') {
+            const limit = tier === 'premium' ? 10 : (tier === 'lite' ? 5 : 2);
+            if ((autoClear?.slots || []).length > limit) {
+                return res.status(403).json({ success: false, error: `Il tuo piano (${tier.toUpperCase()}) permette massimo ${limit} slot per Auto-Clear.` });
             }
-            if ((autoMessage?.slots || []).length > 5) {
-                return res.status(403).json({ success: false, error: 'Free tier limit: 5 Auto-Message slots. Upgrade to PRO for more.' });
+            if ((autoMessage?.slots || []).length > limit) {
+                return res.status(403).json({ success: false, error: `Il tuo piano (${tier.toUpperCase()}) permette massimo ${limit} slot per Auto-Message.` });
             }
         }
 
@@ -391,6 +415,127 @@ router.post('/:guildId/tempvoice', adminCheck, async (req, res) => {
     } catch (error) {
         console.error('Error updating tempvoice config:', error);
         res.status(500).json({ success: false, error: 'Impossibile salvare la configurazione vocale' });
+    }
+});
+
+// GET active temp voice channels list
+router.get('/:guildId/tempvoice/active', adminCheck, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const client = req.discordClient;
+        const guild = await client.guilds.fetch(guildId).catch(() => null);
+        if (!guild) return res.status(404).json({ success: false, error: 'Guild non trovata' });
+
+        const activeRecords = await TempVoice.find({ guildId });
+        const list = [];
+
+        for (const record of activeRecords) {
+            const channel = guild.channels.cache.get(record.channelId) || await guild.channels.fetch(record.channelId).catch(() => null);
+            if (channel) {
+                const owner = guild.members.cache.get(record.ownerId) || await guild.members.fetch(record.ownerId).catch(() => null);
+                list.push({
+                    channelId: record.channelId,
+                    ownerId: record.ownerId,
+                    ownerName: owner ? owner.user.tag : 'Utente Sconosciuto',
+                    channelName: channel.name,
+                    memberCount: channel.members.size,
+                    userLimit: channel.userLimit,
+                    createdAt: record.createdAt || new Date()
+                });
+            } else {
+                await TempVoice.deleteOne({ channelId: record.channelId });
+            }
+        }
+
+        res.json({ success: true, data: list });
+    } catch (error) {
+        console.error('Error fetching active temp voice channels:', error);
+        res.status(500).json({ success: false, error: 'Impossibile caricare i canali attivi' });
+    }
+});
+
+// POST rename active temp voice channel
+router.post('/:guildId/tempvoice/active/:channelId/rename', adminCheck, async (req, res) => {
+    try {
+        const { guildId, channelId } = req.params;
+        const { newName } = req.body;
+        if (!newName || newName.trim() === '') {
+            return res.status(400).json({ success: false, error: 'Nome canale non valido' });
+        }
+
+        const client = req.discordClient;
+        const guild = await client.guilds.fetch(guildId).catch(() => null);
+        if (!guild) return res.status(404).json({ success: false, error: 'Guild non trovata' });
+
+        const record = await TempVoice.findOne({ guildId, channelId });
+        if (!record) return res.status(404).json({ success: false, error: 'Canale non registrato come temporaneo' });
+
+        const channel = guild.channels.cache.get(channelId) || await guild.channels.fetch(channelId).catch(() => null);
+        if (!channel) return res.status(404).json({ success: false, error: 'Canale non trovato su Discord' });
+
+        await channel.setName(newName);
+        await logAudit(req, 'RENAME_TEMPVOICE_CHANNEL', { channelId, oldName: channel.name, newName });
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error renaming active temp voice channel:', error);
+        res.status(500).json({ success: false, error: 'Impossibile rinominare il canale' });
+    }
+});
+
+// POST user limit for active temp voice channel
+router.post('/:guildId/tempvoice/active/:channelId/limit', adminCheck, async (req, res) => {
+    try {
+        const { guildId, channelId } = req.params;
+        const limit = parseInt(req.body.limit);
+        if (isNaN(limit) || limit < 0 || limit > 99) {
+            return res.status(400).json({ success: false, error: 'Limite utenti non valido (0-99)' });
+        }
+
+        const client = req.discordClient;
+        const guild = await client.guilds.fetch(guildId).catch(() => null);
+        if (!guild) return res.status(404).json({ success: false, error: 'Guild non trovata' });
+
+        const record = await TempVoice.findOne({ guildId, channelId });
+        if (!record) return res.status(404).json({ success: false, error: 'Canale non registrato come temporaneo' });
+
+        const channel = guild.channels.cache.get(channelId) || await guild.channels.fetch(channelId).catch(() => null);
+        if (!channel) return res.status(404).json({ success: false, error: 'Canale non trovato su Discord' });
+
+        await channel.setUserLimit(limit);
+        await logAudit(req, 'LIMIT_TEMPVOICE_CHANNEL', { channelId, limit });
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error setting user limit for temp voice channel:', error);
+        res.status(500).json({ success: false, error: 'Impossibile impostare il limite utenti' });
+    }
+});
+
+// DELETE active temp voice channel
+router.delete('/:guildId/tempvoice/active/:channelId', adminCheck, async (req, res) => {
+    try {
+        const { guildId, channelId } = req.params;
+
+        const client = req.discordClient;
+        const guild = await client.guilds.fetch(guildId).catch(() => null);
+        if (!guild) return res.status(404).json({ success: false, error: 'Guild non trovata' });
+
+        const record = await TempVoice.findOne({ guildId, channelId });
+        if (!record) return res.status(404).json({ success: false, error: 'Canale non registrato come temporaneo' });
+
+        const channel = guild.channels.cache.get(channelId) || await guild.channels.fetch(channelId).catch(() => null);
+        if (channel) {
+            await channel.delete().catch(() => null);
+        }
+
+        await TempVoice.deleteOne({ guildId, channelId });
+        await logAudit(req, 'DELETE_TEMPVOICE_CHANNEL', { channelId });
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error deleting active temp voice channel:', error);
+        res.status(500).json({ success: false, error: 'Impossibile eliminare il canale vocale' });
     }
 });
 
@@ -819,7 +964,7 @@ router.post('/:guildId/whitelist/send-panel', adminCheck, async (req, res) => {
         const embed = await messageService.get(guildId, 'whitelist', 'panel', { guild });
 
         // Whitelist Start Button
-        const btnData = config?.embeds?.panel?.button || { label: 'Inizia Whitelist', emoji: '📝', style: 'PRIMARY' };
+        const btnData = config?.embeds?.panel?.button || { label: 'Invia Candidatura', emoji: '📝', style: 'PRIMARY' };
         const isLink = btnData.style === 'LINK' && btnData.url;
         
         const startButton = new ButtonBuilder()
@@ -894,10 +1039,14 @@ router.post('/:guildId/tickets', adminCheck, validate(ticketSchema), async (req,
     try {
         const { guildId } = req.params;
         const guild = await Guild.findOne({ guildId });
-        const isPremium = guild?.isPremium || guild?.premiumTier === 'platinum' || guild?.premiumTier === 'premium';
+        const tier = guild?.premiumTier || (guild?.isPremium ? 'premium' : 'none');
         
-        if (!isPremium && (req.validatedData.categories || []).length > 2) {
-            return res.status(403).json({ success: false, error: 'Free tier limit: 2 Ticket Categories. Upgrade to PRO for more.' });
+        // Enforcement based on Matrix: Standard (2), Premium (10), Platinum (Unlimited)
+        if (tier !== 'platinum') {
+            const limit = tier === 'premium' ? 10 : (tier === 'lite' ? 5 : 2);
+            if ((req.validatedData.categories || []).length > limit) {
+                return res.status(403).json({ success: false, error: `Il tuo piano (${tier.toUpperCase()}) permette massimo ${limit} categorie Ticket.` });
+            }
         }
 
         const config = await TicketConfig.findOneAndUpdate(
@@ -942,9 +1091,7 @@ router.post('/:guildId/tickets/send-panel', adminCheck, async (req, res) => {
             const options = [];
             
             // Convert Map or Object to entries
-            const typesSource = config.typesConfig instanceof Map 
-                ? Array.from(config.typesConfig.entries()) 
-                : Object.entries(config.typesConfig || {});
+            const typesSource = (config.typesConfig instanceof Map ? Array.from(config.typesConfig.entries()) : Object.entries(config.typesConfig || {})).sort((a, b) => (a[1].order || 0) - (b[1].order || 0));
 
             if (typesSource.length > 0) {
                 for (const [id, data] of typesSource) {
@@ -970,9 +1117,7 @@ router.post('/:guildId/tickets/send-panel', adminCheck, async (req, res) => {
             // Default to buttons
             const row = new ActionRowBuilder();
              // Convert Map or Object to entries
-             const typesSource = config.typesConfig instanceof Map 
-             ? Array.from(config.typesConfig.entries()) 
-             : Object.entries(config.typesConfig || {});
+             const typesSource = (config.typesConfig instanceof Map ? Array.from(config.typesConfig.entries()) : Object.entries(config.typesConfig || {})).sort((a, b) => (a[1].order || 0) - (b[1].order || 0));
 
             if (typesSource.length > 0) {
                 const entries = typesSource.slice(0, 5); // Discord limit
@@ -1082,10 +1227,15 @@ router.post('/:guildId/photocontest', adminCheck, validate(photoContestSchema), 
         const { guildId } = req.params;
         const data = req.validatedData || req.body;
 
-        const isPremium = (await Guild.findOne({ guildId }))?.isPremium;
+        const guild = await Guild.findOne({ guildId });
+        const tier = guild?.premiumTier || (guild?.isPremium ? 'premium' : 'none');
 
-        if (!isPremium && (data.themes || []).length > 5) {
-            return res.status(403).json({ success: false, error: 'Free tier limit: 5 Contest Themes. Upgrade to PRO for more.' });
+        // Enforcement: Standard (2), Premium (10), Platinum (Unlimited)
+        if (tier !== 'platinum') {
+            const limit = tier === 'premium' ? 10 : (tier === 'lite' ? 5 : 2);
+            if ((data.themes || []).length > limit) {
+                return res.status(403).json({ success: false, error: `Il tuo piano (${tier.toUpperCase()}) permette massimo ${limit} temi per il Contest.` });
+            }
         }
 
         const config = await PhotoContestConfig.findOneAndUpdate(
@@ -1831,6 +1981,17 @@ router.post('/:guildId/fivem', adminCheck, validate(fivemSchema), async (req, re
         const { guildId } = req.params;
         const updateData = req.body;
 
+        const guild = await Guild.findOne({ guildId });
+        const tier = guild?.premiumTier || (guild?.isPremium ? 'premium' : 'none');
+
+        // Enforcement based on Matrix: Standard (1), Premium (5), Platinum (Unlimited)
+        if (tier !== 'platinum') {
+            const limit = tier === 'premium' ? 5 : (tier === 'lite' ? 2 : 1);
+            if ((updateData.servers || []).length > limit) {
+                return res.status(403).json({ success: false, error: `Il tuo piano (${tier.toUpperCase()}) permette massimo ${limit} server FiveM.` });
+            }
+        }
+
         const config = await FiveMConfig.findOneAndUpdate(
             { guildId },
             updateData,
@@ -2532,6 +2693,59 @@ router.post('/:guildId/:module/reset', adminCheck, async (req, res) => {
         res.status(500).json({ success: false, error: 'Errore durante il ripristino del modulo.' });
     }
 });
+router.post('/:guildId/factory-reset', adminCheck, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const modelMap = {
+            whitelist: WhitelistConfig,
+            tickets: TicketConfig,
+            photocontest: PhotoContestConfig,
+            verify: VerifyConfig,
+            welcome: WelcomeConfig,
+            utility: UtilityConfig,
+            fivem: FiveMConfig,
+            socials: SocialConfig,
+            automations: AutomationConfig,
+            moderation: ModerationConfig,
+            support: SupportConfig,
+            reactionroles: ReactionRoleConfig,
+            polls: PollConfig,
+            tempvoice: TempVoiceConfig,
+            background: BackgroundConfig,
+            giveaway: GiveawayConfig,
+            global: GlobalConfig
+        };
+
+        // 1. Delete all specific module configs
+        const deletePromises = Object.values(modelMap).map(Model => Model.deleteOne({ guildId }));
+        await Promise.all(deletePromises);
+
+        // 2. Reset Guild main document
+        await Guild.findOneAndUpdate(
+            { guildId },
+            { 
+                $set: { 
+                    setupCompleted: false,
+                    enabledModules: [],
+                    logChannelId: null,
+                    welcomeChannelId: null,
+                    prefix: '!'
+                } 
+            }
+        );
+
+        // 3. Clear all caches for this guild
+        invalidateCache(guildId);
+        
+        await logAudit(req, guildId, 'FACTORY_RESET', 'System completely reset to factory defaults');
+
+        res.json({ success: true, message: 'Sistema ripristinato con successo. Verrai reindirizzato al setup.' });
+    } catch (error) {
+        console.error('[FACTORY_RESET_ERROR]:', error);
+        res.status(500).json({ success: false, error: 'Errore durante il ripristino globale.' });
+    }
+});
+
 
 router.post('/:guildId/onboarding/skip', adminCheck, async (req, res) => {
     try {
@@ -2543,6 +2757,48 @@ router.post('/:guildId/onboarding/skip', adminCheck, async (req, res) => {
     } catch (error) {
         console.error('[Onboarding_Skip] Error:', error);
         res.status(500).json({ success: false, error: 'Errore durante il salto dell\'onboarding.' });
+    }
+});
+
+// --- LEVELING ROUTES ---
+
+// GET leveling config
+router.get('/:guildId/leveling', adminCheck, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        let config = await LevelingConfig.findOne({ guildId });
+        if (!config) config = await LevelingConfig.create({ guildId });
+        res.json({ success: true, data: config });
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione leveling' });
+    }
+});
+
+// POST leveling config
+router.post('/:guildId/leveling', adminCheck, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const config = await LevelingConfig.findOneAndUpdate(
+            { guildId },
+            { $set: req.body },
+            { returnDocument: 'after', upsert: true }
+        );
+        res.json({ success: true, data: config });
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'Impossibile salvare la configurazione leveling' });
+    }
+});
+
+// GET leveling leaderboard
+router.get('/:guildId/leveling/leaderboard', adminCheck, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const leaderboard = await UserExperience.find({ guildId })
+            .sort({ xp: -1 })
+            .limit(100);
+        res.json({ success: true, data: leaderboard });
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'Impossibile caricare la leaderboard' });
     }
 });
 

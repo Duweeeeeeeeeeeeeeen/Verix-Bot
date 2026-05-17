@@ -1,7 +1,4 @@
-import { EmbedBuilder } from 'discord.js';
-import WelcomeConfig from '../../../models/WelcomeConfig.js';
-import placeholderHelper from '../../../utils/placeholderHelper.js';
-import logger from '../../../utils/logger.js';
+import messageService from '../../../utils/messageService.js';
 
 export default {
     name: 'guildMemberAdd',
@@ -28,19 +25,18 @@ export default {
             const wEmbed = config.welcome.embed || {};
             const isPlaceholder = (val) => !val || (typeof val === 'string' && (val.trim() === '' || val === 'Senza Titolo' || val === 'Nessun contenuto impostato.'));
 
-            const rawTitle = isPlaceholder(wEmbed.title) ? '✈️ Benvenuto in Città' : wEmbed.title;
-            const rawDesc = isPlaceholder(wEmbed.description) ? 'Un nuovo cittadino, **{user}**, è appena atterrato! Ti auguriamo una permanenza prospera.\n\nAssicurati di consultare i protocolli regolamentari per evitare sanzioni.' : wEmbed.description;
+            // Use messageService for fallback to localized defaults
+            const embed = await messageService.get(member.guild.id, 'welcome', 'join', placeholders);
 
-            const embed = new EmbedBuilder()
-                .setTitle(placeholderHelper.replace(rawTitle, placeholders))
-                .setDescription(placeholderHelper.replace(rawDesc, placeholders))
-                .setColor(wEmbed.color && wEmbed.color !== '#000000' ? wEmbed.color : '#2ecc71')
-                .setThumbnail(placeholders.user_avatar) // Set default thumbnail to user avatar
-                .setTimestamp();
-
+            // Override with DB values if they are NOT placeholders
+            if (!isPlaceholder(wEmbed.title)) embed.setTitle(placeholderHelper.replace(wEmbed.title, placeholders));
+            if (!isPlaceholder(wEmbed.description)) embed.setDescription(placeholderHelper.replace(wEmbed.description, placeholders));
+            if (wEmbed.color && wEmbed.color !== '#000000' && wEmbed.color !== '#2ecc71') embed.setColor(wEmbed.color);
             if (wEmbed.footer) embed.setFooter({ text: placeholderHelper.replace(wEmbed.footer, placeholders), iconURL: member.guild.iconURL() });
             if (wEmbed.thumbnail && !isPlaceholder(wEmbed.thumbnail)) {
                 embed.setThumbnail(placeholderHelper.replace(wEmbed.thumbnail, placeholders));
+            } else {
+                embed.setThumbnail(placeholders.user_avatar);
             }
             if (wEmbed.image) embed.setImage(placeholderHelper.replace(wEmbed.image, placeholders));
 

@@ -465,21 +465,8 @@ export class SocialManager {
             };
 
             // Default titles and descriptions based on platform
-            const defaultTitles = {
-                'Twitch': `📡 **{streamer}** è in diretta!`,
-                'YouTube': `🎥 Nuovo video di **{streamer}**!`,
-                'Twitter': `𝕏 (Twitter) Nuovo post di **{streamer}**`,
-                'Instagram': `📸 Nuovo post di **{streamer}**`,
-                'TikTok': `🎵 Nuovo TikTok di **{streamer}**`
-            };
-
-            const defaultDescs = {
-                'Twitch': `### {title}\n\nEhi! **{streamer}** ha appena acceso la camera su Twitch. Non perderti lo show!\n\n[Entra in Live]({url})`,
-                'YouTube': `### {title}\n\nÈ appena uscito un nuovo video sul canale! Corri a lasciare un like.`,
-                'Twitter': `{description}`,
-                'Instagram': `### {title}\n\nNuovo contenuto caricato su Instagram! Passa a dare un'occhiata.`,
-                'TikTok': `### {title}\n\nÈ appena stato pubblicato un nuovo video su TikTok! Guarda subito.`
-            };
+            const defaultTitles = t('socials.default_titles', lang);
+            const defaultDescs = t('socials.default_descriptions', lang);
 
             // Default settings based on platform (Verified Icons8 CDN)
             const platformStyles = {
@@ -513,7 +500,7 @@ export class SocialManager {
                 .setColor(customEmbed.color ? parseInt(customEmbed.color.replace('#', ''), 16) : style.color)
                 .setTimestamp()
                 .setFooter({ 
-                    text: formatText(customEmbed.footer) || 'Social Notifications | Verix', 
+                    text: formatText(customEmbed.footer) || t('socials.footer', lang), 
                     iconURL: this.client.user.displayAvatarURL() 
                 });
 
@@ -534,19 +521,12 @@ export class SocialManager {
                 embedData.setImage(postData.thumbnail);
             }
 
-            const buttonLabels = {
-                'Twitch': 'Guarda la Live',
-                'YouTube': 'Guarda il Video',
-                'Twitter': 'Vedi su 𝕏',
-                'X': 'Vedi su 𝕏',
-                'Instagram': 'Vedi su Instagram',
-                'TikTok': 'Vedi su TikTok'
-            };
+            const buttonLabels = t('socials.button_labels', lang);
 
             const row = new ActionRowBuilder()
                 .addComponents(
                     new ButtonBuilder()
-                        .setLabel(buttonLabels[platform] || 'Apri Link')
+                        .setLabel(buttonLabels[platform] || buttonLabels.default || 'Open Link')
                         .setStyle(ButtonStyle.Link)
                         .setURL(postData.url)
                 );

@@ -6,10 +6,15 @@ import WhitelistConfig from '../../../models/WhitelistConfig.js';
 import User from '../../../models/User.js';
 import logger from '../../../utils/logger.js';
 import messageService from '../../../utils/messageService.js';
+import GlobalConfig from '../../../models/GlobalConfig.js';
+import { t } from '../../../locales/t.js';
 
 export default {
     name: Events.InteractionCreate,
     async execute(interaction, client) {
+        const globalConfig = await GlobalConfig.findOne({ guildId: interaction.guild?.id });
+        const lang = globalConfig?.language || 'en';
+
         // Handle Buttons
         if (interaction.isButton()) {
             const { customId, channel } = interaction;
@@ -38,20 +43,20 @@ export default {
             if (customId === 'finalize_bg' || customId === 'submit_background') {
                 const modal = new ModalBuilder()
                     .setCustomId('submit_bg_modal')
-                    .setTitle('Dettagli Background');
+                    .setTitle(t('background.modal_title', lang));
 
                 const linkInput = new TextInputBuilder()
                     .setCustomId('bg_link')
-                    .setLabel('Link al Background (es. Google Doc)')
+                    .setLabel(t('background.link_label', lang))
                     .setStyle(TextInputStyle.Short)
                     .setPlaceholder('https://docs.google.com/...')
                     .setRequired(true);
 
                 const descInput = new TextInputBuilder()
                     .setCustomId('bg_desc')
-                    .setLabel('Breve Descrizione (Opzionale)')
+                    .setLabel(t('background.desc_label', lang))
                     .setStyle(TextInputStyle.Paragraph)
-                    .setPlaceholder('Riassumi qui la storia del tuo personaggio...')
+                    .setPlaceholder(t('background.desc_placeholder', lang))
                     .setRequired(false)
                     .setMaxLength(500);
 
@@ -76,11 +81,11 @@ export default {
                     BackgroundConfig.findOne({ guildId: interaction.guild.id })
                 ]);
 
-                if (!app) return messageService.reply(interaction, 'background', 'error', { reason: 'Sessione non trovata.' }, { ephemeral: true });
-                if (!config) return messageService.reply(interaction, 'background', 'error', { reason: 'Configurazione non trovata.' }, { ephemeral: true });
+                if (!app) return messageService.reply(interaction, 'background', 'error', { reason: t('common.none', lang) }, { ephemeral: true });
+                if (!config) return messageService.reply(interaction, 'background', 'error', { reason: t('common.none', lang) }, { ephemeral: true });
 
                 const logChannel = interaction.guild.channels.cache.get(config.logChannelId);
-                if (!logChannel) return messageService.reply(interaction, 'background', 'error', { reason: 'Canale log non trovato.' }, { ephemeral: true });
+                if (!logChannel) return messageService.reply(interaction, 'background', 'error', { reason: t('common.none', lang) }, { ephemeral: true });
 
                 // Update Progress
                 app.link = link;
@@ -96,8 +101,8 @@ export default {
                 const staffEmbed = await messageService.get(interaction.guild.id, 'background', 'staff_received', {
                     userId: interaction.user.id,
                     bg_link: link,
-                    bg_desc: desc || 'Nessuna descrizione fornita',
-                    bg_attachment: app.attachmentURL || 'Nessun allegato caricato',
+                    bg_desc: desc || t('common.no_reason', lang),
+                    bg_attachment: app.attachmentURL || t('common.none', lang),
                     app_id: app._id
                 });
 
@@ -106,8 +111,8 @@ export default {
                 }
 
                 const row = new ActionRowBuilder().addComponents(
-                    new ButtonBuilder().setCustomId(`approve_bg_${app._id}`).setLabel('Accetta').setStyle(ButtonStyle.Success),
-                    new ButtonBuilder().setCustomId(`deny_bg_${app._id}`).setLabel('Rifiuta').setStyle(ButtonStyle.Danger)
+                    new ButtonBuilder().setCustomId(`approve_bg_${app._id}`).setLabel(t('background.approve_btn', lang)).setStyle(ButtonStyle.Success),
+                    new ButtonBuilder().setCustomId(`deny_bg_${app._id}`).setLabel(t('background.deny_btn', lang)).setStyle(ButtonStyle.Danger)
                 );
 
                 const pings = (config.staffRoleIds || []).map(id => `<@&${id}>`).join(' ');
@@ -122,11 +127,11 @@ export default {
                         { status: 'SUBMITTED_BACKGROUND' }
                     );
                     
-                    await messageService.reply(interaction, 'background', 'submission_confirmed', {});
+                    await messageService.reply(interaction, 'background', 'submission_success', {});
                 } else {
                     app.deletionScheduledAt = new Date(Date.now() + 10000);
                     await app.save();
-                    await messageService.reply(interaction, 'background', 'submission_confirmed', { time: '10s' });
+                    await messageService.reply(interaction, 'background', 'submission_success', { time: '10s' });
                 }
 
                 // Send long-running tasks after the interaction is acknowledged
@@ -146,7 +151,7 @@ export default {
 
             } catch (err) {
                 logger.error('[BG] Error in submissionHandler:', err);
-                await messageService.reply(interaction, 'background', 'error', { reason: 'Si è verificato un errore durante l\'invio.' }, { ephemeral: true });
+                await messageService.reply(interaction, 'background', 'error', { reason: t('common.error', lang) }, { ephemeral: true });
             }
         }
     },

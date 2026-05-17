@@ -27,7 +27,7 @@ export default {
             // Cooldown & Pending Check
             const existingPending = await Background.findOne({ userId: interaction.user.id, guildId: interaction.guild.id, status: { $in: ['PENDING', 'SUBMITTED'] } });
             if (existingPending) {
-                return messageService.reply(interaction, 'background', 'active_session', {}, { ephemeral: true });
+                return messageService.reply(interaction, 'background', 'already_exists', {}, { ephemeral: true });
             }
 
             const userData = await User.findOne({ discordId: interaction.user.id }) || await User.create({ discordId: interaction.user.id, username: interaction.user.username });
@@ -40,7 +40,7 @@ export default {
                     const hours = Math.floor(timeLeft / (1000 * 60 * 60));
                     const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
                     
-                    return messageService.reply(interaction, 'background', 'cooldown', { time: `${hours}h ${minutes}m` }, { ephemeral: true });
+                    return messageService.reply(interaction, 'background', 'cooldown_error', { time: `${hours}h ${minutes}m` }, { ephemeral: true });
                 }
             }
 

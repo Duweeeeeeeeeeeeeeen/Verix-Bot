@@ -88,7 +88,7 @@ const globalConfigSchema = new mongoose.Schema({
 
     // ── NAMING SYSTEM ──────────────────────────
     naming: {
-        voiceChannel: { type: String, default: 'wl-{user}' },
+        voiceChannel: { type: String, default: 'apply-{user}' },
         ticket:       { type: String, default: '{emoji}-{type}-{user}' }
     }
 

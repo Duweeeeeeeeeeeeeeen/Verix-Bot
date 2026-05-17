@@ -5,17 +5,14 @@ import {
     Bot, Shield, Info, Save, Crown, EyeOff, MessageSquare, Zap, Sparkles, Check, 
     Plus, Trash2, Clock, CheckCircle2, AlertCircle, RefreshCw, Smartphone, Monitor,
     Fingerprint, UserCircle, Globe, Layout, Layers, Box, Cpu, Activity,
-    ShieldCheck, XCircle, Rocket, Gauge, Palette, Search, Settings2, Power, ArrowRight
+    ShieldCheck, XCircle, Rocket, Gauge, Palette, Search, Settings2, Power, ArrowRight,
+    Key, ExternalLink, CheckCircle, Timer, Eye, ChevronLeft, Gem, X, Lock, HelpCircle
 } from 'lucide-react';
 import Skeleton from '../../../components/Skeleton';
 import api from '../../../utils/api';
 import Head from 'next/head';
-import { 
-    Key, AlertTriangle, ExternalLink, CheckCircle, Timer,
-    Eye, ChevronLeft, Gem, X, Lock
-} from 'lucide-react';
 
-export default function WhiteLabelPage() {
+export default function BrandingPage() {
   const { t, language } = useT();
   const router = useRouter();
   const { guildId } = router.query;
@@ -23,6 +20,7 @@ export default function WhiteLabelPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
 
   // Status management
   const [statuses, setStatuses] = useState([]);
@@ -56,6 +54,8 @@ export default function WhiteLabelPage() {
         
         if (botRes && botRes.success && botRes.data && botRes.data.bot) {
             setBotData(botRes.data.bot);
+        } else if (botRes && botRes.bot) {
+            setBotData(botRes.bot);
         }
     } catch (err) {
         console.error('Failed to fetch config:', err);
@@ -181,6 +181,13 @@ export default function WhiteLabelPage() {
             </div>
             
             <div className="header-controls">
+                {isPlatinum && (
+                    <button className={`pc-btn-outline ${showGuide ? 'active' : ''}`} onClick={() => setShowGuide(!showGuide)} title={t('common.help')}>
+                        <HelpCircle size={18} />
+                        <span>{showGuide ? t('common.hide_guide') : t('common.show_guide')}</span>
+                    </button>
+                )}
+                <div className="pc-header-divider" style={{ width: '1px', height: '24px', background: 'var(--border)', margin: '0 4px' }}></div>
                 {isPremium && (
                     <button className="pc-btn-primary" onClick={handleSave} disabled={saving}>
                         <Save size={18} />
@@ -197,7 +204,7 @@ export default function WhiteLabelPage() {
                         <div className="gate-icon-main">
                             <Sparkles size={48} />
                         </div>
-                        <h1>Identity <span className="text-gradient">White-Label</span></h1>
+                        <h1>Identità <span className="text-gradient">Personalizzata</span></h1>
                         <p>{t('wl.gate.desc')}</p>
                     </div>
                     
@@ -223,7 +230,7 @@ export default function WhiteLabelPage() {
                             <div className="card-badge highlight">{t('wl.gate.platinum_badge')}</div>
                             <div className="card-mockup modern">
                                 <div className="mock-avatar primary"></div>
-                                <div className="mock-text-bold">{config?.name || 'Your Global Brand'}</div>
+                                <div className="mock-text-bold">{config?.name || 'Il Tuo Brand'}</div>
                                 <p className="text-primary-bright">{t('wl.gate.platinum_desc')}</p>
                             </div>
                             <div className="card-status-icon positive">
@@ -240,285 +247,287 @@ export default function WhiteLabelPage() {
                     </button>
                 </div>
             ) : (
-                <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 560px', gap: '32px' }}>
-                    <div className="v-stack" style={{ gap: '32px' }}>
-                        <section className="pc-card-v2 animate slide-up">
-                            <div className="card-header-v2" style={{ marginBottom: '32px' }}>
-                                <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><UserCircle size={18} /></div>
-                                <h3 style={{ margin: 0 }}>{t('wl.identity_global')}</h3>
+                <div className="v-stack" style={{ gap: '32px' }}>
+                    {/* Integrated Guide (Toggleable) */}
+                    {isPlatinum && showGuide && (
+                        <section className="pc-card-v2 animate slide-up" style={{ border: '1.5px solid var(--primary-muted)', background: 'rgba(99, 102, 241, 0.02)' }}>
+                            <div className="card-header-v2">
+                                <div className="header-icon" style={{ background: 'var(--primary)', color: 'white' }}><Layout size={18} /></div>
+                                <div style={{ flex: 1 }}>
+                                    <h3 style={{ margin: 0 }}>{t('wl.guide_title')}</h3>
+                                    <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t('wl.guide_desc')}</p>
+                                </div>
+                                <button className="pc-btn-close-v2" style={{ background: 'transparent', border: 'none', color: 'var(--text-dim)', cursor: 'pointer' }} onClick={() => setShowGuide(false)}><X size={20} /></button>
                             </div>
                             <div className="card-body-v2">
-                                    <div className="pc-input-group-v2">
-                                        <label>{t('wl.custom_nick')}</label>
-                                        <div className="pc-input-wrapper-v2" style={{ background: 'var(--bg-badge)', border: '1.5px solid var(--border)', borderRadius: '22px', display: 'flex', alignItems: 'center', transition: '0.3s' }}>
-                                            <Bot size={22} style={{ marginLeft: '24px', color: 'var(--primary)' }} />
-                                            <input 
-                                                type="text" 
-                                                style={{ width: '100%', border: 'none', background: 'transparent', padding: '24px', fontWeight: 700, color: 'var(--text-heading)', fontSize: '1.2rem', outline: 'none' }}
-                                                value={config.customBotName || ''} 
-                                                onChange={(e) => setConfig({...config, customBotName: e.target.value})}
-                                                placeholder={t('wl.nick_placeholder')}
-                                            />
+                                <div className="pc-stepper-v2 horizontal">
+                                    {[1,2,3,4].map(step => (
+                                        <div key={step} className="pc-step-item-v2 compact">
+                                            <div className="step-num">{step}</div>
+                                            <div className="step-content">
+                                                <h4 className="step-title">{t(`private_bot.step${step}_title`)}</h4>
+                                                <div className="step-media-v2" onClick={() => setSelectedImage({ src: `/img/guide${langPath}/step${step}.png`, title: t(`private_bot.step${step}_title`) })}>
+                                                    <img src={`/img/guide${langPath}/step${step}.png`} alt={`Step ${step}`} />
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div style={{ marginTop: '24px', background: 'rgba(99, 102, 241, 0.05)', padding: '24px', borderRadius: '22px', border: '1.5px solid rgba(99, 102, 241, 0.2)', display: 'flex', gap: '20px', alignItems: 'center' }}>
-                                            <Info size={24} color="#6366f1" style={{ flexShrink: 0 }} />
-                                            <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 600, lineHeight: 1.6 }} dangerouslySetInnerHTML={{ __html: t('wl.nick_desc') }} />
-                                        </div>
-                                    </div>
+                                    ))}
+                                </div>
                             </div>
                         </section>
+                    )}
 
-                        {botData?.clientName ? (
-                            <section className="pc-card-v2 animate slide-up" style={{ animationDelay: '0.1s' }}>
+                    <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 560px', gap: '32px' }}>
+                        <div className="v-stack" style={{ gap: '32px' }}>
+                            <section className="pc-card-v2 animate slide-up">
                                 <div className="card-header-v2" style={{ marginBottom: '32px' }}>
-                                    <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><RefreshCw size={18} /></div>
-                                    <div style={{ flex: 1 }}>
-                                        <h3 style={{ margin: 0 }}>{t('wl.rotation_studio')}</h3>
-                                        <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 700 }}>{t('wl.rotation_desc')}</p>
-                                    </div>
-                                    <button className="pc-btn-add-studio-v2" style={{ background: 'var(--bg-badge)', color: 'var(--primary)', border: '1.5px solid var(--border)', padding: '12px 24px', borderRadius: '14px', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', transition: '0.3s' }} onClick={addStatus}>
-                                        <Plus size={18} /> <span>{t('wl.add_status')}</span>
-                                    </button>
+                                    <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><UserCircle size={18} /></div>
+                                    <h3 style={{ margin: 0 }}>{t('wl.identity_global')}</h3>
                                 </div>
                                 <div className="card-body-v2">
-                                    <div className="v-stack" style={{ gap: '18px' }}>
-                                        {statuses.map((s, index) => (
-                                            <div key={index} className="pc-status-card-v2 animate slide-up" style={{ display: 'flex', gap: '20px', background: 'var(--bg-badge)', padding: '20px', borderRadius: '24px', border: '1.5px solid var(--border)', alignItems: 'center', transition: '0.3s', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
-                                                <div className="pc-select-wrapper-v2" style={{ background: 'var(--bg-card)', borderRadius: '16px', border: '1.5px solid var(--border)', padding: '0 16px' }}>
-                                                        <select 
-                                                            style={{ border: 'none', background: 'transparent', padding: '14px 0', color: '#6366f1', fontWeight: 700, outline: 'none', fontSize: '0.9rem', cursor: 'pointer', minWidth: '110px' }}
-                                                        value={s.type || 0}
-                                                        onChange={(e) => updateStatus(index, 'type', parseInt(e.target.value))}
-                                                    >
-                                                        <option value="0">Playing</option>
-                                                        <option value="3">Watching</option>
-                                                        <option value="2">Listening</option>
-                                                        <option value="5">Competing</option>
-                                                        <option value="4">Custom</option>
-                                                    </select>
-                                                </div>
+                                        <div className="pc-input-group-v2">
+                                            <label>{t('wl.custom_nick')}</label>
+                                            <div className="pc-input-wrapper-v2" style={{ background: 'var(--bg-badge)', border: '1.5px solid var(--border)', borderRadius: '22px', display: 'flex', alignItems: 'center', transition: '0.3s' }}>
+                                                <Bot size={22} style={{ marginLeft: '24px', color: 'var(--primary)' }} />
                                                 <input 
                                                     type="text" 
-                                                    style={{ flex: 1, background: 'var(--bg-input)', border: '1.5px solid var(--border)', padding: '14px 24px', borderRadius: '16px', color: 'var(--text-heading)', fontWeight: 700, outline: 'none', fontSize: '1.05rem' }}
-                                                    value={s.text || ''} 
-                                                    onChange={(e) => updateStatus(index, 'text', e.target.value)}
-                                                    placeholder={t('wl.status_placeholder')}
+                                                    style={{ width: '100%', border: 'none', background: 'transparent', padding: '24px', fontWeight: 700, color: 'var(--text-heading)', fontSize: '1.2rem', outline: 'none' }}
+                                                    value={config.customBotName || ''} 
+                                                    onChange={(e) => setConfig({...config, customBotName: e.target.value})}
+                                                    placeholder={t('wl.nick_placeholder')}
                                                 />
-                                                <button className="pc-btn-delete-studio-v2" style={{ width: '48px', height: '48px', borderRadius: '14px', background: 'rgba(239,68,68,0.08)', color: '#ef4444', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => removeStatus(index)}><Trash2 size={22} /></button>
                                             </div>
-                                        ))}
-                                        {statuses.length === 0 && (
-                                            <div style={{ textAlign: 'center', padding: '100px 40px', color: 'var(--border)', background: 'var(--bg-badge)', borderRadius: '32px', border: '2px dashed var(--border)' }}>
-                                                <Activity size={64} style={{ margin: '0 auto 24px', opacity: 0.3 }} />
-                                                <p style={{ fontWeight: 700, color: 'var(--text-dim)', fontSize: '1.1rem' }}>{t('wl.empty_status')}</p>
+                                            <div style={{ marginTop: '24px', background: 'rgba(99, 102, 241, 0.05)', padding: '24px', borderRadius: '22px', border: '1.5px solid rgba(99, 102, 241, 0.2)', display: 'flex', gap: '20px', alignItems: 'center' }}>
+                                                <Info size={24} color="#6366f1" style={{ flexShrink: 0 }} />
+                                                <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 600, lineHeight: 1.6 }} dangerouslySetInnerHTML={{ __html: t('wl.nick_desc') }} />
+                                            </div>
+                                        </div>
+                                </div>
+                            </section>
+
+                            {botData?.clientName ? (
+                                <section className="pc-card-v2 animate slide-up" style={{ animationDelay: '0.1s' }}>
+                                    <div className="card-header-v2" style={{ marginBottom: '32px' }}>
+                                        <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><RefreshCw size={18} /></div>
+                                        <div style={{ flex: 1 }}>
+                                            <h3 style={{ margin: 0 }}>{t('wl.rotation_studio')}</h3>
+                                            <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 700 }}>{t('wl.rotation_desc')}</p>
+                                        </div>
+                                        <button className="pc-btn-add-studio-v2" style={{ background: 'var(--bg-badge)', color: 'var(--primary)', border: '1.5px solid var(--border)', padding: '12px 24px', borderRadius: '14px', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px', transition: '0.3s' }} onClick={addStatus}>
+                                            <Plus size={18} /> <span>{t('wl.add_status')}</span>
+                                        </button>
+                                    </div>
+                                    <div className="card-body-v2">
+                                        <div className="v-stack" style={{ gap: '18px' }}>
+                                            {statuses.map((s, index) => (
+                                                <div key={index} className="pc-status-card-v2 animate slide-up" style={{ display: 'flex', gap: '20px', background: 'var(--bg-badge)', padding: '20px', borderRadius: '24px', border: '1.5px solid var(--border)', alignItems: 'center', transition: '0.3s', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
+                                                    <div className="pc-select-wrapper-v2" style={{ background: 'var(--bg-card)', borderRadius: '16px', border: '1.5px solid var(--border)', padding: '0 16px' }}>
+                                                            <select 
+                                                                style={{ border: 'none', background: 'transparent', padding: '14px 0', color: '#6366f1', fontWeight: 700, outline: 'none', fontSize: '0.9rem', cursor: 'pointer', minWidth: '110px' }}
+                                                            value={s.type || 0}
+                                                            onChange={(e) => updateStatus(index, 'type', parseInt(e.target.value))}
+                                                        >
+                                                            <option value="0">Playing</option>
+                                                            <option value="3">Watching</option>
+                                                            <option value="2">Listening</option>
+                                                            <option value="5">Competing</option>
+                                                            <option value="4">Custom</option>
+                                                        </select>
+                                                    </div>
+                                                    <input 
+                                                        type="text" 
+                                                        style={{ flex: 1, background: 'var(--bg-input)', border: '1.5px solid var(--border)', padding: '14px 24px', borderRadius: '16px', color: 'var(--text-heading)', fontWeight: 700, outline: 'none', fontSize: '1.05rem' }}
+                                                        value={s.text || ''} 
+                                                        onChange={(e) => updateStatus(index, 'text', e.target.value)}
+                                                        placeholder={t('wl.status_placeholder')}
+                                                    />
+                                                    <button className="pc-btn-delete-studio-v2" style={{ width: '48px', height: '48px', borderRadius: '14px', background: 'rgba(239,68,68,0.08)', color: '#ef4444', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => removeStatus(index)}><Trash2 size={22} /></button>
+                                                </div>
+                                            ))}
+                                            {statuses.length === 0 && (
+                                                <div style={{ textAlign: 'center', padding: '100px 40px', color: 'var(--border)', background: 'var(--bg-badge)', borderRadius: '32px', border: '2px dashed var(--border)' }}>
+                                                    <Activity size={64} style={{ margin: '0 auto 24px', opacity: 0.3 }} />
+                                                    <p style={{ fontWeight: 700, color: 'var(--text-dim)', fontSize: '1.1rem' }}>{t('wl.empty_status')}</p>
+                                                </div>
+                                            )}
+                                        </div>
+        
+                                        {statuses.length > 1 && (
+                                            <div style={{ marginTop: '40px', padding: '36px', background: 'linear-gradient(135deg, var(--bg-badge) 0%, var(--bg-badge) 100%)', borderRadius: '32px', border: '1.5px solid var(--border)' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '32px' }}>
+                                                    <div style={{ width: '48px', height: '48px', background: 'rgba(99,102,241,0.1)', color: '#6366f1', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(0,0,0,0.03)' }}><Timer size={22} /></div>
+                                                    <div className="v-stack">
+                                                        <span style={{ fontWeight: 700, color: 'var(--text-heading)', fontSize: '1.1rem', letterSpacing: '-0.3px' }}>{t('wl.rotation_freq')}</span>
+                                                        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t('wl.rotation_freq_desc')}</span>
+                                                    </div>
+                                                    <div style={{ marginLeft: 'auto', background: 'var(--bg-card)', padding: '10px 24px', borderRadius: '16px', border: '1.5px solid var(--border)', color: '#6366f1', fontWeight: 700, fontSize: '1.3rem' }}>
+                                                        {rotationInterval}s
+                                                    </div>
+                                                </div>
+                                                <input 
+                                                    type="range" 
+                                                    min="15" 
+                                                    max="3600" 
+                                                    step="15"
+                                                    style={{ width: '100%', accentColor: '#6366f1', height: '10px', cursor: 'pointer' }}
+                                                    value={rotationInterval} 
+                                                    onChange={(e) => setRotationInterval(parseInt(e.target.value))}
+                                                />
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase' }}>
+                                                    <span>Velocità Alta (15s)</span>
+                                                    <span>Lento (1h)</span>
+                                                </div>
                                             </div>
                                         )}
                                     </div>
-    
-                                    {statuses.length > 1 && (
-                                        <div style={{ marginTop: '40px', padding: '36px', background: 'linear-gradient(135deg, var(--bg-badge) 0%, var(--bg-badge) 100%)', borderRadius: '32px', border: '1.5px solid var(--border)' }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '32px' }}>
-                                                <div style={{ width: '48px', height: '48px', background: 'rgba(99,102,241,0.1)', color: '#6366f1', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(0,0,0,0.03)' }}><Timer size={22} /></div>
-                                                <div className="v-stack">
-                                                    <span style={{ fontWeight: 700, color: 'var(--text-heading)', fontSize: '1.1rem', letterSpacing: '-0.3px' }}>{t('wl.rotation_freq')}</span>
-                                                    <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t('wl.rotation_freq_desc')}</span>
-                                                </div>
-                                                <div style={{ marginLeft: 'auto', background: 'var(--bg-card)', padding: '10px 24px', borderRadius: '16px', border: '1.5px solid var(--border)', color: '#6366f1', fontWeight: 700, fontSize: '1.3rem' }}>
-                                                    {rotationInterval}s
-                                                </div>
-                                            </div>
-                                            <input 
-                                                type="range" 
-                                                min="15" 
-                                                max="3600" 
-                                                step="15"
-                                                style={{ width: '100%', accentColor: '#6366f1', height: '10px', cursor: 'pointer' }}
-                                                value={rotationInterval} 
-                                                onChange={(e) => setRotationInterval(parseInt(e.target.value))}
-                                            />
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase' }}>
-                                                <span>Ultra High (15s)</span>
-                                                <span>Slow (1h)</span>
-                                            </div>
+                                </section>
+                            ) : (
+                                <section className="pc-card-v2 animate slide-up" style={{ opacity: 0.8, filter: 'grayscale(0.3)', animationDelay: '0.1s' }}>
+                                    <div className="card-header-v2" style={{ marginBottom: '32px' }}>
+                                        <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--text-muted)' }}><Lock size={18} /></div>
+                                        <div style={{ flex: 1 }}>
+                                            <h3 style={{ margin: 0, color: 'var(--text-dim)' }}>{t('wl.rotation_studio_locked')}</h3>
+                                            <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 700 }}>{t('wl.rotation_locked_desc')}</p>
                                         </div>
-                                    )}
-                                </div>
-                            </section>
-                        ) : (
-                            <section className="pc-card-v2 animate slide-up" style={{ opacity: 0.8, filter: 'grayscale(0.3)', animationDelay: '0.1s' }}>
-                                <div className="card-header-v2" style={{ marginBottom: '32px' }}>
-                                    <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--text-muted)' }}><Lock size={18} /></div>
-                                    <div style={{ flex: 1 }}>
-                                        <h3 style={{ margin: 0, color: 'var(--text-dim)' }}>{t('wl.rotation_studio_locked')}</h3>
-                                        <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 700 }}>{t('wl.rotation_locked_desc')}</p>
                                     </div>
-                                </div>
-                                <div className="card-body-v2">
-                                     <div style={{ padding: '60px 40px', textAlign: 'center', background: 'rgba(0,0,0,0.02)', borderRadius: '32px', border: '2px dashed var(--border)' }}>
-                                         <Bot size={48} style={{ margin: '0 auto 20px', opacity: 0.2 }} />
-                                         <p style={{ color: 'var(--text-dim)', fontWeight: 600 }}>{t('wl.rotation_locked_desc')}</p>
-                                     </div>
-                                </div>
-                            </section>
-                        )}
+                                    <div className="card-body-v2">
+                                         <div style={{ padding: '60px 40px', textAlign: 'center', background: 'rgba(0,0,0,0.02)', borderRadius: '32px', border: '2px dashed var(--border)' }}>
+                                             <Bot size={48} style={{ margin: '0 auto 20px', opacity: 0.2 }} />
+                                             <p style={{ color: 'var(--text-dim)', fontWeight: 600 }}>{t('wl.rotation_locked_desc')}</p>
+                                         </div>
+                                    </div>
+                                </section>
+                            )}
+                        </div>
 
-                        {/* Platinum Guide Section */}
-                        {isPlatinum && (
-                            <section className="pc-card-v2 animate slide-up" style={{ animationDelay: '0.2s' }}>
-                                <div className="card-header-v2">
-                                    <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><Layout size={18} /></div>
-                                    <h3 style={{ margin: 0 }}>{t('private_bot.guide_title')}</h3>
-                                </div>
-                                <div className="card-body-v2">
-                                    <div className="pc-stepper-v2">
-                                        {[1,2,3,4,5,6].map(step => (
-                                            <div key={step} className="pc-step-item-v2">
-                                                <div className="step-num">{step}</div>
-                                                <div className="step-content">
-                                                    <h4 className="step-title">{t(`private_bot.step${step}_title`)}</h4>
-                                                    <p className="step-desc" dangerouslySetInnerHTML={{ __html: t(`private_bot.step${step}_desc`) }}></p>
-                                                    {step < 6 && (
-                                                        <div className="step-media-v2" onClick={() => setSelectedImage({ src: `/img/guide${langPath}/step${step}.png`, title: t(`private_bot.step${step}_title`) })}>
-                                                            <img src={`/img/guide${langPath}/step${step}.png`} alt={`Step ${step}`} />
-                                                            <div className="media-overlay"><Sparkles size={16} /> {t('common.zoom')}</div>
+                        <aside className="v-stack" style={{ gap: '32px' }}>
+                            {/* Platinum Instance Monitor */}
+                            {isPlatinum && (
+                                <section className="pc-card-v2 status-monitor-v2 animate slide-up">
+                                    <div className="card-header-v2">
+                                        <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><Power size={18} /></div>
+                                        <h3 style={{ margin: 0 }}>Stato Istanza</h3>
+                                    </div>
+                                    <div className="card-body-v2">
+                                        {botData ? (
+                                            <div className="v-stack" style={{ gap: '24px' }}>
+                                                <div className="pc-bot-identity-v2">
+                                                    <img src={botData.avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'} className="bot-avatar" />
+                                                    <div className="bot-info">
+                                                        <span className="bot-name">{botData.clientName || 'Private Bot'}</span>
+                                                        <div className={`pc-status-tag-v2 ${botData.status === 'online' ? 'on' : 'off'}`}>
+                                                            <div className="status-dot-v2"></div>
+                                                            {botData.status.toUpperCase()}
                                                         </div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </section>
-                        )}
-                    </div>
-
-                    <aside className="v-stack" style={{ gap: '32px' }}>
-                        {/* Platinum Instance Monitor */}
-                        {isPlatinum && (
-                            <section className="pc-card-v2 status-monitor-v2 animate slide-up">
-                                <div className="card-header-v2">
-                                    <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><Power size={18} /></div>
-                                    <h3 style={{ margin: 0 }}>{t('wl.instance_status')}</h3>
-                                </div>
-                                <div className="card-body-v2">
-                                    {botData ? (
-                                        <div className="v-stack" style={{ gap: '24px' }}>
-                                            <div className="pc-bot-identity-v2">
-                                                <img src={botData.avatarUrl || 'https://cdn.discordapp.com/embed/avatars/0.png'} className="bot-avatar" />
-                                                <div className="bot-info">
-                                                    <span className="bot-name">{botData.clientName || 'Private Bot'}</span>
-                                                    <div className={`pc-status-tag-v2 ${botData.status === 'online' ? 'on' : 'off'}`}>
-                                                        <div className="status-dot-v2"></div>
-                                                        {botData.status.toUpperCase()}
                                                     </div>
                                                 </div>
-                                            </div>
 
-                                            <div className="pc-action-row-v2">
-                                                <div className="v-stack">
-                                                    <span className="action-label">{t('wl.enabled')}</span>
-                                                    <span className="action-desc">{t('wl.enabled_desc')}</span>
+                                                <div className="pc-action-row-v2">
+                                                    <div className="v-stack">
+                                                        <span className="action-label">{t('wl.enabled')}</span>
+                                                        <span className="action-desc">{t('wl.enabled_desc')}</span>
+                                                    </div>
+                                                    <label className="pc-toggle-mini">
+                                                        <input type="checkbox" checked={!!botData.enabled} onChange={handleToggleBot} />
+                                                        <span className="pc-slider-mini"></span>
+                                                    </label>
                                                 </div>
-                                                <label className="pc-toggle-mini">
-                                                    <input type="checkbox" checked={!!botData.enabled} onChange={handleToggleBot} />
-                                                    <span className="pc-slider-mini"></span>
-                                                </label>
-                                            </div>
 
-                                            <button className="pc-btn-outline" style={{ width: '100%', height: '56px' }} onClick={handleRestartBot} disabled={restarting}>
-                                                <RefreshCw size={18} className={restarting ? 'animate-spin' : ''} />
-                                                <span>{restarting ? t('wl.restarting_btn') : t('wl.restart_btn')}</span>
+                                                <button className="pc-btn-outline" style={{ width: '100%', height: '56px' }} onClick={handleRestartBot} disabled={restarting}>
+                                                    <RefreshCw size={18} className={restarting ? 'animate-spin' : ''} />
+                                                    <span>{restarting ? t('wl.restarting_btn') : t('wl.restart_btn')}</span>
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <div className="pc-empty-mini">{t('wl.token_setup_hint')}</div>
+                                        )}
+                                    </div>
+                                </section>
+                            )}
+
+                            {/* Platinum Credentials */}
+                            {isPlatinum && (
+                                <section className="pc-card-v2 animate slide-up" style={{ animationDelay: '0.1s' }}>
+                                    <div className="card-header-v2">
+                                        <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><Key size={18} /></div>
+                                        <h3 style={{ margin: 0 }}>Credenziali</h3>
+                                    </div>
+                                    <div className="card-body-v2">
+                                        <div className="pc-input-group-v2">
+                                            <label>{t('wl.token_label')}</label>
+                                            <div className="pc-input-wrapper-v2" style={{ background: 'var(--bg-badge)', border: '1.5px solid var(--border)', borderRadius: '16px', overflow: 'hidden', display: 'flex' }}>
+                                                <input 
+                                                    type={showToken ? 'text' : 'password'} 
+                                                    style={{ flex: 1, background: 'transparent', border: 'none', padding: '16px', fontWeight: 700, color: 'var(--text-heading)', outline: 'none' }}
+                                                    placeholder={botData ? '••••••••••••••••••••' : 'MTE3MjMx...'} 
+                                                    value={token}
+                                                    onChange={e => setToken(e.target.value)}
+                                                />
+                                                <button style={{ background: 'transparent', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '0 16px' }} onClick={() => setShowToken(!showToken)}>
+                                                    {showToken ? <EyeOff size={18} /> : <Eye size={18} />}
+                                                </button>
+                                            </div>
+                                            <button 
+                                                className="pc-btn-primary" 
+                                                style={{ width: '100%', marginTop: '16px' }} 
+                                                onClick={handleSaveToken} 
+                                                disabled={saving || (!token && !botData)}
+                                            >
+                                                <Save size={18} />
+                                                <span>{t('wl.save_token_btn')}</span>
                                             </button>
                                         </div>
-                                    ) : (
-                                        <div className="pc-empty-mini">{t('wl.token_setup_hint')}</div>
-                                    )}
-                                </div>
-                            </section>
-                        )}
+                                    </div>
+                                </section>
+                            )}
 
-                        {/* Platinum Credentials */}
-                        {isPlatinum && (
-                            <section className="pc-card-v2 animate slide-up" style={{ animationDelay: '0.1s' }}>
-                                <div className="card-header-v2">
-                                    <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><Key size={18} /></div>
-                                    <h3 style={{ margin: 0 }}>{t('wl.credentials')}</h3>
+                            <section className="pc-card-v2 animate slide-up">
+                                <div className="card-header-v2" style={{ marginBottom: '32px' }}>
+                                    <div className="header-icon" style={{ background: 'rgba(239,68,68,0.08)', color: '#ef4444' }}><EyeOff size={18} /></div>
+                                    <h3 style={{ margin: 0 }}>Ghost Protocol</h3>
                                 </div>
                                 <div className="card-body-v2">
-                                    <div className="pc-input-group-v2">
-                                        <label>{t('wl.token_label')}</label>
-                                        <div className="pc-input-wrapper-v2" style={{ background: 'var(--bg-badge)', border: '1.5px solid var(--border)', borderRadius: '16px', overflow: 'hidden', display: 'flex' }}>
-                                            <input 
-                                                type={showToken ? 'text' : 'password'} 
-                                                style={{ flex: 1, background: 'transparent', border: 'none', padding: '16px', fontWeight: 700, color: 'var(--text-heading)', outline: 'none' }}
-                                                placeholder={botData ? '••••••••••••••••••••' : 'MTE3MjMx...'} 
-                                                value={token}
-                                                onChange={e => setToken(e.target.value)}
-                                            />
-                                            <button style={{ background: 'transparent', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', padding: '0 16px' }} onClick={() => setShowToken(!showToken)}>
-                                                {showToken ? <EyeOff size={18} /> : <Eye size={18} />}
-                                            </button>
+                                    <div style={{ background: 'var(--bg-badge)', padding: '32px', borderRadius: '28px', border: '1.5px solid var(--border)', boxShadow: '0 8px 20px rgba(0,0,0,0.02)' }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <div className="v-stack" style={{ flex: 1, gap: '6px' }}>
+                                                <strong style={{ fontWeight: 700, fontSize: '1.1rem', color: 'var(--text-heading)', letterSpacing: '-0.5px' }}>{t('wl.hide_branding')}</strong>
+                                                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600, lineHeight: 1.5 }}>{t('wl.hide_branding_desc')}</span>
+                                            </div>
+                                            <label className="pc-toggle-v2">
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={config.hideBranding} 
+                                                    onChange={(e) => setConfig({...config, hideBranding: e.target.checked})}
+                                                />
+                                                <span className="pc-slider-v2"></span>
+                                            </label>
                                         </div>
-                                        <button 
-                                            className="pc-btn-primary" 
-                                            style={{ width: '100%', marginTop: '16px' }} 
-                                            onClick={handleSaveToken} 
-                                            disabled={saving || (!token && !botData)}
-                                        >
-                                            <Save size={18} />
-                                            <span>{t('wl.save_token_btn')}</span>
-                                        </button>
                                     </div>
                                 </div>
                             </section>
-                        )}
 
-                        <section className="pc-card-v2 animate slide-up">
-                            <div className="card-header-v2" style={{ marginBottom: '32px' }}>
-                                <div className="header-icon" style={{ background: 'rgba(239,68,68,0.08)', color: '#ef4444' }}><EyeOff size={18} /></div>
-                                <h3 style={{ margin: 0 }}>{t('wl.ghost_protocol')}</h3>
-                            </div>
-                            <div className="card-body-v2">
-                                <div style={{ background: 'var(--bg-badge)', padding: '32px', borderRadius: '28px', border: '1.5px solid var(--border)', boxShadow: '0 8px 20px rgba(0,0,0,0.02)' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <div className="v-stack" style={{ flex: 1, gap: '6px' }}>
-                                            <strong style={{ fontWeight: 700, fontSize: '1.1rem', color: 'var(--text-heading)', letterSpacing: '-0.5px' }}>{t('wl.hide_branding')}</strong>
-                                            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600, lineHeight: 1.5 }}>{t('wl.hide_branding_desc')}</span>
+                            <div className="pc-variable-card-v2 animate slide-up">
+                                <div style={{ position: 'relative', zIndex: 2 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
+                                        <div className="placeholder-icon-wrapper"><Globe size={24} /></div>
+                                        <span style={{ fontWeight: 700, fontSize: '0.95rem', textTransform: 'uppercase', letterSpacing: '1px' }}>{t('wl.placeholders')}</span>
+                                    </div>
+                                    <p style={{ margin: 0, fontSize: '1rem', fontWeight: 600, opacity: 0.8, lineHeight: 1.7, marginBottom: '32px' }}>{t('wl.placeholders_desc')}</p>
+                                    <div className="v-stack" style={{ gap: '16px' }}>
+                                        <div className="placeholder-item-v2">
+                                            <code>{`{players}`}</code>
+                                            <span style={{ fontSize: '0.9rem', fontWeight: 700 }}>Giocatori Online</span>
                                         </div>
-                                        <label className="pc-toggle-v2">
-                                            <input 
-                                                type="checkbox" 
-                                                checked={config.hideBranding} 
-                                                onChange={(e) => setConfig({...config, hideBranding: e.target.checked})}
-                                            />
-                                            <span className="pc-slider-v2"></span>
-                                        </label>
+                                        <div className="placeholder-item-v2">
+                                            <code>{`{max_players}`}</code>
+                                            <span style={{ fontSize: '0.9rem', fontWeight: 700 }}>Slot Totali</span>
+                                        </div>
                                     </div>
                                 </div>
+                                <div className="placeholder-bg-icon"><Cpu size={200} /></div>
                             </div>
-                        </section>
-
-                        <div className="pc-variable-card-v2 animate slide-up">
-                            <div style={{ position: 'relative', zIndex: 2 }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
-                                    <div className="placeholder-icon-wrapper"><Globe size={24} /></div>
-                                    <span style={{ fontWeight: 700, fontSize: '0.95rem', textTransform: 'uppercase', letterSpacing: '1px' }}>{t('wl.placeholders')}</span>
-                                </div>
-                                <p style={{ margin: 0, fontSize: '1rem', fontWeight: 600, opacity: 0.8, lineHeight: 1.7, marginBottom: '32px' }}>{t('wl.placeholders_desc')}</p>
-                                <div className="v-stack" style={{ gap: '16px' }}>
-                                    <div className="placeholder-item-v2">
-                                        <code>{`{players}`}</code>
-                                        <span style={{ fontSize: '0.9rem', fontWeight: 700 }}>Online Count</span>
-                                    </div>
-                                    <div className="placeholder-item-v2">
-                                        <code>{`{max_players}`}</code>
-                                        <span style={{ fontSize: '0.9rem', fontWeight: 700 }}>Total Slots</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="placeholder-bg-icon"><Cpu size={200} /></div>
-                        </div>
-                    </aside>
+                        </aside>
+                    </div>
                 </div>
             )}
         </div>
@@ -528,7 +537,7 @@ export default function WhiteLabelPage() {
                 <div className="lightbox-content-v2 animate slide-up" onClick={e => e.stopPropagation()}>
                     <div className="lightbox-header-v2">
                         <span>{selectedImage.title}</span>
-                        <button onClick={() => setSelectedImage(null)}><X size={24} /></button>
+                        <button style={{ background: 'transparent', border: 'none', color: 'var(--text-dim)', cursor: 'pointer' }} onClick={() => setSelectedImage(null)}><X size={24} /></button>
                     </div>
                     <img src={selectedImage.src} alt={selectedImage.title} />
                 </div>
@@ -586,6 +595,10 @@ export default function WhiteLabelPage() {
             .pc-btn-primary { background: var(--primary); color: #fff; border: none; padding: 14px 28px; border-radius: 18px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: 0.3s; box-shadow: 0 10px 20px rgba(var(--primary-rgb), 0.2); }
             .pc-btn-primary:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(var(--primary-rgb), 0.3); }
 
+            .pc-btn-outline { display: flex; align-items: center; justify-content: center; gap: 12px; background: var(--bg-card); border: 1.5px solid var(--border); border-radius: 14px; padding: 10px 20px; font-weight: 700; color: var(--text-heading); cursor: pointer; transition: 0.2s; }
+            .pc-btn-outline:hover { background: var(--bg-badge); transform: translateY(-2px); }
+            .pc-btn-outline.active { background: var(--primary); color: white; border-color: var(--primary); }
+
             /* Card V2 */
             .pc-card-v2 { background: var(--bg-card); border: 1px solid var(--border); border-radius: 28px; padding: 32px; box-shadow: var(--shadow-premium); }
             .card-header-v2 { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
@@ -615,16 +628,16 @@ export default function WhiteLabelPage() {
             :global(.light-theme) .pc-header-v2, :global(.light-theme) .pc-card-v2, :global(.light-theme) .pc-status-card-v2, :global(.light-theme) .pc-onboarding-gate { box-shadow: 0 8px 30px rgba(0,0,0,0.04) !important; }
             
             .pc-stepper-v2 { display: flex; flex-direction: column; gap: 40px; }
+            .pc-stepper-v2.horizontal { flex-direction: row; gap: 20px; overflow-x: auto; padding-bottom: 10px; }
             .pc-step-item-v2 { display: flex; gap: 24px; position: relative; text-align: left; }
-            .pc-step-item-v2:not(:last-child):after { content: ''; position: absolute; left: 19px; top: 48px; bottom: -48px; width: 2px; background: var(--border); opacity: 0.3; }
+            .pc-step-item-v2.compact { flex: 1; min-width: 200px; flex-direction: column; gap: 12px; }
+            .pc-step-item-v2:not(:last-child):not(.compact):after { content: ''; position: absolute; left: 19px; top: 48px; bottom: -48px; width: 2px; background: var(--border); opacity: 0.3; }
             .step-num { width: 40px; height: 40px; border-radius: 14px; background: var(--bg-badge); border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-weight: 800; color: var(--primary); z-index: 2; flex-shrink: 0; }
             .step-title { margin: 0 0 8px; font-size: 1.1rem; font-weight: 700; color: var(--text-heading); }
             .step-desc { font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 16px; }
             .step-media-v2 { border-radius: 20px; border: 1.5px solid var(--border); overflow: hidden; cursor: pointer; position: relative; max-width: 100%; transition: 0.3s; }
             .step-media-v2:hover { transform: scale(1.02); box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
             .step-media-v2 img { width: 100%; display: block; }
-            .media-overlay { position: absolute; inset: 0; background: rgba(99, 102, 241, 0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; opacity: 0; transition: 0.3s; }
-            .step-media-v2:hover .media-overlay { opacity: 1; }
 
             /* Status monitor */
             .pc-bot-identity-v2 { display: flex; align-items: center; gap: 20px; background: var(--bg-badge); padding: 20px; border-radius: 24px; }

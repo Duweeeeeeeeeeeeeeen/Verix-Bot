@@ -106,22 +106,14 @@ export default function SetupWizard() {
 
   const startScanning = () => {
     setPhase('scanning');
-    const logs = language === 'it' ? [
-      'Inizializzazione scansione neurale...',
-      'Analisi struttura canali Discord...',
-      'Verifica gerarchia ruoli...',
-      'Scansione database configurazioni...',
-      'Analisi permessi amministrativi...',
-      'Mappatura ecosistema server...',
-      'Ottimizzazione parametri di sistema...'
-    ] : [
-      'Initializing neural scan...',
-      'Analyzing Discord channel structure...',
-      'Verifying role hierarchy...',
-      'Scanning configuration database...',
-      'Analyzing administrative permissions...',
-      'Mapping server ecosystem...',
-      'Optimizing system parameters...'
+    const logs = [
+      t('onboarding.scan_1'),
+      t('onboarding.scan_2'),
+      t('onboarding.scan_3'),
+      t('onboarding.scan_4'),
+      t('onboarding.scan_5'),
+      t('onboarding.scan_6'),
+      t('onboarding.scan_7')
     ];
 
     let currentLog = 0;
@@ -232,7 +224,7 @@ export default function SetupWizard() {
               </div>
             </div>
             <h1>{t('onboarding.welcome_title')} <span className="highlight">Verix Studio</span></h1>
-            <p dangerouslySetInnerHTML={{ __html: t('onboarding.welcome_desc', { guild: guildInfo?.guildName || (language === 'it' ? 'questo server' : 'this server') }) }} />
+            <p dangerouslySetInnerHTML={{ __html: t('onboarding.welcome_desc', { guild: guildInfo?.guildName || t('common.this_server') }) }} />
             
             <div className="setup-features-preview">
                 <div className="feature-item">
@@ -328,7 +320,7 @@ export default function SetupWizard() {
             </div>
 
             <button className="setup-btn-primary full" onClick={() => setPhase('presets')}>
-              <span>{t('common.continue') || (language === 'it' ? 'Continua' : 'Continue')}</span>
+              <span>{t('common.continue')}</span>
               <ChevronRight size={20} />
             </button>
           </div>
@@ -406,7 +398,7 @@ export default function SetupWizard() {
             </div>
 
             <button className="setup-btn-primary full" onClick={() => setPhase('essentials')}>
-              <span>{t('common.continue') || (language === 'it' ? 'Continua' : 'Continue')}</span>
+              <span>{t('common.continue')}</span>
               <ChevronRight size={20} />
             </button>
           </div>
@@ -445,7 +437,7 @@ export default function SetupWizard() {
                             onChange={(e) => setSelectedStaffRole(e.target.value)}
                             className="setup-select"
                         >
-                            <option value="">{language === 'it' ? 'Seleziona...' : 'Select...'}</option>
+                            <option value="">{t('common.select')}</option>
                             {roles.map(role => (
                                 <option key={role.id} value={role.id}>{role.name}</option>
                             ))}
@@ -455,7 +447,7 @@ export default function SetupWizard() {
                     <div className="essentials-section">
                         <h4><UserPlus size={18} /> {t('onboarding.welcome_style')}</h4>
                         <div className="toggle-switch-v2">
-                            <button className={welcomeStyle === 'text' ? 'active' : ''} onClick={() => setWelcomeStyle('text')}>{language === 'it' ? 'Testo' : 'Text'}</button>
+                            <button className={welcomeStyle === 'text' ? 'active' : ''} onClick={() => setWelcomeStyle('text')}>{t('common.text')}</button>
                             <button className={welcomeStyle === 'embed' ? 'active' : ''} onClick={() => setWelcomeStyle('embed')}>Embed</button>
                         </div>
                     </div>

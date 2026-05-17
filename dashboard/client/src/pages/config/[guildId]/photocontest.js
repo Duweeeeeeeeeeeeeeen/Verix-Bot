@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Skeleton from '../../../components/Skeleton';
-import { DiscordSelector } from '../../../components/LazyConfigComponents';
+import { DiscordSelector, SystemMessagesSection } from '../../../components/LazyConfigComponents';
 import api from '../../../utils/api';
 import { 
     Save, Settings2, Trash2, Plus, Calendar, Clock, Users, Bell, Layout, Type, 
@@ -180,7 +180,8 @@ export default function PhotoContestConfig() {
                 {[
                     { id: 'general', icon: <Settings2 size={18} />, label: t('pc.tab_core') },
                     { id: 'themes', icon: <Layers size={18} />, label: t('pc.tab_themes'), count: config.themes.length },
-                    { id: 'design', icon: <Palette size={18} />, label: t('pc.tab_design') }
+                    { id: 'design', icon: <Palette size={18} />, label: t('pc.tab_design') },
+                    { id: 'system_messages', icon: <MessageSquare size={18} />, label: t('common.tab_system_messages') }
                 ].map(tab => (
                     <button key={tab.id} className={activeTab === tab.id ? 'active' : ''} onClick={() => setActiveTab(tab.id)}>
                         {tab.icon} <span>{tab.label}</span>
@@ -207,10 +208,12 @@ export default function PhotoContestConfig() {
                                     <div className="pc-input-group-v2">
                                         <label>{t('pc.main_channel')}</label>
                                         <DiscordSelector type="channel" options={discordData.channels} value={config.channelId} onChange={v => setConfig({...config, channelId: v})} />
+                                        <p style={{ margin: '8px 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t('pc.main_channel_help')}</p>
                                     </div>
                                     <div className="pc-input-group-v2">
                                         <label>{t('pc.hof_channel')}</label>
                                         <DiscordSelector type="channel" options={discordData.channels} value={config.hallOfFameChannelId} onChange={v => setConfig({...config, hallOfFameChannelId: v})} />
+                                        <p style={{ margin: '8px 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t('pc.hof_channel_help')}</p>
                                     </div>
                                 </div>
                                 <div className="pc-input-group-v2" style={{ marginTop: '32px' }}>
@@ -346,9 +349,24 @@ export default function PhotoContestConfig() {
                         guildId={guildId}
                         module="photocontest"
                         slugs={[
-                            { key: 'announcement', label: 'Annuncio Inizio Contest', description: 'Messaggio inviato nel canale contest all\'avvio di una nuova sfida.', variables: ['theme', 'duration', 'channel'], group: 'Comunicazioni', groupIcon: Bell },
-                            { key: 'winner', label: 'Proclamazione Vincitore', description: 'Inviato nella Hall of Fame per celebrare il partecipante con più voti.', variables: ['user', 'theme', 'votes', 'image'], group: 'Vittoria', groupIcon: Trophy },
-                            { key: 'end', label: 'Chiusura Votazioni', description: 'Inviato allo scadere della durata del contest.', variables: ['theme'], group: 'Stato', groupIcon: Clock },
+                            { key: 'announcement', label: t('pc.announce_label'), description: t('pc.announce_desc'), variables: ['theme', 'duration', 'channel'], group: 'Comunicazioni', groupIcon: Bell },
+                            { key: 'winner', label: t('pc.winner_label'), description: t('pc.winner_desc'), variables: ['user', 'theme', 'votes', 'image'], group: 'Vittoria', groupIcon: Trophy },
+                            { key: 'end', label: t('pc.end_label'), description: t('pc.end_desc'), variables: ['theme'], group: 'Stato', groupIcon: Clock },
+                        ]}
+                    />
+                </div>
+            )}
+
+            {activeTab === 'system_messages' && (
+                <div className="v-stack animate slide-up">
+                    <SystemMessagesSection 
+                        config={config}
+                        onUpdate={setConfig}
+                        messages={[
+                            { key: 'voted', label: t('pc.msg_voted'), placeholder: t('pc.msg_voted') },
+                            { key: 'already_voted', label: t('pc.msg_already_voted'), placeholder: t('pc.msg_already_voted') },
+                            { key: 'not_active', label: t('pc.msg_not_active'), placeholder: t('pc.msg_not_active') },
+                            { key: 'staff_only', label: t('pc.msg_staff_only'), placeholder: t('pc.msg_staff_only') }
                         ]}
                     />
                 </div>

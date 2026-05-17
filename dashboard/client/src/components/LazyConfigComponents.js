@@ -36,3 +36,13 @@ export const CustomSelect = dynamic(() => import('./CustomSelect'), {
   ssr: false,
   loading: configFallback
 });
+
+export const SystemMessagesSection = dynamic(() => import('./SystemMessagesSection'), {
+  ssr: false,
+  loading: configFallback
+});
+
+export const HelpTooltip = dynamic(() => import('./HelpTooltip'), {
+  ssr: false,
+  loading: configFallback
+});

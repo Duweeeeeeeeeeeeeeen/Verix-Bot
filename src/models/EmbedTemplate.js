@@ -10,6 +10,10 @@ const embedTemplateSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    targetChannelId: {
+        type: String,
+        default: ''
+    },
     data: {
         title: String,
         description: String,

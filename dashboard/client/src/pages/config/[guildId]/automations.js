@@ -9,7 +9,7 @@ import {
     Trash, CheckCircle2, AlertCircle, Globe, Cpu, Sparkles, Box, Activity, Info, Timer, MessageCircle, Star,
     Terminal, Layers, Shield, RefreshCcw, RotateCcw
 } from 'lucide-react';
-import { DiscordSelector, EmbedEditor, CustomSelect } from '../../../components/LazyConfigComponents';
+import { DiscordSelector, EmbedEditor, CustomSelect, SystemMessagesSection } from '../../../components/LazyConfigComponents';
 import Head from 'next/head';
 
 export default function AutomationsConfig() {
@@ -89,9 +89,9 @@ export default function AutomationsConfig() {
         method: 'POST',
         body: JSON.stringify(config)
       });
-      showToast("Configurazione Automazioni applicata!");
+      showToast(t('common.sync_success'));
     } catch (error) {
-      showToast("Errore durante il salvataggio.", 'error');
+      showToast(t('common.save_error'), 'error');
     } finally {
       setSaving(false);
       window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
@@ -100,7 +100,7 @@ export default function AutomationsConfig() {
 
   const addClearSlot = () => {
     if (!guildData?.isPremium && (config.autoClear?.slots || []).length >= 5) {
-      showToast("Limite slot raggiunto per utenti gratuiti!", 'error');
+      showToast(t('automations.limit_reached'), 'error');
       return;
     }
     const newSlots = [...(config.autoClear?.slots || []), { id: `slot_${Date.now()}`, channelId: '', intervalMinutes: 60, amount: 100, enabled: true }];
@@ -120,7 +120,7 @@ export default function AutomationsConfig() {
 
   const addMessageSlot = () => {
     if (!guildData?.isPremium && (config.autoMessage?.slots || []).length >= 5) {
-      showToast("Limite broadcast raggiunto per utenti gratuiti!", 'error');
+      showToast(t('automations.limit_reached'), 'error');
       return;
     }
     const newSlots = [...(config.autoMessage?.slots || []), { 
@@ -154,7 +154,7 @@ export default function AutomationsConfig() {
   return (
     <div className="pc-premium-wrapper fade-in">
         <Head>
-            <title>Automazioni Studio | Verix Dashboard</title>
+            <title>{t('automations.title')} | Verix Dashboard</title>
         </Head>
 
         {/* V2 Header */}
@@ -164,15 +164,29 @@ export default function AutomationsConfig() {
                     <Cpu size={28} />
                 </div>
                 <div className="pc-title-row">
-                    <h1>Automazioni Studio</h1>
-                    <div className={`pc-status-tag-v2 ${isPremium ? 'on' : 'off'}`}>
+                    <h1>{t('automations.title')}</h1>
+                    <div className={`pc-status-tag-v2 ${config.enabled ? 'on' : 'off'}`}>
                         <div className="status-dot-v2"></div>
-                        {isPremium ? 'POTENZA PREMIUM ATTIVA' : 'ACCESSO STANDARD'}
+                        {config.enabled ? t('automations.active_tag') : t('automations.inactive_tag')}
                     </div>
                 </div>
             </div>
             
             <div className="header-controls">
+                <div className="pc-toggle-container-v2">
+                    <label className="pc-toggle-v2">
+                        <input 
+                            type="checkbox" 
+                            checked={config.enabled} 
+                            onChange={() => setConfig({...config, enabled: !config.enabled})} 
+                        />
+                        <span className="pc-slider-v2"></span>
+                    </label>
+                    <span className={config.enabled ? 'text-active' : 'text-inactive'}>
+                        {config.enabled ? t('common.active') : t('common.inactive')}
+                    </span>
+                </div>
+                <div className="pc-header-divider"></div>
                 <button className="pc-btn-outline-v2" onClick={handleReset} title={t('common.reset_to_default')}>
                     <RotateCcw size={18} />
                 </button>
@@ -187,12 +201,15 @@ export default function AutomationsConfig() {
         <nav className="pc-tabs-container-v2" style={{ marginBottom: '40px' }}>
             <div className="pc-tabs-v2">
                 <button className={activeTab === 'autoclear' ? 'active' : ''} onClick={() => setActiveTab('autoclear')}>
-                    <Trash2 size={16} /> <span>Auto-Clear Hub</span>
+                    <Trash2 size={16} /> <span>{t('automations.tab_autoclear')}</span>
                     {(config.autoClear?.slots || []).length > 0 && <span className="tab-count-v2">{(config.autoClear?.slots || []).length}</span>}
                 </button>
                 <button className={activeTab === 'automessage' ? 'active' : ''} onClick={() => setActiveTab('automessage')}>
-                    <RefreshCcw size={16} /> <span>Broadcast Studio</span>
+                    <RefreshCcw size={16} /> <span>{t('automations.tab_automessage')}</span>
                     {(config.autoMessage?.slots || []).length > 0 && <span className="tab-count-v2">{(config.autoMessage?.slots || []).length}</span>}
+                </button>
+                <button className={activeTab === 'system_messages' ? 'active' : ''} onClick={() => setActiveTab('system_messages')}>
+                    <Settings2 size={16} /> <span>{t('common.tab_system_messages')}</span>
                 </button>
             </div>
         </nav>
@@ -204,10 +221,10 @@ export default function AutomationsConfig() {
                         <div className="pc-premium-banner-v2 animate slide-up">
                             <Star size={20} style={{ color: '#d97706' }} />
                             <div style={{ flex: 1 }}>
-                                <strong style={{ display: 'block', fontSize: '1rem', color: 'var(--text-heading)' }}>Ottimizza la tua Infrastruttura</strong>
-                                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 700 }}>Passa a Premium per sbloccare slot illimitati e intervalli di pulizia sotto i 60 minuti.</span>
+                                <strong style={{ display: 'block', fontSize: '1rem', color: 'var(--text-heading)' }}>{t('automations.banner_title')}</strong>
+                                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 700 }}>{t('automations.banner_desc')}</span>
                             </div>
-                            <button className="pc-btn-upgrade-v2" onClick={() => router.push(`/config/${guildId}/premium`)}>Upgrade</button>
+                            <button className="pc-btn-upgrade-v2" onClick={() => router.push(`/config/${guildId}/premium`)}>{t('common.upgrade')}</button>
                         </div>
                     )}
                     
@@ -215,11 +232,11 @@ export default function AutomationsConfig() {
                         <div className="card-header-v2">
                             <div className="header-icon" style={{ background: 'rgba(239,68,68,0.08)', color: '#ef4444' }}><Trash2 size={18} /></div>
                             <div className="v-stack" style={{ flex: 1 }}>
-                                <h3 style={{ margin: 0 }}>Canali in Auto-Pulizia</h3>
-                                <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 650 }}>Mantieni il tuo server pulito eliminando automaticamente messaggi obsoleti.</p>
+                                <h3 style={{ margin: 0 }}>{t('automations.autoclear_title')}</h3>
+                                <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 650 }}>{t('automations.autoclear_desc')}</p>
                             </div>
                             <button className="pc-btn-add-v2" onClick={addClearSlot}>
-                                <Plus size={18} /> <span>Nuovo Canale</span>
+                                <Plus size={18} /> <span>{t('automations.new_channel_btn')}</span>
                             </button>
                         </div>
                         <div className="card-body-v2">
@@ -229,11 +246,11 @@ export default function AutomationsConfig() {
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '32px', borderBottom: '1.5px dashed var(--border)', paddingBottom: '24px' }}>
                                             <div style={{ width: '48px', height: '48px', background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ef4444', boxShadow: '0 4px 10px rgba(0,0,0,0.03)' }}><Hash size={20} /></div>
                                             <div className="v-stack">
-                                                <h4 style={{ margin: 0, fontWeight: 700, fontSize: '1.1rem', color: 'var(--text-heading)' }}>Slot Pulizia #{index + 1}</h4>
-                                                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '1px' }}>Engine Config</span>
+                                                <h4 style={{ margin: 0, fontWeight: 700, fontSize: '1.1rem', color: 'var(--text-heading)' }}>{t('automations.slot_title', { index: index + 1 })}</h4>
+                                                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '1px' }}>{t('automations.engine_config')}</span>
                                             </div>
                                             <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '20px' }}>
-                                                <div className="pc-status-tag-mini-v2" style={{ background: slot.enabled ? 'rgba(16,185,129,0.08)' : 'var(--bg-badge)', color: slot.enabled ? '#10b981' : 'var(--text-dim)' }}>{slot.enabled ? 'ATTIVO' : 'PAUSA'}</div>
+                                                <div className="pc-status-tag-mini-v2" style={{ background: slot.enabled ? 'rgba(16,185,129,0.08)' : 'var(--bg-badge)', color: slot.enabled ? '#10b981' : 'var(--text-dim)' }}>{slot.enabled ? t('automations.status_active') : t('automations.status_pause')}</div>
                                                 <label className="pc-toggle-v2 mini">
                                                     <input type="checkbox" checked={!!slot.enabled} onChange={e => updateClearSlot(index, 'enabled', e.target.checked)} />
                                                     <span className="pc-slider-v2"></span>
@@ -244,7 +261,7 @@ export default function AutomationsConfig() {
                                         
                                         <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1fr', gap: '28px' }}>
                                             <div className="pc-input-group-v2">
-                                                <label>Seleziona Canale</label>
+                                                <label>{t('automations.select_channel')}</label>
                                                 <DiscordSelector 
                                                     type="channel" 
                                                     options={channels.filter(c => c.type === 0 || c.type === 5)} 
@@ -253,14 +270,14 @@ export default function AutomationsConfig() {
                                                 />
                                             </div>
                                             <div className="pc-input-group-v2">
-                                                <label>Intervallo (Minuti)</label>
+                                                <label>{t('automations.interval_label')}</label>
                                                 <div className="pc-input-wrapper-v2" style={{ background: 'var(--bg-input)', border: '1.5px solid var(--border)', borderRadius: '16px', display: 'flex', alignItems: 'center' }}>
                                                     <Timer size={18} style={{ marginLeft: '16px', color: 'var(--text-dim)' }} />
                                                     <input type="number" style={{ width: '100%', border: 'none', background: 'transparent', padding: '16px', fontWeight: 700, color: 'var(--text-heading)' }} value={slot.intervalMinutes || 60} onChange={e => updateClearSlot(index, 'intervalMinutes', parseInt(e.target.value))} />
                                                 </div>
                                             </div>
                                             <div className="pc-input-group-v2">
-                                                <label>Messaggi per Ciclo</label>
+                                                <label>{t('automations.messages_per_cycle')}</label>
                                                 <div className="pc-input-wrapper-v2" style={{ background: 'var(--bg-input)', border: '1.5px solid var(--border)', borderRadius: '16px', display: 'flex', alignItems: 'center' }}>
                                                     <Layers size={18} style={{ marginLeft: '16px', color: 'var(--text-dim)' }} />
                                                     <input type="number" style={{ width: '100%', border: 'none', background: 'transparent', padding: '16px', fontWeight: 700, color: 'var(--text-heading)' }} value={slot.amount || 100} onChange={e => updateClearSlot(index, 'amount', parseInt(e.target.value))} />
@@ -272,7 +289,7 @@ export default function AutomationsConfig() {
                                 {(config.autoClear?.slots || []).length === 0 && (
                                     <div style={{ textAlign: 'center', padding: '120px 20px', color: 'var(--text-dim)', background: 'var(--bg-badge)', borderRadius: '32px', border: '2px dashed var(--border)' }}>
                                         <Box size={56} style={{ margin: '0 auto 24px', opacity: 0.2, color: '#ef4444' }} />
-                                        <p style={{ fontWeight: 700, fontSize: '1.1rem' }}>Nessuna automazione di pulizia configurata.</p>
+                                        <p style={{ fontWeight: 700, fontSize: '1.1rem' }}>{t('automations.no_autoclear')}</p>
                                     </div>
                                 )}
                             </div>
@@ -287,10 +304,10 @@ export default function AutomationsConfig() {
                         <div className="pc-premium-banner-v2 animate slide-up" style={{ background: 'linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%)', color: '#92400e', border: '1.5px solid #fde68a' }}>
                             <Zap size={20} style={{ color: '#ea580c' }} />
                             <div style={{ flex: 1 }}>
-                                <strong style={{ display: 'block', fontSize: '1rem', color: '#92400e' }}>Designer di Annunci Avanzato</strong>
-                                <span style={{ fontSize: '0.85rem', color: '#b45309', fontWeight: 700 }}>Passa a Premium per sbloccare l'Embed Designer e inviare broadcast grafici professionali.</span>
+                                <strong style={{ display: 'block', fontSize: '1rem', color: '#92400e' }}>{t('automations.banner_designer_title')}</strong>
+                                <span style={{ fontSize: '0.85rem', color: '#b45309', fontWeight: 700 }}>{t('automations.banner_designer_desc')}</span>
                             </div>
-                            <button className="pc-btn-upgrade-v2" style={{ background: '#ea580c' }} onClick={() => router.push(`/config/${guildId}/premium`)}>Sblocca Designer</button>
+                            <button className="pc-btn-upgrade-v2" style={{ background: '#ea580c' }} onClick={() => router.push(`/config/${guildId}/premium`)}>{t('automations.unlock_designer')}</button>
                         </div>
                     )}
 
@@ -298,11 +315,11 @@ export default function AutomationsConfig() {
                         <div className="card-header-v2">
                             <div className="header-icon" style={{ background: 'rgba(245,158,11,0.08)', color: '#f59e0b' }}><MessageCircle size={18} /></div>
                             <div className="v-stack" style={{ flex: 1 }}>
-                                <h3 style={{ margin: 0 }}>Broadcast Ricorrenti</h3>
-                                <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 650 }}>Invia annunci periodici basati sul tempo o sull'attività della chat.</p>
+                                <h3 style={{ margin: 0 }}>{t('automations.broadcast_title')}</h3>
+                                <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 650 }}>{t('automations.broadcast_desc')}</p>
                             </div>
                             <button className="pc-btn-add-v2" style={{ background: 'rgba(245,158,11,0.08)', color: '#d97706', border: '1.5px solid rgba(245,158,11,0.3)' }} onClick={addMessageSlot}>
-                                <Plus size={18} /> <span>Nuovo Broadcast</span>
+                                <Plus size={18} /> <span>{t('automations.new_broadcast_btn')}</span>
                             </button>
                         </div>
                         <div className="card-body-v2">
@@ -312,12 +329,12 @@ export default function AutomationsConfig() {
                                         <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '32px', borderBottom: '1.5px dashed var(--border)', paddingBottom: '24px' }}>
                                             <div style={{ width: '48px', height: '48px', background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f59e0b', boxShadow: '0 4px 10px rgba(0,0,0,0.03)' }}><Send size={20} /></div>
                                             <div className="v-stack">
-                                                <h4 style={{ margin: 0, fontWeight: 700, fontSize: '1.1rem', color: 'var(--text-heading)' }}>Broadcast #{index + 1}</h4>
-                                                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '1px' }}>Studio Annunci</span>
+                                                <h4 style={{ margin: 0, fontWeight: 700, fontSize: '1.1rem', color: 'var(--text-heading)' }}>{t('automations.broadcast_slot', { index: index + 1 })}</h4>
+                                                <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '1px' }}>{t('automations.studio_broadcast')}</span>
                                             </div>
                                             <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '16px' }}>
                                                 <button onClick={() => setEditingEmbedIndex(index)} disabled={!isPremium} className={`pc-btn-studio-v2 ${slot.useEmbed ? 'active' : ''}`} style={{ opacity: isPremium ? 1 : 0.5, cursor: isPremium ? 'pointer' : 'not-allowed' }}>
-                                                    <Palette size={16} /> <span>{slot.useEmbed ? 'Design Attivo' : 'Crea Embed'}</span>
+                                                    <Palette size={16} /> <span>{slot.useEmbed ? t('automations.design_active') : t('automations.create_embed')}</span>
                                                 </button>
                                                 <div style={{ width: '1.5px', height: '28px', background: 'var(--border)', margin: '0 4px' }}></div>
                                                 <label className="pc-toggle-v2 mini">
@@ -330,7 +347,7 @@ export default function AutomationsConfig() {
 
                                         <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.2fr 0.6fr', gap: '28px' }}>
                                             <div className="pc-input-group-v2">
-                                                <label>Canale Destinazione</label>
+                                                <label>{t('automations.target_channel')}</label>
                                                 <DiscordSelector 
                                                     type="channel" 
                                                     options={channels.filter(c => c.type === 0 || c.type === 5)} 
@@ -339,18 +356,18 @@ export default function AutomationsConfig() {
                                                 />
                                             </div>
                                             <div className="pc-input-group-v2">
-                                                <label>Metrica di Attivazione</label>
+                                                <label>{t('automations.activation_metric')}</label>
                                                 <CustomSelect 
                                                     options={[
-                                                        { value: 'TIME', label: 'Cronometro (Minuti)' },
-                                                        { value: 'MESSAGES', label: 'Contatore Chat (Messaggi)' }
+                                                        { value: 'TIME', label: t('automations.trigger_time') },
+                                                        { value: 'MESSAGES', label: t('automations.trigger_messages') }
                                                     ]} 
                                                     value={slot.triggerType || 'TIME'} 
                                                     onChange={val => updateMessageSlot(index, 'triggerType', val)} 
                                                 />
                                             </div>
                                             <div className="pc-input-group-v2">
-                                                <label>Valore</label>
+                                                <label>{t('automations.trigger_value')}</label>
                                                 <div className="pc-input-modern-v2">
                                                     <Activity size={18} style={{ color: 'var(--primary)' }} />
                                                     <input type="number" style={{ width: '100%', border: 'none', background: 'transparent', fontWeight: 700, color: 'var(--text-heading)', outline: 'none' }} value={slot.triggerValue || 60} onChange={e => updateMessageSlot(index, 'triggerValue', parseInt(e.target.value))} />
@@ -359,13 +376,13 @@ export default function AutomationsConfig() {
                                         </div>
 
                                         <div className="pc-input-group-v2" style={{ marginTop: '28px' }}>
-                                            <label>Testo del Messaggio {slot.useEmbed && '(Inviato sopra l\'embed grafico)'}</label>
+                                            <label>{t('automations.message_text')} {slot.useEmbed && t('automations.message_text_hint')}</label>
                                             <textarea 
                                                 className="pc-input-modern-v2"
                                                 style={{ minHeight: '100px', resize: 'none' }} 
                                                 value={slot.content} 
                                                 onChange={e => updateMessageSlot(index, 'content', e.target.value)} 
-                                                placeholder="Scrivi qui il contenuto del tuo annuncio..." 
+                                                placeholder={t('automations.message_placeholder')} 
                                             />
                                         </div>
                                     </div>
@@ -373,7 +390,7 @@ export default function AutomationsConfig() {
                                 {(config.autoMessage?.slots || []).length === 0 && (
                                     <div style={{ textAlign: 'center', padding: '120px 20px', color: 'var(--text-dim)', background: 'var(--bg-badge)', borderRadius: '32px', border: '2px dashed var(--border)' }}>
                                         <MessageCircle size={56} style={{ margin: '0 auto 24px', opacity: 0.2, color: '#f59e0b' }} />
-                                        <p style={{ fontWeight: 700, fontSize: '1.1rem' }}>Nessun broadcast programmato al momento.</p>
+                                        <p style={{ fontWeight: 700, fontSize: '1.1rem' }}>{t('automations.no_broadcast')}</p>
                                     </div>
                                 )}
                             </div>
@@ -389,13 +406,13 @@ export default function AutomationsConfig() {
                             <ChevronLeft size={22} />
                         </button>
                         <div className="v-stack">
-                            <h2 style={{ margin: 0, fontFamily: 'Inter', fontSize: '1.8rem', fontWeight: 700, color: 'var(--text-heading)' }}>Embed Designer: Slot #{editingEmbedIndex + 1}</h2>
-                            <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 700 }}>Progetta un box grafico premium per il tuo broadcast.</p>
+                            <h2 style={{ margin: 0, fontFamily: 'Inter', fontSize: '1.8rem', fontWeight: 700, color: 'var(--text-heading)' }}>{t('automations.designer_title', { index: editingEmbedIndex + 1 })}</h2>
+                            <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 700 }}>{t('automations.designer_desc')}</p>
                         </div>
                         <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '16px', background: 'var(--bg-card)', padding: '12px 24px', borderRadius: '20px', border: '1.5px solid var(--border)' }}>
                             <div className="v-stack" style={{ alignItems: 'flex-end' }}>
-                                <span style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--text-heading)' }}>Usa Design Grafico</span>
-                                <span style={{ fontSize: '0.65rem', color: 'var(--text-dim)', fontWeight: 700 }}>SOSTITUISCE IL TESTO SEMPLICE</span>
+                                <span style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--text-heading)' }}>{t('automations.use_graphic')}</span>
+                                <span style={{ fontSize: '0.65rem', color: 'var(--text-dim)', fontWeight: 700 }}>{t('automations.replace_plain')}</span>
                             </div>
                             <label className="pc-toggle-v2 mini">
                                 <input type="checkbox" checked={!!config.autoMessage.slots[editingEmbedIndex].useEmbed} onChange={e => updateMessageSlot(editingEmbedIndex, 'useEmbed', e.target.checked)} />
@@ -421,12 +438,25 @@ export default function AutomationsConfig() {
                              ) : (
                                 <div style={{ textAlign: 'center', padding: '140px 20px', color: 'var(--text-dim)', background: 'var(--bg-badge)', borderRadius: '32px', border: '3px dashed var(--border)' }}>
                                     <Terminal size={64} style={{ margin: '0 auto 24px', opacity: 0.2 }} />
-                                    <h4 style={{ margin: '0 0 8px 0', fontSize: '1.4rem', color: 'var(--text-heading)', fontWeight: 700 }}>Designer in Standby</h4>
-                                    <p style={{ fontWeight: 700, fontSize: '1rem', maxWidth: '400px', margin: '0 auto' }}>Attiva l'interruttore in alto a destra per iniziare a progettare l'embed per questo slot.</p>
+                                    <h4 style={{ margin: '0 0 8px 0', fontSize: '1.4rem', color: 'var(--text-heading)', fontWeight: 700 }}>{t('automations.designer_standby_title')}</h4>
+                                    <p style={{ fontWeight: 700, fontSize: '1rem', maxWidth: '400px', margin: '0 auto' }}>{t('automations.designer_standby_desc')}</p>
                                 </div>
                              )}
                          </div>
                     </section>
+                </div>
+            )}
+
+            {activeTab === 'system_messages' && (
+                <div className="v-stack animate slide-up">
+                    <SystemMessagesSection 
+                        config={config}
+                        onUpdate={setConfig}
+                        messages={[
+                            { key: 'clear_success', label: t('automations.msg_clear_success'), placeholder: t('automations.msg_clear_success') },
+                            { key: 'broadcast_sent', label: t('automations.msg_broadcast_sent'), placeholder: t('automations.msg_broadcast_sent') }
+                        ]}
+                    />
                 </div>
             )}
         </div>

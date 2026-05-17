@@ -32,14 +32,14 @@ export default function GlobalSync() {
     }, []);
 
     const modules = [
-        { id: 'whitelist', label: 'Whitelist', icon: Shield, desc: 'Ruoli e permessi staff' },
-        { id: 'tickets', label: 'Tickets', icon: Layers, desc: 'Configurazione supporto' },
-        { id: 'automations', label: 'Automazioni', icon: Zap, desc: 'Comandi e script auto' },
-        { id: 'moderation', label: 'Moderazione', icon: ShieldCheck, desc: 'Filtri anti-spam e raid' },
-        { id: 'welcome', label: 'Welcome', icon: MessageSquare, desc: 'Messaggi di benvenuto' },
-        { id: 'verify', label: 'Verifica', icon: CheckCircle, desc: 'Sistemi di captcha/ruoli' },
-        { id: 'socials', label: 'Socials', icon: Globe, desc: 'Twitch, YouTube, Post' },
-        { id: 'utility', label: 'Utility', icon: Settings2, desc: 'Embed e configurazioni' }
+        { id: 'whitelist', label: t('sync.module_names.whitelist'), icon: Shield, desc: t('sync.module_descs.whitelist') },
+        { id: 'tickets', label: t('sync.module_names.tickets'), icon: Layers, desc: t('sync.module_descs.tickets') },
+        { id: 'automations', label: t('sync.module_names.automations'), icon: Zap, desc: t('sync.module_descs.automations') },
+        { id: 'moderation', label: t('sync.module_names.moderation'), icon: ShieldCheck, desc: t('sync.module_descs.moderation') },
+        { id: 'welcome', label: t('sync.module_names.welcome'), icon: MessageSquare, desc: t('sync.module_descs.welcome') },
+        { id: 'verify', label: t('sync.module_names.verify'), icon: CheckCircle, desc: t('sync.module_descs.verify') },
+        { id: 'socials', label: t('sync.module_names.socials'), icon: Globe, desc: t('sync.module_descs.socials') },
+        { id: 'utility', label: t('sync.module_names.utility'), icon: Settings2, desc: t('sync.module_descs.utility') }
     ];
 
     const loadData = async () => {
@@ -81,11 +81,11 @@ export default function GlobalSync() {
                 body: JSON.stringify({ sourceGuildId, modules: selectedModules })
             });
             window.dispatchEvent(new CustomEvent('show-toast', { 
-                detail: { message: "Sincronizzazione completata!", type: 'success' } 
+                detail: { message: t('sync.success'), type: 'success' } 
             }));
         } catch (err) {
             window.dispatchEvent(new CustomEvent('show-toast', { 
-                detail: { message: "Errore sincronizzazione", type: 'error' } 
+                detail: { message: t('sync.error'), type: 'error' } 
             }));
         } finally {
             setSyncing(false);
@@ -106,7 +106,7 @@ export default function GlobalSync() {
     return (
         <div className="pc-premium-wrapper fade-in">
             <Head>
-                <title>Ecosystem Sync | Verix Dashboard</title>
+                <title>{t('sync.multi_server_title')} | Verix Dashboard</title>
             </Head>
 
             {/* V2 Header */}
@@ -116,10 +116,10 @@ export default function GlobalSync() {
                         <RefreshCcw size={28} />
                     </div>
                     <div className="pc-title-row">
-                        <h1>Ecosystem Sync</h1>
+                        <h1>{t('sync.multi_server_title')}</h1>
                         <div className={`pc-status-tag-v2 ${isPlatinum ? 'on' : 'off'}`}>
                             <div className="status-dot-v2"></div>
-                            {isPlatinum ? 'SISTEMA PLATINUM ATTIVO' : 'FUNZIONE BLOCCATA'}
+                            {isPlatinum ? t('sync.platinum_active') : t('sync.blocked')}
                         </div>
                     </div>
                 </div>
@@ -128,11 +128,11 @@ export default function GlobalSync() {
                     {isPlatinum && (
                         <button className="pc-btn-primary" onClick={handleSync} disabled={!sourceGuildId || selectedModules.length === 0 || syncing}>
                             {syncing ? <RefreshCcw className="animate-spin" size={18} /> : <Copy size={18} />}
-                            <span>{syncing ? 'Sincronizzazione...' : 'Avvia Clonazione'}</span>
+                            <span>{syncing ? t('common.syncing') : t('sync.start_clone')}</span>
                         </button>
                     )}
                     <button className="pc-btn-ghost-v2" onClick={() => router.push(`/config/${guildId}`)}>
-                        <Layout size={18} /> <span>Dashboard</span>
+                        <Layout size={18} /> <span>{t('common.back_to_hub')}</span>
                     </button>
                 </div>
             </header>
@@ -144,14 +144,14 @@ export default function GlobalSync() {
                             <div className="gate-icon-glow-v2" style={{ width: '96px', height: '96px', background: '#fdf4ff', color: '#a855f7', borderRadius: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 32px', boxShadow: '0 15px 35px rgba(168, 85, 247, 0.2)' }}>
                                 <Gem size={48} />
                             </div>
-                            <h2 style={{ fontFamily: 'Inter', fontSize: '2.5rem', fontWeight: 700, color: 'var(--text-heading)', marginBottom: '16px', textAlign: 'center' }}>Sincronizzazione Multi-Server</h2>
-                            <p style={{ fontSize: '1.15rem', color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: 600, margin: '0 auto 40px', textAlign: 'center' }}>Gestisci un network di server? Copia istantaneamente intere configurazioni tra le tue community con un solo click e mantieni la coerenza assoluta.</p>
+                            <h2 style={{ fontFamily: 'Inter', fontSize: '2.5rem', fontWeight: 700, color: 'var(--text-heading)', marginBottom: '16px', textAlign: 'center' }}>{t('sync.multi_server_title')}</h2>
+                            <p style={{ fontSize: '1.15rem', color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: 600, margin: '0 auto 40px', textAlign: 'center' }}>{t('sync.multi_server_desc')}</p>
                             
                             <div className="gate-checklist-v2" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', maxWidth: '900px', margin: '0 auto 48px' }}>
                                 {[
-                                    { icon: <ShieldCheck size={20} />, title: "Sync Whitelist", desc: "Copia ruoli staff e permessi." },
-                                    { icon: <MessageCircle size={20} />, title: "Sync Design", desc: "Copia template embed e messaggi." },
-                                    { icon: <Cpu size={20} />, title: "Sync Bot", desc: "Copia automazioni e comandi." }
+                                    { icon: <ShieldCheck size={20} />, title: t('sync.gate.whitelist.title'), desc: t('sync.gate.whitelist.desc') },
+                                    { icon: <MessageCircle size={20} />, title: t('sync.gate.design.title'), desc: t('sync.gate.design.desc') },
+                                    { icon: <Cpu size={20} />, title: t('sync.gate.bot.title'), desc: t('sync.gate.bot.desc') }
                                 ].map((item, i) => (
                                     <div key={i} className="pc-card-v2" style={{ padding: '24px', background: '#fdf4ff', border: '1.5px solid #f5d0fe' }}>
                                         <div style={{ color: '#a855f7', marginBottom: '12px' }}>{item.icon}</div>
@@ -163,7 +163,7 @@ export default function GlobalSync() {
 
                             <button className="pc-btn-premium-v2" style={{ background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%)', color: 'white', border: 'none', padding: '20px 48px', borderRadius: '20px', fontWeight: 700, fontSize: '1.1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 14, margin: '0 auto', transition: '0.3s', boxShadow: '0 10px 25px rgba(var(--primary-rgb), 0.3)' }} onClick={() => router.push(`/config/${guildId}/premium`)}>
                                 <Sparkles size={18} />
-                                <span>Attiva Piano Platinum</span>
+                                <span>{t('common.pass_to_platinum')}</span>
                             </button>
                         </div>
                     </div>
@@ -173,18 +173,18 @@ export default function GlobalSync() {
                             <section className="pc-card-v2">
                                 <div className="card-header-v2">
                                     <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><Server size={18} /></div>
-                                    <h3>Server Sorgente</h3>
+                                    <h3>{t('sync.source_server')}</h3>
                                 </div>
                                 <div className="card-body-v2">
                                     <div className="pc-input-group-v2">
-                                        <label>Copia dati da:</label>
+                                        <label>{t('sync.copy_from')}</label>
                                         <div className="pc-input-wrapper-v2" style={{ background: 'var(--bg-badge)', border: '1.5px solid var(--border)', borderRadius: '14px', position: 'relative' }}>
                                             <select 
                                                 style={{ width: '100%', background: 'transparent', border: 'none', padding: '14px 16px', fontWeight: 700, color: 'var(--text-heading)', outline: 'none', appearance: 'none', cursor: 'pointer' }}
                                                 value={sourceGuildId} 
                                                 onChange={e => setSourceGuildId(e.target.value)}
                                             >
-                                                <option value="">Seleziona un server...</option>
+                                                <option value="">{t('sync.select_server')}</option>
                                                 {userGuilds.map(g => (
                                                     <option key={g.id} value={g.id}>{g.name}</option>
                                                 ))}
@@ -196,20 +196,23 @@ export default function GlobalSync() {
                                     <div className="pc-alert-banner-v2" style={{ marginTop: '24px', background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: '20px', padding: '20px', display: 'flex', gap: '16px', color: '#ef4444' }}>
                                         <AlertTriangle size={20} style={{ flexShrink: 0 }} />
                                         <div className="alert-text-v2">
-                                            <strong style={{ display: 'block', fontSize: '0.9rem', fontWeight: 700, marginBottom: '4px' }}>Attenzione</strong>
-                                            <p style={{ margin: 0, fontSize: '0.8rem', fontWeight: 600, opacity: 0.8, lineHeight: 1.5 }}>Le impostazioni attuali verranno rimpiazzate da quelle del server sorgente. Questa azione non può essere annullata.</p>
+                                            <strong style={{ display: 'block', fontSize: '0.9rem', fontWeight: 700, marginBottom: '4px' }}>{t('common.warning')}</strong>
+                                            <p style={{ margin: 0, fontSize: '0.8rem', fontWeight: 600, opacity: 0.8, lineHeight: 1.5 }}>{t('sync.overwrite_warn')}</p>
                                         </div>
                                     </div>
                                 </div>
                             </section>
 
-                            <section className="pc-card-v2" style={{ background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%)', color: 'white', border: 'none', boxShadow: '0 15px 35px rgba(var(--primary-rgb), 0.2)' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-                                    <Info size={22} />
-                                    <h4 style={{ margin: 0, fontWeight: 700 }}>Suggerimento Platinum</h4>
+                            <section className="pc-card-v2" style={{ background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%)', color: '#ffffff', border: 'none', boxShadow: '0 15px 35px rgba(var(--primary-rgb), 0.2)', position: 'relative', overflow: 'hidden' }}>
+                                <div style={{ position: 'absolute', top: '-20px', right: '-20px', opacity: 0.1, color: 'white', transform: 'rotate(15deg)' }}>
+                                    <Sparkles size={120} />
                                 </div>
-                                <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: 600, opacity: 0.9, lineHeight: 1.6 }}>
-                                    La sincronizzazione funziona al meglio se i nomi dei canali e dei ruoli sono identici tra i due server. Verix mapperà automaticamente gli ID corrispondenti.
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px', position: 'relative', zIndex: 1 }}>
+                                    <Info size={22} style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))' }} />
+                                    <h4 style={{ margin: 0, fontWeight: 800, color: '#ffffff', textShadow: '0 2px 4px rgba(0,0,0,0.2)', fontSize: '1.1rem' }}>{t('sync.platinum_tip')}</h4>
+                                </div>
+                                <p style={{ margin: 0, fontSize: '0.9rem', fontWeight: 600, opacity: 1, lineHeight: 1.6, color: '#ffffff', textShadow: '0 1px 2px rgba(0,0,0,0.1)', position: 'relative', zIndex: 1 }}>
+                                    {t('sync.platinum_tip_desc')}
                                 </p>
                             </section>
                         </div>
@@ -218,7 +221,7 @@ export default function GlobalSync() {
                             <section className="pc-card-v2">
                                 <div className="card-header-v2">
                                     <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><Box size={18} /></div>
-                                    <h3>Moduli da Sincronizzare</h3>
+                                    <h3>{t('sync.modules_to_sync')}</h3>
                                 </div>
                                 <div className="card-body-v2">
                                     <div className="pc-sync-modules-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '16px' }}>
@@ -251,7 +254,7 @@ export default function GlobalSync() {
                                             disabled={!sourceGuildId || selectedModules.length === 0 || syncing}
                                         >
                                             {syncing ? <RefreshCcw className="animate-spin" size={20} /> : <Copy size={20} />}
-                                            <span style={{ fontSize: '1rem' }}>{syncing ? 'Sincronizzazione in corso...' : 'Avvia Clonazione Ecosystem'}</span>
+                                            <span style={{ fontSize: '1rem' }}>{syncing ? t('common.syncing') : t('sync.start_ecosystem_clone')}</span>
                                         </button>
                                     </div>
                                 </div>

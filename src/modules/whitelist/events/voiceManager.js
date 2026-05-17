@@ -11,6 +11,8 @@ import { resolveVoiceChannelName } from '../../../utils/namingHelper.js';
 import { sendLog } from '../../../utils/notificationSender.js';
 import messageService from '../../../utils/messageService.js';
 import logger from '../../../utils/logger.js';
+import GlobalConfig from '../../../models/GlobalConfig.js';
+import { t } from '../../../locales/t.js';
 
 const antiSpam = new Map();
 
@@ -19,6 +21,10 @@ export default {
     async execute(oldState, newState, client) {
         const { member, guild, channelId } = newState;
         if (!member || member.user.bot) return;
+
+        // Fetch Global Config for Language
+        const globalConfig = await GlobalConfig.findOne({ guildId: guild.id });
+        const lang = globalConfig?.language || 'en';
 
         // Fetch Guild Config
         const guildData = await Guild.findOne({ guildId: guild.id });
@@ -49,7 +55,7 @@ export default {
             try {
                 // Check if paused
                 if (config.voiceSettings.paused) {
-                    await member.voice.disconnect('Ufficio Vocale temporaneamente chiuso.');
+                    await member.voice.disconnect(t('support.paused_reason', lang));
                     return messageService.sendNotification(guild, member, 'support', 'paused', {}, config.voiceSettings.notifications);
                 }
 
@@ -57,7 +63,7 @@ export default {
                 const now = Date.now();
                 const lastJoin = antiSpam.get(member.id);
                 if (lastJoin && (now - lastJoin < (config.voiceSettings.queueCooldown || 5) * 60 * 1000)) {
-                    await member.voice.disconnect('Anti-Spam Cooldown active.');
+                    await member.voice.disconnect(t('common.antispam', lang));
                     return messageService.sendNotification(guild, member, 'support', 'cooldown', {}, config.voiceSettings.notifications);
                 }
                 antiSpam.set(member.id, now);
@@ -68,7 +74,7 @@ export default {
                 // 1. Block access if Voice WL is not part of this mode
                 const hasVoice = ['VOICE', 'HYBRID', 'BG_VOICE', 'FULL'].includes(m);
                 if (!hasVoice) {
-                    await member.voice.disconnect('Procedura non prevista.');
+                    await member.voice.disconnect(t('whitelist.not_configured', lang));
                     return messageService.sendNotification(guild, member, 'whitelist', 'voice_procedural_error', {}, config.voiceSettings.notifications);
                 }
 
@@ -77,7 +83,7 @@ export default {
                 if (requiresBG) {
                     const bgApp = await Background.findOne({ userId: member.id, guildId: guild.id, status: 'ACCEPTED' });
                     if (!bgApp) {
-                        reasons.push('- Background non inviato o non ancora accettato.');
+                        reasons.push(`- ${t('whitelist.bg_not_accepted', lang)}`);
                     }
                 }
 
@@ -90,7 +96,7 @@ export default {
                         status: { $in: ['ACCEPTED', 'WAITING_VOICE'] } 
                     });
                     if (!textApp) {
-                        reasons.push('- Prova scritta non completata o in attesa di approvazione.');
+                        reasons.push(`- ${t('whitelist.written_not_accepted', lang)}`);
                     }
                 }
 
@@ -102,14 +108,14 @@ export default {
                     
                     if (timePassed < cooldownMs) {
                         const remainingHours = Math.ceil((cooldownMs - timePassed) / (60 * 60 * 1000));
-                        reasons.push(`- Hai fallito l'ultimo colloquio. Potrai riprovare tra circa **${remainingHours} ore**.`);
+                        reasons.push(`- ${t('whitelist.voice_rejection_cooldown', lang, { hours: remainingHours })}`);
                     }
                 }
 
                 if (reasons.length > 0) {
                     const errorEmbed = buildEmbed(config.embeds.voice_error_flow, { user: member.user, reason: reasons.join('\n') });
                     await member.send({ embeds: [errorEmbed] }).catch(() => {});
-                    await member.voice.disconnect('Requisiti non soddisfatti.');
+                    await member.voice.disconnect(t('whitelist.not_configured', lang));
                     return;
                 }
 
@@ -145,12 +151,12 @@ export default {
                     }
                     
                     return messageService.sendNotification(guild, member, 'support', 'queueFull', { 
-                        vip_priority: isVip ? '💎 **Priorità VIP Attiva!**' : '' 
+                        vip_priority: isVip ? t('whitelist.vip_priority', lang) : '' 
                     }, config.voiceSettings.notifications);
                 }
 
                 // Start Session
-                await startVoiceSession(member, guild, config, client);
+                await startVoiceSession(member, guild, config, client, lang);
                 await updateDashboard(guild, client);
 
             } catch (error) {
@@ -182,7 +188,7 @@ export default {
                     }
                     
                     // Process queue and update dashboard immediately
-                    await processQueue(guild, config, client);
+                    await processQueue(guild, config, client, lang);
                     await updateDashboard(guild, client);
                 }
             }
@@ -193,7 +199,7 @@ export default {
 /**
  * Starts a new voice session for a member.
  */
-async function startVoiceSession(member, guild, config, client) {
+async function startVoiceSession(member, guild, config, client, lang) {
     // Increment session counter and fetch the new number
     const updatedConfig = await WhitelistConfig.findOneAndUpdate(
         { guildId: guild.id },
@@ -246,7 +252,7 @@ async function startVoiceSession(member, guild, config, client) {
         event: 'voice.onVoiceStart',
         guildId: guild.id,
         guild,
-        content: `🎤 **UDIENZA AVVIATA:** Il cittadino ${member} è stato ammesso nel dipartimento **${channelName}**`
+        content: t('whitelist.voice_session_start_log', lang, { user: member.toString(), channel: channelName })
     });
 
     // Create session record
@@ -257,7 +263,7 @@ async function startVoiceSession(member, guild, config, client) {
     );
 
     // 3. Written Test Recap
-    let recap = '*Nessuna prova scritta trovata.*';
+    let recap = t('whitelist.no_written_found', lang);
     let textAppId = null;
     try {
         const lastApp = await WhitelistApp.findOne({
@@ -289,11 +295,11 @@ async function startVoiceSession(member, guild, config, client) {
 
         if (bgApp) {
             bgEmbed = new EmbedBuilder()
-                .setTitle(`📖 Background Story: ${member.user.username}`)
-                .setDescription(bgApp.description || '*Nessuna descrizione fornita*')
+                .setTitle(t('whitelist.bg_story_title', lang, { user: member.user.username }))
+                .setDescription(bgApp.description || t('common.no_reason', lang))
                 .setColor('#f39c12') // Orange/Gold for BG
                 .addFields(
-                    { name: '🔗 Link Documentazione', value: bgApp.link ? `[Consultabile Qui](${bgApp.link})` : '*Link mancante*' }
+                    { name: t('whitelist.bg_link_label', lang), value: bgApp.link ? t('whitelist.bg_link_value', lang, { link: bgApp.link }) : t('common.none', lang) }
                 );
             
             if (bgApp.attachmentURL) {
@@ -314,11 +320,11 @@ async function startVoiceSession(member, guild, config, client) {
         // Enforce a completely clean guide embed overriding whatever old broken configurations are in the DB
         controlEmbed.setDescription(null);
         controlEmbed.setFields([]); // Remove all old broken fields
-        controlEmbed.addFields({ name: '⏱️ Inizio Colloquio', value: `<t:${Math.floor(Date.now() / 1000)}:R>` });
+        controlEmbed.addFields({ name: '⏱️ ' + t('common.start_time', lang), value: `<t:${Math.floor(Date.now() / 1000)}:R>` });
     }
 
     const recapEmbed = new EmbedBuilder()
-        .setTitle(`📑 Archivio Dichiarazioni: ${member.user.username}`)
+        .setTitle(t('whitelist.written_archive_title', lang, { user: member.user.username }))
         .setDescription(recap)
         .setColor(config.colors?.primary || '#3BA4FF');
 
@@ -326,17 +332,17 @@ async function startVoiceSession(member, guild, config, client) {
     const controlRow = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
             .setCustomId(`approve_voice_${member.id}`)
-            .setLabel(buttons.approve?.label || 'Accetta')
+            .setLabel(buttons.approve?.label || t('background.approve_btn', lang))
             .setEmoji(buttons.approve?.emoji || '✅')
             .setStyle(getButtonStyle(buttons.approve?.style)),
         new ButtonBuilder()
             .setCustomId(`deny_voice_${member.id}`)
-            .setLabel(buttons.deny?.label || 'Rifiuta')
+            .setLabel(buttons.deny?.label || t('background.deny_btn', lang))
             .setEmoji(buttons.deny?.emoji || '❌')
             .setStyle(getButtonStyle(buttons.deny?.style)),
         new ButtonBuilder()
             .setCustomId(`reset_timer_voice_${member.id}`)
-            .setLabel(buttons.reset?.label || 'Riavvia Timer')
+            .setLabel(buttons.reset?.label || t('common.reset_timer', lang))
             .setEmoji(buttons.reset?.emoji || '⏱️')
             .setStyle(getButtonStyle(buttons.reset?.style))
     );
@@ -357,12 +363,12 @@ async function startVoiceSession(member, guild, config, client) {
             const row = new ActionRowBuilder().addComponents(
                 new ButtonBuilder()
                     .setCustomId(`approve_voice_${member.id}`)
-                    .setLabel(buttons.approve?.label || 'Accetta')
+                    .setLabel(buttons.approve?.label || t('background.approve_btn', lang))
                     .setEmoji(buttons.approve?.emoji || '✅')
                     .setStyle(getButtonStyle(buttons.approve?.style)),
                 new ButtonBuilder()
                     .setCustomId(`deny_voice_${member.id}`)
-                    .setLabel(buttons.deny?.label || 'Rifiuta')
+                    .setLabel(buttons.deny?.label || t('background.deny_btn', lang))
                     .setEmoji(buttons.deny?.emoji || '❌')
                     .setStyle(getButtonStyle(buttons.deny?.style))
             );
@@ -377,7 +383,7 @@ async function startVoiceSession(member, guild, config, client) {
 /**
  * Processes the queue and starts the next available session.
  */
-async function processQueue(guild, config, client) {
+async function processQueue(guild, config, client, lang) {
     const activeCount = await VoiceQueue.countDocuments({ guildId: guild.id, status: 'ACTIVE' });
     if (activeCount >= (config.voiceSettings.maxConcurrent || 1)) return;
 
@@ -389,14 +395,14 @@ async function processQueue(guild, config, client) {
     if (!member || !member.voice.channelId) {
         nextInQueue.status = 'CANCELLED';
         await nextInQueue.save();
-        return processQueue(guild, config, client);
+        return processQueue(guild, config, client, lang);
     }
 
     if (member.voice.channelId === config.voiceSettings.joinChannelId) {
-        await startVoiceSession(member, guild, config, client);
+        await startVoiceSession(member, guild, config, client, lang);
     } else {
         nextInQueue.status = 'CANCELLED';
         await nextInQueue.save();
-        return processQueue(guild, config, client);
+        return processQueue(guild, config, client, lang);
     }
 }

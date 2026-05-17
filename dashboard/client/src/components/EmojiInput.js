@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import { Smile, X } from 'lucide-react';
+import { Smile, X, Type } from 'lucide-react';
 
 const EmojiPicker = dynamic(() => import('emoji-picker-react'), {
     ssr: false,
@@ -13,7 +13,9 @@ const EmojiPicker = dynamic(() => import('emoji-picker-react'), {
 
 export default function EmojiInput({ value, onChange, placeholder, className, style, alignPicker = 'right', hideInput = false }) {
     const [showPicker, setShowPicker] = useState(false);
+    const [isPasting, setIsPasting] = useState(false);
     const pickerRef = useRef(null);
+    const inputRef = useRef(null);
 
     // Close picker when clicking outside
     useEffect(() => {
@@ -37,106 +39,155 @@ export default function EmojiInput({ value, onChange, placeholder, className, st
         onChange({ target: { value: '' } });
     };
 
+    const handlePaste = (e) => {
+        const pastedText = e.clipboardData.getData('text');
+        // Extract first emoji
+        const emojiMatch = pastedText.match(/(\p{Emoji_Presentation}|\p{Emoji}\uFE0F)/u);
+        if (emojiMatch) {
+            e.preventDefault();
+            onChange({ target: { value: hideInput ? emojiMatch[0] : (value || '') + emojiMatch[0] } });
+            
+            // Visual feedback
+            setIsPasting(true);
+            setTimeout(() => setIsPasting(false), 600);
+        }
+    };
+
     return (
-        <div style={{ position: 'relative', display: 'flex', width: '100%', height: '100%', flex: 1, ...style }}>
+        <div className="pc-emoji-input-wrapper" style={{ position: 'relative', display: 'flex', width: '100%', height: '100%', flex: 1, ...style }}>
             {!hideInput ? (
                 <>
                     <input 
-                        className={className || 'input'} 
-                        style={{ paddingRight: '40px', width: '100%' }} 
+                        ref={inputRef}
+                        className={className || 'pc-input-modern-v2'} 
+                        style={{ paddingRight: '44px', width: '100%' }} 
                         value={value} 
                         onChange={onChange} 
+                        onPaste={handlePaste}
                         placeholder={placeholder} 
                     />
                     <button 
                         type="button"
                         onClick={() => setShowPicker(!showPicker)}
+                        className="picker-trigger"
                         style={{ 
                             position: 'absolute', 
-                            right: '6px', 
+                            right: '8px', 
                             top: '50%', 
                             transform: 'translateY(-50%)', 
-                            background: 'transparent', 
-                            border: 'none', 
+                            background: 'var(--bg-badge)', 
+                            border: '1.5px solid var(--border)', 
                             color: 'var(--text-muted)', 
                             cursor: 'pointer',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            padding: '4px',
-                            borderRadius: '4px',
+                            width: '32px',
+                            height: '32px',
+                            borderRadius: '10px',
                             transition: '0.2s',
                             zIndex: 2
                         }}
-                        onMouseOver={(e) => e.currentTarget.style.color = 'var(--primary)'}
-                        onMouseOut={(e) => e.currentTarget.style.color = 'var(--text-muted)'}
                     >
                         <Smile size={18} />
                     </button>
                 </>
             ) : (
                 <div style={{ width: '100%', height: '100%', position: 'relative' }}>
-                    <button 
-                        type="button"
+                    <div 
+                        className={`emoji-selector-box ${showPicker ? 'active' : ''}`}
                         onClick={() => setShowPicker(!showPicker)}
-                        className="emoji-selector-btn"
                         style={{ 
                             width: '100%', 
                             height: '100%', 
-                            background: 'var(--bg-input)', 
-                            border: '1px solid var(--border)', 
-                            borderRadius: '10px',
-                            color: 'var(--text-main)',
-                            fontSize: '1.2rem',
+                            background: 'var(--bg-inset)', 
+                            border: '1.5px solid var(--border)', 
+                            borderRadius: '14px',
+                            color: 'var(--text-heading)',
+                            fontSize: '1.4rem',
                             cursor: 'pointer',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            transition: '0.2s',
-                            padding: '0'
+                            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                            padding: '0',
+                            position: 'relative',
+                            overflow: 'hidden'
                         }}
                     >
-                        {value || <Smile size={20} opacity={0.3} />}
-                    </button>
+                        {/* Invisible input to allow pasting/typing */}
+                        <input 
+                            style={{
+                                position: 'absolute',
+                                opacity: 0,
+                                width: '100%',
+                                height: '100%',
+                                cursor: 'text',
+                                zIndex: 5
+                            }}
+                            value={value || ''}
+                            onChange={onChange}
+                            onPaste={handlePaste}
+                            onFocus={() => setIsPasting(true)}
+                            onBlur={() => setIsPasting(false)}
+                            title="Paste emoji here or click to open picker"
+                        />
+                        <div style={{ pointerEvents: 'none', zIndex: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', height: '100%' }}>
+                            {value ? (
+                                <span style={{ fontSize: '2.5rem' }}>{value}</span>
+                            ) : (
+                                <Smile size={28} style={{ opacity: 0.2 }} />
+                            )}
+                        </div>
+                        
+                        {isPasting && (
+                            <div style={{ position: 'absolute', inset: 0, border: '2px solid var(--primary)', borderRadius: '14px', pointerEvents: 'none', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(var(--primary-rgb), 0.05)' }}>
+                                <Type size={16} style={{ color: 'var(--primary)', opacity: 0.8 }} />
+                            </div>
+                        )}
+                    </div>
                     {value && (
                         <button 
                             type="button"
                             onClick={handleClear}
+                            className="clear-emoji-btn"
                             style={{
                                 position: 'absolute',
-                                top: '-6px',
-                                right: '-6px',
-                                width: '18px',
-                                height: '18px',
+                                top: '-8px',
+                                right: '-8px',
+                                width: '22px',
+                                height: '22px',
                                 borderRadius: '50%',
-                                background: 'var(--error)',
-                                border: 'none',
+                                background: '#ef4444',
+                                border: '2px solid var(--bg-card)',
                                 color: 'white',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 cursor: 'pointer',
-                                zIndex: 3,
-                                boxShadow: '0 2px 5px rgba(0,0,0,0.3)'
+                                zIndex: 10,
+                                boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)',
+                                transition: '0.2s'
                             }}
                         >
-                            <X size={10} strokeWidth={4} />
+                            <X size={12} strokeWidth={3} />
                         </button>
                     )}
                 </div>
             )}
             
             {showPicker && (
-                <div ref={pickerRef} style={{ 
+                <div ref={pickerRef} className="emoji-picker-dropdown animate-scale-in" style={{ 
                     position: 'absolute', 
                     zIndex: 2000, 
                     top: '100%', 
                     ...(alignPicker === 'right' ? { right: 0 } : { left: 0 }),
-                    marginTop: '8px',
-                    boxShadow: '0 10px 40px rgba(0,0,0,0.8)',
-                    borderRadius: '12px',
+                    marginTop: '12px',
+                    boxShadow: 'var(--shadow-premium)',
+                    borderRadius: '16px',
                     overflow: 'hidden',
-                    border: '1px solid var(--border-strong)'
+                    border: '1px solid var(--border-strong)',
+                    background: 'var(--bg-card)'
                 }}>
                     <EmojiPicker
                         theme={typeof document !== 'undefined' && document.body.classList.contains('light-theme') ? 'light' : 'dark'}
@@ -146,19 +197,34 @@ export default function EmojiInput({ value, onChange, placeholder, className, st
                         width={320}
                         height={400}
                     />
-                    <style jsx>{`
-                        .emoji-picker-loading {
-                            width: 320px;
-                            height: 240px;
-                            display: flex;
-                            align-items: center;
-                            justify-content: center;
-                            color: var(--text-muted);
-                            background: var(--bg-card);
-                        }
-                    `}</style>
                 </div>
             )}
+            
+            <style jsx>{`
+                .picker-trigger:hover { background: var(--primary-glow) !important; color: var(--primary) !important; border-color: var(--primary) !important; }
+                .emoji-selector-box:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); background: var(--bg-badge); }
+                .emoji-selector-box.active { border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-glow); }
+                .clear-emoji-btn:hover { transform: scale(1.1); background: #f87171; }
+                
+                .emoji-picker-loading {
+                    width: 320px;
+                    height: 400px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: var(--text-muted);
+                    background: var(--bg-card);
+                }
+
+                .animate-scale-in {
+                    animation: scaleIn 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+                }
+
+                @keyframes scaleIn {
+                    from { opacity: 0; transform: scale(0.95) translateY(-10px); }
+                    to { opacity: 1; transform: scale(1) translateY(0); }
+                }
+            `}</style>
         </div>
     );
 }

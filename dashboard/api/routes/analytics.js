@@ -5,6 +5,9 @@ import Ticket from '../../../src/models/Ticket.js';
 import StaffStats from '../../../src/models/StaffStats.js';
 import Infraction from '../../../src/models/Infraction.js';
 import Guild from '../../../src/models/Guild.js';
+import WhitelistAudit from '../../../src/models/WhitelistAudit.js';
+import DashboardAuditLog from '../../../src/models/DashboardAuditLog.js';
+import UserExperience from '../../../src/models/UserExperience.js';
 
 const router = express.Router();
 
@@ -44,17 +47,44 @@ router.get('/:guildId', adminCheck, async (req, res) => {
             Infraction.countDocuments({ guildId, type: 'MUTE', active: true })
         ]);
 
-        // 5. Activity Heatmap (Last 30 days)
-        const [ticketTimeline, infractionTimeline] = await Promise.all([
-            Ticket.find({ guildId, createdAt: { $gte: thirtyDaysAgo } }).select('createdAt'),
-            Infraction.find({ guildId, createdAt: { $gte: thirtyDaysAgo } }).select('createdAt')
+        // 5. Activity Heatmap (Last 30 days) - Staff Productivity
+        const [ticketTimeline, infractionTimeline, wlTimeline, auditTimeline] = await Promise.all([
+            Ticket.find({ guildId, openedAt: { $gte: thirtyDaysAgo } }).select('openedAt'),
+            Infraction.find({ guildId, createdAt: { $gte: thirtyDaysAgo } }).select('createdAt'),
+            WhitelistAudit.find({ guildId, timestamp: { $gte: thirtyDaysAgo } }).select('timestamp'),
+            DashboardAuditLog.find({ guildId, timestamp: { $gte: thirtyDaysAgo } }).select('timestamp')
         ]);
 
-        const heatmap = new Array(24).fill(0);
-        [...ticketTimeline, ...infractionTimeline].forEach(item => {
-            const hour = new Date(item.createdAt).getHours();
-            heatmap[hour]++;
+        // 7 days x 24 hours
+        const heatmap = Array.from({ length: 7 }, () => new Array(24).fill(0));
+        
+        [...ticketTimeline.map(t => t.openedAt), 
+         ...infractionTimeline.map(i => i.createdAt), 
+         ...wlTimeline.map(w => w.timestamp), 
+         ...auditTimeline.map(a => a.timestamp)
+        ].forEach(date => {
+            if (!date) return;
+            const d = new Date(date);
+            const day = d.getDay(); // 0 (Sun) - 6 (Sat)
+            const hour = d.getHours();
+            heatmap[day][hour]++;
         });
+
+        // 6. Leveling Real-time Stats
+        const currentExpAgg = await UserExperience.aggregate([
+            { $match: { guildId } },
+            { 
+                $group: { 
+                    _id: null, 
+                    totalXp: { $sum: "$xp" }, 
+                    totalMessages: { $sum: "$totalMessages" },
+                    userCount: { $sum: 1 }
+                } 
+            }
+        ]);
+        const currentTotalXp = currentExpAgg[0]?.totalXp || 0;
+        const currentTotalMessages = currentExpAgg[0]?.totalMessages || 0;
+        const currentXpUsers = currentExpAgg[0]?.userCount || 0;
 
         if (!isPremium) {
             return res.json({
@@ -71,7 +101,12 @@ router.get('/:guildId', adminCheck, async (req, res) => {
             success: true,
             isPro: true,
             data: {
-                growth: growth.map(s => ({ t: s.timestamp, count: s.memberCount })),
+                growth: growth.map(s => ({ 
+                    t: s.timestamp, 
+                    count: s.memberCount,
+                    totalXp: s.totalXp || 0,
+                    totalMessages: s.totalMessages || 0
+                })),
                 tickets: {
                     total: totalTickets,
                     new7d: ticketsLast7Days,
@@ -85,6 +120,11 @@ router.get('/:guildId', adminCheck, async (req, res) => {
                 moderation: {
                     total: totalInfractions,
                     activeMutes
+                },
+                leveling: {
+                    totalXp: currentTotalXp,
+                    totalMessages: currentTotalMessages,
+                    activeUsers: currentXpUsers
                 },
                 heatmap
             }

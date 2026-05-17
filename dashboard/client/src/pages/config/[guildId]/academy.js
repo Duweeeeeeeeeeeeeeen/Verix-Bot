@@ -25,7 +25,8 @@ import {
   ShieldCheck,
   MessageSquare,
   Activity,
-  ArrowRight
+  ArrowRight,
+  Trophy
 } from 'lucide-react';
 
 export default function AcademyPage() {
@@ -47,11 +48,11 @@ export default function AcademyPage() {
       icon: <Target size={20} />, 
       title: t('sidebar.group_system'), 
       color: '#6366f1',
-      desc: "Il cuore pulsante del tuo server. Qui gestisci l'identità del bot, i permessi amministrativi e il sistema di logging centralizzato.",
+      desc: t('academy_page.module_global_desc'),
       features: [
-        { title: "Identity Engine", text: "Personalizza nome, avatar e stato del bot (Platinum)." },
-        { title: "Master Perms", text: "Definisci quali ruoli possono gestire il pannello Verix." },
-        { title: "Log Registry", text: "Monitora ogni azione in canali dedicati per la massima trasparenza." }
+        { title: t('academy_page.module_global_f1_title'), text: t('academy_page.module_global_f1_text') },
+        { title: t('academy_page.module_global_f2_title'), text: t('academy_page.module_global_f2_text') },
+        { title: t('academy_page.module_global_f3_title'), text: t('academy_page.module_global_f3_text') }
       ]
     },
     { 
@@ -59,11 +60,11 @@ export default function AcademyPage() {
       icon: <Shield size={20} />, 
       title: t('sidebar.moderation'), 
       color: '#ef4444',
-      desc: "Protezione totale contro spam, raid e utenti tossici. Un sistema intelligente che agisce prima che il danno sia fatto.",
+      desc: t('academy_page.module_moderation_desc'),
       features: [
-        { title: "Auto-Mod Filters", text: "Blocca link, inviti, spam di emoji e CAPS LOCK automaticamente." },
-        { title: "Raid Prevention", text: "Rileva ondate improvvise di join e mette il server in sicurezza." },
-        { title: "Punizioni Progressive", text: "Sistema di warn automatici che scalano fino al ban." }
+        { title: t('academy_page.module_moderation_f1_title'), text: t('academy_page.module_moderation_f1_text') },
+        { title: t('academy_page.module_moderation_f2_title'), text: t('academy_page.module_moderation_f2_text') },
+        { title: t('academy_page.module_moderation_f3_title'), text: t('academy_page.module_moderation_f3_text') }
       ]
     },
     { 
@@ -71,11 +72,11 @@ export default function AcademyPage() {
       icon: <CheckCircle2 size={20} />, 
       title: t('sidebar.verify'), 
       color: '#10b981',
-      desc: "La prima linea di difesa. Assicurati che solo esseri umani entrino nel tuo server con sistemi di verifica avanzati.",
+      desc: t('academy_page.module_verify_desc'),
       features: [
-        { title: "Button & Code Verify", text: "Scegli tra una verifica rapida o un codice anti-bot." },
-        { title: "Auto-Role", text: "Assegna ruoli automaticamente dopo il completamento della verifica." },
-        { title: "Anti-Alt", text: "Impedisci agli account sospetti o troppo nuovi di accedere." }
+        { title: t('academy_page.module_verify_f1_title'), text: t('academy_page.module_verify_f1_text') },
+        { title: t('academy_page.module_verify_f2_title'), text: t('academy_page.module_verify_f2_text') },
+        { title: t('academy_page.module_verify_f3_title'), text: t('academy_page.module_verify_f3_text') }
       ]
     },
     { 
@@ -83,11 +84,11 @@ export default function AcademyPage() {
       icon: <Ticket size={20} />, 
       title: t('sidebar.tickets'), 
       color: '#f59e0b',
-      desc: "Supporto clienti professionale. Gestisci le richieste degli utenti in modo ordinato, veloce e tracciabile.",
+      desc: t('academy_page.module_tickets_desc'),
       features: [
-        { title: "Multi-Categorie", text: "Crea dipartimenti separati per Supporto, Segnalazioni, Partnership." },
-        { title: "Transcripts", text: "Salva automaticamente l'intera chat del ticket alla chiusura." },
-        { title: "Claim System", text: "Permetti allo staff di prendere in carico i ticket individualmente." }
+        { title: t('academy_page.module_tickets_f1_title'), text: t('academy_page.module_tickets_f1_text') },
+        { title: t('academy_page.module_tickets_f2_title'), text: t('academy_page.module_tickets_f2_text') },
+        { title: t('academy_page.module_tickets_f3_title'), text: t('academy_page.module_tickets_f3_text') }
       ]
     },
     { 
@@ -95,11 +96,11 @@ export default function AcademyPage() {
       icon: <Layout size={20} />, 
       title: t('sidebar.embeds'), 
       color: '#8b5cf6',
-      desc: "Comunicazione di alto livello. Crea messaggi spettacolari, annunci programmati e interazioni avanzate.",
+      desc: t('academy_page.module_embeds_desc'),
       features: [
-        { title: "Visual Designer", text: "Crea embed mozzafiato con anteprima in tempo reale." },
-        { title: "Scheduling", text: "Programma l'invio di messaggi per date o orari specifici." },
-        { title: "Placeholder Dinamici", text: "Usa variabili come {user} o {guild} per messaggi personalizzati." }
+        { title: t('academy_page.module_embeds_f1_title'), text: t('academy_page.module_embeds_f1_text') },
+        { title: t('academy_page.module_embeds_f2_title'), text: t('academy_page.module_embeds_f2_text') },
+        { title: t('academy_page.module_embeds_f3_title'), text: t('academy_page.module_embeds_f3_text') }
       ]
     },
     { 
@@ -107,11 +108,95 @@ export default function AcademyPage() {
       icon: <Cpu size={20} />, 
       title: t('sidebar.automations'), 
       color: '#3b82f6',
-      desc: "Rendi il tuo server autonomo. Pulizia automatica dei canali e messaggi ricorrenti senza alcuno sforzo.",
+      desc: t('academy_page.module_automations_desc'),
       features: [
-        { title: "Auto-Clear", text: "Pulisci canali specifici ogni X minuti o dopo Y messaggi." },
-        { title: "Broadcast", text: "Invia messaggi automatici a intervalli regolari in canali scelti." },
-        { title: "Maintenance", text: "Mantieni l'ordine eliminando messaggi di join o comandi bot." }
+        { title: t('academy_page.module_automations_f1_title'), text: t('academy_page.module_automations_f1_text') },
+        { title: t('academy_page.module_automations_f2_title'), text: t('academy_page.module_automations_f2_text') },
+        { title: t('academy_page.module_automations_f3_title'), text: t('academy_page.module_automations_f3_text') }
+      ]
+    },
+    { 
+      id: 'whitelist', 
+      icon: <ShieldCheck size={20} />, 
+      title: t('sidebar.whitelist'), 
+      color: '#f43f5e',
+      desc: t('academy_page.module_whitelist_desc'),
+      features: [
+        { title: t('academy_page.module_whitelist_f1_title'), text: t('academy_page.module_whitelist_f1_text') },
+        { title: t('academy_page.module_whitelist_f2_title'), text: t('academy_page.module_whitelist_f2_text') },
+        { title: t('academy_page.module_whitelist_f3_title'), text: t('academy_page.module_whitelist_f3_text') }
+      ]
+    },
+    { 
+      id: 'socials', 
+      icon: <Globe size={20} />, 
+      title: t('sidebar.socials'), 
+      color: '#a855f7',
+      desc: t('academy_page.module_socials_desc'),
+      features: [
+        { title: t('academy_page.module_socials_f1_title'), text: t('academy_page.module_socials_f1_text') },
+        { title: t('academy_page.module_socials_f2_title'), text: t('academy_page.module_socials_f2_text') },
+        { title: t('academy_page.module_socials_f3_title'), text: t('academy_page.module_socials_f3_text') }
+      ]
+    },
+    { 
+      id: 'giveaway', 
+      icon: <Gift size={20} />, 
+      title: t('sidebar.giveaway'), 
+      color: '#ec4899',
+      desc: t('academy_page.module_giveaway_desc'),
+      features: [
+        { title: t('academy_page.module_giveaway_f1_title'), text: t('academy_page.module_giveaway_f1_text') },
+        { title: t('academy_page.module_giveaway_f2_title'), text: t('academy_page.module_giveaway_f2_text') },
+        { title: t('academy_page.module_giveaway_f3_title'), text: t('academy_page.module_giveaway_f3_text') }
+      ]
+    },
+    { 
+      id: 'reactionroles', 
+      icon: <MousePointer2 size={20} />, 
+      title: t('sidebar.reactionroles'), 
+      color: '#06b6d4',
+      desc: t('academy_page.module_reactionroles_desc'),
+      features: [
+        { title: t('academy_page.module_reactionroles_f1_title'), text: t('academy_page.module_reactionroles_f1_text') },
+        { title: t('academy_page.module_reactionroles_f2_title'), text: t('academy_page.module_reactionroles_f2_text') },
+        { title: t('academy_page.module_reactionroles_f3_title'), text: t('academy_page.module_reactionroles_f3_text') }
+      ]
+    },
+    { 
+      id: 'voice', 
+      icon: <Mic2 size={20} />, 
+      title: t('sidebar.voice_interviste'), 
+      color: '#fbbf24',
+      desc: t('academy_page.module_voice_desc'),
+      features: [
+        { title: t('academy_page.module_voice_f1_title'), text: t('academy_page.module_voice_f1_text') },
+        { title: t('academy_page.module_voice_f2_title'), text: t('academy_page.module_voice_f2_text') },
+        { title: t('academy_page.module_voice_f3_title'), text: t('academy_page.module_voice_f3_text') }
+      ]
+    },
+    { 
+      id: 'white-label', 
+      icon: <Sparkles size={20} />, 
+      title: t('sidebar.branding'), 
+      color: '#a855f7',
+      desc: t('academy_page.module_branding_desc'),
+      features: [
+        { title: t('academy_page.module_branding_f1_title'), text: t('academy_page.module_branding_f1_text') },
+        { title: t('academy_page.module_branding_f2_title'), text: t('academy_page.module_branding_f2_text') },
+        { title: t('academy_page.module_branding_f3_title'), text: t('academy_page.module_branding_f3_text') }
+      ]
+    },
+    { 
+      id: 'leveling', 
+      icon: <Trophy size={20} />, 
+      title: t('sidebar.leveling'), 
+      color: '#f59e0b',
+      desc: t('academy_page.module_leveling_desc'),
+      features: [
+        { title: t('academy_page.module_leveling_f1_title'), text: t('academy_page.module_leveling_f1_text') },
+        { title: t('academy_page.module_leveling_f2_title'), text: t('academy_page.module_leveling_f2_text') },
+        { title: t('academy_page.module_leveling_f3_title'), text: t('academy_page.module_leveling_f3_text') }
       ]
     }
   ];
@@ -131,8 +216,8 @@ export default function AcademyPage() {
             <Sparkles size={14} />
             <span>Verix Academy</span>
           </div>
-          <h1>{t('academy_page.hero_title') || 'Domina il tuo Server'}</h1>
-          <p>{t('academy_page.hero_subtitle') || 'Scopri come configurare ogni modulo per creare un\'esperienza indimenticabile per la tua community.'}</p>
+          <h1>{t('academy_page.hero_title')}</h1>
+          <p>{t('academy_page.hero_subtitle')}</p>
         </div>
         <div className="hero-visual">
           <div className="floating-card c1"><Shield size={32} /></div>
@@ -144,7 +229,7 @@ export default function AcademyPage() {
       <div className="academy-layout">
         {/* Module Sidebar */}
         <aside className="module-nav">
-          <h3>Moduli Disponibili</h3>
+          <h3>{t('academy_page.modules_available')}</h3>
           <div className="nav-list">
             {modules.map(m => (
               <button 
@@ -162,8 +247,8 @@ export default function AcademyPage() {
           
           <div className="support-card-mini">
             <Info size={18} />
-            <p>Hai bisogno di aiuto specifico?</p>
-            <a href="https://discord.gg/verix" target="_blank" rel="noreferrer">Entra nel Supporto</a>
+            <p>{t('academy_page.support_card_text')}</p>
+            <a href="https://discord.com/invite/Ck3rGpSV7U" target="_blank" rel="noreferrer">{t('academy_page.support_card_btn')}</a>
           </div>
         </aside>
 
@@ -198,18 +283,25 @@ export default function AcademyPage() {
                 <span>Pro Tip</span>
               </div>
               <p>
-                {activeModule === 'global' && "Usa il sistema di logging per tenere traccia di chi modifica le impostazioni del server. È fondamentale per la sicurezza!"}
-                {activeModule === 'moderation' && "Non essere troppo restrittivo all'inizio. Usa i log per capire quali filtri servono davvero prima di attivare punizioni severe."}
-                {activeModule === 'verify' && "Il sistema di verifica a codice è il più efficace contro i bot automatici evoluti."}
-                {activeModule === 'tickets' && "Crea una categoria 'Partnership' separata per non intasare i ticket di assistenza tecnica."}
-                {activeModule === 'embeds' && "Salva i tuoi design più complessi nella libreria template per riutilizzarli in futuro con un solo click."}
-                {activeModule === 'automations' && "Imposta l'Auto-Clear nei canali di comando per mantenere la chat pulita dai messaggi di attivazione dei bot."}
+                {activeModule === 'global' && t('academy_page.tip_global')}
+                {activeModule === 'moderation' && t('academy_page.tip_moderation')}
+                {activeModule === 'verify' && t('academy_page.tip_verify')}
+                {activeModule === 'tickets' && t('academy_page.tip_tickets')}
+                {activeModule === 'embeds' && t('academy_page.tip_embeds')}
+                {activeModule === 'automations' && t('academy_page.tip_automations')}
+                {activeModule === 'whitelist' && t('academy_page.tip_whitelist')}
+                {activeModule === 'socials' && t('academy_page.tip_socials')}
+                {activeModule === 'giveaway' && t('academy_page.tip_giveaway')}
+                {activeModule === 'reactionroles' && t('academy_page.tip_reactionroles')}
+                {activeModule === 'voice' && t('academy_page.tip_voice')}
+                {activeModule === 'white-label' && t('academy_page.tip_branding')}
+                {activeModule === 'leveling' && t('academy_page.tip_leveling')}
               </p>
             </div>
 
             <div className="action-footer">
               <button className="pc-btn-primary" onClick={() => router.push(`/config/${guildId}/${activeModule}`)}>
-                <span>Configura Modulo</span>
+                <span>{t('academy_page.config_module_btn')}</span>
                 <ArrowRight size={18} />
               </button>
             </div>
@@ -219,13 +311,13 @@ export default function AcademyPage() {
           <div className="insights-row">
             <div className="insight-card pc-card-v2">
               <Activity size={20} color="var(--primary)" />
-              <h4>Perché usarlo?</h4>
-              <p>Migliora l'engagement e la sicurezza automatizzando i processi ripetitivi.</p>
+              <h4>{t('academy_page.why_use_title')}</h4>
+              <p>{t('academy_page.why_use_desc')}</p>
             </div>
             <div className="insight-card pc-card-v2">
               <ShieldCheck size={20} color="#10b981" />
-              <h4>Sicurezza</h4>
-              <p>Tutti i moduli sono testati per garantire la massima stabilità del server.</p>
+              <h4>{t('academy_page.security_title')}</h4>
+              <p>{t('academy_page.security_desc')}</p>
             </div>
           </div>
         </main>

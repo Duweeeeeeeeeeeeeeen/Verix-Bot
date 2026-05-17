@@ -64,6 +64,10 @@ const giveawaySchema = new mongoose.Schema({
     buttonStyle: {
         type: String,
         default: 'PRIMARY'
+    },
+    minLevel: {
+        type: Number,
+        default: 0
     }
 }, { timestamps: true });
 

@@ -19,6 +19,7 @@ import ReactionRoleManager from './src/modules/reactionRoles/manager.js';
 import PollManager from './src/modules/polls/manager.js';
 import MonitoringService from './src/services/monitoringService.js';
 import installRuntimeGuards from './src/utils/runtimeGuards.js';
+import * as voiceXpHandler from './src/handlers/voiceXpHandler.js';
 
 // Initialize Discord Client
 const client = new Client({
@@ -53,15 +54,23 @@ if (global.botInitialized) {
         // Connect to Database
         if (config.mongoUri) {
             try {
-                mongoose.set('bufferCommands', false);
+                // Enable command buffering to handle temporary connection delays
+                mongoose.set('bufferCommands', true);
+                
+                logger.info('Connecting to MongoDB...');
                 await mongoose.connect(config.mongoUri, {
                     serverSelectionTimeoutMS: 5000,
                     family: 4,
                 });
                 logger.db('Successfully connected to MongoDB.');
             } catch (error) {
-                logger.error('Failed to connect to MongoDB:', error.message);
+                logger.error('CRITICAL: Failed to connect to MongoDB:', error.message);
+                logger.error('The bot requires a database connection to function. Please check your MONGO_URI and IP whitelist.');
+                process.exit(1); // Exit if DB is required but fails
             }
+        } else {
+            logger.error('CRITICAL: MONGO_URI is missing in .env!');
+            process.exit(1);
         }
 
         // Load Handlers
@@ -106,6 +115,9 @@ if (global.botInitialized) {
 
             client.monitoring = new MonitoringService(client);
             await client.monitoring.init();
+
+            // Start Voice XP tracking
+            voiceXpHandler.start(client);
 
             startDashboard(client);
 
