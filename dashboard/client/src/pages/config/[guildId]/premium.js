@@ -130,11 +130,19 @@ export default function PremiumHub() {
 
                         {!isPremium && (
                             <div className="hero-actions-v2">
-                                <button className="pc-btn-primary invite-pulse" style={{ background: 'var(--bg-card)', color: 'var(--primary)' }}>
+                                <button 
+                                    className="pc-btn-primary invite-pulse" 
+                                    style={{ background: 'var(--bg-card)', color: 'var(--primary)' }}
+                                    onClick={() => document.querySelector('.pc-pricing-grid-v2')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+                                >
                                     <Rocket size={18} />
                                     <span>{t('ph.explore')}</span>
                                 </button>
-                                <button className="pc-btn-outline-v2" style={{ borderColor: 'rgba(255,255,255,0.3)', color: 'white', background: 'rgba(255,255,255,0.1)' }}>
+                                <button 
+                                    className="pc-btn-outline-v2" 
+                                    style={{ borderColor: 'rgba(255,255,255,0.3)', color: 'white', background: 'rgba(255,255,255,0.1)' }}
+                                    onClick={() => document.querySelector('.platinum')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+                                >
                                     <span>{t('ph.demo')}</span>
                                 </button>
                             </div>
