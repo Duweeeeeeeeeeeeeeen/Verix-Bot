@@ -21,6 +21,7 @@ export default function PremiumHub() {
   const { guildId } = router.query;
   const [config, setConfig] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -44,7 +45,7 @@ export default function PremiumHub() {
 
   const handleCheckout = async (planType) => {
     try {
-      setLoading(true);
+      setCheckoutLoading(true);
       const res = await api.request(`/stripe/checkout`, {
           method: 'POST',
           data: { guildId, planType }
@@ -54,8 +55,7 @@ export default function PremiumHub() {
       }
     } catch (error) {
       console.error("Errore di checkout:", error);
-    } finally {
-      setLoading(false);
+      setCheckoutLoading(false);
     }
   };
 
@@ -132,7 +132,7 @@ export default function PremiumHub() {
                             <div className="hero-actions-v2">
                                 <button 
                                     className="pc-btn-primary invite-pulse" 
-                                    style={{ background: 'var(--bg-card)', color: 'var(--primary)' }}
+                                    style={{ background: '#ffffff', color: '#1e1b4b' }}
                                     onClick={() => document.querySelector('.pc-pricing-grid-v2')?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
                                 >
                                     <Rocket size={18} />
@@ -200,10 +200,10 @@ export default function PremiumHub() {
                     <button 
                         className="pc-btn-price-v2 premium" 
                         style={{ background: '#3b82f6', boxShadow: '0 10px 20px rgba(59, 130, 246, 0.2)' }} 
-                        disabled={premiumTier === 'lite'}
+                        disabled={premiumTier === 'lite' || checkoutLoading}
                         onClick={() => handleCheckout('lite')}
                     >
-                        {premiumTier === 'lite' ? t('ph.active') : t('ph.activate_lt')}
+                        {checkoutLoading ? 'Attendere...' : (premiumTier === 'lite' ? t('ph.active') : t('ph.activate_lt'))}
                     </button>
                 </div>
 
@@ -225,10 +225,10 @@ export default function PremiumHub() {
                     </div>
                     <button 
                         className="pc-btn-price-v2 premium" 
-                        disabled={premiumTier === 'premium'}
+                        disabled={premiumTier === 'premium' || checkoutLoading}
                         onClick={() => handleCheckout('premium')}
                     >
-                        {premiumTier === 'premium' ? t('ph.active') : t('ph.activate_pr')}
+                        {checkoutLoading ? 'Attendere...' : (premiumTier === 'premium' ? t('ph.active') : t('ph.activate_pr'))}
                     </button>
                 </div>
 
@@ -250,10 +250,10 @@ export default function PremiumHub() {
                     </div>
                     <button 
                         className="pc-btn-price-v2 platinum" 
-                        disabled={isPlatinum}
+                        disabled={isPlatinum || checkoutLoading}
                         onClick={() => handleCheckout('platinum')}
                     >
-                        {isPlatinum ? t('ph.active') : t('ph.activate_pl')}
+                        {checkoutLoading ? 'Attendere...' : (isPlatinum ? t('ph.active') : t('ph.activate_pl'))}
                     </button>
                 </div>
             </div>
