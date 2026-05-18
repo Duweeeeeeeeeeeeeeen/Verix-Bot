@@ -56,9 +56,23 @@ pm2 status --no-color
 "@
 
 $remoteScript = $remoteScript -replace "`r", ""
-$remoteScript | ssh -o BatchMode=yes $Vps "bash -s"
-if ($LASTEXITCODE -ne 0) {
-    throw "Remote deploy failed with exit code $LASTEXITCODE"
+$localScript = Join-Path ([System.IO.Path]::GetTempPath()) "verix-deploy-remote.sh"
+$remoteScriptPath = "/tmp/verix-deploy-remote.sh"
+[System.IO.File]::WriteAllText($localScript, $remoteScript, [System.Text.UTF8Encoding]::new($false))
+
+try {
+    scp -o BatchMode=yes $localScript "${Vps}:${remoteScriptPath}"
+    if ($LASTEXITCODE -ne 0) {
+        throw "Remote script upload failed with exit code $LASTEXITCODE"
+    }
+
+    ssh -o BatchMode=yes $Vps "bash $remoteScriptPath; deploy_status=`$?; rm -f $remoteScriptPath; exit `$deploy_status"
+    if ($LASTEXITCODE -ne 0) {
+        throw "Remote deploy failed with exit code $LASTEXITCODE"
+    }
+}
+finally {
+    Remove-Item -LiteralPath $localScript -Force -ErrorAction SilentlyContinue
 }
 
 Write-Output "Deploy complete."
