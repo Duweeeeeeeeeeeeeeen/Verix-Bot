@@ -19,6 +19,7 @@ const socialPlatformSchema = new mongoose.Schema({
         username: { type: String, required: true }, // The username or ID of the channel/account
         discordUserId: { type: String, default: null }, // Linked Discord user (mostly used for Twitch roles)
         lastPostId: { type: String, default: null }, // Last video/stream/post ID to avoid duplicates
+        resolvedId: { type: String, default: null }, // Persisted resolved ID (e.g. UC...)
         isLive: { type: Boolean, default: false }, // Specific to Twitch
         lastCheckAt: { type: Date, default: null },
         bridgeErrorCount: { type: Number, default: 0 },

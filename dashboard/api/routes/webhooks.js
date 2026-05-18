@@ -2,6 +2,7 @@ import express from 'express';
 import SocialConfig from '../../../src/models/SocialConfig.js';
 import logger from '../../../src/utils/logger.js';
 import Parser from 'rss-parser';
+import axios from 'axios';
 
 const router = express.Router();
 const rssParser = new Parser();
@@ -156,7 +157,7 @@ router.post('/youtube/:channelId', express.text({ type: ['application/atom+xml',
             const platformConfig = config.platforms.youtube;
             if (!platformConfig || !platformConfig.accounts) continue;
 
-            const trackingAccount = platformConfig.accounts.find(acc => acc.username.includes(channelId));
+            const trackingAccount = platformConfig.accounts.find(acc => acc.username.includes(channelId) || acc.resolvedId === channelId);
             if (!trackingAccount) continue;
 
             // Multi-bot protection
@@ -186,6 +187,60 @@ router.post('/youtube/:channelId', express.text({ type: ['application/atom+xml',
         }
     } catch (error) {
         logger.error('[WebSub] Error processing push notification:', error.message);
+    }
+});
+
+/**
+ * Secure Image Proxy Endpoint
+ * Bypasses hotlink protection and expired signatures on Discord crawls.
+ * URL: GET /api/webhooks/image-proxy?url=BASE64_URL
+ */
+router.get('/image-proxy', async (req, res) => {
+    try {
+        const { url } = req.query;
+        if (!url) return res.status(400).send('Missing url parameter');
+
+        // Decode URL
+        const decodedUrl = Buffer.from(url, 'base64').toString('utf-8');
+
+        const allowedDomains = [
+            'cdninstagram.com',
+            'fbcdn.net',
+            'twimg.com',
+            'fbsbx.com'
+        ];
+
+        let isAllowed = false;
+        try {
+            const parsedUrl = new URL(decodedUrl);
+            isAllowed = allowedDomains.some(domain => parsedUrl.hostname.endsWith(domain));
+        } catch {
+            return res.status(400).send('Invalid url structure');
+        }
+
+        if (!isAllowed) {
+            logger.warn(`[ImageProxy] Blocked unauthorized domain proxy request: ${decodedUrl}`);
+            return res.status(403).send('Forbidden domain');
+        }
+
+        const response = await axios({
+            method: 'get',
+            url: decodedUrl,
+            responseType: 'stream',
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            },
+            timeout: 10000
+        });
+
+        // Forward headers and stream data
+        res.setHeader('Content-Type', response.headers['content-type'] || 'image/jpeg');
+        res.setHeader('Cache-Control', 'public, max-age=86400'); // Cache for 24h
+        response.data.pipe(res);
+
+    } catch (error) {
+        logger.error(`[ImageProxy] Failed to proxy image: ${error.message}`);
+        res.status(500).send('Failed to fetch image');
     }
 });
 

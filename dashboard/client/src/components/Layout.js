@@ -593,8 +593,8 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
                   </div>
 
                   <Link href={`/config/${guildId}/premium`} legacyBehavior>
-                    <a className={`icon-action premium-btn ${premiumTier !== 'none' ? 'is-premium' : ''}`} title={t('sidebar.premium')}>
-                      <Crown size={18} strokeWidth={2} className={premiumTier === 'platinum' ? 'text-platinum' : premiumTier === 'premium' ? 'text-gold' : 'text-dim'} />
+                    <a className={`icon-action premium-btn ${premiumTier !== 'none' ? `is-premium ${premiumTier === 'premium' ? 'premium-tier' : premiumTier}` : ''}`} title={t('sidebar.premium')}>
+                      <Crown size={18} strokeWidth={2} className={premiumTier === 'platinum' ? 'text-platinum' : premiumTier === 'premium' ? 'text-gold' : premiumTier === 'lite' ? 'text-lite' : 'text-dim'} />
                       {premiumTier !== 'none' && <span className="premium-badge-dot"></span>}
                     </a>
                   </Link>
@@ -818,17 +818,31 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
           color: var(--text-heading);
         }
 
-        .premium-btn.is-premium {
-          background: rgba(255, 215, 0, 0.1);
-          border-color: rgba(255, 215, 0, 0.2);
+        .premium-btn.is-premium.lite {
+          background: rgba(59, 130, 246, 0.1);
+          border-color: rgba(59, 130, 246, 0.2);
         }
-
-        .premium-btn.is-premium:hover {
-          background: rgba(255, 215, 0, 0.2);
+        .premium-btn.is-premium.lite:hover {
+          background: rgba(59, 130, 246, 0.2);
+        }
+        .premium-btn.is-premium.premium-tier {
+          background: rgba(245, 158, 11, 0.1);
+          border-color: rgba(245, 158, 11, 0.2);
+        }
+        .premium-btn.is-premium.premium-tier:hover {
+          background: rgba(245, 158, 11, 0.2);
+        }
+        .premium-btn.is-premium.platinum {
+          background: rgba(168, 85, 247, 0.1);
+          border-color: rgba(168, 85, 247, 0.2);
+        }
+        .premium-btn.is-premium.platinum:hover {
+          background: rgba(168, 85, 247, 0.2);
         }
 
         .text-gold { color: #ffd700; filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.4)); }
-        .text-platinum { color: #e5e4e2; filter: drop-shadow(0 0 8px rgba(229, 228, 226, 0.4)); }
+        .text-platinum { color: #a855f7; filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.4)); }
+        .text-lite { color: #3b82f6; filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.4)); }
         .text-dim { color: var(--text-dim); }
 
         .premium-badge-dot {

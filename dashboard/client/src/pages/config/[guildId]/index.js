@@ -131,6 +131,9 @@ export default function GuildHome() {
     'whitelist', 'tickets', 'verify', 'photocontest', 'support', 'fivem', 'welcome', 'reactionRoles', 'polls'
   ].filter(id => config?.[id]?.enabled).length;
 
+  const hasPremium = config?.isPremium || ['lite', 'premium', 'platinum'].includes(config?.premiumTier);
+  const premiumTier = config?.premiumTier || (config?.isPremium ? 'premium' : 'none');
+
   return (
     <div className="pc-premium-wrapper fade-in">
         <Head>
@@ -146,17 +149,17 @@ export default function GuildHome() {
                     ) : (
                         <div className="avatar-placeholder-v2">{config?.guildName?.charAt(0)}</div>
                     )}
-                    {config?.isPremium && (
-                        <div className="premium-crown-v2">
-                            <Crown size={14} fill="currentColor" />
+                    {hasPremium && (
+                        <div className={`premium-crown-v2 ${premiumTier}`}>
+                            {premiumTier === 'platinum' ? <Award size={14} fill="currentColor" /> : premiumTier === 'premium' ? <Crown size={14} fill="currentColor" /> : <Star size={14} fill="currentColor" />}
                         </div>
                     )}
                 </div>
                 <div className="hero-text-v2">
                     <div className="status-row-v2">
                         <span className="live-tag-v2"><div className="pulse-dot"></div> {t('hub.engine_online')}</span>
-                        <div className={`tier-badge-v2 ${config?.isPremium ? 'premium' : 'standard'}`}>
-                            {config?.premiumTier === 'platinum' ? 'VERIX PLATINUM' : config?.isPremium ? 'VERIX PREMIUM' : 'VERIX STANDARD'}
+                        <div className={`tier-badge-v2 ${premiumTier}`}>
+                            {premiumTier === 'platinum' ? 'VERIX PLATINUM' : premiumTier === 'premium' ? 'VERIX PREMIUM' : premiumTier === 'lite' ? 'VERIX LITE' : 'VERIX STANDARD'}
                         </div>
                     </div>
                     <h1>{t('hub.welcome')} <span className="user-name-v2">{user?.username}</span></h1>
@@ -317,7 +320,11 @@ export default function GuildHome() {
             .server-avatar-container-v2 { position: relative; width: 60px; height: 60px; }
             .server-icon-v2 { width: 100%; height: 100%; border-radius: 16px; object-fit: cover; border: 2px solid var(--bg-card); }
             .avatar-placeholder-v2 { width: 100%; height: 100%; border-radius: 16px; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: 700; }
-            .premium-crown-v2 { position: absolute; bottom: -4px; right: -4px; width: 28px; height: 28px; background: linear-gradient(135deg, #f59e0b, #fbbf24); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid var(--bg-card); box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3); }
+            .premium-crown-v2 { position: absolute; bottom: -4px; right: -4px; width: 28px; height: 28px; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid var(--bg-card); }
+            .premium-crown-v2.none { display: none; }
+            .premium-crown-v2.platinum { background: linear-gradient(135deg, #7c3aed, #c084fc); box-shadow: 0 4px 15px rgba(124, 58, 237, 0.4); }
+            .premium-crown-v2.premium { background: linear-gradient(135deg, #f59e0b, #fbbf24); box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3); }
+            .premium-crown-v2.lite { background: linear-gradient(135deg, #3b82f6, #60a5fa); box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); }
             
             .hero-text-v2 h1 { font-size: 1.7rem; font-weight: 700; margin: 0; color: var(--text-heading); letter-spacing: normal; }
             .user-name-v2 { font-weight: 800; background: linear-gradient(135deg, var(--primary) 0%, #a78bfa 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
@@ -327,7 +334,9 @@ export default function GuildHome() {
             .pulse-dot { width: 6px; height: 6px; border-radius: 50%; background: #10b981; animation: pulse 2s infinite; }
             @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.5; } 100% { transform: scale(1); opacity: 1; } }
             .tier-badge-v2 { font-size: 0.65rem; font-weight: 700; padding: 4px 12px; border-radius: 100px; letter-spacing: 0.5px; }
+            .tier-badge-v2.platinum { background: rgba(124, 58, 237, 0.1); color: #c084fc; border: 1px solid rgba(124, 58, 237, 0.2); }
             .tier-badge-v2.premium { background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.2); }
+            .tier-badge-v2.lite { background: rgba(59, 130, 246, 0.1); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.2); }
             .tier-badge-v2.standard { background: var(--bg-badge); color: var(--text-muted); border: 1px solid var(--border); }
 
             .hero-controls-v2 { display: flex; gap: 16px; position: relative; z-index: 1; }

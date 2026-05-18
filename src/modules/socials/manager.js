@@ -11,7 +11,15 @@ import Guild from '../../models/Guild.js';
 import { t } from '../../locales/t.js';
 import { axiosWithRetry } from '../../utils/httpClient.js';
 
-const rssParser = new Parser();
+const rssParser = new Parser({
+    customFields: {
+        item: [
+            ['media:content', 'mediaContent'],
+            ['media:thumbnail', 'mediaThumbnail'],
+            ['media:group', 'mediaGroup']
+        ]
+    }
+});
 const BRIDGE_ERROR_LOG_INTERVAL_MS = 60 * 60 * 1000;
 const BRIDGE_ERROR_BASE_BACKOFF_MS = 15 * 60 * 1000;
 const BRIDGE_ERROR_MAX_BACKOFF_MS = 6 * 60 * 60 * 1000;
@@ -24,6 +32,13 @@ const BRIDGE_ERROR_KEYWORDS = [
     'rate limit',
     'too many requests',
     'details:'
+];
+const RSS_BRIDGE_INSTANCES = [
+    'http://localhost:3005',
+    'https://rss-bridge.org/bridge01',
+    'https://rssbridge.noblogs.org',
+    'https://rss-bridge.sans-nuage.fr',
+    'https://rss-bridge.cheredeprince.net'
 ];
 const RSS_TIMEOUT_MS = 8000;
 const WEB_SUB_TIMEOUT_MS = 8000;
@@ -46,6 +61,8 @@ export class SocialManager {
     constructor(client) {
         this.client = client;
         this.interval = null;
+        this.youtubeIdCache = new Map();
+        this.youtubeAvatarCache = new Map();
     }
 
     init() {
@@ -212,8 +229,21 @@ export class SocialManager {
                 if (username.startsWith('UC')) {
                     feedUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${username}`;
                 } else {
-                    // Try to resolve handle (@username) to Channel ID
-                    const channelId = await this.resolveYouTubeHandle(username);
+                    // Try to resolve handle (@username) to Channel ID via persistent/in-memory cache or API
+                    let channelId = account.resolvedId;
+                    if (!channelId && this.youtubeIdCache && this.youtubeIdCache.has(username)) {
+                        channelId = this.youtubeIdCache.get(username);
+                    }
+
+                    if (!channelId) {
+                        channelId = await this.resolveYouTubeHandle(username);
+                        if (channelId) {
+                            account.resolvedId = channelId;
+                            if (this.youtubeIdCache) this.youtubeIdCache.set(username, channelId);
+                            changed = true;
+                        }
+                    }
+
                     if (channelId) {
                         feedUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`;
                     } else {
@@ -229,6 +259,13 @@ export class SocialManager {
                         const latestVideo = feed.items[0];
                         
                         if (latestVideo.id !== account.lastPostId) {
+                            if (!account.lastPostId) {
+                                logger.info(`[Socials/YouTube] Initialized lastPostId for ${account.username} to ${latestVideo.id} without notification`);
+                                account.lastPostId = latestVideo.id;
+                                changed = true;
+                                continue;
+                            }
+
                             // Attempt to fetch profile image if missing
                             if (!account.cachedProfileImage) {
                                 account.cachedProfileImage = await this.fetchYouTubeProfileImage(username);
@@ -280,9 +317,31 @@ export class SocialManager {
                 }
 
                 const feedUrl = urlTemplate.replace('{username}', username);
+                const queryIndex = feedUrl.indexOf('?');
+                const queryString = queryIndex !== -1 ? feedUrl.substring(queryIndex) : '';
 
                 try {
-                    const feed = await parseRssUrl(feedUrl);
+                    let feed = null;
+                    let lastError = null;
+
+                    // Dynamic RSS-Bridge Failover Loop
+                    for (const instance of RSS_BRIDGE_INSTANCES) {
+                        const finalFeedUrl = queryIndex !== -1 ? `${instance}${queryString}` : feedUrl;
+                        try {
+                            feed = await parseRssUrl(finalFeedUrl);
+                            if (feed && feed.items && feed.items.length > 0) {
+                                break;
+                            }
+                        } catch (err) {
+                            lastError = err;
+                            logger.debug(`[Socials/Bridge] Failover: ${instance} failed for ${username}: ${err.message}`);
+                        }
+                    }
+
+                    if (!feed) {
+                        throw new Error(lastError ? lastError.message : 'All RSS-Bridge instances failed');
+                    }
+
                     if (feed && feed.items && feed.items.length > 0) {
                         const latestItem = feed.items[0];
 
@@ -301,29 +360,44 @@ export class SocialManager {
                         const itemId = latestItem.id || latestItem.guid || latestItem.link;
 
                         if (itemId !== account.lastPostId) {
+                            if (!account.lastPostId) {
+                                logger.info(`[Socials/${platformName}] Initialized lastPostId for ${username} to ${itemId} without notification`);
+                                account.lastPostId = itemId;
+                                changed = true;
+                                continue;
+                            }
+
                             // NEW POST detected
                             // 2. Extract thumbnail more aggressively
                             let thumbnail = latestItem.enclosure?.url || latestItem.thumbnail || '';
                             
-                            // Check media fields if available
-                            if (!thumbnail && latestItem['media:content']) {
-                                thumbnail = Array.isArray(latestItem['media:content']) 
-                                    ? latestItem['media:content'][0]?.$.url 
-                                    : latestItem['media:content']?.$.url;
+                            // Check media fields if available (including mapped custom fields)
+                            if (!thumbnail) {
+                                const mContent = latestItem.mediaContent || latestItem['media:content'];
+                                if (mContent) {
+                                    thumbnail = Array.isArray(mContent) 
+                                        ? mContent[0]?.$.url 
+                                        : mContent?.$.url;
+                                }
                             }
 
-                            if (!thumbnail && latestItem['media:thumbnail']) {
-                                thumbnail = Array.isArray(latestItem['media:thumbnail'])
-                                    ? latestItem['media:thumbnail'][0]?.$.url
-                                    : latestItem['media:thumbnail']?.$.url;
+                            if (!thumbnail) {
+                                const mThumbnail = latestItem.mediaThumbnail || latestItem['media:thumbnail'];
+                                if (mThumbnail) {
+                                    thumbnail = Array.isArray(mThumbnail)
+                                        ? mThumbnail[0]?.$.url
+                                        : mThumbnail?.$.url;
+                                }
                             }
 
                             // Support for media:group (common in some bridges)
-                            if (!thumbnail && latestItem['media:group']) {
-                                const group = latestItem['media:group'];
-                                const media = group['media:content'] || group['media:thumbnail'];
-                                if (media) {
-                                    thumbnail = Array.isArray(media) ? media[0]?.$.url : media?.$.url;
+                            if (!thumbnail) {
+                                const mGroup = latestItem.mediaGroup || latestItem['media:group'];
+                                if (mGroup) {
+                                    const media = mGroup.mediaContent || mGroup['media:content'] || mGroup.mediaThumbnail || mGroup['media:thumbnail'];
+                                    if (media) {
+                                        thumbnail = Array.isArray(media) ? media[0]?.$.url : media?.$.url;
+                                    }
                                 }
                             }
 
@@ -337,7 +411,6 @@ export class SocialManager {
                             // Last resort for Instagram/Twitter: if we have a link, try to use a proxy for the image if it's missing
                             if (!thumbnail && latestItem.link) {
                                 if (latestItem.link.includes('instagram.com')) {
-                                    // ddinstagram often breaks for images, so we use ig.vxtwitter.com or ddinstagram
                                     thumbnail = latestItem.link.replace('instagram.com', 'ddinstagram.com').replace('/p/', '/p/show/');
                                 } else if (latestItem.link.includes('twitter.com') || latestItem.link.includes('x.com')) {
                                     thumbnail = latestItem.link.replace(/(twitter\.com|x\.com)/, 'fixupx.com').replace('/status/', '/status/show/');
@@ -533,7 +606,13 @@ export class SocialManager {
 
             if (postData.thumbnail) {
                 // Main Image (Bottom) - The stream preview or post photo
-                embedData.setImage(postData.thumbnail);
+                let finalThumbnail = postData.thumbnail;
+                if (finalThumbnail.includes('cdninstagram.com') || finalThumbnail.includes('fbcdn.net') || finalThumbnail.includes('twimg.com')) {
+                    const base64Url = Buffer.from(finalThumbnail).toString('base64');
+                    const apiUrl = process.env.API_URL || 'https://verixbot.com/api';
+                    finalThumbnail = `${apiUrl}/webhooks/image-proxy?url=${encodeURIComponent(base64Url)}`;
+                }
+                embedData.setImage(finalThumbnail);
             }
 
             const buttonLabels = t('socials.button_labels', lang);
@@ -603,6 +682,14 @@ export class SocialManager {
     async resolveYouTubeHandle(handle) {
         try {
             const cleanHandle = handle.startsWith('@') ? handle : `@${handle}`;
+            
+            if (this.youtubeIdCache && this.youtubeIdCache.has(cleanHandle)) {
+                return this.youtubeIdCache.get(cleanHandle);
+            }
+            if (this.youtubeIdCache && this.youtubeIdCache.has(handle)) {
+                return this.youtubeIdCache.get(handle);
+            }
+
             const url = `https://www.youtube.com/${cleanHandle}`;
             
             const response = await axiosWithRetry({
@@ -618,6 +705,10 @@ export class SocialManager {
             const match = response.data.match(/\"(?:channelId|externalId)\"\:\"(UC[a-zA-Z0-9_-]+)\"/);
             if (match && match[1]) {
                 logger.info(`[YouTubeResolver] Resolved ${handle} to ${match[1]}`);
+                if (this.youtubeIdCache) {
+                    this.youtubeIdCache.set(cleanHandle, match[1]);
+                    this.youtubeIdCache.set(handle, match[1]);
+                }
                 return match[1];
             }
 
@@ -625,6 +716,10 @@ export class SocialManager {
             const canonicalMatch = response.data.match(/<link rel=\"canonical\" href=\"https:\/\/www\.youtube\.com\/channel\/(UC[a-zA-Z0-9_-]+)\"/);
             if (canonicalMatch && canonicalMatch[1]) {
                 logger.info(`[YouTubeResolver] Resolved ${handle} to ${canonicalMatch[1]} (via canonical)`);
+                if (this.youtubeIdCache) {
+                    this.youtubeIdCache.set(cleanHandle, canonicalMatch[1]);
+                    this.youtubeIdCache.set(handle, canonicalMatch[1]);
+                }
                 return canonicalMatch[1];
             }
 
@@ -639,6 +734,14 @@ export class SocialManager {
         try {
             const isHandle = channelIdOrHandle.startsWith('@') || !channelIdOrHandle.startsWith('UC');
             const cleanHandle = isHandle && !channelIdOrHandle.startsWith('@') ? `@${channelIdOrHandle}` : channelIdOrHandle;
+            
+            if (this.youtubeAvatarCache && this.youtubeAvatarCache.has(cleanHandle)) {
+                return this.youtubeAvatarCache.get(cleanHandle);
+            }
+            if (this.youtubeAvatarCache && this.youtubeAvatarCache.has(channelIdOrHandle)) {
+                return this.youtubeAvatarCache.get(channelIdOrHandle);
+            }
+
             const url = isHandle ? `https://www.youtube.com/${cleanHandle}` : `https://www.youtube.com/channel/${channelIdOrHandle}`;
             
             const response = await axiosWithRetry({
@@ -654,7 +757,12 @@ export class SocialManager {
             // Extract from meta tags (og:image)
             const metaMatch = response.data.match(/<meta property="og:image" content="([^"]+)"/);
             if (metaMatch && metaMatch[1]) {
-                return metaMatch[1].replace('s900-c', 's288-c'); // use smaller optimized avatar if available
+                const avatarUrl = metaMatch[1].replace('s900-c', 's288-c');
+                if (this.youtubeAvatarCache) {
+                    this.youtubeAvatarCache.set(cleanHandle, avatarUrl);
+                    this.youtubeAvatarCache.set(channelIdOrHandle, avatarUrl);
+                }
+                return avatarUrl;
             }
             
             return null;
@@ -688,7 +796,19 @@ export class SocialManager {
 
                     // Resolve handles if necessary
                     if (!channelId.startsWith('UC')) {
-                        const resolvedId = await this.resolveYouTubeHandle(channelId);
+                        let resolvedId = account.resolvedId;
+                        if (!resolvedId && this.youtubeIdCache && this.youtubeIdCache.has(channelId)) {
+                            resolvedId = this.youtubeIdCache.get(channelId);
+                        }
+
+                        if (!resolvedId) {
+                            resolvedId = await this.resolveYouTubeHandle(channelId);
+                            if (resolvedId) {
+                                account.resolvedId = resolvedId;
+                                if (this.youtubeIdCache) this.youtubeIdCache.set(channelId, resolvedId);
+                                await config.save().catch(() => null);
+                            }
+                        }
                         if (resolvedId) channelId = resolvedId;
                     }
 

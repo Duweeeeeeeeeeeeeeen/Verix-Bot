@@ -155,8 +155,9 @@ export default function BrandingPage() {
 
   if (!mounted || loading) return <Skeleton height="600px" />;
 
-  const isPremium = config?.isPremium || ['premium', 'platinum'].includes(config?.premiumTier);
-  const isPlatinum = config?.premiumTier === 'platinum';
+  const premiumTier = config?.premiumTier || (config?.isPremium ? 'premium' : 'none');
+  const isPremium = ['premium', 'platinum'].includes(premiumTier);
+  const isPlatinum = premiumTier === 'platinum';
   const langPath = language === 'it' ? '' : '/en';
 
   return (

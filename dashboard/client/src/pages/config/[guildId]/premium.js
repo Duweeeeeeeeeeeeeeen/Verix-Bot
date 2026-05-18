@@ -66,10 +66,12 @@ export default function PremiumHub() {
   if (!mounted || loading || !config) return <Skeleton height="600px" />;
 
   const premiumTier = config.premiumTier || 'none';
+  const isLite = premiumTier === 'lite';
   const isPremium = premiumTier === 'premium' || premiumTier === 'platinum';
   const isPlatinum = premiumTier === 'platinum';
+  const isPaid = premiumTier !== 'none';
 
-  const currentTierColor = isPlatinum ? '#a855f7' : isPremium ? '#f59e0b' : '#6366f1';
+  const currentTierColor = isPlatinum ? '#a855f7' : isPremium ? '#f59e0b' : isLite ? '#3b82f6' : '#6366f1';
 
   return (
     <div className="pc-premium-wrapper fade-in">
@@ -85,9 +87,9 @@ export default function PremiumHub() {
                 </div>
                 <div className="pc-title-row">
                     <h1>{t('ph.title')}</h1>
-                    <div className={`pc-status-tag-v2 ${isPremium ? 'on' : 'off'} ${isPlatinum ? 'platinum-v2' : ''}`}>
+                    <div className={`pc-status-tag-v2 ${isPaid ? 'on' : 'off'} ${isPlatinum ? 'platinum-v2' : isLite ? 'lite-v2' : ''}`}>
                         <div className="status-dot-v2"></div>
-                        {isPremium ? `${premiumTier.toUpperCase()} ${t('ph.active')}` : t('ph.standard_access')}
+                        {isPaid ? `${premiumTier.toUpperCase()} ${t('ph.active')}` : t('ph.standard_access')}
                     </div>
                 </div>
             </div>
@@ -108,9 +110,9 @@ export default function PremiumHub() {
                     <div className="hero-text-v2">
                         <div className="premium-badge-v2">
                             <Sparkles size={14} />
-                            <span>{isPlatinum ? 'PLATINUM ELITE' : isPremium ? 'PREMIUM ENGINE' : 'STANDARD ACCESS'}</span>
+                            <span>{isPlatinum ? 'PLATINUM ELITE' : isPremium ? 'PREMIUM ENGINE' : isLite ? 'LITE ENGINE' : 'STANDARD ACCESS'}</span>
                         </div>
-                        <h2>{isPlatinum ? t('ph.hero_title_pl') : isPremium ? t('ph.hero_title_pr') : t('ph.hero_title_base')}</h2>
+                        <h2>{isPlatinum ? t('ph.hero_title_pl') : isPremium ? t('ph.hero_title_pr') : isLite ? t('ph.hero_title_lt') : t('ph.hero_title_base')}</h2>
                         <p>{t('ph.hero_desc')}</p>
                         
                         <div className="hero-stats-row-v2">
@@ -128,7 +130,7 @@ export default function PremiumHub() {
                             </div>
                         </div>
 
-                        {!isPremium && (
+                        {!isPaid && (
                             <div className="hero-actions-v2">
                                 <button 
                                     className="pc-btn-primary invite-pulse" 
@@ -154,7 +156,7 @@ export default function PremiumHub() {
                             <div className="hologram-ring-1"></div>
                             <div className="hologram-ring-2"></div>
                             <div className="tier-symbol-v2">
-                                {isPlatinum ? <Award size={100} /> : isPremium ? <Crown size={100} /> : <Rocket size={100} />}
+                                {isPlatinum ? <Award size={100} /> : isPremium ? <Crown size={100} /> : isLite ? <Star size={100} /> : <Rocket size={100} />}
                             </div>
                         </div>
                     </div>
@@ -178,7 +180,7 @@ export default function PremiumHub() {
                             <li><CheckCircle2 size={16} style={{ opacity: 0.5 }} /> {t('ph.standard_feat5')}</li>
                         </ul>
                     </div>
-                    <button className="pc-btn-price-v2" disabled={!isPremium}>{t('ph.your_plan')}</button>
+                    <button className="pc-btn-price-v2" disabled={premiumTier === 'none'}>{premiumTier === 'none' ? t('ph.your_plan') : t('ph.standard')}</button>
                 </div>
 
                 {/* Lite Plan */}

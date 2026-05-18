@@ -155,10 +155,10 @@ export default function SocialsConfig() {
 
   const currentPlatformConfig = config.platforms[activePlatform];
   const pData = PLATFORMS.find(p => p.id === activePlatform);
-  const isLocked = !guildData?.isPremium && 
-    activePlatform !== 'twitch' && 
-    !(activePlatform === 'youtube' && guildData?.premiumTier === 'lite') && 
-    !['premium', 'platinum'].includes(guildData?.premiumTier);
+  const premiumTier = guildData?.premiumTier || (guildData?.isPremium ? 'premium' : 'none');
+  const isLocked = !['premium', 'platinum'].includes(premiumTier) && 
+    !(premiumTier === 'lite' && (activePlatform === 'twitch' || activePlatform === 'youtube')) && 
+    !(premiumTier === 'none' && activePlatform === 'twitch');
   const getAccountStatus = (account) => {
     const backoffUntil = account.bridgeBackoffUntil ? new Date(account.bridgeBackoffUntil) : null;
     const isBackoff = backoffUntil && backoffUntil.getTime() > Date.now();
@@ -235,10 +235,9 @@ export default function SocialsConfig() {
                     <span className="sidebar-label-v2">{t('socials.repository')}</span>
                     <nav className="pc-nav-stack-v2">
                         {PLATFORMS.map(p => {
-                            const locked = !guildData?.isPremium && 
-                                p.id !== 'twitch' && 
-                                !(p.id === 'youtube' && guildData?.premiumTier === 'lite') && 
-                                !['premium', 'platinum'].includes(guildData?.premiumTier);
+                            const locked = !['premium', 'platinum'].includes(premiumTier) && 
+                                !(premiumTier === 'lite' && (p.id === 'twitch' || p.id === 'youtube')) && 
+                                !(premiumTier === 'none' && p.id === 'twitch');
                             const active = activePlatform === p.id;
                             const isEnabled = config.platforms[p.id]?.enabled;
                             return (
