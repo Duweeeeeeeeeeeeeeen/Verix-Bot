@@ -205,7 +205,7 @@ export default function BrandingPage() {
                         <div className="gate-icon-main">
                             <Sparkles size={48} />
                         </div>
-                        <h1>Identità <span className="text-gradient">Personalizzata</span></h1>
+                        <h1>{t('wl.gate.custom_identity_part1') || 'Identità'} <span className="text-gradient">{t('wl.gate.custom_identity_part2') || 'Personalizzata'}</span></h1>
                         <p>{t('wl.gate.desc')}</p>
                     </div>
                     
@@ -231,7 +231,7 @@ export default function BrandingPage() {
                             <div className="card-badge highlight">{t('wl.gate.platinum_badge')}</div>
                             <div className="card-mockup modern">
                                 <div className="mock-avatar primary"></div>
-                                <div className="mock-text-bold">{config?.name || 'Il Tuo Brand'}</div>
+                                <div className="mock-text-bold">{config?.name || t('wl.gate.your_brand') || 'Il Tuo Brand'}</div>
                                 <p className="text-primary-bright">{t('wl.gate.platinum_desc')}</p>
                             </div>
                             <div className="card-status-icon positive">
