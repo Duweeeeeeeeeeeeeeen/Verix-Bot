@@ -190,7 +190,7 @@ export default function WelcomeConfig() {
                 </button>
                 <button className="pc-btn-primary" onClick={handleSave} disabled={saving}>
                     <Save size={18} />
-                    <span>{saving ? t('common.saving') : t('common.sync')}</span>
+                    <span>{saving ? t('common.saving') : t('common.save_changes')}</span>
                 </button>
             </div>
         </header>

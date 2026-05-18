@@ -223,7 +223,7 @@ export default function SocialsConfig() {
                 </button>
                 <button className="pc-btn-primary" onClick={handleSave} disabled={saving}>
                     <Save size={18} />
-                    <span>{saving ? t('common.saving') : t('common.save')}</span>
+                    <span>{saving ? t('common.saving') : t('common.save_changes')}</span>
                 </button>
             </div>
         </header>

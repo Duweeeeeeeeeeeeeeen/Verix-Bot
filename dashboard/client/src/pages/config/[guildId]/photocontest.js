@@ -173,7 +173,7 @@ export default function PhotoContestConfig() {
                 </button>
                 <button className="pc-btn-primary" onClick={handleSave} disabled={saving}>
                     <Save size={18} />
-                    <span>{saving ? t('common.saving') : t('common.sync')}</span>
+                    <span>{saving ? t('common.saving') : t('common.save_changes')}</span>
                 </button>
             </div>
         </header>
@@ -293,7 +293,7 @@ export default function PhotoContestConfig() {
                 <div className="v-stack animate slide-up" style={{ gap: '24px' }}>
                     <section className="pc-card-v2">
                         <div className="card-header-v2" style={{ marginBottom: '24px' }}>
-                            <div className="header-icon" style={{ background: 'var(--bg-badge)', color: '#db2777' }}><Wand2 size={20} /></div>
+                            <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><Wand2 size={20} /></div>
                             <div className="v-stack" style={{ flex: 1 }}>
                                 <h3 style={{ margin: 0 }}>{t('pc.library_title')}</h3>
                                 <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 700 }}>{t('pc.library_desc')}</p>
@@ -301,34 +301,34 @@ export default function PhotoContestConfig() {
                         </div>
                         <div className="card-body-v2">
                             <div className="pc-add-theme-studio" style={{ display: 'flex', gap: '20px', marginBottom: '24px' }}>
-                                <div className="pc-input-wrapper-v2" style={{ flex: 1, background: 'var(--bg-badge)', border: '1.5px solid var(--border)', borderRadius: '24px', display: 'flex', alignItems: 'center' }}>
-                                    <Type size={22} style={{ marginLeft: '24px', color: 'var(--text-muted)' }} />
+                                <div className="pc-input-wrapper-v2" style={{ flex: 1, background: 'var(--bg-badge)', border: '1.5px solid var(--border)', borderRadius: '14px', display: 'flex', alignItems: 'center' }}>
+                                    <Type size={18} style={{ marginLeft: '16px', color: 'var(--text-muted)' }} />
                                     <input 
-                                        style={{ width: '100%', border: 'none', background: 'transparent', padding: '24px', fontWeight: 700, color: 'var(--text-heading)', fontSize: '1.15rem', outline: 'none' }}
+                                        style={{ width: '100%', border: 'none', background: 'transparent', padding: '14px 16px', fontWeight: 700, color: 'var(--text-heading)', fontSize: '0.95rem', outline: 'none' }}
                                         placeholder={t('pc.add_theme_placeholder')}
                                         value={newTheme}
                                         onChange={e => setNewTheme(e.target.value)}
                                         onKeyDown={e => e.key === 'Enter' && addTheme()}
                                     />
                                 </div>
-                                <button className="pc-btn-primary" style={{ padding: '0 48px', borderRadius: '24px', fontSize: '0.95rem', background: '#db2777' }} onClick={addTheme}>
-                                    <Plus size={24} />
+                                <button className="pc-btn-primary" onClick={addTheme}>
+                                    <Plus size={18} />
                                     <span>{t('pc.add_theme_btn')}</span>
                                 </button>
                             </div>
 
-                            <div className="pc-themes-matrix-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '24px' }}>
+                            <div className="pc-themes-matrix-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '14px' }}>
                                 {config.themes.map((theme, idx) => (
-                                    <div key={idx} className="pc-theme-studio-card animate slide-up" style={{ display: 'flex', alignItems: 'center', gap: '20px', background: 'var(--bg-card)', border: '1.5px solid var(--border)', padding: '24px', borderRadius: '24px', transition: '0.3s', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
-                                        <div style={{ width: '34px', height: '34px', background: 'var(--bg-badge)', color: '#db2777', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem', fontWeight: 700, border: '1.5px solid var(--border)' }}>#{idx + 1}</div>
+                                    <div key={idx} className="pc-theme-studio-card animate slide-up" style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--bg-card)', border: '1.5px solid var(--border)', padding: '14px', borderRadius: '14px', transition: '0.2s' }}>
+                                        <div style={{ width: '30px', height: '30px', background: 'var(--bg-badge)', color: 'var(--primary)', borderRadius: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, border: '1.5px solid var(--border)' }}>#{idx + 1}</div>
                                         <span style={{ flex: 1, fontWeight: 700, color: 'var(--text-heading)', fontSize: '0.95rem', letterSpacing: '-0.3px' }}>{theme}</span>
-                                        <button onClick={() => removeTheme(theme)} className="pc-btn-delete-studio-mini" style={{ width: '34px', height: '34px', borderRadius: '12px', background: 'var(--bg-badge)', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.2s' }}><X size={20} /></button>
+                                        <button onClick={() => removeTheme(theme)} className="pc-btn-delete-studio-mini" style={{ width: '30px', height: '30px', borderRadius: '9px', background: 'var(--bg-badge)', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.2s' }}><X size={16} /></button>
                                     </div>
                                 ))}
                                 {config.themes.length === 0 && (
-                                    <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '64px 32px', background: 'var(--bg-badge)', borderRadius: '40px', border: '2px dashed var(--border)' }}>
-                                        <Image size={80} style={{ margin: '0 auto 32px', opacity: 0.15, color: '#db2777' }} />
-                                        <h3 style={{ margin: 0, fontWeight: 700, color: 'var(--text-heading)', fontSize: '1.6rem', letterSpacing: '-0.8px' }}>{t('pc.empty_library')}</h3>
+                                    <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '48px 24px', background: 'var(--bg-badge)', borderRadius: '16px', border: '1.5px dashed var(--border)' }}>
+                                        <Image size={48} style={{ margin: '0 auto 20px', opacity: 0.3, color: 'var(--primary)' }} />
+                                        <h3 style={{ margin: 0, fontWeight: 700, color: 'var(--text-heading)', fontSize: '1.15rem', letterSpacing: '0' }}>{t('pc.empty_library')}</h3>
                                         <p style={{ fontWeight: 700, color: 'var(--text-muted)', fontSize: '0.95rem', marginTop: '10px' }}>{t('pc.empty_library_desc')}</p>
                                     </div>
                                 )}
@@ -393,7 +393,7 @@ export default function PhotoContestConfig() {
             .pc-tabs-v2 { display: flex; gap: 8px; background: var(--bg-badge); padding: 6px; border-radius: 14px; width: fit-content; max-width: 100%; overflow-x: auto; }
             .pc-tabs-v2 button { display: flex; align-items: center; gap: 10px; padding: 10px 18px; border: none; background: transparent; color: var(--text-muted); font-weight: 700; font-size: 0.9rem; border-radius: 10px; cursor: pointer; transition: 0.2s; white-space: nowrap; position: relative; }
             .pc-tabs-v2 button.active { background: var(--bg-card); color: var(--primary); box-shadow: none; }
-            .pc-tab-badge-v2 { background: #ec4899; color: #fff; font-size: 0.7rem; padding: 2px 8px; border-radius: 100px; margin-left: 6px; font-weight: 700; }
+            .pc-tab-badge-v2 { background: var(--primary); color: #fff; font-size: 0.7rem; padding: 2px 8px; border-radius: 100px; margin-left: 6px; font-weight: 700; }
 
             /* Card V2 */
             .pc-card-v2 { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; box-shadow: none; }
@@ -409,7 +409,7 @@ export default function PhotoContestConfig() {
             .pc-input-modern-v2:focus-within { border-color: var(--primary); }
             .pc-input-modern-v2 input { border: none; background: transparent; width: 100%; font-weight: 700; outline: none; color: var(--text-heading); }
 
-            .pc-theme-studio-card:hover { border-color: #ec4899 !important; transform: translateY(-4px); box-shadow: 0 10px 30px rgba(236, 72, 153, 0.1); }
+            .pc-theme-studio-card:hover { border-color: var(--primary-muted) !important; background: var(--bg-badge) !important; }
             .pc-btn-delete-studio-mini:hover { background: rgba(239, 68, 68, 0.1) !important; color: #ef4444 !important; transform: rotate(8deg); }
 
             /* Toggle V2 */
