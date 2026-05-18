@@ -2,8 +2,10 @@ import express from 'express';
 import Stripe from 'stripe';
 import Guild from '../../../src/models/Guild.js';
 import logger from '../../../src/utils/logger.js';
+import { adminCheck } from '../middleware/adminCheck.js';
 
-const router = express.Router();
+export const stripeCheckoutRouter = express.Router();
+export const stripeWebhookRouter = express.Router();
 
 // Initialize Stripe ONLY if the key is provided
 let stripe = null;
@@ -17,7 +19,7 @@ if (process.env.STRIPE_SECRET_KEY) {
  * 1. Checkout Endpoint
  * Requires express.json() to parse the body.
  */
-router.post('/checkout', express.json(), async (req, res) => {
+stripeCheckoutRouter.post('/checkout', adminCheck, async (req, res) => {
     if (!stripe) {
         return res.status(500).json({ error: 'Stripe non configurato sul server.' });
     }
@@ -43,13 +45,21 @@ router.post('/checkout', express.json(), async (req, res) => {
             platinum_lifetime: process.env.STRIPE_PRICE_PLATINUM_LIFETIME
         };
 
-        const priceId = prices[planType || 'premium'];
+        const allowedPlanTypes = new Set(Object.keys(prices));
+        const selectedPlanType = planType || 'premium';
+
+        if (!allowedPlanTypes.has(selectedPlanType)) {
+            return res.status(400).json({ error: 'Piano non valido.' });
+        }
+
+        const priceId = prices[selectedPlanType];
 
         if (!priceId) {
             return res.status(400).json({ error: 'Piano non valido o non configurato.' });
         }
 
-        const isLifetime = planType && planType.endsWith('_lifetime');
+        const frontendUrl = process.env.DASHBOARD_FRONTEND_URL || 'https://verixbot.com';
+        const isLifetime = selectedPlanType.endsWith('_lifetime');
         const checkoutMode = isLifetime ? 'payment' : 'subscription';
 
         const session = await stripe.checkout.sessions.create({
@@ -60,13 +70,13 @@ router.post('/checkout', express.json(), async (req, res) => {
                     quantity: 1,
                 },
             ],
-            mode: checkoutMode, // Change to 'payment' for one-time purchases
-            success_url: `${process.env.DASHBOARD_FRONTEND_URL}/config/${guildId}/premium?payment=success`,
-            cancel_url: `${process.env.DASHBOARD_FRONTEND_URL}/config/${guildId}/premium?payment=cancelled`,
+            mode: checkoutMode,
+            success_url: `${frontendUrl}/config/${guildId}/premium?payment=success`,
+            cancel_url: `${frontendUrl}/config/${guildId}/premium?payment=cancelled`,
             client_reference_id: guildId, // This is crucial for the webhook to know which guild paid!
             metadata: {
                 guildId,
-                planType
+                planType: selectedPlanType
             }
         });
 
@@ -81,7 +91,12 @@ router.post('/checkout', express.json(), async (req, res) => {
  * 2. Webhook Endpoint
  * MUST use express.raw() to verify the Stripe signature!
  */
-router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+stripeWebhookRouter.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+    if (!stripe || !process.env.STRIPE_WEBHOOK_SECRET) {
+        logger.error('[Stripe Webhook Error] Stripe key or webhook secret is not configured.');
+        return res.status(500).send('Stripe webhook not configured');
+    }
+
     const sig = req.headers['stripe-signature'];
     const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
@@ -117,9 +132,10 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
                          { 
                              isPremium: true,
                              premiumTier: planType,
-                             // Optionally save the Stripe subscription ID (or 'lifetime' indicator)
-                             stripeSubscriptionId: isLifetime ? 'lifetime' : (session.subscription || 'lifetime'),
-                             stripeCustomerId: session.customer
+                             stripeSubscriptionId: isLifetime ? null : session.subscription,
+                             stripeCustomerId: session.customer,
+                             stripePaymentMode: session.mode,
+                             premiumLifetime: isLifetime
                          },
                          { upsert: true }
                      );
@@ -135,7 +151,9 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
                     { stripeSubscriptionId: subscription.id },
                     { 
                         isPremium: false,
-                        premiumTier: 'none'
+                        premiumTier: 'none',
+                        stripeSubscriptionId: null,
+                        premiumLifetime: false
                     }
                 );
                 break;
@@ -153,4 +171,4 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
     }
 });
 
-export default router;
+export default stripeCheckoutRouter;

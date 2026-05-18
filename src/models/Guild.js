@@ -34,6 +34,23 @@ const guildSchema = new mongoose.Schema({
         enum: ['none', 'lite', 'premium', 'platinum'],
         default: 'none'
     },
+    stripeCustomerId: {
+        type: String,
+        default: null
+    },
+    stripeSubscriptionId: {
+        type: String,
+        default: null
+    },
+    stripePaymentMode: {
+        type: String,
+        enum: ['subscription', 'payment', null],
+        default: null
+    },
+    premiumLifetime: {
+        type: Boolean,
+        default: false
+    },
 
     enabledModules: {
         type: [String],
