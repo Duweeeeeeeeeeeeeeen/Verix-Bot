@@ -14,6 +14,11 @@ const __dirname = path.dirname(__filename);
 if (!global.eventRegistry) global.eventRegistry = new Map();
 if (!global.registeredEvents) global.registeredEvents = new Set();
 
+// Maps folder names (src/modules/<folder>) to their registry key when they differ
+const folderToRegistryName = {
+    'voice': 'tempvoice',
+};
+
 export default async (client) => {
     const eventRegistry = global.eventRegistry;
     const registeredEvents = global.registeredEvents;
@@ -156,8 +161,10 @@ export default async (client) => {
                         
                         if (matchesModule) logger.debug(`[HUB] Routing ${target} to module: ${moduleName}`);
                     } else {
-                        // For non-interaction events (MessageCreate), check activation
-                        const config = await getModuleConfig(guildId, moduleName.toLowerCase());
+                        // For non-interaction events (voiceStateUpdate, messageCreate, etc.)
+                        // Map folder name to registry name if they differ
+                        const registryName = folderToRegistryName[moduleName.toLowerCase()] || moduleName.toLowerCase();
+                        const config = await getModuleConfig(guildId, registryName);
                         if (!config || !config.enabled) continue;
                     }
                 }

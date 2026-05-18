@@ -343,8 +343,38 @@ export default function ReactionRolesConfig() {
                                         <div className="v-stack" style={{ gap: '16px' }}>
                                             {activePanel.roles.map((role, idx) => (
                                                 <div key={idx} className="pc-button-builder animate slide-up">
-                                                    <div className="pc-bb-left">
-                                                        <GripVertical size={20} color="rgba(255,255,255,0.2)" style={{ cursor: 'grab' }} />
+                                                    <div className="pc-bb-left" style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center', justifyContent: 'center', padding: '0 8px' }}>
+                                                        <button 
+                                                            disabled={idx === 0} 
+                                                            onClick={() => {
+                                                                if (idx === 0) return;
+                                                                const newRoles = [...activePanel.roles];
+                                                                const temp = newRoles[idx];
+                                                                newRoles[idx] = newRoles[idx - 1];
+                                                                newRoles[idx - 1] = temp;
+                                                                updatePanel(activePanel.id, { roles: newRoles });
+                                                            }}
+                                                            className="pc-bb-reorder-btn"
+                                                            title={t('rr.move_up') || 'Sposta su'}
+                                                        >
+                                                            <ChevronUp size={16} />
+                                                        </button>
+                                                        <GripVertical size={18} color="rgba(255,255,255,0.2)" />
+                                                        <button 
+                                                            disabled={idx === activePanel.roles.length - 1} 
+                                                            onClick={() => {
+                                                                if (idx === activePanel.roles.length - 1) return;
+                                                                const newRoles = [...activePanel.roles];
+                                                                const temp = newRoles[idx];
+                                                                newRoles[idx] = newRoles[idx + 1];
+                                                                newRoles[idx + 1] = temp;
+                                                                updatePanel(activePanel.id, { roles: newRoles });
+                                                            }}
+                                                            className="pc-bb-reorder-btn"
+                                                            title={t('rr.move_down') || 'Sposta giù'}
+                                                        >
+                                                            <ChevronDown size={16} />
+                                                        </button>
                                                     </div>
                                                     <div className="pc-bb-content">
                                                         <div className="pc-bb-top-row">
@@ -515,6 +545,29 @@ export default function ReactionRolesConfig() {
             .pc-bb-col label { font-size: 0.65rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
             .pc-bb-input-box input { width: 100%; background: var(--bg-badge); border: 1.5px solid var(--border); padding: 12px 16px; border-radius: 14px; font-weight: 700; color: var(--text-heading); outline: none; }
             .pc-bb-input-box input:focus { border-color: var(--primary); }
+
+            .pc-bb-reorder-btn {
+                background: transparent;
+                border: none;
+                color: var(--text-muted);
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 4px;
+                border-radius: 6px;
+                transition: 0.2s;
+                opacity: 0.6;
+            }
+            .pc-bb-reorder-btn:hover:not(:disabled) {
+                background: var(--border);
+                color: var(--primary);
+                opacity: 1;
+            }
+            .pc-bb-reorder-btn:disabled {
+                opacity: 0.15;
+                cursor: not-allowed;
+            }
 
             .v-stack { display: flex; flex-direction: column; }
             .animate { animation: slideUp 0.4s ease-out; }
