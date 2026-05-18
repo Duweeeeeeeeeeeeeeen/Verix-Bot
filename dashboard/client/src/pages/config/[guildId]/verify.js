@@ -266,7 +266,7 @@ export default function VerifyConfig() {
                                 {config.logEnabled && (
                                     <div className="pc-input-group-v2 animate slide-up" style={{ marginTop: '24px' }}>
                                         <label>{t('verify.log_channel')}</label>
-                                        <DiscordSelector type="channel" options={discordData.channels} value={config.logChannelId} onChange={v => setNested('logChannelId', v)} />
+                                        <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 0 || c.type === 5)} value={config.logChannelId} onChange={v => setNested('logChannelId', v)} />
                                     </div>
                                 )}
                             </div>

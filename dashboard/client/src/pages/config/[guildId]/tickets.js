@@ -242,7 +242,7 @@ export default function TicketConfig() {
                                 </div>
                                 <div className="pc-input-group-v2" style={{ marginTop: '24px' }}>
                                     <label>{t('tickets.log_channel')}</label>
-                                    <DiscordSelector type="channel" options={discordData.channels} value={config.logChannelId} onChange={v => setConfig({...config, logChannelId: v})} />
+                                    <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 0 || c.type === 5)} value={config.logChannelId} onChange={v => setConfig({...config, logChannelId: v})} />
                                     <p style={{ margin: '8px 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t('tickets.log_channel_help')}</p>
                                 </div>
                             </div>

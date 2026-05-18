@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { Search, ChevronDown, Hash, Shield, Check, AlertCircle, X } from 'lucide-react';
+import { Search, ChevronDown, Hash, Shield, Check, AlertCircle, X, Volume2, Folder, Megaphone } from 'lucide-react';
 import { useT } from '../contexts/LanguageContext';
 
 /**
@@ -16,9 +16,22 @@ export default function DiscordSelector({
 }) {
   const { t } = useT();
   const displayPlaceholder = placeholder || t('common.select_placeholder');
-  const [isOpen, setIsOpen] = useState(false);
+   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState('');
   const containerRef = useRef(null);
+
+  const getChannelIcon = (option, size = 16) => {
+    if (!option) return <Hash size={size} className="ds-icon-muted" />;
+    const channelType = option.type;
+    if (channelType === 2 || channelType === 13) {
+      return <Volume2 size={size} className="ds-icon-muted" />;
+    } else if (channelType === 4) {
+      return <Folder size={size} className="ds-icon-muted" />;
+    } else if (channelType === 5) {
+      return <Megaphone size={size} className="ds-icon-muted" />;
+    }
+    return <Hash size={size} className="ds-icon-muted" />;
+  };
 
   const selectedOptions = useMemo(() => {
     if (multiple) {
@@ -95,7 +108,7 @@ export default function DiscordSelector({
                 </div>
               ) : (
                 <div className="ds-channel-v2">
-                  <Hash size={14} className="ds-icon-muted" />
+                  {getChannelIcon(selectedOptions, 14)}
                   <span>{selectedOptions.name}</span>
                 </div>
               )}
@@ -139,7 +152,7 @@ export default function DiscordSelector({
                          </div>
                        ) : (
                          <div className="ds-channel-preview">
-                            <Hash size={16} />
+                            {getChannelIcon(opt, 16)}
                             <span className="ds-opt-name">{opt.name}</span>
                          </div>
                        )}
