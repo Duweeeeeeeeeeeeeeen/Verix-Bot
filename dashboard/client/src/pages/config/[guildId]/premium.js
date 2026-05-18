@@ -23,6 +23,7 @@ export default function PremiumHub() {
   const [loading, setLoading] = useState(true);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [billingInterval, setBillingInterval] = useState('monthly');
 
   useEffect(() => {
     setMounted(true);
@@ -46,9 +47,10 @@ export default function PremiumHub() {
   const handleCheckout = async (planType) => {
     try {
       setCheckoutLoading(true);
+      const finalPlanType = billingInterval === 'yearly' ? `${planType}_yearly` : planType;
       const res = await api.request(`/stripe/checkout`, {
           method: 'POST',
-          data: { guildId, planType }
+          data: { guildId, planType: finalPlanType }
       });
       if (res && res.url) {
         window.location.href = res.url;
@@ -162,6 +164,24 @@ export default function PremiumHub() {
                     </div>
                 </div>
             </section>
+            {/* Billing Switch */}
+            <div className="pc-billing-toggle-wrapper">
+                <div className="pc-billing-toggle">
+                    <button 
+                        className={`toggle-btn ${billingInterval === 'monthly' ? 'active' : ''}`}
+                        onClick={() => setBillingInterval('monthly')}
+                    >
+                        {t('ph.monthly')}
+                    </button>
+                    <button 
+                        className={`toggle-btn ${billingInterval === 'yearly' ? 'active' : ''}`}
+                        onClick={() => setBillingInterval('yearly')}
+                    >
+                        {t('ph.yearly')}
+                        <span className="yearly-badge">{t('ph.save_20')}</span>
+                    </button>
+                </div>
+            </div>
 
             {/* V2 Pricing Grid */}
             <div className="pc-pricing-grid-v2">
@@ -188,7 +208,13 @@ export default function PremiumHub() {
                     <div className="lite-tag-v2">{t('ph.lite')}</div>
                     <div className="price-header-v2">
                         <div className="price-title-v2" style={{ color: '#3b82f6' }}>{t('ph.lite')}</div>
-                        <div className="price-val-v2">€2.49<span>/{t('ph.month')}</span></div>
+                        <div className="price-val-v2">
+                            {billingInterval === 'monthly' ? (
+                                <>€2.49<span>/{t('ph.month')}</span></>
+                            ) : (
+                                <>€1.99<span style={{ fontSize: '0.9rem', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>/{t('ph.month')}<br/><small style={{ fontSize: '0.65rem', opacity: 0.8, display: 'block', marginTop: '2px' }}>€23.88 / {t('ph.year')}</small></span></>
+                            )}
+                        </div>
                     </div>
                     <div className="price-body-v2">
                         <ul className="feature-list-v2">
@@ -214,7 +240,13 @@ export default function PremiumHub() {
                     <div className="popular-tag-v2">{t('common.best_seller')}</div>
                     <div className="price-header-v2">
                         <div className="price-title-v2" style={{ color: '#f59e0b' }}>{t('ph.premium')}</div>
-                        <div className="price-val-v2">€4.99<span>/{t('ph.month')}</span></div>
+                        <div className="price-val-v2">
+                            {billingInterval === 'monthly' ? (
+                                <>€4.99<span>/{t('ph.month')}</span></>
+                            ) : (
+                                <>€3.99<span style={{ fontSize: '0.9rem', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>/{t('ph.month')}<br/><small style={{ fontSize: '0.65rem', opacity: 0.8, display: 'block', marginTop: '2px' }}>€47.88 / {t('ph.year')}</small></span></>
+                            )}
+                        </div>
                     </div>
                     <div className="price-body-v2">
                         <ul className="feature-list-v2">
@@ -239,7 +271,13 @@ export default function PremiumHub() {
                     <div className="elite-tag-v2">{t('common.elite_engine')}</div>
                     <div className="price-header-v2">
                         <div className="price-title-v2" style={{ color: '#a855f7' }}>{t('ph.platinum')}</div>
-                        <div className="price-val-v2">€9.99<span>/{t('ph.month')}</span></div>
+                        <div className="price-val-v2">
+                            {billingInterval === 'monthly' ? (
+                                <>€9.99<span>/{t('ph.month')}</span></>
+                            ) : (
+                                <>€7.99<span style={{ fontSize: '0.9rem', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>/{t('ph.month')}<br/><small style={{ fontSize: '0.65rem', opacity: 0.8, display: 'block', marginTop: '2px' }}>€95.88 / {t('ph.year')}</small></span></>
+                            )}
+                        </div>
                     </div>
                     <div className="price-body-v2">
                         <ul className="feature-list-v2">
@@ -401,6 +439,56 @@ export default function PremiumHub() {
             .animate { animation: slide-up 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); }
             @keyframes slide-up { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
             
+            /* Billing Switch Toggle */
+            .pc-billing-toggle-wrapper {
+                display: flex;
+                justify-content: center;
+                margin-top: -16px;
+                margin-bottom: 48px;
+            }
+            .pc-billing-toggle {
+                display: flex;
+                background: var(--bg-card);
+                border: 1.5px solid var(--border);
+                padding: 6px;
+                border-radius: 20px;
+                gap: 4px;
+                box-shadow: var(--shadow-premium);
+            }
+            .toggle-btn {
+                padding: 12px 28px;
+                border-radius: 16px;
+                font-weight: 700;
+                font-size: 0.95rem;
+                cursor: pointer;
+                border: none;
+                background: transparent;
+                color: var(--text-muted);
+                transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .toggle-btn:hover {
+                color: var(--text-heading);
+            }
+            .toggle-btn.active {
+                background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+                color: #fff;
+                box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2);
+            }
+            .yearly-badge {
+                font-size: 0.65rem;
+                font-weight: 800;
+                background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                color: #fff;
+                padding: 3px 8px;
+                border-radius: 100px;
+                letter-spacing: 0.5px;
+                text-transform: uppercase;
+                box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
+            }
+
             @media (max-width: 1024px) {
                 .pc-hero-engine-v2 { padding: 40px; }
                 .hero-content-v2 { flex-direction: column; text-align: center; gap: 48px; }

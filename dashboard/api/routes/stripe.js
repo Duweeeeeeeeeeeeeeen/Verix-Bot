@@ -33,8 +33,11 @@ router.post('/checkout', express.json(), async (req, res) => {
         // You should define these in your .env or a config file
         const prices = {
             lite: process.env.STRIPE_PRICE_LITE,
-            premium: process.env.STRIPE_PRICE_PREMIUM, // e.g. price_1Nxxx
-            platinum: process.env.STRIPE_PRICE_PLATINUM // e.g. price_1Nyyy
+            premium: process.env.STRIPE_PRICE_PREMIUM,
+            platinum: process.env.STRIPE_PRICE_PLATINUM,
+            lite_yearly: process.env.STRIPE_PRICE_LITE_YEARLY,
+            premium_yearly: process.env.STRIPE_PRICE_PREMIUM_YEARLY,
+            platinum_yearly: process.env.STRIPE_PRICE_PLATINUM_YEARLY
         };
 
         const priceId = prices[planType || 'premium'];
@@ -94,26 +97,29 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
     try {
         switch (event.type) {
             case 'checkout.session.completed': {
-                const session = event.data.object;
-                const guildId = session.client_reference_id || session.metadata.guildId;
-                const planType = session.metadata.planType || 'premium';
-
-                if (guildId) {
-                    logger.info(`[Stripe] Payment successful for guild ${guildId} (Plan: ${planType})`);
-                    
-                    // Update database
-                    await Guild.findOneAndUpdate(
-                        { guildId },
-                        { 
-                            isPremium: true,
-                            premiumTier: planType,
-                            // Optionally save the Stripe subscription ID
-                            stripeSubscriptionId: session.subscription,
-                            stripeCustomerId: session.customer
-                        },
-                        { upsert: true }
-                    );
-                }
+                 const session = event.data.object;
+                 const guildId = session.client_reference_id || session.metadata.guildId;
+                 let planType = session.metadata.planType || 'premium';
+ 
+                 if (guildId) {
+                     if (planType.endsWith('_yearly')) {
+                         planType = planType.replace('_yearly', '');
+                     }
+                     logger.info(`[Stripe] Payment successful for guild ${guildId} (Plan: ${planType})`);
+                     
+                     // Update database
+                     await Guild.findOneAndUpdate(
+                         { guildId },
+                         { 
+                             isPremium: true,
+                             premiumTier: planType,
+                             // Optionally save the Stripe subscription ID
+                             stripeSubscriptionId: session.subscription,
+                             stripeCustomerId: session.customer
+                         },
+                         { upsert: true }
+                     );
+                 }
                 break;
             }
             case 'customer.subscription.deleted': {
