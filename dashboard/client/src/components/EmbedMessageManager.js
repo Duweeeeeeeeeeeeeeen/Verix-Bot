@@ -283,15 +283,17 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
       <style jsx>{`
         .manager-layout {
           display: grid;
-          grid-template-columns: 240px 1fr;
-          gap: 24px;
+          grid-template-columns: 220px minmax(0, 1fr);
+          gap: 20px;
           align-items: flex-start;
+          max-width: 1280px;
+          margin: 0 auto;
         }
 
         .slug-sidebar {
           background: var(--bg-sidebar-alt);
           border: 1px solid var(--border);
-          border-radius: 20px;
+          border-radius: 16px;
           overflow: hidden;
           position: sticky;
           top: 24px;
@@ -299,7 +301,7 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
         }
 
         .sidebar-header {
-          padding: 24px;
+          padding: 18px;
           border-bottom: 1px solid var(--border);
           display: flex;
           align-items: center;
@@ -315,7 +317,7 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
         }
 
         .group-list {
-          padding: 12px;
+          padding: 10px;
           display: flex;
           flex-direction: column;
           gap: 8px;
@@ -335,7 +337,7 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
 
         .group-header {
           width: 100%;
-          padding: 14px 16px;
+          padding: 12px 14px;
           background: none;
           border: none;
           display: flex;
@@ -359,8 +361,8 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
         }
 
         .group-icon-wrapper {
-          width: 32px;
-          height: 32px;
+          width: 30px;
+          height: 30px;
           border-radius: 8px;
           display: flex;
           align-items: center;
@@ -444,11 +446,12 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
         }
 
         .editor-header-v2 {
-          margin-bottom: 32px;
+          margin-bottom: 22px;
           display: flex;
           justify-content: space-between;
-          align-items: flex-end;
-          padding: 0 4px;
+          align-items: flex-start;
+          padding: 0;
+          gap: 16px;
         }
 
         .badge-context {
@@ -463,15 +466,16 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
         }
 
         .header-text-v2 h3 {
-          font-size: 1.8rem;
+          font-size: 1.35rem;
           font-weight: 900;
-          margin-bottom: 8px;
+          margin-bottom: 6px;
         }
 
         .header-text-v2 p {
           color: var(--text-dim);
           font-size: 0.95rem;
-          max-width: 600px;
+          max-width: 680px;
+          line-height: 1.5;
         }
 
         .btn-save-all {
@@ -498,9 +502,9 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
         .editor-card-p {
           background: var(--bg-card);
           border: 1px solid var(--border);
-          border-radius: 24px;
-          padding: 32px;
-          box-shadow: var(--shadow-premium);
+          border-radius: 16px;
+          padding: 20px;
+          box-shadow: none;
         }
 
         .empty-manager-state {
@@ -530,9 +534,16 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
           margin-bottom: 8px;
         }
 
-        @media (max-width: 1400px) {
+        @media (max-width: 1180px) {
           .manager-layout { grid-template-columns: 1fr; }
           .slug-sidebar { position: static; }
+          .editor-header-v2 { flex-direction: column; }
+        }
+
+        @media (max-width: 720px) {
+          .editor-card-p { padding: 14px; }
+          .header-buttons-v2 { width: 100%; flex-wrap: wrap; }
+          .header-buttons-v2 button { flex: 1; justify-content: center; }
         }
 
         @keyframes slide-up {

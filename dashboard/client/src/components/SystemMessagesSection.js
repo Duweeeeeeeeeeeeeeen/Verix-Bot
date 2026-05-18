@@ -41,11 +41,11 @@ const SystemMessagesSection = ({
                 </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="system-messages-grid">
                 {messages.map((msg) => (
-                    <div key={msg.key} className="pc-input-group-v2">
-                        <div className="flex justify-between items-center mb-2">
-                            <label className="pc-label-v2 flex items-center gap-2">
+                    <div key={msg.key} className="pc-input-group-v2 system-message-card">
+                        <div className="message-label-row">
+                            <label className="pc-label-v2">
                                 {msg.label}
                                 {msg.description && (
                                     <span className="pc-help-icon-v2" title={msg.description}>?</span>
@@ -56,13 +56,13 @@ const SystemMessagesSection = ({
                             )}
                         </div>
                         <textarea
-                            className="pc-input-modern-v2 min-h-[100px] py-3 resize-y"
+                            className="pc-input-modern-v2 system-message-textarea"
                             value={config.systemMessages?.[msg.key] || ''}
                             onChange={(e) => handleChange(msg.key, e.target.value)}
                             placeholder={msg.placeholder || t('common.leave_empty_default')}
                         />
-                        <p className="text-[11px] text-gray-500 mt-1">
-                            {t('common.local_key')}: <code className="bg-gray-800 px-1 rounded">{msg.key}</code>
+                        <p className="system-message-key">
+                            {t('common.local_key')}: <code>{msg.key}</code>
                         </p>
                     </div>
                 ))}
@@ -73,6 +73,68 @@ const SystemMessagesSection = ({
                     <p className="text-gray-500">{t('common.no_system_messages')}</p>
                 </div>
             )}
+
+            <style jsx>{`
+                .system-messages-section {
+                    max-width: 1180px;
+                    margin: 0 auto;
+                }
+
+                .system-messages-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+                    gap: 18px;
+                }
+
+                .system-message-card {
+                    background: var(--bg-card);
+                    border: 1px solid var(--border-light);
+                    border-radius: 16px;
+                    padding: 18px;
+                }
+
+                .message-label-row {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    gap: 12px;
+                    margin-bottom: 10px;
+                }
+
+                .pc-label-v2 {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    min-width: 0;
+                }
+
+                .system-message-textarea {
+                    min-height: 135px;
+                    padding: 14px;
+                    resize: vertical;
+                    line-height: 1.5;
+                    font-family: inherit;
+                }
+
+                .system-message-key {
+                    margin: 8px 0 0;
+                    font-size: 11px;
+                    color: var(--text-muted);
+                }
+
+                .system-message-key code {
+                    background: var(--bg-badge);
+                    color: var(--text-main);
+                    padding: 2px 6px;
+                    border-radius: 6px;
+                }
+
+                @media (max-width: 720px) {
+                    .system-messages-grid {
+                        grid-template-columns: 1fr;
+                    }
+                }
+            `}</style>
         </div>
     );
 };

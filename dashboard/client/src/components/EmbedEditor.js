@@ -166,7 +166,7 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
                         {embed?.fields?.map((f, i) => (
                             <div key={i} className="field-entry-v2">
                                 <input placeholder={t('embeds.editor.field_name_placeholder') || 'Nome'} value={f.name} onChange={e => updateFieldEntry(i, 'name', e.target.value)} />
-                                <input placeholder={t('embeds.editor.field_value') || 'Valore'} value={f.value} onChange={e => updateFieldEntry(i, 'value', e.target.value)} />
+                                <textarea placeholder={t('embeds.editor.field_value') || 'Valore'} value={f.value} onChange={e => updateFieldEntry(i, 'value', e.target.value)} rows={2} />
                                 <button className="btn-del-mini-v2" onClick={() => removeField(i)}><Trash2 size={14} /></button>
                             </div>
                         ))}
@@ -229,12 +229,12 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
 
       <style jsx>{`
         .pc-embed-editor-v2 { width: 100%; }
-        .pc-editor-layout-v2 { display: grid; grid-template-columns: 1fr 560px; gap: 32px; align-items: start; }
+        .pc-editor-layout-v2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(360px, 480px); gap: 24px; align-items: start; max-width: 1180px; margin: 0 auto; }
         
-        .pc-editor-form-v2 { display: flex; flex-direction: column; gap: 32px; }
+        .pc-editor-form-v2 { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
 
-        .pc-card-v2 { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 28px; padding: 24px; box-shadow: var(--shadow-premium); }
-        .card-header-v2 { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+        .pc-card-v2 { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 16px; padding: 22px; box-shadow: none; }
+        .card-header-v2 { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
         .header-icon { width: 36px; height: 36px; background: var(--bg-badge); color: var(--primary); border-radius: 10px; display: flex; align-items: center; justify-content: center; }
         .card-header-v2 h3 { margin: 0; font-size: 1.05rem; font-weight: 800; }
 
@@ -244,24 +244,26 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
         .pc-input-wrapper-v2 { display: flex; align-items: center; background: var(--bg-input); border: 1.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: 0.2s; }
         .pc-input-wrapper-v2:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }
         .pc-input-wrapper-v2 .input-icon { margin-left: 14px; color: var(--text-muted); opacity: 0.6; }
-        .pc-input-wrapper-v2 input { width: 100%; border: none; background: transparent; padding: 10px 14px; font-weight: 700; outline: none; color: var(--text-main); font-size: 0.9rem; }
+        .pc-input-wrapper-v2 input { width: 100%; border: none; background: transparent; padding: 12px 14px; font-weight: 700; outline: none; color: var(--text-main); font-size: 0.95rem; }
 
-        .pc-textarea-v2 { width: 100%; background: var(--bg-input); border: 1.5px solid var(--border); border-radius: 12px; padding: 14px; font-weight: 600; color: var(--text-main); outline: none; transition: 0.2s; resize: vertical; }
+        .pc-textarea-v2 { width: 100%; min-height: 170px; background: var(--bg-input); border: 1.5px solid var(--border); border-radius: 12px; padding: 14px; font-weight: 600; color: var(--text-main); outline: none; transition: 0.2s; resize: vertical; line-height: 1.55; }
         .pc-textarea-v2:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }
 
-        .pc-row-v2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .pc-row-v2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
         
         .pc-color-picker-wrapper-v2 { display: flex; gap: 10px; }
         .pc-color-picker-wrapper-v2 input[type="color"] { width: 44px; height: 44px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg-badge); cursor: pointer; padding: 3px; }
         .hex-input-v2 { flex: 1; background: var(--bg-input); border: 1.5px solid var(--border); border-radius: 12px; padding: 0 14px; font-weight: 700; color: var(--text-main); outline: none; font-size: 0.9rem; }
 
-        .pc-fields-manager-v2 { margin-top: 24px; padding: 20px; background: var(--bg-badge); border-radius: 20px; border: 1px solid var(--border-light); }
+        .pc-fields-manager-v2 { margin-top: 20px; padding: 16px; background: var(--bg-badge); border-radius: 14px; border: 1px solid var(--border-light); }
         .fields-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; font-size: 0.85rem; font-weight: 800; color: var(--text-main); }
         .btn-add-mini-v2 { width: 32px; height: 32px; border-radius: 8px; border: none; background: var(--primary); color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         
         .fields-list-v2 { display: flex; flex-direction: column; gap: 8px; }
-        .field-entry-v2 { display: grid; grid-template-columns: 1fr 1fr 32px; gap: 8px; align-items: center; }
-        .field-entry-v2 input { background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; font-size: 0.85rem; font-weight: 700; color: var(--text-main); outline: none; }
+        .field-entry-v2 { display: grid; grid-template-columns: minmax(150px, 0.75fr) minmax(220px, 1fr) 32px; gap: 8px; align-items: stretch; }
+        .field-entry-v2 input,
+        .field-entry-v2 textarea { background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; font-size: 0.85rem; font-weight: 700; color: var(--text-main); outline: none; font-family: inherit; line-height: 1.35; }
+        .field-entry-v2 textarea { min-height: 40px; resize: vertical; }
         .btn-del-mini-v2 { width: 32px; height: 32px; border-radius: 8px; border: none; background: rgba(239, 68, 68, 0.1); color: var(--error); cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
         .pc-preview-sidebar-v2 { position: sticky; top: 20px; }
@@ -305,7 +307,13 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
         }
         .pc-btn-upload-v2:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        @media (max-width: 1300px) { .pc-editor-layout-v2 { grid-template-columns: 1fr; } .pc-preview-sidebar-v2 { position: static; } }
+        @media (max-width: 1180px) { .pc-editor-layout-v2 { grid-template-columns: 1fr; } .pc-preview-sidebar-v2 { position: static; } }
+        @media (max-width: 720px) {
+          .pc-card-v2 { padding: 18px; }
+          .field-entry-v2 { grid-template-columns: 1fr 32px; }
+          .field-entry-v2 textarea { grid-column: 1 / -1; }
+          .pc-textarea-v2 { min-height: 150px; }
+        }
         
         /* White Mode Specific Fixes */
         :global(.light-theme) .pc-card-v2, 
