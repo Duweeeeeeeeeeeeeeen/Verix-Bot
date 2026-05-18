@@ -74,6 +74,8 @@ export default function PremiumHub() {
   const isPaid = premiumTier !== 'none';
 
   const currentTierColor = isPlatinum ? '#a855f7' : isPremium ? '#f59e0b' : isLite ? '#3b82f6' : '#6366f1';
+  const automationsLimit = isPlatinum ? '∞' : (premiumTier === 'premium' ? '10' : (isLite ? '5' : '2'));
+  const computeType = isPlatinum ? (t('ph.compute_dedicated') || 'Dedicated') : (premiumTier === 'premium' ? (t('ph.compute_priority') || 'Priority') : (t('ph.compute_shared') || 'Shared'));
 
   return (
     <div className="pc-premium-wrapper fade-in">
@@ -119,7 +121,7 @@ export default function PremiumHub() {
                         
                         <div className="hero-stats-row-v2">
                             <div className="hero-stat-item-v2">
-                                <span className="stat-val-v2">∞</span>
+                                <span className="stat-val-v2">{automationsLimit}</span>
                                 <span className="stat-label-v2">{t('ph.automations')}</span>
                             </div>
                             <div className="hero-stat-item-v2">
@@ -127,7 +129,7 @@ export default function PremiumHub() {
                                 <span className="stat-label-v2">{t('ph.uptime')}</span>
                             </div>
                             <div className="hero-stat-item-v2">
-                                <span className="stat-val-v2">Dedicated</span>
+                                <span className="stat-val-v2">{computeType}</span>
                                 <span className="stat-label-v2">{t('ph.compute')}</span>
                             </div>
                         </div>
