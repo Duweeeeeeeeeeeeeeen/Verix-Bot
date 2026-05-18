@@ -76,13 +76,12 @@ const SystemMessagesSection = ({
 
             <style jsx>{`
                 .system-messages-section {
-                    max-width: 1180px;
-                    margin: 0 auto;
+                    width: 100%;
                 }
 
                 .system-messages-grid {
                     display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+                    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
                     gap: 18px;
                 }
 
