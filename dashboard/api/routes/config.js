@@ -2719,6 +2719,7 @@ router.post('/:guildId/onboarding/complete', adminCheck, async (req, res) => {
 
         // 2. Initialize specific module configs with channels and roles
         await initializeModuleConfigs(guildId, createdChannels, { 
+            modules,
             adminRoles, 
             staffRole, 
             language, 

@@ -36,7 +36,7 @@ export default function SystemConfig() {
 
   const handleSave = () => {
       window.dispatchEvent(new CustomEvent('show-toast', { 
-          detail: { message: t('common.saved_success'), type: 'success' } 
+          detail: { message: t('common.save_success'), type: 'success' } 
       }));
   };
 

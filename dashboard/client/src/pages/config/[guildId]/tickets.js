@@ -23,6 +23,7 @@ export default function TicketConfig() {
   const [discordData, setDiscordData] = useState({ roles: [], channels: [], categories: [] });
   const [activeTab, setActiveTab] = useState('settings');
   const [mounted, setMounted] = useState(false);
+  const [sendingPanel, setSendingPanel] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -75,6 +76,20 @@ export default function TicketConfig() {
     } finally {
       setSaving(false);
       window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
+    }
+  };
+
+  const handleSendPanel = async () => {
+    if (!config.panelChannelId) return showToast(t('tickets.panel_no_channel') || 'Seleziona prima un canale per il pannello.', 'error');
+    setSendingPanel(true);
+    try {
+        await handleSave();
+        await api.request(`/config/${guildId}/tickets/send-panel`, { method: 'POST' });
+        showToast(t('tickets.panel_success') || 'Pannello ticket inviato correttamente!');
+    } catch (e) {
+        showToast(t('tickets.panel_error') || 'Errore durante l\'invio del pannello.', 'error');
+    } finally {
+        setSendingPanel(false);
     }
   };
 
@@ -173,6 +188,15 @@ export default function TicketConfig() {
                 <button className="pc-btn-outline-v2" onClick={handleReset} title={t('common.reset_to_default')}>
                     <RotateCcw size={18} />
                 </button>
+                <button 
+                    className="pc-btn-outline-v2" 
+                    onClick={handleSendPanel} 
+                    disabled={sendingPanel || !config.panelChannelId} 
+                    title={t('tickets.send_panel') || 'Invia Panel Ticket'}
+                    style={{ color: 'var(--primary)', borderColor: sendingPanel ? 'var(--border)' : 'rgba(var(--primary-rgb), 0.2)' }}
+                >
+                    {sendingPanel ? <RotateCcw size={18} className="animate-spin" /> : <Send size={18} />}
+                </button>
                 <button className="pc-btn-primary" onClick={handleSave} disabled={saving}>
                     <Save size={18} />
                     <span>{saving ? t('common.saving') : t('common.save_changes')}</span>
@@ -206,9 +230,15 @@ export default function TicketConfig() {
                                 <h3 style={{ margin: 0 }}>{t('tickets.perms_title')}</h3>
                             </div>
                             <div className="card-body-v2">
-                                <div className="pc-input-group-v2">
-                                    <label>{t('tickets.support_roles')}</label>
-                                    <DiscordSelector type="role" multiple={true} options={discordData.roles} value={config.supportRoles || []} onChange={v => setConfig({...config, supportRoles: v})} />
+                                <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                                    <div className="pc-input-group-v2">
+                                        <label>{t('tickets.support_roles')}</label>
+                                        <DiscordSelector type="role" multiple={true} options={discordData.roles} value={config.staffRoleIds || []} onChange={v => setConfig({...config, staffRoleIds: v})} />
+                                    </div>
+                                    <div className="pc-input-group-v2">
+                                        <label>{t('tickets.panel_channel') || 'Canale Pannello'}</label>
+                                        <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 0 || c.type === 5)} value={config.panelChannelId} onChange={v => setConfig({...config, panelChannelId: v})} />
+                                    </div>
                                 </div>
                                 <div className="pc-input-group-v2" style={{ marginTop: '24px' }}>
                                     <label>{t('tickets.log_channel')}</label>

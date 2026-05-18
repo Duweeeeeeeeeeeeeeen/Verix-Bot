@@ -66,7 +66,7 @@ export async function createDefaultChannels(guild, modules, customNames = {}, la
  * @param {import('discord.js').Guild} guild
  */
 export async function initializeModuleConfigs(guildId, createdChannels, onboardingData = {}, guild) {
-    const { adminRoles, staffRole, language, prefix, nickname, ticketCategory, welcomeStyle } = onboardingData;
+    const { modules = [], adminRoles, staffRole, language, prefix, nickname, ticketCategory, welcomeStyle } = onboardingData;
 
     // 0. Global & Guild Core
     await Guild.findOneAndUpdate(
@@ -115,79 +115,95 @@ export async function initializeModuleConfigs(guildId, createdChannels, onboardi
     }
 
     // 1. Giveaway
-    if (createdChannels.giveaway) {
-        await GiveawayConfig.findOneAndUpdate(
-            { guildId },
-            { $set: { giveawayChannelId: createdChannels.giveaway, enabled: true } },
-            { upsert: true }
-        );
-    }
+    const isGiveawayEnabled = modules.includes('giveaway');
+    await GiveawayConfig.findOneAndUpdate(
+        { guildId },
+        { 
+            $set: { 
+                enabled: isGiveawayEnabled,
+                ...(createdChannels.giveaway && { giveawayChannelId: createdChannels.giveaway })
+            } 
+        },
+        { upsert: true }
+    );
 
     // 2. Polls
-    if (createdChannels.polls) {
-        await PollConfig.findOneAndUpdate(
-            { guildId },
-            { $set: { channelId: createdChannels.polls, enabled: true } },
-            { upsert: true }
-        );
-    }
+    const isPollsEnabled = modules.includes('polls');
+    await PollConfig.findOneAndUpdate(
+        { guildId },
+        { 
+            $set: { 
+                enabled: isPollsEnabled,
+                ...(createdChannels.polls && { channelId: createdChannels.polls })
+            } 
+        },
+        { upsert: true }
+    );
 
     // 3. Tickets
-    let categoryId = null;
-    if (ticketCategory && guild.members.me.permissions.has(PermissionFlagsBits.ManageChannels)) {
+    const isTicketsEnabled = modules.includes('tickets');
+    let categoryOpenId = null;
+    if (isTicketsEnabled && ticketCategory && guild.members.me.permissions.has(PermissionFlagsBits.ManageChannels)) {
         try {
             const category = await guild.channels.create({
                 name: ticketCategory,
                 type: ChannelType.GuildCategory
             });
-            categoryId = category.id;
+            categoryOpenId = category.id;
         } catch (err) {
             console.error('[SetupUtils] Category create error:', err);
         }
     }
 
-    if (createdChannels.tickets || staffRole || categoryId) {
-        const update = { enabled: true };
-        if (createdChannels.tickets) update.panelChannelId = createdChannels.tickets;
-        if (staffRole) update.staffRoleId = staffRole;
-        if (categoryId) update.categoryId = categoryId;
+    const ticketUpdate = { enabled: isTicketsEnabled };
+    if (createdChannels.tickets) ticketUpdate.panelChannelId = createdChannels.tickets;
+    if (staffRole) ticketUpdate.staffRoleIds = [staffRole];
+    if (categoryOpenId) ticketUpdate.categoryOpenId = categoryOpenId;
 
-        await TicketConfig.findOneAndUpdate(
-            { guildId },
-            { $set: update },
-            { upsert: true }
-        );
-    }
+    await TicketConfig.findOneAndUpdate(
+        { guildId },
+        { $set: ticketUpdate },
+        { upsert: true }
+    );
 
     // 4. Verify
-    if (createdChannels.verify) {
-        await VerifyConfig.findOneAndUpdate(
-            { guildId },
-            { $set: { panelChannelId: createdChannels.verify, enabled: true } },
-            { upsert: true }
-        );
-    }
+    const isVerifyEnabled = modules.includes('verify');
+    await VerifyConfig.findOneAndUpdate(
+        { guildId },
+        { 
+            $set: { 
+                enabled: isVerifyEnabled,
+                ...(createdChannels.verify && { panelChannelId: createdChannels.verify })
+            } 
+        },
+        { upsert: true }
+    );
 
     // 5. Whitelist (Staff Role)
-    if (staffRole) {
-        await WhitelistConfig.findOneAndUpdate(
-            { guildId },
-            { $set: { staffRoleId: staffRole, enabled: true } },
-            { upsert: true }
-        );
-    }
+    const isWhitelistEnabled = modules.includes('whitelist');
+    await WhitelistConfig.findOneAndUpdate(
+        { guildId },
+        { 
+            $set: { 
+                enabled: isWhitelistEnabled,
+                ...(staffRole && { staffRoleIds: [staffRole] })
+            } 
+        },
+        { upsert: true }
+    );
 
     // 6. Welcome (Style)
-    if (welcomeStyle) {
-        await WelcomeConfig.findOneAndUpdate(
-            { guildId },
-            { $set: { 
-                enabled: true,
-                useEmbed: welcomeStyle === 'embed'
-            } },
-            { upsert: true }
-        );
-    }
+    const isWelcomeEnabled = modules.includes('welcome');
+    await WelcomeConfig.findOneAndUpdate(
+        { guildId },
+        { 
+            $set: { 
+                enabled: isWelcomeEnabled,
+                ...(welcomeStyle && { useEmbed: welcomeStyle === 'embed' })
+            } 
+        },
+        { upsert: true }
+    );
 
     // 7. Logs
     if (createdChannels.logs) {
