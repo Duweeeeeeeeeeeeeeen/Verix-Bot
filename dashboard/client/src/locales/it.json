@@ -3353,5 +3353,23 @@
     "last_update": "Ultimo aggiornamento",
     "refresh_desc": "Lo status viene aggiornato automaticamente ogni 30 secondi.",
     "back_to_dashboard": "Torna al Dashboard"
-  }
+  },
+  "status_page.title": "Stato del Sistema",
+  "status_page.all_operational": "Tutti i Sistemi Operativi",
+  "status_page.api_latency": "Latenza API",
+  "status_page.back_to_dashboard": "Torna alla Dashboard",
+  "status_page.checking": "Controllo in corso...",
+  "status_page.connected": "Connesso",
+  "status_page.database": "Database",
+  "status_page.degraded_performance": "Prestazioni Degradate",
+  "status_page.disconnected": "Disconnesso",
+  "status_page.discord_api": "API di Discord",
+  "status_page.last_update": "Ultimo Aggiornamento",
+  "status_page.major_outage": "Interruzione Grave",
+  "status_page.memory_usage": "Utilizzo Memoria",
+  "status_page.operational": "Operativo",
+  "status_page.refresh_desc": "La pagina si aggiorna automaticamente ogni 30 secondi.",
+  "status_page.uptime": "Uptime",
+  "common.saved_success": "Salvato con successo!",
+  "embeds.editor.field_name_placeholder": "Nome del campo..."
 }

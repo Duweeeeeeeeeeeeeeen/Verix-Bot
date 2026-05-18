@@ -3353,5 +3353,23 @@
     "last_update": "Last update",
     "refresh_desc": "Status is automatically updated every 30 seconds.",
     "back_to_dashboard": "Back to Dashboard"
-  }
+  },
+  "status_page.title": "System Status",
+  "status_page.all_operational": "All Systems Operational",
+  "status_page.api_latency": "API Latency",
+  "status_page.back_to_dashboard": "Back to Dashboard",
+  "status_page.checking": "Checking...",
+  "status_page.connected": "Connected",
+  "status_page.database": "Database",
+  "status_page.degraded_performance": "Degraded Performance",
+  "status_page.disconnected": "Disconnected",
+  "status_page.discord_api": "Discord API",
+  "status_page.last_update": "Last Update",
+  "status_page.major_outage": "Major Outage",
+  "status_page.memory_usage": "Memory Usage",
+  "status_page.operational": "Operational",
+  "status_page.refresh_desc": "Page refreshes automatically every 30 seconds.",
+  "status_page.uptime": "Uptime",
+  "common.saved_success": "Saved successfully!",
+  "embeds.editor.field_name_placeholder": "Field name..."
 }
