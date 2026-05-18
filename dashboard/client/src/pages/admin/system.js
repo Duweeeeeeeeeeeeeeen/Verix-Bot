@@ -536,7 +536,7 @@ export default function SystemUpdates() {
                                                     <p className="id-tag">{searchGuildId}</p>
                                                 </div>
                                                 <div className="status-badge-row">
-                                                    <span className={`status-badge ${foundGuild.premiumTier === 'platinum' ? 'platinum' : (foundGuild.isPremium ? 'premium' : 'free')}`}>
+                                                    <span className={`status-badge ${foundGuild.premiumTier === 'platinum' ? 'platinum' : foundGuild.premiumTier === 'premium' ? 'premium' : foundGuild.premiumTier === 'lite' ? 'lite' : 'free'}`}>
                                                         <Crown size={10} style={{ marginRight: '4px' }} />
                                                         {(foundGuild.premiumTier || (foundGuild.isPremium ? 'premium' : 'none')).toUpperCase()}
                                                     </span>
@@ -551,6 +551,7 @@ export default function SystemUpdates() {
                                                     className="tier-select-admin"
                                                 >
                                                     <option value="none">{t('admin.plan_none')}</option>
+                                                    <option value="lite">{t('admin.plan_lite')}</option>
                                                     <option value="premium">{t('admin.plan_premium')}</option>
                                                     <option value="platinum">{t('admin.plan_platinum')}</option>
                                                 </select>
@@ -1047,6 +1048,7 @@ export default function SystemUpdates() {
                     text-transform: uppercase;
                 }
                 .status-badge.free { background: rgba(255,255,255,0.1); color: var(--text-main); }
+                .status-badge.lite { background: rgba(59, 130, 246, 0.1); color: #3b82f6; border: 1px solid rgba(59, 130, 246, 0.2); }
                 .status-badge.premium { background: rgba(234, 179, 8, 0.1); color: #eab308; border: 1px solid rgba(234, 179, 8, 0.2); }
                 .status-badge.platinum { background: rgba(168, 85, 247, 0.1); color: #a855f7; border: 1px solid rgba(168, 85, 247, 0.3); }
 

@@ -161,6 +161,7 @@
   "admin.guild_not_found": "Server not found or database error.",
   "admin.node_env": "Node Environment",
   "admin.overview_badge": "GLOBAL OVERVIEW",
+  "admin.plan_lite": "Lite",
   "admin.plan_none": "Free (None)",
   "admin.plan_platinum": "Platinum",
   "admin.plan_premium": "Premium",

@@ -217,7 +217,7 @@ router.get('/guild/:guildId', ownerCheck, async (req, res) => {
 router.post('/guild/:guildId/tier', ownerCheck, async (req, res) => {
     try {
         const { tier } = req.body;
-        if (!['none', 'premium', 'platinum'].includes(tier)) {
+        if (!['none', 'lite', 'premium', 'platinum'].includes(tier)) {
             return res.status(400).json({ success: false, error: 'Tier non valido.' });
         }
 
