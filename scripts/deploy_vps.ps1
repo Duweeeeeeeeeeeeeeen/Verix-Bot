@@ -1,39 +1,50 @@
-$vps = "root@178.104.245.26"
-$remotePath = "/root/Verix-Bot"
+param(
+    [string]$Vps = "root@178.104.245.26",
+    [string]$RemotePath = "/root/Verix-Bot",
+    [string]$Branch = "main"
+)
 
-Write-Output "Deploying all changes to VPS..."
+$ErrorActionPreference = "Stop"
 
-# Root files
-scp -o BatchMode=yes index.js "${vps}:${remotePath}/index.js"
-scp -o BatchMode=yes package.json "${vps}:${remotePath}/package.json"
+Write-Output "Deploying Verix Bot from origin/$Branch to $Vps..."
 
-# src (full sync)
-scp -o BatchMode=yes -r src "${vps}:${remotePath}/"
+$remoteScript = @"
+set -euo pipefail
 
-# dashboard (full sync API and specific client files)
-scp -o BatchMode=yes -r dashboard/api "${vps}:${remotePath}/dashboard/"
+cd "$RemotePath"
+mkdir -p /root/backups
 
-# dashboard client components, contexts, styles & locales
-scp -o BatchMode=yes -r dashboard/client/public "${vps}:${remotePath}/dashboard/client/"
-scp -o BatchMode=yes -r dashboard/client/src/locales "${vps}:${remotePath}/dashboard/client/src/"
-scp -o BatchMode=yes -r dashboard/client/src/components "${vps}:${remotePath}/dashboard/client/src/"
-scp -o BatchMode=yes -r dashboard/client/src/contexts "${vps}:${remotePath}/dashboard/client/src/"
-scp -o BatchMode=yes -r dashboard/client/src/styles "${vps}:${remotePath}/dashboard/client/src/"
-scp -o BatchMode=yes -r dashboard/client/src/utils "${vps}:${remotePath}/dashboard/client/src/"
+backup_name="/root/backups/verix-before-deploy-`$(date +%Y%m%d-%H%M%S).tar.gz"
+tar \
+  --exclude='Verix-Bot/node_modules' \
+  --exclude='Verix-Bot/dashboard/client/node_modules' \
+  --exclude='Verix-Bot/dashboard/client/.next' \
+  -czf "`$backup_name" -C /root Verix-Bot
+echo "Backup created: `$backup_name"
 
-# Sync ALL pages (handling brackets via tar)
-Write-Output "Syncing all dashboard pages..."
-tar -czf pages.tar.gz -C dashboard/client/src/pages .
-scp -o BatchMode=yes pages.tar.gz "${vps}:${remotePath}/pages.tar.gz"
-ssh -o BatchMode=yes $vps "mkdir -p ${remotePath}/dashboard/client/src/pages && tar -xzf ${remotePath}/pages.tar.gz -C ${remotePath}/dashboard/client/src/pages/ && rm ${remotePath}/pages.tar.gz"
-Remove-Item pages.tar.gz
+git fetch origin "$Branch"
+git reset --hard "origin/$Branch"
+git clean -fd -- \
+  src \
+  dashboard/api \
+  dashboard/client/src \
+  dashboard/client/public \
+  scripts
 
-Write-Output "Restarting services on VPS..."
-# Clear Next.js cache, build and restart
-ssh -o BatchMode=yes $vps "rm -rf ${remotePath}/dashboard/client/.next && cd ${remotePath}/dashboard/client && npm run build && pm2 restart verix-dashboard-client"
-ssh -o BatchMode=yes $vps "pm2 restart verix-bot"
+npm install --omit=dev
 
-Write-Output "Verifying service status..."
-ssh -o BatchMode=yes $vps "pm2 list"
+cd dashboard/client
+npm install --omit=dev
+npm run build
 
-Write-Output "Deploy complete!"
+cd "$RemotePath"
+pm2 restart verix-bot verix-dashboard-client
+pm2 save
+
+curl -fsS https://verixbot.com/api/health
+pm2 status --no-color
+"@
+
+$remoteScript | ssh -o BatchMode=yes $Vps "bash -s"
+
+Write-Output "Deploy complete."

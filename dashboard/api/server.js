@@ -14,6 +14,7 @@ import analyticsRoutes from './routes/analytics.js';
 import privateBotRoutes from './routes/privateBot.js';
 import adminRoutes from './routes/admin.js';
 import { stripeCheckoutRouter, stripeWebhookRouter } from './routes/stripe.js';
+import { ONE_WEEK_MS, buildSessionCookieOptions } from './utils/sessionConfig.js';
 
 // ─── Critical startup guard ─────────────────────────────────────────────────
 if (!process.env.SESSION_SECRET) {
@@ -57,12 +58,9 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
-    cookie: {
-        httpOnly: true,
-        sameSite: 'lax',
-        secure: false,  // Set to false since the VPS uses HTTP (not HTTPS)
-        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days explicit expiry
-    }
+    proxy: true,
+    rolling: true,
+    cookie: buildSessionCookieOptions({ maxAge: ONE_WEEK_MS })
 }));
 app.use(passport.initialize());
 app.use(passport.session());

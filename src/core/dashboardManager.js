@@ -23,6 +23,7 @@ import privateBotRoutes from '../../dashboard/api/routes/privateBot.js';
 import adminRoutes from '../../dashboard/api/routes/admin.js';
 import analyticsRoutes from '../../dashboard/api/routes/analytics.js';
 import { stripeCheckoutRouter, stripeWebhookRouter } from '../../dashboard/api/routes/stripe.js';
+import { ONE_DAY_MS, buildSessionCookieOptions } from '../../dashboard/api/utils/sessionConfig.js';
 
 /**
  * Initializes and starts the Web Dashboard API hosted by the Bot process.
@@ -90,6 +91,9 @@ export function startDashboard(client) {
     
     const secret = process.env.SESSION_SECRET;
     if (!secret) {
+        if (process.env.NODE_ENV === 'production' || process.env.REQUIRE_SESSION_SECRET === 'true') {
+            throw new Error('[Dashboard] SESSION_SECRET is not set. Set it in .env before starting the dashboard.');
+        }
         logger.error('[Dashboard] SESSION_SECRET is not set — using insecure fallback. Please set this in .env immediately!');
     }
     const isProduction = process.env.NODE_ENV === 'production';
@@ -108,13 +112,8 @@ export function startDashboard(client) {
                 family: 4 // Force IPv4
             }
         }),
-        cookie: {
-            maxAge: 1000 * 60 * 60 * 24, // 24 hours
-            secure: false, // Set to false since the VPS uses HTTP (not HTTPS)
-            httpOnly: true,
-            sameSite: 'lax',
-            path: '/'
-        }
+        rolling: true,
+        cookie: buildSessionCookieOptions({ maxAge: ONE_DAY_MS })
     }));
 
     app.use(passport.initialize());
