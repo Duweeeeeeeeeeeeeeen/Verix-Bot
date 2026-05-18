@@ -140,7 +140,9 @@ export default function OnboardingWizard({ config, guildId }) {
             <CustomSelect 
               options={[
                 { value: 'it', label: 'Italiano 🇮🇹' },
-                { value: 'en', label: 'English 🇺🇸' }
+                { value: 'en', label: 'English 🇺🇸' },
+                { value: 'es', label: 'Español 🇪🇸' },
+                { value: 'fr', label: 'Français 🇫🇷' }
               ]} 
               value={formData.language} 
               onChange={val => {

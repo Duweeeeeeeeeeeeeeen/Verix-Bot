@@ -1,7 +1,7 @@
 import { useAuth } from '../contexts/AuthContext';
 import { useT } from '../contexts/LanguageContext';
 import { Sun, Moon, ShieldCheck, Ticket, Mic2, Layout, LogIn, Shield, Zap, MessageCircle, Globe } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { useTheme } from '../contexts/ThemeContext';
@@ -13,6 +13,7 @@ export default function Home() {
   const { t, language, setLanguage } = useT();
   const { theme, toggleTheme } = useTheme();
   const router = useRouter();
+  const [showLang, setShowLang] = useState(false);
 
   useEffect(() => {
     if (user) router.push('/selector');
@@ -59,10 +60,28 @@ export default function Home() {
             <span className="nav-brand outfit-font">VERIX</span>
         </div>
         <div className="nav-actions">
-            <button className="lang-btn-v2" onClick={() => setLanguage(language === 'it' ? 'en' : 'it')}>
-                <Globe size={18} />
-                <span>{language.toUpperCase()}</span>
-            </button>
+            <div className="lang-selector-container-p">
+                <button className="lang-btn-v2" onClick={() => setShowLang(!showLang)}>
+                    <Globe size={18} />
+                    <span>{language.toUpperCase()}</span>
+                </button>
+                {showLang && (
+                    <div className="lang-dropdown-p animate fade-in">
+                        {['it', 'en', 'es', 'fr'].map(lang => (
+                            <button
+                                key={lang}
+                                className={`lang-dropdown-item-p ${language === lang ? 'active' : ''}`}
+                                onClick={() => {
+                                    setLanguage(lang);
+                                    setShowLang(false);
+                                }}
+                            >
+                                {lang.toUpperCase()}
+                            </button>
+                        ))}
+                    </div>
+                )}
+            </div>
             <button className="theme-btn" onClick={toggleTheme}>
                 {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
             </button>
@@ -276,6 +295,47 @@ export default function Home() {
         .footer-link-v2 { color: var(--text-secondary); text-decoration: none; font-weight: 600; font-size: 0.95rem; transition: 0.2s; }
         .footer-link-v2:hover { color: #6366f1; }
         .footer-copy { color: var(--text-secondary); font-size: 0.85rem; font-weight: 600; opacity: 0.8; }
+
+        .lang-selector-container-p {
+            position: relative;
+        }
+        .lang-dropdown-p {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 100px;
+            z-index: 1100;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+        .lang-dropdown-item-p {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-align: left;
+            cursor: pointer;
+            transition: 0.2s;
+            width: 100%;
+        }
+        .lang-dropdown-item-p:hover {
+            background: rgba(255,255,255,0.05);
+            color: var(--text-primary);
+        }
+        .lang-dropdown-item-p.active {
+            background: var(--primary);
+            color: white;
+        }
 
         @media (max-width: 1100px) {
             .hero-grid-p { grid-template-columns: 1fr; text-align: center; gap: 80px; }

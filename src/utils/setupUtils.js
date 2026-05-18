@@ -87,23 +87,23 @@ export async function initializeModuleConfigs(guildId, createdChannels, onboardi
                 adminRoleIds: adminRoles || [],
                 language: language || 'en',
                 'ui.whitelistButtons': [
-                    { customId: 'start_wl', label: language === 'it' ? 'Inizia Candidatura' : 'Start Application', emoji: '⚖️', style: 'PRIMARY', enabled: true },
-                    { customId: 'confirm_wl', label: language === 'it' ? 'Conferma' : 'Confirm', emoji: '✅', style: 'SUCCESS', enabled: true },
-                    { customId: 'cancel_wl', label: language === 'it' ? 'Annulla' : 'Cancel', emoji: '❌', style: 'DANGER', enabled: true }
+                    { customId: 'start_wl', label: language === 'it' ? 'Inizia Candidatura' : language === 'es' ? 'Iniciar Solicitud' : language === 'fr' ? 'Démarrer Candidature' : 'Start Application', emoji: '⚖️', style: 'PRIMARY', enabled: true },
+                    { customId: 'confirm_wl', label: language === 'it' ? 'Conferma' : language === 'es' ? 'Confirmar' : language === 'fr' ? 'Confirmer' : 'Confirm', emoji: '✅', style: 'SUCCESS', enabled: true },
+                    { customId: 'cancel_wl', label: language === 'it' ? 'Annulla' : language === 'es' ? 'Cancelar' : language === 'fr' ? 'Annuler' : 'Cancel', emoji: '❌', style: 'DANGER', enabled: true }
                 ],
                 'ui.ticketButtons': [
-                    { customId: 'tk_claim', label: language === 'it' ? 'Assumi' : 'Claim', emoji: '🙋‍♂️', style: 'SUCCESS', enabled: true },
-                    { customId: 'tk_close', label: language === 'it' ? 'Chiudi' : 'Close', emoji: '🔒', style: 'DANGER', enabled: true },
-                    { customId: 'tk_quick_reply', label: language === 'it' ? 'Risposte Rapide' : 'Quick Replies', emoji: '📝', style: 'PRIMARY', enabled: true },
-                    { customId: 'tk_tag', label: language === 'it' ? 'Tagga' : 'Tag', emoji: '🏷️', style: 'SECONDARY', enabled: true },
+                    { customId: 'tk_claim', label: language === 'it' ? 'Assumi' : language === 'es' ? 'Reclamar' : language === 'fr' ? 'Réclamer' : 'Claim', emoji: '🙋‍♂️', style: 'SUCCESS', enabled: true },
+                    { customId: 'tk_close', label: language === 'it' ? 'Chiudi' : language === 'es' ? 'Cerrar' : language === 'fr' ? 'Fermer' : 'Close', emoji: '🔒', style: 'DANGER', enabled: true },
+                    { customId: 'tk_quick_reply', label: language === 'it' ? 'Risposte Rapide' : language === 'es' ? 'Respuestas Rápidas' : language === 'fr' ? 'Réponses Rapides' : 'Quick Replies', emoji: '📝', style: 'PRIMARY', enabled: true },
+                    { customId: 'tk_tag', label: language === 'it' ? 'Tagga' : language === 'es' ? 'Etiquetar' : language === 'fr' ? 'Taguer' : 'Tag', emoji: '🏷️', style: 'SECONDARY', enabled: true },
                     { customId: 'tk_transcript', label: 'Logs', emoji: '📄', style: 'SECONDARY', enabled: true }
                 ],
                 'ui.voiceButtons': [
-                    { customId: 'approve_voice', label: language === 'it' ? 'Accetta' : 'Approve', emoji: '✅', style: 'SUCCESS', enabled: true },
-                    { customId: 'deny_voice', label: language === 'it' ? 'Rifiuta' : 'Deny', emoji: '❌', style: 'DANGER', enabled: true },
-                    { customId: 'reset_timer_voice', label: language === 'it' ? 'Riavvia Timer' : 'Reset Timer', emoji: '⏱️', style: 'SECONDARY', enabled: true }
+                    { customId: 'approve_voice', label: language === 'it' ? 'Accetta' : language === 'es' ? 'Aprobar' : language === 'fr' ? 'Approuver' : 'Approve', emoji: '✅', style: 'SUCCESS', enabled: true },
+                    { customId: 'deny_voice', label: language === 'it' ? 'Rifiuta' : language === 'es' ? 'Rechazar' : language === 'fr' ? 'Refuser' : 'Deny', emoji: '❌', style: 'DANGER', enabled: true },
+                    { customId: 'reset_timer_voice', label: language === 'it' ? 'Riavvia Timer' : language === 'es' ? 'Reiniciar Temporizador' : language === 'fr' ? 'Réinitialiser le Minuteur' : 'Reset Timer', emoji: '⏱️', style: 'SECONDARY', enabled: true }
                 ],
-                'naming.voiceChannel': language === 'it' ? 'candidatura-{user}' : 'apply-{user}'
+                'naming.voiceChannel': language === 'it' ? 'candidatura-{user}' : language === 'es' ? 'solicitud-{user}' : language === 'fr' ? 'candidature-{user}' : 'apply-{user}'
             } 
         },
         { upsert: true }

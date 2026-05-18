@@ -1,10 +1,12 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import it from '../locales/it.json';
 import en from '../locales/en.json';
+import es from '../locales/es.json';
+import fr from '../locales/fr.json';
 
 const LanguageContext = createContext();
 
-const locales = { it, en };
+const locales = { it, en, es, fr };
 
 export function LanguageProvider({ children }) {
     const [language, setLanguageState] = useState('en');

@@ -79,6 +79,28 @@ export default function SetupWizard() {
             logs: '📜-verix-logs'
         });
         setTicketCategory('--- SUPPORTO ---');
+    } else if (lang === 'es') {
+        setChannelNames({
+            whitelist: '⚖️-candidaturas',
+            tickets: '🎫-abrir-ticket',
+            verify: '✅-verificacion',
+            polls: '📊-encuestas',
+            giveaway: '🎉-sorteos',
+            photocontest: '📸-concurso-fotos',
+            logs: '📜-verix-registros'
+        });
+        setTicketCategory('--- SOPORTE ---');
+    } else if (lang === 'fr') {
+        setChannelNames({
+            whitelist: '⚖️-candidatures',
+            tickets: '🎫-ouvrir-ticket',
+            verify: '✅-verification',
+            polls: '📊-sondages',
+            giveaway: '🎉-giveaways',
+            photocontest: '📸-concours-photo',
+            logs: '📜-verix-logs'
+        });
+        setTicketCategory('--- SUPPORT ---');
     } else {
         setChannelNames({
             whitelist: '⚖️-applications',
@@ -290,8 +312,8 @@ export default function SetupWizard() {
                 >
                     <span className="flag">🇮🇹</span>
                     <div className="lang-info">
-                        <strong>{t('onboarding.lang_it')}</strong>
-                        <span>{t('onboarding.lang_it_desc')}</span>
+                        <strong>{t('onboarding.lang_it') || 'Italiano'}</strong>
+                        <span>{t('onboarding.lang_it_desc') || 'Imposta il bot in Italiano'}</span>
                     </div>
                 </div>
                 <div 
@@ -300,8 +322,28 @@ export default function SetupWizard() {
                 >
                     <span className="flag">🇺🇸</span>
                     <div className="lang-info">
-                        <strong>{t('onboarding.lang_en')}</strong>
-                        <span>{t('onboarding.lang_en_desc')}</span>
+                        <strong>{t('onboarding.lang_en') || 'English'}</strong>
+                        <span>{t('onboarding.lang_en_desc') || 'Set the bot to English'}</span>
+                    </div>
+                </div>
+                <div 
+                  className={`lang-card ${language === 'es' ? 'active' : ''}`}
+                  onClick={() => selectLanguage('es')}
+                >
+                    <span className="flag">🇪🇸</span>
+                    <div className="lang-info">
+                        <strong>Español</strong>
+                        <span>Establecer el bot en Español</span>
+                    </div>
+                </div>
+                <div 
+                  className={`lang-card ${language === 'fr' ? 'active' : ''}`}
+                  onClick={() => selectLanguage('fr')}
+                >
+                    <span className="flag">🇫🇷</span>
+                    <div className="lang-info">
+                        <strong>Français</strong>
+                        <span>Mettre le bot en Français</span>
                     </div>
                 </div>
             </div>

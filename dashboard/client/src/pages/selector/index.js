@@ -30,6 +30,7 @@ export default function Selector() {
   const [filter, setFilter] = useState('all'); // all, active, missing
   const [mounted, setMounted] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [showLang, setShowLang] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -165,10 +166,28 @@ export default function Selector() {
                     </div>
                 </div>
                 <div className="action-btns-group">
-                    <button className="theme-toggle-btn-v2 lang-toggle-v2" onClick={() => setLanguage(language === 'it' ? 'en' : 'it')}>
-                        <Globe size={18} />
-                        <span className="lang-code-v2">{language.toUpperCase()}</span>
-                    </button>
+                    <div className="lang-selector-container-p">
+                        <button className="theme-toggle-btn-v2 lang-toggle-v2" onClick={() => setShowLang(!showLang)}>
+                            <Globe size={18} />
+                            <span className="lang-code-v2">{language.toUpperCase()}</span>
+                        </button>
+                        {showLang && (
+                            <div className="lang-dropdown-p animate fade-in">
+                                {['it', 'en', 'es', 'fr'].map(lang => (
+                                    <button
+                                        key={lang}
+                                        className={`lang-dropdown-item-p ${language === lang ? 'active' : ''}`}
+                                        onClick={() => {
+                                            setLanguage(lang);
+                                            setShowLang(false);
+                                        }}
+                                    >
+                                        {lang.toUpperCase()}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                     <button className="theme-toggle-btn-v2" onClick={toggleTheme}>
                         {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
                     </button>
@@ -445,6 +464,47 @@ export default function Selector() {
             .pc-empty-selector-v2 p { color: var(--text-secondary); margin-bottom: 40px; }
             .pc-btn-primary-v2 { background: var(--accent); color: white; border: none; padding: 18px 36px; border-radius: 18px; font-weight: 800; cursor: pointer; transition: 0.3s; box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2); }
             .pc-btn-primary-v2:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(99, 102, 241, 0.3); }
+
+        .lang-selector-container-p {
+            position: relative;
+        }
+        .lang-dropdown-p {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 100px;
+            z-index: 1100;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+        .lang-dropdown-item-p {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-align: left;
+            cursor: pointer;
+            transition: 0.2s;
+            width: 100%;
+        }
+        .lang-dropdown-item-p:hover {
+            background: rgba(255,255,255,0.05);
+            color: var(--text-primary);
+        }
+        .lang-dropdown-item-p.active {
+            background: var(--accent);
+            color: white;
+        }
 
             @media (max-width: 768px) {
                 .pc-selector-wrapper { padding: 30px 20px; }
