@@ -37,7 +37,10 @@ router.post('/checkout', express.json(), async (req, res) => {
             platinum: process.env.STRIPE_PRICE_PLATINUM,
             lite_yearly: process.env.STRIPE_PRICE_LITE_YEARLY,
             premium_yearly: process.env.STRIPE_PRICE_PREMIUM_YEARLY,
-            platinum_yearly: process.env.STRIPE_PRICE_PLATINUM_YEARLY
+            platinum_yearly: process.env.STRIPE_PRICE_PLATINUM_YEARLY,
+            lite_lifetime: process.env.STRIPE_PRICE_LITE_LIFETIME,
+            premium_lifetime: process.env.STRIPE_PRICE_PREMIUM_LIFETIME,
+            platinum_lifetime: process.env.STRIPE_PRICE_PLATINUM_LIFETIME
         };
 
         const priceId = prices[planType || 'premium'];
@@ -45,6 +48,9 @@ router.post('/checkout', express.json(), async (req, res) => {
         if (!priceId) {
             return res.status(400).json({ error: 'Piano non valido o non configurato.' });
         }
+
+        const isLifetime = planType && planType.endsWith('_lifetime');
+        const checkoutMode = isLifetime ? 'payment' : 'subscription';
 
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
@@ -54,7 +60,7 @@ router.post('/checkout', express.json(), async (req, res) => {
                     quantity: 1,
                 },
             ],
-            mode: 'subscription', // Change to 'payment' for one-time purchases
+            mode: checkoutMode, // Change to 'payment' for one-time purchases
             success_url: `${process.env.DASHBOARD_FRONTEND_URL}/config/${guildId}/premium?payment=success`,
             cancel_url: `${process.env.DASHBOARD_FRONTEND_URL}/config/${guildId}/premium?payment=cancelled`,
             client_reference_id: guildId, // This is crucial for the webhook to know which guild paid!
@@ -79,11 +85,6 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
     const sig = req.headers['stripe-signature'];
     const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
-    if (!stripe || !endpointSecret) {
-        logger.warn('[Stripe Webhook] Received webhook but Stripe is not fully configured.');
-        return res.status(400).send('Webhook Secret Not Configured');
-    }
-
     let event;
 
     try {
@@ -102,8 +103,11 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
                  let planType = session.metadata.planType || 'premium';
  
                  if (guildId) {
+                     const isLifetime = planType.endsWith('_lifetime');
                      if (planType.endsWith('_yearly')) {
                          planType = planType.replace('_yearly', '');
+                     } else if (planType.endsWith('_lifetime')) {
+                         planType = planType.replace('_lifetime', '');
                      }
                      logger.info(`[Stripe] Payment successful for guild ${guildId} (Plan: ${planType})`);
                      
@@ -113,8 +117,8 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
                          { 
                              isPremium: true,
                              premiumTier: planType,
-                             // Optionally save the Stripe subscription ID
-                             stripeSubscriptionId: session.subscription,
+                             // Optionally save the Stripe subscription ID (or 'lifetime' indicator)
+                             stripeSubscriptionId: isLifetime ? 'lifetime' : (session.subscription || 'lifetime'),
                              stripeCustomerId: session.customer
                          },
                          { upsert: true }

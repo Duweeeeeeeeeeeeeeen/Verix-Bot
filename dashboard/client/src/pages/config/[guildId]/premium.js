@@ -47,7 +47,7 @@ export default function PremiumHub() {
   const handleCheckout = async (planType) => {
     try {
       setCheckoutLoading(true);
-      const finalPlanType = billingInterval === 'yearly' ? `${planType}_yearly` : planType;
+      const finalPlanType = billingInterval === 'yearly' ? `${planType}_yearly` : (billingInterval === 'lifetime' ? `${planType}_lifetime` : planType);
       const res = await api.request(`/stripe/checkout`, {
           method: 'POST',
           data: { guildId, planType: finalPlanType }
@@ -182,6 +182,13 @@ export default function PremiumHub() {
                         {t('ph.yearly')}
                         <span className="yearly-badge">{t('ph.save_20')}</span>
                     </button>
+                    <button 
+                        className={`toggle-btn ${billingInterval === 'lifetime' ? 'active' : ''}`}
+                        onClick={() => setBillingInterval('lifetime')}
+                    >
+                        {t('ph.lifetime')}
+                        <span className="yearly-badge" style={{ background: 'linear-gradient(135deg, #a855f7 0%, #7c3aed 100%)', boxShadow: '0 4px 10px rgba(168, 85, 247, 0.2)' }}>HOT</span>
+                    </button>
                 </div>
             </div>
 
@@ -213,8 +220,10 @@ export default function PremiumHub() {
                         <div className="price-val-v2">
                             {billingInterval === 'monthly' ? (
                                 <>€2.49<span>/{t('ph.month')}</span></>
-                            ) : (
+                            ) : billingInterval === 'yearly' ? (
                                 <>€1.99<span style={{ fontSize: '0.9rem', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>/{t('ph.month')}<br/><small style={{ fontSize: '0.65rem', opacity: 0.8, display: 'block', marginTop: '2px' }}>€23.88 / {t('ph.year')}</small></span></>
+                            ) : (
+                                <>€49.99<span style={{ fontSize: '0.9rem', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>/{t('ph.forever')}<br/><small style={{ fontSize: '0.65rem', opacity: 0.8, display: 'block', marginTop: '2px' }}>{t('ph.pay_once')}</small></span></>
                             )}
                         </div>
                     </div>
@@ -245,8 +254,10 @@ export default function PremiumHub() {
                         <div className="price-val-v2">
                             {billingInterval === 'monthly' ? (
                                 <>€4.99<span>/{t('ph.month')}</span></>
-                            ) : (
+                            ) : billingInterval === 'yearly' ? (
                                 <>€3.99<span style={{ fontSize: '0.9rem', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>/{t('ph.month')}<br/><small style={{ fontSize: '0.65rem', opacity: 0.8, display: 'block', marginTop: '2px' }}>€47.88 / {t('ph.year')}</small></span></>
+                            ) : (
+                                <>€99.99<span style={{ fontSize: '0.9rem', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>/{t('ph.forever')}<br/><small style={{ fontSize: '0.65rem', opacity: 0.8, display: 'block', marginTop: '2px' }}>{t('ph.pay_once')}</small></span></>
                             )}
                         </div>
                     </div>
@@ -276,8 +287,10 @@ export default function PremiumHub() {
                         <div className="price-val-v2">
                             {billingInterval === 'monthly' ? (
                                 <>€9.99<span>/{t('ph.month')}</span></>
-                            ) : (
+                            ) : billingInterval === 'yearly' ? (
                                 <>€7.99<span style={{ fontSize: '0.9rem', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>/{t('ph.month')}<br/><small style={{ fontSize: '0.65rem', opacity: 0.8, display: 'block', marginTop: '2px' }}>€95.88 / {t('ph.year')}</small></span></>
+                            ) : (
+                                <>€199.99<span style={{ fontSize: '0.9rem', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>/{t('ph.forever')}<br/><small style={{ fontSize: '0.65rem', opacity: 0.8, display: 'block', marginTop: '2px' }}>{t('ph.pay_once')}</small></span></>
                             )}
                         </div>
                     </div>
