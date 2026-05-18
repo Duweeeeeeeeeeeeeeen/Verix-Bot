@@ -56,6 +56,10 @@ const photoContestConfigSchema = new mongoose.Schema({
         type: String,
         default: ''
     },
+    staffRoleIds: {
+        type: [String],
+        default: []
+    },
     automaticThemes: {
         type: Boolean,
         default: false
@@ -74,6 +78,11 @@ const photoContestConfigSchema = new mongoose.Schema({
     notifications: {
         mode: { type: String, enum: ['DM', 'CHANNEL', 'BOTH', 'NONE'], default: 'DM' },
         channelId: { type: String, default: null }
+    },
+    systemMessages: {
+        type: Map,
+        of: String,
+        default: {}
     },
     submitLabel: {
         type: String,

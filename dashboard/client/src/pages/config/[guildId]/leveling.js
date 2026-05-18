@@ -4,7 +4,7 @@ import Skeleton from '../../../components/Skeleton';
 import { DiscordSelector, HelpTooltip } from '../../../components/LazyConfigComponents';
 import api from '../../../utils/api';
 import { useT } from '../../../contexts/LanguageContext';
-import { 
+import {
     Save, Trophy, Settings2, Users, Flame, RotateCcw, Plus, Trash2,
     Shield, Star, Crown
 } from 'lucide-react';
@@ -102,14 +102,14 @@ export default function LevelingConfigPage() {
                     </div>
                 </div>
             </div>
-            
+
             <div className="header-controls">
                 <div className="pc-toggle-container-v2">
                     <label className="pc-toggle-v2">
-                        <input 
-                            type="checkbox" 
-                            checked={config.enabled} 
-                            onChange={() => setConfig({...config, enabled: !config.enabled})} 
+                        <input
+                            type="checkbox"
+                            checked={config.enabled}
+                            onChange={() => setConfig({...config, enabled: !config.enabled})}
                         />
                         <span className="pc-slider-v2"></span>
                     </label>
@@ -147,10 +147,10 @@ export default function LevelingConfigPage() {
                                 <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '24px' }}>
                                     <div className="pc-input-group-v2">
                                         <label>{t('leveling.xp_rate')}</label>
-                                        <input 
-                                            type="number" 
-                                            className="pc-input-modern-v2" 
-                                            value={config.xpRate} 
+                                        <input
+                                            type="number"
+                                            className="pc-input-modern-v2"
+                                            value={config.xpRate}
                                             onChange={e => setConfig({...config, xpRate: parseFloat(e.target.value) || 1})}
                                             min="0.1"
                                             step="0.1"
@@ -158,20 +158,20 @@ export default function LevelingConfigPage() {
                                     </div>
                                     <div className="pc-input-group-v2">
                                         <label>{t('leveling.cooldown')}</label>
-                                        <input 
-                                            type="number" 
-                                            className="pc-input-modern-v2" 
-                                            value={config.cooldown} 
+                                        <input
+                                            type="number"
+                                            className="pc-input-modern-v2"
+                                            value={config.cooldown}
                                             onChange={e => setConfig({...config, cooldown: parseInt(e.target.value) || 60})}
                                             min="10"
                                         />
                                     </div>
                                     <div className="pc-input-group-v2">
                                         <label>{t('leveling.daily_xp_cap')}</label>
-                                        <input 
-                                            type="number" 
-                                            className="pc-input-modern-v2" 
-                                            value={config.dailyXpCap || 0} 
+                                        <input
+                                            type="number"
+                                            className="pc-input-modern-v2"
+                                            value={config.dailyXpCap || 0}
                                             onChange={e => setConfig({...config, dailyXpCap: parseInt(e.target.value) || 0})}
                                             min="0"
                                         />
@@ -183,10 +183,10 @@ export default function LevelingConfigPage() {
                                         <span className="text-muted" style={{ fontSize: '0.85rem' }}>{t('leveling.double_xp_desc')}</span>
                                     </div>
                                     <label className="pc-toggle-v2 mini">
-                                        <input 
-                                            type="checkbox" 
-                                            checked={config.doubleXpEnabled || false} 
-                                            onChange={e => setConfig({...config, doubleXpEnabled: e.target.checked})} 
+                                        <input
+                                            type="checkbox"
+                                            checked={(config.xpMultiplier || 1) > 1}
+                                            onChange={e => setConfig({...config, xpMultiplier: e.target.checked ? 2 : 1})}
                                         />
                                         <span className="pc-slider-v2"></span>
                                     </label>
@@ -198,10 +198,10 @@ export default function LevelingConfigPage() {
                                         <span className="text-muted" style={{ fontSize: '0.85rem' }}>{t('leveling.double_xp_scheduled_desc')}</span>
                                     </div>
                                     <label className="pc-toggle-v2 mini">
-                                        <input 
-                                            type="checkbox" 
-                                            checked={config.doubleXpScheduled || false} 
-                                            onChange={e => setConfig({...config, doubleXpScheduled: e.target.checked})} 
+                                        <input
+                                            type="checkbox"
+                                            checked={config.doubleXpScheduled || false}
+                                            onChange={e => setConfig({...config, doubleXpScheduled: e.target.checked})}
                                         />
                                         <span className="pc-slider-v2"></span>
                                     </label>
@@ -219,7 +219,7 @@ export default function LevelingConfigPage() {
                                                         type="button"
                                                         onClick={() => {
                                                             const currentDays = config.doubleXpDays || [];
-                                                            const nextDays = isActive 
+                                                            const nextDays = isActive
                                                                 ? currentDays.filter(d => d !== idx)
                                                                 : [...currentDays, idx];
                                                             setConfig({ ...config, doubleXpDays: nextDays });
@@ -245,20 +245,20 @@ export default function LevelingConfigPage() {
                                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                                             <div className="pc-input-group-v2">
                                                 <label>{t('leveling.start_hour')}</label>
-                                                <input 
-                                                    type="text" 
-                                                    className="pc-input-modern-v2" 
-                                                    value={config.doubleXpStartHour || '00:00'} 
+                                                <input
+                                                    type="text"
+                                                    className="pc-input-modern-v2"
+                                                    value={config.doubleXpStartHour || '00:00'}
                                                     onChange={e => setConfig({...config, doubleXpStartHour: e.target.value})}
                                                     placeholder="00:00"
                                                 />
                                             </div>
                                             <div className="pc-input-group-v2">
                                                 <label>{t('leveling.end_hour')}</label>
-                                                <input 
-                                                    type="text" 
-                                                    className="pc-input-modern-v2" 
-                                                    value={config.doubleXpEndHour || '23:59'} 
+                                                <input
+                                                    type="text"
+                                                    className="pc-input-modern-v2"
+                                                    value={config.doubleXpEndHour || '23:59'}
                                                     onChange={e => setConfig({...config, doubleXpEndHour: e.target.value})}
                                                     placeholder="23:59"
                                                 />
@@ -278,10 +278,10 @@ export default function LevelingConfigPage() {
                                 <div className="pc-toggle-card-v2">
                                     <strong>{t('leveling.notify_level_up')}</strong>
                                     <label className="pc-toggle-v2 mini">
-                                        <input 
-                                            type="checkbox" 
-                                            checked={config.notifyLevelUp} 
-                                            onChange={e => setConfig({...config, notifyLevelUp: e.target.checked})} 
+                                        <input
+                                            type="checkbox"
+                                            checked={config.notifyLevelUp}
+                                            onChange={e => setConfig({...config, notifyLevelUp: e.target.checked})}
                                         />
                                         <span className="pc-slider-v2"></span>
                                     </label>
@@ -339,10 +339,10 @@ export default function LevelingConfigPage() {
                                         {(config.levelUpNotificationType || 'channel') === 'channel' && (
                                             <div className="pc-input-group-v2 animate slide-up" style={{ marginTop: '24px' }}>
                                                 <label>{t('leveling.notify_channel')}</label>
-                                                <DiscordSelector 
-                                                    type="channel" 
-                                                    options={discordData.channels.filter(c => c.type === 0)} 
-                                                    value={config.notifyChannelId} 
+                                                <DiscordSelector
+                                                    type="channel"
+                                                    options={discordData.channels.filter(c => c.type === 0)}
+                                                    value={config.notifyChannelId}
                                                     onChange={v => setConfig({...config, notifyChannelId: v})}
                                                     placeholder={t('common.current_channel')}
                                                 />
@@ -352,11 +352,11 @@ export default function LevelingConfigPage() {
                                         {(config.levelUpNotificationType || 'channel') !== 'silent' && (
                                             <div className="pc-input-group-v2 animate slide-up" style={{ marginTop: '24px' }}>
                                                 <label>{t('leveling.custom_message')}</label>
-                                                <textarea 
-                                                    className="pc-input-modern-v2" 
+                                                <textarea
+                                                    className="pc-input-modern-v2"
                                                     style={{ minHeight: '80px', width: '100%', padding: '12px', background: 'rgba(0, 0, 0, 0.15)', color: 'inherit', border: '1px solid var(--border)', borderRadius: '8px' }}
-                                                    value={config.customLevelUpMessage || ''} 
-                                                    onChange={e => setConfig({...config, customLevelUpMessage: e.target.value})}
+                                                    value={config.notifyTextTemplate || ''}
+                                                    onChange={e => setConfig({...config, notifyTextTemplate: e.target.value})}
                                                     placeholder="Congratulazioni {user}! Sei salito al livello {level}!"
                                                 />
                                                 <span className="text-muted" style={{ fontSize: '0.8rem', marginTop: '6px', display: 'block' }}>{t('leveling.custom_message_desc')}</span>
@@ -376,30 +376,30 @@ export default function LevelingConfigPage() {
                                 <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '24px' }}>
                                     <div className="pc-input-group-v2">
                                         <label>{t('leveling.voice_rate')}</label>
-                                        <input 
-                                            type="number" 
-                                            className="pc-input-modern-v2" 
-                                            value={config.voiceXpRate !== undefined ? config.voiceXpRate : 10} 
+                                        <input
+                                            type="number"
+                                            className="pc-input-modern-v2"
+                                            value={config.voiceXpRate !== undefined ? config.voiceXpRate : 10}
                                             onChange={e => setConfig({...config, voiceXpRate: parseInt(e.target.value) || 0})}
                                             min="0"
                                         />
                                     </div>
                                     <div className="pc-input-group-v2">
                                         <label>{t('leveling.voice_interval')}</label>
-                                        <input 
-                                            type="number" 
-                                            className="pc-input-modern-v2" 
-                                            value={config.voiceXpInterval !== undefined ? config.voiceXpInterval : 5} 
+                                        <input
+                                            type="number"
+                                            className="pc-input-modern-v2"
+                                            value={config.voiceXpInterval !== undefined ? config.voiceXpInterval : 5}
                                             onChange={e => setConfig({...config, voiceXpInterval: parseInt(e.target.value) || 1})}
                                             min="1"
                                         />
                                     </div>
                                     <div className="pc-input-group-v2">
                                         <label>{t('leveling.voice_min_users')}</label>
-                                        <input 
-                                            type="number" 
-                                            className="pc-input-modern-v2" 
-                                            value={config.voiceMinUsers !== undefined ? config.voiceMinUsers : 2} 
+                                        <input
+                                            type="number"
+                                            className="pc-input-modern-v2"
+                                            value={config.voiceMinUsers !== undefined ? config.voiceMinUsers : 2}
                                             onChange={e => setConfig({...config, voiceMinUsers: parseInt(e.target.value) || 1})}
                                             min="1"
                                         />
@@ -417,20 +417,20 @@ export default function LevelingConfigPage() {
                                 <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
                                     <div className="pc-input-group-v2">
                                         <label>{t('leveling.giveaway_reward')}</label>
-                                        <input 
-                                            type="number" 
-                                            className="pc-input-modern-v2" 
-                                            value={config.giveawayEntryXp !== undefined ? config.giveawayEntryXp : 15} 
+                                        <input
+                                            type="number"
+                                            className="pc-input-modern-v2"
+                                            value={config.giveawayEntryXp !== undefined ? config.giveawayEntryXp : 15}
                                             onChange={e => setConfig({...config, giveawayEntryXp: parseInt(e.target.value) || 0})}
                                             min="0"
                                         />
                                     </div>
                                     <div className="pc-input-group-v2">
                                         <label>{t('leveling.photo_contest_reward')}</label>
-                                        <input 
-                                            type="number" 
-                                            className="pc-input-modern-v2" 
-                                            value={config.photoContestEntryXp !== undefined ? config.photoContestEntryXp : 25} 
+                                        <input
+                                            type="number"
+                                            className="pc-input-modern-v2"
+                                            value={config.photoContestEntryXp !== undefined ? config.photoContestEntryXp : 25}
                                             onChange={e => setConfig({...config, photoContestEntryXp: parseInt(e.target.value) || 0})}
                                             min="0"
                                         />
@@ -448,20 +448,20 @@ export default function LevelingConfigPage() {
                                 <div className="v-stack" style={{ gap: '24px' }}>
                                     <div className="pc-input-group-v2">
                                         <label>Canali Ignorati</label>
-                                        <DiscordSelector 
-                                            type="channel" 
-                                            options={discordData.channels.filter(c => c.type === 0)} 
-                                            value={config.ignoredChannels} 
+                                        <DiscordSelector
+                                            type="channel"
+                                            options={discordData.channels.filter(c => c.type === 0)}
+                                            value={config.ignoredChannels}
                                             onChange={v => setConfig({...config, ignoredChannels: v})}
                                             multi={true}
                                         />
                                     </div>
                                     <div className="pc-input-group-v2">
                                         <label>Ruoli Ignorati</label>
-                                        <DiscordSelector 
-                                            type="role" 
-                                            options={discordData.roles} 
-                                            value={config.ignoredRoles} 
+                                        <DiscordSelector
+                                            type="role"
+                                            options={discordData.roles}
+                                            value={config.ignoredRoles}
                                             onChange={v => setConfig({...config, ignoredRoles: v})}
                                             multi={true}
                                         />
@@ -492,20 +492,20 @@ export default function LevelingConfigPage() {
                                         <div className="reward-inputs">
                                             <div className="pc-input-group-v2">
                                                 <label>{t('leveling.level_label')}</label>
-                                                <input 
-                                                    type="number" 
-                                                    value={reward.level} 
+                                                <input
+                                                    type="number"
+                                                    value={reward.level}
                                                     onChange={e => updateReward(index, 'level', e.target.value)}
                                                     min="1"
                                                 />
                                             </div>
                                             <div className="pc-input-group-v2">
                                                 <label>{t('leveling.role_label')}</label>
-                                                <DiscordSelector 
-                                                    type="role" 
-                                                    options={discordData.roles} 
-                                                    value={reward.roleId} 
-                                                    onChange={v => updateReward(index, 'roleId', v)} 
+                                                <DiscordSelector
+                                                    type="role"
+                                                    options={discordData.roles}
+                                                    value={reward.roleId}
+                                                    onChange={v => updateReward(index, 'roleId', v)}
                                                 />
                                             </div>
                                         </div>
@@ -533,32 +533,32 @@ export default function LevelingConfigPage() {
             .header-info { display: flex; align-items: center; gap: 16px; }
             .v-stack { display: flex; flex-direction: column; }
             .animate { animation: slideUp 0.4s ease-out; }
-            
+
             .pc-rewards-list { display: flex; flex-direction: column; gap: 16px; }
-            .pc-reward-item { 
-                display: flex; align-items: center; gap: 20px; 
-                background: var(--bg-card-dark); border: 1px solid var(--border); 
+            .pc-reward-item {
+                display: flex; align-items: center; gap: 20px;
+                background: var(--bg-card-dark); border: 1px solid var(--border);
                 padding: 20px; border-radius: 16px; transition: 0.2s;
             }
             .pc-reward-item:hover { border-color: var(--primary); transform: translateX(5px); }
-            .reward-badge { 
-                width: 40px; height: 40px; border-radius: 12px; 
-                background: var(--bg-badge); color: var(--primary); 
-                display: flex; align-items: center; justify-content: center; 
+            .reward-badge {
+                width: 40px; height: 40px; border-radius: 12px;
+                background: var(--bg-badge); color: var(--primary);
+                display: flex; align-items: center; justify-content: center;
                 font-weight: 800; font-size: 0.9rem;
             }
             .reward-inputs { display: grid; grid-template-columns: 120px 1fr; gap: 24px; flex: 1; }
-            
-            .pc-btn-delete-v2 { 
-                width: 44px; height: 44px; border-radius: 12px; 
-                background: rgba(239, 68, 68, 0.1); color: #ef4444; 
-                border: none; cursor: pointer; transition: 0.2s; 
+
+            .pc-btn-delete-v2 {
+                width: 44px; height: 44px; border-radius: 12px;
+                background: rgba(239, 68, 68, 0.1); color: #ef4444;
+                border: none; cursor: pointer; transition: 0.2s;
                 display: flex; align-items: center; justify-content: center;
             }
             .pc-btn-delete-v2:hover { background: #ef4444; color: #fff; }
 
-            .pc-empty-state-v2 { 
-                padding: 60px; text-align: center; color: var(--text-muted); 
+            .pc-empty-state-v2 {
+                padding: 60px; text-align: center; color: var(--text-muted);
                 background: var(--bg-badge); border-radius: 20px; border: 2px dashed var(--border);
                 display: flex; flex-direction: column; align-items: center; gap: 16px;
             }

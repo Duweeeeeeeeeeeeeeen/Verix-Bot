@@ -195,6 +195,77 @@ const ensureLegacySetupCompleted = async (guildData, configs) => {
     return guildData;
 };
 
+const normalizeThemeList = (themes) => {
+    if (!Array.isArray(themes)) return [];
+
+    return themes
+        .map(theme => {
+            if (typeof theme === 'string') return { name: theme.trim() };
+            if (theme && typeof theme === 'object' && typeof theme.name === 'string') {
+                return {
+                    name: theme.name.trim(),
+                    duration: theme.duration ?? null
+                };
+            }
+            return null;
+        })
+        .filter(theme => theme?.name);
+};
+
+const normalizePhotoContestPayload = (payload) => {
+    const data = { ...payload };
+
+    if (data.winnerRoleId !== undefined && data.prizeRoleId === undefined) {
+        data.prizeRoleId = data.winnerRoleId;
+    }
+
+    if (data.staffRoles !== undefined && data.staffRoleIds === undefined) {
+        data.staffRoleIds = data.staffRoles;
+    }
+
+    if (data.themes !== undefined) {
+        data.themesList = normalizeThemeList(data.themes);
+    } else if (data.themesList !== undefined) {
+        data.themesList = normalizeThemeList(data.themesList);
+    }
+
+    if (data.notificationMode !== undefined && data.notifications === undefined) {
+        data.notifications = {
+            mode: String(data.notificationMode || 'NONE').toUpperCase(),
+            channelId: data.notificationChannelId || null
+        };
+    }
+
+    delete data.winnerRoleId;
+    delete data.themes;
+    delete data.staffRoles;
+    delete data.notificationMode;
+    delete data.notificationChannelId;
+    delete data._id;
+    delete data.__v;
+
+    return data;
+};
+
+const normalizeLevelingPayload = (payload) => {
+    const data = { ...payload };
+
+    if (data.doubleXpEnabled !== undefined) {
+        data.xpMultiplier = data.doubleXpEnabled ? 2 : 1;
+        delete data.doubleXpEnabled;
+    }
+
+    if (data.customLevelUpMessage !== undefined) {
+        data.notifyTextTemplate = data.customLevelUpMessage || null;
+        delete data.customLevelUpMessage;
+    }
+
+    delete data._id;
+    delete data.__v;
+
+    return data;
+};
+
 // MiddleWare to resolve the correct Discord Client (Main or Private Bot)
 router.use('/:guildId', (req, res, next) => {
     const { guildId } = req.params;
@@ -1290,7 +1361,7 @@ router.get('/:guildId/photocontest', adminCheck, async (req, res) => {
 router.post('/:guildId/photocontest', adminCheck, validate(photoContestSchema), async (req, res) => {
     try {
         const { guildId } = req.params;
-        const data = req.validatedData || req.body;
+        const data = normalizePhotoContestPayload(req.validatedData || req.body);
 
         const guild = await Guild.findOne({ guildId });
         const tier = guild?.premiumTier || (guild?.isPremium ? 'premium' : 'none');
@@ -1298,7 +1369,7 @@ router.post('/:guildId/photocontest', adminCheck, validate(photoContestSchema), 
         // Enforcement: Standard (2), Premium (10), Platinum (Unlimited)
         if (tier !== 'platinum') {
             const limit = tier === 'premium' ? 10 : (tier === 'lite' ? 5 : 2);
-            if ((data.themes || []).length > limit) {
+            if ((data.themesList || []).length > limit) {
                 return res.status(403).json({ success: false, error: `Il tuo piano (${tier.toUpperCase()}) permette massimo ${limit} temi per il Contest.` });
             }
         }
@@ -2843,11 +2914,13 @@ router.get('/:guildId/leveling', adminCheck, async (req, res) => {
 router.post('/:guildId/leveling', adminCheck, async (req, res) => {
     try {
         const { guildId } = req.params;
+        const data = normalizeLevelingPayload(req.body);
         const config = await LevelingConfig.findOneAndUpdate(
             { guildId },
-            { $set: req.body },
-            { returnDocument: 'after', upsert: true }
+            { $set: data },
+            { returnDocument: 'after', upsert: true, runValidators: true }
         );
+        invalidateCache(guildId);
         res.json({ success: true, data: config });
     } catch (error) {
         res.status(500).json({ success: false, error: 'Impossibile salvare la configurazione leveling' });

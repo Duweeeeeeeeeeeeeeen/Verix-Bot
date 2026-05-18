@@ -13,6 +13,7 @@ export const photoContestSchema = z.object({
         color: colorHex.optional()
     }).passthrough().optional(),
     hallOfFameChannelId: discordId.or(z.literal('')).optional().nullable(),
+    staffRoleIds: z.array(discordId).optional(),
     automaticThemes: z.boolean().optional(),
     themesList: z.array(z.union([
         z.string(),
@@ -24,5 +25,14 @@ export const photoContestSchema = z.object({
     notifications: z.object({
         mode: z.enum(['DM', 'CHANNEL', 'BOTH', 'NONE']).default('DM'),
         channelId: discordId.or(z.literal('')).optional().nullable()
-    }).optional()
+    }).optional(),
+    systemMessages: z.record(z.string(), z.string()).optional(),
+    submitLabel: z.string().max(80).optional(),
+    submitEmoji: z.string().max(32).optional(),
+    voteLabel: z.string().max(80).optional(),
+    voteEmoji: z.string().max(32).optional(),
+    upvoteEmoji: z.string().max(32).optional(),
+    downvoteEmoji: z.string().max(32).optional(),
+    multiWinner: z.boolean().optional(),
+    winnersCount: z.number().min(1).max(10).optional()
 }).passthrough();

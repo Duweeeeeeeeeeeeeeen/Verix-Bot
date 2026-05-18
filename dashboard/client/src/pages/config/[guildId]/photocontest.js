@@ -49,13 +49,14 @@ export default function PhotoContestConfig() {
         enabled: data?.enabled ?? false,
         channelId: data?.channelId || '',
         hallOfFameChannelId: data?.hallOfFameChannelId || '',
-        winnerRoleId: data?.winnerRoleId || '',
+        prizeRoleId: data?.prizeRoleId || data?.winnerRoleId || '',
         interval: data?.interval || 24,
         duration: data?.duration || 24,
         multiWinner: data?.multiWinner ?? false,
-        themes: data?.themes || [],
-        staffRoles: data?.staffRoles || [],
-        notificationMode: data?.notificationMode || 'none'
+        themesList: (data?.themesList || data?.themes || []).map(theme => typeof theme === 'string' ? theme : theme.name).filter(Boolean),
+        staffRoleIds: data?.staffRoleIds || data?.staffRoles || [],
+        notifications: data?.notifications || { mode: 'NONE', channelId: null },
+        systemMessages: data?.systemMessages || {}
       });
       const dData = discordRes?.data || discordRes || { roles: [], channels: [] };
       setDiscordData({
@@ -102,9 +103,15 @@ export default function PhotoContestConfig() {
     setSaving(true);
     window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
     try {
+      const payload = {
+        ...config,
+        themesList: (config.themesList || []).map(theme => ({ name: theme })),
+        notifications: config.notifications || { mode: 'NONE', channelId: null }
+      };
+
       await api.request(`/config/${guildId}/photocontest`, {
         method: 'POST',
-        body: JSON.stringify(config)
+        body: JSON.stringify(payload)
       });
       showToast(t('pc.sync_success'));
     } catch (error) {
@@ -117,16 +124,16 @@ export default function PhotoContestConfig() {
 
   const addTheme = () => {
     if (!newTheme.trim()) return;
-    if (config.themes.includes(newTheme.trim())) {
+    if ((config.themesList || []).includes(newTheme.trim())) {
         showToast(t('pc.theme_exists'), 'error');
         return;
     }
-    setConfig({ ...config, themes: [...config.themes, newTheme.trim()] });
+    setConfig({ ...config, themesList: [...(config.themesList || []), newTheme.trim()] });
     setNewTheme('');
   };
 
   const removeTheme = (theme) => {
-    setConfig({ ...config, themes: config.themes.filter(t => t !== theme) });
+    setConfig({ ...config, themesList: (config.themesList || []).filter(t => t !== theme) });
   };
 
   if (!mounted || loading || !config) return <Skeleton height="600px" />;
@@ -183,7 +190,7 @@ export default function PhotoContestConfig() {
             <div className="pc-tabs-v2">
                 {[
                     { id: 'general', icon: <Settings2 size={18} />, label: t('pc.tab_core') },
-                    { id: 'themes', icon: <Layers size={18} />, label: t('pc.tab_themes'), count: config.themes.length },
+                    { id: 'themes', icon: <Layers size={18} />, label: t('pc.tab_themes'), count: (config.themesList || []).length },
                     { id: 'design', icon: <Palette size={18} />, label: t('pc.tab_design') },
                     { id: 'system_messages', icon: <MessageSquare size={18} />, label: t('common.tab_system_messages') }
                 ].map(tab => (
@@ -222,7 +229,7 @@ export default function PhotoContestConfig() {
                                 </div>
                                 <div className="pc-input-group-v2" style={{ marginTop: '32px' }}>
                                     <label>{t('pc.winner_role')}</label>
-                                    <DiscordSelector type="role" options={discordData.roles} value={config.winnerRoleId} onChange={v => setConfig({...config, winnerRoleId: v})} />
+                                    <DiscordSelector type="role" options={discordData.roles} value={config.prizeRoleId} onChange={v => setConfig({...config, prizeRoleId: v})} />
                                     <div style={{ marginTop: '20px', background: 'var(--primary-glow)', padding: '24px', borderRadius: '22px', border: '1.5px solid var(--primary-muted)', display: 'flex', gap: '16px', alignItems: 'center' }}>
                                         <Info size={24} color="var(--primary)" style={{ flexShrink: 0 }} />
                                         <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 700, lineHeight: 1.6 }}>{t('pc.winner_role_desc')}</p>
@@ -269,7 +276,7 @@ export default function PhotoContestConfig() {
                             <div className="card-body-v2">
                                 <div className="pc-input-group-v2">
                                     <label>{t('pc.moderators')}</label>
-                                    <DiscordSelector type="role" multiple options={discordData.roles} value={config.staffRoles || []} onChange={v => setConfig({...config, staffRoles: v})} />
+                                    <DiscordSelector type="role" multiple options={discordData.roles} value={config.staffRoleIds || []} onChange={v => setConfig({...config, staffRoleIds: v})} />
                                 </div>
                                 <div style={{ marginTop: '32px', background: 'var(--bg-badge)', padding: '28px', borderRadius: '28px', border: '1.5px solid var(--border)' }}>
                                     <div className="pc-toggle-row-v2" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -318,14 +325,14 @@ export default function PhotoContestConfig() {
                             </div>
 
                             <div className="pc-themes-matrix-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '14px' }}>
-                                {config.themes.map((theme, idx) => (
+                                {(config.themesList || []).map((theme, idx) => (
                                     <div key={idx} className="pc-theme-studio-card animate slide-up" style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--bg-card)', border: '1.5px solid var(--border)', padding: '14px', borderRadius: '14px', transition: '0.2s' }}>
                                         <div style={{ width: '30px', height: '30px', background: 'var(--bg-badge)', color: 'var(--primary)', borderRadius: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, border: '1.5px solid var(--border)' }}>#{idx + 1}</div>
                                         <span style={{ flex: 1, fontWeight: 700, color: 'var(--text-heading)', fontSize: '0.95rem', letterSpacing: '-0.3px' }}>{theme}</span>
                                         <button onClick={() => removeTheme(theme)} className="pc-btn-delete-studio-mini" style={{ width: '30px', height: '30px', borderRadius: '9px', background: 'var(--bg-badge)', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.2s' }}><X size={16} /></button>
                                     </div>
                                 ))}
-                                {config.themes.length === 0 && (
+                                {(!config.themesList || config.themesList.length === 0) && (
                                     <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '48px 24px', background: 'var(--bg-badge)', borderRadius: '16px', border: '1.5px dashed var(--border)' }}>
                                         <Image size={48} style={{ margin: '0 auto 20px', opacity: 0.3, color: 'var(--primary)' }} />
                                         <h3 style={{ margin: 0, fontWeight: 700, color: 'var(--text-heading)', fontSize: '1.15rem', letterSpacing: '0' }}>{t('pc.empty_library')}</h3>
