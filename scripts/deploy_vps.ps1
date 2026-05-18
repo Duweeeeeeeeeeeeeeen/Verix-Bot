@@ -31,10 +31,10 @@ git clean -fd -- \
   dashboard/client/public \
   scripts
 
-npm install --omit=dev
+npm ci --omit=dev
 
 cd dashboard/client
-npm install --omit=dev
+npm ci --omit=dev
 npm run build
 
 cd "$RemotePath"
