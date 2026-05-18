@@ -7,7 +7,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { 
   Shield, Ticket, Mic2, RefreshCcw, Activity, ShieldCheck,
   Camera, Globe, UserPlus,
-  ChevronRight, Box, Settings2, TrendingUp, MousePointer2, ListChecks, Crown,
+  ChevronRight, Box, Settings2, TrendingUp, MousePointer2, ListChecks, Crown, Star, Award,
   History, LayoutTemplate, AlertTriangle, Sparkles,
   Cpu, Rocket, Command
 } from 'lucide-react';
