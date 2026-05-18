@@ -41,7 +41,17 @@ cd "$RemotePath"
 pm2 restart verix-bot verix-dashboard-client
 pm2 save
 
-curl -fsS https://verixbot.com/api/health
+for attempt in {1..12}; do
+  if curl -fsS https://verixbot.com/api/health; then
+    break
+  fi
+  if [ "`$attempt" -eq 12 ]; then
+    echo "Health check failed after `$attempt attempts"
+    exit 1
+  fi
+  sleep 5
+done
+
 pm2 status --no-color
 "@
 
