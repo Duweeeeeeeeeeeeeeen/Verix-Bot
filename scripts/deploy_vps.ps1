@@ -55,6 +55,10 @@ done
 pm2 status --no-color
 "@
 
+$remoteScript = $remoteScript -replace "`r", ""
 $remoteScript | ssh -o BatchMode=yes $Vps "bash -s"
+if ($LASTEXITCODE -ne 0) {
+    throw "Remote deploy failed with exit code $LASTEXITCODE"
+}
 
 Write-Output "Deploy complete."
