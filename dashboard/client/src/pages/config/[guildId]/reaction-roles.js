@@ -242,7 +242,7 @@ export default function ReactionRolesConfig() {
 
         <div className="pc-layout-grid-v2 rr-layout-outer">
             {/* Sidebar Navigator V2 */}
-            <aside className="v-stack animate slide-up" style={{ gap: '24px' }}>
+            <aside className="v-stack animate slide-up rr-sidebar" style={{ gap: '24px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div className="v-stack">
                         <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>{t('rr.fleet_repo')}</span>
@@ -250,7 +250,7 @@ export default function ReactionRolesConfig() {
                     </div>
                     <button onClick={addPanel} className="pc-btn-icon-v2"><Plus size={20} /></button>
                 </div>
-                <div className="v-stack" style={{ gap: '12px' }}>
+                <div className="v-stack rr-panel-list" style={{ gap: '12px' }}>
                     {config.panels.map(p => (
                         <button 
                             key={p.id}
@@ -506,9 +506,22 @@ export default function ReactionRolesConfig() {
         </div>
 
         <style jsx>{`
-            .rr-layout-outer { display: grid !important; grid-template-columns: 320px minmax(0, 1fr) !important; gap: 32px !important; align-items: start !important; }
-            .rr-layout-inner { display: grid !important; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) !important; gap: 32px !important; align-items: start !important; }
+            .rr-layout-outer { display: grid !important; grid-template-columns: 260px minmax(0, 1fr) !important; gap: 32px !important; align-items: start !important; }
+            .rr-layout-inner { display: grid !important; grid-template-columns: minmax(0, 1.3fr) minmax(340px, 1fr) !important; gap: 32px !important; align-items: start !important; }
             .pc-premium-wrapper { padding: 32px; max-width: 1500px; margin: 0 auto; font-family: 'Inter', sans-serif; }
+
+            .rr-sidebar { position: sticky; top: 32px; }
+
+            @media (max-width: 1280px) {
+                .rr-layout-outer { grid-template-columns: 220px minmax(0, 1fr) !important; gap: 24px !important; }
+                .rr-layout-inner { grid-template-columns: minmax(0, 1.1fr) minmax(320px, 1fr) !important; gap: 24px !important; }
+            }
+            @media (max-width: 1024px) {
+                .rr-layout-outer { grid-template-columns: 1fr !important; gap: 24px !important; }
+                .rr-layout-inner { grid-template-columns: 1fr !important; gap: 24px !important; }
+                .rr-sidebar { position: static !important; }
+                .rr-panel-list { display: grid !important; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)) !important; gap: 12px !important; }
+            }
             
             .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-card); padding: 24px; border-radius: 28px; box-shadow: var(--shadow-premium); border: 1px solid var(--border); }
             .header-info { display: flex; align-items: center; gap: 16px; }
