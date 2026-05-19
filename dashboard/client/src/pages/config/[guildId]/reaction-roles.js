@@ -639,18 +639,20 @@ export default function ReactionRolesConfig() {
                 gap: 12px !important;
                 align-items: flex-end !important;
             }
-            .pc-bb-emoji-box {
+            :global(.pc-bb-emoji-box) {
                 width: 44px !important;
                 height: 44px !important;
+                font-size: 1.2rem !important;
+                border-radius: 12px !important;
                 flex-shrink: 0;
             }
-            .pc-bb-col {
+            :global(.pc-bb-col) {
                 display: flex;
                 flex-direction: column;
                 gap: 6px;
                 flex: 1;
             }
-            .pc-bb-col label {
+            :global(.pc-bb-col label) {
                 font-size: 0.65rem;
                 font-weight: 700;
                 color: var(--text-muted);
@@ -658,24 +660,27 @@ export default function ReactionRolesConfig() {
                 letter-spacing: 0.5px;
                 margin-bottom: 2px;
             }
-            .pc-bb-input-box {
-                flex: 1;
+            :global(.pc-bb-input-box) {
+                flex: 1 !important;
                 height: 44px !important;
-            }
-            .pc-bb-input-box input {
-                width: 100%;
-                background: var(--bg-badge);
-                border: 1.5px solid var(--border);
-                padding: 8px 12px !important;
+                background: var(--bg-badge) !important;
+                border: 1.5px solid var(--border) !important;
                 border-radius: 12px !important;
+                padding: 0 12px !important;
+            }
+            :global(.pc-bb-input-box input) {
+                width: 100%;
+                background: transparent !important;
+                border: none !important;
+                padding: 0 !important;
                 font-size: 0.85rem !important;
                 font-weight: 600;
                 color: var(--text-heading);
                 outline: none;
-                height: 44px !important;
+                height: 100% !important;
             }
-            .pc-bb-input-box input:focus {
-                border-color: var(--primary);
+            :global(.pc-bb-input-box input:focus) {
+                border-color: transparent !important;
             }
             :global(.pc-bb-color-picker) {
                 height: 44px !important;
@@ -690,27 +695,27 @@ export default function ReactionRolesConfig() {
                 height: 18px !important;
             }
 
-            .pc-bb-reorder-btn {
-                background: transparent;
-                border: none;
-                color: var(--text-muted);
-                cursor: pointer;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                padding: 4px;
-                border-radius: 6px;
-                transition: 0.2s;
-                opacity: 0.6;
+            :global(.pc-bb-reorder-btn) {
+                background: transparent !important;
+                border: none !important;
+                color: var(--text-muted) !important;
+                cursor: pointer !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                padding: 4px !important;
+                border-radius: 6px !important;
+                transition: 0.2s !important;
+                opacity: 0.6 !important;
             }
-            .pc-bb-reorder-btn:hover:not(:disabled) {
-                background: var(--border);
-                color: var(--primary);
-                opacity: 1;
+            :global(.pc-bb-reorder-btn:hover:not(:disabled)) {
+                background: var(--border) !important;
+                color: var(--primary) !important;
+                opacity: 1 !important;
             }
-            .pc-bb-reorder-btn:disabled {
-                opacity: 0.15;
-                cursor: not-allowed;
+            :global(.pc-bb-reorder-btn:disabled) {
+                opacity: 0.15 !important;
+                cursor: not-allowed !important;
             }
 
             .v-stack { display: flex; flex-direction: column; }
