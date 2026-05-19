@@ -60,9 +60,9 @@ export default function EmbedPreview({ data, isMobile = false, theme = 'dark' })
       fontFamily: '"Inter", "gg sans", "Whitney", "Helvetica Neue", Helvetica, Arial, sans-serif',
       color: colors.text_normal,
       fontSize: '0.95rem',
-      width: isMobile ? '100%' : '624px',
-      minWidth: isMobile ? 'auto' : '624px',
-      maxWidth: isMobile ? '360px' : 'none',
+      width: '100%',
+      minWidth: 'auto',
+      maxWidth: isMobile ? '360px' : '624px',
       boxShadow: 'var(--shadow-premium)',
       border: '1.5px solid var(--border)',
       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -109,15 +109,14 @@ export default function EmbedPreview({ data, isMobile = false, theme = 'dark' })
                 <span style={{ color: colors.text_muted, fontSize: '0.75rem' }}>Oggi alle {new Date().getHours()}:{new Date().getMinutes().toString().padStart(2, '0')}</span>
             </div>
  
-            {/* The Embed Skeleton */}
             <div className="embed-container" style={{
                 background: theme === 'dark' ? 'rgba(43, 45, 49, 0.8)' : 'rgba(242, 243, 245, 0.8)',
                 backdropFilter: 'blur(10px)',
                 borderRadius: '8px',
                 padding: '16px 20px',
                 marginTop: '12px',
-                width: isMobile ? '100%' : '520px',
-                minWidth: isMobile ? 'auto' : '520px',
+                width: '100%',
+                minWidth: 'auto',
                 maxWidth: '520px',
                 position: 'relative',
                 display: 'flex',
