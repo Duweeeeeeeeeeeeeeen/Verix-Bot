@@ -409,7 +409,7 @@ export default function ReactionRolesConfig() {
                                                             <ChevronDown size={14} />
                                                         </button>
                                                     </div>
-                                                    <div className="pc-bb-content" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '16px', padding: '12px 16px', flex: 1, flexWrap: 'wrap' }}>
+                                                    <div className="pc-bb-content" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '12px', padding: '12px 16px', flex: 1, flexWrap: 'nowrap' }}>
                                                         {/* Emoji Box */}
                                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '44px' }}>
                                                             <label style={{ fontSize: '0.62rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('common.emoji')}</label>
@@ -466,12 +466,13 @@ export default function ReactionRolesConfig() {
                                                         </div>
 
                                                         {/* Trash Button */}
-                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '40px', justifyContent: 'flex-end', height: '44px', marginTop: '18px' }}>
+                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '40px' }}>
+                                                            <label style={{ fontSize: '0.62rem', fontWeight: '800', opacity: 0, userSelect: 'none' }}>DEL</label>
                                                             <button onClick={() => {
                                                                 const newRoles = activePanel.roles.filter((_, i) => i !== idx);
                                                                 updatePanel(activePanel.id, { roles: newRoles });
                                                             }} className="pc-bb-trash" style={{ width: '40px', height: '44px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                                    <Trash2 size={16} />
+                                                                <Trash2 size={16} />
                                                             </button>
                                                         </div>
                                                     </div>
