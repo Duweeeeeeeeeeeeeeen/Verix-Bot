@@ -2401,6 +2401,40 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: none !important;
 }
 
+.dashboard-container .pc-premium-wrapper {
+  padding: 24px !important;
+  max-width: 1320px !important;
+}
+
+.dashboard-container .pc-content-v2,
+.dashboard-container .pc-content-v2 > .v-stack {
+  gap: 24px !important;
+}
+
+.dashboard-container .pc-layout-grid-v2,
+.dashboard-container .pc-settings-grid-v2 {
+  gap: 20px !important;
+  align-items: start !important;
+}
+
+.dashboard-container .pc-layout-grid-v2 {
+  grid-template-columns: minmax(0, 1.15fr) minmax(300px, 0.85fr) !important;
+}
+
+.dashboard-container .pc-settings-grid-v2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+.dashboard-container .pc-input-grid-v2 {
+  gap: 16px !important;
+}
+
+.dashboard-container .pc-sub-card-v2 {
+  border-radius: 14px !important;
+  padding: 16px !important;
+  border: 1px solid var(--border) !important;
+}
+
 .dashboard-container .pc-header-v2 {
   border-radius: 16px !important;
   padding: 20px 24px !important;
@@ -2542,7 +2576,8 @@ h1, h2, h3, h4, h5, h6 {
 
 .dashboard-container textarea.pc-input-modern-v2,
 .dashboard-container textarea.form-control,
-.dashboard-container .system-message-textarea {
+.dashboard-container .system-message-textarea,
+.dashboard-container .pc-textarea-v2 {
   min-height: 150px !important;
   resize: vertical !important;
 }
@@ -2616,6 +2651,15 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 @media (max-width: 900px) {
+  .dashboard-container .pc-premium-wrapper {
+    padding: 18px !important;
+  }
+
+  .dashboard-container .pc-layout-grid-v2,
+  .dashboard-container .pc-settings-grid-v2 {
+    grid-template-columns: 1fr !important;
+  }
+
   .dashboard-container .pc-header-v2 {
     grid-template-columns: 1fr !important;
     padding: 18px !important;

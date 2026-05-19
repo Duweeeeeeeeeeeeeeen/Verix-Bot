@@ -4,8 +4,8 @@ import Skeleton from '../../../components/Skeleton';
 import { EmbedMessageManager, DiscordSelector, CustomSelect, SystemMessagesSection } from '../../../components/LazyConfigComponents';
 import api from '../../../utils/api';
 import { useT } from '../../../contexts/LanguageContext';
-import { 
-  Save, ShieldCheck, Settings2, ListChecks, Palette, Plus, Trash2, Power, Clock, 
+import {
+  Save, ShieldCheck, Settings2, ListChecks, Palette, Plus, Trash2, Power, Clock,
   RefreshCcw, Zap, Command, Mic2, Send, FileText, ChevronLeft, ChevronRight,
   Sparkles, Award, CheckCircle2, XCircle, Layout, RotateCcw, MessageCircle
 } from 'lucide-react';
@@ -38,7 +38,7 @@ export default function WhitelistConfig() {
         api.request(`/config/${guildId}/background`),
         api.request(`/config/${guildId}/discord-data`)
       ]);
-      
+
       setConfig(wlRes?.data || wlRes);
       setBgConfig(bgRes?.data || bgRes);
       setDiscordData(discordRes?.data || discordRes || { roles: [], channels: [] });
@@ -111,7 +111,7 @@ export default function WhitelistConfig() {
   const tabs = [
     { id: 'settings', name: t('whitelist.core_setup'), icon: Settings2 },
     { id: 'questions', name: t('whitelist.written_test'), icon: ListChecks },
-    (config.mode === 'VOICE' || config.mode === 'HYBRID' || config.mode === 'FULL') ? 
+    (config.mode === 'VOICE' || config.mode === 'HYBRID' || config.mode === 'FULL') ?
       { id: 'voice', name: t('whitelist.tab_voice'), icon: Mic2 } : null,
     { id: 'background', name: t('whitelist.staff_recruits'), icon: Command },
     { id: 'system_messages', name: t('common.system_messages'), icon: MessageCircle },
@@ -138,14 +138,14 @@ export default function WhitelistConfig() {
                     </div>
                 </div>
             </div>
-            
+
             <div className="header-controls">
                 <div className="pc-toggle-container-v2">
                     <label className="pc-toggle-v2">
-                        <input 
-                            type="checkbox" 
-                            checked={config.enabled} 
-                            onChange={() => setConfig({...config, enabled: !config.enabled})} 
+                        <input
+                            type="checkbox"
+                            checked={config.enabled}
+                            onChange={() => setConfig({...config, enabled: !config.enabled})}
                         />
                         <span className="pc-slider-v2"></span>
                     </label>
@@ -157,10 +157,10 @@ export default function WhitelistConfig() {
                 <button className="pc-btn-outline-v2" onClick={handleReset} title={t('common.reset_to_default')}>
                     <RotateCcw size={18} />
                 </button>
-                <button 
-                    className="pc-btn-outline-v2" 
-                    onClick={handleSendPanel} 
-                    disabled={sendingPanel || !config.panelChannelId} 
+                <button
+                    className="pc-btn-outline-v2"
+                    onClick={handleSendPanel}
+                    disabled={sendingPanel || !config.panelChannelId}
                     title={t('whitelist.send_panel')}
                     style={{ color: 'var(--primary)', borderColor: sendingPanel ? 'var(--border)' : 'rgba(var(--primary-rgb), 0.2)' }}
                 >
@@ -195,15 +195,15 @@ export default function WhitelistConfig() {
                                 <div className="pc-input-grid-v2">
                                     <div className="pc-input-group-v2">
                                         <label>{t('whitelist.selection_method')}</label>
-                                        <CustomSelect 
+                                        <CustomSelect
                                             options={[
                                                 { value: 'TEXT', label: t('whitelist.mode_text_only') },
                                                 { value: 'VOICE', label: t('whitelist.mode_voice_only') },
                                                 { value: 'HYBRID', label: t('whitelist.mode_hybrid_text_voice') },
                                                 { value: 'FULL', label: t('whitelist.mode_full_ecosystem') }
-                                            ]} 
-                                            value={config.mode || 'TEXT'} 
-                                            onChange={val => setConfig({...config, mode: val})} 
+                                            ]}
+                                            value={config.mode || 'TEXT'}
+                                            onChange={val => setConfig({...config, mode: val})}
                                         />
                                     </div>
                                     <div className="pc-input-group-v2" style={{ marginTop: '24px' }}>
@@ -286,15 +286,15 @@ export default function WhitelistConfig() {
                                         <div className="v-stack" style={{ gap: '16px' }}>
                                             <div className="pc-input-group-v2">
                                                 <label>Domanda #{idx + 1}</label>
-                                                <textarea 
+                                                <textarea
                                                     className="pc-textarea-v2"
-                                                    value={q.text || ''} 
+                                                    value={q.text || ''}
                                                     onChange={e => {
                                                         const qs = [...config.questions];
                                                         qs[idx].text = e.target.value;
                                                         setConfig({...config, questions: qs});
-                                                    }} 
-                                                    placeholder={t('automations.placeholder_text')} 
+                                                    }}
+                                                    placeholder={t('automations.placeholder_text')}
                                                 />
                                             </div>
                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -385,15 +385,15 @@ export default function WhitelistConfig() {
                                         <div className="v-stack" style={{ gap: '16px' }}>
                                             <div className="pc-input-group-v2">
                                                 <label>{t('whitelist.question_number', { number: idx + 1 })}</label>
-                                                <textarea 
+                                                <textarea
                                                     className="pc-textarea-v2"
-                                                    value={q.text || ''} 
+                                                    value={q.text || ''}
                                                     onChange={e => {
                                                         const qs = [...bgConfig.questions];
                                                         qs[idx].text = e.target.value;
                                                         setBgConfig({...bgConfig, questions: qs});
-                                                    }} 
-                                                    placeholder={t('whitelist.staff_questions_placeholder')} 
+                                                    }}
+                                                    placeholder={t('whitelist.staff_questions_placeholder')}
                                                 />
                                             </div>
                                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -521,7 +521,7 @@ export default function WhitelistConfig() {
 
             {activeTab === 'design' && (
                 <div className="v-stack animate slide-up">
-                    <EmbedMessageManager 
+                    <EmbedMessageManager
                         guildId={guildId}
                         module="whitelist"
                         slugs={[
@@ -535,42 +535,46 @@ export default function WhitelistConfig() {
 
             {activeTab === 'system_messages' && (
                 <div className="v-stack animate slide-up" style={{ gap: '32px' }}>
-                    <SystemMessagesSection 
-                        config={config}
-                        onUpdate={setConfig}
-                        title={t('whitelist.system_messages') || 'Whitelist System Messages'}
-                        messages={[
-                            { key: 'already_exists', label: t('whitelist.msg_already_exists'), placeholder: t('whitelist.msg_already_exists_placeholder') },
-                            { key: 'cooldown_error', label: t('whitelist.msg_cooldown_error'), placeholder: t('whitelist.msg_cooldown_error_placeholder') },
-                            { key: 'blacklist_error', label: t('whitelist.msg_blacklist_error'), placeholder: t('whitelist.msg_blacklist_error_placeholder') },
-                            { key: 'test_passed', label: t('whitelist.msg_test_passed'), placeholder: t('whitelist.msg_test_passed_placeholder') },
-                            { key: 'test_failed', label: t('whitelist.msg_test_failed'), placeholder: t('whitelist.msg_test_failed_placeholder') }
-                        ]}
-                    />
+                    <section className="pc-card-v2">
+                        <SystemMessagesSection
+                            config={config}
+                            onUpdate={setConfig}
+                            title={t('whitelist.system_messages') || 'Whitelist System Messages'}
+                            messages={[
+                                { key: 'already_exists', label: t('whitelist.msg_already_exists'), placeholder: t('whitelist.msg_already_exists_placeholder') },
+                                { key: 'cooldown_error', label: t('whitelist.msg_cooldown_error'), placeholder: t('whitelist.msg_cooldown_error_placeholder') },
+                                { key: 'blacklist_error', label: t('whitelist.msg_blacklist_error'), placeholder: t('whitelist.msg_blacklist_error_placeholder') },
+                                { key: 'test_passed', label: t('whitelist.msg_test_passed'), placeholder: t('whitelist.msg_test_passed_placeholder') },
+                                { key: 'test_failed', label: t('whitelist.msg_test_failed'), placeholder: t('whitelist.msg_test_failed_placeholder') }
+                            ]}
+                        />
+                    </section>
 
-                    <SystemMessagesSection 
-                        config={bgConfig}
-                        onUpdate={setBgConfig}
-                        title={t('background.system_messages') || 'Background System Messages'}
-                        messages={[
-                            { key: 'already_exists', label: t('background.msg_already_exists'), placeholder: t('background.msg_already_exists_placeholder') },
-                            { key: 'cooldown_error', label: t('background.msg_cooldown_error'), placeholder: t('background.msg_cooldown_error_placeholder') },
-                            { key: 'submission_success', label: t('background.msg_submission_success'), placeholder: t('background.msg_submission_success_placeholder') }
-                        ]}
-                    />
+                    <section className="pc-card-v2">
+                        <SystemMessagesSection
+                            config={bgConfig}
+                            onUpdate={setBgConfig}
+                            title={t('background.system_messages') || 'Background System Messages'}
+                            messages={[
+                                { key: 'already_exists', label: t('background.msg_already_exists'), placeholder: t('background.msg_already_exists_placeholder') },
+                                { key: 'cooldown_error', label: t('background.msg_cooldown_error'), placeholder: t('background.msg_cooldown_error_placeholder') },
+                                { key: 'submission_success', label: t('background.msg_submission_success'), placeholder: t('background.msg_submission_success_placeholder') }
+                            ]}
+                        />
+                    </section>
                 </div>
             )}
         </div>
 
         <style jsx>{`
             .pc-premium-wrapper { padding: 32px; max-width: 1500px; margin: 0 auto; font-family: 'Inter', sans-serif; }
-            
+
             /* Header V2 */
             .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-card); padding: 24px; border-radius: 28px; box-shadow: var(--shadow-premium); border: 1px solid var(--border); }
             .header-info { display: flex; align-items: center; gap: 16px; }
             .pc-icon-box { width: 52px; height: 52px; color: #fff; border-radius: 16px; display: flex; align-items: center; justify-content: center; }
             .pc-title-row h1 { font-family: 'Inter'; font-size: 1.8rem; font-weight: 700; margin: 0; color: var(--text-heading); letter-spacing: normal; }
-            
+
             .pc-status-tag-v2 { display: flex; align-items: center; gap: 6px; font-size: 0.6rem; font-weight: 700; padding: 4px 10px; border-radius: 100px;  width: fit-content; }
             .pc-status-tag-v2.on { background: rgba(16, 185, 129, 0.1); color: #10b981; }
             .pc-status-tag-v2.off { background: var(--bg-badge); color: #ef4444; }
@@ -578,10 +582,10 @@ export default function WhitelistConfig() {
 
             .pc-btn-primary { background: var(--primary); color: #fff; border: none; padding: 12px 24px; border-radius: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
             .pc-btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(var(--primary-rgb), 0.2); }
-            
+
             .header-controls { display: flex; align-items: center; gap: 12px; }
             .pc-header-divider { width: 1.5px; height: 24px; background: var(--border); margin: 0 4px; }
-            
+
             .text-active { color: #10b981; }
             .text-inactive { color: #ef4444; }
 

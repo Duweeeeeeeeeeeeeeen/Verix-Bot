@@ -3,8 +3,8 @@ import { useRouter } from 'next/router';
 import Skeleton from '../../../components/Skeleton';
 import api from '../../../utils/api';
 import { useT } from '../../../contexts/LanguageContext';
-import { 
-    Save, Ticket, Settings2, Shield, Plus, MessageSquare, Trash2, 
+import {
+    Save, Ticket, Settings2, Shield, Plus, MessageSquare, Trash2,
     ChevronRight, CheckCircle2, Layout, Clock, UserPlus, FileText,
     RotateCcw, Send, GripVertical, AlertCircle
 } from 'lucide-react';
@@ -41,10 +41,10 @@ export default function TicketConfig() {
         api.request(`/config/${guildId}/tickets`).catch(() => ({ enabled: false })),
         api.request(`/config/${guildId}/discord-data`).catch(() => ({ roles: [], channels: [], categories: [] }))
       ]);
-      
+
       const rawConfig = configRes?.data || configRes || { enabled: false };
       setConfig(mergeConfig(rawConfig, 'tickets'));
-      
+
       if (discordRes) {
         setDiscordData({
           roles: discordRes.roles || [],
@@ -169,14 +169,14 @@ export default function TicketConfig() {
                     </div>
                 </div>
             </div>
-            
+
             <div className="header-controls">
                 <div className="pc-toggle-container-v2">
                     <label className="pc-toggle-v2">
-                        <input 
-                            type="checkbox" 
-                            checked={config.enabled} 
-                            onChange={() => setConfig({...config, enabled: !config.enabled})} 
+                        <input
+                            type="checkbox"
+                            checked={config.enabled}
+                            onChange={() => setConfig({...config, enabled: !config.enabled})}
                         />
                         <span className="pc-slider-v2"></span>
                     </label>
@@ -188,10 +188,10 @@ export default function TicketConfig() {
                 <button className="pc-btn-outline-v2" onClick={handleReset} title={t('common.reset_to_default')}>
                     <RotateCcw size={18} />
                 </button>
-                <button 
-                    className="pc-btn-outline-v2" 
-                    onClick={handleSendPanel} 
-                    disabled={sendingPanel || !config.panelChannelId} 
+                <button
+                    className="pc-btn-outline-v2"
+                    onClick={handleSendPanel}
+                    disabled={sendingPanel || !config.panelChannelId}
                     title={t('tickets.send_panel') || 'Invia Panel Ticket'}
                     style={{ color: 'var(--primary)', borderColor: sendingPanel ? 'var(--border)' : 'rgba(var(--primary-rgb), 0.2)' }}
                 >
@@ -323,7 +323,7 @@ export default function TicketConfig() {
                                                 }} placeholder={t('tickets.cat_title_placeholder')} />
                                                 <button onClick={() => removeTicketType(id)} className="pc-btn-icon-danger-v2"><Trash2 size={20} /></button>
                                             </div>
-                                            
+
                                             <div className="pc-bb-columns">
                                                 <div className="pc-bb-col" style={{ width: '80px' }}>
                                                     <label>{t('common.emoji')}</label>
@@ -348,8 +348,8 @@ export default function TicketConfig() {
 
                                             <div className="pc-input-group-v2" style={{ marginTop: '24px' }}>
                                                 <label>{t('tickets.welcome_message')}</label>
-                                                <textarea 
-                                                    className="pc-input-modern-v2" 
+                                                <textarea
+                                                    className="pc-input-modern-v2"
                                                     style={{ minHeight: '80px', width: '100%', resize: 'vertical' }}
                                                     value={config.typesConfig[id]?.welcomeMessage || ''}
                                                     onChange={e => {
@@ -419,16 +419,18 @@ export default function TicketConfig() {
 
             {activeTab === 'system_messages' && (
                 <div className="v-stack animate slide-up">
-                    <SystemMessagesSection 
-                        config={config}
-                        onUpdate={setConfig}
-                        messages={[
-                            { key: 'cooldown', label: t('tickets.msg_cooldown'), placeholder: t('tickets.msg_cooldown_placeholder') },
-                            { key: 'limit_reached', label: t('tickets.msg_limit'), placeholder: t('tickets.msg_limit_placeholder') },
-                            { key: 'already_open', label: t('tickets.msg_already_open'), placeholder: t('tickets.msg_already_open_placeholder') },
-                            { key: 'no_perms', label: t('tickets.msg_no_perms'), placeholder: t('tickets.msg_no_perms_placeholder') }
-                        ]}
-                    />
+                    <section className="pc-card-v2">
+                        <SystemMessagesSection
+                            config={config}
+                            onUpdate={setConfig}
+                            messages={[
+                                { key: 'cooldown', label: t('tickets.msg_cooldown'), placeholder: t('tickets.msg_cooldown_placeholder') },
+                                { key: 'limit_reached', label: t('tickets.msg_limit'), placeholder: t('tickets.msg_limit_placeholder') },
+                                { key: 'already_open', label: t('tickets.msg_already_open'), placeholder: t('tickets.msg_already_open_placeholder') },
+                                { key: 'no_perms', label: t('tickets.msg_no_perms'), placeholder: t('tickets.msg_no_perms_placeholder') }
+                            ]}
+                        />
+                    </section>
                 </div>
             )}
         </div>

@@ -4,8 +4,8 @@ import Skeleton from '../../../components/Skeleton';
 import { DiscordSelector, CustomSelect, EmbedMessageManager, SystemMessagesSection, HelpTooltip } from '../../../components/LazyConfigComponents';
 import api from '../../../utils/api';
 import { useT } from '../../../contexts/LanguageContext';
-import { 
-    Save, ShieldCheck, Settings2, Palette, MousePointer2, CheckCircle2, 
+import {
+    Save, ShieldCheck, Settings2, Palette, MousePointer2, CheckCircle2,
     Shield, Send, GripVertical, RotateCcw
 } from 'lucide-react';
 import EmojiInput from '../../../components/EmojiInput';
@@ -40,7 +40,7 @@ export default function VerifyConfig() {
 
       const data = configRes.data || configRes || {};
       setConfig(mergeConfig(data, 'verify'));
-      
+
       const dData = discordRes.data || discordRes || {};
       setDiscordData({
         roles: dData.roles || [],
@@ -91,7 +91,7 @@ export default function VerifyConfig() {
 
   const handleReset = async () => {
     if (!confirm(t('common.reset_confirm'))) return;
-    
+
     setLoading(true);
     window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
     try {
@@ -161,14 +161,14 @@ export default function VerifyConfig() {
                     </div>
                 </div>
             </div>
-            
+
             <div className="header-controls">
                 <div className="pc-toggle-container-v2">
                     <label className="pc-toggle-v2">
-                        <input 
-                            type="checkbox" 
-                            checked={config.enabled} 
-                            onChange={() => setConfig({...config, enabled: !config.enabled})} 
+                        <input
+                            type="checkbox"
+                            checked={config.enabled}
+                            onChange={() => setConfig({...config, enabled: !config.enabled})}
                         />
                         <span className="pc-slider-v2"></span>
                     </label>
@@ -180,10 +180,10 @@ export default function VerifyConfig() {
                 <button className="pc-btn-outline-v2" onClick={handleReset} title={t('common.reset_to_default')}>
                     <RotateCcw size={18} />
                 </button>
-                <button 
-                    className="pc-btn-outline-v2" 
-                    onClick={handleSendPanel} 
-                    disabled={sendingPanel || !config.channelId} 
+                <button
+                    className="pc-btn-outline-v2"
+                    onClick={handleSendPanel}
+                    disabled={sendingPanel || !config.channelId}
                     title={t('verify.send_panel')}
                     style={{ color: 'var(--primary)', borderColor: sendingPanel ? 'var(--border)' : 'rgba(var(--primary-rgb), 0.2)' }}
                 >
@@ -285,16 +285,16 @@ export default function VerifyConfig() {
 
             {activeTab === 'design' && (
                 <div className="v-stack animate slide-up" style={{ gap: '32px' }}>
-                    <EmbedMessageManager 
+                    <EmbedMessageManager
                         guildId={guildId}
                         module="verify"
                         slugs={[
-                            { 
-                                key: 'panel', 
-                                label: t('verify.panel_id_label'), 
-                                description: t('verify.panel_id_desc'), 
-                                variables: ['user', 'guild'], 
-                                group: 'UI', 
+                            {
+                                key: 'panel',
+                                label: t('verify.panel_id_label'),
+                                description: t('verify.panel_id_desc'),
+                                variables: ['user', 'guild'],
+                                group: 'UI',
                                 groupIcon: Palette,
                                 extra: (
                                     <section className="pc-card-v2 animate slide-up" style={{ marginTop: '32px' }}>
@@ -332,7 +332,7 @@ export default function VerifyConfig() {
                                                             <label>{t('common.color')}</label>
                                                             <div className="pc-bb-color-picker">
                                                                 {['PRIMARY', 'SUCCESS', 'DANGER', 'SECONDARY'].map(styleOption => (
-                                                                    <div 
+                                                                    <div
                                                                         key={styleOption}
                                                                         className={`pc-bb-swatch swatch-${styleOption} ${(config.buttons?.verify?.style || 'PRIMARY') === styleOption ? 'active' : ''}`}
                                                                         onClick={() => setNested('buttons.verify.style', styleOption)}
@@ -358,15 +358,17 @@ export default function VerifyConfig() {
 
             {activeTab === 'system_messages' && (
                 <div className="v-stack animate slide-up">
-                    <SystemMessagesSection 
-                        config={config}
-                        onUpdate={setConfig}
-                        messages={[
-                            { key: 'success', label: t('verify.msg_success'), placeholder: t('verify.msg_success_placeholder') },
-                            { key: 'error', label: t('verify.msg_error'), placeholder: t('verify.msg_error_placeholder') },
-                            { key: 'pending', label: t('verify.msg_pending'), placeholder: t('verify.msg_pending_placeholder') }
-                        ]}
-                    />
+                    <section className="pc-card-v2">
+                        <SystemMessagesSection
+                            config={config}
+                            onUpdate={setConfig}
+                            messages={[
+                                { key: 'success', label: t('verify.msg_success'), placeholder: t('verify.msg_success_placeholder') },
+                                { key: 'error', label: t('verify.msg_error'), placeholder: t('verify.msg_error_placeholder') },
+                                { key: 'pending', label: t('verify.msg_pending'), placeholder: t('verify.msg_pending_placeholder') }
+                            ]}
+                        />
+                    </section>
                 </div>
             )}
         </div>
