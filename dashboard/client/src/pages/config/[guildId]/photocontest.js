@@ -203,7 +203,7 @@ export default function PhotoContestConfig() {
 
         <div className="pc-content-v2">
             {activeTab === 'general' && (
-                <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 420px', gap: '24px' }}>
+                <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 664px', gap: '24px' }}>
                     <div className="v-stack" style={{ gap: '24px' }}>
                         <section className="pc-card-v2 animate slide-up">
                             <div className="card-header-v2" style={{ marginBottom: '22px' }}>
@@ -377,7 +377,7 @@ export default function PhotoContestConfig() {
         </div>
 
         <style jsx>{`
-            .pc-premium-wrapper { padding: 24px; max-width: 1280px; margin: 0 auto; font-family: 'Inter', sans-serif; }
+            .pc-premium-wrapper { padding: 24px; max-width: 1650px; margin: 0 auto; font-family: 'Inter', sans-serif; }
             
             /* Header V2 */
             .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; background: var(--bg-card); padding: 20px 22px; border-radius: 16px; box-shadow: none; border: 1px solid var(--border); }
@@ -437,8 +437,8 @@ export default function PhotoContestConfig() {
             .animate { animation: slideUp 0.4s ease-out; }
             @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-            @media (max-width: 1180px) {
-                .pc-layout-grid-v2 { grid-template-columns: 1fr !important; }
+            @media (max-width: 1200px) {
+                .pc-layout-grid-v2 { grid-template-columns: 1fr !important; gap: 24px !important; }
             }
 
             @media (max-width: 720px) {

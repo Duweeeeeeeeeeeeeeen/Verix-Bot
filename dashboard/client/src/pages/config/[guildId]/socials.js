@@ -440,7 +440,7 @@ export default function SocialsConfig() {
         </div>
 
         <style jsx>{`
-            .pc-premium-wrapper { padding: 24px; max-width: 1320px; margin: 0 auto; font-family: 'Inter', sans-serif; }
+            .pc-premium-wrapper { padding: 24px; max-width: 1650px; margin: 0 auto; font-family: 'Inter', sans-serif; }
             .socials-layout { display: grid; grid-template-columns: 230px minmax(0, 1fr) !important; gap: 20px; align-items: flex-start; }
             .socials-sidebar { position: sticky; top: 24px; }
             

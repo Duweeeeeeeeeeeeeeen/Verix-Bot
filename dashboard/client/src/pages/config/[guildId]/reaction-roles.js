@@ -541,7 +541,7 @@ export default function ReactionRolesConfig() {
 
         <style jsx>{`
             .rr-layout-outer { display: block !important; }
-            .rr-layout-inner { display: grid !important; grid-template-columns: minmax(0, 1.3fr) minmax(664px, 1fr) !important; gap: 32px !important; align-items: start !important; }
+            .rr-layout-inner { display: grid !important; grid-template-columns: 1fr 664px !important; gap: 32px !important; align-items: start !important; }
             .pc-premium-wrapper { padding: 32px; max-width: 1650px; margin: 0 auto; font-family: 'Inter', sans-serif; }
 
             /* Horizontal Top Bar styles */

@@ -254,7 +254,7 @@ export default function EmbedBuilder() {
                     </div>
                 </section>
 
-                <div className="pc-layout-grid-v2 embeds-main-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 420px', gap: '24px' }}>
+                <div className="pc-layout-grid-v2 embeds-main-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 664px', gap: '24px' }}>
                     <div className="v-stack" style={{ gap: '32px' }}>
                         {/* Visual Designer */}
                         <section className="pc-card-v2 animate slide-up" style={{ padding: 0, animationDelay: '0.1s' }}>
@@ -345,7 +345,7 @@ export default function EmbedBuilder() {
         </div>
 
         <style jsx>{`
-            .pc-premium-wrapper { padding: 32px; max-width: 1500px; margin: 0 auto; font-family: 'Inter', sans-serif; }
+            .pc-premium-wrapper { padding: 32px; max-width: 1650px; margin: 0 auto; font-family: 'Inter', sans-serif; }
             
             /* Header V2 */
             .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-card); padding: 24px; border-radius: 28px; box-shadow: var(--shadow-premium); border: 1px solid var(--border); }
@@ -365,7 +365,11 @@ export default function EmbedBuilder() {
             .pc-btn-save-v2 { background: var(--bg-badge); color: var(--text-heading); border: 1.5px solid var(--border); padding: 12px 24px; border-radius: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; width: 100%; height: 56px; justify-content: center; }
             .pc-btn-save-v2:hover { background: var(--bg-card); border-color: var(--primary); color: var(--primary); }
 
-            .embeds-main-grid { grid-template-columns: minmax(0, 1fr) 420px !important; gap: 24px !important; }
+            .embeds-main-grid { grid-template-columns: 1fr 664px !important; gap: 24px !important; }
+            
+            @media (max-width: 1200px) {
+                .pc-layout-grid-v2.embeds-main-grid { grid-template-columns: 1fr !important; gap: 24px !important; }
+            }
             .embed-designer-wrapper { overflow: hidden; }
             .embed-designer-wrapper :global(.pc-editor-layout-v2) {
                 grid-template-columns: 1fr !important;

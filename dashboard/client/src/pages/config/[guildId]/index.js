@@ -302,7 +302,7 @@ export default function GuildHome() {
         </div>
 
         <style jsx>{`
-            .pc-premium-wrapper { padding: 24px; max-width: 1500px; margin: 0 auto; font-family: 'Inter', sans-serif; }
+            .pc-premium-wrapper { padding: 24px; max-width: 1650px; margin: 0 auto; font-family: 'Inter', sans-serif; }
             
             /* Hero Studio V2 */
             .pc-hero-studio-v2 { 

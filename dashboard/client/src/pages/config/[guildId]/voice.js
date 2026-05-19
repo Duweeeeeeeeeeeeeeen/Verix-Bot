@@ -240,7 +240,7 @@ export default function VoiceHubPage() {
         <div className="pc-content-v2">
             {/* PROVINI MODULE */}
             {activeModule === 'provini' && activeTab === 'settings' && (
-                <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 420px', gap: '32px' }}>
+                <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 664px', gap: '32px' }}>
                     <div className="v-stack" style={{ gap: '32px' }}>
                         <section className="pc-card-v2 animate slide-up">
                             <div className="card-header-v2">
@@ -374,7 +374,7 @@ export default function VoiceHubPage() {
 
             {/* SUPPORT SOS MODULE */}
             {activeModule === 'support' && activeTab === 'settings' && (
-                <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 420px', gap: '32px' }}>
+                <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 664px', gap: '32px' }}>
                     <div className="v-stack" style={{ gap: '32px' }}>
                         <section className="pc-card-v2 animate slide-up">
                             <div className="card-header-v2">
@@ -548,7 +548,7 @@ export default function VoiceHubPage() {
         </div>
 
         <style jsx>{`
-            .pc-premium-wrapper { padding: 32px; max-width: 1500px; margin: 0 auto; font-family: 'Inter', sans-serif; }
+            .pc-premium-wrapper { padding: 32px; max-width: 1650px; margin: 0 auto; font-family: 'Inter', sans-serif; }
             .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-card); padding: 24px; border-radius: 28px; box-shadow: var(--shadow-premium); border: 1px solid var(--border); }
             .header-info { display: flex; align-items: center; gap: 16px; }
             .pc-icon-box { width: 52px; height: 52px; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: #fff; }
@@ -589,6 +589,9 @@ export default function VoiceHubPage() {
             .animate { animation: slideUp 0.4s ease-out; }
             @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
             :global(.light-theme) .pc-header-v2, :global(.light-theme) .pc-card-v2, :global(.light-theme) .pc-module-switcher button { box-shadow: 0 8px 30px rgba(0,0,0,0.04) !important; }
+            @media (max-width: 1200px) {
+                .pc-layout-grid-v2 { grid-template-columns: 1fr !important; gap: 24px !important; }
+            }
             @media (max-width: 900px) {
                 .pc-module-switcher { grid-template-columns: 1fr !important; }
             }

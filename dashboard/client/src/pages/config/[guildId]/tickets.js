@@ -222,7 +222,7 @@ export default function TicketConfig() {
 
         <div className="pc-content-v2">
             {activeTab === 'settings' && (
-                <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 560px', gap: '32px' }}>
+                <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 664px', gap: '32px' }}>
                     <div className="v-stack" style={{ gap: '32px' }}>
                         <section className="pc-card-v2 animate slide-up">
                             <div className="card-header-v2">
@@ -436,7 +436,11 @@ export default function TicketConfig() {
         </div>
 
         <style jsx>{`
-            .pc-premium-wrapper { padding: 32px; max-width: 1500px; margin: 0 auto; font-family: 'Inter', sans-serif; }
+            .pc-premium-wrapper { padding: 32px; max-width: 1650px; margin: 0 auto; font-family: 'Inter', sans-serif; }
+            
+            @media (max-width: 1200px) {
+                .pc-layout-grid-v2 { grid-template-columns: 1fr !important; gap: 24px !important; }
+            }
             .header-info { display: flex; align-items: center; gap: 16px; }
             .v-stack { display: flex; flex-direction: column; }
             .animate { animation: slideUp 0.4s ease-out; }

@@ -324,7 +324,7 @@ export default function AcademyPage() {
       </div>
 
       <style jsx>{`
-        .academy-wrapper { padding: 0 24px 48px 24px; max-width: 1400px; margin: 0 auto; }
+        .academy-wrapper { padding: 0 24px 48px 24px; max-width: 1650px; margin: 0 auto; }
         
         /* Hero */
         .academy-hero { 
