@@ -373,10 +373,10 @@ export default function ReactionRolesConfig() {
                                         </div>
                                     </div>
                                     <div className="card-body-v2">
-                                        <div className="v-stack" style={{ gap: '16px' }}>
+                                        <div className="v-stack" style={{ gap: '12px' }}>
                                             {activePanel.roles.map((role, idx) => (
-                                                <div key={role.id || role._id || idx} className="pc-button-builder animate slide-up">
-                                                    <div className="pc-bb-left" style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center', justifyContent: 'center', padding: '0 8px' }}>
+                                                <div key={role.id || role._id || idx} className="pc-button-builder animate slide-up" style={{ minHeight: 'auto' }}>
+                                                    <div className="pc-bb-left" style={{ display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'center', justifyContent: 'center', padding: '0 8px', borderRight: '1.5px solid var(--border)' }}>
                                                         <button 
                                                             disabled={idx === 0} 
                                                             onClick={() => {
@@ -390,9 +390,9 @@ export default function ReactionRolesConfig() {
                                                             className="pc-bb-reorder-btn"
                                                             title={t('rr.move_up') || 'Sposta su'}
                                                         >
-                                                            <ChevronUp size={16} />
+                                                            <ChevronUp size={14} />
                                                         </button>
-                                                        <GripVertical size={18} color="rgba(255,255,255,0.2)" />
+                                                        <GripVertical size={14} color="rgba(255,255,255,0.2)" />
                                                         <button 
                                                             disabled={idx === activePanel.roles.length - 1} 
                                                             onClick={() => {
@@ -406,77 +406,77 @@ export default function ReactionRolesConfig() {
                                                             className="pc-bb-reorder-btn"
                                                             title={t('rr.move_down') || 'Sposta giù'}
                                                         >
-                                                            <ChevronDown size={16} />
+                                                            <ChevronDown size={14} />
                                                         </button>
                                                     </div>
-                                                    <div className="pc-bb-content">
-                                                        <div className="pc-bb-top-row">
-                                                            <div className={`pc-bb-preview ${role.style || 'PRIMARY'}`}>
-                                                                <span>{role.emoji}</span>
-                                                                <span>{role.label || 'Select Role'}</span>
-                                                            </div>
-                                                            <div className="pc-bb-controls">
-                                                                <button onClick={() => {
-                                                                    const newRoles = activePanel.roles.filter((_, i) => i !== idx);
+                                                    <div className="pc-bb-content" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '16px', padding: '12px 16px', flex: 1, flexWrap: 'wrap' }}>
+                                                        {/* Emoji Box */}
+                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '44px' }}>
+                                                            <label style={{ fontSize: '0.62rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('common.emoji')}</label>
+                                                            <div className="pc-bb-emoji-box" style={{ width: '44px', height: '44px' }}>
+                                                                <EmojiInput hideInput={true} value={role.emoji} onChange={e => {
+                                                                    const newRoles = [...activePanel.roles];
+                                                                    newRoles[idx].emoji = countryCodeToFlagEmoji(e.target.value);
                                                                     updatePanel(activePanel.id, { roles: newRoles });
-                                                                }} className="pc-bb-trash">
-                                                                    <Trash2 size={16} />
-                                                                </button>
+                                                                }} />
                                                             </div>
                                                         </div>
 
-                                                        <div className="pc-bb-columns">
-                                                            <div className="pc-bb-col">
-                                                                <label>{t('common.emoji')}</label>
-                                                                <div className="pc-bb-emoji-box">
-                                                                    <EmojiInput hideInput={true} value={role.emoji} onChange={e => {
+                                                        {/* Label Input */}
+                                                        {activePanel.type !== 'REACTION' && (
+                                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: '1 1 120px' }}>
+                                                                <label style={{ fontSize: '0.62rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('rr.label')}</label>
+                                                                <div className="pc-bb-input-box" style={{ height: '44px' }}>
+                                                                    <input value={role.label || ''} onChange={e => {
                                                                         const newRoles = [...activePanel.roles];
-                                                                        newRoles[idx].emoji = countryCodeToFlagEmoji(e.target.value);
+                                                                        newRoles[idx].label = e.target.value;
                                                                         updatePanel(activePanel.id, { roles: newRoles });
-                                                                    }} />
+                                                                    }} placeholder={t('rr.slot_default_label') || "Select Role"} />
                                                                 </div>
                                                             </div>
-                                                            {role.type !== 'REACTION' && (
-                                                                <>
-                                                                    <div className="pc-bb-col">
-                                                                        <label>{t('rr.label')}</label>
-                                                                        <div className="pc-bb-input-box">
-                                                                            <input value={role.label || ''} onChange={e => {
-                                                                                const newRoles = [...activePanel.roles];
-                                                                                newRoles[idx].label = e.target.value;
-                                                                                updatePanel(activePanel.id, { roles: newRoles });
-                                                                            }} placeholder="Select Role" />
-                                                                        </div>
-                                                                    </div>
-                                                                    <div className="pc-bb-col">
-                                                                        <label>{t('common.color')}</label>
-                                                                        <div className="pc-bb-color-picker">
-                                                                            {['PRIMARY', 'SUCCESS', 'DANGER', 'SECONDARY'].map(styleOption => (
-                                                                                <div 
-                                                                                    key={styleOption}
-                                                                                    className={`pc-bb-swatch swatch-${styleOption} ${(role.style || 'PRIMARY') === styleOption ? 'active' : ''}`}
-                                                                                    onClick={() => {
-                                                                                        const newRoles = [...activePanel.roles];
-                                                                                        newRoles[idx].style = styleOption;
-                                                                                        updatePanel(activePanel.id, { roles: newRoles });
-                                                                                    }}
-                                                                                >
-                                                                                    {(role.style || 'PRIMARY') === styleOption && <CheckCircle2 size={12} color="#fff" />}
-                                                                                </div>
-                                                                            ))}
-                                                                        </div>
-                                                                    </div>
-                                                                </>
-                                                            )}
-                                                        </div>
+                                                        )}
 
-                                                        <div className="pc-input-group-v2" style={{ marginTop: '10px' }}>
-                                                            <label>{t('rr.role')}</label>
+                                                        {/* Discord Role Selector */}
+                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: '1.5 1 180px' }}>
+                                                            <label style={{ fontSize: '0.62rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('rr.role')}</label>
                                                             <DiscordSelector type="role" options={roles} value={role.roleId} onChange={val => {
                                                                 const newRoles = [...activePanel.roles];
                                                                 newRoles[idx].roleId = val;
                                                                 updatePanel(activePanel.id, { roles: newRoles });
                                                             }} />
+                                                        </div>
+
+                                                        {/* Color Swatches */}
+                                                        {activePanel.type !== 'REACTION' && (
+                                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '135px' }}>
+                                                                <label style={{ fontSize: '0.62rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('common.color')}</label>
+                                                                <div className="pc-bb-color-picker" style={{ height: '44px', padding: '0 8px', gap: '6px', width: '100%' }}>
+                                                                    {['PRIMARY', 'SUCCESS', 'DANGER', 'SECONDARY'].map(styleOption => (
+                                                                        <div 
+                                                                            key={styleOption}
+                                                                            className={`pc-bb-swatch swatch-${styleOption} ${(role.style || 'PRIMARY') === styleOption ? 'active' : ''}`}
+                                                                            style={{ width: '20px', height: '20px' }}
+                                                                            onClick={() => {
+                                                                                const newRoles = [...activePanel.roles];
+                                                                                newRoles[idx].style = styleOption;
+                                                                                updatePanel(activePanel.id, { roles: newRoles });
+                                                                            }}
+                                                                        >
+                                                                            {(role.style || 'PRIMARY') === styleOption && <CheckCircle2 size={10} color="#fff" />}
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        {/* Trash Button */}
+                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '40px', justifyContent: 'flex-end', height: '44px', marginTop: '18px' }}>
+                                                            <button onClick={() => {
+                                                                const newRoles = activePanel.roles.filter((_, i) => i !== idx);
+                                                                updatePanel(activePanel.id, { roles: newRoles });
+                                                            }} className="pc-bb-trash" style={{ width: '40px', height: '44px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                                    <Trash2 size={16} />
+                                                            </button>
                                                         </div>
                                                     </div>
                                                 </div>
