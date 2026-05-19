@@ -1769,8 +1769,8 @@
   "onboarding.step1.desc": "Définissez les bases de votre serveur.",
   "onboarding.step1.label": "Étape {{step}} de {{total}}",
   "onboarding.step1.lang": "Langue principale",
-  "onboarding.step1.logs": "Canal de journal central",
-  "onboarding.step1.logs_desc": "Où le bot enverra toutes les notifications administratives.",
+  "onboarding.step1.logs": "Salon des mises a jour et du statut",
+  "onboarding.step1.logs_desc": "Verix y enverra les mises a jour du bot, les avis de statut, les annonces broadcast et les logs administratifs importants.",
   "onboarding.step1.staff": "Rôles d'administrateur (personnel)",
   "onboarding.step1.staff_desc": "Ces rôles auront un accès complet pour gérer le bot.",
   "onboarding.step1.title": "Configuration initiale de Verix",
@@ -3371,5 +3371,11 @@
   "status_page.refresh_desc": "La page se rafraîchit automatiquement toutes les 30 secondes.",
   "status_page.uptime": "Disponibilité",
   "common.saved_success": "Enregistré avec succès !",
-  "embeds.editor.field_name_placeholder": "Nom du champ..."
+  "embeds.editor.field_name_placeholder": "Nom du champ...",
+  "system.update_channel_title": "Salon des mises a jour et du statut",
+  "system.update_channel_desc": "Choisissez ou Verix envoie les notes de version, les avis de statut, les annonces broadcast et les logs importants du bot.",
+  "system.update_channel_label": "Salon des mises a jour",
+  "system.update_channel_help": "C est le salon utilise pour les broadcasts owner et les annonces de statut/mise a jour du bot.",
+  "system.update_broadcasts_toggle": "Recevoir les mises a jour Verix",
+  "system.update_channel_not_set": "Aucun salon selectionne"
 }

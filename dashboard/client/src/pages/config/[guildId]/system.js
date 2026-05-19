@@ -1,19 +1,17 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Skeleton from '../../../components/Skeleton';
-import { EmbedMessageManager } from '../../../components/LazyConfigComponents';
+import { DiscordSelector, EmbedMessageManager } from '../../../components/LazyConfigComponents';
 import api from '../../../utils/api';
 import { useT } from '../../../contexts/LanguageContext';
 import { 
   Settings, 
-  ShieldAlert, 
-  BellRing,
-  HelpCircle,
   Save,
   MessageSquare,
   Shield,
   Layout,
-  Globe
+  Globe,
+  Megaphone
 } from 'lucide-react';
 import Head from 'next/head';
 
@@ -23,22 +21,92 @@ export default function SystemConfig() {
   const { guildId } = router.query;
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [globalConfig, setGlobalConfig] = useState(null);
+  const [discordData, setDiscordData] = useState({ channels: [] });
 
   useEffect(() => {
     setMounted(true);
-    if (guildId) {
-        setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    if (guildId && guildId !== 'undefined' && mounted) {
+        loadData();
         window.dispatchEvent(new CustomEvent('update-guide-context', { detail: {} }));
     }
-  }, [guildId]);
+  }, [guildId, mounted]);
 
-  if (!mounted || loading) return <Skeleton height="600px" />;
+  const loadData = async () => {
+      setLoading(true);
+      window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
+      try {
+          const [globalRes, discordRes] = await Promise.all([
+              api.request(`/config/${guildId}/global`),
+              api.request(`/config/${guildId}/discord-data`).catch(() => ({ channels: [] }))
+          ]);
 
-  const handleSave = () => {
-      window.dispatchEvent(new CustomEvent('show-toast', { 
-          detail: { message: t('common.save_success'), type: 'success' } 
+          const data = globalRes?.data || globalRes || {};
+          const dData = discordRes?.data || discordRes || {};
+
+          setGlobalConfig({
+              ...data,
+              logs: {
+                  enabled: data.logs?.enabled ?? true,
+                  channelId: data.logs?.channelId || '',
+                  ...(data.logs || {})
+              }
+          });
+          setDiscordData({
+              channels: (dData.channels || []).filter(c => c.type === 0 || c.type === 5)
+          });
+      } catch (error) {
+          if (!api.isAuthError(error)) {
+              console.error('System config load error:', error);
+          }
+          window.dispatchEvent(new CustomEvent('show-toast', {
+              detail: { message: t('common.error'), type: 'error' }
+          }));
+      } finally {
+          setLoading(false);
+          window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
+      }
+  };
+
+  const handleSave = async () => {
+      if (!globalConfig) return;
+      setSaving(true);
+      window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
+      try {
+          await api.request(`/config/${guildId}/global`, {
+              method: 'POST',
+              body: JSON.stringify({ logs: globalConfig.logs })
+          });
+          window.dispatchEvent(new CustomEvent('show-toast', {
+              detail: { message: t('common.save_success'), type: 'success' }
+          }));
+      } catch (error) {
+          window.dispatchEvent(new CustomEvent('show-toast', {
+              detail: { message: t('common.save_error'), type: 'error' }
+          }));
+      } finally {
+          setSaving(false);
+          window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
+      }
+  };
+
+  const updateLogs = (patch) => {
+      setGlobalConfig(prev => ({
+          ...prev,
+          logs: {
+              ...(prev?.logs || {}),
+              ...patch
+          }
       }));
   };
+
+  if (!mounted || loading || !globalConfig) return <Skeleton height="600px" />;
+
+  const updateChannelName = discordData.channels.find(c => c.id === globalConfig.logs?.channelId)?.name;
 
   return (
     <div className="pc-premium-wrapper fade-in">
@@ -62,14 +130,51 @@ export default function SystemConfig() {
             </div>
             
             <div className="header-controls">
-                <button className="pc-btn-primary" onClick={handleSave}>
+                <button className="pc-btn-primary" onClick={handleSave} disabled={saving}>
                     <Save size={18} />
-                    <span>{t('common.save_all')}</span>
+                    <span>{saving ? t('common.saving') : t('common.save_all')}</span>
                 </button>
             </div>
         </header>
 
         <div className="pc-content-v2">
+            <section className="pc-card-v2 system-settings-card">
+                <div className="card-header-v2">
+                    <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><Megaphone size={18} /></div>
+                    <div className="v-stack" style={{ flex: 1 }}>
+                        <h3 style={{ margin: 0 }}>{t('system.update_channel_title')}</h3>
+                        <p style={{ margin: '4px 0 0', color: 'var(--text-muted)', fontSize: '0.9rem', fontWeight: 650 }}>{t('system.update_channel_desc')}</p>
+                    </div>
+                </div>
+                <div className="card-body-v2 system-settings-grid">
+                    <div className="pc-input-group-v2">
+                        <label>{t('system.update_channel_label')}</label>
+                        <DiscordSelector
+                            type="channel"
+                            options={discordData.channels}
+                            value={globalConfig.logs?.channelId || ''}
+                            onChange={value => updateLogs({ channelId: value })}
+                            placeholder={t('common.select_channel')}
+                        />
+                        <p className="pc-hint-v2">{t('system.update_channel_help')}</p>
+                    </div>
+                    <div className="pc-toggle-card-v2 system-toggle-card">
+                        <div className="v-stack">
+                            <strong>{t('system.update_broadcasts_toggle')}</strong>
+                            <span>{updateChannelName ? `#${updateChannelName}` : t('system.update_channel_not_set')}</span>
+                        </div>
+                        <label className="pc-toggle-v2">
+                            <input
+                                type="checkbox"
+                                checked={globalConfig.logs?.enabled ?? true}
+                                onChange={e => updateLogs({ enabled: e.target.checked })}
+                            />
+                            <span className="pc-slider-v2"></span>
+                        </label>
+                    </div>
+                </div>
+            </section>
+
             <section className="pc-card-v2">
                 <div className="card-header-v2">
                     <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><MessageSquare size={18} /></div>
@@ -113,14 +218,24 @@ export default function SystemConfig() {
             .pc-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(var(--primary-rgb), 0.2); }
 
             /* Cards */
+            .pc-content-v2 { display: flex; flex-direction: column; gap: 24px; }
             .pc-card-v2 { background: var(--bg-card); border: 1px solid var(--border); border-radius: 28px; padding: 32px; box-shadow: var(--shadow-premium); }
             .card-header-v2 { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
             .header-icon { width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; }
             .card-header-v2 h3 { margin: 0; font-family: 'Inter'; font-size: 1.3rem; font-weight: 700; color: var(--text-heading); }
 
+            .system-settings-grid { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 24px; align-items: end; }
+            .system-toggle-card { min-height: 86px; margin: 0; }
+            .system-toggle-card span { color: var(--text-muted); font-size: 0.85rem; margin-top: 4px; }
+            .pc-hint-v2 { margin: 8px 0 0; color: var(--text-muted); font-size: 0.82rem; font-weight: 600; }
+
             .v-stack { display: flex; flex-direction: column; }
             .animate { animation: slideUp 0.4s ease-out; }
             @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+            @media (max-width: 900px) {
+                .system-settings-grid { grid-template-columns: 1fr; }
+            }
         `}</style>
     </div>
   );

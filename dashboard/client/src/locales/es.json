@@ -1769,8 +1769,8 @@
   "onboarding.step1.desc": "Establece las bases de tu servidor.",
   "onboarding.step1.label": "Paso {{step}} de {{total}}",
   "onboarding.step1.lang": "Idioma principal",
-  "onboarding.step1.logs": "Canal de registro central",
-  "onboarding.step1.logs_desc": "Donde el bot enviará todas las notificaciones administrativas.",
+  "onboarding.step1.logs": "Canal de actualizaciones y estado",
+  "onboarding.step1.logs_desc": "Aqui Verix enviara actualizaciones del bot, avisos de estado, anuncios broadcast y registros administrativos importantes.",
   "onboarding.step1.staff": "Funciones de administrador (personal)",
   "onboarding.step1.staff_desc": "Estos roles tendrán acceso completo para administrar el bot.",
   "onboarding.step1.title": "Configuración inicial de Verix",
@@ -3371,5 +3371,11 @@
   "status_page.refresh_desc": "La página se actualiza automáticamente cada 30 segundos.",
   "status_page.uptime": "Tiempo de Actividad",
   "common.saved_success": "¡Guardado con éxito!",
-  "embeds.editor.field_name_placeholder": "Nombre del campo..."
+  "embeds.editor.field_name_placeholder": "Nombre del campo...",
+  "system.update_channel_title": "Canal de actualizaciones y estado",
+  "system.update_channel_desc": "Elige donde Verix envia notas de version, avisos de estado, anuncios broadcast y registros importantes del bot.",
+  "system.update_channel_label": "Canal de actualizaciones",
+  "system.update_channel_help": "Es el canal usado por los broadcast del owner y los anuncios de estado/actualizacion del bot.",
+  "system.update_broadcasts_toggle": "Recibir actualizaciones de Verix",
+  "system.update_channel_not_set": "Ningun canal seleccionado"
 }

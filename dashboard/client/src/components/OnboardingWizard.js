@@ -95,6 +95,8 @@ export default function OnboardingWizard({ config, guildId }) {
   const channels = config.channels || [];
   const categories = channels.filter(c => c.type === 4); // 4 is Category
   const textChannels = channels.filter(c => c.type === 0); // 0 is Text
+  const selectedLogChannelName = textChannels.find(c => c.id === formData.logChannelId)?.name;
+  const canContinue = step !== 1 || Boolean(formData.logChannelId);
 
   const nextStep = () => setStep(s => Math.min(s + 1, 4));
   const prevStep = () => setStep(s => Math.max(s - 1, 1));
@@ -402,6 +404,10 @@ export default function OnboardingWizard({ config, guildId }) {
             <span className="summary-value-p">{t('onboarding.step4.staff_value', { count: formData.adminRoleIds.length })}</span>
           </div>
           <div className="summary-row-p">
+            <span className="summary-label-p">{t('system.update_channel_label')}</span>
+            <span className="summary-value-p">{selectedLogChannelName ? `#${selectedLogChannelName}` : t('system.update_channel_not_set')}</span>
+          </div>
+          <div className="summary-row-p">
             <span className="summary-label-p">{t('onboarding.step4.modules_label')}</span>
             <div className="summary-tags-p">
               {formData.modules.whitelist && <span className="tag-p">{t('sidebar.whitelist')}</span>}
@@ -465,7 +471,7 @@ export default function OnboardingWizard({ config, guildId }) {
             )}
             <div style={{ marginLeft: 'auto', display: 'flex', gap: '12px' }}>
               {step < 4 ? (
-                <button className="btn-primary-p" onClick={nextStep}>
+                <button className="btn-primary-p" onClick={nextStep} disabled={!canContinue}>
                   {t('common.continue')} <ChevronRight size={18} />
                 </button>
               ) : (
@@ -755,6 +761,13 @@ export default function OnboardingWizard({ config, guildId }) {
           background: var(--primary-hover);
           transform: translateY(-2px);
           box-shadow: 0 6px 20px rgba(var(--primary-rgb), 0.4);
+        }
+
+        .btn-primary-p:disabled {
+          opacity: 0.55;
+          cursor: not-allowed;
+          transform: none;
+          box-shadow: none;
         }
 
         .btn-save-p {

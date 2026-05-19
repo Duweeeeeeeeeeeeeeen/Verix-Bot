@@ -1,11 +1,13 @@
 import { z } from 'zod';
 import { discordId } from './common.js';
 
+const requiredDiscordId = z.string().regex(/^\d{17,20}$/, 'ID Discord non valido');
+
 export const onboardingSchema = z.object({
     // Step 1: Base Settings
     language: z.enum(['it', 'en', 'es', 'fr']),
     adminRoleIds: z.array(discordId),
-    logChannelId: discordId.nullable().optional(),
+    logChannelId: requiredDiscordId,
 
     // Step 2: Module Toggles
     modules: z.object({
