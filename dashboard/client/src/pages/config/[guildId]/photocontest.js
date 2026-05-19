@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Skeleton from '../../../components/Skeleton';
-import { DiscordSelector, SystemMessagesSection } from '../../../components/LazyConfigComponents';
+import { DiscordSelector, EmbedMessageManager, SystemMessagesSection } from '../../../components/LazyConfigComponents';
 import api from '../../../utils/api';
 import { 
     Save, Settings2, Trash2, Plus, Calendar, Clock, Users, Bell, Layout, Type, 
@@ -11,7 +11,6 @@ import {
     Gauge, Timer, Wand2, History, RotateCcw
 } from 'lucide-react';
 import { useT } from '../../../contexts/LanguageContext';
-import { EmbedMessageManager } from '../../../components/LazyConfigComponents';
 import Head from 'next/head';
 
 export default function PhotoContestConfig() {
@@ -298,7 +297,7 @@ export default function PhotoContestConfig() {
 
             {activeTab === 'themes' && (
                 <div className="v-stack animate slide-up" style={{ gap: '24px' }}>
-                    <section className="pc-card-v2">
+                    <section className="pc-card-v2 pc-focused-panel">
                         <div className="card-header-v2" style={{ marginBottom: '24px' }}>
                             <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><Wand2 size={20} /></div>
                             <div className="v-stack" style={{ flex: 1 }}>
@@ -307,8 +306,8 @@ export default function PhotoContestConfig() {
                             </div>
                         </div>
                         <div className="card-body-v2">
-                            <div className="pc-add-theme-studio" style={{ display: 'flex', gap: '20px', marginBottom: '24px' }}>
-                                <div className="pc-input-wrapper-v2" style={{ flex: 1, background: 'var(--bg-badge)', border: '1.5px solid var(--border)', borderRadius: '14px', display: 'flex', alignItems: 'center' }}>
+                            <div className="pc-add-theme-studio">
+                                <div className="pc-input-wrapper-v2 pc-add-theme-input">
                                     <Type size={18} style={{ marginLeft: '16px', color: 'var(--text-muted)' }} />
                                     <input 
                                         style={{ width: '100%', border: 'none', background: 'transparent', padding: '14px 16px', fontWeight: 700, color: 'var(--text-heading)', fontSize: '0.95rem', outline: 'none' }}
@@ -324,16 +323,16 @@ export default function PhotoContestConfig() {
                                 </button>
                             </div>
 
-                            <div className="pc-themes-matrix-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '14px' }}>
+                            <div className="pc-themes-matrix-grid">
                                 {(config.themesList || []).map((theme, idx) => (
-                                    <div key={idx} className="pc-theme-studio-card animate slide-up" style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--bg-card)', border: '1.5px solid var(--border)', padding: '14px', borderRadius: '14px', transition: '0.2s' }}>
-                                        <div style={{ width: '30px', height: '30px', background: 'var(--bg-badge)', color: 'var(--primary)', borderRadius: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, border: '1.5px solid var(--border)' }}>#{idx + 1}</div>
-                                        <span style={{ flex: 1, fontWeight: 700, color: 'var(--text-heading)', fontSize: '0.95rem', letterSpacing: '-0.3px' }}>{theme}</span>
-                                        <button onClick={() => removeTheme(theme)} className="pc-btn-delete-studio-mini" style={{ width: '30px', height: '30px', borderRadius: '9px', background: 'var(--bg-badge)', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.2s' }}><X size={16} /></button>
+                                    <div key={idx} className="pc-theme-studio-card animate slide-up">
+                                        <div className="theme-index-pill">#{idx + 1}</div>
+                                        <span className="theme-title">{theme}</span>
+                                        <button onClick={() => removeTheme(theme)} className="pc-btn-delete-studio-mini"><X size={16} /></button>
                                     </div>
                                 ))}
                                 {(!config.themesList || config.themesList.length === 0) && (
-                                    <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '48px 24px', background: 'var(--bg-badge)', borderRadius: '16px', border: '1.5px dashed var(--border)' }}>
+                                    <div className="pc-empty-state-v2">
                                         <Image size={48} style={{ margin: '0 auto 20px', opacity: 0.3, color: 'var(--primary)' }} />
                                         <h3 style={{ margin: 0, fontWeight: 700, color: 'var(--text-heading)', fontSize: '1.15rem', letterSpacing: '0' }}>{t('pc.empty_library')}</h3>
                                         <p style={{ fontWeight: 700, color: 'var(--text-muted)', fontSize: '0.95rem', marginTop: '10px' }}>{t('pc.empty_library_desc')}</p>
@@ -361,16 +360,18 @@ export default function PhotoContestConfig() {
 
             {activeTab === 'system_messages' && (
                 <div className="v-stack animate slide-up">
-                    <SystemMessagesSection 
-                        config={config}
-                        onUpdate={setConfig}
-                        messages={[
-                            { key: 'voted', label: t('pc.msg_voted'), placeholder: t('pc.msg_voted') },
-                            { key: 'already_voted', label: t('pc.msg_already_voted'), placeholder: t('pc.msg_already_voted') },
-                            { key: 'not_active', label: t('pc.msg_not_active'), placeholder: t('pc.msg_not_active') },
-                            { key: 'staff_only', label: t('pc.msg_staff_only'), placeholder: t('pc.msg_staff_only') }
-                        ]}
-                    />
+                    <section className="pc-card-v2 pc-system-messages-shell">
+                        <SystemMessagesSection
+                            config={config}
+                            onUpdate={setConfig}
+                            messages={[
+                                { key: 'voted', label: t('pc.msg_voted'), placeholder: t('pc.msg_voted') },
+                                { key: 'already_voted', label: t('pc.msg_already_voted'), placeholder: t('pc.msg_already_voted') },
+                                { key: 'not_active', label: t('pc.msg_not_active'), placeholder: t('pc.msg_not_active') },
+                                { key: 'staff_only', label: t('pc.msg_staff_only'), placeholder: t('pc.msg_staff_only') }
+                            ]}
+                        />
+                    </section>
                 </div>
             )}
         </div>
@@ -381,6 +382,7 @@ export default function PhotoContestConfig() {
             /* Header V2 */
             .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; background: var(--bg-card); padding: 20px 22px; border-radius: 16px; box-shadow: none; border: 1px solid var(--border); }
             .header-info { display: flex; align-items: center; gap: 16px; }
+            .header-controls { display: flex; align-items: center; gap: 12px; }
             .pc-icon-box { width: 52px; height: 52px; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: #fff; box-shadow: 0 12px 24px rgba(var(--primary-rgb), 0.25); }
             .pc-title-row { display: flex; flex-direction: column; gap: 6px; }
             .pc-title-row h1 { font-family: 'Inter', sans-serif; font-size: 1.8rem; font-weight: 700; margin: 0; color: var(--text-heading); letter-spacing: normal; }
@@ -392,6 +394,7 @@ export default function PhotoContestConfig() {
 
             .pc-btn-primary { background: var(--primary); color: #fff; border: none; padding: 12px 22px; border-radius: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; box-shadow: none; }
             .pc-btn-primary:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(var(--primary-rgb), 0.3); }
+            .pc-btn-primary:disabled { opacity: 0.65; cursor: not-allowed; transform: none; box-shadow: none; }
 
             .pc-status-toggle-v2 { display: flex; align-items: center; gap: 10px; background: var(--bg-badge); color: var(--text-muted); border: 1.5px solid var(--border); padding: 12px 28px; border-radius: 18px; font-weight: 700; cursor: pointer; transition: 0.2s; }
             .pc-status-toggle-v2.active { background: rgba(var(--primary-rgb), 0.1); color: var(--primary); border-color: rgba(var(--primary-rgb), 0.2); }
@@ -404,6 +407,7 @@ export default function PhotoContestConfig() {
 
             /* Card V2 */
             .pc-card-v2 { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; box-shadow: none; }
+            .pc-focused-panel, .pc-system-messages-shell { width: 100%; }
             .card-header-v2 { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
             .header-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: none; }
             .card-header-v2 h3 { margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--text-heading); letter-spacing: normal; }
@@ -416,8 +420,16 @@ export default function PhotoContestConfig() {
             .pc-input-modern-v2:focus-within { border-color: var(--primary); }
             .pc-input-modern-v2 input { border: none; background: transparent; width: 100%; font-weight: 700; outline: none; color: var(--text-heading); }
 
-            .pc-theme-studio-card:hover { border-color: var(--primary-muted) !important; background: var(--bg-badge) !important; }
-            .pc-btn-delete-studio-mini:hover { background: rgba(239, 68, 68, 0.1) !important; color: #ef4444 !important; transform: rotate(8deg); }
+            .pc-add-theme-studio { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; margin-bottom: 20px; max-width: 900px; }
+            .pc-add-theme-input { min-height: 48px; background: var(--bg-badge); border: 1px solid var(--border); border-radius: 12px; display: flex; align-items: center; }
+            .pc-themes-matrix-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+            .pc-theme-studio-card { display: flex; align-items: center; gap: 12px; background: var(--bg-card); border: 1px solid var(--border); padding: 12px; border-radius: 12px; transition: 0.2s; min-height: 56px; }
+            .pc-theme-studio-card:hover { border-color: var(--primary-muted); background: var(--bg-badge); }
+            .theme-index-pill { width: 30px; height: 30px; background: var(--bg-badge); color: var(--primary); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; border: 1px solid var(--border); flex-shrink: 0; }
+            .theme-title { flex: 1; min-width: 0; font-weight: 700; color: var(--text-heading); font-size: 0.95rem; letter-spacing: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+            .pc-btn-delete-studio-mini { width: 32px; height: 32px; border-radius: 10px; background: var(--bg-badge); border: 1px solid var(--border); color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; flex-shrink: 0; }
+            .pc-btn-delete-studio-mini:hover { background: rgba(239, 68, 68, 0.1); color: #ef4444; border-color: rgba(239, 68, 68, 0.2); }
+            .pc-empty-state-v2 { grid-column: 1 / -1; text-align: center; padding: 42px 24px; background: var(--bg-badge); border-radius: 14px; border: 1px dashed var(--border); }
 
             /* Toggle V2 */
 
@@ -434,7 +446,7 @@ export default function PhotoContestConfig() {
                 .pc-header-v2 { flex-direction: column; align-items: stretch; gap: 18px; }
                 .header-controls { flex-wrap: wrap; }
                 .pc-input-grid-v2 { grid-template-columns: 1fr !important; }
-                .pc-add-theme-studio { flex-direction: column; }
+                .pc-add-theme-studio { grid-template-columns: 1fr; max-width: none; }
                 .pc-add-theme-studio .pc-btn-primary { justify-content: center; min-height: 48px; }
             }
         `}</style>
