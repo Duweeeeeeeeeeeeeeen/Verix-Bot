@@ -449,7 +449,7 @@ export default function SocialsConfig() {
 
         <style jsx>{`
             .pc-premium-wrapper { padding: 24px; max-width: 1320px; margin: 0 auto; font-family: 'Inter', sans-serif; }
-            .socials-layout { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 20px; align-items: flex-start; }
+            .socials-layout { display: grid; grid-template-columns: 230px minmax(0, 1fr) !important; gap: 20px; align-items: flex-start; }
             .socials-sidebar { position: sticky; top: 24px; }
             
             /* Header V2 */
@@ -551,7 +551,7 @@ export default function SocialsConfig() {
             .animate { animation: slideUp 0.4s ease-out; }
             @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
             @media (max-width: 1100px) {
-                .socials-layout { grid-template-columns: 1fr; }
+                .socials-layout { grid-template-columns: 1fr !important; }
                 .socials-sidebar { position: static; }
                 .pc-nav-stack-v2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
                 .pc-settings-layout-v2 { grid-template-columns: 1fr; }

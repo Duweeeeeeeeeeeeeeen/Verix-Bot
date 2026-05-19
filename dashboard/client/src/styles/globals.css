@@ -2418,7 +2418,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .dashboard-container .pc-layout-grid-v2 {
-  grid-template-columns: minmax(0, 1.15fr) minmax(300px, 0.85fr) !important;
+  grid-template-columns: minmax(0, 1.15fr) minmax(300px, 0.85fr);
 }
 
 .dashboard-container .pc-settings-grid-v2 {
