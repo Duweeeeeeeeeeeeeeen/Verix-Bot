@@ -244,7 +244,7 @@ export default function PollsConfig() {
 
         <div className="pc-content-v2">
             {activeTab === 'create' && (
-                <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 560px', gap: '40px' }}>
+                <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 664px', gap: '40px' }}>
                     <div className="v-stack" style={{ gap: '32px' }}>
                         <section className="pc-card-v2 animate slide-up">
                             <div className="card-header-v2" style={{ marginBottom: '32px' }}>
@@ -436,7 +436,11 @@ export default function PollsConfig() {
         </div>
 
         <style jsx>{`
-            .pc-premium-wrapper { padding: 32px; max-width: 1500px; margin: 0 auto; font-family: 'Inter', sans-serif; }
+            .pc-premium-wrapper { padding: 32px; max-width: 1650px; margin: 0 auto; font-family: 'Inter', sans-serif; }
+            
+            @media (max-width: 1200px) {
+                .pc-layout-grid-v2 { grid-template-columns: 1fr !important; gap: 24px !important; }
+            }
             
             /* Header V2 */
             .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-card); padding: 24px; border-radius: 28px; box-shadow: var(--shadow-premium); border: 1px solid var(--border); }

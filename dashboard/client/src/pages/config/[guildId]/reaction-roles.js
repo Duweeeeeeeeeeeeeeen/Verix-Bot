@@ -541,8 +541,8 @@ export default function ReactionRolesConfig() {
 
         <style jsx>{`
             .rr-layout-outer { display: block !important; }
-            .rr-layout-inner { display: grid !important; grid-template-columns: minmax(0, 1.3fr) minmax(340px, 1fr) !important; gap: 32px !important; align-items: start !important; }
-            .pc-premium-wrapper { padding: 32px; max-width: 1500px; margin: 0 auto; font-family: 'Inter', sans-serif; }
+            .rr-layout-inner { display: grid !important; grid-template-columns: minmax(0, 1.3fr) minmax(664px, 1fr) !important; gap: 32px !important; align-items: start !important; }
+            .pc-premium-wrapper { padding: 32px; max-width: 1650px; margin: 0 auto; font-family: 'Inter', sans-serif; }
 
             /* Horizontal Top Bar styles */
             .rr-top-bar { display: flex; align-items: center; gap: 24px; padding: 16px 24px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 24px; box-shadow: var(--shadow-premium); margin-bottom: 32px; }
@@ -567,12 +567,11 @@ export default function ReactionRolesConfig() {
             .nav-meta-horizontal { font-size: 0.62rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; }
 
             @media (max-width: 1200px) {
-                .rr-layout-inner { grid-template-columns: minmax(0, 1.1fr) minmax(320px, 1fr) !important; gap: 24px !important; }
+                .rr-layout-inner { grid-template-columns: 1fr !important; gap: 24px !important; }
             }
             @media (max-width: 992px) {
                 .rr-top-bar { flex-direction: column; align-items: stretch; gap: 16px; }
                 .top-bar-header { border-right: none; border-bottom: 1.5px solid var(--border); padding-right: 0; padding-bottom: 16px; justify-content: space-between; }
-                .rr-layout-inner { grid-template-columns: 1fr !important; gap: 24px !important; }
             }
             
             .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-card); padding: 24px; border-radius: 28px; box-shadow: var(--shadow-premium); border: 1px solid var(--border); }
