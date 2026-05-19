@@ -14,6 +14,18 @@ import EmojiInput from '../../../components/EmojiInput';
 import EmbedPreviewContainer from '../../../components/EmbedPreviewContainer';
 import Head from 'next/head';
 
+const countryCodeToFlagEmoji = (code) => {
+  if (!code || typeof code !== 'string') return code;
+  const clean = code.toUpperCase().trim();
+  if (clean.length === 2 && /^[A-Z]{2}$/.test(clean)) {
+    return String.fromCodePoint(
+      clean.charCodeAt(0) - 65 + 0x1F1E6,
+      clean.charCodeAt(1) - 65 + 0x1F1E6
+    );
+  }
+  return code;
+};
+
 export default function ReactionRolesConfig() {
   const { t } = useT();
   const router = useRouter();
@@ -66,6 +78,18 @@ export default function ReactionRolesConfig() {
       } else if (!activePanelId) {
           setActivePanelId(rrConfig.panels[0].id);
       }
+      
+      // Sanitize loaded panel emojis
+      if (rrConfig.panels) {
+        rrConfig.panels.forEach(p => {
+          if (p.roles) {
+            p.roles.forEach(r => {
+              if (r.emoji) r.emoji = countryCodeToFlagEmoji(r.emoji);
+            });
+          }
+        });
+      }
+
       setConfig(rrConfig);
       setRoles(discordRes.roles || discordRes.data?.roles || []);
       setChannels((discordRes.channels || discordRes.data?.channels || []).filter(c => c.type === 0 || c.type === 5));
@@ -91,7 +115,17 @@ export default function ReactionRolesConfig() {
     try {
       const res = await api.request(`/config/${guildId}/reaction-roles/reset`, { method: 'POST' });
       if (res.success) {
-        setConfig(res.data);
+        let rrConfig = res.data;
+        if (rrConfig && rrConfig.panels) {
+          rrConfig.panels.forEach(p => {
+            if (p.roles) {
+              p.roles.forEach(r => {
+                if (r.emoji) r.emoji = countryCodeToFlagEmoji(r.emoji);
+              });
+            }
+          });
+        }
+        setConfig(rrConfig);
         window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('common.reset_success'), type: 'success' } }));
       }
     } catch (error) {
@@ -175,7 +209,7 @@ export default function ReactionRolesConfig() {
   const addRole = (panelId) => {
       const panel = config.panels.find(p => p.id === panelId);
       if (panel.roles.length >= 25) return window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('rr.max_components'), type: 'error' } }));
-      const newRoles = [...panel.roles, { roleId: '', emoji: '💠', label: 'New Role', style: 'PRIMARY' }];
+      const newRoles = [...panel.roles, { id: 'role-' + Math.random().toString(36).substr(2, 6), roleId: '', emoji: '💠', label: 'New Role', style: 'PRIMARY' }];
       updatePanel(panelId, { roles: newRoles });
   };
 
@@ -323,7 +357,7 @@ export default function ReactionRolesConfig() {
                                         </div>
                                         <div className="pc-input-group-v2" style={{ marginTop: '20px' }}>
                                             <label>{t('rr.embed_desc')}</label>
-                                            <textarea className="pc-input-modern-v2" style={{ minHeight: '100px' }} value={activePanel.embed.description} onChange={e => updatePanel(activePanel.id, { embed: { ...activePanel.embed, description: e.target.value } })} />
+                                            <textarea className="pc-input-modern-v2" style={{ minHeight: '220px' }} value={activePanel.embed.description} onChange={e => updatePanel(activePanel.id, { embed: { ...activePanel.embed, description: e.target.value } })} />
                                         </div>
                                     </div>
                                 </section>
@@ -341,7 +375,7 @@ export default function ReactionRolesConfig() {
                                     <div className="card-body-v2">
                                         <div className="v-stack" style={{ gap: '16px' }}>
                                             {activePanel.roles.map((role, idx) => (
-                                                <div key={idx} className="pc-button-builder animate slide-up">
+                                                <div key={role.id || role._id || idx} className="pc-button-builder animate slide-up">
                                                     <div className="pc-bb-left" style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'center', justifyContent: 'center', padding: '0 8px' }}>
                                                         <button 
                                                             disabled={idx === 0} 
@@ -397,7 +431,7 @@ export default function ReactionRolesConfig() {
                                                                 <div className="pc-bb-emoji-box">
                                                                     <EmojiInput hideInput={true} value={role.emoji} onChange={e => {
                                                                         const newRoles = [...activePanel.roles];
-                                                                        newRoles[idx].emoji = e.target.value;
+                                                                        newRoles[idx].emoji = countryCodeToFlagEmoji(e.target.value);
                                                                         updatePanel(activePanel.id, { roles: newRoles });
                                                                     }} />
                                                                 </div>
@@ -570,13 +604,91 @@ export default function ReactionRolesConfig() {
             .pc-btn-danger-studio-v2 { width: 100%; padding: 16px; background: rgba(239, 68, 68, 0.08); color: #ef4444; border: 1.5px solid rgba(239, 68, 68, 0.1); border-radius: 20px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s; }
             .pc-btn-danger-studio-v2:hover { background: #ef4444; color: #fff; }
 
-            .pc-bb-emoji-box { width: 72px; height: 72px; flex-shrink: 0; }
-            .pc-bb-input-box { flex: 1; }
-            .pc-bb-columns { display: flex; gap: 20px; align-items: flex-end; }
-            .pc-bb-col { display: flex; flex-direction: column; gap: 8px; flex: 1; }
-            .pc-bb-col label { font-size: 0.65rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-            .pc-bb-input-box input { width: 100%; background: var(--bg-badge); border: 1.5px solid var(--border); padding: 12px 16px; border-radius: 14px; font-weight: 700; color: var(--text-heading); outline: none; }
-            .pc-bb-input-box input:focus { border-color: var(--primary); }
+            /* Compact Role Matrix Panels */
+            :global(.pc-button-builder) {
+                background: var(--bg-elevated, rgba(255,255,255,0.02)) !important;
+                border-radius: 16px !important;
+                margin-bottom: 0px !important;
+            }
+            :global(.pc-bb-left) {
+                padding: 12px 10px !important;
+                border-right: 1.5px solid var(--border) !important;
+                width: 44px !important;
+            }
+            :global(.pc-bb-content) {
+                padding: 16px 20px !important;
+                gap: 12px !important;
+            }
+            :global(.pc-bb-top-row) {
+                gap: 12px !important;
+                margin-bottom: 4px !important;
+            }
+            :global(.pc-bb-preview) {
+                padding: 8px 14px !important;
+                font-size: 0.85rem !important;
+                min-width: 120px !important;
+                border-radius: 8px !important;
+                height: 36px !important;
+            }
+            :global(.pc-bb-trash) {
+                width: 32px !important;
+                height: 32px !important;
+                border-radius: 8px !important;
+            }
+            :global(.pc-bb-columns) {
+                gap: 12px !important;
+                align-items: flex-end !important;
+            }
+            .pc-bb-emoji-box {
+                width: 44px !important;
+                height: 44px !important;
+                flex-shrink: 0;
+            }
+            .pc-bb-col {
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+                flex: 1;
+            }
+            .pc-bb-col label {
+                font-size: 0.65rem;
+                font-weight: 700;
+                color: var(--text-muted);
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                margin-bottom: 2px;
+            }
+            .pc-bb-input-box {
+                flex: 1;
+                height: 44px !important;
+            }
+            .pc-bb-input-box input {
+                width: 100%;
+                background: var(--bg-badge);
+                border: 1.5px solid var(--border);
+                padding: 8px 12px !important;
+                border-radius: 12px !important;
+                font-size: 0.85rem !important;
+                font-weight: 600;
+                color: var(--text-heading);
+                outline: none;
+                height: 44px !important;
+            }
+            .pc-bb-input-box input:focus {
+                border-color: var(--primary);
+            }
+            :global(.pc-bb-color-picker) {
+                height: 44px !important;
+                border-radius: 12px !important;
+                padding: 0 10px !important;
+                gap: 8px !important;
+                background: var(--bg-badge) !important;
+                border: 1.5px solid var(--border) !important;
+            }
+            :global(.pc-bb-swatch) {
+                width: 18px !important;
+                height: 18px !important;
+            }
 
             .pc-bb-reorder-btn {
                 background: transparent;
