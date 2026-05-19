@@ -3,7 +3,7 @@ import { discordId } from './common.js';
 
 export const onboardingSchema = z.object({
     // Step 1: Base Settings
-    language: z.enum(['it', 'en', 'es', 'fr', 'de']),
+    language: z.enum(['it', 'en', 'es', 'fr']),
     adminRoleIds: z.array(discordId),
     logChannelId: discordId.nullable().optional(),
 

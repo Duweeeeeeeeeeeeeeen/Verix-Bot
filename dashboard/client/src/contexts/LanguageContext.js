@@ -1,35 +1,52 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import it from '../locales/it.json';
 import en from '../locales/en.json';
-import es from '../locales/es.json';
-import fr from '../locales/fr.json';
 
 const LanguageContext = createContext();
 
-const locales = { it, en, es, fr };
+const supportedLocales = ['en', 'it', 'es', 'fr'];
+const localeLoaders = {
+    en: async () => en,
+    it: () => import('../locales/it.json').then(module => module.default),
+    es: () => import('../locales/es.json').then(module => module.default),
+    fr: () => import('../locales/fr.json').then(module => module.default)
+};
 
 export function LanguageProvider({ children }) {
     const [language, setLanguageState] = useState('en');
+    const [loadedLocales, setLoadedLocales] = useState({ en });
 
     useEffect(() => {
         const savedLang = localStorage.getItem('verix-language');
-        if (savedLang && locales[savedLang]) {
-            setLanguageState(savedLang);
+        if (supportedLocales.includes(savedLang)) {
+            setLanguage(savedLang);
         }
     }, []);
 
-    const setLanguage = (lang) => {
-        if (locales[lang]) {
-            setLanguageState(lang);
-            localStorage.setItem('verix-language', lang);
-        }
-    };
+    const loadLocale = useCallback(async (lang) => {
+        if (!supportedLocales.includes(lang)) return en;
+        if (loadedLocales[lang]) return loadedLocales[lang];
+
+        const messages = await localeLoaders[lang]();
+        setLoadedLocales(prev => ({ ...prev, [lang]: messages }));
+        return messages;
+    }, [loadedLocales]);
+
+    const setLanguage = useCallback((lang) => {
+        if (!supportedLocales.includes(lang)) return;
+
+        setLanguageState(lang);
+        localStorage.setItem('verix-language', lang);
+        loadLocale(lang).catch(() => {
+            setLanguageState('en');
+            localStorage.setItem('verix-language', 'en');
+        });
+    }, [loadLocale]);
 
     const t = useCallback((key, vars = {}) => {
-        const locale = locales[language] || locales['en'];
-        
+        const locale = loadedLocales[language] || en;
+
         // Try exact key first (flat)
-        let val = locale[key];
+        let val = locale[key] ?? en[key];
 
         // Fallback to nested if needed (optional, but keep it simple for now)
         if (!val && key.includes('.')) {
@@ -37,6 +54,13 @@ export function LanguageProvider({ children }) {
             val = locale;
             for (const k of keys) {
                 val = val?.[k];
+            }
+
+            if (val === undefined) {
+                val = en;
+                for (const k of keys) {
+                    val = val?.[k];
+                }
             }
         }
 
@@ -47,7 +71,7 @@ export function LanguageProvider({ children }) {
         return val.replace(/\{\{?(\w+)\}\}?/g, (match, name) => {
             return vars[name] !== undefined ? vars[name] : match;
         });
-    }, [language]);
+    }, [language, loadedLocales]);
 
     return (
         <LanguageContext.Provider value={{ language, setLanguage, t }}>
