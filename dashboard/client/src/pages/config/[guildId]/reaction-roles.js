@@ -423,18 +423,16 @@ export default function ReactionRolesConfig() {
                                                         </div>
 
                                                         {/* Label Input */}
-                                                        {activePanel.type !== 'REACTION' && (
-                                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: '1 1 120px' }}>
-                                                                <label style={{ fontSize: '0.62rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('rr.label')}</label>
-                                                                <div className="pc-bb-input-box" style={{ height: '44px' }}>
-                                                                    <input value={role.label || ''} onChange={e => {
-                                                                        const newRoles = [...activePanel.roles];
-                                                                        newRoles[idx].label = e.target.value;
-                                                                        updatePanel(activePanel.id, { roles: newRoles });
-                                                                    }} placeholder={t('rr.slot_default_label') || "Select Role"} />
-                                                                </div>
+                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: '1 1 120px' }}>
+                                                            <label style={{ fontSize: '0.62rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('rr.label')}</label>
+                                                            <div className="pc-bb-input-box" style={{ height: '44px' }}>
+                                                                <input value={role.label || ''} onChange={e => {
+                                                                    const newRoles = [...activePanel.roles];
+                                                                    newRoles[idx].label = e.target.value;
+                                                                    updatePanel(activePanel.id, { roles: newRoles });
+                                                                }} placeholder={t('rr.slot_default_label') || "Select Role"} />
                                                             </div>
-                                                        )}
+                                                        </div>
 
                                                         {/* Discord Role Selector */}
                                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: '1.5 1 180px' }}>
@@ -447,27 +445,25 @@ export default function ReactionRolesConfig() {
                                                         </div>
 
                                                         {/* Color Swatches */}
-                                                        {activePanel.type !== 'REACTION' && (
-                                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '135px' }}>
-                                                                <label style={{ fontSize: '0.62rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('common.color')}</label>
-                                                                <div className="pc-bb-color-picker" style={{ height: '44px', padding: '0 8px', gap: '6px', width: '100%' }}>
-                                                                    {['PRIMARY', 'SUCCESS', 'DANGER', 'SECONDARY'].map(styleOption => (
-                                                                        <div 
-                                                                            key={styleOption}
-                                                                            className={`pc-bb-swatch swatch-${styleOption} ${(role.style || 'PRIMARY') === styleOption ? 'active' : ''}`}
-                                                                            style={{ width: '20px', height: '20px' }}
-                                                                            onClick={() => {
-                                                                                const newRoles = [...activePanel.roles];
-                                                                                newRoles[idx].style = styleOption;
-                                                                                updatePanel(activePanel.id, { roles: newRoles });
-                                                                            }}
-                                                                        >
-                                                                            {(role.style || 'PRIMARY') === styleOption && <CheckCircle2 size={10} color="#fff" />}
-                                                                        </div>
-                                                                    ))}
-                                                                </div>
+                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '135px' }}>
+                                                            <label style={{ fontSize: '0.62rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('common.color')}</label>
+                                                            <div className="pc-bb-color-picker" style={{ height: '44px', padding: '0 8px', gap: '6px', width: '100%' }}>
+                                                                {['PRIMARY', 'SUCCESS', 'DANGER', 'SECONDARY'].map(styleOption => (
+                                                                    <div 
+                                                                        key={styleOption}
+                                                                        className={`pc-bb-swatch swatch-${styleOption} ${(role.style || 'PRIMARY') === styleOption ? 'active' : ''}`}
+                                                                        style={{ width: '20px', height: '20px' }}
+                                                                        onClick={() => {
+                                                                            const newRoles = [...activePanel.roles];
+                                                                            newRoles[idx].style = styleOption;
+                                                                            updatePanel(activePanel.id, { roles: newRoles });
+                                                                        }}
+                                                                    >
+                                                                        {(role.style || 'PRIMARY') === styleOption && <CheckCircle2 size={10} color="#fff" />}
+                                                                    </div>
+                                                                ))}
                                                             </div>
-                                                        )}
+                                                        </div>
 
                                                         {/* Trash Button */}
                                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '40px', justifyContent: 'flex-end', height: '44px', marginTop: '18px' }}>
