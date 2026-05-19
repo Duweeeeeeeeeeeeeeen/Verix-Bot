@@ -429,7 +429,7 @@ export default function SocialsConfig() {
                                  )}
 
                                  {activeTab === 'design' && (
-                                     <div className="v-stack animate slide-up" style={{ gap: '24px' }}>
+                                     <div className="socials-message-manager animate slide-up">
                                          <EmbedMessageManager 
                                              guildId={guildId}
                                              module="socials"
@@ -501,6 +501,13 @@ export default function SocialsConfig() {
             .pc-tabs-v2 button.active { background: var(--bg-card); color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
 
             .pc-settings-layout-v2 { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.75fr); gap: 20px; align-items: start; }
+            .socials-message-manager :global(.manager-layout) { grid-template-columns: 1fr !important; max-width: 100% !important; margin: 0 !important; }
+            .socials-message-manager :global(.slug-sidebar) { position: static !important; }
+            .socials-message-manager :global(.pc-editor-layout-v2) { grid-template-columns: 1fr !important; max-width: 100% !important; }
+            .socials-message-manager :global(.pc-preview-sidebar-v2) { position: static !important; }
+            .socials-message-manager :global(.editor-header-v2) { align-items: flex-start !important; flex-wrap: wrap !important; }
+            .socials-message-manager :global(.header-buttons-v2) { flex-wrap: wrap !important; }
+            .socials-message-manager :global(.header-buttons-v2 button) { min-height: 44px; }
             .pc-card-v2 { background: var(--bg-card); border: 1px solid var(--border); border-radius: 28px; padding: 32px; box-shadow: var(--shadow-premium); }
             .card-header-v2 { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
             .header-icon { width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: var(--bg-badge); color: var(--primary); }
