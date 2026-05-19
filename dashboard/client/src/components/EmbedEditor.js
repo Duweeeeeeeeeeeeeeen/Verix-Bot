@@ -30,7 +30,7 @@ const EmbedPreviewContainer = dynamic(() => import('./EmbedPreviewContainer'), {
   loading: () => <div className="embed-preview-skeleton" />
 });
 
-export default function EmbedEditor({ embed, onChange, variables = ['user', 'guild'], showButtonEditor = false, previewButtons, renderPreviewFooter }) {
+export default function EmbedEditor({ embed, onChange, variables = ['user', 'guild'], showButtonEditor = false, previewButtons, renderPreviewFooter, compact = false }) {
   const { t } = useT();
   const [isPreviewMobile, setIsPreviewMobile] = useState(false);
   const [previewTheme, setPreviewTheme] = useState('dark');
@@ -103,7 +103,7 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
   };
 
   return (
-    <div className="pc-embed-editor-v2 fade-in">
+    <div className={`pc-embed-editor-v2 fade-in ${compact ? 'compact' : ''}`}>
       <div className="pc-editor-layout-v2">
         <div className="pc-editor-form-v2">
           {/* Main Content Card */}
@@ -230,6 +230,8 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
       <style jsx>{`
         .pc-embed-editor-v2 { width: 100%; }
         .pc-editor-layout-v2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(360px, 480px); gap: 24px; align-items: start; max-width: 1180px; margin: 0 auto; }
+        .pc-embed-editor-v2.compact .pc-editor-layout-v2 { grid-template-columns: 1fr; max-width: 100%; margin: 0; }
+        .pc-embed-editor-v2.compact .pc-preview-sidebar-v2 { position: static !important; }
         
         .pc-editor-form-v2 { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
 

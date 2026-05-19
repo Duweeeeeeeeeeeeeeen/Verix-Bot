@@ -27,7 +27,7 @@ import defaultMessagesMap from '../locales';
  * @param {Array} slugs - List of { key, label, description, variables, group, groupIcon }
  * @param {Function} extraButtons - Optional function (slug) => [buttons] for preview
  */
-export default function EmbedMessageManager({ guildId, module, slugs = [], extraButtons }) {
+export default function EmbedMessageManager({ guildId, module, slugs = [], extraButtons, compact = false }) {
   const { t, language } = useT();
   const defaultMessages = defaultMessagesMap[language] || defaultMessagesMap['en'];
   const [messages, setMessages] = useState({});
@@ -158,7 +158,7 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
   );
 
   return (
-    <div className="message-manager">
+    <div className={`message-manager ${compact ? 'compact' : ''}`}>
       <div className="manager-layout">
         {/* Sidebar Groups */}
         <aside className="slug-sidebar">
@@ -260,6 +260,7 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
                   onChange={(data) => updateMessage(activeSlug, data)}
                   variables={slugs.find(s => s.key === activeSlug)?.variables}
                   previewButtons={extraButtons ? extraButtons(activeSlug) : null}
+                  compact={compact}
                 />
                 
                 {/* Render extra content specific to this slug (e.g., button branding) */}
@@ -288,6 +289,25 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
           align-items: flex-start;
           max-width: 1280px;
           margin: 0 auto;
+        }
+
+        .message-manager.compact .manager-layout {
+          grid-template-columns: 1fr;
+          max-width: 100%;
+          margin: 0;
+        }
+
+        .message-manager.compact .slug-sidebar {
+          position: static;
+        }
+
+        .message-manager.compact .editor-header-v2 {
+          align-items: flex-start;
+          flex-wrap: wrap;
+        }
+
+        .message-manager.compact .header-buttons-v2 {
+          flex-wrap: wrap;
         }
 
         .slug-sidebar {

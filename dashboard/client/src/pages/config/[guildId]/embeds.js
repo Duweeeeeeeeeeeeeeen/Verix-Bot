@@ -268,6 +268,7 @@ export default function EmbedBuilder() {
                                     onChange={setCurrentEmbed} 
                                     variables={['user', 'guild', 'time', 'date', 'member_count']} 
                                     showButtonEditor={true}
+                                    compact
                                 />
                             </div>
                         </section>

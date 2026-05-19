@@ -433,6 +433,7 @@ export default function SocialsConfig() {
                                          <EmbedMessageManager 
                                              guildId={guildId}
                                              module="socials"
+                                             compact
                                              slugs={[
                                                  { key: pData.id, label: `${platformName} ${t('socials.announcement_label')}`, description: t('socials.announcement_desc', { platform: platformName }), variables: ['username', 'link', 'title', 'preview_url', 'platform'], group: t('socials.title'), groupIcon: Globe2 },
                                              ]}
