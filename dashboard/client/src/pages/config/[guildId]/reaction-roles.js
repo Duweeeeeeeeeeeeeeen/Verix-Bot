@@ -240,34 +240,33 @@ export default function ReactionRolesConfig() {
             </div>
         </header>
 
+        {/* Fleet Repository Horizontal Top Bar */}
+        <section className="rr-top-bar animate slide-up">
+            <div className="top-bar-header">
+                <div className="v-stack">
+                    <span className="top-bar-label">{t('rr.fleet_repo')}</span>
+                    <span className="top-bar-count">{config.panels.length} {t('rr.panels')}</span>
+                </div>
+                <button onClick={addPanel} className="pc-btn-icon-v2 add-panel-btn"><Plus size={20} /></button>
+            </div>
+            <div className="rr-horizontal-list">
+                {config.panels.map(p => (
+                    <button 
+                        key={p.id}
+                        className={`pc-panel-nav-btn-horizontal ${activePanelId === p.id ? 'active' : ''}`}
+                        onClick={() => setActivePanelId(p.id)}
+                    >
+                        <div className="nav-icon-horizontal"><Layout size={18} /></div>
+                        <div className="nav-info-horizontal">
+                            <span className="nav-name-horizontal">{p.name}</span>
+                            <span className="nav-meta-horizontal">{p.roles.length} {t('rr.roles')} • {p.type}</span>
+                        </div>
+                    </button>
+                ))}
+            </div>
+        </section>
+
         <div className="pc-layout-grid-v2 rr-layout-outer">
-            {/* Sidebar Navigator V2 */}
-            <aside className="v-stack animate slide-up rr-sidebar" style={{ gap: '24px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div className="v-stack">
-                        <span style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>{t('rr.fleet_repo')}</span>
-                        <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--primary)' }}>{config.panels.length} {t('rr.panels')}</span>
-                    </div>
-                    <button onClick={addPanel} className="pc-btn-icon-v2"><Plus size={20} /></button>
-                </div>
-                <div className="v-stack rr-panel-list" style={{ gap: '12px' }}>
-                    {config.panels.map(p => (
-                        <button 
-                            key={p.id}
-                            className={`pc-panel-nav-btn-v2 ${activePanelId === p.id ? 'active' : ''}`}
-                            onClick={() => setActivePanelId(p.id)}
-                        >
-                            <div className="nav-icon"><Layout size={20} /></div>
-                            <div className="nav-info">
-                                <span className="nav-name">{p.name}</span>
-                                <span className="nav-meta">{p.roles.length} {t('rr.roles')} • {p.type}</span>
-                            </div>
-                            {activePanelId === p.id && <ChevronRight size={16} />}
-                        </button>
-                    ))}
-                </div>
-            </aside>
-            
             {/* Main Studio Area V2 */}
             <main className="pc-studio-content-v2">
                 <nav className="pc-tabs-v2" style={{ marginBottom: '32px' }}>
@@ -506,21 +505,39 @@ export default function ReactionRolesConfig() {
         </div>
 
         <style jsx>{`
-            .rr-layout-outer { display: grid !important; grid-template-columns: 260px minmax(0, 1fr) !important; gap: 32px !important; align-items: start !important; }
+            .rr-layout-outer { display: block !important; }
             .rr-layout-inner { display: grid !important; grid-template-columns: minmax(0, 1.3fr) minmax(340px, 1fr) !important; gap: 32px !important; align-items: start !important; }
             .pc-premium-wrapper { padding: 32px; max-width: 1500px; margin: 0 auto; font-family: 'Inter', sans-serif; }
 
-            .rr-sidebar { position: sticky; top: 32px; }
+            /* Horizontal Top Bar styles */
+            .rr-top-bar { display: flex; align-items: center; gap: 24px; padding: 16px 24px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 24px; box-shadow: var(--shadow-premium); margin-bottom: 32px; }
+            .top-bar-header { display: flex; align-items: center; gap: 16px; padding-right: 24px; border-right: 1.5px solid var(--border); }
+            .top-bar-label { font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+            .top-bar-count { font-size: 0.8rem; font-weight: 800; color: var(--primary); }
+            .add-panel-btn { width: 36px !important; height: 36px !important; border-radius: 10px !important; }
+            
+            .rr-horizontal-list { display: flex; gap: 12px; overflow-x: auto; padding: 4px 0; flex: 1; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+            .rr-horizontal-list::-webkit-scrollbar { height: 4px; }
+            .rr-horizontal-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+            
+            .pc-panel-nav-btn-horizontal { display: flex; align-items: center; gap: 12px; padding: 10px 18px; background: var(--bg-badge); border: 1.5px solid var(--border); border-radius: 16px; cursor: pointer; transition: all 0.2s ease; flex-shrink: 0; }
+            .pc-panel-nav-btn-horizontal:hover { border-color: var(--primary); }
+            .pc-panel-nav-btn-horizontal.active { background: var(--bg-card); border-color: var(--primary); box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.08); }
+            
+            .nav-icon-horizontal { width: 32px; height: 32px; border-radius: 8px; background: var(--bg-card); display: flex; align-items: center; justify-content: center; color: var(--text-muted); transition: 0.2s; }
+            .pc-panel-nav-btn-horizontal.active .nav-icon-horizontal { color: var(--primary); background: var(--bg-badge); }
+            
+            .nav-info-horizontal { display: flex; flex-direction: column; text-align: left; }
+            .nav-name-horizontal { font-weight: 700; color: var(--text-heading); font-size: 0.85rem; }
+            .nav-meta-horizontal { font-size: 0.62rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; }
 
-            @media (max-width: 1280px) {
-                .rr-layout-outer { grid-template-columns: 220px minmax(0, 1fr) !important; gap: 24px !important; }
+            @media (max-width: 1200px) {
                 .rr-layout-inner { grid-template-columns: minmax(0, 1.1fr) minmax(320px, 1fr) !important; gap: 24px !important; }
             }
-            @media (max-width: 1024px) {
-                .rr-layout-outer { grid-template-columns: 1fr !important; gap: 24px !important; }
+            @media (max-width: 992px) {
+                .rr-top-bar { flex-direction: column; align-items: stretch; gap: 16px; }
+                .top-bar-header { border-right: none; border-bottom: 1.5px solid var(--border); padding-right: 0; padding-bottom: 16px; justify-content: space-between; }
                 .rr-layout-inner { grid-template-columns: 1fr !important; gap: 24px !important; }
-                .rr-sidebar { position: static !important; }
-                .rr-panel-list { display: grid !important; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)) !important; gap: 12px !important; }
             }
             
             .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-card); padding: 24px; border-radius: 28px; box-shadow: var(--shadow-premium); border: 1px solid var(--border); }
