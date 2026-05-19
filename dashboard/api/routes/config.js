@@ -486,7 +486,7 @@ router.post('/:guildId/automations', adminCheck, async (req, res) => {
             { returnDocument: 'after', upsert: true }
         );
 
-        await logAudit(req, guildId, 'automations_update', 'Automations Config Updated');
+        await logAudit(req, 'automations_update', { message: 'Automations Config Updated' });
         res.json({ success: true, data: config });
     } catch (error) {
         console.error('Error updating automations:', error);
@@ -918,7 +918,7 @@ router.post('/:guildId/autoclear/manual', adminCheck, async (req, res) => {
 
         const deleted = await channel.bulkDelete(Math.min(parsedAmount, 100), true);
 
-        await logAudit(req, guildId, 'manual_clear', 'Manual Clear Executed', { channelId, amount: deleted.size });
+        await logAudit(req, 'manual_clear', { message: 'Manual Clear Executed', channelId, amount: deleted.size });
         
         res.json({ success: true, data: { count: deleted.size } });
     } catch (error) {
@@ -2547,7 +2547,7 @@ router.post('/:guildId/sync', adminCheck, async (req, res) => {
         }
 
         invalidateCache(guildId);
-        await logAudit(req, guildId, 'SYNC_CONFIG', { sourceGuildId, modules: syncedModules });
+        await logAudit(req, 'SYNC_CONFIG', { sourceGuildId, modules: syncedModules });
 
         res.json({ 
             success: true, 
@@ -2570,7 +2570,7 @@ router.post('/:guildId/reaction-roles', adminCheck, validate(reactionRoleSchema)
             { upsert: true, returnDocument: 'after' }
         );
         invalidateCache(guildId);
-        await logAudit(req, guildId, 'UPDATE_REACTION_ROLES', req.body);
+        await logAudit(req, 'UPDATE_REACTION_ROLES', req.body);
         res.json({ success: true, data: config });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
@@ -2601,7 +2601,7 @@ router.post('/:guildId/polls/config', adminCheck, validate(pollConfigSchema), as
             { upsert: true, returnDocument: 'after' }
         );
         invalidateCache(guildId);
-        await logAudit(req, guildId, 'UPDATE_POLL_CONFIG', req.body);
+        await logAudit(req, 'UPDATE_POLL_CONFIG', req.body);
         res.json({ success: true, data: config });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
@@ -2667,7 +2667,7 @@ router.post('/:guildId/polls/create', adminCheck, validate(pollCreateSchema), as
         });
 
         await poll.save();
-        await logAudit(req, guildId, 'CREATE_POLL', { question, channelId });
+        await logAudit(req, 'CREATE_POLL', { question, channelId });
 
         res.json({ success: true, pollId: poll._id });
     } catch (error) {
@@ -2729,7 +2729,7 @@ router.post('/:guildId/onboarding/complete', adminCheck, async (req, res) => {
             welcomeStyle 
         }, guild);
 
-        await logAudit(req, guildId, 'ONBOARDING_COMPLETED', 'Onboarding Setup Finished', { modules, autoChannels });
+        await logAudit(req, 'ONBOARDING_COMPLETED', { message: 'Onboarding Setup Finished', modules, autoChannels });
         
         res.json({ success: true, message: 'Setup completato con successo!' });
     } catch (error) {
@@ -2765,7 +2765,7 @@ router.post('/:guildId/leave', adminCheck, async (req, res) => {
             });
         }
 
-        await logAudit(req, guildId, 'GUILD_LEAVE', 'Il bot ha lasciato il server tramite dashboard');
+        await logAudit(req, 'GUILD_LEAVE', { message: 'Il bot ha lasciato il server tramite dashboard' });
         
         // Final action
         await guild.leave();
@@ -2794,6 +2794,7 @@ router.post('/:guildId/:module/reset', adminCheck, async (req, res) => {
             moderation: ModerationConfig,
             support: SupportConfig,
             reactionroles: ReactionRoleConfig,
+            'reaction-roles': ReactionRoleConfig,
             polls: PollConfig,
             tempvoice: TempVoiceConfig,
             background: BackgroundConfig,
@@ -2822,7 +2823,7 @@ router.post('/:guildId/:module/reset', adminCheck, async (req, res) => {
         const lang = await messageService.getGuildLanguage(guildId);
         const data = mergeModuleDefaults(targetModule, newConfig, lang);
 
-        await logAudit(req, guildId, `${targetModule.toUpperCase()}_RESET`, `Modulo ${targetModule} reimpostato ai valori di default`);
+        await logAudit(req, `${targetModule.toUpperCase()}_RESET`, { message: `Modulo ${targetModule} reimpostato ai valori di default` });
 
         res.json({ success: true, data });
     } catch (error) {
@@ -2846,6 +2847,7 @@ router.post('/:guildId/factory-reset', adminCheck, async (req, res) => {
             moderation: ModerationConfig,
             support: SupportConfig,
             reactionroles: ReactionRoleConfig,
+            'reaction-roles': ReactionRoleConfig,
             polls: PollConfig,
             tempvoice: TempVoiceConfig,
             background: BackgroundConfig,
@@ -2874,7 +2876,7 @@ router.post('/:guildId/factory-reset', adminCheck, async (req, res) => {
         // 3. Clear all caches for this guild
         invalidateCache(guildId);
         
-        await logAudit(req, guildId, 'FACTORY_RESET', 'System completely reset to factory defaults');
+        await logAudit(req, 'FACTORY_RESET', { message: 'System completely reset to factory defaults' });
 
         res.json({ success: true, message: 'Sistema ripristinato con successo. Verrai reindirizzato al setup.' });
     } catch (error) {

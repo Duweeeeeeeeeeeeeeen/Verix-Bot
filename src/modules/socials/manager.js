@@ -518,7 +518,7 @@ export class SocialManager {
             }
 
             // Dynamically build embed using user's config
-            const customEmbed = platformConfig.embed || {};
+            const customEmbed = await messageService.getRaw(guildId, 'socials', platform.toLowerCase()) || platformConfig.embed || {};
 
             // Optimize URL for preview/shareability
             let optimizedUrl = postData.url || '';

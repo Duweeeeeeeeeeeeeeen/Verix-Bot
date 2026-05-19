@@ -564,6 +564,36 @@ export default {
         }
     },
     socials: {
+        twitch: {
+            title: '📡 ¡**{streamer}** está en directo!',
+            description: '### {title}\n\n¡Hola! **{streamer}** acaba de encender la cámara en Twitch. ¡No te pierdas el show!\n\n[Únete al Directo]({url})',
+            color: '#6441a5',
+            footer: 'Notificaciones Sociales | Verix'
+        },
+        youtube: {
+            title: '🎥 ¡Nuevo video de **{streamer}**!',
+            description: '### {title}\n\n¡Un nuevo video acaba de salir en el canal! Ve a revisarlo.',
+            color: '#ff0000',
+            footer: 'Notificaciones Sociales | Verix'
+        },
+        twitter: {
+            title: '𝕏 (Twitter) Nueva publicación de **{streamer}**',
+            description: '{description}',
+            color: '#000000',
+            footer: 'Notificaciones Sociales | Verix'
+        },
+        instagram: {
+            title: '📸 Nueva publicación de **{streamer}**',
+            description: '### {title}\n\n¡Nuevo contenido subido a Instagram! Ve a echar un vistazo.',
+            color: '#e1306c',
+            footer: 'Notificaciones Sociales | Verix'
+        },
+        tiktok: {
+            title: '🎵 Nuevo TikTok de **{streamer}**',
+            description: '### {title}\n\n¡Un nuevo video acaba de ser publicado en TikTok! Míralo ahora.',
+            color: '#000000',
+            footer: 'Notificaciones Sociales | Verix'
+        },
         default_titles: {
             Twitch: '📡 ¡**{streamer}** está en directo!',
             YouTube: '🎥 ¡Nuevo video de **{streamer}**!',
