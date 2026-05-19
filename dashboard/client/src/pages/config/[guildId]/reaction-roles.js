@@ -423,15 +423,19 @@ export default function ReactionRolesConfig() {
                                                         </div>
 
                                                         {/* Label Input */}
-                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: '1 1 120px' }}>
+                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: '1 1 150px', marginLeft: '12px' }}>
                                                             <label style={{ fontSize: '0.62rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('rr.label')}</label>
-                                                            <div className="pc-bb-input-box" style={{ height: '44px' }}>
-                                                                <input value={role.label || ''} onChange={e => {
+                                                            <input 
+                                                                className="pc-input-modern-v2"
+                                                                style={{ height: '44px', width: '100%', fontSize: '0.9rem', padding: '0 16px' }}
+                                                                value={role.label || ''} 
+                                                                onChange={e => {
                                                                     const newRoles = [...activePanel.roles];
                                                                     newRoles[idx].label = e.target.value;
                                                                     updatePanel(activePanel.id, { roles: newRoles });
-                                                                }} placeholder={t('rr.slot_default_label') || "Select Role"} />
-                                                            </div>
+                                                                }} 
+                                                                placeholder={t('rr.slot_default_label') || "Select Role"} 
+                                                            />
                                                         </div>
 
                                                         {/* Discord Role Selector */}
