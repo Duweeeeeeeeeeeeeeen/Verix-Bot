@@ -240,7 +240,7 @@ export default function ReactionRolesConfig() {
             </div>
         </header>
 
-        <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: '32px' }}>
+        <div className="pc-layout-grid-v2 rr-layout-outer">
             {/* Sidebar Navigator V2 */}
             <aside className="v-stack animate slide-up" style={{ gap: '24px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -280,7 +280,7 @@ export default function ReactionRolesConfig() {
                 </nav>
 
                 {activeTab === 'settings' && activePanel && (
-                    <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '32px' }}>
+                    <div className="pc-layout-grid-v2 rr-layout-inner">
                         <div className="v-stack animate slide-up" style={{ gap: '32px' }}>
                                 <section className="pc-card-v2">
                                     <div className="card-header-v2">
@@ -506,6 +506,8 @@ export default function ReactionRolesConfig() {
         </div>
 
         <style jsx>{`
+            .rr-layout-outer { display: grid !important; grid-template-columns: 320px minmax(0, 1fr) !important; gap: 32px !important; align-items: start !important; }
+            .rr-layout-inner { display: grid !important; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) !important; gap: 32px !important; align-items: start !important; }
             .pc-premium-wrapper { padding: 32px; max-width: 1500px; margin: 0 auto; font-family: 'Inter', sans-serif; }
             
             .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-card); padding: 24px; border-radius: 28px; box-shadow: var(--shadow-premium); border: 1px solid var(--border); }
