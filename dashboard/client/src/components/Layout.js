@@ -31,6 +31,7 @@ import {
   AlertCircle,
   Bell,
   Cpu,
+  Command,
   Globe,
   Camera,
   MoreVertical,
@@ -256,6 +257,7 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
       title: t('sidebar.group_tools'),
       items: [
         { name: t('sidebar.automations'), icon: Cpu, path: `/config/${guildId}/automations`, id: 'automations' },
+        { name: t('sidebar.utility') || 'Utility', icon: Command, path: `/config/${guildId}/utility`, id: 'utility' },
         { name: t('sidebar.embeds'), icon: LayoutIcon, path: `/config/${guildId}/embeds`, id: 'embeds' },
         { name: t('sidebar.analytics'), icon: BarChart3, path: `/config/${guildId}/analytics`, id: 'analytics' }
       ]

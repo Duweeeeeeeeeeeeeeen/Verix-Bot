@@ -272,6 +272,7 @@ export default function GuildHome() {
                         {[
                             { label: t('hub.nav_embed_designer'), path: 'embeds', icon: LayoutTemplate, color: '#10b981', sub: t('hub.nav_embeds') },
                             { label: t('hub.nav_automations_title'), path: 'automations', icon: Cpu, color: '#f59e0b', sub: t('hub.nav_automations') },
+                            { label: t('automations.utility.title') || 'Utility Config', path: 'utility', icon: Command, color: '#06b6d4', sub: t('automations.utility.quick_purge') || 'Purificazione Rapida' },
                             { label: t('hub.nav_whitelabel_title'), path: 'white-label', icon: Sparkles, color: '#6366f1', sub: t('hub.nav_whitelabel') },
                             { label: t('hub.nav_audit_title'), path: 'audit', icon: History, color: 'var(--text-muted)', sub: t('hub.nav_audit') },
                             { label: t('hub.nav_global_title'), path: 'global', icon: Settings2, color: 'var(--text-heading)', sub: t('hub.nav_global') }
