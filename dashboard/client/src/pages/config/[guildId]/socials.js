@@ -155,6 +155,7 @@ export default function SocialsConfig() {
 
   const currentPlatformConfig = config.platforms[activePlatform];
   const pData = PLATFORMS.find(p => p.id === activePlatform);
+  const platformName = t(pData.nameKey);
   const premiumTier = guildData?.premiumTier || (guildData?.isPremium ? 'premium' : 'none');
   const isLocked = !['premium', 'platinum'].includes(premiumTier) && 
     !(premiumTier === 'lite' && (activePlatform === 'twitch' || activePlatform === 'youtube')) && 
@@ -228,9 +229,9 @@ export default function SocialsConfig() {
             </div>
         </header>
 
-        <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '240px 1fr', gap: '24px' }}>
+        <div className="pc-layout-grid-v2 socials-layout">
             {/* V2 Platform Navigator Sidebar */}
-            <aside className="v-stack animate slide-up" style={{ gap: '24px' }}>
+            <aside className="v-stack animate slide-up socials-sidebar" style={{ gap: '16px' }}>
                 <div className="pc-sidebar-card-v2">
                     <span className="sidebar-label-v2">{t('socials.repository')}</span>
                     <nav className="pc-nav-stack-v2">
@@ -274,27 +275,27 @@ export default function SocialsConfig() {
             </aside>
 
             {/* V2 Main Platform Studio Area */}
-            <main className="v-stack" style={{ gap: '32px' }}>
+            <main className="v-stack" style={{ gap: '24px' }}>
                 {isLocked ? (
                     <div className="pc-tier-gate-v2 animate slide-up">
                         <div className="gate-icon-v2">
                             <Lock size={40} />
                         </div>
                         <h2>{t('premium.slot_locked')}</h2>
-                        <p>{t('socials.tier_gate_desc', { platform: pData.name })}</p>
+                        <p>{t('socials.tier_gate_desc', { platform: platformName })}</p>
                         <button className="pc-btn-primary" onClick={() => router.push(`/config/${guildId}/premium`)}>
                             <Sparkles size={20} />
                             <span>{t('socials.upgrade_now')}</span>
                         </button>
                     </div>
                 ) : (
-                    <div className="v-stack animate slide-up" key={activePlatform} style={{ gap: '32px' }}>
+                    <div className="v-stack animate slide-up" key={activePlatform} style={{ gap: '24px' }}>
                         <section className="pc-platform-banner-v2">
                             <div className="p-hero-icon-v2" style={{ color: pData.color }}>
                                 <pData.icon size={36} />
                             </div>
                             <div className="v-stack" style={{ flex: 1 }}>
-                                <h4 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-heading)' }}>{t(pData.nameKey)}</h4>
+                                <h4 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 700, color: 'var(--text-heading)' }}>{platformName}</h4>
                                 <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 700, lineHeight: 1.4 }}>{t(pData.descKey)}</p>
                             </div>
                             <div className="v-stack" style={{ alignItems: 'flex-end', gap: '12px' }}>
@@ -316,7 +317,7 @@ export default function SocialsConfig() {
                                 </div>
                                 <h3>{t('socials.standby_title')}</h3>
                                 <p>{t('socials.standby_desc')}</p>
-                                <button className="pc-btn-primary" onClick={() => updatePlatform('enabled', true)}>{t('socials.deploy_modulo')} {pData.name}</button>
+                                <button className="pc-btn-primary" onClick={() => updatePlatform('enabled', true)}>{t('socials.deploy_modulo')} {platformName}</button>
                             </div>
                         ) : (
                             <>
@@ -331,7 +332,7 @@ export default function SocialsConfig() {
 
                                  {activeTab === 'settings' && (
                                      <div className="pc-settings-layout-v2">
-                                         <div className="v-stack" style={{ gap: '32px' }}>
+                                         <div className="v-stack" style={{ gap: '24px' }}>
                                              <section className="pc-card-v2">
                                                  <div className="card-header-v2">
                                                      <div className="header-icon"><Users size={18} /></div>
@@ -345,7 +346,7 @@ export default function SocialsConfig() {
                                                              <div key={i} className="pc-sub-card-v2 animate slide-up">
                                                                  <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
                                                                     <div className="v-stack" style={{ flex: 1, gap: '8px' }}>
-                                                                        <label className="input-label-v2">{pData.name} {t('socials.account_id_label')}</label>
+                                                                        <label className="input-label-v2">{platformName} {t('socials.account_id_label')}</label>
                                                                         <div className="pc-input-modern-v2">
                                                                             <Link2 size={16} />
                                                                             <input 
@@ -378,14 +379,14 @@ export default function SocialsConfig() {
                                                             );
                                                          })}
                                                          <button className="pc-btn-add-account-v2" onClick={addAccount}>
-                                                             <Plus size={20} /> <span>{t('socials.connect_new')} {pData.name}</span>
+                                                             <Plus size={20} /> <span>{t('socials.connect_new')} {platformName}</span>
                                                          </button>
                                                      </div>
                                                  </div>
                                              </section>
                                          </div>
 
-                                        <div className="v-stack" style={{ gap: '32px' }}>
+                                        <div className="v-stack" style={{ gap: '24px' }}>
                                             <section className="pc-card-v2">
                                                 <div className="card-header-v2">
                                                     <div className="header-icon"><Bell size={18} /></div>
@@ -428,12 +429,12 @@ export default function SocialsConfig() {
                                  )}
 
                                  {activeTab === 'design' && (
-                                     <div className="v-stack animate slide-up" style={{ gap: '32px' }}>
+                                     <div className="v-stack animate slide-up" style={{ gap: '24px' }}>
                                          <EmbedMessageManager 
                                              guildId={guildId}
                                              module="socials"
                                              slugs={[
-                                                 { key: pData.id, label: `${t(pData.nameKey)} ${t('socials.announcement_label')}`, description: t('socials.announcement_desc', { platform: t(pData.nameKey) }), variables: ['username', 'link', 'title', 'preview_url', 'platform'], group: t('socials.studio_title'), groupIcon: Globe2 },
+                                                 { key: pData.id, label: `${platformName} ${t('socials.announcement_label')}`, description: t('socials.announcement_desc', { platform: platformName }), variables: ['username', 'link', 'title', 'preview_url', 'platform'], group: t('socials.title'), groupIcon: Globe2 },
                                              ]}
                                          />
                                      </div>
@@ -446,7 +447,9 @@ export default function SocialsConfig() {
         </div>
 
         <style jsx>{`
-            .pc-premium-wrapper { padding: 32px; max-width: 1500px; margin: 0 auto; font-family: 'Inter', sans-serif; }
+            .pc-premium-wrapper { padding: 24px; max-width: 1320px; margin: 0 auto; font-family: 'Inter', sans-serif; }
+            .socials-layout { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: 20px; align-items: flex-start; }
+            .socials-sidebar { position: sticky; top: 24px; }
             
             /* Header V2 */
             .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-card); padding: 24px; border-radius: 28px; box-shadow: var(--shadow-premium); border: 1px solid var(--border); }
@@ -466,27 +469,27 @@ export default function SocialsConfig() {
             .pc-btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(var(--primary-rgb), 0.2); }
 
             /* Sidebar */
-            .pc-sidebar-card-v2 { background: var(--bg-card); padding: 24px; border-radius: 28px; box-shadow: var(--shadow-premium); border: 1px solid var(--border); }
-            .sidebar-label-v2 { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; display: block; }
-            .pc-nav-stack-v2 { display: flex; flex-direction: column; gap: 12px; }
-            .pc-nav-item-v2 { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border: 1.5px solid transparent; background: transparent; border-radius: 18px; cursor: pointer; transition: 0.2s; position: relative; width: 100%; }
+            .pc-sidebar-card-v2 { background: var(--bg-card); padding: 14px; border-radius: 16px; box-shadow: none; border: 1px solid var(--border); }
+            .sidebar-label-v2 { font-size: 0.68rem; font-weight: 750; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0; margin-bottom: 12px; display: block; padding: 0 4px; }
+            .pc-nav-stack-v2 { display: flex; flex-direction: column; gap: 6px; }
+            .pc-nav-item-v2 { display: flex; align-items: center; gap: 10px; padding: 10px; border: 1px solid transparent; background: transparent; border-radius: 12px; cursor: pointer; transition: 0.2s; position: relative; width: 100%; min-height: 56px; }
             .pc-nav-item-v2:hover:not(.locked) { background: var(--bg-badge); color: var(--primary); }
             .pc-nav-item-v2.active { background: var(--bg-badge); border-color: var(--primary); color: var(--primary); }
-            .p-icon-box-v2 { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; transition: 0.2s; flex-shrink: 0; }
-            .nav-label-v2 { font-weight: 700; font-size: 0.95rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px; }
+            .p-icon-box-v2 { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; transition: 0.2s; flex-shrink: 0; }
+            .p-name-v2 { font-weight: 700; font-size: 0.9rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 145px; }
             .nav-sync-tag-v2 { display: flex; align-items: center; gap: 4px; margin-top: 2px; }
             .nav-sync-tag-v2 .dot { width: 4px; height: 4px; border-radius: 50%; background: #10b981; }
-            .nav-sync-tag-v2 span { font-size: 0.6rem; color: #10b981; font-weight: 700; text-transform: uppercase; }
+            .nav-sync-tag-v2 span { font-size: 0.62rem; color: #10b981; font-weight: 700; text-transform: none; }
             .lock-badge-v2 { position: absolute; right: 10px; top: 10px; background: linear-gradient(135deg, #a855f7, #7c3aed); color: #fff; padding: 3px; border-radius: 6px; }
 
-            .pc-pro-card-v2 { background: var(--bg-badge); padding: 24px; border-radius: 28px; color: var(--text-heading); border: 1px solid var(--border); }
+            .pc-pro-card-v2 { background: var(--bg-badge); padding: 16px; border-radius: 16px; color: var(--text-heading); border: 1px solid var(--border); }
             .pro-header-v2 { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
             .pro-icon-v2 { padding: 8px; background: var(--bg-card); border-radius: 10px; color: var(--primary); }
             .pc-pro-card-v2 p { margin: 0; font-size: 0.8rem; opacity: 0.8; line-height: 1.6; font-weight: 700; }
 
             /* Main Area */
-            .pc-platform-banner-v2 { display: flex; align-items: center; gap: 24px; padding: 32px; background: var(--bg-card); border-radius: 28px; border: 1px solid var(--border); position: relative; overflow: hidden; box-shadow: var(--shadow-premium); }
-            .p-hero-icon-v2 { width: 64px; height: 64px; border-radius: 18px; background: var(--bg-badge); display: flex; align-items: center; justify-content: center; }
+            .pc-platform-banner-v2 { display: flex; align-items: center; gap: 18px; padding: 20px; background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border); position: relative; overflow: hidden; box-shadow: none; }
+            .p-hero-icon-v2 { width: 52px; height: 52px; border-radius: 14px; background: var(--bg-badge); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
             .pc-platform-banner-v2 h2 { margin: 0; font-family: 'Inter'; font-size: 1.6rem; font-weight: 700; color: var(--text-heading); }
             .pc-platform-banner-v2 p { margin: 6px 0 0 0; color: var(--text-muted); font-size: 0.95rem; font-weight: 700; }
             .pc-status-badge-v2 { display: flex; align-items: center; gap: 6px; background: var(--bg-badge); color: var(--text-muted); padding: 5px 12px; border-radius: 100px; font-size: 0.65rem; font-weight: 700; border: 1px solid var(--border); }
@@ -497,19 +500,19 @@ export default function SocialsConfig() {
             .pc-tabs-v2 button { display: flex; align-items: center; gap: 10px; padding: 10px 24px; border: none; background: transparent; color: var(--text-muted); font-weight: 700; font-size: 0.9rem; border-radius: 14px; cursor: pointer; transition: 0.2s; }
             .pc-tabs-v2 button.active { background: var(--bg-card); color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
 
-            .pc-settings-layout-v2 { display: grid; grid-template-columns: 1.3fr 1fr; gap: 32px; }
+            .pc-settings-layout-v2 { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.75fr); gap: 20px; align-items: start; }
             .pc-card-v2 { background: var(--bg-card); border: 1px solid var(--border); border-radius: 28px; padding: 32px; box-shadow: var(--shadow-premium); }
             .card-header-v2 { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
             .header-icon { width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: var(--bg-badge); color: var(--primary); }
             .card-header-v2 h3 { margin: 0; font-family: 'Inter'; font-size: 1.3rem; font-weight: 700; color: var(--text-heading); }
 
-            .pc-sub-card-v2 { background: var(--bg-badge); padding: 20px; border-radius: 20px; border: 1.5px solid var(--border); }
-            .input-label-v2 { font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-            .pc-input-modern-v2 { display: flex; align-items: center; gap: 12px; background: var(--bg-badge); padding: 10px 16px; border-radius: 14px; border: 1.5px solid var(--border); transition: 0.2s; }
+            .pc-sub-card-v2 { background: var(--bg-badge); padding: 16px; border-radius: 14px; border: 1px solid var(--border); }
+            .input-label-v2 { font-size: 0.72rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0; }
+            .pc-input-modern-v2 { display: flex; align-items: center; gap: 12px; background: var(--bg-card); padding: 10px 14px; border-radius: 12px; border: 1px solid var(--border); transition: 0.2s; }
             .pc-input-modern-v2:focus-within { border-color: var(--primary); }
             .pc-input-modern-v2 input { border: none; background: transparent; width: 100%; font-weight: 700; font-size: 1rem; outline: none; color: var(--text-heading); }
             
-            .pc-btn-icon-danger-v2 { width: 40px; height: 40px; border-radius: 12px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+            .pc-btn-icon-danger-v2 { width: 40px; height: 40px; border-radius: 12px; background: rgba(239, 68, 68, 0.08); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.14); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
             .pc-btn-icon-danger-v2:hover { background: #ef4444; color: #fff; }
 
             .social-account-status-v2 { margin-top: 14px; padding: 12px 14px; border-radius: 14px; display: flex; justify-content: space-between; gap: 12px; align-items: center; font-size: 0.72rem; font-weight: 700; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-muted); }
@@ -519,7 +522,7 @@ export default function SocialsConfig() {
             .status-main-v2 { display: flex; align-items: center; gap: 8px; color: inherit; }
             .status-dot-inline-v2 { width: 7px; height: 7px; border-radius: 999px; background: currentColor; flex-shrink: 0; }
 
-            .pc-btn-add-account-v2 { width: 100%; padding: 20px; border: 2px dashed var(--border); background: transparent; border-radius: 20px; color: var(--text-muted); font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px; transition: 0.2s; }
+            .pc-btn-add-account-v2 { width: 100%; padding: 16px; border: 1px dashed var(--border); background: transparent; border-radius: 14px; color: var(--text-muted); font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px; transition: 0.2s; }
             .pc-btn-add-account-v2:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-glow); }
 
             .pc-input-group-v2 label { font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 12px; display: block; letter-spacing: 0.5px; }
@@ -529,16 +532,27 @@ export default function SocialsConfig() {
             .pc-toggle-card-v2 strong { font-weight: 700; color: var(--text-heading); }
             .pc-toggle-card-v2 span { font-size: 0.75rem; color: var(--text-muted); font-weight: 700; }
 
-            .pc-standby-view-v2 { text-align: center; padding: 80px 40px; background: var(--bg-badge); border: 2px dashed var(--border); border-radius: 32px; }
-            .standby-icon-v2 { width: 72px; height: 72px; background: var(--bg-card); border-radius: 24px; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; color: var(--text-muted); }
+            .pc-standby-view-v2 { text-align: center; padding: 44px 24px; background: var(--bg-badge); border: 1px dashed var(--border); border-radius: 16px; }
+            .standby-icon-v2 { width: 58px; height: 58px; background: var(--bg-card); border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; color: var(--text-muted); }
 
-            .pc-tier-gate-v2 { padding: 80px 40px; background: var(--bg-card); border-radius: 32px; border: 1px solid var(--border); text-align: center; box-shadow: var(--shadow-premium); }
-            .gate-icon-v2 { width: 80px; height: 80px; background: var(--bg-badge); color: var(--primary); border-radius: 24px; display: flex; align-items: center; justify-content: center; margin: 0 auto 32px; }
+            .pc-tier-gate-v2 { padding: 48px 24px; background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border); text-align: center; box-shadow: none; }
+            .gate-icon-v2 { width: 64px; height: 64px; background: var(--bg-badge); color: var(--primary); border-radius: 18px; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; }
 
 
             .v-stack { display: flex; flex-direction: column; }
             .animate { animation: slideUp 0.4s ease-out; }
             @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+            @media (max-width: 1100px) {
+                .socials-layout { grid-template-columns: 1fr; }
+                .socials-sidebar { position: static; }
+                .pc-nav-stack-v2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+                .pc-settings-layout-v2 { grid-template-columns: 1fr; }
+            }
+            @media (max-width: 720px) {
+                .pc-premium-wrapper { padding: 16px; }
+                .pc-platform-banner-v2 { align-items: flex-start; flex-wrap: wrap; }
+                .pc-platform-banner-v2 > .v-stack:last-child { width: 100%; align-items: flex-start !important; }
+            }
         `}</style>
     </div>
   );
