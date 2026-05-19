@@ -3,8 +3,8 @@ import { useRouter } from 'next/router';
 import Skeleton from '../../../components/Skeleton';
 import HelpTooltip from '../../../components/HelpTooltip';
 import api from '../../../utils/api';
-import { 
-    Save, Mic2, Users, MousePointer2, Shield, ListFilter, Info, CheckCircle, 
+import {
+    Save, Mic2, Users, MousePointer2, Shield, ListFilter, Info, CheckCircle,
     XCircle, MessageSquare, Settings2, Palette, Zap, Power, Globe, Clock, Layout, Terminal,
     RotateCcw, ChevronRight, Hash, Sparkles, Box, Fingerprint, Activity, Volume2, BellRing, Layers, ShieldCheck
 } from 'lucide-react';
@@ -21,17 +21,17 @@ export default function VoiceHubPage() {
   const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  
+
   // Hub State
-  const [activeModule, setActiveModule] = useState('provini'); 
+  const [activeModule, setActiveModule] = useState('provini');
   const [activeTab, setActiveTab] = useState('settings');
-  
+
   // Data State
-  const [voiceConfig, setVoiceConfig] = useState(null); 
-  const [tempVoiceConfig, setTempVoiceConfig] = useState(null); 
+  const [voiceConfig, setVoiceConfig] = useState(null);
+  const [tempVoiceConfig, setTempVoiceConfig] = useState(null);
   const [supportConfig, setSupportConfig] = useState(null);
   const [discordData, setDiscordData] = useState({ channels: [], roles: [] });
-  
+
   // Editor State
   const [activeEmbedKey, setActiveEmbedKey] = useState('voice_waiting');
 
@@ -59,10 +59,10 @@ export default function VoiceHubPage() {
         });
         const vConfig = { ...(wlData.voiceSettings || {}), embeds: vEmbeds };
         setVoiceConfig(mergeConfig(vConfig, 'voice'));
-        
+
         // TempVoice processing
         setTempVoiceConfig(tvRes?.data || tvRes || {});
-        
+
         // Support SOS processing
         setSupportConfig(suppRes?.data || suppRes || {});
 
@@ -89,7 +89,7 @@ export default function VoiceHubPage() {
         if (activeModule === 'provini') {
             await api.request(`/config/${guildId}/whitelist`, {
                 method: 'POST',
-                body: JSON.stringify({ 
+                body: JSON.stringify({
                     voiceSettings: { ...voiceConfig, embeds: undefined },
                     embeds: { ...(voiceConfig.embeds || {}) }
                 })
@@ -121,7 +121,7 @@ export default function VoiceHubPage() {
         tempvoice: setTempVoiceConfig,
         support: setSupportConfig
     };
-    
+
     setters[module](prev => {
         const next = { ...prev };
         const parts = path.split('.');
@@ -160,14 +160,14 @@ export default function VoiceHubPage() {
                     </div>
                 </div>
             </div>
-            
+
             <div className="header-controls">
                 <div className="pc-toggle-container-v2">
                     <label className="pc-toggle-v2">
-                        <input 
-                            type="checkbox" 
-                            checked={currentModuleConfig.enabled} 
-                            onChange={() => setNested(activeModule, 'enabled', !currentModuleConfig.enabled)} 
+                        <input
+                            type="checkbox"
+                            checked={currentModuleConfig.enabled}
+                            onChange={() => setNested(activeModule, 'enabled', !currentModuleConfig.enabled)}
                         />
                         <span className="pc-slider-v2"></span>
                     </label>
@@ -221,7 +221,7 @@ export default function VoiceHubPage() {
         </div>
 
         {/* Sub-Tabs */}
-        <nav className="pc-tabs-container-v2" style={{ marginBottom: '40px' }}>
+        <nav className="pc-tabs-container-v2" style={{ marginBottom: '24px' }}>
             <div className="pc-tabs-v2">
                 <button className={activeTab === 'settings' ? 'active' : ''} onClick={() => setActiveTab('settings')}>
                     <Settings2 size={16} /> <span>{t('voice.tab_channels')}</span>
@@ -328,15 +328,15 @@ export default function VoiceHubPage() {
                                             </div>
                                             <div className="pc-input-group-v2">
                                                 <label>{t('common.style')}</label>
-                                                <CustomSelect 
+                                                <CustomSelect
                                                     options={[
                                                         { value: 'SUCCESS', label: t('voice.style_success') },
                                                         { value: 'DANGER', label: t('voice.style_danger') },
                                                         { value: 'PRIMARY', label: t('voice.style_primary') },
                                                         { value: 'SECONDARY', label: t('voice.style_secondary') }
-                                                    ]} 
-                                                    value={voiceConfig.voiceButtons?.[btn.key]?.style || 'PRIMARY'} 
-                                                    onChange={val => setNested('provini', `voiceButtons.${btn.key}.style`, val)} 
+                                                    ]}
+                                                    value={voiceConfig.voiceButtons?.[btn.key]?.style || 'PRIMARY'}
+                                                    onChange={val => setNested('provini', `voiceButtons.${btn.key}.style`, val)}
                                                 />
                                             </div>
                                         </div>
@@ -442,7 +442,7 @@ export default function VoiceHubPage() {
                                 </div>
                             </div>
                         </section>
-                        <NotificationSettings 
+                        <NotificationSettings
                             guildId={guildId}
                             value={supportConfig.voiceSettings?.notifications}
                             onChange={val => setNested('support', 'voiceSettings.notifications', val)}
@@ -475,14 +475,14 @@ export default function VoiceHubPage() {
                                             </button>
                                         ))}
                                     </div>
-                                    <EmbedEditor 
-                                        embed={voiceConfig.embeds?.[activeEmbedKey] || {}} 
+                                    <EmbedEditor
+                                        embed={voiceConfig.embeds?.[activeEmbedKey] || {}}
                                         onChange={val => setNested('provini', `embeds.${activeEmbedKey}`, val)}
                                         variables={['user', 'staff', 'voice_channel', 'reason', 'cooldown']}
                                     />
                                 </div>
                             </section>
-                            <EmbedMessageManager 
+                            <EmbedMessageManager
                                 guildId={guildId}
                                 module="voice"
                                 slugs={[
@@ -513,21 +513,23 @@ export default function VoiceHubPage() {
                                     </div>
                                 </div>
                             </section>
-                            <SystemMessagesSection 
-                                config={tempVoiceConfig}
-                                onUpdate={setTempVoiceConfig}
-                                messages={[
-                                    { key: 'not_owner', label: t('voice.msg_not_owner'), placeholder: t('voice.msg_not_owner_desc') },
-                                    { key: 'no_perms', label: t('voice.msg_no_perms'), placeholder: t('voice.msg_no_perms_desc') },
-                                    { key: 'cooldown', label: t('voice.msg_cooldown'), placeholder: t('voice.msg_cooldown_desc') }
-                                ]}
-                            />
+                            <section className="pc-card-v2">
+                                <SystemMessagesSection
+                                    config={tempVoiceConfig}
+                                    onUpdate={setTempVoiceConfig}
+                                    messages={[
+                                        { key: 'not_owner', label: t('voice.msg_not_owner'), placeholder: t('voice.msg_not_owner_desc') },
+                                        { key: 'no_perms', label: t('voice.msg_no_perms'), placeholder: t('voice.msg_no_perms_desc') },
+                                        { key: 'cooldown', label: t('voice.msg_cooldown'), placeholder: t('voice.msg_cooldown_desc') }
+                                    ]}
+                                />
+                            </section>
                         </div>
                     )}
 
                     {activeModule === 'support' && (
                         <div className="v-stack animate slide-up">
-                            <EmbedMessageManager 
+                            <EmbedMessageManager
                                 guildId={guildId}
                                 module="support"
                                 slugs={[
@@ -558,12 +560,12 @@ export default function VoiceHubPage() {
             .status-dot-v2 { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
             .pc-header-divider { width: 1px; height: 24px; background: var(--border); margin: 0 4px; }
             .pc-btn-primary { background: var(--primary); color: #fff; border: none; padding: 14px 28px; border-radius: 18px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: 0.3s; box-shadow: 0 10px 20px rgba(var(--primary-rgb), 0.2); }
-            .pc-module-switcher { display: grid; gap: 24px; margin-bottom: 40px; }
-            .pc-module-switcher button { position: relative; display: flex; align-items: center; gap: 20px; background: var(--bg-card); border: 1.5px solid var(--border); padding: 24px; border-radius: 28px; text-align: left; cursor: pointer; transition: 0.3s; overflow: hidden; }
+            .pc-module-switcher { display: grid; gap: 12px; margin-bottom: 24px; }
+            .pc-module-switcher button { position: relative; display: flex; align-items: center; gap: 14px; background: var(--bg-card); border: 1.5px solid var(--border); padding: 16px; border-radius: 16px; text-align: left; cursor: pointer; transition: 0.2s; overflow: hidden; }
             .pc-module-switcher button.active { border-color: var(--primary); background: rgba(var(--primary-rgb), 0.02); }
-            .pc-module-switcher button:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.04); }
-            .m-title { font-weight: 800; font-size: 1.1rem; color: var(--text-heading); }
-            .m-desc { font-size: 0.85rem; color: var(--text-muted); font-weight: 600; }
+            .pc-module-switcher button:hover { transform: translateY(-1px); box-shadow: 0 8px 18px rgba(0,0,0,0.035); }
+            .m-title { font-weight: 800; font-size: 0.98rem; color: var(--text-heading); }
+            .m-desc { font-size: 0.78rem; color: var(--text-muted); font-weight: 600; }
             .active-glow { position: absolute; inset: 0; background: radial-gradient(circle at top right, rgba(var(--primary-rgb), 0.1) 0%, transparent 70%); pointer-events: none; }
             .pc-tabs-v2 { display: flex; gap: 6px; background: var(--bg-badge); padding: 6px; border-radius: 18px; width: fit-content; }
             .pc-tabs-v2 button { display: flex; align-items: center; gap: 10px; padding: 12px 24px; border: none; background: transparent; color: var(--text-muted); font-weight: 700; font-size: 0.9rem; border-radius: 14px; cursor: pointer; transition: 0.2s; white-space: nowrap; }
@@ -587,6 +589,9 @@ export default function VoiceHubPage() {
             .animate { animation: slideUp 0.4s ease-out; }
             @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
             :global(.light-theme) .pc-header-v2, :global(.light-theme) .pc-card-v2, :global(.light-theme) .pc-module-switcher button { box-shadow: 0 8px 30px rgba(0,0,0,0.04) !important; }
+            @media (max-width: 900px) {
+                .pc-module-switcher { grid-template-columns: 1fr !important; }
+            }
         `}</style>
     </div>
   );

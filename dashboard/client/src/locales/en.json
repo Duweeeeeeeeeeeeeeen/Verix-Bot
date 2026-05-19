@@ -2304,7 +2304,7 @@
   "socials.status_unstable": "Feed unstable",
   "socials.status_unstable_desc": "Last check failed, retry scheduled.",
   "socials.studio_title": "Social feeds",
-  "socials.sync_active": "SYNC ACTIVE",
+  "socials.sync_active": "Enabled",
   "socials.sync_success": "Social feed settings saved!",
   "socials.synchronized": "Enabled",
   "socials.tab_embed": "Custom Message",

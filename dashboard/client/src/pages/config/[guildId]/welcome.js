@@ -5,9 +5,9 @@ import { DiscordSelector, SystemMessagesSection } from '../../../components/Lazy
 import { EmbedEditor } from '../../../components/LazyConfigComponents';
 import api from '../../../utils/api';
 import { useT } from '../../../contexts/LanguageContext';
-import { 
-    Save, UserPlus, UserMinus, Settings2, RefreshCcw, Power, Palette, Info, Bell, Layout as LayoutIcon, 
-    ChevronRight, Zap, ArrowRight, MessageSquare, Shield, Clock, Plus, Trash2, Camera, 
+import {
+    Save, UserPlus, UserMinus, Settings2, RefreshCcw, Power, Palette, Info, Bell, Layout as LayoutIcon,
+    ChevronRight, Zap, ArrowRight, MessageSquare, Shield, Clock, Plus, Trash2, Camera,
     Terminal, Layout, Sparkles, CheckCircle2, Box, MessageCircle, Hash, ArrowLeft,
     Monitor, Smartphone, Laptop, RotateCcw, Send, RefreshCw, SendHorizontal
 } from 'lucide-react';
@@ -73,7 +73,7 @@ export default function WelcomeConfig() {
 
   const handleReset = async () => {
     if (!confirm(t('common.reset_confirm'))) return;
-    
+
     setLoading(true);
     window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
     try {
@@ -104,8 +104,8 @@ export default function WelcomeConfig() {
       showToast(t('welcome.toast_saved'));
     } catch (error) {
         showToast(t('welcome.toast_save_error'), 'error');
-    } finally { 
-        setSaving(false); 
+    } finally {
+        setSaving(false);
         window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
     }
   };
@@ -160,14 +160,14 @@ export default function WelcomeConfig() {
                     </div>
                 </div>
             </div>
-            
+
             <div className="header-controls">
                 <div className="pc-toggle-container-v2">
                     <label className="pc-toggle-v2">
-                        <input 
-                            type="checkbox" 
-                            checked={config.enabled} 
-                            onChange={() => setConfig({...config, enabled: !config.enabled})} 
+                        <input
+                            type="checkbox"
+                            checked={config.enabled}
+                            onChange={() => setConfig({...config, enabled: !config.enabled})}
                         />
                         <span className="pc-slider-v2"></span>
                     </label>
@@ -179,10 +179,10 @@ export default function WelcomeConfig() {
                 <button className="pc-btn-outline-v2" onClick={handleReset} title={t('common.reset_to_default')}>
                     <RotateCcw size={18} />
                 </button>
-                <button 
-                    className="pc-btn-outline-v2" 
-                    onClick={handleTest} 
-                    disabled={testing || !config.welcome?.channelId} 
+                <button
+                    className="pc-btn-outline-v2"
+                    onClick={handleTest}
+                    disabled={testing || !config.welcome?.channelId}
                     title={t('welcome.send_test')}
                     style={{ color: 'var(--primary)', borderColor: testing ? 'var(--border)' : 'rgba(var(--primary-rgb), 0.2)' }}
                 >
@@ -289,12 +289,12 @@ export default function WelcomeConfig() {
             )}
 
             {activeTab === 'personalization' && (
-                <div className="pc-card-v2 animate slide-up" style={{ padding: 0, overflow: 'hidden', minHeight: '750px' }}>
-                    <div className="pc-studio-layout-v2" style={{ display: 'grid', gridTemplateColumns: '350px 1fr', height: '100%' }}>
-                        <aside style={{ background: 'var(--bg-badge)', borderRight: '1px solid var(--border)', padding: '40px 32px' }}>
+                <div className="pc-card-v2 welcome-editor-shell animate slide-up">
+                    <div className="pc-studio-layout-v2 welcome-editor-layout">
+                        <aside className="welcome-editor-sidebar">
                             <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '1.2px', marginBottom: '24px' }}>{t('welcome.editor_title')}</div>
                             <div className="v-stack" style={{ gap: '12px' }}>
-                                <button 
+                                <button
                                     className={`pc-studio-tab-v2 ${activeEmbedKey === 'welcome' ? 'active' : ''}`}
                                     onClick={() => setActiveEmbedKey('welcome')}
                                     style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '18px 24px', border: 'none', borderRadius: '20px', cursor: 'pointer', transition: '0.2s', background: activeEmbedKey === 'welcome' ? 'var(--bg-card)' : 'transparent', color: activeEmbedKey === 'welcome' ? 'var(--text-heading)' : 'var(--text-muted)', fontWeight: 700, textAlign: 'left', border: activeEmbedKey === 'welcome' ? '1.5px solid var(--border)' : '1.5px solid transparent', boxShadow: activeEmbedKey === 'welcome' ? '0 10px 20px rgba(0,0,0,0.04)' : 'none' }}
@@ -303,7 +303,7 @@ export default function WelcomeConfig() {
                                     <span style={{ flex: 1 }}>{t('welcome.studio_welcome')}</span>
                                     <ChevronRight size={16} style={{ opacity: activeEmbedKey === 'welcome' ? 1 : 0.3 }} />
                                 </button>
-                                <button 
+                                <button
                                     className={`pc-studio-tab-v2 ${activeEmbedKey === 'leave' ? 'active' : ''}`}
                                     onClick={() => setActiveEmbedKey('leave')}
                                     style={{ display: 'flex', alignItems: 'center', gap: '16px', padding: '18px 24px', border: 'none', borderRadius: '20px', cursor: 'pointer', transition: '0.2s', background: activeEmbedKey === 'leave' ? 'var(--bg-card)' : 'transparent', color: activeEmbedKey === 'leave' ? 'var(--text-heading)' : 'var(--text-muted)', fontWeight: 700, textAlign: 'left', border: activeEmbedKey === 'leave' ? '1.5px solid var(--border)' : '1.5px solid transparent', boxShadow: activeEmbedKey === 'leave' ? '0 10px 20px rgba(0,0,0,0.04)' : 'none' }}
@@ -313,8 +313,8 @@ export default function WelcomeConfig() {
                                     <ChevronRight size={16} style={{ opacity: activeEmbedKey === 'leave' ? 1 : 0.3 }} />
                                 </button>
                             </div>
-                            
-                            <div style={{ marginTop: '40px', paddingTop: '40px', borderTop: '2px dashed var(--border)' }}>
+
+                            <div className="welcome-editor-reset">
                                 <button className="pc-btn-reset-v2" style={{ display: 'flex', alignItems: 'center', gap: '12px', background: 'rgba(239,68,68,0.08)', color: '#ef4444', border: 'none', width: '100%', padding: '16px', borderRadius: '18px', fontWeight: 700, cursor: 'pointer', justifyContent: 'center', transition: '0.2s' }} onClick={() => {
                                     if (window.confirm(t('welcome.reset_confirm_params'))) {
                                         const defaults = defaultMessagesMap[language] || defaultMessagesMap['en'];
@@ -326,10 +326,10 @@ export default function WelcomeConfig() {
                                 </button>
                             </div>
                         </aside>
-                        
-                        <main style={{ padding: '50px', background: 'var(--bg-card)', overflowY: 'auto' }}>
-                            <EmbedEditor 
-                                embed={config[activeEmbedKey]?.embed || {}} 
+
+                        <main className="welcome-editor-main">
+                            <EmbedEditor
+                                embed={config[activeEmbedKey]?.embed || {}}
                                 onChange={d => updateEmbed(activeEmbedKey, d)}
                                 variables={['user', 'user_mention', 'user_tag', 'guild', 'member_count']}
                             />
@@ -340,28 +340,30 @@ export default function WelcomeConfig() {
 
             {activeTab === 'system_messages' && (
                 <div className="v-stack animate slide-up">
-                    <SystemMessagesSection 
-                        config={config}
-                        onUpdate={setConfig}
-                        messages={[
-                            { key: 'test_success', label: t('welcome.msg_test_success'), placeholder: t('welcome.placeholder_test_success') },
-                            { key: 'test_error', label: t('welcome.msg_test_error'), placeholder: t('welcome.placeholder_test_error') }
-                        ]}
-                    />
+                    <section className="pc-card-v2">
+                        <SystemMessagesSection
+                            config={config}
+                            onUpdate={setConfig}
+                            messages={[
+                                { key: 'test_success', label: t('welcome.msg_test_success'), placeholder: t('welcome.placeholder_test_success') },
+                                { key: 'test_error', label: t('welcome.msg_test_error'), placeholder: t('welcome.placeholder_test_error') }
+                            ]}
+                        />
+                    </section>
                 </div>
             )}
         </div>
 
         <style jsx>{`
             .pc-premium-wrapper { padding: 32px; max-width: 1500px; margin: 0 auto; font-family: 'Inter', sans-serif; }
-            
+
             /* Header V2 */
             .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-card); padding: 24px; border-radius: 28px; box-shadow: var(--shadow-premium); border: 1px solid var(--border); }
             .header-info { display: flex; align-items: center; gap: 16px; }
             .pc-icon-box { width: 52px; height: 52px; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: #fff; box-shadow: 0 12px 24px rgba(var(--primary-rgb), 0.25); }
             .pc-title-row { display: flex; flex-direction: column; gap: 2px; }
             .pc-title-row h1 { font-family: 'Inter', sans-serif; font-size: 1.8rem; font-weight: 700; margin: 0; color: var(--text-heading); letter-spacing: -0.03em; }
-            
+
             .pc-status-tag-v2 { display: flex; align-items: center; gap: 6px; font-size: 0.6rem; font-weight: 700; padding: 4px 10px; border-radius: 100px;  width: fit-content; }
             .pc-status-tag-v2.on { background: rgba(16, 185, 129, 0.1); color: #10b981; }
             .pc-status-tag-v2.off { background: var(--bg-badge); color: #ef4444; }
@@ -369,13 +371,19 @@ export default function WelcomeConfig() {
 
             .header-controls { display: flex; align-items: center; gap: 12px; }
             .pc-header-divider { width: 1.5px; height: 24px; background: var(--border); margin: 0 4px; }
-            
+
             .text-active { color: #10b981; }
             .text-inactive { color: #ef4444; }
 
             .pc-btn-outline-v2 { background: var(--bg-badge); color: var(--text-muted); border: 1.5px solid var(--border); width: 44px; height: 44px; border-radius: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
             .pc-btn-outline-v2:hover:not(:disabled) { background: var(--bg-card); border-color: var(--primary); color: var(--primary); transform: translateY(-2px); }
             .pc-btn-outline-v2:disabled { opacity: 0.5; cursor: not-allowed; }
+
+            .welcome-editor-shell { padding: 0 !important; overflow: hidden; min-height: 640px; }
+            .welcome-editor-layout { display: grid; grid-template-columns: 280px minmax(0, 1fr); min-height: 640px; }
+            .welcome-editor-sidebar { background: var(--bg-badge); border-right: 1px solid var(--border); padding: 24px; }
+            .welcome-editor-main { padding: 24px; background: var(--bg-card); overflow-y: auto; }
+            .welcome-editor-reset { margin-top: 24px; padding-top: 24px; border-top: 1px dashed var(--border); }
 
             /* Card V2 */
             .pc-card-v2 { background: var(--bg-card); border: 1px solid var(--border); border-radius: 28px; padding: 32px; box-shadow: var(--shadow-premium); }
@@ -390,6 +398,10 @@ export default function WelcomeConfig() {
             .v-stack { display: flex; flex-direction: column; }
             .animate { animation: slideUp 0.4s ease-out; }
             @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+            @media (max-width: 980px) {
+                .welcome-editor-layout { grid-template-columns: 1fr; }
+                .welcome-editor-sidebar { border-right: 0; border-bottom: 1px solid var(--border); }
+            }
         `}</style>
     </div>
   );

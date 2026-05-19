@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Skeleton from '../../../components/Skeleton';
 import api from '../../../utils/api';
-import { 
-    Save, 
-    Mic2, 
-    Settings2, 
-    Plus, 
-    Hash, 
+import {
+    Save,
+    Mic2,
+    Settings2,
+    Plus,
+    Hash,
     Power,
     RefreshCcw,
     Layout,
@@ -57,7 +57,7 @@ export default function TempVoiceConfig() {
         api.request(`/config/${guildId}/discord-data`),
         api.request(`/config/${guildId}/tempvoice/active`).catch(() => ({ data: [] }))
       ]);
-      
+
       if (configRes) setConfig(configRes.data || configRes);
       if (discordRes) {
         const discordData = discordRes || {};
@@ -182,14 +182,14 @@ export default function TempVoiceConfig() {
                     </div>
                 </div>
             </div>
-            
+
             <div className="header-controls">
                 <div className="pc-toggle-container-v2">
                     <label className="pc-toggle-v2">
-                        <input 
-                            type="checkbox" 
-                            checked={config.enabled} 
-                            onChange={() => setConfig({...config, enabled: !config.enabled})} 
+                        <input
+                            type="checkbox"
+                            checked={config.enabled}
+                            onChange={() => setConfig({...config, enabled: !config.enabled})}
                         />
                         <span className="pc-slider-v2"></span>
                     </label>
@@ -205,7 +205,7 @@ export default function TempVoiceConfig() {
         </header>
 
         {/* V2 Navigation Tabs */}
-        <nav className="pc-tabs-container-v2" style={{ marginBottom: '40px' }}>
+        <nav className="pc-tabs-container-v2" style={{ marginBottom: '24px' }}>
             <div className="pc-tabs-v2">
                 <button className={activeTab === 'settings' ? 'active' : ''} onClick={() => setActiveTab('settings')}>
                     <Settings2 size={16} /> <span>{t('tempvoice.tab_settings')}</span>
@@ -238,21 +238,21 @@ export default function TempVoiceConfig() {
                             <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
                                 <div className="pc-input-group-v2">
                                     <label>{t('tempvoice.generator_channel')}</label>
-                                    <DiscordSelector 
-                                        type="channel" 
-                                        options={channels} 
-                                        value={config.creatorChannelId || ''} 
-                                        onChange={val => setNested('creatorChannelId', val)} 
+                                    <DiscordSelector
+                                        type="channel"
+                                        options={channels}
+                                        value={config.creatorChannelId || ''}
+                                        onChange={val => setNested('creatorChannelId', val)}
                                     />
                                     <p style={{ margin: '8px 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t('tempvoice.generator_help')}</p>
                                 </div>
                                 <div className="pc-input-group-v2">
                                     <label>{t('tempvoice.category')}</label>
-                                    <DiscordSelector 
-                                        type="channel" 
-                                        options={categories} 
-                                        value={config.categoryId || ''} 
-                                        onChange={val => setNested('categoryId', val)} 
+                                    <DiscordSelector
+                                        type="channel"
+                                        options={categories}
+                                        value={config.categoryId || ''}
+                                        onChange={val => setNested('categoryId', val)}
                                     />
                                     <p style={{ margin: '8px 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t('tempvoice.category_help')}</p>
                                 </div>
@@ -279,11 +279,11 @@ export default function TempVoiceConfig() {
                                     <label>{t('tempvoice.name_template')}</label>
                                     <div className="pc-input-wrapper-v2" style={{ background: 'var(--bg-badge)', border: '1.5px solid var(--border)', borderRadius: '14px' }}>
                                         <MessageSquare size={16} className="input-icon-v2" style={{ marginLeft: '16px', color: 'var(--text-dim)' }} />
-                                        <input 
-                                            type="text" 
+                                        <input
+                                            type="text"
                                             style={{ width: '100%', border: 'none', background: 'transparent', padding: '14px 16px', fontWeight: 700 }}
-                                            value={config.channelNameTemplate || ''} 
-                                            onChange={e => setNested('channelNameTemplate', e.target.value)} 
+                                            value={config.channelNameTemplate || ''}
+                                            onChange={e => setNested('channelNameTemplate', e.target.value)}
                                             placeholder={t('tempvoice.name_placeholder')}
                                         />
                                     </div>
@@ -293,11 +293,11 @@ export default function TempVoiceConfig() {
                                     <label>{t('tempvoice.user_limit')}</label>
                                     <div className="pc-input-wrapper-v2" style={{ background: 'var(--bg-badge)', border: '1.5px solid var(--border)', borderRadius: '14px' }}>
                                         <Users size={16} className="input-icon-v2" style={{ marginLeft: '16px', color: 'var(--text-dim)' }} />
-                                        <input 
-                                            type="number" 
+                                        <input
+                                            type="number"
                                             style={{ width: '100%', border: 'none', background: 'transparent', padding: '14px 16px', fontWeight: 700 }}
-                                            value={config.defaultUserLimit || 0} 
-                                            onChange={e => setNested('defaultUserLimit', parseInt(e.target.value))} 
+                                            value={config.defaultUserLimit || 0}
+                                            onChange={e => setNested('defaultUserLimit', parseInt(e.target.value))}
                                         />
                                     </div>
                                     <p className="pc-hint-v2" style={{ marginTop: '8px' }}>{t('tempvoice.limit_hint')}</p>
@@ -310,15 +310,17 @@ export default function TempVoiceConfig() {
 
             {activeTab === 'system_messages' && (
                 <div className="v-stack animate slide-up">
-                    <SystemMessagesSection 
-                        config={config}
-                        onUpdate={setConfig}
-                        messages={[
-                            { key: 'not_owner', label: t('tempvoice.msg_not_owner'), placeholder: t('tempvoice.msg_not_owner') },
-                            { key: 'no_perms', label: t('tempvoice.msg_no_perms'), placeholder: t('tempvoice.msg_no_perms') },
-                            { key: 'cooldown', label: t('tempvoice.msg_cooldown'), placeholder: t('tempvoice.msg_cooldown') }
-                        ]}
-                    />
+                    <section className="pc-card-v2">
+                        <SystemMessagesSection
+                            config={config}
+                            onUpdate={setConfig}
+                            messages={[
+                                { key: 'not_owner', label: t('tempvoice.msg_not_owner'), placeholder: t('tempvoice.msg_not_owner') },
+                                { key: 'no_perms', label: t('tempvoice.msg_no_perms'), placeholder: t('tempvoice.msg_no_perms') },
+                                { key: 'cooldown', label: t('tempvoice.msg_cooldown'), placeholder: t('tempvoice.msg_cooldown') }
+                            ]}
+                        />
+                    </section>
                 </div>
             )}
 
@@ -350,20 +352,20 @@ export default function TempVoiceConfig() {
                                                     {editingRoomId === room.channelId ? (
                                                         <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginTop: '4px' }}>
                                                             <div className="pc-input-wrapper-v2" style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: '10px', width: '200px' }}>
-                                                                <input 
-                                                                    type="text" 
+                                                                <input
+                                                                    type="text"
                                                                     style={{ width: '100%', border: 'none', background: 'transparent', padding: '8px 12px', fontSize: '0.9rem', fontWeight: 700 }}
-                                                                    value={editName} 
-                                                                    onChange={e => setEditName(e.target.value)} 
+                                                                    value={editName}
+                                                                    onChange={e => setEditName(e.target.value)}
                                                                     placeholder={t('tempvoice.room_name')}
                                                                 />
                                                             </div>
                                                             <div className="pc-input-wrapper-v2" style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border)', borderRadius: '10px', width: '80px' }}>
-                                                                <input 
-                                                                    type="number" 
+                                                                <input
+                                                                    type="number"
                                                                     style={{ width: '100%', border: 'none', background: 'transparent', padding: '8px 12px', fontSize: '0.9rem', fontWeight: 700 }}
-                                                                    value={editLimit} 
-                                                                    onChange={e => setEditLimit(parseInt(e.target.value) || 0)} 
+                                                                    value={editLimit}
+                                                                    onChange={e => setEditLimit(parseInt(e.target.value) || 0)}
                                                                     min="0"
                                                                     max="99"
                                                                 />
@@ -383,7 +385,7 @@ export default function TempVoiceConfig() {
                                                             <span style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-heading)' }}>{room.name}</span>
                                                             <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)', fontWeight: 600, display: 'flex', gap: '8px', marginTop: '4px' }}>
                                                                 <span>ID: {room.channelId}</span>
-                                                                <span>•</span>
+                                                                <span>-</span>
                                                                 <span>{t('tempvoice.room_owner')}: <strong style={{ color: 'var(--text-muted)' }}>{room.ownerName || room.ownerId}</strong></span>
                                                             </span>
                                                         </>
@@ -397,15 +399,15 @@ export default function TempVoiceConfig() {
                                                         {t('tempvoice.room_users')}: {room.userCount || 0}
                                                     </span>
                                                     <span className="pc-tag-v2" style={{ fontSize: '0.75rem', fontWeight: 700, background: room.userLimit ? 'rgba(245, 158, 11, 0.1)' : 'rgba(16, 185, 129, 0.1)', color: room.userLimit ? '#f59e0b' : '#10b981' }}>
-                                                        {room.userLimit ? `${t('tempvoice.action_limit')}: ${room.userLimit}` : '∞ Unlimited'}
+                                                        {room.userLimit ? `${t('tempvoice.action_limit')}: ${room.userLimit}` : 'Unlimited'}
                                                     </span>
                                                 </div>
 
                                                 {editingRoomId !== room.channelId && (
                                                     <div style={{ display: 'flex', gap: '8px' }}>
-                                                        <button 
-                                                            className="pc-tag-v2" 
-                                                            style={{ cursor: 'pointer', background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--primary)' }} 
+                                                        <button
+                                                            className="pc-tag-v2"
+                                                            style={{ cursor: 'pointer', background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--primary)' }}
                                                             onClick={() => {
                                                                 setEditingRoomId(room.channelId);
                                                                 setEditName(room.name);
@@ -414,9 +416,9 @@ export default function TempVoiceConfig() {
                                                         >
                                                             {t('tempvoice.action_rename')}
                                                         </button>
-                                                        <button 
-                                                            className="pc-tag-v2" 
-                                                            style={{ cursor: 'pointer', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)' }} 
+                                                        <button
+                                                            className="pc-tag-v2"
+                                                            style={{ cursor: 'pointer', background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.2)' }}
                                                             onClick={() => handleDisconnect(room.channelId)}
                                                         >
                                                             {t('tempvoice.action_disconnect')}
@@ -436,14 +438,14 @@ export default function TempVoiceConfig() {
 
         <style jsx>{`
             .pc-premium-wrapper { padding: 32px; max-width: 1500px; margin: 0 auto; font-family: 'Inter', sans-serif; }
-            
+
             /* Header V2 */
             .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-card); padding: 24px; border-radius: 28px; box-shadow: var(--shadow-premium); border: 1px solid var(--border); }
             .header-info { display: flex; align-items: center; gap: 16px; }
             .pc-icon-box { width: 52px; height: 52px; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: #fff; }
             .pc-title-row { display: flex; flex-direction: column; gap: 6px; }
             .pc-title-row h1 { font-family: 'Inter', sans-serif; font-size: 1.8rem; font-weight: 700; margin: 0; color: var(--text-heading); letter-spacing: normal; }
-            
+
             .pc-status-tag-v2 { display: flex; align-items: center; gap: 6px; font-size: 0.6rem; font-weight: 700; padding: 4px 10px; border-radius: 100px;  width: fit-content; }
             .pc-status-tag-v2.on { background: rgba(14, 165, 233, 0.1); color: #0ea5e9; }
             .pc-status-tag-v2.off { background: var(--bg-badge); color: #ef4444; }
