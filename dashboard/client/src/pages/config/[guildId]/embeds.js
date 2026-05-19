@@ -254,7 +254,7 @@ export default function EmbedBuilder() {
                     </div>
                 </section>
 
-                <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 560px', gap: '32px' }}>
+                <div className="pc-layout-grid-v2 embeds-main-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 420px', gap: '24px' }}>
                     <div className="v-stack" style={{ gap: '32px' }}>
                         {/* Visual Designer */}
                         <section className="pc-card-v2 animate slide-up" style={{ padding: 0, animationDelay: '0.1s' }}>
@@ -262,7 +262,7 @@ export default function EmbedBuilder() {
                                 <div className="header-icon" style={{ background: 'rgba(16,185,129,0.08)', color: '#10b981', width: '36px', height: '36px' }}><Palette size={16} /></div>
                                 <h4 style={{ margin: 0, fontFamily: 'Inter', fontWeight: 700, color: 'var(--text-heading)' }}>{t('embeds.visual_designer')}</h4>
                             </div>
-                            <div className="pc-editor-wrapper-v2" style={{ padding: '32px' }}>
+                            <div className="pc-editor-wrapper-v2 embed-designer-wrapper" style={{ padding: '24px' }}>
                                 <EmbedEditor 
                                     embed={currentEmbed} 
                                     onChange={setCurrentEmbed} 
@@ -363,6 +363,20 @@ export default function EmbedBuilder() {
 
             .pc-btn-save-v2 { background: var(--bg-badge); color: var(--text-heading); border: 1.5px solid var(--border); padding: 12px 24px; border-radius: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; width: 100%; height: 56px; justify-content: center; }
             .pc-btn-save-v2:hover { background: var(--bg-card); border-color: var(--primary); color: var(--primary); }
+
+            .embeds-main-grid { grid-template-columns: minmax(0, 1fr) 420px !important; gap: 24px !important; }
+            .embed-designer-wrapper { overflow: hidden; }
+            .embed-designer-wrapper :global(.pc-editor-layout-v2) {
+                grid-template-columns: 1fr !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+            }
+            .embed-designer-wrapper :global(.pc-preview-sidebar-v2) {
+                position: static !important;
+            }
+            .embed-designer-wrapper :global(.pc-card-v2) {
+                min-width: 0 !important;
+            }
 
             /* Card V2 */
             .pc-card-v2 { background: var(--bg-card); border: 1px solid var(--border); border-radius: 28px; padding: 32px; box-shadow: var(--shadow-premium); }
