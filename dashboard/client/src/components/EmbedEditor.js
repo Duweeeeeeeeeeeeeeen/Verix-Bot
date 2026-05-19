@@ -229,7 +229,7 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
 
       <style jsx>{`
         .pc-embed-editor-v2 { width: 100%; }
-        .pc-editor-layout-v2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(360px, 480px); gap: 24px; align-items: start; max-width: 1180px; margin: 0 auto; }
+        .pc-editor-layout-v2 { display: grid; grid-template-columns: 1fr 664px; gap: 24px; align-items: start; max-width: 100%; margin: 0 auto; }
         .pc-embed-editor-v2.compact .pc-editor-layout-v2 { grid-template-columns: 1fr; max-width: 100%; margin: 0; }
         .pc-embed-editor-v2.compact .pc-preview-sidebar-v2 { position: static !important; }
         
@@ -309,7 +309,7 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
         }
         .pc-btn-upload-v2:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        @media (max-width: 1180px) { .pc-editor-layout-v2 { grid-template-columns: 1fr; } .pc-preview-sidebar-v2 { position: static; } }
+        @media (max-width: 1200px) { .pc-editor-layout-v2 { grid-template-columns: 1fr; } .pc-preview-sidebar-v2 { position: static; } }
         @media (max-width: 720px) {
           .pc-card-v2 { padding: 18px; }
           .field-entry-v2 { grid-template-columns: 1fr 32px; }

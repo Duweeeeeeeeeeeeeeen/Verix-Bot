@@ -287,7 +287,7 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
           grid-template-columns: 240px minmax(0, 1fr);
           gap: 20px;
           align-items: flex-start;
-          max-width: 1280px;
+          max-width: 1650px;
           margin: 0 auto;
         }
 
@@ -566,7 +566,7 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
           margin-bottom: 8px;
         }
 
-        @media (max-width: 1180px) {
+        @media (max-width: 1200px) {
           .manager-layout { grid-template-columns: 1fr; }
           .slug-sidebar { position: static; }
           .editor-header-v2 { flex-direction: column; }
