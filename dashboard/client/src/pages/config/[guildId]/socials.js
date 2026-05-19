@@ -264,14 +264,6 @@ export default function SocialsConfig() {
                         })}
                     </nav>
                 </div>
-
-                <div className="pc-pro-card-v2">
-                    <div className="pro-header-v2">
-                        <div className="pro-icon-v2"><Cpu size={18} /></div>
-                        <h4>{t('socials.edge_monitoring')}</h4>
-                    </div>
-                    <p>{t('socials.edge_desc')}</p>
-                </div>
             </aside>
 
             {/* V2 Main Platform Studio Area */}
