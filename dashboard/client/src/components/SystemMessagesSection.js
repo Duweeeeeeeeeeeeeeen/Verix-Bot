@@ -34,11 +34,11 @@ const SystemMessagesSection = ({
 
     return (
         <div className="system-messages-section">
-            <div className="section-header-v2 mb-6">
-                <h3 className="section-title-v2">{displayTitle}</h3>
-                <p className="section-description-v2">
-                    {displayDescription}
-                </p>
+            <div className="system-section-header">
+                <div>
+                    <h3>{displayTitle}</h3>
+                    <p>{displayDescription}</p>
+                </div>
             </div>
 
             <div className="system-messages-grid">
@@ -79,17 +79,42 @@ const SystemMessagesSection = ({
                     width: 100%;
                 }
 
+                .system-section-header {
+                    margin-bottom: 22px;
+                    display: flex;
+                    justify-content: space-between;
+                    gap: 16px;
+                }
+
+                .system-section-header h3 {
+                    margin: 0;
+                    color: var(--text-heading);
+                    font-size: 1.15rem;
+                    font-weight: 800;
+                    letter-spacing: 0;
+                }
+
+                .system-section-header p {
+                    margin: 6px 0 0;
+                    max-width: 760px;
+                    color: var(--text-muted);
+                    font-size: 0.9rem;
+                    font-weight: 650;
+                    line-height: 1.45;
+                }
+
                 .system-messages-grid {
                     display: grid;
-                    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-                    gap: 18px;
+                    grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+                    gap: 16px;
                 }
 
                 .system-message-card {
                     background: var(--bg-card);
-                    border: 1px solid var(--border-light);
-                    border-radius: 16px;
-                    padding: 18px;
+                    border: 1px solid var(--border);
+                    border-radius: 14px;
+                    padding: 16px;
+                    min-width: 0;
                 }
 
                 .message-label-row {
@@ -105,14 +130,20 @@ const SystemMessagesSection = ({
                     align-items: center;
                     gap: 8px;
                     min-width: 0;
+                    color: var(--text-heading);
+                    font-size: 0.88rem;
+                    font-weight: 750;
+                    letter-spacing: 0;
                 }
 
                 .system-message-textarea {
-                    min-height: 135px;
+                    width: 100%;
+                    min-height: 150px;
                     padding: 14px;
                     resize: vertical;
                     line-height: 1.5;
                     font-family: inherit;
+                    border-radius: 12px;
                 }
 
                 .system-message-key {
@@ -131,6 +162,10 @@ const SystemMessagesSection = ({
                 @media (max-width: 720px) {
                     .system-messages-grid {
                         grid-template-columns: 1fr;
+                    }
+
+                    .system-section-header {
+                        flex-direction: column;
                     }
                 }
             `}</style>

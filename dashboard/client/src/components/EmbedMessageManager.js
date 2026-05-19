@@ -283,7 +283,7 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
       <style jsx>{`
         .manager-layout {
           display: grid;
-          grid-template-columns: 220px minmax(0, 1fr);
+          grid-template-columns: 240px minmax(0, 1fr);
           gap: 20px;
           align-items: flex-start;
           max-width: 1280px;
@@ -297,7 +297,7 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
           overflow: hidden;
           position: sticky;
           top: 24px;
-          box-shadow: var(--shadow-premium);
+          box-shadow: none;
         }
 
         .sidebar-header {
@@ -446,11 +446,14 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
         }
 
         .editor-header-v2 {
-          margin-bottom: 22px;
+          margin-bottom: 18px;
           display: flex;
           justify-content: space-between;
-          align-items: flex-start;
-          padding: 0;
+          align-items: center;
+          padding: 18px 20px;
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          border-radius: 16px;
           gap: 16px;
         }
 
@@ -466,16 +469,19 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
         }
 
         .header-text-v2 h3 {
-          font-size: 1.35rem;
-          font-weight: 900;
+          font-size: 1.2rem;
+          font-weight: 800;
           margin-bottom: 6px;
+          color: var(--text-heading);
+          letter-spacing: 0;
         }
 
         .header-text-v2 p {
-          color: var(--text-dim);
-          font-size: 0.95rem;
+          color: var(--text-muted);
+          font-size: 0.9rem;
           max-width: 680px;
-          line-height: 1.5;
+          line-height: 1.45;
+          font-weight: 650;
         }
 
         .btn-save-all {
@@ -491,19 +497,25 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
           font-size: 0.9rem;
           cursor: pointer;
           transition: 0.2s;
-          box-shadow: var(--primary-glow);
+          box-shadow: none;
         }
 
-        .btn-save-all:hover {
+        .btn-save-all:hover:not(:disabled) {
           transform: translateY(-2px);
           filter: brightness(1.1);
+        }
+
+        .btn-save-all:disabled {
+          opacity: 0.65;
+          cursor: not-allowed;
+          transform: none;
         }
 
         .editor-card-p {
           background: var(--bg-card);
           border: 1px solid var(--border);
           border-radius: 16px;
-          padding: 20px;
+          padding: 18px;
           box-shadow: none;
         }
 
