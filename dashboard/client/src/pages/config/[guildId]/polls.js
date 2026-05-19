@@ -341,7 +341,7 @@ export default function PollsConfig() {
                                     <button onClick={() => setPreviewIsMobile(true)} style={{ border: 'none', background: previewIsMobile ? 'rgba(99,102,241,0.1)' : 'transparent', color: previewIsMobile ? 'var(--primary)' : 'var(--text-dim)', padding: '10px', borderRadius: '12px', cursor: 'pointer', transition: '0.2s' }}><Smartphone size={18} /></button>
                                 </div>
                             </div>
-                            <div style={{ padding: '40px', background: previewTheme === 'dark' ? '#0f172a' : 'var(--bg-badge)', minHeight: '480px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <div style={{ padding: '40px 20px', background: previewTheme === 'dark' ? '#0f172a' : 'var(--bg-badge)', minHeight: '480px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflowX: 'auto' }}>
                                 <EmbedPreview data={previewPollEmbed} isMobile={previewIsMobile} theme={previewTheme} />
                             </div>
                             <div style={{ padding: '20px 32px', background: 'var(--bg-card)', borderTop: '1.5px solid var(--border)', display: 'flex', justifyContent: 'space-between' }}>
