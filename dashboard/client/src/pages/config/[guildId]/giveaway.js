@@ -4,7 +4,7 @@ import Skeleton from '../../../components/Skeleton';
 import api from '../../../utils/api';
 import { useT } from '../../../contexts/LanguageContext';
 import { 
-    Save, Gift, Trophy, Clock, Users, Trash2, Plus, RefreshCcw, Settings2, Shield, Power, Palette, Zap, 
+    Save, Gift, Trophy, Clock, Users, Trash2, Plus, RefreshCcw, Settings2, Shield, Power, Palette, Zap, Flame,
     Info, MessageSquare, ExternalLink, History, X, Calendar, ChevronRight, AlertCircle, Square, 
     Monitor, Smartphone, Sun, Moon, ArrowRight, Search, Sparkles, Layout, CheckCircle2, Box, Send, Star,
     MousePointer2, Timer, Award, UserCheck, ShieldAlert, Layers, Target, Eye, EyeOff, Wand2, RefreshCw, GripVertical, RotateCcw
@@ -253,10 +253,7 @@ export default function GiveawayConfig() {
                             </div>
                             <div className="card-body-v2">
                                 <div className="pc-input-group-v2">
-                                    <div className="pc-label-row">
-                                        <label>{t('giveaway.prize_name')}</label>
-                                        <HelpTooltip text={t('giveaway.prize_help')} />
-                                    </div>
+                                    <label>{t('giveaway.prize_name')}</label>
                                     <div className="pc-input-modern-v2">
                                         <Gift size={18} />
                                         <input value={newGw.prize} onChange={e => setNewGw({...newGw, prize: e.target.value})} placeholder={t('giveaway.prize_placeholder')} />
@@ -264,33 +261,56 @@ export default function GiveawayConfig() {
                                 </div>
                                 <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr', gap: '20px', marginTop: '24px' }}>
                                     <div className="pc-input-group-v2">
-                                        <div className="pc-label-row">
-                                            <label>{t('giveaway.target_channel')}</label>
-                                            <HelpTooltip text={t('giveaway.launch_channel_help')} />
-                                        </div>
+                                        <label>{t('giveaway.target_channel')}</label>
                                         <DiscordSelector type="channel" options={channels} value={newGw.channelId} onChange={v => setNewGw({...newGw, channelId: v})} />
                                     </div>
                                     <div className="pc-input-group-v2">
                                         <label>{t('giveaway.winners_count')}</label>
-                                        <input className="pc-input-modern-v2" type="number" value={newGw.winnerCount} onChange={e => setNewGw({...newGw, winnerCount: parseInt(e.target.value) || 1})} min="1" max="50" />
+                                        <div className="pc-input-modern-v2">
+                                            <Trophy size={18} />
+                                            <input type="number" value={newGw.winnerCount} onChange={e => setNewGw({...newGw, winnerCount: parseInt(e.target.value) || 1})} min="1" max="50" style={{ width: '100%' }} />
+                                        </div>
                                     </div>
                                     <div className="pc-input-group-v2">
-                                        <div className="pc-label-row">
-                                            <label>{t('giveaway.min_level_req')}</label>
-                                            <HelpTooltip text={t('giveaway.min_level_help')} />
+                                        <label>{t('giveaway.min_level_req')}</label>
+                                        <div className="pc-input-modern-v2">
+                                            <Flame size={18} />
+                                            <input type="number" value={newGw.minLevel !== undefined ? newGw.minLevel : 0} onChange={e => setNewGw({...newGw, minLevel: parseInt(e.target.value) || 0})} min="0" style={{ width: '100%' }} />
                                         </div>
-                                        <input className="pc-input-modern-v2" type="number" value={newGw.minLevel !== undefined ? newGw.minLevel : 0} onChange={e => setNewGw({...newGw, minLevel: parseInt(e.target.value) || 0})} min="0" />
                                     </div>
                                 </div>
                                 <div className="pc-input-group-v2" style={{ marginTop: '24px' }}>
                                     <label>{t('giveaway.duration')}</label>
-                                    <input className="pc-input-modern-v2" type="number" value={newGw.duration} onChange={e => setNewGw({...newGw, duration: parseInt(e.target.value)})} min="1" />
+                                    <div className="pc-input-modern-v2">
+                                        <Clock size={18} />
+                                        <input type="number" value={newGw.duration} onChange={e => setNewGw({...newGw, duration: parseInt(e.target.value) || 60})} min="1" style={{ width: '100%' }} />
+                                    </div>
                                     <div className="pc-time-presets-v2" style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
-                                        {[60, 1440, 10080].map(m => (
-                                            <button key={m} onClick={() => setNewGw({...newGw, duration: m})} className="pc-tag-v2" style={{ cursor: 'pointer' }}>
-                                                {m === 60 ? '1h' : m === 1440 ? '24h' : '1w'}
-                                            </button>
-                                        ))}
+                                        {[60, 1440, 10080].map(m => {
+                                            const isActive = newGw.duration === m;
+                                            return (
+                                                <button 
+                                                    key={m} 
+                                                    onClick={() => setNewGw({...newGw, duration: m})} 
+                                                    className={`pc-tag-v2 ${isActive ? 'active' : ''}`} 
+                                                    style={{ 
+                                                        cursor: 'pointer',
+                                                        background: isActive ? 'linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%)' : 'rgba(255, 255, 255, 0.03)',
+                                                        color: isActive ? '#fff' : 'var(--text-muted)',
+                                                        borderColor: isActive ? 'var(--primary)' : 'var(--border)',
+                                                        fontWeight: isActive ? '700' : '500',
+                                                        boxShadow: isActive ? '0 4px 12px var(--primary-glow)' : 'none',
+                                                        transition: 'all 0.2s ease',
+                                                        padding: '8px 16px',
+                                                        borderRadius: '8px',
+                                                        border: '1px solid var(--border)',
+                                                        transform: isActive ? 'scale(1.05)' : 'none'
+                                                    }}
+                                                >
+                                                    {m === 60 ? '1h' : m === 1440 ? '24h' : '1w'}
+                                                </button>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             </div>

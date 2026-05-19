@@ -30,9 +30,11 @@ export default function EmbedPreviewContainer({ data, style = {}, children }) {
                 minHeight: '450px', 
                 display: 'flex', 
                 alignItems: 'center', 
-                justifyContent: 'center',
+                justifyContent: isMobile ? 'center' : 'flex-start',
+                overflowX: 'auto',
                 transition: 'all 0.3s ease',
-                position: 'relative'
+                position: 'relative',
+                width: '100%'
             }}>
                 <EmbedPreview data={data} isMobile={isMobile} theme={theme} />
             </div>

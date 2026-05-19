@@ -60,13 +60,16 @@ export default function EmbedPreview({ data, isMobile = false, theme = 'dark' })
       fontFamily: '"Inter", "gg sans", "Whitney", "Helvetica Neue", Helvetica, Arial, sans-serif',
       color: colors.text_normal,
       fontSize: '0.95rem',
-      maxWidth: isMobile ? '360px' : '100%',
+      width: isMobile ? '100%' : '624px',
+      minWidth: isMobile ? 'auto' : '624px',
+      maxWidth: isMobile ? '360px' : 'none',
       boxShadow: 'var(--shadow-premium)',
       border: '1.5px solid var(--border)',
       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       margin: '0 auto',
       position: 'relative',
-      overflow: 'hidden'
+      overflow: 'hidden',
+      flexShrink: 0
     }}>
       <div style={{ display: 'flex', gap: '16px' }}>
          {/* Avatar Simulation */}
@@ -113,6 +116,8 @@ export default function EmbedPreview({ data, isMobile = false, theme = 'dark' })
                 borderRadius: '8px',
                 padding: '16px 20px',
                 marginTop: '12px',
+                width: isMobile ? '100%' : '520px',
+                minWidth: isMobile ? 'auto' : '520px',
                 maxWidth: '520px',
                 position: 'relative',
                 display: 'flex',

@@ -14,7 +14,7 @@ router.get('/:guildId', async (req, res) => {
         // Check tier
         const guild = await Guild.findOne({ guildId });
         if (!guild || guild.premiumTier !== 'platinum') {
-            return res.status(403).json({ success: false, error: 'Questa funzione richiede un abbonamento Platinum.' });
+            return res.json({ success: true, data: { bot: null, platinumRequired: true } });
         }
 
         const bot = await PrivateBot.findOne({ guildId });

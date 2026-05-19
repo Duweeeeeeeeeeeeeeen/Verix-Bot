@@ -163,27 +163,57 @@ router.post('/youtube/:channelId', express.text({ type: ['application/atom+xml',
             // Multi-bot protection
             if (client.multiBotManager && !client.multiBotManager.shouldHandle(config.guildId, client)) continue;
 
-            // Avoid duplicates
-            if (trackingAccount.lastPostId === latestVideo.id) continue;
+            let configChanged = false;
 
-            logger.info(`[WebSub] Received push notification for ${channelId} in guild ${config.guildId}`);
-
-            // Fetch profile image if missing
-            if (!trackingAccount.cachedProfileImage) {
-                trackingAccount.cachedProfileImage = await client.socialManager.fetchYouTubeProfileImage(channelId);
+            // Initialize seenPostIds if empty and lastPostId is set, or if lastPostId is not set
+            if (!trackingAccount.seenPostIds) {
+                trackingAccount.seenPostIds = [];
+            }
+            if (trackingAccount.lastPostId && trackingAccount.seenPostIds.length === 0) {
+                trackingAccount.seenPostIds.push(trackingAccount.lastPostId);
+                configChanged = true;
             }
 
-            await client.socialManager.handleSocialPost(config.guildId, platformConfig, trackingAccount, {
-                title: latestVideo.title,
-                url: latestVideo.link,
-                author: feed.title || latestVideo.author || trackingAccount.username,
-                thumbnail: `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`,
-                fallbackThumbnail: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
-                profileImage: trackingAccount.cachedProfileImage
-            }, 'YouTube');
+            for (const video of feed.items) {
+                const isDuplicate = trackingAccount.seenPostIds.includes(video.id) || video.id === trackingAccount.lastPostId;
+                const pubTime = video.isoDate ? new Date(video.isoDate).getTime() : (video.pubDate ? new Date(video.pubDate).getTime() : 0);
+                const isRecent = !pubTime || (Date.now() - pubTime < 48 * 60 * 60 * 1000); // 48 hours
 
-            trackingAccount.lastPostId = latestVideo.id;
-            await config.save();
+                if (!isDuplicate) {
+                    if (isRecent) {
+                        logger.info(`[WebSub] Processing new video push for ${channelId} in guild ${config.guildId}: ${video.title}`);
+
+                        // Fetch profile image if missing
+                        if (!trackingAccount.cachedProfileImage) {
+                            trackingAccount.cachedProfileImage = await client.socialManager.fetchYouTubeProfileImage(channelId);
+                        }
+
+                        const currentVideoId = video.id.replace('yt:video:', '');
+                        await client.socialManager.handleSocialPost(config.guildId, platformConfig, trackingAccount, {
+                            title: video.title,
+                            url: video.link,
+                            author: feed.title || video.author || trackingAccount.username,
+                            thumbnail: `https://i.ytimg.com/vi/${currentVideoId}/maxresdefault.jpg`,
+                            fallbackThumbnail: `https://i.ytimg.com/vi/${currentVideoId}/hqdefault.jpg`,
+                            profileImage: trackingAccount.cachedProfileImage
+                        }, 'YouTube');
+
+                        trackingAccount.lastPostId = video.id;
+                    } else {
+                        logger.info(`[WebSub] Skipping push of old video for ${channelId} in guild ${config.guildId}: ${video.title}`);
+                    }
+
+                    trackingAccount.seenPostIds.push(video.id);
+                    if (trackingAccount.seenPostIds.length > 20) {
+                        trackingAccount.seenPostIds.shift();
+                    }
+                    configChanged = true;
+                }
+            }
+
+            if (configChanged) {
+                await config.save();
+            }
         }
     } catch (error) {
         logger.error('[WebSub] Error processing push notification:', error.message);

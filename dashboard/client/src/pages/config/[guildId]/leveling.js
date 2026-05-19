@@ -407,14 +407,57 @@ export default function LevelingConfigPage() {
                                 </div>
                             </div>
                         </section>
+                    </div>
 
-                        <section className="pc-card-v2 animate slide-up" style={{ animationDelay: '0.18s' }}>
+                    {/* Right Sidebar Column */}
+                    <div className="v-stack animate slide-up" style={{ gap: '32px' }}>
+                        {/* Premium System Preview Card */}
+                        <section className="pc-card-v2">
+                            <div className="card-header-v2">
+                                <div className="header-icon" style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}><Star size={18} /></div>
+                                <h3 style={{ margin: 0 }}>Anteprima Sistema</h3>
+                            </div>
+                            <div className="card-body-v2" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', borderRadius: '16px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Status Modulo</span>
+                                        <span style={{ 
+                                            fontSize: '0.75rem', fontWeight: '800', padding: '4px 10px', borderRadius: '100px',
+                                            background: config.enabled ? 'rgba(16, 185, 129, 0.1)' : 'var(--bg-badge)',
+                                            color: config.enabled ? '#10b981' : 'var(--text-muted)'
+                                        }}>
+                                            {config.enabled ? 'ATTIVO' : 'DISATTIVATO'}
+                                        </span>
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>XP per Messaggio</span>
+                                        <span style={{ fontSize: '0.9rem', fontWeight: '700', color: 'var(--text-heading)' }}>~{Math.round(15 * (config.xpRate || 1))} XP</span>
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Moltiplicatore Attivo</span>
+                                        <span style={{ fontSize: '0.9rem', fontWeight: '700', color: '#f59e0b' }}>x{config.xpMultiplier || 1}</span>
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Ricompense Ruoli</span>
+                                        <span style={{ fontSize: '0.9rem', fontWeight: '700', color: 'var(--text-heading)' }}>{(config.roleRewards || []).length} Ruoli</span>
+                                    </div>
+                                </div>
+                                
+                                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', background: 'rgba(245, 158, 11, 0.05)', border: '1px solid rgba(245, 158, 11, 0.1)', padding: '16px', borderRadius: '12px', display: 'flex', gap: '10px' }}>
+                                    <Trophy size={18} style={{ color: '#f59e0b', flexShrink: 0 }} />
+                                    <span><strong>Suggerimento:</strong> Assicurati di impostare il ruolo del bot Verix più in alto rispetto ai ruoli di ricompensa nella lista ruoli di Discord, altrimenti non potrà assegnarli!</span>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* Other Rewards */}
+                        <section className="pc-card-v2">
                             <div className="card-header-v2">
                                 <div className="header-icon"><Trophy size={18} /></div>
                                 <h3 style={{ margin: 0 }}>{t('leveling.other_rewards')}</h3>
                             </div>
                             <div className="card-body-v2">
-                                <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                                <div className="v-stack" style={{ gap: '20px' }}>
                                     <div className="pc-input-group-v2">
                                         <label>{t('leveling.giveaway_reward')}</label>
                                         <input
@@ -439,9 +482,10 @@ export default function LevelingConfigPage() {
                             </div>
                         </section>
 
-                        <section className="pc-card-v2 animate slide-up" style={{ animationDelay: '0.2s' }}>
+                        {/* Filters & Restrictions */}
+                        <section className="pc-card-v2">
                             <div className="card-header-v2">
-                                <div className="header-icon" style={{ background: '#fef2f2', color: '#ef4444' }}><Shield size={18} /></div>
+                                <div className="header-icon" style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444' }}><Shield size={18} /></div>
                                 <h3 style={{ margin: 0 }}>Filtri & Restrizioni</h3>
                             </div>
                             <div className="card-body-v2">

@@ -300,7 +300,7 @@ export default function BrandingPage() {
                                             </div>
                                             <div style={{ marginTop: '24px', background: 'rgba(99, 102, 241, 0.05)', padding: '24px', borderRadius: '22px', border: '1.5px solid rgba(99, 102, 241, 0.2)', display: 'flex', gap: '20px', alignItems: 'center' }}>
                                                 <Info size={24} color="#6366f1" style={{ flexShrink: 0 }} />
-                                                <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 600, lineHeight: 1.6 }} dangerouslySetInnerHTML={{ __html: t('wl.nick_desc') }} />
+                                                <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 600, lineHeight: 1.6 }} dangerouslySetInnerHTML={{ __html: (t('wl.nick_desc') || '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') }} />
                                             </div>
                                         </div>
                                 </div>

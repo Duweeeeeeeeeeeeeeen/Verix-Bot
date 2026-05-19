@@ -256,37 +256,66 @@ export class SocialManager {
                 try {
                     const feed = await parseRssUrl(feedUrl);
                     if (feed && feed.items && feed.items.length > 0) {
-                        const latestVideo = feed.items[0];
-                        
-                        if (latestVideo.id !== account.lastPostId) {
-                            if (!account.lastPostId) {
-                                logger.info(`[Socials/YouTube] Initialized lastPostId for ${account.username} to ${latestVideo.id} without notification`);
-                                account.lastPostId = latestVideo.id;
-                                changed = true;
-                                continue;
-                            }
-
-                            // Attempt to fetch profile image if missing
-                            if (!account.cachedProfileImage) {
-                                account.cachedProfileImage = await this.fetchYouTubeProfileImage(username);
-                            }
-
-                            // NEW VIDEO detected
-                            const videoId = latestVideo.id.replace('yt:video:', '');
-                            await this.handleSocialPost(guildId, platformConfig, account, {
-                                title: latestVideo.title,
-                                url: latestVideo.link,
-                                author: feed.title,
-                                thumbnail: `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`,
-                                fallbackThumbnail: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
-                                profileImage: account.cachedProfileImage
-                            }, 'YouTube');
-                            account.lastPostId = latestVideo.id;
+                        // Ensure seenPostIds is initialized
+                        if (!account.seenPostIds) {
+                            account.seenPostIds = [];
+                        }
+                        if (account.lastPostId && account.seenPostIds.length === 0) {
+                            account.seenPostIds.push(account.lastPostId);
                             changed = true;
+                        }
+
+                        if (!account.lastPostId) {
+                            const latestVideo = feed.items[0];
+                            logger.info(`[Socials/YouTube] Initialized lastPostId for ${account.username} to ${latestVideo.id} without notification`);
+                            account.lastPostId = latestVideo.id;
+                            account.seenPostIds = feed.items.map(item => item.id).filter(Boolean);
+                            changed = true;
+                            continue;
+                        }
+
+                        // Process items in reverse (oldest first) so they are posted in chronological order
+                        const itemsToProcess = [...feed.items].reverse();
+                        for (const video of itemsToProcess) {
+                            const isDuplicate = account.seenPostIds.includes(video.id) || video.id === account.lastPostId;
+                            const pubTime = video.isoDate ? new Date(video.isoDate).getTime() : (video.pubDate ? new Date(video.pubDate).getTime() : 0);
+                            const isRecent = !pubTime || (Date.now() - pubTime < 48 * 60 * 60 * 1000); // 48 hours
+
+                            if (!isDuplicate) {
+                                if (isRecent) {
+                                    // Attempt to fetch profile image if missing
+                                    if (!account.cachedProfileImage) {
+                                        account.cachedProfileImage = await this.fetchYouTubeProfileImage(username);
+                                    }
+
+                                    // NEW VIDEO detected
+                                    const videoId = video.id.replace('yt:video:', '');
+                                    logger.info(`[Socials/YouTube] New video detected: ${video.title} (${video.id}) for guild ${guildId}`);
+                                    
+                                    await this.handleSocialPost(guildId, platformConfig, account, {
+                                        title: video.title,
+                                        url: video.link,
+                                        author: feed.title,
+                                        thumbnail: `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`,
+                                        fallbackThumbnail: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+                                        profileImage: account.cachedProfileImage
+                                    }, 'YouTube');
+                                    
+                                    account.lastPostId = video.id;
+                                } else {
+                                    logger.debug(`[Socials/YouTube] Skipping old video upload/edit: ${video.title} (${video.id})`);
+                                }
+
+                                account.seenPostIds.push(video.id);
+                                if (account.seenPostIds.length > 20) {
+                                    account.seenPostIds.shift();
+                                }
+                                changed = true;
+                            }
                         }
                     }
                 } catch (feedErr) {
-                    logger.warn(`[Socials/YouTube] Could not fetch feed for ${account.username}`);
+                    logger.warn(`[Socials/YouTube] Could not fetch feed for ${account.username}: ${feedErr.message}`);
                 }
             }
         } catch (error) {
@@ -343,6 +372,15 @@ export class SocialManager {
                     }
 
                     if (feed && feed.items && feed.items.length > 0) {
+                        // Ensure seenPostIds is initialized
+                        if (!account.seenPostIds) {
+                            account.seenPostIds = [];
+                        }
+                        if (account.lastPostId && account.seenPostIds.length === 0) {
+                            account.seenPostIds.push(account.lastPostId);
+                            changed = true;
+                        }
+
                         const latestItem = feed.items[0];
 
                         if (this.isBridgeErrorItem(latestItem)) {
@@ -356,89 +394,109 @@ export class SocialManager {
                             changed = true;
                         }
                         
-                        // ID comparison to avoid duplicates
-                        const itemId = latestItem.id || latestItem.guid || latestItem.link;
+                        // Process items in reverse (oldest first) so they are posted in chronological order
+                        const itemsToProcess = [...feed.items].reverse();
+                        for (const item of itemsToProcess) {
+                            const itemId = item.id || item.guid || item.link;
+                            if (!itemId) continue;
 
-                        if (itemId !== account.lastPostId) {
-                            if (!account.lastPostId) {
-                                logger.info(`[Socials/${platformName}] Initialized lastPostId for ${username} to ${itemId} without notification`);
-                                account.lastPostId = itemId;
-                                changed = true;
-                                continue;
-                            }
+                            const isDuplicate = account.seenPostIds.includes(itemId) || itemId === account.lastPostId;
+                            const pubTime = item.isoDate ? new Date(item.isoDate).getTime() : (item.pubDate ? new Date(item.pubDate).getTime() : 0);
+                            const isRecent = !pubTime || (Date.now() - pubTime < 48 * 60 * 60 * 1000); // 48 hours
 
-                            // NEW POST detected
-                            // 2. Extract thumbnail more aggressively
-                            let thumbnail = latestItem.enclosure?.url || latestItem.thumbnail || '';
-                            
-                            // Check media fields if available (including mapped custom fields)
-                            if (!thumbnail) {
-                                const mContent = latestItem.mediaContent || latestItem['media:content'];
-                                if (mContent) {
-                                    thumbnail = Array.isArray(mContent) 
-                                        ? mContent[0]?.$.url 
-                                        : mContent?.$.url;
+                            if (!isDuplicate) {
+                                if (!account.lastPostId) {
+                                    logger.info(`[Socials/${platformName}] Initialized lastPostId for ${username} to ${itemId} without notification`);
+                                    account.lastPostId = itemId;
+                                    account.seenPostIds = feed.items.map(i => i.id || i.guid || i.link).filter(Boolean);
+                                    changed = true;
+                                    break; // Stop loop as we just initialized
                                 }
-                            }
 
-                            if (!thumbnail) {
-                                const mThumbnail = latestItem.mediaThumbnail || latestItem['media:thumbnail'];
-                                if (mThumbnail) {
-                                    thumbnail = Array.isArray(mThumbnail)
-                                        ? mThumbnail[0]?.$.url
-                                        : mThumbnail?.$.url;
-                                }
-                            }
-
-                            // Support for media:group (common in some bridges)
-                            if (!thumbnail) {
-                                const mGroup = latestItem.mediaGroup || latestItem['media:group'];
-                                if (mGroup) {
-                                    const media = mGroup.mediaContent || mGroup['media:content'] || mGroup.mediaThumbnail || mGroup['media:thumbnail'];
-                                    if (media) {
-                                        thumbnail = Array.isArray(media) ? media[0]?.$.url : media?.$.url;
+                                if (isRecent) {
+                                    // NEW POST detected
+                                    // Extract thumbnail more aggressively
+                                    let thumbnail = item.enclosure?.url || item.thumbnail || '';
+                                    
+                                    // Check media fields if available (including mapped custom fields)
+                                    if (!thumbnail) {
+                                        const mContent = item.mediaContent || item['media:content'];
+                                        if (mContent) {
+                                            thumbnail = Array.isArray(mContent) 
+                                                ? mContent[0]?.$.url 
+                                                : mContent?.$.url;
+                                        }
                                     }
+
+                                    if (!thumbnail) {
+                                        const mThumbnail = item.mediaThumbnail || item['media:thumbnail'];
+                                        if (mThumbnail) {
+                                            thumbnail = Array.isArray(mThumbnail)
+                                                ? mThumbnail[0]?.$.url
+                                                : mThumbnail?.$.url;
+                                        }
+                                    }
+
+                                    // Support for media:group (common in some bridges)
+                                    if (!thumbnail) {
+                                        const mGroup = item.mediaGroup || item['media:group'];
+                                        if (mGroup) {
+                                            const media = mGroup.mediaContent || mGroup['media:content'] || mGroup.mediaThumbnail || mGroup['media:thumbnail'];
+                                            if (media) {
+                                                thumbnail = Array.isArray(media) ? media[0]?.$.url : media?.$.url;
+                                            }
+                                        }
+                                    }
+
+                                    if (!thumbnail) {
+                                        const content = item.content || item.contentSnippet || '';
+                                        // Support both double and single quotes, various attributes, and data-src
+                                        const imgMatch = content.match(/<img[^>]+(?:src|data-src|original-src)=["']([^"']+)["']/i);
+                                        if (imgMatch) thumbnail = imgMatch[1];
+                                    }
+                                    
+                                    // Last resort for Instagram/Twitter: if we have a link, try to use a proxy for the image if it's missing
+                                    if (!thumbnail && item.link) {
+                                        if (item.link.includes('instagram.com')) {
+                                            thumbnail = item.link.replace('instagram.com', 'ddinstagram.com').replace('/p/', '/p/show/');
+                                        } else if (item.link.includes('twitter.com') || item.link.includes('x.com')) {
+                                            thumbnail = item.link.replace(/(twitter\.com|x\.com)/, 'fixupx.com').replace('/status/', '/status/show/');
+                                        }
+                                    }
+
+                                    if (!thumbnail) {
+                                        logger.debug(`[Socials/${platformName}] Could not find thumbnail for item: ${item.title}`);
+                                    }
+
+                                    const isVideo = item.enclosure?.type?.includes('video') || 
+                                                  item.content?.includes('<video') || 
+                                                  item.link?.includes('/video/') ||
+                                                  item.title?.toLowerCase().includes('video') ||
+                                                  item.title?.toLowerCase().includes('reel');
+
+                                    logger.info(`[Socials/${platformName}] New post detected: ${item.title} (${itemId}) for guild ${guildId}`);
+
+                                    await this.handleSocialPost(guildId, platformConfig, account, {
+                                        title: item.title || 'Nuovo post!',
+                                        url: item.link,
+                                        author: feed.title || username,
+                                        description: item.contentSnippet || item.content?.replace(/<[^>]*>/g, '').substring(0, 500) || '',
+                                        thumbnail: thumbnail,
+                                        isVideo: isVideo,
+                                        profileImage: feed.image?.url || feed.itunes?.image
+                                    }, platformName);
+
+                                    account.lastPostId = itemId;
+                                } else {
+                                    logger.debug(`[Socials/${platformName}] Skipping old post: ${item.title} (${itemId})`);
                                 }
-                            }
 
-                            if (!thumbnail) {
-                                const content = latestItem.content || latestItem.contentSnippet || '';
-                                // Support both double and single quotes, various attributes, and data-src
-                                const imgMatch = content.match(/<img[^>]+(?:src|data-src|original-src)=["']([^"']+)["']/i);
-                                if (imgMatch) thumbnail = imgMatch[1];
-                            }
-                            
-                            // Last resort for Instagram/Twitter: if we have a link, try to use a proxy for the image if it's missing
-                            if (!thumbnail && latestItem.link) {
-                                if (latestItem.link.includes('instagram.com')) {
-                                    thumbnail = latestItem.link.replace('instagram.com', 'ddinstagram.com').replace('/p/', '/p/show/');
-                                } else if (latestItem.link.includes('twitter.com') || latestItem.link.includes('x.com')) {
-                                    thumbnail = latestItem.link.replace(/(twitter\.com|x\.com)/, 'fixupx.com').replace('/status/', '/status/show/');
+                                account.seenPostIds.push(itemId);
+                                if (account.seenPostIds.length > 20) {
+                                    account.seenPostIds.shift();
                                 }
+                                changed = true;
                             }
-
-                            if (!thumbnail) {
-                                logger.debug(`[Socials/${platformName}] Could not find thumbnail for item: ${latestItem.title}`);
-                            }
-
-                            const isVideo = latestItem.enclosure?.type?.includes('video') || 
-                                          latestItem.content?.includes('<video') || 
-                                          latestItem.link?.includes('/video/') ||
-                                          latestItem.title?.toLowerCase().includes('video') ||
-                                          latestItem.title?.toLowerCase().includes('reel');
-
-                            await this.handleSocialPost(guildId, platformConfig, account, {
-                                title: latestItem.title || 'Nuovo post!',
-                                url: latestItem.link,
-                                author: feed.title || username,
-                                description: latestItem.contentSnippet || latestItem.content?.replace(/<[^>]*>/g, '').substring(0, 500) || '',
-                                thumbnail: thumbnail,
-                                isVideo: isVideo,
-                                profileImage: feed.image?.url || feed.itunes?.image
-                            }, platformName);
-
-                            account.lastPostId = itemId;
-                            changed = true;
                         }
                     }
                 } catch (feedErr) {

@@ -12,6 +12,31 @@ class ReactionRoleManager {
     }
 
     /**
+     * Parse and clean emoji strings to extract ID for custom emojis,
+     * or return the raw string if it's a unicode/standard emoji.
+     */
+    getCleanEmoji(emojiStr) {
+        if (!emojiStr) return '';
+        const clean = emojiStr.trim();
+        // Match <:name:id> or <a:name:id>
+        const customMatch = clean.match(/^<?a?:?([a-zA-Z0-9_]+):([0-9]+)>?$/);
+        if (customMatch) {
+            return customMatch[2]; // Return only the numeric ID
+        }
+        // Match :name:id (without brackets)
+        const nameIdMatch = clean.match(/^([a-zA-Z0-9_]+):([0-9]+)$/);
+        if (nameIdMatch) {
+            return nameIdMatch[2]; // Return only the numeric ID
+        }
+        // Match pure numeric ID
+        if (/^[0-9]+$/.test(clean)) {
+            return clean;
+        }
+        // Standard Unicode emoji
+        return clean;
+    }
+
+    /**
      * Handle button interactions for reaction roles.
      * Expected customId format: rr_toggle_{panelId}_{roleId}
      */
@@ -80,7 +105,10 @@ class ReactionRoleManager {
         const panel = config.panels.find(p => p.messageId === messageId);
         if (!panel) return;
 
-        const roleMapping = panel.roles.find(r => r.emoji === emoji || r.emoji === reaction.emoji.name);
+        const roleMapping = panel.roles.find(r => {
+            const cleanConfigEmoji = this.getCleanEmoji(r.emoji);
+            return cleanConfigEmoji === emoji || cleanConfigEmoji === reaction.emoji.name;
+        });
         if (!roleMapping) return;
 
         const guild = reaction.message.guild;
@@ -144,7 +172,10 @@ class ReactionRoleManager {
                     .setLabel(r.label || 'Role')
                     .setStyle(styleMap[r.style] || ButtonStyle.Primary);
                 
-                if (r.emoji && r.emoji.trim()) btn.setEmoji(r.emoji);
+                if (r.emoji && r.emoji.trim()) {
+                    const cleanEmoji = this.getCleanEmoji(r.emoji);
+                    btn.setEmoji(cleanEmoji);
+                }
                 
                 currentRow.addComponents(btn);
             });
@@ -168,7 +199,10 @@ class ReactionRoleManager {
             // If it's REACTION type, add reactions
             if (panel.type === 'REACTION') {
                 for (const r of panel.roles) {
-                    if (r.emoji) await message.react(r.emoji).catch(() => null);
+                    if (r.emoji) {
+                        const cleanEmoji = this.getCleanEmoji(r.emoji);
+                        if (cleanEmoji) await message.react(cleanEmoji).catch(() => null);
+                    }
                 }
             }
 
