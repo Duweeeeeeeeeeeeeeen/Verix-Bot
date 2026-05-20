@@ -289,7 +289,7 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
         .preview-drawer-backdrop { position: absolute; inset: 0; border: 0; background: rgba(15, 23, 42, 0.42); cursor: pointer; }
         .preview-drawer-panel {
           position: relative;
-          width: min(540px, 100vw);
+          width: min(760px, calc(100vw - 40px));
           height: 100vh;
           background: var(--bg-main);
           border-left: 1px solid var(--border);
@@ -321,7 +321,7 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
           cursor: pointer;
           flex-shrink: 0;
         }
-        .preview-drawer-body { padding: 18px; overflow-y: auto; flex: 1; }
+        .preview-drawer-body { padding: 18px; overflow: auto; flex: 1; }
         
         .pc-editor-form-v2 { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
 
