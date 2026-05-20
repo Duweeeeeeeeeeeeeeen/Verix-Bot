@@ -19,7 +19,8 @@ import {
   AlignLeft,
   ChevronDown,
   Hash,
-  Upload
+  Upload,
+  X
 } from 'lucide-react';
 import HelpTooltip from './HelpTooltip';
 import CustomSelect from './CustomSelect';
@@ -32,8 +33,7 @@ const EmbedPreviewContainer = dynamic(() => import('./EmbedPreviewContainer'), {
 
 export default function EmbedEditor({ embed, onChange, variables = ['user', 'guild'], showButtonEditor = false, previewButtons, renderPreviewFooter, compact = false }) {
   const { t } = useT();
-  const [isPreviewMobile, setIsPreviewMobile] = useState(false);
-  const [previewTheme, setPreviewTheme] = useState('dark');
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   
   const thumbInputRef = useRef(null);
@@ -104,6 +104,15 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
 
   return (
     <div className={`pc-embed-editor-v2 fade-in ${compact ? 'compact' : ''}`}>
+      {compact && (
+        <div className="compact-editor-toolbar">
+          <button className="preview-drawer-trigger" onClick={() => setPreviewOpen(true)}>
+            <Eye size={16} />
+            <span>Preview</span>
+          </button>
+        </div>
+      )}
+
       <div className="pc-editor-layout-v2">
         <div className="pc-editor-form-v2">
           {/* Main Content Card */}
@@ -213,6 +222,7 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
         </div>
 
         {/* Floating Preview Section */}
+        {!compact && (
         <aside className="pc-preview-sidebar-v2" style={{ position: 'sticky', top: '20px', height: 'fit-content' }}>
             <EmbedPreviewContainer data={{ ...embed, buttons: previewButtons || embed.buttons }}>
                 {renderPreviewFooter && <div className="render-footer-v2" style={{ marginBottom: '16px' }}>{renderPreviewFooter}</div>}
@@ -225,13 +235,93 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
                 </div>
             </EmbedPreviewContainer>
         </aside>
+        )}
       </div>
+
+      {compact && previewOpen && (
+        <div className="preview-drawer-layer" role="dialog" aria-modal="true">
+          <button className="preview-drawer-backdrop" onClick={() => setPreviewOpen(false)} aria-label="Close preview" />
+          <aside className="preview-drawer-panel">
+            <header className="preview-drawer-header">
+              <div>
+                <span>Discord Preview</span>
+                <p>Preview with proper message width.</p>
+              </div>
+              <button className="preview-drawer-close" onClick={() => setPreviewOpen(false)} aria-label="Close preview">
+                <X size={18} />
+              </button>
+            </header>
+            <div className="preview-drawer-body">
+              <EmbedPreviewContainer data={{ ...embed, buttons: previewButtons || embed.buttons }} style={{ minHeight: '100%' }}>
+                {renderPreviewFooter && <div className="render-footer-v2" style={{ marginBottom: '16px' }}>{renderPreviewFooter}</div>}
+
+                <div className="variable-hints-v2" style={{ margin: 0, border: 'none' }}>
+                  <div className="hint-header-v2"><Info size={14} /> <span>{t('embeds.editor.tags_title')}</span></div>
+                  <div className="tags-grid-v2">
+                    {variables.map(v => <code key={v}>{`{${v}}`}</code>)}
+                  </div>
+                </div>
+              </EmbedPreviewContainer>
+            </div>
+          </aside>
+        </div>
+      )}
 
       <style jsx>{`
         .pc-embed-editor-v2 { width: 100%; }
         .pc-editor-layout-v2 { display: grid; grid-template-columns: 1fr 664px; gap: 24px; align-items: start; max-width: 100%; margin: 0 auto; }
         .pc-embed-editor-v2.compact .pc-editor-layout-v2 { grid-template-columns: 1fr; max-width: 100%; margin: 0; }
-        .pc-embed-editor-v2.compact .pc-preview-sidebar-v2 { position: static !important; }
+        .compact-editor-toolbar { display: flex; justify-content: flex-end; margin-bottom: 14px; }
+        .preview-drawer-trigger {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          min-height: 42px;
+          padding: 0 16px;
+          border-radius: 12px;
+          border: 1px solid var(--border);
+          background: var(--bg-card);
+          color: var(--primary);
+          font-weight: 800;
+          cursor: pointer;
+        }
+        .preview-drawer-layer { position: fixed; inset: 0; z-index: 1000; display: flex; justify-content: flex-end; }
+        .preview-drawer-backdrop { position: absolute; inset: 0; border: 0; background: rgba(15, 23, 42, 0.42); cursor: pointer; }
+        .preview-drawer-panel {
+          position: relative;
+          width: min(540px, 100vw);
+          height: 100vh;
+          background: var(--bg-main);
+          border-left: 1px solid var(--border);
+          box-shadow: -24px 0 60px rgba(0,0,0,0.18);
+          display: flex;
+          flex-direction: column;
+        }
+        .preview-drawer-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 16px;
+          padding: 18px 20px;
+          background: var(--bg-card);
+          border-bottom: 1px solid var(--border);
+        }
+        .preview-drawer-header span { display: block; font-size: 1rem; font-weight: 850; color: var(--text-heading); }
+        .preview-drawer-header p { margin: 4px 0 0 0; font-size: 0.78rem; font-weight: 650; color: var(--text-muted); }
+        .preview-drawer-close {
+          width: 40px;
+          height: 40px;
+          border-radius: 12px;
+          border: 1px solid var(--border);
+          background: var(--bg-badge);
+          color: var(--text-main);
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          flex-shrink: 0;
+        }
+        .preview-drawer-body { padding: 18px; overflow-y: auto; flex: 1; }
         
         .pc-editor-form-v2 { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
 
@@ -315,6 +405,8 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
           .field-entry-v2 { grid-template-columns: 1fr 32px; }
           .field-entry-v2 textarea { grid-column: 1 / -1; }
           .pc-textarea-v2 { min-height: 150px; }
+          .preview-drawer-panel { width: 100vw; }
+          .preview-drawer-body { padding: 12px; }
         }
         
         /* White Mode Specific Fixes */
