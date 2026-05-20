@@ -10,7 +10,7 @@ import {
     Shapes, LayoutGrid, Timer, ShieldCheck, Flag, RotateCcw
 } from 'lucide-react';
 import { DiscordSelector, CustomSelect, SystemMessagesSection } from '../../../components/LazyConfigComponents';
-import EmbedPreview from '../../../components/EmbedPreview';
+import EmbedPreviewDrawer from '../../../components/EmbedPreviewDrawer';
 import Head from 'next/head';
 
 export default function PollsConfig() {
@@ -24,8 +24,7 @@ export default function PollsConfig() {
   const [channels, setChannels] = useState([]);
   const [activePolls, setActivePolls] = useState([]);
   const [activeTab, setActiveTab] = useState('create');
-  const [previewTheme, setPreviewTheme] = useState('dark');
-  const [previewIsMobile, setPreviewIsMobile] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -244,7 +243,7 @@ export default function PollsConfig() {
 
         <div className="pc-content-v2">
             {activeTab === 'create' && (
-                <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 664px', gap: '40px' }}>
+                <div className="v-stack" style={{ gap: '24px' }}>
                     <div className="v-stack" style={{ gap: '32px' }}>
                         <section className="pc-card-v2 animate slide-up">
                             <div className="card-header-v2" style={{ marginBottom: '32px' }}>
@@ -332,28 +331,16 @@ export default function PollsConfig() {
                         </section>
                     </div>
 
-                    <aside className="pc-preview-sticky-v2 animate fade-in" style={{ position: 'sticky', top: '40px', height: 'fit-content' }}>
-                        <div className="pc-card-v2" style={{ padding: '0', overflow: 'hidden', border: 'none', boxShadow: '0 20px 50px rgba(0,0,0,0.1)' }}>
-                            <div style={{ background: 'var(--bg-badge)', padding: '28px', borderBottom: '1.5px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontWeight: 700, color: 'var(--text-heading)', fontSize: '1rem' }}><PieChart size={22} style={{ color: 'var(--primary)' }} /> {t('polls.preview_title')}</div>
-                                <div style={{ display: 'flex', gap: '6px', background: 'var(--bg-card)', padding: '6px', borderRadius: '16px', border: '1.5px solid var(--border)' }}>
-                                    <button onClick={() => setPreviewIsMobile(false)} style={{ border: 'none', background: !previewIsMobile ? 'rgba(99,102,241,0.1)' : 'transparent', color: !previewIsMobile ? 'var(--primary)' : 'var(--text-dim)', padding: '10px', borderRadius: '12px', cursor: 'pointer', transition: '0.2s' }}><Monitor size={18} /></button>
-                                    <button onClick={() => setPreviewIsMobile(true)} style={{ border: 'none', background: previewIsMobile ? 'rgba(99,102,241,0.1)' : 'transparent', color: previewIsMobile ? 'var(--primary)' : 'var(--text-dim)', padding: '10px', borderRadius: '12px', cursor: 'pointer', transition: '0.2s' }}><Smartphone size={18} /></button>
-                                </div>
-                            </div>
-                            <div style={{ padding: '40px 20px', background: previewTheme === 'dark' ? '#0f172a' : 'var(--bg-badge)', minHeight: '480px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflowX: 'auto' }}>
-                                <EmbedPreview data={previewPollEmbed} isMobile={previewIsMobile} theme={previewTheme} />
-                            </div>
-                            <div style={{ padding: '20px 32px', background: 'var(--bg-card)', borderTop: '1.5px solid var(--border)', display: 'flex', justifyContent: 'space-between' }}>
-                                <button onClick={() => setPreviewTheme('dark')} style={{ border: 'none', background: previewTheme === 'dark' ? 'rgba(99,102,241,0.1)' : 'transparent', color: previewTheme === 'dark' ? 'var(--primary)' : 'var(--text-muted)', fontWeight: 700, fontSize: '0.8rem', padding: '10px 20px', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}><Moon size={16} /> DARK</button>
-                                <button onClick={() => setPreviewTheme('light')} style={{ border: 'none', background: previewTheme === 'light' ? 'rgba(99,102,241,0.1)' : 'transparent', color: previewTheme === 'light' ? 'var(--primary)' : 'var(--text-muted)', fontWeight: 700, fontSize: '0.8rem', padding: '10px 20px', borderRadius: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}><Sun size={16} /> LIGHT</button>
-                            </div>
-                        </div>
-                        <button className="pc-btn-primary" style={{ marginTop: '32px', width: '100%', padding: '24px', borderRadius: '28px', fontSize: '1.2rem', justifyContent: 'center' }} onClick={handleCreatePoll} disabled={creating}>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '12px', alignItems: 'center' }}>
+                        <button className="pc-btn-outline-v2" style={{ justifyContent: 'center', minHeight: '56px' }} onClick={() => setPreviewOpen(true)}>
+                            <Monitor size={18} /> <span>{t('polls.preview_title')}</span>
+                        </button>
+                        <button className="pc-btn-primary" style={{ padding: '18px 24px', borderRadius: '18px', fontSize: '1rem', justifyContent: 'center' }} onClick={handleCreatePoll} disabled={creating}>
                             <Send size={24} />
                             <span>{creating ? t('common.deploying') : t('polls.deploy_btn')}</span>
                         </button>
-                    </aside>
+                    </div>
+                    <EmbedPreviewDrawer open={previewOpen} onClose={() => setPreviewOpen(false)} data={previewPollEmbed} />
                 </div>
             )}
 

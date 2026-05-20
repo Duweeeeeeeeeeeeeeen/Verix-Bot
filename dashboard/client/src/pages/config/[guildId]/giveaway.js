@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { DiscordSelector, CustomSelect, SystemMessagesSection, HelpTooltip } from '../../../components/LazyConfigComponents';
 import EmojiInput from '../../../components/EmojiInput';
-import EmbedPreviewContainer from '../../../components/EmbedPreviewContainer';
+import EmbedPreviewDrawer from '../../../components/EmbedPreviewDrawer';
 import Head from 'next/head';
 
 export default function GiveawayConfig() {
@@ -28,6 +28,7 @@ export default function GiveawayConfig() {
   const [scheduledGiveaways, setScheduledGiveaways] = useState([]);
   const [logs, setLogs] = useState([]);
   const [activeTab, setActiveTab] = useState('create');
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   const [newGw, setNewGw] = useState({
@@ -244,7 +245,7 @@ export default function GiveawayConfig() {
 
         <div className="pc-content-v2">
             {activeTab === 'create' && (
-                <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 664px', gap: '32px' }}>
+                <div className="v-stack" style={{ gap: '24px' }}>
                     <div className="v-stack" style={{ gap: '32px' }}>
                         <section className="pc-card-v2 animate slide-up">
                             <div className="card-header-v2">
@@ -406,9 +407,12 @@ export default function GiveawayConfig() {
                         </section>
                     </div>
 
-                    <aside style={{ position: 'sticky', top: '32px', height: 'fit-content' }}>
-                        <EmbedPreviewContainer data={previewEmbed} />
-                    </aside>
+                    <div>
+                        <button className="pc-btn-secondary-v2" style={{ width: '100%', height: '56px', fontSize: '1.1rem', background: 'var(--bg-card)', color: 'var(--primary)', border: '1.5px solid var(--border)', borderRadius: '14px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }} onClick={() => setPreviewOpen(true)}>
+                            <Monitor size={20} /> <span>Preview</span>
+                        </button>
+                    </div>
+                    <EmbedPreviewDrawer open={previewOpen} onClose={() => setPreviewOpen(false)} data={previewEmbed} />
                 </div>
             )}
 

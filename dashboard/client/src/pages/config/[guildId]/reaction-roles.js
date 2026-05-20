@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { DiscordSelector, CustomSelect, SystemMessagesSection } from '../../../components/LazyConfigComponents';
 import EmojiInput from '../../../components/EmojiInput';
-import EmbedPreviewContainer from '../../../components/EmbedPreviewContainer';
+import EmbedPreviewDrawer from '../../../components/EmbedPreviewDrawer';
 import Head from 'next/head';
 
 const countryCodeToFlagEmoji = (code) => {
@@ -37,8 +37,8 @@ export default function ReactionRolesConfig() {
   const [channels, setChannels] = useState([]);
   const [activePanelId, setActivePanelId] = useState(null);
   const [activeTab, setActiveTab] = useState('settings');
-  const [previewTheme, setPreviewTheme] = useState('dark');
   const [isPreviewMobile, setIsPreviewMobile] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -491,8 +491,16 @@ export default function ReactionRolesConfig() {
                                 </button>
                             </div>
 
-                            <aside style={{ position: 'sticky', top: '32px', height: 'fit-content' }}>
-                                <EmbedPreviewContainer 
+                            <aside className="v-stack" style={{ gap: '16px' }}>
+                                <button className="pc-btn-primary" style={{ width: '100%', justifyContent: 'center' }} onClick={() => setPreviewOpen(true)}>
+                                    <Monitor size={18} /> <span>Preview</span>
+                                </button>
+                                <button onClick={() => handleDeploy(activePanel.id)} className="pc-btn-primary" disabled={saving || !activePanel.channelId} style={{ width: '100%', justifyContent: 'center' }}>
+                                    <Send size={18} /> <span>{t('rr.launch_panel') || 'Send Panel'}</span>
+                                </button>
+                                <EmbedPreviewDrawer
+                                    open={previewOpen}
+                                    onClose={() => setPreviewOpen(false)}
                                     data={{
                                         ...activePanel.embed,
                                         type: activePanel.type,
@@ -504,10 +512,8 @@ export default function ReactionRolesConfig() {
                                         reactions: activePanel.type === 'REACTION' ? activePanel.roles.map(r => ({
                                             emoji: r.emoji
                                         })) : []
-                                    }} 
+                                    }}
                                 />
-                                
-
                             </aside>
                         </div>
                 )}
