@@ -247,11 +247,11 @@ export default function PollsConfig() {
                     <section className="pc-card-v2 preview-action-bar">
                         <div>
                             <h3 style={{ margin: 0 }}>{t('polls.preview_title')}</h3>
-                            <p>Check the Discord message before publishing.</p>
+                            <p>{t('polls.preview_desc')}</p>
                         </div>
                         <div className="preview-action-buttons">
                             <button className="pc-btn-outline-v2 preview-action-btn" onClick={() => setPreviewOpen(true)}>
-                                <Monitor size={18} /> <span>Preview</span>
+                                <Monitor size={18} /> <span>{t('common.preview')}</span>
                             </button>
                             <button className="pc-btn-primary preview-action-btn" onClick={handleCreatePoll} disabled={creating}>
                                 <Send size={18} />

@@ -316,11 +316,15 @@ export default function ReactionRolesConfig() {
                         <section className="pc-card-v2 preview-action-bar">
                             <div>
                                 <h3 style={{ margin: 0 }}>{activePanel.name || t('rr.panel_identity')}</h3>
-                                <p>{activePanel.roles.length} roles - {activePanel.type === 'REACTION' ? 'Reactions' : 'Buttons'} - {activePanel.channelId ? 'Channel selected' : 'Channel missing'}</p>
+                                <p>{t('rr.panel_meta', {
+                                    roles: activePanel.roles.length,
+                                    type: activePanel.type === 'REACTION' ? t('rr.reactions') : t('rr.buttons'),
+                                    channel: activePanel.channelId ? t('rr.channel_selected') : t('rr.channel_missing')
+                                })}</p>
                             </div>
                             <div className="preview-action-buttons">
                                 <button className="pc-btn-outline-v2 preview-action-btn" onClick={() => setPreviewOpen(true)}>
-                                    <Monitor size={18} /> <span>Preview</span>
+                                    <Monitor size={18} /> <span>{t('common.preview')}</span>
                                 </button>
                                 <button onClick={() => handleDeploy(activePanel.id)} className="pc-btn-primary preview-action-btn" disabled={saving || !activePanel.channelId}>
                                     <Send size={18} /> <span>{t('rr.launch_panel') || 'Send Panel'}</span>
@@ -507,16 +511,16 @@ export default function ReactionRolesConfig() {
                                 <section className="pc-card-v2 rr-summary-card">
                                     <div className="card-header-v2">
                                         <div className="header-icon"><Layout size={18} /></div>
-                                        <h3 style={{ margin: 0 }}>Panel summary</h3>
+                                        <h3 style={{ margin: 0 }}>{t('rr.panel_summary')}</h3>
                                     </div>
                                     <div className="v-stack" style={{ gap: '12px' }}>
                                         <div className="rr-summary-row">
                                             <span>{t('rr.target_channel')}</span>
-                                            <strong className={activePanel.channelId ? 'ok' : 'warn'}>{activePanel.channelId ? 'Selected' : 'Missing'}</strong>
+                                            <strong className={activePanel.channelId ? 'ok' : 'warn'}>{activePanel.channelId ? t('rr.selected') : t('rr.missing')}</strong>
                                         </div>
                                         <div className="rr-summary-row">
                                             <span>{t('rr.interaction')}</span>
-                                            <strong>{activePanel.type === 'REACTION' ? 'Reactions' : 'Buttons'}</strong>
+                                            <strong>{activePanel.type === 'REACTION' ? t('rr.reactions') : t('rr.buttons')}</strong>
                                         </div>
                                         <div className="rr-summary-row">
                                             <span>{t('rr.role_matrix')}</span>
@@ -524,7 +528,7 @@ export default function ReactionRolesConfig() {
                                         </div>
                                         <div className="rr-summary-row">
                                             <span>{t('rr.embed_title')}</span>
-                                            <strong>{activePanel.embed.title ? 'Ready' : 'Missing'}</strong>
+                                            <strong>{activePanel.embed.title ? t('rr.ready') : t('rr.missing')}</strong>
                                         </div>
                                     </div>
                                 </section>

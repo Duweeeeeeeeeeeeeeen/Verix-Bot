@@ -357,7 +357,7 @@ export default function LevelingConfigPage() {
                                                     style={{ minHeight: '80px', width: '100%', padding: '12px', background: 'rgba(0, 0, 0, 0.15)', color: 'inherit', border: '1px solid var(--border)', borderRadius: '8px' }}
                                                     value={config.notifyTextTemplate || ''}
                                                     onChange={e => setConfig({...config, notifyTextTemplate: e.target.value})}
-                                                    placeholder="Congratulazioni {user}! Sei salito al livello {level}!"
+                                                    placeholder={t('leveling.message_placeholder')}
                                                 />
                                                 <span className="text-muted" style={{ fontSize: '0.8rem', marginTop: '6px', display: 'block' }}>{t('leveling.custom_message_desc')}</span>
                                             </div>
@@ -415,12 +415,12 @@ export default function LevelingConfigPage() {
                         <section className="pc-card-v2">
                             <div className="card-header-v2">
                                 <div className="header-icon" style={{ background: 'rgba(245, 158, 11, 0.1)', color: '#f59e0b' }}><Star size={18} /></div>
-                                <h3 style={{ margin: 0 }}>Anteprima Sistema</h3>
+                                <h3 style={{ margin: 0 }}>{t('leveling.system_preview')}</h3>
                             </div>
                             <div className="card-body-v2" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                                 <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', borderRadius: '16px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Status Modulo</span>
+                                        <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{t('leveling.module_status')}</span>
                                         <span style={{ 
                                             fontSize: '0.75rem', fontWeight: '800', padding: '4px 10px', borderRadius: '100px',
                                             background: config.enabled ? 'rgba(16, 185, 129, 0.1)' : 'var(--bg-badge)',
@@ -430,22 +430,22 @@ export default function LevelingConfigPage() {
                                         </span>
                                     </div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>XP per Messaggio</span>
+                                        <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{t('leveling.xp_per_message')}</span>
                                         <span style={{ fontSize: '0.9rem', fontWeight: '700', color: 'var(--text-heading)' }}>~{Math.round(15 * (config.xpRate || 1))} XP</span>
                                     </div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Moltiplicatore Attivo</span>
+                                        <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{t('leveling.active_multiplier')}</span>
                                         <span style={{ fontSize: '0.9rem', fontWeight: '700', color: '#f59e0b' }}>x{config.xpMultiplier || 1}</span>
                                     </div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                        <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Ricompense Ruoli</span>
-                                        <span style={{ fontSize: '0.9rem', fontWeight: '700', color: 'var(--text-heading)' }}>{(config.roleRewards || []).length} Ruoli</span>
+                                        <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{t('leveling.role_rewards')}</span>
+                                        <span style={{ fontSize: '0.9rem', fontWeight: '700', color: 'var(--text-heading)' }}>{(config.roleRewards || []).length} {t('leveling.roles_count')}</span>
                                     </div>
                                 </div>
                                 
                                 <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', background: 'rgba(245, 158, 11, 0.05)', border: '1px solid rgba(245, 158, 11, 0.1)', padding: '16px', borderRadius: '12px', display: 'flex', gap: '10px' }}>
                                     <Trophy size={18} style={{ color: '#f59e0b', flexShrink: 0 }} />
-                                    <span><strong>Suggerimento:</strong> Assicurati di impostare il ruolo del bot Verix più in alto rispetto ai ruoli di ricompensa nella lista ruoli di Discord, altrimenti non potrà assegnarli!</span>
+                                    <span><strong>{t('leveling.tip')}:</strong> {t('leveling.role_hierarchy_tip')}</span>
                                 </div>
                             </div>
                         </section>
@@ -486,12 +486,12 @@ export default function LevelingConfigPage() {
                         <section className="pc-card-v2">
                             <div className="card-header-v2">
                                 <div className="header-icon" style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444' }}><Shield size={18} /></div>
-                                <h3 style={{ margin: 0 }}>Filtri & Restrizioni</h3>
+                                <h3 style={{ margin: 0 }}>{t('leveling.filters_title')}</h3>
                             </div>
                             <div className="card-body-v2">
                                 <div className="v-stack" style={{ gap: '24px' }}>
                                     <div className="pc-input-group-v2">
-                                        <label>Canali Ignorati</label>
+                                        <label>{t('leveling.ignored_channels')}</label>
                                         <DiscordSelector
                                             type="channel"
                                             options={discordData.channels.filter(c => c.type === 0)}
@@ -501,7 +501,7 @@ export default function LevelingConfigPage() {
                                         />
                                     </div>
                                     <div className="pc-input-group-v2">
-                                        <label>Ruoli Ignorati</label>
+                                        <label>{t('leveling.ignored_roles')}</label>
                                         <DiscordSelector
                                             type="role"
                                             options={discordData.roles}

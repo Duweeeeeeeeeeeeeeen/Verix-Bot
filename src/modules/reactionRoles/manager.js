@@ -1,6 +1,14 @@
 import ReactionRoleConfig from '../../models/ReactionRoleConfig.js';
 import logger from '../../utils/logger.js';
-import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags } from 'discord.js';
+import {
+    EmbedBuilder,
+    ActionRowBuilder,
+    ButtonBuilder,
+    ButtonStyle,
+    MessageFlags,
+    PermissionFlagsBits
+} from 'discord.js';
+import { checkBotPermissions } from '../../utils/permissionHelper.js';
 
 class ReactionRoleManager {
     constructor(client) {
@@ -11,38 +19,24 @@ class ReactionRoleManager {
         logger.info('[ReactionRoles] Manager initialized.');
     }
 
-    /**
-     * Parse and clean emoji strings to extract ID for custom emojis,
-     * or return the raw string if it's a unicode/standard emoji.
-     */
     getCleanEmoji(emojiStr) {
         if (!emojiStr) return '';
         const clean = emojiStr.trim();
-        // Match <:name:id> or <a:name:id>
+
         const customMatch = clean.match(/^<?a?:?([a-zA-Z0-9_]+):([0-9]+)>?$/);
-        if (customMatch) {
-            return customMatch[2]; // Return only the numeric ID
-        }
-        // Match :name:id (without brackets)
+        if (customMatch) return customMatch[2];
+
         const nameIdMatch = clean.match(/^([a-zA-Z0-9_]+):([0-9]+)$/);
-        if (nameIdMatch) {
-            return nameIdMatch[2]; // Return only the numeric ID
-        }
-        // Match pure numeric ID
-        if (/^[0-9]+$/.test(clean)) {
-            return clean;
-        }
-        // Standard Unicode emoji
+        if (nameIdMatch) return nameIdMatch[2];
+
+        if (/^[0-9]+$/.test(clean)) return clean;
+
         return clean;
     }
 
-    /**
-     * Handle button interactions for reaction roles.
-     * Expected customId format: rr_toggle_{panelId}_{roleId}
-     */
     async handleInteraction(interaction) {
         if (!interaction.isButton()) return;
-        
+
         const parts = interaction.customId.split('_');
         if (parts.length < 4) return;
 
@@ -55,47 +49,57 @@ class ReactionRoleManager {
         try {
             const role = await guild.roles.fetch(roleId).catch(() => null);
             if (!role) {
-                return interaction.reply({ 
-                    content: '❌ Ruolo non trovato. Contatta un amministratore.', 
-                    flags: [MessageFlags.Ephemeral] 
+                return interaction.reply({
+                    content: 'Role not found. Please contact an administrator.',
+                    flags: [MessageFlags.Ephemeral]
+                });
+            }
+
+            const botMember = guild.members.me || await guild.members.fetchMe().catch(() => null);
+            if (!botMember?.permissions.has(PermissionFlagsBits.ManageRoles) || role.position >= botMember.roles.highest.position) {
+                return interaction.reply({
+                    content: 'Verix cannot manage this role. Move the bot role above the target role and grant Manage Roles.',
+                    flags: [MessageFlags.Ephemeral]
                 });
             }
 
             if (member.roles.cache.has(roleId)) {
                 await member.roles.remove(roleId);
-                await interaction.reply({ 
-                    content: `✅ Ruolo **${role.name}** rimosso con successo.`, 
-                    flags: [MessageFlags.Ephemeral] 
+                await interaction.reply({
+                    content: `Role **${role.name}** removed successfully.`,
+                    flags: [MessageFlags.Ephemeral]
                 });
             } else {
                 await member.roles.add(roleId);
-                await interaction.reply({ 
-                    content: `✅ Ruolo **${role.name}** assegnato con successo.`, 
-                    flags: [MessageFlags.Ephemeral] 
+                await interaction.reply({
+                    content: `Role **${role.name}** assigned successfully.`,
+                    flags: [MessageFlags.Ephemeral]
                 });
             }
         } catch (error) {
             logger.error(`[ReactionRoles] Error toggling role ${roleId} for ${interaction.user.tag}:`, error);
-            await interaction.reply({ 
-                content: '❌ Errore durante l\'assegnazione del ruolo. Verifica i permessi del bot.', 
-                flags: [MessageFlags.Ephemeral] 
-            });
+            const payload = {
+                content: 'Unable to update the role. Check the bot permissions and role hierarchy.',
+                flags: [MessageFlags.Ephemeral]
+            };
+            if (interaction.replied || interaction.deferred) {
+                await interaction.followUp(payload).catch(() => null);
+            } else {
+                await interaction.reply(payload).catch(() => null);
+            }
         }
     }
 
-    /**
-     * Handle reaction additions/removals for reaction roles.
-     */
     async handleReaction(reaction, user, action) {
         if (user.bot) return;
         if (reaction.partial) await reaction.fetch().catch(() => null);
-        
+
         const guildId = reaction.message.guildId;
         const messageId = reaction.message.id;
         const emoji = reaction.emoji.id || reaction.emoji.name;
 
-        const config = await ReactionRoleConfig.findOne({ 
-            guildId, 
+        const config = await ReactionRoleConfig.findOne({
+            guildId,
             'panels.messageId': messageId,
             'panels.type': 'REACTION'
         });
@@ -126,28 +130,37 @@ class ReactionRoleManager {
         }
     }
 
-    /**
-     * Deploy or update a panel in a channel.
-     */
     async deployPanel(guildId, panelId) {
         const config = await ReactionRoleConfig.findOne({ guildId });
-        if (!config) return { success: false, error: 'Configurazione non trovata' };
+        if (!config) return { success: false, error: 'Configuration not found' };
 
         const panel = config.panels.find(p => p.id === panelId);
-        if (!panel) return { success: false, error: 'Panel non trovato' };
+        if (!panel) return { success: false, error: 'Panel not found' };
 
         const guild = this.client.guilds.cache.get(guildId) || await this.client.guilds.fetch(guildId).catch(() => null);
-        if (!guild) return { success: false, error: 'Guild non trovata' };
+        if (!guild) return { success: false, error: 'Guild not found' };
 
         const channel = await guild.channels.fetch(panel.channelId).catch(() => null);
-        if (!channel) return { success: false, error: 'Canale non trovato' };
+        if (!channel) return { success: false, error: 'Channel not found' };
+
+        const requiredPermissions = [
+            PermissionFlagsBits.ViewChannel,
+            PermissionFlagsBits.SendMessages,
+            PermissionFlagsBits.EmbedLinks
+        ];
+        if (panel.type === 'REACTION') requiredPermissions.push(PermissionFlagsBits.AddReactions);
+
+        const permCheck = checkBotPermissions(channel, requiredPermissions);
+        if (!permCheck.hasPermission) {
+            return { success: false, error: `Missing bot permissions: ${permCheck.missing.join(', ')}` };
+        }
 
         const embed = new EmbedBuilder()
             .setTitle(panel.embed.title)
             .setDescription(panel.embed.description)
             .setColor(panel.embed.color || '#5865F2')
             .setFooter({ text: panel.embed.footer });
-        
+
         if (panel.embed.image) embed.setImage(panel.embed.image);
         if (panel.embed.thumbnail) embed.setThumbnail(panel.embed.thumbnail);
 
@@ -161,22 +174,22 @@ class ReactionRoleManager {
                 }
 
                 const styleMap = {
-                    'PRIMARY': ButtonStyle.Primary,
-                    'SECONDARY': ButtonStyle.Secondary,
-                    'SUCCESS': ButtonStyle.Success,
-                    'DANGER': ButtonStyle.Danger
+                    PRIMARY: ButtonStyle.Primary,
+                    SECONDARY: ButtonStyle.Secondary,
+                    SUCCESS: ButtonStyle.Success,
+                    DANGER: ButtonStyle.Danger
                 };
 
                 const btn = new ButtonBuilder()
                     .setCustomId(`rr_toggle_${panel.id}_${r.roleId}`)
                     .setLabel(r.label || 'Role')
                     .setStyle(styleMap[r.style] || ButtonStyle.Primary);
-                
+
                 if (r.emoji && r.emoji.trim()) {
                     const cleanEmoji = this.getCleanEmoji(r.emoji);
                     btn.setEmoji(cleanEmoji);
                 }
-                
+
                 currentRow.addComponents(btn);
             });
             if (currentRow.components.length > 0) rows.push(currentRow);
@@ -196,7 +209,6 @@ class ReactionRoleManager {
                 await config.save();
             }
 
-            // If it's REACTION type, add reactions
             if (panel.type === 'REACTION') {
                 for (const r of panel.roles) {
                     if (r.emoji) {

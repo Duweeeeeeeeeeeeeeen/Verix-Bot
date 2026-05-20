@@ -75,6 +75,23 @@ import { pollConfigSchema, pollCreateSchema } from '../validations/pollSchema.js
 
 const router = express.Router();
 
+function ensurePanelPermissions(channel, res) {
+    const permCheck = checkBotPermissions(channel, [
+        PermissionFlagsBits.ViewChannel,
+        PermissionFlagsBits.SendMessages,
+        PermissionFlagsBits.EmbedLinks
+    ]);
+
+    if (permCheck.hasPermission) return true;
+
+    res.status(403).json({
+        success: false,
+        error: 'Missing bot permissions in the selected Discord channel.',
+        details: permCheck.missing
+    });
+    return false;
+}
+
 router.get('/:guildId/module-status', adminCheck, async (req, res) => {
     try {
         const { guildId } = req.params;
@@ -990,6 +1007,7 @@ router.post('/:guildId/background/send-panel', adminCheck, async (req, res) => {
         if (!channel) {
             return res.status(404).json({ success: false, error: 'Canale non trovato su Discord.' });
         }
+        if (!ensurePanelPermissions(channel, res)) return;
 
         const embed = await messageService.get(guildId, 'background', 'panel', { guild });
 
@@ -1096,6 +1114,7 @@ router.post('/:guildId/whitelist/send-panel', adminCheck, async (req, res) => {
         if (!channel) {
             return res.status(404).json({ success: false, error: 'Canale non trovato su Discord.' });
         }
+        if (!ensurePanelPermissions(channel, res)) return;
 
         const embed = await messageService.get(guildId, 'whitelist', 'panel', { guild });
 
@@ -1217,6 +1236,7 @@ router.post('/:guildId/tickets/send-panel', adminCheck, async (req, res) => {
         if (!channel) {
             return res.status(404).json({ success: false, error: 'Canale pannello non trovato su Discord.' });
         }
+        if (!ensurePanelPermissions(channel, res)) return;
 
         const embed = await messageService.get(guildId, 'tickets', 'panel', { guild });
 
@@ -1440,6 +1460,7 @@ router.post('/:guildId/verify/send-panel', adminCheck, async (req, res) => {
         if (!channel) {
             return res.status(404).json({ success: false, error: 'Canale di verifica non trovato su Discord.' });
         }
+        if (!ensurePanelPermissions(channel, res)) return;
 
         const embed = await messageService.get(guildId, 'verify', 'panel', { guild });
 
@@ -2222,6 +2243,7 @@ router.post('/:guildId/fivem/send-panel', adminCheck, async (req, res) => {
         if (!channel) {
             return res.status(404).json({ success: false, error: 'Canale Discord non trovato o inaccessibile.' });
         }
+        if (!ensurePanelPermissions(channel, res)) return;
 
         const embed = new EmbedBuilder()
             .setTitle(server.onlineEmbed.title || 'Inizializzazione Monitoraggio...')
@@ -2655,6 +2677,7 @@ router.post('/:guildId/polls/create', adminCheck, validate(pollCreateSchema), as
         const guild = req.discordClient.guilds.cache.get(guildId);
         const channel = await guild.channels.fetch(channelId).catch(() => null);
         if (!channel) return res.status(400).json({ success: false, error: 'Canale non trovato.' });
+        if (!ensurePanelPermissions(channel, res)) return;
 
         const endTime = new Date(Date.now() + duration * 60000);
 

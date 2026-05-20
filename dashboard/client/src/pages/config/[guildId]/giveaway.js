@@ -249,10 +249,10 @@ export default function GiveawayConfig() {
                     <section className="pc-card-v2 preview-action-bar">
                         <div>
                             <h3 style={{ margin: 0 }}>{t('giveaway.visual_designer')}</h3>
-                            <p>Check the Discord message before deploying or scheduling.</p>
+                            <p>{t('giveaway.preview_desc')}</p>
                         </div>
                         <button className="pc-btn-secondary-v2 preview-action-btn" onClick={() => setPreviewOpen(true)}>
-                            <Monitor size={18} /> <span>Preview</span>
+                            <Monitor size={18} /> <span>{t('common.preview')}</span>
                         </button>
                     </section>
 
