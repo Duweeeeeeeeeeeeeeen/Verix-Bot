@@ -638,7 +638,7 @@ export class SocialManager {
                                 author: cleanAuthor,
                                 description: desc,
                                 thumbnail: thumbnail,
-                                profileImage: 'https://img.icons8.com/color/512/reddit.png'
+                                profileImage: 'https://logo.clearbit.com/reddit.com'
                             }, 'Reddit');
 
                             account.lastPostId = itemId;
@@ -729,7 +729,7 @@ export class SocialManager {
                                 author: gameName,
                                 description: desc,
                                 thumbnail: thumbnail,
-                                profileImage: 'https://img.icons8.com/color/512/steam.png'
+                                profileImage: 'https://logo.clearbit.com/steampowered.com'
                             }, 'Steam');
 
                             account.lastPostId = itemId;
@@ -853,15 +853,15 @@ export class SocialManager {
             const defaultTitles = t('socials.default_titles', lang);
             const defaultDescs = t('socials.default_descriptions', lang);
 
-            // Default settings based on platform (Verified Icons8 CDN)
+            // Default settings based on platform (Official brand icons via Clearbit Logo API)
             const platformStyles = {
-                'Twitch': { color: 0x6441a5, icon: 'https://img.icons8.com/color/512/twitch.png', label: 'Twitch Live' },
-                'YouTube': { color: 0xff0000, icon: 'https://img.icons8.com/color/512/youtube-play.png', label: 'YouTube Video' },
-                'Twitter': { color: 0x000000, icon: 'https://img.icons8.com/color/512/twitterx--v2.png', label: 'X (Twitter)' },
-                'Instagram': { color: 0xe1306c, icon: 'https://img.icons8.com/color/512/instagram-new--v1.png', label: 'Instagram' },
-                'TikTok': { color: 0x000000, icon: 'https://img.icons8.com/color/512/tiktok.png', label: 'TikTok' },
-                'Reddit': { color: 0xff4500, icon: 'https://img.icons8.com/color/512/reddit.png', label: 'Reddit Post' },
-                'Steam': { color: 0x1b2838, icon: 'https://img.icons8.com/color/512/steam.png', label: 'Steam Announcement' }
+                'Twitch': { color: 0x6441a5, icon: 'https://logo.clearbit.com/twitch.tv', label: 'Twitch Live' },
+                'YouTube': { color: 0xff0000, icon: 'https://logo.clearbit.com/youtube.com', label: 'YouTube Video' },
+                'Twitter': { color: 0x000000, icon: 'https://logo.clearbit.com/x.com', label: 'X (Twitter)' },
+                'Instagram': { color: 0xe1306c, icon: 'https://logo.clearbit.com/instagram.com', label: 'Instagram' },
+                'TikTok': { color: 0x000000, icon: 'https://logo.clearbit.com/tiktok.com', label: 'TikTok' },
+                'Reddit': { color: 0xff4500, icon: 'https://logo.clearbit.com/reddit.com', label: 'Reddit Post' },
+                'Steam': { color: 0x1b2838, icon: 'https://logo.clearbit.com/steampowered.com', label: 'Steam Announcement' }
             };
 
             const style = platformStyles[platform] || { color: 0x7289da, icon: '', label: platform };

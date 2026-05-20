@@ -4,7 +4,7 @@ import Skeleton from '../../../components/Skeleton';
 import { DiscordSelector, CustomSelect, EmbedMessageManager } from '../../../components/LazyConfigComponents';
 import api from '../../../utils/api';
 import { 
-    Save, Settings2, Trash2, Plus, Tv, Youtube, Instagram, Twitter, Share2, Hash, 
+    Save, Settings2, Trash2, Plus, Hash, 
     MessageSquare, BellRing, ChevronRight, Sparkles, Lock, Search, Zap, Users, 
     Info, Layout, ArrowRight, X, CheckCircle2, Monitor, Globe, Cpu, UserPlus, 
     Power, Radio, Send, Bell, Palette, Globe2, Link2, Ghost, RotateCcw
@@ -12,34 +12,39 @@ import {
 import { useT } from '../../../contexts/LanguageContext';
 import Head from 'next/head';
 
-const XLogo = ({ size = 24, color = "currentColor" }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M4 4l11.733 16H20L8.267 4H4z" fill={color} stroke="none" />
-        <path d="M4 20l6.768-6.768m2.464-2.464L20 4" />
-    </svg>
-);
+// Official platform logos via Clearbit Logo API (official brand assets)
+const mkLogo = (domain) => {
+    const Comp = ({ size = 24 }) => (
+        <img
+            src={`https://logo.clearbit.com/${domain}`}
+            width={size}
+            height={size}
+            alt={domain}
+            style={{ borderRadius: '4px', objectFit: 'contain', display: 'block' }}
+        />
+    );
+    Comp.displayName = domain;
+    return Comp;
+};
 
-const RedditLogo = ({ size = 24, color = "currentColor" }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
-        <path d="M24 11.5c0-1.65-1.35-3-3-3-.96 0-1.86.48-2.42 1.24-1.64-1-3.85-1.64-6.29-1.72l1.3-4.08 4.22.9c.04.93.8 1.66 1.74 1.66 1.65 0 3-1.35 3-3s-1.35-3-3-3c-.94 0-1.7.53-2.07 1.29l-4.73-1a.76.76 0 0 0-.91.56L10.3 6.94C7.8 7 5.54 7.64 3.9 8.65c-.56-.76-1.46-1.24-2.42-1.24-1.65 0-3 1.35-3 3 0 1.2.71 2.24 1.74 2.74-.03.22-.05.45-.05.67 0 3.73 4.3 6.75 9.6 6.75 5.3 0 9.6-3.02 9.6-6.75 0-.22-.02-.45-.05-.67 1.03-.5 1.74-1.54 1.74-2.74zm-18 1c0-.83.67-1.5 1.5-1.5s1.5.67 1.5 1.5-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5zm11.4 4.89c-.9.9-2.61.98-3.4.98-.79 0-2.5-.08-3.4-.98-.24-.24-.24-.64 0-.88.24-.24.64-.24.88 0 .63.63 1.84.73 2.52.73.68 0 1.89-.1 2.52-.73.24-.24.64-.24.88 0 .24.24.24.64 0 .88zm.1-3.39c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
-    </svg>
-);
-
-const SteamLogo = ({ size = 24, color = "currentColor" }) => (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 .002a12 12 0 0 0-12 12 12 12 0 0 0 7.828 11.237c.365-.418.665-.92.833-1.463l3.663-1.488a4.7 4.7 0 0 0 .546.069 4.7 4.7 0 0 0 4.673-4.707 4.7 4.7 0 0 0-4.673-4.707 4.7 4.7 0 0 0-1.328.2l-2.038-2.905c-.004-.326-.067-.655-.195-.97l-3.313 1.346c.168.544.468 1.045.833 1.463L4.85 17.584c-.22.09-.434.195-.643.32a3.8 3.8 0 0 1-.365-.418 3.8 3.8 0 0 1 3.818-3.818c1.328 0 2.457.685 3.09 1.724l2.037 2.905c.004.327.067.656.196.97a3.8 3.8 0 0 1-.546-.07z"/>
-    </svg>
-);
+const TwitchIcon    = mkLogo('twitch.tv');
+const YoutubeIcon   = mkLogo('youtube.com');
+const InstagramIcon = mkLogo('instagram.com');
+const TikTokIcon    = mkLogo('tiktok.com');
+const XIcon         = mkLogo('x.com');
+const RedditIcon    = mkLogo('reddit.com');
+const SteamIcon     = mkLogo('steampowered.com');
 
 const PLATFORMS = [
-    { id: 'twitch', nameKey: 'socials.twitch_name', icon: Tv, color: '#9146ff', descKey: 'socials.twitch_desc' },
-    { id: 'youtube', nameKey: 'socials.youtube_name', icon: Youtube, color: '#ff0000', descKey: 'socials.youtube_desc' },
-    { id: 'instagram', nameKey: 'socials.instagram_name', icon: Instagram, color: '#e1306c', descKey: 'socials.instagram_desc' },
-    { id: 'tiktok', nameKey: 'socials.tiktok_name', icon: Share2, color: '#000000', descKey: 'socials.tiktok_desc' },
-    { id: 'twitter', nameKey: 'socials.twitter_name', icon: XLogo, color: '#000000', descKey: 'socials.twitter_desc' },
-    { id: 'reddit', nameKey: 'socials.reddit_name', icon: RedditLogo, color: '#ff4500', descKey: 'socials.reddit_desc' },
-    { id: 'steam', nameKey: 'socials.steam_name', icon: SteamLogo, color: '#1b2838', descKey: 'socials.steam_desc' }
+    { id: 'twitch',    nameKey: 'socials.twitch_name',    icon: TwitchIcon,    color: '#9146ff', descKey: 'socials.twitch_desc' },
+    { id: 'youtube',   nameKey: 'socials.youtube_name',   icon: YoutubeIcon,   color: '#ff0000', descKey: 'socials.youtube_desc' },
+    { id: 'instagram', nameKey: 'socials.instagram_name', icon: InstagramIcon, color: '#e1306c', descKey: 'socials.instagram_desc' },
+    { id: 'tiktok',    nameKey: 'socials.tiktok_name',    icon: TikTokIcon,    color: '#010101', descKey: 'socials.tiktok_desc' },
+    { id: 'twitter',   nameKey: 'socials.twitter_name',   icon: XIcon,         color: '#000000', descKey: 'socials.twitter_desc' },
+    { id: 'reddit',    nameKey: 'socials.reddit_name',    icon: RedditIcon,    color: '#ff4500', descKey: 'socials.reddit_desc' },
+    { id: 'steam',     nameKey: 'socials.steam_name',     icon: SteamIcon,     color: '#1b2838', descKey: 'socials.steam_desc' }
 ];
+
 
 export default function SocialsConfig() {
   const { t } = useT();
