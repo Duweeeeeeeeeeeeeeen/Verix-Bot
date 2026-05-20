@@ -311,12 +311,12 @@ export default function SocialsConfig() {
                                     className={`pc-nav-item-v2 ${active ? 'active' : ''} ${locked ? 'locked' : ''}`}
                                     onClick={() => !locked && setActivePlatform(p.id)}
                                 >
-                                    <div className="p-icon-box-v2" style={{ background: active ? p.color : 'var(--bg-badge)', color: active ? '#fff' : locked ? 'var(--text-muted)' : p.color }}>
+                                    <div className="p-icon-box-v2" style={{ background: 'var(--bg-badge)', color: locked ? 'var(--text-muted)' : p.color }}>
                                         {locked ? <Lock size={18} /> : <p.icon size={20} />}
                                     </div>
                                     <div className="v-stack" style={{ flex: 1, textAlign: 'left' }}>
-                                        <div className="p-name-v2" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                            {t(p.nameKey)}
+                                        <div className="p-name-v2" style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                                            <span>{t(p.nameKey)}</span>
                                             <div className={`nav-status-dot-mini ${isEnabled ? 'on' : 'off'}`} />
                                         </div>
                                         {isEnabled && <div className="nav-sync-tag-v2"><span>{t('socials.synchronized')}</span></div>}
@@ -581,9 +581,12 @@ export default function SocialsConfig() {
             .pc-nav-item-v2:hover:not(.locked) { background: var(--bg-badge); color: var(--primary); }
             .pc-nav-item-v2.active { background: var(--bg-badge); border-color: var(--primary); color: var(--primary); }
             .p-icon-box-v2 { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; transition: 0.2s; flex-shrink: 0; }
+            .p-icon-box-v2 img { opacity: 1 !important; visibility: visible !important; filter: none !important; }
             .brand-logo-wrap { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; line-height: 1; }
             .brand-logo-fallback { align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 0.72rem; font-weight: 900; letter-spacing: 0; color: currentColor; }
-            .p-name-v2 { font-weight: 700; font-size: 0.9rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 145px; }
+            .p-name-v2 { font-weight: 700; font-size: 0.9rem; color: var(--text-main); min-width: 0; max-width: 128px; line-height: 1.2; }
+            .p-name-v2 span { min-width: 0; white-space: normal; overflow-wrap: anywhere; word-break: normal; }
+            .p-name-v2 .nav-status-dot-mini { margin-top: 5px; flex-shrink: 0; }
             .nav-sync-tag-v2 { display: flex; align-items: center; gap: 4px; margin-top: 2px; }
             .nav-sync-tag-v2 .dot { width: 4px; height: 4px; border-radius: 50%; background: #10b981; }
             .nav-sync-tag-v2 span { font-size: 0.62rem; color: #10b981; font-weight: 700; text-transform: none; }
