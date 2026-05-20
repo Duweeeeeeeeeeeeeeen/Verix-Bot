@@ -332,6 +332,7 @@ export default function WelcomeConfig() {
                                 embed={config[activeEmbedKey]?.embed || {}}
                                 onChange={d => updateEmbed(activeEmbedKey, d)}
                                 variables={['user', 'user_mention', 'user_tag', 'guild', 'member_count']}
+                                compact
                             />
                         </main>
                     </div>

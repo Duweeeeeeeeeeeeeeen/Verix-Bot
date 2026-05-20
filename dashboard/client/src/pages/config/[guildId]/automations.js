@@ -433,6 +433,7 @@ export default function AutomationsConfig() {
                                             setConfig({...config, autoMessage: {...config.autoMessage, slots: newSlots}});
                                         }}
                                         variables={['guild', 'member_count', 'date', 'time', 'channel']}
+                                        compact
                                     />
                                 </div>
                              ) : (

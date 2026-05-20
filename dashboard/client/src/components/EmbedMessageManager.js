@@ -27,7 +27,7 @@ import defaultMessagesMap from '../locales';
  * @param {Array} slugs - List of { key, label, description, variables, group, groupIcon }
  * @param {Function} extraButtons - Optional function (slug) => [buttons] for preview
  */
-export default function EmbedMessageManager({ guildId, module, slugs = [], extraButtons, compact = false }) {
+export default function EmbedMessageManager({ guildId, module, slugs = [], extraButtons, compact = true }) {
   const { t, language } = useT();
   const defaultMessages = defaultMessagesMap[language] || defaultMessagesMap['en'];
   const [messages, setMessages] = useState({});

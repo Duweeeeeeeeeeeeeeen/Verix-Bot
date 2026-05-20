@@ -479,6 +479,7 @@ export default function VoiceHubPage() {
                                         embed={voiceConfig.embeds?.[activeEmbedKey] || {}}
                                         onChange={val => setNested('provini', `embeds.${activeEmbedKey}`, val)}
                                         variables={['user', 'staff', 'voice_channel', 'reason', 'cooldown']}
+                                        compact
                                     />
                                 </div>
                             </section>
