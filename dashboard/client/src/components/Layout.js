@@ -577,15 +577,15 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
                                         <div className="item-icon"><Sparkles size={16} /></div>
                                         <div className="item-text">
                                             <span className="title">{t('hub.academy_title') || 'Verix Academy'}</span>
-                                            <span className="desc">Guide e documentazione completa</span>
+                                            <span className="desc">{t('layout.help.academy_desc')}</span>
                                         </div>
                                     </a>
                                 </Link>
                                 <a href="https://discord.com/invite/Ck3rGpSV7U" target="_blank" rel="noreferrer" className="dropdown-item">
                                     <div className="item-icon" style={{ color: '#5865F2' }}><MessageSquare size={16} /></div>
                                     <div className="item-text">
-                                        <span className="title">Supporto Discord</span>
-                                        <span className="desc">Chiedi aiuto alla community</span>
+                                        <span className="title">{t('layout.help.discord_title')}</span>
+                                        <span className="desc">{t('layout.help.discord_desc')}</span>
                                     </div>
                                 </a>
                                 <Link href={`/status?from=${encodeURIComponent(router.asPath)}`} legacyBehavior>
@@ -593,7 +593,7 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
                                         <div className="item-icon" style={{ color: '#10b981' }}><Activity size={16} /></div>
                                         <div className="item-text">
                                             <span className="title">{t('status_page.title') || 'Status Sistema'}</span>
-                                            <span className="desc">Monitora l'operatività di Verix</span>
+                                            <span className="desc">{t('layout.help.status_desc')}</span>
                                         </div>
                                     </a>
                                 </Link>
@@ -610,7 +610,7 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
                   </Link>
 
                  {!hideGuide && !isGuideOpen && (
-                   <button className="icon-action help-toggle" onClick={() => setIsGuideOpen(true)} title="Show Guide">
+                   <button className="icon-action help-toggle" onClick={() => setIsGuideOpen(true)} title={t('layout.show_guide')}>
                      <HelpCircle size={18} strokeWidth={2} className="text-amber" />
                      <span className="dot-pulse"></span>
                    </button>

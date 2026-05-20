@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { ChevronDown, Check } from 'lucide-react';
+import { useT } from '../contexts/LanguageContext';
 
 /**
  * Premium Custom Select Component
@@ -13,6 +14,7 @@ export default function CustomSelect({
   className = '',
   style = {}
 }) {
+  const { t } = useT();
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef(null);
 
@@ -63,7 +65,7 @@ export default function CustomSelect({
               </div>
             ))}
             {options.length === 0 && (
-              <div className="no-options">Nessuna opzione disponibile</div>
+              <div className="no-options">{t('common.no_options')}</div>
             )}
           </div>
         </div>

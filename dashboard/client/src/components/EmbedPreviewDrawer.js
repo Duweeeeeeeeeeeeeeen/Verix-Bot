@@ -1,19 +1,22 @@
 import { X } from 'lucide-react';
 import EmbedPreviewContainer from './EmbedPreviewContainer';
+import { useT } from '../contexts/LanguageContext';
 
 export default function EmbedPreviewDrawer({ open, onClose, data, children }) {
+  const { t } = useT();
+
   if (!open) return null;
 
   return (
     <div className="preview-drawer-layer" role="dialog" aria-modal="true">
-      <button className="preview-drawer-backdrop" onClick={onClose} aria-label="Close preview" />
+      <button className="preview-drawer-backdrop" onClick={onClose} aria-label={t('preview.close')} />
       <aside className="preview-drawer-panel">
         <header className="preview-drawer-header">
           <div>
-            <span>Discord Preview</span>
-            <p>Preview with proper message width.</p>
+            <span>{t('preview.discord_title')}</span>
+            <p>{t('preview.discord_desc')}</p>
           </div>
-          <button className="preview-drawer-close" onClick={onClose} aria-label="Close preview">
+          <button className="preview-drawer-close" onClick={onClose} aria-label={t('preview.close')}>
             <X size={18} />
           </button>
         </header>

@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import en from '../locales/en.json';
 
-const LanguageContext = createContext();
+export const LanguageContext = createContext();
 
 const supportedLocales = ['en', 'it', 'es', 'fr'];
 const localeLoaders = {

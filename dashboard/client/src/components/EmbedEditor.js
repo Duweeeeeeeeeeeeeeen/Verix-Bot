@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import HelpTooltip from './HelpTooltip';
 import CustomSelect from './CustomSelect';
+import EmbedPreviewDrawer from './EmbedPreviewDrawer';
 import { useT } from '../contexts/LanguageContext';
 
 const EmbedPreviewContainer = dynamic(() => import('./EmbedPreviewContainer'), {
@@ -75,7 +76,7 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
         }
     } catch (error) {
       console.error('Upload error:', error);
-      alert('Errore di connessione durante il caricamento.');
+      alert(t('embeds.editor.upload_connection_error'));
     } finally {
       setIsUploading(false);
     }
@@ -108,7 +109,7 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
         <div className="compact-editor-toolbar">
           <button className="preview-drawer-trigger" onClick={() => setPreviewOpen(true)}>
             <Eye size={16} />
-            <span>Preview</span>
+            <span>{t('common.preview')}</span>
           </button>
         </div>
       )}
@@ -196,7 +197,7 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
                         <label>{t('embeds.editor.thumbnail_label')}</label>
                         <div className="pc-input-with-button-v2">
                             <input className="pc-input-modern" value={embed?.thumbnail || ''} onChange={e => updateEmbed('thumbnail', e.target.value)} placeholder="https://..." />
-                            <button className="pc-btn-upload-v2" onClick={() => thumbInputRef.current.click()} disabled={isUploading} title="Carica Immagine">
+                            <button className="pc-btn-upload-v2" onClick={() => thumbInputRef.current.click()} disabled={isUploading} title={t('embeds.editor.upload_image')}>
                                 <Upload size={16} />
                             </button>
                             <input type="file" ref={thumbInputRef} style={{ display: 'none' }} onChange={e => handleFileUpload(e, 'thumbnail')} accept="image/*" />
@@ -206,7 +207,7 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
                         <label>{t('embeds.editor.image_label')}</label>
                         <div className="pc-input-with-button-v2">
                             <input className="pc-input-modern" value={embed?.image || ''} onChange={e => updateEmbed('image', e.target.value)} placeholder="https://..." />
-                            <button className="pc-btn-upload-v2" onClick={() => imageInputRef.current.click()} disabled={isUploading} title="Carica Immagine">
+                            <button className="pc-btn-upload-v2" onClick={() => imageInputRef.current.click()} disabled={isUploading} title={t('embeds.editor.upload_image')}>
                                 <Upload size={16} />
                             </button>
                             <input type="file" ref={imageInputRef} style={{ display: 'none' }} onChange={e => handleFileUpload(e, 'image')} accept="image/*" />
@@ -239,32 +240,16 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
       </div>
 
       {compact && previewOpen && (
-        <div className="preview-drawer-layer" role="dialog" aria-modal="true">
-          <button className="preview-drawer-backdrop" onClick={() => setPreviewOpen(false)} aria-label="Close preview" />
-          <aside className="preview-drawer-panel">
-            <header className="preview-drawer-header">
-              <div>
-                <span>Discord Preview</span>
-                <p>Preview with proper message width.</p>
-              </div>
-              <button className="preview-drawer-close" onClick={() => setPreviewOpen(false)} aria-label="Close preview">
-                <X size={18} />
-              </button>
-            </header>
-            <div className="preview-drawer-body">
-              <EmbedPreviewContainer data={{ ...embed, buttons: previewButtons || embed.buttons }} style={{ minHeight: '100%' }}>
-                {renderPreviewFooter && <div className="render-footer-v2" style={{ marginBottom: '16px' }}>{renderPreviewFooter}</div>}
+        <EmbedPreviewDrawer open={previewOpen} onClose={() => setPreviewOpen(false)} data={{ ...embed, buttons: previewButtons || embed.buttons }}>
+          {renderPreviewFooter && <div className="render-footer-v2" style={{ marginBottom: '16px' }}>{renderPreviewFooter}</div>}
 
-                <div className="variable-hints-v2" style={{ margin: 0, border: 'none' }}>
-                  <div className="hint-header-v2"><Info size={14} /> <span>{t('embeds.editor.tags_title')}</span></div>
-                  <div className="tags-grid-v2">
-                    {variables.map(v => <code key={v}>{`{${v}}`}</code>)}
-                  </div>
-                </div>
-              </EmbedPreviewContainer>
+          <div className="variable-hints-v2" style={{ margin: 0, border: 'none' }}>
+            <div className="hint-header-v2"><Info size={14} /> <span>{t('embeds.editor.tags_title')}</span></div>
+            <div className="tags-grid-v2">
+              {variables.map(v => <code key={v}>{`{${v}}`}</code>)}
             </div>
-          </aside>
-        </div>
+          </div>
+        </EmbedPreviewDrawer>
       )}
 
       <style jsx>{`

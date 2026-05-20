@@ -12,13 +12,13 @@ export default function EmbedPreviewContainer({ data, style = {}, children }) {
         <div className="pc-embed-preview-container-v2 pc-card-v2" style={{ padding: '0', overflow: 'hidden', display: 'flex', flexDirection: 'column', ...style }}>
             <div style={{ background: 'var(--bg-badge)', padding: '24px', borderBottom: '1.5px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 800, color: 'var(--text-heading)', fontSize: '1.05rem' }}>
-                    <Monitor size={20} className="header-icon-primary" /> Anteprima
+                    <Monitor size={20} className="header-icon-primary" /> {t('preview.title')}
                 </div>
                 <div style={{ display: 'flex', gap: '4px', background: 'var(--bg-card)', padding: '4px', borderRadius: '12px', border: '1px solid var(--border)' }}>
-                    <button onClick={() => setIsMobile(false)} className={`view-btn-v2 ${!isMobile ? 'active' : ''}`} title="Desktop View">
+                    <button onClick={() => setIsMobile(false)} className={`view-btn-v2 ${!isMobile ? 'active' : ''}`} title={t('preview.desktop_view')}>
                         <Monitor size={16} />
                     </button>
-                    <button onClick={() => setIsMobile(true)} className={`view-btn-v2 ${isMobile ? 'active' : ''}`} title="Mobile View">
+                    <button onClick={() => setIsMobile(true)} className={`view-btn-v2 ${isMobile ? 'active' : ''}`} title={t('preview.mobile_view')}>
                         <Smartphone size={16} />
                     </button>
                 </div>
@@ -40,10 +40,10 @@ export default function EmbedPreviewContainer({ data, style = {}, children }) {
             </div>
             
             <div style={{ padding: '16px', background: 'var(--bg-card)', borderTop: '1.5px solid var(--border)', display: 'flex', justifyContent: 'center', gap: '12px' }}>
-                <button onClick={() => setTheme('dark')} className={`theme-btn-v2 ${theme === 'dark' ? 'active' : ''}`} title="Dark Mode">
+                <button onClick={() => setTheme('dark')} className={`theme-btn-v2 ${theme === 'dark' ? 'active' : ''}`} title={t('preview.dark_mode')}>
                     <Moon size={18} />
                 </button>
-                <button onClick={() => setTheme('light')} className={`theme-btn-v2 ${theme === 'light' ? 'active' : ''}`} title="Light Mode">
+                <button onClick={() => setTheme('light')} className={`theme-btn-v2 ${theme === 'light' ? 'active' : ''}`} title={t('preview.light_mode')}>
                     <Sun size={18} />
                 </button>
             </div>
