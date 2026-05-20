@@ -383,7 +383,13 @@ export default function SocialsConfig() {
                                              <section className="pc-card-v2">
                                                  <div className="card-header-v2">
                                                      <div className="header-icon"><Users size={18} /></div>
-                                                     <h3>{t('socials.monitored_channels')}</h3>
+                                                     <h3>
+                                                         {activePlatform === 'steam' 
+                                                             ? t('socials.monitored_games') 
+                                                             : activePlatform === 'reddit' 
+                                                                 ? t('socials.monitored_subreddits') 
+                                                                 : t('socials.monitored_channels')}
+                                                     </h3>
                                                  </div>
                                                  <div className="card-body-v2">
                                                      <div className="v-stack" style={{ gap: '16px' }}>
@@ -398,7 +404,7 @@ export default function SocialsConfig() {
                                                                         <div className="pc-input-modern-v2">
                                                                             <Link2 size={16} />
                                                                             <input 
-                                                                                placeholder={`Es: ${pData.id === 'twitch' ? 'verix_official' : 'VerixBot'}`}
+                                                                                placeholder={t(`socials.placeholder_${pData.id}`)}
                                                                                 value={acc.username}
                                                                                 onChange={e => updateAccount(i, 'username', e.target.value)}
                                                                             />
