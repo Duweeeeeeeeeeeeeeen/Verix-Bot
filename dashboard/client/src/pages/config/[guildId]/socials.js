@@ -197,6 +197,29 @@ export default function SocialsConfig() {
     };
   };
 
+  const formatDiagnosticTime = (value) => {
+    if (!value) return 'Never';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return 'Invalid';
+    return date.toLocaleString([], {
+      month: 'short',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const getAccountDiagnostics = (account) => {
+    const backoffUntil = account.bridgeBackoffUntil ? new Date(account.bridgeBackoffUntil) : null;
+    const isBackoff = backoffUntil && backoffUntil.getTime() > Date.now();
+    return [
+      { label: 'Last check', value: formatDiagnosticTime(account.lastCheckAt), tone: account.lastCheckAt ? 'ok' : 'idle' },
+      { label: activePlatform === 'twitch' ? 'Live state' : 'Last content', value: activePlatform === 'twitch' ? (account.isLive ? 'Live' : 'Offline') : (account.lastPostId ? 'Tracked' : 'Not initialized'), tone: account.lastPostId || account.isLive ? 'ok' : 'idle' },
+      { label: 'Seen cache', value: `${account.seenPostIds?.length || 0}/100`, tone: (account.seenPostIds?.length || 0) > 0 ? 'ok' : 'idle' },
+      { label: 'Feed health', value: isBackoff ? `Retry ${formatDiagnosticTime(backoffUntil)}` : ((account.bridgeErrorCount || 0) > 0 ? `${account.bridgeErrorCount} recent errors` : 'Healthy'), tone: isBackoff || (account.bridgeErrorCount || 0) > 0 ? 'warn' : 'ok' }
+    ];
+  };
+
   return (
     <div className="pc-premium-wrapper fade-in">
         <Head>
@@ -348,6 +371,7 @@ export default function SocialsConfig() {
                                                      <div className="v-stack" style={{ gap: '16px' }}>
                                                          {(currentPlatformConfig.accounts || []).map((acc, i) => {
                                                             const accountStatus = getAccountStatus(acc);
+                                                            const diagnostics = getAccountDiagnostics(acc);
                                                             return (
                                                              <div key={i} className="pc-sub-card-v2 animate slide-up">
                                                                  <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
@@ -373,6 +397,15 @@ export default function SocialsConfig() {
                                                                         <strong>{accountStatus.label}</strong>
                                                                     </div>
                                                                     <span>{accountStatus.detail}</span>
+                                                                 </div>
+
+                                                                 <div className="social-diagnostics-grid">
+                                                                    {diagnostics.map(item => (
+                                                                        <div key={item.label} className={`social-diagnostic-cell ${item.tone}`}>
+                                                                            <span>{item.label}</span>
+                                                                            <strong>{item.value}</strong>
+                                                                        </div>
+                                                                    ))}
                                                                  </div>
                                                                  
                                                                  {activePlatform === 'twitch' && (
@@ -539,6 +572,13 @@ export default function SocialsConfig() {
             .social-account-status-v2.idle { color: var(--text-muted); }
             .status-main-v2 { display: flex; align-items: center; gap: 8px; color: inherit; }
             .status-dot-inline-v2 { width: 7px; height: 7px; border-radius: 999px; background: currentColor; flex-shrink: 0; }
+            .social-diagnostics-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
+            .social-diagnostic-cell { min-width: 0; padding: 10px 12px; border-radius: 12px; background: var(--bg-card); border: 1px solid var(--border); display: flex; flex-direction: column; gap: 4px; }
+            .social-diagnostic-cell span { color: var(--text-muted); font-size: 0.66rem; font-weight: 750; text-transform: uppercase; letter-spacing: 0; }
+            .social-diagnostic-cell strong { color: var(--text-heading); font-size: 0.78rem; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+            .social-diagnostic-cell.ok strong { color: #10b981; }
+            .social-diagnostic-cell.warn strong { color: #d97706; }
+            .social-diagnostic-cell.idle strong { color: var(--text-muted); }
 
             .pc-btn-add-account-v2 { width: 100%; padding: 16px; border: 1px dashed var(--border); background: transparent; border-radius: 14px; color: var(--text-muted); font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px; transition: 0.2s; }
             .pc-btn-add-account-v2:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-glow); }
@@ -570,6 +610,7 @@ export default function SocialsConfig() {
                 .pc-premium-wrapper { padding: 16px; }
                 .pc-platform-banner-v2 { align-items: flex-start; flex-wrap: wrap; }
                 .pc-platform-banner-v2 > .v-stack:last-child { width: 100%; align-items: flex-start !important; }
+                .social-diagnostics-grid { grid-template-columns: 1fr; }
             }
         `}</style>
     </div>

@@ -282,6 +282,8 @@ export class SocialManager {
                 const cleanName = (streamer.username || '').includes('twitch.tv/')
                     ? streamer.username.split('/').pop().split('?')[0].toLowerCase()
                     : (streamer.username || '').toLowerCase();
+                streamer.lastCheckAt = new Date();
+                changed = true;
 
                 const stream = liveStreams.find(s => s.user_login.toLowerCase() === cleanName);
                 const user = userData.find(u => u.login.toLowerCase() === cleanName);
@@ -330,6 +332,9 @@ export class SocialManager {
         try {
             for (const account of platformConfig.accounts) {
                 let username = account.username || '';
+                account.lastCheckAt = new Date();
+                changed = true;
+
                 if (username.includes('youtube.com/')) {
                     username = username.split('/').pop().split('?')[0];
                 }
@@ -422,6 +427,9 @@ export class SocialManager {
         try {
             for (const account of platformConfig.accounts) {
                 let username = (account.username || '').trim();
+                account.lastCheckAt = new Date();
+                changed = true;
+
                 // Extract username if a full URL was provided
                 if (username.includes('.com/')) {
                     username = username.split('/').filter(p => p && !p.includes('.com')).pop().split('?')[0];
