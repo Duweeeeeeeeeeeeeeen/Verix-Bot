@@ -12,28 +12,38 @@ import {
 import { useT } from '../../../contexts/LanguageContext';
 import Head from 'next/head';
 
-// Official platform logos via Clearbit Logo API (official brand assets)
-const mkLogo = (domain) => {
+// Official platform logos from Simple Icons, with a local text fallback if the CDN is blocked.
+const mkLogo = (slug, color, fallbackLabel) => {
     const Comp = ({ size = 24 }) => (
         <img
-            src={`https://logo.clearbit.com/${domain}`}
+            src={`https://cdn.simpleicons.org/${slug}/${color.replace('#', '')}`}
             width={size}
             height={size}
-            alt={domain}
+            alt={fallbackLabel}
+            onError={(event) => {
+                event.currentTarget.style.display = 'none';
+                event.currentTarget.nextElementSibling.style.display = 'inline-flex';
+            }}
             style={{ borderRadius: '4px', objectFit: 'contain', display: 'block' }}
         />
     );
-    Comp.displayName = domain;
-    return Comp;
+    const Wrapped = ({ size = 24 }) => (
+        <span className="brand-logo-wrap" style={{ width: size, height: size }}>
+            <Comp size={size} />
+            <span className="brand-logo-fallback" style={{ display: 'none' }}>{fallbackLabel}</span>
+        </span>
+    );
+    Wrapped.displayName = `${slug}Logo`;
+    return Wrapped;
 };
 
-const TwitchIcon    = mkLogo('twitch.tv');
-const YoutubeIcon   = mkLogo('youtube.com');
-const InstagramIcon = mkLogo('instagram.com');
-const TikTokIcon    = mkLogo('tiktok.com');
-const XIcon         = mkLogo('x.com');
-const RedditIcon    = mkLogo('reddit.com');
-const SteamIcon     = mkLogo('steampowered.com');
+const TwitchIcon    = mkLogo('twitch', '#9146ff', 'T');
+const YoutubeIcon   = mkLogo('youtube', '#ff0000', 'Y');
+const InstagramIcon = mkLogo('instagram', '#e1306c', 'I');
+const TikTokIcon    = mkLogo('tiktok', '#010101', 'T');
+const XIcon         = mkLogo('x', '#000000', 'X');
+const RedditIcon    = mkLogo('reddit', '#ff4500', 'R');
+const SteamIcon     = mkLogo('steam', '#1b2838', 'S');
 
 const PLATFORMS = [
     { id: 'twitch',    nameKey: 'socials.twitch_name',    icon: TwitchIcon,    color: '#9146ff', descKey: 'socials.twitch_desc' },
@@ -559,6 +569,8 @@ export default function SocialsConfig() {
             .pc-nav-item-v2:hover:not(.locked) { background: var(--bg-badge); color: var(--primary); }
             .pc-nav-item-v2.active { background: var(--bg-badge); border-color: var(--primary); color: var(--primary); }
             .p-icon-box-v2 { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; transition: 0.2s; flex-shrink: 0; }
+            .brand-logo-wrap { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; line-height: 1; }
+            .brand-logo-fallback { align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 0.72rem; font-weight: 900; letter-spacing: 0; color: currentColor; }
             .p-name-v2 { font-weight: 700; font-size: 0.9rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 145px; }
             .nav-sync-tag-v2 { display: flex; align-items: center; gap: 4px; margin-top: 2px; }
             .nav-sync-tag-v2 .dot { width: 4px; height: 4px; border-radius: 50%; background: #10b981; }

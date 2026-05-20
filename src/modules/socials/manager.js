@@ -57,7 +57,17 @@ async function parseRssUrl(url) {
         },
         timeout: RSS_TIMEOUT_MS
     });
-    return rssParser.parseString(response.data);
+    const xml = String(response.data || '');
+    try {
+        return await rssParser.parseString(xml);
+    } catch (error) {
+        if (!/Invalid character in entity name/i.test(error.message || '')) {
+            throw error;
+        }
+
+        const sanitizedXml = xml.replace(/&(?!#\d+;|#x[\da-fA-F]+;|[a-zA-Z][a-zA-Z\d]+;)/g, '&amp;');
+        return rssParser.parseString(sanitizedXml);
+    }
 }
 
 export class SocialManager {
@@ -849,7 +859,7 @@ export class SocialManager {
 
                 if (!gameId) continue;
 
-                const feedUrl = `https://steamcommunity.com/games/${gameId}/rss/`;
+                const feedUrl = `https://store.steampowered.com/feeds/news/app/${gameId}/?cc=US&l=en`;
 
                 try {
                     const feed = await parseRssUrl(feedUrl);
