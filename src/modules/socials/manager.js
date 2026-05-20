@@ -21,8 +21,8 @@ const rssParser = new Parser({
     }
 });
 const BRIDGE_ERROR_LOG_INTERVAL_MS = 60 * 60 * 1000;
-const BRIDGE_ERROR_BASE_BACKOFF_MS = 15 * 60 * 1000;
-const BRIDGE_ERROR_MAX_BACKOFF_MS = 6 * 60 * 60 * 1000;
+const BRIDGE_ERROR_BASE_BACKOFF_MS = 5 * 60 * 1000;
+const BRIDGE_ERROR_MAX_BACKOFF_MS = 30 * 60 * 1000;
 const BRIDGE_ERROR_KEYWORDS = [
     '404',
     'bridge error',
@@ -43,6 +43,8 @@ const RSS_BRIDGE_INSTANCES = [
 const RSS_TIMEOUT_MS = 8000;
 const WEB_SUB_TIMEOUT_MS = 8000;
 const YOUTUBE_RESOLVE_TIMEOUT_MS = 7000;
+const SOCIAL_SEEN_HISTORY_LIMIT = 100;
+const SOCIAL_RECENT_WINDOW_MS = 48 * 60 * 60 * 1000;
 
 async function parseRssUrl(url) {
     const response = await axiosWithRetry({
@@ -61,6 +63,8 @@ export class SocialManager {
     constructor(client) {
         this.client = client;
         this.interval = null;
+        this.webSubInterval = null;
+        this.isChecking = false;
         this.youtubeIdCache = new Map();
         this.youtubeAvatarCache = new Map();
     }
@@ -73,15 +77,16 @@ export class SocialManager {
     start(ms) {
         if (this.interval) clearInterval(this.interval);
         this.interval = setInterval(() => this.checkSocials(), ms);
-        
+
         // Initial check after a short delay
         setTimeout(() => {
             this.checkSocials();
             this.maintainWebSubSubscriptions();
         }, 10000);
-        
+
         // Maintain WebSub subscriptions every 24 hours
-        setInterval(() => this.maintainWebSubSubscriptions(), 24 * 60 * 60 * 1000);
+        if (this.webSubInterval) clearInterval(this.webSubInterval);
+        this.webSubInterval = setInterval(() => this.maintainWebSubSubscriptions(), 24 * 60 * 60 * 1000);
     }
 
     stop() {
@@ -89,13 +94,22 @@ export class SocialManager {
             clearInterval(this.interval);
             this.interval = null;
         }
+        if (this.webSubInterval) {
+            clearInterval(this.webSubInterval);
+            this.webSubInterval = null;
+        }
     }
 
     async checkSocials() {
+        if (this.isChecking) {
+            logger.debug('[Socials] Previous check still running, skipping overlapping cycle.');
+            return;
+        }
         if (mongoose.connection.readyState !== 1) {
             logger.warn('[Socials] Skipping checkSocials: Database not connected.');
             return;
         }
+        this.isChecking = true;
         try {
             // Find all configs that have at least one platform enabled
             const configs = await SocialConfig.find({});
@@ -116,7 +130,7 @@ export class SocialManager {
                     const platformConfig = config.platforms.twitch;
                     const usernames = platformConfig.accounts.map(s => s.username);
                     logger.debug(`[Socials/Twitch] Checking ${usernames.length} streamers for guild ${guildId}: ${usernames.join(', ')}`);
-                    
+
                     const liveStreams = await getStreams(usernames);
                     const userData = await getUsers(usernames) || []; // Default to empty if API fails
 
@@ -124,7 +138,7 @@ export class SocialManager {
                         logger.warn(`[Socials/Twitch] API error for guild ${guildId}, skipping this check.`);
                         continue;
                     }
-                    
+
                     logger.debug(`[Socials/Twitch] Found ${liveStreams.length} live streams.`);
 
                     const changed = await this.checkTwitch(guildId, platformConfig, liveStreams, userData);
@@ -162,7 +176,102 @@ export class SocialManager {
             }
         } catch (error) {
             logger.error('[Socials] Error in checkSocials loop:', error);
+        } finally {
+            this.isChecking = false;
         }
+    }
+
+    getPostId(item) {
+        return item?.id || item?.guid || item?.link || null;
+    }
+
+    getPostTime(item) {
+        const value = item?.isoDate || item?.pubDate || item?.published || item?.updated;
+        const time = value ? new Date(value).getTime() : 0;
+        return Number.isFinite(time) ? time : 0;
+    }
+
+    isRecentPost(item) {
+        const pubTime = this.getPostTime(item);
+        return !pubTime || (Date.now() - pubTime < SOCIAL_RECENT_WINDOW_MS);
+    }
+
+    ensureSeenState(account) {
+        if (!Array.isArray(account.seenPostIds)) {
+            account.seenPostIds = [];
+            return true;
+        }
+        return false;
+    }
+
+    rememberSeen(account, ids) {
+        const current = Array.isArray(account.seenPostIds) ? account.seenPostIds : [];
+        let changed = false;
+        for (const id of ids.filter(Boolean)) {
+            if (!current.includes(id)) {
+                current.push(id);
+                changed = true;
+            }
+        }
+        while (current.length > SOCIAL_SEEN_HISTORY_LIMIT) {
+            current.shift();
+            changed = true;
+        }
+        account.seenPostIds = current;
+        return changed;
+    }
+
+    getLatestUnseenItem(account, items) {
+        const feedItems = Array.isArray(items) ? items : [];
+        const seen = new Set(account.seenPostIds || []);
+        return feedItems.find(item => {
+            const id = this.getPostId(item);
+            return id && id !== account.lastPostId && !seen.has(id) && this.isRecentPost(item);
+        }) || null;
+    }
+
+    extractThumbnail(item) {
+        let thumbnail = item.enclosure?.url || item.thumbnail || '';
+
+        if (!thumbnail) {
+            const mContent = item.mediaContent || item['media:content'];
+            if (mContent) {
+                thumbnail = Array.isArray(mContent) ? mContent[0]?.$.url : mContent?.$.url;
+            }
+        }
+
+        if (!thumbnail) {
+            const mThumbnail = item.mediaThumbnail || item['media:thumbnail'];
+            if (mThumbnail) {
+                thumbnail = Array.isArray(mThumbnail) ? mThumbnail[0]?.$.url : mThumbnail?.$.url;
+            }
+        }
+
+        if (!thumbnail) {
+            const mGroup = item.mediaGroup || item['media:group'];
+            if (mGroup) {
+                const media = mGroup.mediaContent || mGroup['media:content'] || mGroup.mediaThumbnail || mGroup['media:thumbnail'];
+                if (media) {
+                    thumbnail = Array.isArray(media) ? media[0]?.$.url : media?.$.url;
+                }
+            }
+        }
+
+        if (!thumbnail) {
+            const content = item.content || item.contentSnippet || '';
+            const imgMatch = content.match(/<img[^>]+(?:src|data-src|original-src)=["']([^"']+)["']/i);
+            if (imgMatch) thumbnail = imgMatch[1];
+        }
+
+        if (!thumbnail && item.link) {
+            if (item.link.includes('instagram.com')) {
+                thumbnail = item.link.replace('instagram.com', 'ddinstagram.com').replace('/p/', '/p/show/').replace('/reel/', '/reel/show/');
+            } else if (item.link.includes('twitter.com') || item.link.includes('x.com')) {
+                thumbnail = item.link.replace(/(twitter\.com|x\.com)/, 'fixupx.com').replace('/status/', '/status/show/');
+            }
+        }
+
+        return thumbnail || '';
     }
 
     async checkTwitch(guildId, platformConfig, liveStreams, userData = []) {
@@ -170,13 +279,13 @@ export class SocialManager {
         let changed = false;
         try {
             for (const streamer of platformConfig.accounts) {
-                const cleanName = (streamer.username || '').includes('twitch.tv/') 
+                const cleanName = (streamer.username || '').includes('twitch.tv/')
                     ? streamer.username.split('/').pop().split('?')[0].toLowerCase()
                     : (streamer.username || '').toLowerCase();
 
                 const stream = liveStreams.find(s => s.user_login.toLowerCase() === cleanName);
                 const user = userData.find(u => u.login.toLowerCase() === cleanName);
-                
+
                 if (stream) {
                     // Streamer is LIVE
                     if (!streamer.isLive || (stream.id !== streamer.lastPostId)) {
@@ -203,7 +312,7 @@ export class SocialManager {
                         streamer.isLive = false;
                         changed = true;
                     }
-                    
+
                     // Self-healing: Always ensure role is removed if streamer is offline
                     if (platformConfig.liveRoleId && streamer.discordUserId) {
                         await this.removeSocialRole(guildId, platformConfig, streamer);
@@ -256,63 +365,47 @@ export class SocialManager {
                 try {
                     const feed = await parseRssUrl(feedUrl);
                     if (feed && feed.items && feed.items.length > 0) {
-                        // Ensure seenPostIds is initialized
-                        if (!account.seenPostIds) {
-                            account.seenPostIds = [];
-                        }
+                        if (this.ensureSeenState(account)) changed = true;
                         if (account.lastPostId && account.seenPostIds.length === 0) {
                             account.seenPostIds.push(account.lastPostId);
                             changed = true;
                         }
 
+                        const feedIds = feed.items.map(item => this.getPostId(item)).filter(Boolean);
+
                         if (!account.lastPostId) {
                             const latestVideo = feed.items[0];
-                            logger.info(`[Socials/YouTube] Initialized lastPostId for ${account.username} to ${latestVideo.id} without notification`);
-                            account.lastPostId = latestVideo.id;
-                            account.seenPostIds = feed.items.map(item => item.id).filter(Boolean);
+                            const latestId = this.getPostId(latestVideo);
+                            logger.info(`[Socials/YouTube] Initialized lastPostId for ${account.username} to ${latestId} without notification`);
+                            account.lastPostId = latestId;
+                            account.seenPostIds = feedIds;
                             changed = true;
                             continue;
                         }
 
-                        // Process items in reverse (oldest first) so they are posted in chronological order
-                        const itemsToProcess = [...feed.items].reverse();
-                        for (const video of itemsToProcess) {
-                            const isDuplicate = account.seenPostIds.includes(video.id) || video.id === account.lastPostId;
-                            const pubTime = video.isoDate ? new Date(video.isoDate).getTime() : (video.pubDate ? new Date(video.pubDate).getTime() : 0);
-                            const isRecent = !pubTime || (Date.now() - pubTime < 48 * 60 * 60 * 1000); // 48 hours
-
-                            if (!isDuplicate) {
-                                if (isRecent) {
-                                    // Attempt to fetch profile image if missing
-                                    if (!account.cachedProfileImage) {
-                                        account.cachedProfileImage = await this.fetchYouTubeProfileImage(username);
-                                    }
-
-                                    // NEW VIDEO detected
-                                    const videoId = video.id.replace('yt:video:', '');
-                                    logger.info(`[Socials/YouTube] New video detected: ${video.title} (${video.id}) for guild ${guildId}`);
-                                    
-                                    await this.handleSocialPost(guildId, platformConfig, account, {
-                                        title: video.title,
-                                        url: video.link,
-                                        author: feed.title,
-                                        thumbnail: `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`,
-                                        fallbackThumbnail: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
-                                        profileImage: account.cachedProfileImage
-                                    }, 'YouTube');
-                                    
-                                    account.lastPostId = video.id;
-                                } else {
-                                    logger.debug(`[Socials/YouTube] Skipping old video upload/edit: ${video.title} (${video.id})`);
-                                }
-
-                                account.seenPostIds.push(video.id);
-                                if (account.seenPostIds.length > 20) {
-                                    account.seenPostIds.shift();
-                                }
-                                changed = true;
+                        const latestUnseen = this.getLatestUnseenItem(account, feed.items);
+                        if (latestUnseen) {
+                            const latestUnseenId = this.getPostId(latestUnseen);
+                            if (!account.cachedProfileImage) {
+                                account.cachedProfileImage = await this.fetchYouTubeProfileImage(username);
                             }
+
+                            const videoId = latestUnseenId.replace('yt:video:', '');
+                            logger.info(`[Socials/YouTube] New video detected: ${latestUnseen.title} (${latestUnseenId}) for guild ${guildId}`);
+
+                            await this.handleSocialPost(guildId, platformConfig, account, {
+                                title: latestUnseen.title,
+                                url: latestUnseen.link,
+                                author: feed.title,
+                                thumbnail: `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`,
+                                profileImage: account.cachedProfileImage
+                            }, 'YouTube');
+
+                            account.lastPostId = latestUnseenId;
+                            changed = true;
                         }
+
+                        if (this.rememberSeen(account, feedIds)) changed = true;
                     }
                 } catch (feedErr) {
                     logger.warn(`[Socials/YouTube] Could not fetch feed for ${account.username}: ${feedErr.message}`);
@@ -372,15 +465,13 @@ export class SocialManager {
                     }
 
                     if (feed && feed.items && feed.items.length > 0) {
-                        // Ensure seenPostIds is initialized
-                        if (!account.seenPostIds) {
-                            account.seenPostIds = [];
-                        }
+                        if (this.ensureSeenState(account)) changed = true;
                         if (account.lastPostId && account.seenPostIds.length === 0) {
                             account.seenPostIds.push(account.lastPostId);
                             changed = true;
                         }
 
+                        const feedIds = feed.items.map(item => this.getPostId(item)).filter(Boolean);
                         const latestItem = feed.items[0];
 
                         if (this.isBridgeErrorItem(latestItem)) {
@@ -393,111 +484,48 @@ export class SocialManager {
                         if (this.clearBridgeErrorState(account)) {
                             changed = true;
                         }
-                        
-                        // Process items in reverse (oldest first) so they are posted in chronological order
-                        const itemsToProcess = [...feed.items].reverse();
-                        for (const item of itemsToProcess) {
-                            const itemId = item.id || item.guid || item.link;
-                            if (!itemId) continue;
 
-                            const isDuplicate = account.seenPostIds.includes(itemId) || itemId === account.lastPostId;
-                            const pubTime = item.isoDate ? new Date(item.isoDate).getTime() : (item.pubDate ? new Date(item.pubDate).getTime() : 0);
-                            const isRecent = !pubTime || (Date.now() - pubTime < 48 * 60 * 60 * 1000); // 48 hours
-
-                            if (!isDuplicate) {
-                                if (!account.lastPostId) {
-                                    logger.info(`[Socials/${platformName}] Initialized lastPostId for ${username} to ${itemId} without notification`);
-                                    account.lastPostId = itemId;
-                                    account.seenPostIds = feed.items.map(i => i.id || i.guid || i.link).filter(Boolean);
-                                    changed = true;
-                                    break; // Stop loop as we just initialized
-                                }
-
-                                if (isRecent) {
-                                    // NEW POST detected
-                                    // Extract thumbnail more aggressively
-                                    let thumbnail = item.enclosure?.url || item.thumbnail || '';
-                                    
-                                    // Check media fields if available (including mapped custom fields)
-                                    if (!thumbnail) {
-                                        const mContent = item.mediaContent || item['media:content'];
-                                        if (mContent) {
-                                            thumbnail = Array.isArray(mContent) 
-                                                ? mContent[0]?.$.url 
-                                                : mContent?.$.url;
-                                        }
-                                    }
-
-                                    if (!thumbnail) {
-                                        const mThumbnail = item.mediaThumbnail || item['media:thumbnail'];
-                                        if (mThumbnail) {
-                                            thumbnail = Array.isArray(mThumbnail)
-                                                ? mThumbnail[0]?.$.url
-                                                : mThumbnail?.$.url;
-                                        }
-                                    }
-
-                                    // Support for media:group (common in some bridges)
-                                    if (!thumbnail) {
-                                        const mGroup = item.mediaGroup || item['media:group'];
-                                        if (mGroup) {
-                                            const media = mGroup.mediaContent || mGroup['media:content'] || mGroup.mediaThumbnail || mGroup['media:thumbnail'];
-                                            if (media) {
-                                                thumbnail = Array.isArray(media) ? media[0]?.$.url : media?.$.url;
-                                            }
-                                        }
-                                    }
-
-                                    if (!thumbnail) {
-                                        const content = item.content || item.contentSnippet || '';
-                                        // Support both double and single quotes, various attributes, and data-src
-                                        const imgMatch = content.match(/<img[^>]+(?:src|data-src|original-src)=["']([^"']+)["']/i);
-                                        if (imgMatch) thumbnail = imgMatch[1];
-                                    }
-                                    
-                                    // Last resort for Instagram/Twitter: if we have a link, try to use a proxy for the image if it's missing
-                                    if (!thumbnail && item.link) {
-                                        if (item.link.includes('instagram.com')) {
-                                            thumbnail = item.link.replace('instagram.com', 'ddinstagram.com').replace('/p/', '/p/show/');
-                                        } else if (item.link.includes('twitter.com') || item.link.includes('x.com')) {
-                                            thumbnail = item.link.replace(/(twitter\.com|x\.com)/, 'fixupx.com').replace('/status/', '/status/show/');
-                                        }
-                                    }
-
-                                    if (!thumbnail) {
-                                        logger.debug(`[Socials/${platformName}] Could not find thumbnail for item: ${item.title}`);
-                                    }
-
-                                    const isVideo = item.enclosure?.type?.includes('video') || 
-                                                  item.content?.includes('<video') || 
-                                                  item.link?.includes('/video/') ||
-                                                  item.title?.toLowerCase().includes('video') ||
-                                                  item.title?.toLowerCase().includes('reel');
-
-                                    logger.info(`[Socials/${platformName}] New post detected: ${item.title} (${itemId}) for guild ${guildId}`);
-
-                                    await this.handleSocialPost(guildId, platformConfig, account, {
-                                        title: item.title || 'Nuovo post!',
-                                        url: item.link,
-                                        author: feed.title || username,
-                                        description: item.contentSnippet || item.content?.replace(/<[^>]*>/g, '').substring(0, 500) || '',
-                                        thumbnail: thumbnail,
-                                        isVideo: isVideo,
-                                        profileImage: feed.image?.url || feed.itunes?.image
-                                    }, platformName);
-
-                                    account.lastPostId = itemId;
-                                } else {
-                                    logger.debug(`[Socials/${platformName}] Skipping old post: ${item.title} (${itemId})`);
-                                }
-
-                                account.seenPostIds.push(itemId);
-                                if (account.seenPostIds.length > 20) {
-                                    account.seenPostIds.shift();
-                                }
-                                changed = true;
-                            }
+                        if (!account.lastPostId) {
+                            const latestId = this.getPostId(latestItem);
+                            logger.info(`[Socials/${platformName}] Initialized lastPostId for ${username} to ${latestId} without notification`);
+                            account.lastPostId = latestId;
+                            account.seenPostIds = feedIds;
+                            changed = true;
+                            continue;
                         }
+
+                        const item = this.getLatestUnseenItem(account, feed.items);
+                        if (item) {
+                            const itemId = this.getPostId(item);
+                            let thumbnail = this.extractThumbnail(item, platformName);
+
+                            if (!thumbnail) {
+                                logger.debug(`[Socials/${platformName}] Could not find thumbnail for item: ${item.title}`);
+                            }
+
+                            const isVideo = item.enclosure?.type?.includes('video') ||
+                                          item.content?.includes('<video') ||
+                                          item.link?.includes('/video/') ||
+                                          item.title?.toLowerCase().includes('video') ||
+                                          item.title?.toLowerCase().includes('reel');
+
+                            logger.info(`[Socials/${platformName}] New post detected: ${item.title} (${itemId}) for guild ${guildId}`);
+
+                            await this.handleSocialPost(guildId, platformConfig, account, {
+                                title: item.title || 'New post!',
+                                url: item.link,
+                                author: feed.title || username,
+                                description: item.contentSnippet || item.content?.replace(/<[^>]*>/g, '').substring(0, 500) || '',
+                                thumbnail: thumbnail,
+                                isVideo: isVideo,
+                                profileImage: feed.image?.url || feed.itunes?.image
+                            }, platformName);
+
+                            account.lastPostId = itemId;
+                            changed = true;
+                        }
+
+                        if (this.rememberSeen(account, feedIds)) changed = true;
                     }
                 } catch (feedErr) {
                     if (this.recordBridgeError(account, platformName, username, feedErr.message)) {
@@ -513,7 +541,9 @@ export class SocialManager {
 
     isBridgeBackoffActive(account) {
         const until = account.bridgeBackoffUntil ? new Date(account.bridgeBackoffUntil).getTime() : 0;
-        return Number.isFinite(until) && until > Date.now();
+        if (!Number.isFinite(until) || until <= Date.now()) return false;
+        if (until - Date.now() > BRIDGE_ERROR_MAX_BACKOFF_MS) return false;
+        return true;
     }
 
     isBridgeErrorItem(item) {
@@ -586,7 +616,7 @@ export class SocialManager {
 
             const formatText = (text) => {
                 if (!text) return '';
-                
+
                 // If it's a video on X/Twitter, the user requested to put nothing instead of the post content/description
                 if (postData.isVideo && (platform === 'Twitter' || platform === 'X')) {
                     return '';
@@ -633,7 +663,7 @@ export class SocialManager {
             // Suppress description if video on X/Twitter
             const isTwitter = platform === 'Twitter' || platform === 'X';
             const isTwitterVideo = isTwitter && postData.isVideo;
-            
+
             let finalDescription = formatText(customEmbed.description) || formatText(defaultDescs[platform]) || postData.description || postData.title;
             if (isTwitterVideo) {
                 finalDescription = ''; // Don't show post content if it's a video
@@ -645,21 +675,21 @@ export class SocialManager {
                 .setDescription(finalDescription)
                 .setColor(customEmbed.color ? parseInt(customEmbed.color.replace('#', ''), 16) : style.color)
                 .setTimestamp()
-                .setFooter({ 
-                    text: formatText(customEmbed.footer) || t('socials.footer', lang), 
-                    iconURL: this.client.user.displayAvatarURL() 
+                .setFooter({
+                    text: formatText(customEmbed.footer) || t('socials.footer', lang),
+                    iconURL: this.client.user.displayAvatarURL()
                 });
 
             // Use profile image if available, otherwise fallback to platform icon
             const profileImage = postData.profileImage || style.icon;
-            
+
             // Thumbnail (Right side) - The user explicitly requested the channel/streamer image here
             embedData.setThumbnail(profileImage);
 
             // Author (Top) - Use the platform icon for branding
-            embedData.setAuthor({ 
-                name: `${style.label} - ${authorName}`, 
-                iconURL: style.icon || guild.iconURL() 
+            embedData.setAuthor({
+                name: `${style.label} - ${authorName}`,
+                iconURL: style.icon || guild.iconURL()
             });
 
             if (postData.thumbnail) {
@@ -684,9 +714,9 @@ export class SocialManager {
                 );
 
             const content = platformConfig.mentionEveryone ? '@everyone' : (platformConfig.roleId ? `<@&${platformConfig.roleId}>` : null);
-            
-            await channel.send({ 
-                content, 
+
+            await channel.send({
+                content,
                 embeds: [embedData],
                 components: [row]
             }).catch(err => {
@@ -740,7 +770,7 @@ export class SocialManager {
     async resolveYouTubeHandle(handle) {
         try {
             const cleanHandle = handle.startsWith('@') ? handle : `@${handle}`;
-            
+
             if (this.youtubeIdCache && this.youtubeIdCache.has(cleanHandle)) {
                 return this.youtubeIdCache.get(cleanHandle);
             }
@@ -749,7 +779,7 @@ export class SocialManager {
             }
 
             const url = `https://www.youtube.com/${cleanHandle}`;
-            
+
             const response = await axiosWithRetry({
                 method: 'GET',
                 url,
@@ -792,7 +822,7 @@ export class SocialManager {
         try {
             const isHandle = channelIdOrHandle.startsWith('@') || !channelIdOrHandle.startsWith('UC');
             const cleanHandle = isHandle && !channelIdOrHandle.startsWith('@') ? `@${channelIdOrHandle}` : channelIdOrHandle;
-            
+
             if (this.youtubeAvatarCache && this.youtubeAvatarCache.has(cleanHandle)) {
                 return this.youtubeAvatarCache.get(cleanHandle);
             }
@@ -801,7 +831,7 @@ export class SocialManager {
             }
 
             const url = isHandle ? `https://www.youtube.com/${cleanHandle}` : `https://www.youtube.com/channel/${channelIdOrHandle}`;
-            
+
             const response = await axiosWithRetry({
                 method: 'GET',
                 url,
@@ -822,7 +852,7 @@ export class SocialManager {
                 }
                 return avatarUrl;
             }
-            
+
             return null;
         } catch (error) {
             logger.debug(`[YouTubeResolver] Failed to fetch profile image for ${channelIdOrHandle}: ${error.message}`);
@@ -832,7 +862,7 @@ export class SocialManager {
 
     async maintainWebSubSubscriptions() {
         if (mongoose.connection.readyState !== 1) return;
-        
+
         try {
             logger.info('[WebSub] Starting YouTube WebSub subscription maintenance...');
             const configs = await SocialConfig.find({ 'platforms.youtube.enabled': true });
@@ -871,7 +901,7 @@ export class SocialManager {
                     }
 
                     if (!channelId || !channelId.startsWith('UC') || subscribedChannels.has(channelId)) continue;
-                    
+
                     subscribedChannels.add(channelId);
 
                     const topicUrl = `https://www.youtube.com/xml/feeds/videos.xml?channel_id=${channelId}`;
@@ -890,7 +920,7 @@ export class SocialManager {
                             },
                             timeout: WEB_SUB_TIMEOUT_MS
                         });
-                        
+
                         if (response.status === 202 || response.status === 204) {
                             logger.info(`[WebSub] Sent subscription request for channel ${channelId}`);
                         } else {
@@ -899,7 +929,7 @@ export class SocialManager {
                     } catch (subErr) {
                         logger.error(`[WebSub] Failed to subscribe to ${channelId}:`, subErr.message);
                     }
-                    
+
                     // Small delay to avoid hammering Google Hub
                     await new Promise(r => setTimeout(r, 1000));
                 }

@@ -166,15 +166,24 @@ router.post('/youtube/:channelId', express.text({ type: ['application/atom+xml',
             let configChanged = false;
 
             // Initialize seenPostIds if empty and lastPostId is set, or if lastPostId is not set
-            if (!trackingAccount.seenPostIds) {
+            if (!Array.isArray(trackingAccount.seenPostIds)) {
                 trackingAccount.seenPostIds = [];
+                configChanged = true;
             }
             if (trackingAccount.lastPostId && trackingAccount.seenPostIds.length === 0) {
                 trackingAccount.seenPostIds.push(trackingAccount.lastPostId);
                 configChanged = true;
             }
 
-            for (const video of feed.items) {
+            const feedIds = feed.items.map(video => video.id).filter(Boolean);
+            const video = feed.items.find(item => {
+                const isDuplicate = trackingAccount.seenPostIds.includes(item.id) || item.id === trackingAccount.lastPostId;
+                const pubTime = item.isoDate ? new Date(item.isoDate).getTime() : (item.pubDate ? new Date(item.pubDate).getTime() : 0);
+                const isRecent = !pubTime || (Date.now() - pubTime < 48 * 60 * 60 * 1000);
+                return !isDuplicate && isRecent;
+            });
+
+            if (video) {
                 const isDuplicate = trackingAccount.seenPostIds.includes(video.id) || video.id === trackingAccount.lastPostId;
                 const pubTime = video.isoDate ? new Date(video.isoDate).getTime() : (video.pubDate ? new Date(video.pubDate).getTime() : 0);
                 const isRecent = !pubTime || (Date.now() - pubTime < 48 * 60 * 60 * 1000); // 48 hours
@@ -193,8 +202,7 @@ router.post('/youtube/:channelId', express.text({ type: ['application/atom+xml',
                             title: video.title,
                             url: video.link,
                             author: feed.title || video.author || trackingAccount.username,
-                            thumbnail: `https://i.ytimg.com/vi/${currentVideoId}/maxresdefault.jpg`,
-                            fallbackThumbnail: `https://i.ytimg.com/vi/${currentVideoId}/hqdefault.jpg`,
+                            thumbnail: `https://i.ytimg.com/vi/${currentVideoId}/hqdefault.jpg`,
                             profileImage: trackingAccount.cachedProfileImage
                         }, 'YouTube');
 
@@ -202,13 +210,18 @@ router.post('/youtube/:channelId', express.text({ type: ['application/atom+xml',
                     } else {
                         logger.info(`[WebSub] Skipping push of old video for ${channelId} in guild ${config.guildId}: ${video.title}`);
                     }
+                }
+            }
 
-                    trackingAccount.seenPostIds.push(video.id);
-                    if (trackingAccount.seenPostIds.length > 20) {
-                        trackingAccount.seenPostIds.shift();
-                    }
+            for (const id of feedIds) {
+                if (!trackingAccount.seenPostIds.includes(id)) {
+                    trackingAccount.seenPostIds.push(id);
                     configChanged = true;
                 }
+            }
+            while (trackingAccount.seenPostIds.length > 100) {
+                trackingAccount.seenPostIds.shift();
+                configChanged = true;
             }
 
             if (configChanged) {

@@ -511,6 +511,7 @@ export default function SocialsConfig() {
             .pc-settings-layout-v2 { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.75fr); gap: 20px; align-items: start; }
             .socials-library-card { animation: slideUp 0.25s ease-out; }
             .socials-library-item { width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 14px; border: 1.5px solid rgba(var(--primary-rgb), 0.18); background: rgba(var(--primary-rgb), 0.06); color: var(--text-heading); cursor: default; }
+            .socials-library-item .p-name-v2 { white-space: normal; overflow-wrap: anywhere; text-overflow: clip; max-width: none; line-height: 1.25; }
             .socials-message-manager :global(.manager-layout) { grid-template-columns: 1fr !important; max-width: 100% !important; margin: 0 !important; }
             .socials-message-manager :global(.slug-sidebar) { position: static !important; }
             .socials-message-manager :global(.pc-editor-layout-v2) { grid-template-columns: 1fr !important; max-width: 100% !important; }
