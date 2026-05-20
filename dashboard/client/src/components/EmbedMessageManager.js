@@ -292,13 +292,14 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
         }
 
         .message-manager.compact .manager-layout {
-          grid-template-columns: 1fr;
+          grid-template-columns: 260px minmax(0, 1fr);
           max-width: 100%;
           margin: 0;
         }
 
         .message-manager.compact .slug-sidebar {
-          position: static;
+          position: sticky;
+          top: 24px;
         }
 
         .message-manager.compact .editor-header-v2 {
@@ -567,8 +568,10 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
         }
 
         @media (max-width: 1200px) {
-          .manager-layout { grid-template-columns: 1fr; }
+          .manager-layout,
+          .message-manager.compact .manager-layout { grid-template-columns: 1fr; }
           .slug-sidebar { position: static; }
+          .message-manager.compact .slug-sidebar { position: static; }
           .editor-header-v2 { flex-direction: column; }
         }
 
