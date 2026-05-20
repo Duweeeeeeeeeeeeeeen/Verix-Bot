@@ -192,6 +192,30 @@ export class SocialManager {
                     if (changed) configChanged = true;
                 }
 
+                // 8. Check Kick
+                if (config.platforms?.kick?.enabled && config.platforms.kick.accounts?.length > 0) {
+                    const changed = await this.checkKick(guildId, config.platforms.kick);
+                    if (changed) configChanged = true;
+                }
+
+                // 9. Check GitHub
+                if (config.platforms?.github?.enabled && config.platforms.github.accounts?.length > 0) {
+                    const changed = await this.checkGitHub(guildId, config.platforms.github);
+                    if (changed) configChanged = true;
+                }
+
+                // 10. Check custom RSS feeds
+                if (config.platforms?.rss?.enabled && config.platforms.rss.accounts?.length > 0) {
+                    const changed = await this.checkCustomRSS(guildId, config.platforms.rss);
+                    if (changed) configChanged = true;
+                }
+
+                // 11. Check Telegram channels
+                if (config.platforms?.telegram?.enabled && config.platforms.telegram.accounts?.length > 0) {
+                    const changed = await this.checkTelegram(guildId, config.platforms.telegram);
+                    if (changed) configChanged = true;
+                }
+
                 // Save if any state changed
                 if (configChanged) {
                     await config.save();
@@ -933,6 +957,269 @@ export class SocialManager {
         return changed;
     }
 
+    async checkFeedAccounts(guildId, platformConfig, platformName, buildFeedUrl, buildPostData) {
+        let changed = false;
+        try {
+            for (const account of platformConfig.accounts) {
+                const username = (account.username || '').trim();
+                account.lastCheckAt = new Date();
+                changed = true;
+
+                if (!username) continue;
+                if (this.isBridgeBackoffActive(account)) continue;
+
+                try {
+                    const feedUrl = buildFeedUrl(username);
+                    const feed = await parseRssUrl(feedUrl);
+                    if (feed && feed.items && feed.items.length > 0) {
+                        if (this.ensureSeenState(account)) changed = true;
+                        if (account.lastPostId && account.seenPostIds.length === 0) {
+                            account.seenPostIds.push(account.lastPostId);
+                            changed = true;
+                        }
+
+                        const feedIds = feed.items.map(item => this.getPostId(item)).filter(Boolean);
+                        const latestItem = feed.items[0];
+
+                        if (this.clearBridgeErrorState(account)) changed = true;
+
+                        if (!account.lastPostId) {
+                            const latestId = this.getPostId(latestItem);
+                            logger.info(`[Socials/${platformName}] Initialized lastPostId for ${username} to ${latestId} without notification`);
+                            account.lastPostId = latestId;
+                            account.seenPostIds = feedIds;
+                            changed = true;
+                            continue;
+                        }
+
+                        const item = this.getLatestUnseenItem(account, feed.items);
+                        if (item) {
+                            const itemId = this.getPostId(item);
+                            logger.info(`[Socials/${platformName}] New item detected: ${item.title} (${itemId}) for guild ${guildId}`);
+
+                            await this.handleSocialPost(guildId, platformConfig, account, buildPostData({ item, feed, username }), platformName);
+
+                            account.lastPostId = itemId;
+                            changed = true;
+                        }
+
+                        if (this.rememberSeen(account, feedIds)) changed = true;
+                    }
+                } catch (feedErr) {
+                    if (this.recordBridgeError(account, platformName, username, feedErr.message)) {
+                        changed = true;
+                    }
+                }
+            }
+        } catch (error) {
+            logger.error(`[Socials/${platformName}] Error checking guild ${guildId}:`, error);
+        }
+        return changed;
+    }
+
+    normalizeGithubFeedUrl(value) {
+        let input = String(value || '').trim();
+        if (!input) return '';
+        if (!/^https?:\/\//i.test(input)) input = `https://github.com/${input}`;
+        const url = new URL(input);
+        const parts = url.pathname.split('/').filter(Boolean);
+        if (parts.length < 2) throw new Error('GitHub source must be owner/repo or a GitHub repository URL');
+        const owner = parts[0];
+        const repo = parts[1];
+        const mode = parts.includes('releases') ? 'releases' : 'commits';
+        const branchIndex = parts.indexOf('commits');
+        const branch = branchIndex !== -1 && parts[branchIndex + 1] ? parts.slice(branchIndex + 1).join('/') : null;
+        return mode === 'releases'
+            ? `https://github.com/${owner}/${repo}/releases.atom`
+            : `https://github.com/${owner}/${repo}/commits/${branch || 'HEAD'}.atom`;
+    }
+
+    async checkGitHub(guildId, platformConfig) {
+        return this.checkFeedAccounts(
+            guildId,
+            platformConfig,
+            'GitHub',
+            value => this.normalizeGithubFeedUrl(value),
+            ({ item, feed, username }) => ({
+                title: item.title || 'New GitHub update',
+                url: item.link,
+                author: item.author || feed.title || username,
+                description: (item.contentSnippet || item.content || '').replace(/<[^>]*>/g, '').trim().substring(0, 500),
+                thumbnail: '',
+                profileImage: 'https://logo.clearbit.com/github.com'
+            })
+        );
+    }
+
+    async checkCustomRSS(guildId, platformConfig) {
+        return this.checkFeedAccounts(
+            guildId,
+            platformConfig,
+            'RSS',
+            value => {
+                if (!/^https?:\/\//i.test(value)) throw new Error('RSS feed must be a valid http(s) URL');
+                return value;
+            },
+            ({ item, feed, username }) => ({
+                title: item.title || 'New feed update',
+                url: item.link || username,
+                author: feed.title || username,
+                description: (item.contentSnippet || item.content || '').replace(/<[^>]*>/g, '').trim().substring(0, 500),
+                thumbnail: this.extractThumbnail(item),
+                profileImage: feed.image?.url || 'https://logo.clearbit.com/rss.com'
+            })
+        );
+    }
+
+    cleanTelegramUsername(value = '') {
+        return String(value || '')
+            .trim()
+            .replace(/^https?:\/\//i, '')
+            .replace(/^t\.me\/s\//i, '')
+            .replace(/^t\.me\//i, '')
+            .replace(/^@/, '')
+            .split('/')[0]
+            .split('?')[0];
+    }
+
+    decodeTelegramHtml(value = '') {
+        return this.decodeHtmlEntities(String(value || '').replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]*>/g, '')).trim();
+    }
+
+    async fetchTelegramPosts(username) {
+        const cleanUsername = this.cleanTelegramUsername(username);
+        const response = await axiosWithRetry({
+            method: 'GET',
+            url: `https://t.me/s/${encodeURIComponent(cleanUsername)}`,
+            responseType: 'text',
+            headers: { 'User-Agent': 'Mozilla/5.0 VerixBot/1.0' },
+            timeout: RSS_TIMEOUT_MS
+        });
+        const html = String(response.data || '');
+        const matches = [...html.matchAll(/<div class="tgme_widget_message_wrap[\s\S]*?<\/time>[\s\S]*?<\/div>\s*<\/div>/g)];
+        const items = matches.map(match => {
+            const block = match[0];
+            const idMatch = block.match(/data-post="([^"]+)"/);
+            const textMatch = block.match(/<div class="tgme_widget_message_text[^"]*"[^>]*>([\s\S]*?)<\/div>/);
+            const timeMatch = block.match(/datetime="([^"]+)"/);
+            const imageMatch = block.match(/background-image:url\('([^']+)'\)/);
+            const id = idMatch?.[1] || '';
+            const text = this.decodeTelegramHtml(textMatch?.[1] || '');
+            const [, channel, postId] = id.match(/^([^/]+)\/(.+)$/) || [];
+            return {
+                id,
+                guid: id,
+                link: channel && postId ? `https://t.me/${channel}/${postId}` : `https://t.me/s/${cleanUsername}`,
+                title: text ? text.slice(0, 120) : `New Telegram post from ${cleanUsername}`,
+                contentSnippet: text,
+                content: text,
+                isoDate: timeMatch?.[1] || null,
+                pubDate: timeMatch?.[1] || null,
+                thumbnail: imageMatch?.[1] || ''
+            };
+        }).filter(item => item.id).sort((a, b) => this.getPostTime(b) - this.getPostTime(a));
+
+        if (!items.length) throw new Error('Telegram channel returned no public posts');
+        return { title: cleanUsername, items };
+    }
+
+    async checkTelegram(guildId, platformConfig) {
+        let changed = false;
+        try {
+            for (const account of platformConfig.accounts) {
+                const username = this.cleanTelegramUsername(account.username);
+                account.lastCheckAt = new Date();
+                changed = true;
+                if (!username) continue;
+                if (this.isBridgeBackoffActive(account)) continue;
+
+                try {
+                    const feed = await this.fetchTelegramPosts(username);
+                    if (this.ensureSeenState(account)) changed = true;
+                    const feedIds = feed.items.map(item => this.getPostId(item)).filter(Boolean);
+                    const latestItem = feed.items[0];
+                    if (this.clearBridgeErrorState(account)) changed = true;
+                    if (!account.lastPostId) {
+                        account.lastPostId = this.getPostId(latestItem);
+                        account.seenPostIds = feedIds;
+                        changed = true;
+                        continue;
+                    }
+                    const item = this.getLatestUnseenItem(account, feed.items);
+                    if (item) {
+                        await this.handleSocialPost(guildId, platformConfig, account, {
+                            title: item.title || 'New Telegram post',
+                            url: item.link,
+                            author: username,
+                            description: item.contentSnippet || '',
+                            thumbnail: item.thumbnail,
+                            profileImage: 'https://logo.clearbit.com/telegram.org'
+                        }, 'Telegram');
+                        account.lastPostId = this.getPostId(item);
+                        changed = true;
+                    }
+                    if (this.rememberSeen(account, feedIds)) changed = true;
+                } catch (feedErr) {
+                    if (this.recordBridgeError(account, 'Telegram', username, feedErr.message)) changed = true;
+                }
+            }
+        } catch (error) {
+            logger.error(`[Socials/Telegram] Error checking guild ${guildId}:`, error);
+        }
+        return changed;
+    }
+
+    cleanKickUsername(value = '') {
+        return String(value || '').trim().replace(/^https?:\/\//i, '').replace(/^www\./i, '').replace(/^kick\.com\//i, '').split('/')[0].split('?')[0].replace(/^@/, '');
+    }
+
+    async checkKick(guildId, platformConfig) {
+        let changed = false;
+        try {
+            for (const account of platformConfig.accounts) {
+                const username = this.cleanKickUsername(account.username);
+                account.lastCheckAt = new Date();
+                changed = true;
+                if (!username) continue;
+                try {
+                    const response = await axiosWithRetry({
+                        method: 'GET',
+                        url: `https://kick.com/api/v2/channels/${encodeURIComponent(username)}`,
+                        responseType: 'json',
+                        headers: { 'User-Agent': 'Mozilla/5.0 VerixBot/1.0', 'Accept': 'application/json' },
+                        timeout: RSS_TIMEOUT_MS
+                    });
+                    const channel = response.data || {};
+                    const stream = channel.livestream;
+                    if (stream) {
+                        const streamId = String(stream.id || stream.session_title || channel.playback_url || `${username}-live`);
+                        if (!account.isLive || account.lastPostId !== streamId) {
+                            await this.handleSocialPost(guildId, platformConfig, account, {
+                                title: stream.session_title || `${channel.user?.username || username} is live`,
+                                url: `https://kick.com/${channel.slug || username}`,
+                                author: channel.user?.username || username,
+                                thumbnail: stream.thumbnail?.url || channel.banner_image?.url || channel.offline_banner_image?.url || '',
+                                profileImage: channel.user?.profile_pic || 'https://logo.clearbit.com/kick.com'
+                            }, 'Kick');
+                            account.isLive = true;
+                            account.lastPostId = streamId;
+                            changed = true;
+                        }
+                    } else if (account.isLive) {
+                        account.isLive = false;
+                        changed = true;
+                    }
+                    if (this.clearBridgeErrorState(account)) changed = true;
+                } catch (feedErr) {
+                    if (this.recordBridgeError(account, 'Kick', username, feedErr.message)) changed = true;
+                }
+            }
+        } catch (error) {
+            logger.error(`[Socials/Kick] Error checking guild ${guildId}:`, error);
+        }
+        return changed;
+    }
+
     isBridgeBackoffActive(account) {
         const until = account.bridgeBackoffUntil ? new Date(account.bridgeBackoffUntil).getTime() : 0;
         if (!Number.isFinite(until) || until <= Date.now()) return false;
@@ -1046,7 +1333,11 @@ export class SocialManager {
                 'Instagram': { color: 0xe1306c, icon: 'https://logo.clearbit.com/instagram.com', label: 'Instagram' },
                 'TikTok': { color: 0x000000, icon: 'https://logo.clearbit.com/tiktok.com', label: 'TikTok' },
                 'Reddit': { color: 0xff4500, icon: 'https://logo.clearbit.com/reddit.com', label: 'Reddit Post' },
-                'Steam': { color: 0x1b2838, icon: 'https://logo.clearbit.com/steampowered.com', label: 'Steam Announcement' }
+                'Steam': { color: 0x1b2838, icon: 'https://logo.clearbit.com/steampowered.com', label: 'Steam Announcement' },
+                'Kick': { color: 0x53fc18, icon: 'https://logo.clearbit.com/kick.com', label: 'Kick Live' },
+                'GitHub': { color: 0x24292f, icon: 'https://logo.clearbit.com/github.com', label: 'GitHub Update' },
+                'RSS': { color: 0xf97316, icon: 'https://logo.clearbit.com/rss.com', label: 'RSS Update' },
+                'Telegram': { color: 0x26a5e4, icon: 'https://logo.clearbit.com/telegram.org', label: 'Telegram Post' }
             };
 
             const style = platformStyles[platform] || { color: 0x7289da, icon: '', label: platform };

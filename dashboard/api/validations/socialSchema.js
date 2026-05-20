@@ -32,6 +32,10 @@ export const socialSchema = z.object({
         tiktok: platformSchema,
         twitter: platformSchema,
         reddit: platformSchema,
-        steam: platformSchema
+        steam: platformSchema,
+        kick: platformSchema,
+        github: platformSchema,
+        rss: platformSchema,
+        telegram: platformSchema
     }).passthrough().optional()
 }).passthrough();

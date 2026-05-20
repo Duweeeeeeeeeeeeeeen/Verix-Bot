@@ -44,6 +44,10 @@ const TikTokIcon    = mkLogo('tiktok', '#010101', 'T');
 const XIcon         = mkLogo('x', '#000000', 'X');
 const RedditIcon    = mkLogo('reddit', '#ff4500', 'R');
 const SteamIcon     = mkLogo('steam', '#1b2838', 'S');
+const KickIcon      = mkLogo('kick', '#53fc18', 'K');
+const GithubIcon    = mkLogo('github', '#24292f', 'G');
+const RssIcon       = mkLogo('rss', '#f97316', 'R');
+const TelegramIcon  = mkLogo('telegram', '#26a5e4', 'T');
 
 const PLATFORMS = [
     { id: 'twitch',    nameKey: 'socials.twitch_name',    icon: TwitchIcon,    color: '#9146ff', descKey: 'socials.twitch_desc' },
@@ -52,7 +56,11 @@ const PLATFORMS = [
     { id: 'tiktok',    nameKey: 'socials.tiktok_name',    icon: TikTokIcon,    color: '#010101', descKey: 'socials.tiktok_desc' },
     { id: 'twitter',   nameKey: 'socials.twitter_name',   icon: XIcon,         color: '#000000', descKey: 'socials.twitter_desc' },
     { id: 'reddit',    nameKey: 'socials.reddit_name',    icon: RedditIcon,    color: '#ff4500', descKey: 'socials.reddit_desc' },
-    { id: 'steam',     nameKey: 'socials.steam_name',     icon: SteamIcon,     color: '#1b2838', descKey: 'socials.steam_desc' }
+    { id: 'steam',     nameKey: 'socials.steam_name',     icon: SteamIcon,     color: '#1b2838', descKey: 'socials.steam_desc' },
+    { id: 'kick',      nameKey: 'socials.kick_name',      icon: KickIcon,      color: '#53fc18', descKey: 'socials.kick_desc' },
+    { id: 'github',    nameKey: 'socials.github_name',    icon: GithubIcon,    color: '#24292f', descKey: 'socials.github_desc' },
+    { id: 'rss',       nameKey: 'socials.rss_name',       icon: RssIcon,       color: '#f97316', descKey: 'socials.rss_desc' },
+    { id: 'telegram',  nameKey: 'socials.telegram_name',  icon: TelegramIcon,  color: '#26a5e4', descKey: 'socials.telegram_desc' }
 ];
 
 
@@ -403,7 +411,11 @@ export default function SocialsConfig() {
                                                              ? t('socials.monitored_games') 
                                                              : activePlatform === 'reddit' 
                                                                  ? t('socials.monitored_subreddits') 
-                                                                 : t('socials.monitored_channels')}
+                                                                 : activePlatform === 'github'
+                                                                    ? t('socials.monitored_repositories')
+                                                                    : activePlatform === 'rss'
+                                                                        ? t('socials.monitored_feeds')
+                                                                        : t('socials.monitored_channels')}
                                                      </h3>
                                                  </div>
                                                  <div className="card-body-v2">

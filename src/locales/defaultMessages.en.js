@@ -606,6 +606,30 @@ export default {
             color: '#1b2838',
             footer: 'Social Notifications | Verix'
         },
+        kick: {
+            title: 'Kick live: **{streamer}**',
+            description: '### {title}\n\nWatch the stream now on Kick.',
+            color: '#53fc18',
+            footer: 'Social Notifications | Verix'
+        },
+        github: {
+            title: 'New GitHub update for **{username}**',
+            description: '### {title}\n\n{description}',
+            color: '#24292f',
+            footer: 'Social Notifications | Verix'
+        },
+        rss: {
+            title: 'New update from **{username}**',
+            description: '### {title}\n\n{description}',
+            color: '#f97316',
+            footer: 'Social Notifications | Verix'
+        },
+        telegram: {
+            title: 'New Telegram post from **{username}**',
+            description: '### {title}\n\n{description}',
+            color: '#26a5e4',
+            footer: 'Social Notifications | Verix'
+        },
         default_titles: {
             Twitch: '📡 **{streamer}** is live!',
             YouTube: '🎥 New video from **{streamer}**!',
@@ -633,6 +657,10 @@ export default {
             TikTok: 'View on TikTok',
             Reddit: 'View on Reddit',
             Steam: 'View on Steam',
+            Kick: 'Watch on Kick',
+            GitHub: 'View on GitHub',
+            RSS: 'Open Feed Item',
+            Telegram: 'View on Telegram',
             default: 'Open Link'
         },
         footer: 'Social Notifications | Verix'
