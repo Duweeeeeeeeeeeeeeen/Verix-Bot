@@ -244,6 +244,22 @@ export default function PollsConfig() {
         <div className="pc-content-v2">
             {activeTab === 'create' && (
                 <div className="v-stack" style={{ gap: '24px' }}>
+                    <section className="pc-card-v2 preview-action-bar">
+                        <div>
+                            <h3 style={{ margin: 0 }}>{t('polls.preview_title')}</h3>
+                            <p>Check the Discord message before publishing.</p>
+                        </div>
+                        <div className="preview-action-buttons">
+                            <button className="pc-btn-outline-v2 preview-action-btn" onClick={() => setPreviewOpen(true)}>
+                                <Monitor size={18} /> <span>Preview</span>
+                            </button>
+                            <button className="pc-btn-primary preview-action-btn" onClick={handleCreatePoll} disabled={creating}>
+                                <Send size={18} />
+                                <span>{creating ? t('common.deploying') : t('polls.deploy_btn')}</span>
+                            </button>
+                        </div>
+                    </section>
+
                     <div className="v-stack" style={{ gap: '32px' }}>
                         <section className="pc-card-v2 animate slide-up">
                             <div className="card-header-v2" style={{ marginBottom: '32px' }}>
@@ -331,15 +347,6 @@ export default function PollsConfig() {
                         </section>
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '12px', alignItems: 'center' }}>
-                        <button className="pc-btn-outline-v2" style={{ justifyContent: 'center', minHeight: '56px' }} onClick={() => setPreviewOpen(true)}>
-                            <Monitor size={18} /> <span>{t('polls.preview_title')}</span>
-                        </button>
-                        <button className="pc-btn-primary" style={{ padding: '18px 24px', borderRadius: '18px', fontSize: '1rem', justifyContent: 'center' }} onClick={handleCreatePoll} disabled={creating}>
-                            <Send size={24} />
-                            <span>{creating ? t('common.deploying') : t('polls.deploy_btn')}</span>
-                        </button>
-                    </div>
                     <EmbedPreviewDrawer open={previewOpen} onClose={() => setPreviewOpen(false)} data={previewPollEmbed} />
                 </div>
             )}
@@ -443,6 +450,15 @@ export default function PollsConfig() {
 
             .pc-btn-primary { background: var(--primary); color: #fff; border: none; padding: 12px 24px; border-radius: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
             .pc-btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(var(--primary-rgb), 0.2); }
+            .preview-action-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 20px !important; }
+            .preview-action-bar p { margin: 4px 0 0 0; color: var(--text-muted); font-size: 0.85rem; font-weight: 650; }
+            .preview-action-buttons { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+            .preview-action-btn { min-height: 44px; justify-content: center; }
+            @media (max-width: 720px) {
+                .preview-action-bar { align-items: stretch; flex-direction: column; }
+                .preview-action-buttons { justify-content: stretch; }
+                .preview-action-buttons button { width: 100%; }
+            }
 
             .pc-status-toggle-v2 { display: flex; align-items: center; gap: 10px; background: var(--bg-badge); color: var(--text-muted); border: 1.5px solid var(--border); padding: 12px 24px; border-radius: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; }
             .pc-status-toggle-v2.active { background: rgba(var(--primary-rgb), 0.1); color: var(--primary); border-color: rgba(var(--primary-rgb), 0.2); }

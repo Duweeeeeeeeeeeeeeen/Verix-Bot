@@ -37,7 +37,6 @@ export default function ReactionRolesConfig() {
   const [channels, setChannels] = useState([]);
   const [activePanelId, setActivePanelId] = useState(null);
   const [activeTab, setActiveTab] = useState('settings');
-  const [isPreviewMobile, setIsPreviewMobile] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -313,8 +312,24 @@ export default function ReactionRolesConfig() {
                 </nav>
 
                 {activeTab === 'settings' && activePanel && (
-                    <div className="pc-layout-grid-v2 rr-layout-inner">
-                        <div className="v-stack animate slide-up" style={{ gap: '32px' }}>
+                    <div className="v-stack animate slide-up" style={{ gap: '20px' }}>
+                        <section className="pc-card-v2 preview-action-bar">
+                            <div>
+                                <h3 style={{ margin: 0 }}>{activePanel.name || t('rr.panel_identity')}</h3>
+                                <p>{activePanel.roles.length} roles - {activePanel.type === 'REACTION' ? 'Reactions' : 'Buttons'} - {activePanel.channelId ? 'Channel selected' : 'Channel missing'}</p>
+                            </div>
+                            <div className="preview-action-buttons">
+                                <button className="pc-btn-outline-v2 preview-action-btn" onClick={() => setPreviewOpen(true)}>
+                                    <Monitor size={18} /> <span>Preview</span>
+                                </button>
+                                <button onClick={() => handleDeploy(activePanel.id)} className="pc-btn-primary preview-action-btn" disabled={saving || !activePanel.channelId}>
+                                    <Send size={18} /> <span>{t('rr.launch_panel') || 'Send Panel'}</span>
+                                </button>
+                            </div>
+                        </section>
+
+                        <div className="pc-layout-grid-v2 rr-layout-inner">
+                            <div className="v-stack" style={{ gap: '32px' }}>
                                 <section className="pc-card-v2">
                                     <div className="card-header-v2">
                                         <div className="header-icon"><Settings2 size={18} /></div>
@@ -486,17 +501,36 @@ export default function ReactionRolesConfig() {
                                     </div>
                                 </section>
 
-                                <button onClick={() => removePanel(activePanel.id)} className="pc-btn-danger-studio-v2">
-                                    <Trash2 size={18} /> <span>{t('rr.del_panel')}</span>
-                                </button>
                             </div>
 
                             <aside className="v-stack" style={{ gap: '16px' }}>
-                                <button className="pc-btn-primary" style={{ width: '100%', justifyContent: 'center' }} onClick={() => setPreviewOpen(true)}>
-                                    <Monitor size={18} /> <span>Preview</span>
-                                </button>
-                                <button onClick={() => handleDeploy(activePanel.id)} className="pc-btn-primary" disabled={saving || !activePanel.channelId} style={{ width: '100%', justifyContent: 'center' }}>
-                                    <Send size={18} /> <span>{t('rr.launch_panel') || 'Send Panel'}</span>
+                                <section className="pc-card-v2 rr-summary-card">
+                                    <div className="card-header-v2">
+                                        <div className="header-icon"><Layout size={18} /></div>
+                                        <h3 style={{ margin: 0 }}>Panel summary</h3>
+                                    </div>
+                                    <div className="v-stack" style={{ gap: '12px' }}>
+                                        <div className="rr-summary-row">
+                                            <span>{t('rr.target_channel')}</span>
+                                            <strong className={activePanel.channelId ? 'ok' : 'warn'}>{activePanel.channelId ? 'Selected' : 'Missing'}</strong>
+                                        </div>
+                                        <div className="rr-summary-row">
+                                            <span>{t('rr.interaction')}</span>
+                                            <strong>{activePanel.type === 'REACTION' ? 'Reactions' : 'Buttons'}</strong>
+                                        </div>
+                                        <div className="rr-summary-row">
+                                            <span>{t('rr.role_matrix')}</span>
+                                            <strong>{activePanel.roles.length}</strong>
+                                        </div>
+                                        <div className="rr-summary-row">
+                                            <span>{t('rr.embed_title')}</span>
+                                            <strong>{activePanel.embed.title ? 'Ready' : 'Missing'}</strong>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <button onClick={() => removePanel(activePanel.id)} className="pc-btn-danger-studio-v2 rr-danger-action">
+                                    <Trash2 size={18} /> <span>{t('rr.del_panel')}</span>
                                 </button>
                                 <EmbedPreviewDrawer
                                     open={previewOpen}
@@ -516,6 +550,7 @@ export default function ReactionRolesConfig() {
                                 />
                             </aside>
                         </div>
+                    </div>
                 )}
 
                 {activeTab === 'settings' && !activePanel && (
@@ -547,8 +582,21 @@ export default function ReactionRolesConfig() {
 
         <style jsx>{`
             .rr-layout-outer { display: block !important; }
-            .rr-layout-inner { display: grid !important; grid-template-columns: 1fr 664px !important; gap: 32px !important; align-items: start !important; }
+            .rr-layout-inner { display: grid !important; grid-template-columns: minmax(0, 1fr) 320px !important; gap: 24px !important; align-items: start !important; }
             .pc-premium-wrapper { padding: 32px; max-width: 1650px; margin: 0 auto; font-family: 'Inter', sans-serif; }
+            .preview-action-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 20px !important; }
+            .preview-action-bar p { margin: 4px 0 0 0; color: var(--text-muted); font-size: 0.85rem; font-weight: 650; }
+            .preview-action-buttons { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+            .preview-action-btn { min-height: 44px; justify-content: center; }
+            .rr-summary-card { position: sticky; top: 24px; padding: 20px !important; }
+            .rr-summary-card .card-header-v2 { margin-bottom: 16px; }
+            .rr-summary-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+            .rr-summary-row:last-child { border-bottom: none; }
+            .rr-summary-row span { color: var(--text-muted); font-size: 0.78rem; font-weight: 750; }
+            .rr-summary-row strong { color: var(--text-heading); font-size: 0.82rem; font-weight: 800; text-align: right; }
+            .rr-summary-row strong.ok { color: #10b981; }
+            .rr-summary-row strong.warn { color: #ef4444; }
+            .rr-danger-action { border-radius: 16px !important; }
 
             /* Horizontal Top Bar styles */
             .rr-top-bar { display: flex; align-items: center; gap: 24px; padding: 16px 24px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 24px; box-shadow: var(--shadow-premium); margin-bottom: 32px; }
@@ -574,10 +622,16 @@ export default function ReactionRolesConfig() {
 
             @media (max-width: 1200px) {
                 .rr-layout-inner { grid-template-columns: 1fr !important; gap: 24px !important; }
+                .rr-summary-card { position: static; }
             }
             @media (max-width: 992px) {
                 .rr-top-bar { flex-direction: column; align-items: stretch; gap: 16px; }
                 .top-bar-header { border-right: none; border-bottom: 1.5px solid var(--border); padding-right: 0; padding-bottom: 16px; justify-content: space-between; }
+            }
+            @media (max-width: 720px) {
+                .preview-action-bar { align-items: stretch; flex-direction: column; }
+                .preview-action-buttons { justify-content: stretch; }
+                .preview-action-buttons button { width: 100%; }
             }
             
             .pc-header-v2 { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; background: var(--bg-card); padding: 24px; border-radius: 28px; box-shadow: var(--shadow-premium); border: 1px solid var(--border); }

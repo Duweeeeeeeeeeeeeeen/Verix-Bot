@@ -246,6 +246,16 @@ export default function GiveawayConfig() {
         <div className="pc-content-v2">
             {activeTab === 'create' && (
                 <div className="v-stack" style={{ gap: '24px' }}>
+                    <section className="pc-card-v2 preview-action-bar">
+                        <div>
+                            <h3 style={{ margin: 0 }}>{t('giveaway.visual_designer')}</h3>
+                            <p>Check the Discord message before deploying or scheduling.</p>
+                        </div>
+                        <button className="pc-btn-secondary-v2 preview-action-btn" onClick={() => setPreviewOpen(true)}>
+                            <Monitor size={18} /> <span>Preview</span>
+                        </button>
+                    </section>
+
                     <div className="v-stack" style={{ gap: '32px' }}>
                         <section className="pc-card-v2 animate slide-up">
                             <div className="card-header-v2">
@@ -407,11 +417,6 @@ export default function GiveawayConfig() {
                         </section>
                     </div>
 
-                    <div>
-                        <button className="pc-btn-secondary-v2" style={{ width: '100%', height: '56px', fontSize: '1.1rem', background: 'var(--bg-card)', color: 'var(--primary)', border: '1.5px solid var(--border)', borderRadius: '14px', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }} onClick={() => setPreviewOpen(true)}>
-                            <Monitor size={20} /> <span>Preview</span>
-                        </button>
-                    </div>
                     <EmbedPreviewDrawer open={previewOpen} onClose={() => setPreviewOpen(false)} data={previewEmbed} />
                 </div>
             )}
@@ -511,6 +516,13 @@ export default function GiveawayConfig() {
             .pc-tab-badge-v2 { background: var(--primary); color: #fff; font-size: 0.7rem; padding: 2px 8px; border-radius: 100px; margin-left: 8px; }
             .v-stack { display: flex; flex-direction: column; }
             .animate { animation: slideUp 0.4s ease-out; }
+            .preview-action-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 20px !important; }
+            .preview-action-bar p { margin: 4px 0 0 0; color: var(--text-muted); font-size: 0.85rem; font-weight: 650; }
+            .preview-action-btn { min-height: 44px; justify-content: center; display: flex; align-items: center; gap: 10px; border-radius: 14px; padding: 12px 20px; }
+            @media (max-width: 720px) {
+                .preview-action-bar { align-items: stretch; flex-direction: column; }
+                .preview-action-btn { width: 100%; }
+            }
             @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         `}</style>
     </div>
