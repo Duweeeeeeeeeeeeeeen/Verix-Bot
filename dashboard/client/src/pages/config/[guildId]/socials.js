@@ -168,7 +168,8 @@ export default function SocialsConfig() {
       return {
         tone: 'warn',
         label: t('socials.status_retrying'),
-        detail: `${t('socials.status_next_retry')} ${backoffUntil.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+        detail: `${t('socials.status_next_retry')} ${backoffUntil.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
+        isBackoff: true
       };
     }
 
@@ -176,7 +177,8 @@ export default function SocialsConfig() {
       return {
         tone: 'warn',
         label: t('socials.status_unstable'),
-        detail: t('socials.status_unstable_desc')
+        detail: t('socials.status_unstable_desc'),
+        isBackoff: false
       };
     }
 
@@ -186,14 +188,16 @@ export default function SocialsConfig() {
         label: t('socials.status_monitoring'),
         detail: account.lastCheckAt
           ? `${t('socials.status_last_check')} ${new Date(account.lastCheckAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
-          : t('socials.status_ready_desc')
+          : t('socials.status_ready_desc'),
+        isBackoff: false
       };
     }
 
     return {
       tone: 'idle',
       label: t('socials.status_pending'),
-      detail: t('socials.status_pending_desc')
+      detail: t('socials.status_pending_desc'),
+      isBackoff: false
     };
   };
 
@@ -399,6 +403,19 @@ export default function SocialsConfig() {
                                                                     <span>{accountStatus.detail}</span>
                                                                  </div>
 
+                                                                 {activePlatform === 'twitter' && (accountStatus.isBackoff || acc.bridgeErrorCount > 0) && (
+                                                                     <div className="twitter-bridge-alert">
+                                                                         <div className="alert-header">
+                                                                             <Info size={16} className="alert-icon" />
+                                                                             <strong>{t('socials.twitter_bridge_title')}</strong>
+                                                                         </div>
+                                                                         <p className="alert-text">{t('socials.twitter_bridge_notice')}</p>
+                                                                         <div className="alert-footer">
+                                                                             <span className="status-badge-saved">{t('socials.settings_saved_status')}</span>
+                                                                         </div>
+                                                                     </div>
+                                                                 )}
+
                                                                  <div className="social-diagnostics-grid">
                                                                     {diagnostics.map(item => (
                                                                         <div key={item.label} className={`social-diagnostic-cell ${item.tone}`}>
@@ -552,8 +569,8 @@ export default function SocialsConfig() {
             .socials-message-manager :global(.editor-header-v2) { align-items: flex-start !important; flex-wrap: wrap !important; }
             .socials-message-manager :global(.header-buttons-v2) { flex-wrap: wrap !important; }
             .socials-message-manager :global(.header-buttons-v2 button) { min-height: 44px; }
-            .pc-card-v2 { background: var(--bg-card); border: 1px solid var(--border); border-radius: 28px; padding: 32px; box-shadow: var(--shadow-premium); }
-            .card-header-v2 { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+            .pc-card-v2 { background: var(--bg-card); border: 1px solid var(--border); border-radius: 28px; padding: 24px; box-shadow: var(--shadow-premium); }
+            .card-header-v2 { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; }
             .header-icon { width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: var(--bg-badge); color: var(--primary); }
             .card-header-v2 h3 { margin: 0; font-family: 'Inter'; font-size: 1.3rem; font-weight: 700; color: var(--text-heading); }
 
@@ -600,6 +617,51 @@ export default function SocialsConfig() {
             .v-stack { display: flex; flex-direction: column; }
             .animate { animation: slideUp 0.4s ease-out; }
             @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+            .twitter-bridge-alert {
+                margin-top: 12px;
+                padding: 12px 16px;
+                border-radius: 14px;
+                background: rgba(245, 158, 11, 0.04);
+                border: 1px solid rgba(245, 158, 11, 0.15);
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+            .twitter-bridge-alert .alert-header {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                color: #d97706;
+                font-size: 0.8rem;
+                font-weight: 750;
+            }
+            .twitter-bridge-alert .alert-icon {
+                color: #d97706;
+                flex-shrink: 0;
+            }
+            .twitter-bridge-alert .alert-text {
+                margin: 0;
+                color: var(--text-dim);
+                font-size: 0.75rem;
+                font-weight: 600;
+                line-height: 1.5;
+            }
+            .twitter-bridge-alert .alert-footer {
+                display: flex;
+                align-items: center;
+                border-top: 1px dashed rgba(245, 158, 11, 0.15);
+                padding-top: 8px;
+                margin-top: 4px;
+            }
+            .twitter-bridge-alert .status-badge-saved {
+                font-size: 0.68rem;
+                font-weight: 750;
+                color: #10b981;
+                display: flex;
+                align-items: center;
+                gap: 4px;
+            }
+
             @media (max-width: 1100px) {
                 .socials-layout { grid-template-columns: 1fr !important; }
                 .socials-sidebar { position: static; }
