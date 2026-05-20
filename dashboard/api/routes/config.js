@@ -1708,6 +1708,23 @@ router.post('/:guildId/socials', adminCheck, validate(socialSchema), async (req,
         if (data._id) delete data._id;
         if (data.__v !== undefined) delete data.__v;
 
+        const guild = await Guild.findOne({ guildId }).select('isPremium premiumTier').lean();
+        const tier = guild?.premiumTier || (guild?.isPremium ? 'premium' : 'none');
+        const canUsePlatform = (platform) => {
+            if (['premium', 'platinum'].includes(tier)) return true;
+            if (tier === 'lite') return platform === 'twitch' || platform === 'youtube';
+            return platform === 'twitch';
+        };
+
+        for (const platform of ['twitch', 'youtube', 'instagram', 'tiktok', 'twitter', 'reddit', 'steam', 'kick', 'github', 'rss', 'telegram']) {
+            if (data.platforms?.[platform]?.enabled && !canUsePlatform(platform)) {
+                return res.status(403).json({
+                    success: false,
+                    error: `${platform} social feeds require a premium plan.`
+                });
+            }
+        }
+
         const existing = await SocialConfig.findOne({ guildId });
         if (existing) {
             // MERGE LOGIC: Preserve internal state (isLive, lastPostId) for existing accounts
