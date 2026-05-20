@@ -170,7 +170,7 @@ export default function GlobalConfigPage() {
 
         <div className="pc-content-v2">
             {activeTab === 'general' && (
-                <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 664px', gap: '32px' }}>
+                <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(280px, 360px)', gap: '32px' }}>
                     <div className="v-stack" style={{ gap: '32px' }}>
                         <section className="pc-card-v2 animate slide-up">
                             <div className="card-header-v2">

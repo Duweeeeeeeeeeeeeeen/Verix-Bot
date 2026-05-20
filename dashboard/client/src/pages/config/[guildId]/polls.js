@@ -359,9 +359,9 @@ export default function PollsConfig() {
                             <h3 style={{ margin: 0 }}>{t('polls.live_studio')}</h3>
                         </div>
                         <div className="card-body-v2">
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(440px, 1fr))', gap: '28px' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '18px' }}>
                                 {activePolls.map(poll => (
-                                    <div key={poll._id} className="pc-matrix-item-v2 animate slide-up" style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border)', padding: '32px', borderRadius: '32px', display: 'flex', gap: '24px', alignItems: 'center', boxShadow: '0 10px 30px rgba(0,0,0,0.02)' }}>
+                                    <div key={poll._id} className="pc-matrix-item-v2 animate slide-up" style={{ background: 'var(--bg-card)', border: '1.5px solid var(--border)', padding: '20px', borderRadius: '18px', display: 'flex', gap: '16px', alignItems: 'center', boxShadow: '0 8px 20px rgba(0,0,0,0.02)' }}>
                                         <div style={{ width: '72px', height: '72px', background: 'rgba(99,102,241,0.08)', borderRadius: '22px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)', border: '1.5px solid rgba(99,102,241,0.2)' }}><BarChart size={32} /></div>
                                         <div style={{ flex: 1 }}>
                                             <h4 style={{ margin: '0 0 10px 0', fontSize: '1.3rem', fontWeight: 700, color: 'var(--text-heading)', letterSpacing: '-0.5px' }}>{poll.question}</h4>
@@ -374,7 +374,7 @@ export default function PollsConfig() {
                                     </div>
                                 ))}
                                 {activePolls.length === 0 && (
-                                    <div style={{ gridColumn: 'span 2', textAlign: 'center', padding: '120px 40px', background: 'var(--bg-badge)', borderRadius: '40px', border: '2px dashed var(--border)' }}>
+                                    <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '56px 24px', background: 'var(--bg-badge)', borderRadius: '18px', border: '1.5px dashed var(--border)' }}>
                                         <div style={{ width: '80px', height: '80px', background: 'var(--bg-badge)', borderRadius: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', color: 'var(--border)' }}>
                                             <Shapes size={40} />
                                         </div>

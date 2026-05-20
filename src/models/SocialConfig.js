@@ -21,6 +21,7 @@ const socialPlatformSchema = new mongoose.Schema({
         lastPostId: { type: String, default: null }, // Last video/stream/post ID to avoid duplicates
         seenPostIds: { type: [String], default: [] }, // Array of notified post IDs to prevent duplicates/spam
         resolvedId: { type: String, default: null }, // Persisted resolved ID (e.g. UC...)
+        cachedProfileImage: { type: String, default: null },
         isLive: { type: Boolean, default: false }, // Specific to Twitch
         lastCheckAt: { type: Date, default: null },
         bridgeErrorCount: { type: Number, default: 0 },

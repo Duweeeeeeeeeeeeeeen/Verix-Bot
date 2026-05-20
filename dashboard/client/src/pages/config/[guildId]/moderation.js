@@ -206,7 +206,7 @@ export default function ModerationConfig() {
         <div className="pc-content-v2">
             {activeTab === 'antispam' && (
                 <div className="v-stack animate slide-up" style={{ gap: '32px' }}>
-                    <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 664px', gap: '32px' }}>
+                    <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(280px, 360px)', gap: '32px' }}>
                         <section className="pc-card-v2">
                             <div className="card-header-v2">
                                 <div className="header-icon"><MessageCircle size={18} /></div>
@@ -416,7 +416,7 @@ export default function ModerationConfig() {
 
             {activeTab === 'settings' && (
                 <div className="v-stack animate slide-up">
-                    <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 664px', gap: '32px' }}>
+                    <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(280px, 360px)', gap: '32px' }}>
                     <section className="pc-card-v2">
                         <div className="card-header-v2">
                             <div className="header-icon"><EyeOff size={18} /></div>

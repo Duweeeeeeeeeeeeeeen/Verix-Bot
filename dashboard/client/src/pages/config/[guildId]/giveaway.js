@@ -423,7 +423,7 @@ export default function GiveawayConfig() {
 
             {activeTab === 'live' && (
                 <div className="v-stack animate slide-up" style={{ gap: '32px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: '24px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '18px' }}>
                         {activeGiveaways.map(gw => (
                             <div key={gw.messageId} className="pc-sub-card-v2" style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
                                 <div style={{ width: '64px', height: '64px', background: 'var(--bg-card)', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)', border: '1.5px solid var(--border)' }}><Trophy size={32} /></div>
@@ -437,7 +437,7 @@ export default function GiveawayConfig() {
                             </div>
                         ))}
                         {activeGiveaways.length === 0 && (
-                            <div style={{ gridColumn: 'span 2', textAlign: 'center', padding: '100px 32px', background: 'var(--bg-badge)', borderRadius: '32px', border: '2px dashed var(--border)' }}>
+                            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '56px 24px', background: 'var(--bg-badge)', borderRadius: '18px', border: '1.5px dashed var(--border)' }}>
                                 <Box size={64} style={{ margin: '0 auto 24px', opacity: 0.1 }} />
                                 <h3 style={{ margin: 0, fontWeight: 700, color: 'var(--text-heading)' }}>{t('giveaway.no_active')}</h3>
                                 <button onClick={() => setActiveTab('create')} className="pc-btn-primary" style={{ margin: '24px auto 0' }}><Plus size={18} /> {t('giveaway.new_project')}</button>
