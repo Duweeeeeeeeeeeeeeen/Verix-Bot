@@ -38,7 +38,9 @@ const socialConfigSchema = new mongoose.Schema({
         youtube: { type: socialPlatformSchema, default: () => ({ embed: { color: '#ff0000', title: '🎥 Nuovo video di {streamer}!', description: '### {title}\n\nÈ appena uscito un nuovo video sul canale! Corri a lasciare un like.' } }) },
         instagram: { type: socialPlatformSchema, default: () => ({ embed: { color: '#e1306c', title: '📸 Nuovo post di {streamer}', description: '### {title}\n\nNuovo contenuto caricato su Instagram! Passa a dare un\'occhiata.' } }) },
         tiktok: { type: socialPlatformSchema, default: () => ({ embed: { color: '#000000', title: '🎵 Nuovo TikTok di {streamer}', description: '### {title}\n\nÈ appena stato pubblicato un nuovo video su TikTok! Guarda subito.' } }) },
-        twitter: { type: socialPlatformSchema, default: () => ({ embed: { color: '#1da1f2', title: '🐦 Nuovo Tweet di {streamer}', description: '{description}' } }) }
+        twitter: { type: socialPlatformSchema, default: () => ({ embed: { color: '#1da1f2', title: '🐦 Nuovo Tweet di {streamer}', description: '{description}' } }) },
+        reddit: { type: socialPlatformSchema, default: () => ({ embed: { color: '#ff4500', title: '👾 Nuovo Post su r/{username}!', description: '### {title}\n\n**{author}** ha pubblicato un nuovo contenuto su **r/{username}**!\n\n{description}' } }) },
+        steam: { type: socialPlatformSchema, default: () => ({ embed: { color: '#1b2838', title: '🎮 Nuovo Annuncio per {username}!', description: '### {title}\n\n**{username}** ha rilasciato un nuovo annuncio/aggiornamento!\n\n{description}' } }) }
     },
     colors: {
         primary: { type: String, default: '#5865F2' },

@@ -592,19 +592,35 @@ export default {
             color: '#000000',
             footer: 'Notifiche Social | Verix'
         },
+        reddit: {
+            title: '👾 Nuovo Post su **r/{username}**!',
+            description: '### {title}\n\n**{author}** ha pubblicato un nuovo post su **r/{username}**!\n\n{description}',
+            color: '#ff4500',
+            footer: 'Notifiche Social | Verix'
+        },
+        steam: {
+            title: '🎮 Nuovo Annuncio per **{username}**!',
+            description: '### {title}\n\n**{username}** ha rilasciato un nuovo annuncio/aggiornamento!\n\n{description}',
+            color: '#1b2838',
+            footer: 'Notifiche Social | Verix'
+        },
         default_titles: {
             Twitch: '📡 **{streamer}** è in diretta!',
             YouTube: '🎥 Nuovo video di **{streamer}**!',
             Twitter: '𝕏 (Twitter) Nuovo post di **{streamer}**',
             Instagram: '📸 Nuovo post di **{streamer}**',
-            TikTok: '🎵 Nuovo TikTok di **{streamer}**'
+            TikTok: '🎵 Nuovo TikTok di **{streamer}**',
+            Reddit: '👾 Nuovo Post su **r/{username}**!',
+            Steam: '🎮 Nuovo Annuncio per **{username}**!'
         },
         default_descriptions: {
             Twitch: '### {title}\n\nEhi! **{streamer}** ha appena acceso la camera su Twitch. Non perderti lo show!\n\n[Entra in Live]({url})',
             YouTube: '### {title}\n\nÈ appena uscito un nuovo video sul canale! Corri a lasciare un like.',
             Twitter: '{description}',
             Instagram: '### {title}\n\nNuovo contenuto caricato su Instagram! Passa a dare un\'occhiata.',
-            TikTok: '### {title}\n\nÈ appena stato pubblicato un nuovo video su TikTok! Guarda subito.'
+            TikTok: '### {title}\n\nÈ appena stato pubblicato un nuovo video su TikTok! Guarda subito.',
+            Reddit: '### {title}\n\n**{author}** ha pubblicato un nuovo post su **r/{username}**!\n\n{description}',
+            Steam: '### {title}\n\n**{username}** ha rilasciato un nuovo annuncio/aggiornamento!\n\n{description}'
         },
         button_labels: {
             Twitch: 'Guarda la Live',
@@ -613,6 +629,8 @@ export default {
             X: 'Vedi su 𝕏',
             Instagram: 'Vedi su Instagram',
             TikTok: 'Vedi su TikTok',
+            Reddit: 'Vedi su Reddit',
+            Steam: 'Vedi su Steam',
             default: 'Apri Link'
         },
         footer: 'Notifiche Social | Verix'

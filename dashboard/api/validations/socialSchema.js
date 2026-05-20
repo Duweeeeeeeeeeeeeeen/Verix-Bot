@@ -30,6 +30,8 @@ export const socialSchema = z.object({
         youtube: platformSchema,
         instagram: platformSchema,
         tiktok: platformSchema,
-        twitter: platformSchema
+        twitter: platformSchema,
+        reddit: platformSchema,
+        steam: platformSchema
     }).passthrough().optional()
 }).passthrough();

@@ -1676,7 +1676,7 @@ router.get('/:guildId/socials', adminCheck, async (req, res) => {
 
         // Ensure all platforms have a webhook token if missing (for existing docs)
         let modified = false;
-        const platforms = ['twitch', 'youtube', 'instagram', 'tiktok', 'twitter'];
+        const platforms = ['twitch', 'youtube', 'instagram', 'tiktok', 'twitter', 'reddit', 'steam'];
         for (const p of platforms) {
             if (!config.platforms[p]) {
                 config.platforms[p] = {};
@@ -1711,7 +1711,7 @@ router.post('/:guildId/socials', adminCheck, validate(socialSchema), async (req,
         const existing = await SocialConfig.findOne({ guildId });
         if (existing) {
             // MERGE LOGIC: Preserve internal state (isLive, lastPostId) for existing accounts
-            for (const platform of ['twitch', 'youtube', 'instagram', 'tiktok', 'twitter']) {
+            for (const platform of ['twitch', 'youtube', 'instagram', 'tiktok', 'twitter', 'reddit', 'steam']) {
                 if (data.platforms?.[platform]?.accounts) {
                     const newAccounts = data.platforms[platform].accounts;
                     const oldAccounts = existing.platforms[platform]?.accounts || [];

@@ -169,6 +169,18 @@ export class SocialManager {
                     if (changed) configChanged = true;
                 }
 
+                // 6. Check Reddit
+                if (config.platforms?.reddit?.enabled && config.platforms.reddit.accounts?.length > 0) {
+                    const changed = await this.checkReddit(guildId, config.platforms.reddit);
+                    if (changed) configChanged = true;
+                }
+
+                // 7. Check Steam
+                if (config.platforms?.steam?.enabled && config.platforms.steam.accounts?.length > 0) {
+                    const changed = await this.checkSteam(guildId, config.platforms.steam);
+                    if (changed) configChanged = true;
+                }
+
                 // Save if any state changed
                 if (configChanged) {
                     await config.save();
@@ -547,6 +559,195 @@ export class SocialManager {
         return changed;
     }
 
+    async checkReddit(guildId, platformConfig) {
+        let changed = false;
+        try {
+            for (const account of platformConfig.accounts) {
+                let username = (account.username || '').trim();
+                account.lastCheckAt = new Date();
+                changed = true;
+
+                if (username.includes('reddit.com/r/')) {
+                    username = username.split('reddit.com/r/').pop().split('/')[0].split('?')[0];
+                } else if (username.includes('/r/')) {
+                    username = username.split('/r/').pop().split('/')[0].split('?')[0];
+                }
+
+                if (!username) continue;
+
+                const feedUrl = `https://www.reddit.com/r/${username}/new.rss`;
+
+                try {
+                    const feed = await parseRssUrl(feedUrl);
+                    if (feed && feed.items && feed.items.length > 0) {
+                        if (this.ensureSeenState(account)) changed = true;
+                        if (account.lastPostId && account.seenPostIds.length === 0) {
+                            account.seenPostIds.push(account.lastPostId);
+                            changed = true;
+                        }
+
+                        const feedIds = feed.items.map(item => this.getPostId(item)).filter(Boolean);
+
+                        if (!account.lastPostId) {
+                            const latestItem = feed.items[0];
+                            const latestId = this.getPostId(latestItem);
+                            logger.info(`[Socials/Reddit] Initialized lastPostId for r/${username} to ${latestId} without notification`);
+                            account.lastPostId = latestId;
+                            account.seenPostIds = feedIds;
+                            changed = true;
+                            continue;
+                        }
+
+                        const item = this.getLatestUnseenItem(account, feed.items);
+                        if (item) {
+                            const itemId = this.getPostId(item);
+                            
+                            let thumbnail = '';
+                            const content = item.content || item.contentSnippet || '';
+                            const imgMatch = content.match(/<img[^>]+(?:src|data-src|original-src)=["']([^"']+)["']/i);
+                            if (imgMatch && imgMatch[1]) {
+                                thumbnail = imgMatch[1];
+                            }
+                            if (thumbnail && (thumbnail.includes('redditstatic.com') || thumbnail.includes('reddit.com/static'))) {
+                                thumbnail = '';
+                            }
+
+                            const author = item.author || item.creator || 'u/RedditUser';
+                            let cleanAuthor = author;
+                            if (cleanAuthor.name) cleanAuthor = cleanAuthor.name;
+                            if (typeof cleanAuthor === 'string') {
+                                cleanAuthor = cleanAuthor.replace(/^\/u\//, 'u/');
+                                if (!cleanAuthor.startsWith('u/')) {
+                                    cleanAuthor = `u/${cleanAuthor}`;
+                                }
+                            }
+
+                            logger.info(`[Socials/Reddit] New Reddit post detected: ${item.title} (${itemId}) for guild ${guildId}`);
+
+                            let desc = item.contentSnippet || '';
+                            if (!desc && item.content) {
+                                desc = item.content.replace(/<[^>]*>/g, '').trim();
+                            }
+                            if (desc.length > 500) {
+                                desc = desc.substring(0, 500) + '...';
+                            }
+
+                            await this.handleSocialPost(guildId, platformConfig, account, {
+                                title: item.title || 'Nuovo Post!',
+                                url: item.link,
+                                author: cleanAuthor,
+                                description: desc,
+                                thumbnail: thumbnail,
+                                profileImage: 'https://img.icons8.com/color/512/reddit.png'
+                            }, 'Reddit');
+
+                            account.lastPostId = itemId;
+                            changed = true;
+                        }
+
+                        if (this.rememberSeen(account, feedIds)) changed = true;
+                    }
+                } catch (feedErr) {
+                    logger.warn(`[Socials/Reddit] Could not fetch Reddit feed for ${username}: ${feedErr.message}`);
+                }
+            }
+        } catch (error) {
+            logger.error(`[Socials/Reddit] Error checking guild ${guildId}:`, error);
+        }
+        return changed;
+    }
+
+    async checkSteam(guildId, platformConfig) {
+        let changed = false;
+        try {
+            for (const account of platformConfig.accounts) {
+                let username = (account.username || '').trim();
+                account.lastCheckAt = new Date();
+                changed = true;
+
+                let gameId = username;
+                if (gameId.includes('steamcommunity.com/games/')) {
+                    gameId = gameId.split('steamcommunity.com/games/').pop().split('/')[0].split('?')[0];
+                } else if (gameId.includes('store.steampowered.com/app/')) {
+                    gameId = gameId.split('store.steampowered.com/app/').pop().split('/')[0].split('?')[0];
+                }
+
+                if (!gameId) continue;
+
+                const feedUrl = `https://steamcommunity.com/games/${gameId}/rss/`;
+
+                try {
+                    const feed = await parseRssUrl(feedUrl);
+                    if (feed && feed.items && feed.items.length > 0) {
+                        if (this.ensureSeenState(account)) changed = true;
+                        if (account.lastPostId && account.seenPostIds.length === 0) {
+                            account.seenPostIds.push(account.lastPostId);
+                            changed = true;
+                        }
+
+                        const feedIds = feed.items.map(item => this.getPostId(item)).filter(Boolean);
+
+                        if (!account.lastPostId) {
+                            const latestItem = feed.items[0];
+                            const latestId = this.getPostId(latestItem);
+                            logger.info(`[Socials/Steam] Initialized lastPostId for Steam game ${gameId} to ${latestId} without notification`);
+                            account.lastPostId = latestId;
+                            account.seenPostIds = feedIds;
+                            changed = true;
+                            continue;
+                        }
+
+                        const item = this.getLatestUnseenItem(account, feed.items);
+                        if (item) {
+                            const itemId = this.getPostId(item);
+                            
+                            let thumbnail = this.extractThumbnail(item);
+                            if (!thumbnail && /^\d+$/.test(gameId)) {
+                                thumbnail = `https://cdn.akamai.steamstatic.com/steam/apps/${gameId}/header.jpg`;
+                            }
+
+                            let desc = item.contentSnippet || '';
+                            if (!desc && item.content) {
+                                desc = item.content.replace(/<[^>]*>/g, '').trim();
+                            }
+                            if (desc.length > 500) {
+                                desc = desc.substring(0, 500) + '...';
+                            }
+
+                            let gameName = feed.title || gameId;
+                            if (gameName.includes('Steam Community :: Group :: ')) {
+                                gameName = gameName.replace('Steam Community :: Group :: ', '');
+                            } else if (gameName.includes('Steam Community :: ')) {
+                                gameName = gameName.replace('Steam Community :: ', '');
+                            }
+
+                            logger.info(`[Socials/Steam] New Steam announcement detected: ${item.title} (${itemId}) for guild ${guildId}`);
+
+                            await this.handleSocialPost(guildId, platformConfig, account, {
+                                title: item.title || 'Nuovo Annuncio!',
+                                url: item.link,
+                                author: gameName,
+                                description: desc,
+                                thumbnail: thumbnail,
+                                profileImage: 'https://img.icons8.com/color/512/steam.png'
+                            }, 'Steam');
+
+                            account.lastPostId = itemId;
+                            changed = true;
+                        }
+
+                        if (this.rememberSeen(account, feedIds)) changed = true;
+                    }
+                } catch (feedErr) {
+                    logger.warn(`[Socials/Steam] Could not fetch Steam feed for ${gameId}: ${feedErr.message}`);
+                }
+            }
+        } catch (error) {
+            logger.error(`[Socials/Steam] Error checking guild ${guildId}:`, error);
+        }
+        return changed;
+    }
+
     isBridgeBackoffActive(account) {
         const until = account.bridgeBackoffUntil ? new Date(account.bridgeBackoffUntil).getTime() : 0;
         if (!Number.isFinite(until) || until <= Date.now()) return false;
@@ -658,7 +859,9 @@ export class SocialManager {
                 'YouTube': { color: 0xff0000, icon: 'https://img.icons8.com/color/512/youtube-play.png', label: 'YouTube Video' },
                 'Twitter': { color: 0x000000, icon: 'https://img.icons8.com/color/512/twitterx--v2.png', label: 'X (Twitter)' },
                 'Instagram': { color: 0xe1306c, icon: 'https://img.icons8.com/color/512/instagram-new--v1.png', label: 'Instagram' },
-                'TikTok': { color: 0x000000, icon: 'https://img.icons8.com/color/512/tiktok.png', label: 'TikTok' }
+                'TikTok': { color: 0x000000, icon: 'https://img.icons8.com/color/512/tiktok.png', label: 'TikTok' },
+                'Reddit': { color: 0xff4500, icon: 'https://img.icons8.com/color/512/reddit.png', label: 'Reddit Post' },
+                'Steam': { color: 0x1b2838, icon: 'https://img.icons8.com/color/512/steam.png', label: 'Steam Announcement' }
             };
 
             const style = platformStyles[platform] || { color: 0x7289da, icon: '', label: platform };

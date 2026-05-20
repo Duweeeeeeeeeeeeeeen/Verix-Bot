@@ -594,19 +594,35 @@ export default {
             color: '#000000',
             footer: 'Social Notifications | Verix'
         },
+        reddit: {
+            title: '👾 New Post on **r/{username}**!',
+            description: '### {title}\n\n**{author}** published a new post on **r/{username}**!\n\n{description}',
+            color: '#ff4500',
+            footer: 'Social Notifications | Verix'
+        },
+        steam: {
+            title: '🎮 New Announcement for **{username}**!',
+            description: '### {title}\n\n**{username}** released a new update/announcement!\n\n{description}',
+            color: '#1b2838',
+            footer: 'Social Notifications | Verix'
+        },
         default_titles: {
             Twitch: '📡 **{streamer}** is live!',
             YouTube: '🎥 New video from **{streamer}**!',
             Twitter: '𝕏 (Twitter) New post from **{streamer}**',
             Instagram: '📸 New post from **{streamer}**',
-            TikTok: '🎵 New TikTok from **{streamer}**'
+            TikTok: '🎵 New TikTok from **{streamer}**',
+            Reddit: '👾 New Post on **r/{username}**!',
+            Steam: '🎮 New Announcement for **{username}**!'
         },
         default_descriptions: {
             Twitch: '### {title}\n\nHey! **{streamer}** just turned on the camera on Twitch. Don\'t miss the show!\n\n[Join Live]({url})',
             YouTube: '### {title}\n\nA new video just dropped on the channel! Go check it out.',
             Twitter: '{description}',
             Instagram: '### {title}\n\nNew content uploaded to Instagram! Go take a look.',
-            TikTok: '### {title}\n\nA new video was just published on TikTok! Watch now.'
+            TikTok: '### {title}\n\nA new video was just published on TikTok! Watch now.',
+            Reddit: '### {title}\n\n**{author}** published a new post on **r/{username}**!\n\n{description}',
+            Steam: '### {title}\n\n**{username}** released a new update/announcement!\n\n{description}'
         },
         button_labels: {
             Twitch: 'Watch Live',
@@ -615,6 +631,8 @@ export default {
             X: 'View on 𝕏',
             Instagram: 'View on Instagram',
             TikTok: 'View on TikTok',
+            Reddit: 'View on Reddit',
+            Steam: 'View on Steam',
             default: 'Open Link'
         },
         footer: 'Social Notifications | Verix'

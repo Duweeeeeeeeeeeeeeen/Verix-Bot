@@ -594,19 +594,35 @@ export default {
             color: '#000000',
             footer: 'Notifications Sociales | Verix'
         },
+        reddit: {
+            title: '👾 Nouvelle publication sur **r/{username}** !',
+            description: '### {title}\n\n**{author}** a publié un nouveau contenu sur **r/{username}** !\n\n{description}',
+            color: '#ff4500',
+            footer: 'Notifications Sociales | Verix'
+        },
+        steam: {
+            title: '🎮 Nouvelle annonce pour **{username}** !',
+            description: '### {title}\n\n**{username}** a partagé une nouvelle annonce ou mise à jour !\n\n{description}',
+            color: '#1b2838',
+            footer: 'Notifications Sociales | Verix'
+        },
         default_titles: {
             Twitch: '📡 **{streamer}** est en direct !',
             YouTube: '🎥 Nouvelle vidéo de **{streamer}** !',
             Twitter: '𝕏 (Twitter) Nouvelle publication de **{streamer}**',
             Instagram: '📸 Nouvelle publication de **{streamer}**',
-            TikTok: '🎵 Nouveau TikTok de **{streamer}**'
+            TikTok: '🎵 Nouveau TikTok de **{streamer}**',
+            Reddit: '👾 Nouvelle publication sur **r/{username}** !',
+            Steam: '🎮 Nouvelle annonce pour **{username}** !'
         },
         default_descriptions: {
             Twitch: '### {title}\n\nHé ! **{streamer}** vient d\'allumer la caméra sur Twitch. Ne manque pas l\'émission !\n\n[Rejoindre le Direct]({url})',
             YouTube: '### {title}\n\nUne nouvelle vidéo vient de sortir sur la chaîne ! Va y jeter un coup d\'œil.',
             Twitter: '{description}',
             Instagram: '### {title}\n\nNouveau contenu téléchargé sur Instagram ! Va jeter un œil.',
-            TikTok: '### {title}\n\nUne nouvelle vidéo vient d\'être publiée sur TikTok ! Regarde maintenant.'
+            TikTok: '### {title}\n\nA une nouvelle vidéo vient d\'être publiée sur TikTok ! Regarde maintenant.',
+            Reddit: '### {title}\n\n**{author}** a publié un nouveau contenu sur **r/{username}** !\n\n{description}',
+            Steam: '### {title}\n\n**{username}** a partagé une nouvelle annonce ou mise à jour !\n\n{description}'
         },
         button_labels: {
             Twitch: 'Regarder en Direct',
@@ -615,6 +631,8 @@ export default {
             X: 'Voir sur 𝕏',
             Instagram: 'Voir sur Instagram',
             TikTok: 'Voir sur TikTok',
+            Reddit: 'Voir sur Reddit',
+            Steam: 'Voir sur Steam',
             default: 'Ouvrir le Lien'
         },
         footer: 'Notifications Sociales | Verix'
