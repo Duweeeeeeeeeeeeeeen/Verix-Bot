@@ -23,7 +23,7 @@ export default function GlobalSync() {
     const [userGuilds, setUserGuilds] = useState([]);
     const [sourceGuildId, setSourceGuildId] = useState('');
     const [selectedModules, setSelectedModules] = useState([
-        'whitelist', 'tickets', 'automations', 'moderation', 'welcome', 'verify'
+        'whitelist', 'tickets', 'automations', 'moderation', 'welcome', 'verify', 'photocontest', 'giveaway', 'support'
     ]);
     const [mounted, setMounted] = useState(false);
 
@@ -38,8 +38,16 @@ export default function GlobalSync() {
         { id: 'moderation', label: t('sync.module_names.moderation'), icon: ShieldCheck, desc: t('sync.module_descs.moderation') },
         { id: 'welcome', label: t('sync.module_names.welcome'), icon: MessageSquare, desc: t('sync.module_descs.welcome') },
         { id: 'verify', label: t('sync.module_names.verify'), icon: CheckCircle, desc: t('sync.module_descs.verify') },
+        { id: 'photocontest', label: t('sidebar.photocontest'), icon: Layout, desc: t('dashboard.module_photocontest_desc_v2') },
+        { id: 'giveaway', label: t('sidebar.giveaway'), icon: Gem, desc: t('dashboard.module_giveaway_desc_v2') },
+        { id: 'support', label: t('sidebar.support'), icon: MessageCircle, desc: t('dashboard.module_support_desc_v2') },
+        { id: 'reactionRoles', label: t('sidebar.reactionroles'), icon: UserCheck, desc: t('dashboard.module_reactionroles_desc_v2') },
+        { id: 'polls', label: t('sidebar.polls'), icon: CheckCircle2, desc: t('dashboard.module_polls_desc_v2') },
+        { id: 'leveling', label: t('sidebar.leveling'), icon: Sparkles, desc: t('academy_page.module_leveling_desc') },
         { id: 'socials', label: t('sync.module_names.socials'), icon: Globe, desc: t('sync.module_descs.socials') },
-        { id: 'utility', label: t('sync.module_names.utility'), icon: Settings2, desc: t('sync.module_descs.utility') }
+        { id: 'utility', label: t('sync.module_names.utility'), icon: Settings2, desc: t('sync.module_descs.utility') },
+        { id: 'tempvoice', label: t('sidebar.tempvoice'), icon: Cpu, desc: t('dashboard.module_tempvoice_desc_v2') },
+        { id: 'global', label: t('sidebar.global'), icon: Server, desc: t('dashboard.module_global_desc_v2') }
     ];
 
     const loadData = async () => {

@@ -173,7 +173,7 @@ export async function initializeModuleConfigs(guildId, createdChannels, onboardi
         { 
             $set: { 
                 enabled: isVerifyEnabled,
-                ...(createdChannels.verify && { panelChannelId: createdChannels.verify })
+                ...(createdChannels.verify && { channelId: createdChannels.verify })
             } 
         },
         { upsert: true }

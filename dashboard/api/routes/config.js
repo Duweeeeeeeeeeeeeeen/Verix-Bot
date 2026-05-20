@@ -2535,9 +2535,18 @@ router.post('/:guildId/sync', adminCheck, async (req, res) => {
             fivem: FiveMConfig,
             welcome: WelcomeConfig,
             verify: VerifyConfig,
+            photocontest: PhotoContestConfig,
+            giveaway: GiveawayConfig,
+            support: SupportConfig,
+            tempvoice: TempVoiceConfig,
+            background: BackgroundConfig,
+            leveling: LevelingConfig,
             socials: SocialConfig,
             utility: UtilityConfig,
+            global: GlobalConfig,
             reactionroles: ReactionRoleConfig,
+            reactionRoles: ReactionRoleConfig,
+            'reaction-roles': ReactionRoleConfig,
             polls: PollConfig
         };
 
