@@ -254,7 +254,7 @@ export default function EmbedBuilder() {
                     </div>
                 </section>
 
-                <div className="pc-layout-grid-v2 embeds-main-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 664px', gap: '24px' }}>
+                <div className="pc-layout-grid-v2 embeds-main-grid" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(280px, 360px)', gap: '24px' }}>
                     <div className="v-stack" style={{ gap: '32px' }}>
                         {/* Visual Designer */}
                         <section className="pc-card-v2 animate slide-up" style={{ padding: 0, animationDelay: '0.1s' }}>
@@ -274,15 +274,15 @@ export default function EmbedBuilder() {
                         </section>
                     </div>
 
-                    <aside className="v-stack" style={{ gap: '32px' }}>
+                    <aside className="v-stack embeds-actions-sidebar" style={{ gap: '18px' }}>
                         {/* Schedule Section */}
-                        <section className="pc-card-v2 animate slide-up" style={{ animationDelay: '0.2s' }}>
+                        <section className="pc-card-v2 animate slide-up embeds-schedule-card" style={{ animationDelay: '0.2s' }}>
                             <div className="card-header-v2">
                                 <div className="header-icon" style={{ background: '#fef2f2', color: '#ef4444' }}><Clock size={18} /></div>
                                 <h3>{t('embeds.schedule_title')}</h3>
                             </div>
                             <div className="card-body-v2">
-                                <div className="pc-schedule-stack-v2" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                <div className="pc-schedule-stack-v2" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                                     {[
                                         { id: 'NOW', label: t('embeds.schedule_now'), icon: Zap, desc: t('embeds.schedule_now_desc') },
                                         { id: 'DELAY', label: t('embeds.schedule_delay'), icon: Clock, desc: t('embeds.schedule_delay_desc') },
@@ -300,20 +300,20 @@ export default function EmbedBuilder() {
                                 </div>
 
                                 {scheduleType === 'DELAY' && (
-                                    <div className="pc-input-group-v2 animate slide-up" style={{ marginTop: '24px' }}>
+                                    <div className="pc-input-group-v2 animate slide-up" style={{ marginTop: '16px' }}>
                                         <label>{t('embeds.delay_minutes')}</label>
                                         <input type="number" className="pc-input-modern-v2" value={delayMinutes} onChange={e => setDelayMinutes(e.target.value)} />
                                     </div>
                                 )}
                                 
                                 {scheduleType === 'TIME' && (
-                                    <div className="pc-input-group-v2 animate slide-up" style={{ marginTop: '24px' }}>
+                                    <div className="pc-input-group-v2 animate slide-up" style={{ marginTop: '16px' }}>
                                         <label>{t('embeds.scheduled_timestamp')}</label>
                                         <input type="datetime-local" className="pc-input-modern-v2" value={specificTime} onChange={e => setSpecificTime(e.target.value)} />
                                     </div>
                                 )}
 
-                                <div className="pc-recurrence-studio-v2" style={{ marginTop: '32px', paddingTop: '24px', borderTop: '1.5px dashed var(--border)' }}>
+                                <div className="pc-recurrence-studio-v2" style={{ marginTop: '20px', paddingTop: '18px', borderTop: '1.5px dashed var(--border)' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
                                         <RefreshCw size={14} color="#6366f1" />
                                         <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '1px' }}>{t('embeds.recurrence_title')}</label>
@@ -365,10 +365,15 @@ export default function EmbedBuilder() {
             .pc-btn-save-v2 { background: var(--bg-badge); color: var(--text-heading); border: 1.5px solid var(--border); padding: 12px 24px; border-radius: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; width: 100%; height: 56px; justify-content: center; }
             .pc-btn-save-v2:hover { background: var(--bg-card); border-color: var(--primary); color: var(--primary); }
 
-            .embeds-main-grid { grid-template-columns: 1fr 664px !important; gap: 24px !important; }
+            .embeds-main-grid { grid-template-columns: minmax(0, 1fr) minmax(280px, 360px) !important; gap: 24px !important; align-items: start; }
+            .embeds-actions-sidebar { position: sticky; top: 24px; }
+            .embeds-schedule-card { padding: 20px !important; border-radius: 18px !important; }
+            .embeds-schedule-card .card-header-v2 { margin-bottom: 16px; }
+            .embeds-schedule-card .card-header-v2 h3 { font-size: 1rem; }
             
             @media (max-width: 1200px) {
                 .pc-layout-grid-v2.embeds-main-grid { grid-template-columns: 1fr !important; gap: 24px !important; }
+                .embeds-actions-sidebar { position: static; }
             }
             .embed-designer-wrapper { overflow: hidden; }
             .embed-designer-wrapper :global(.pc-editor-layout-v2) {
@@ -390,12 +395,12 @@ export default function EmbedBuilder() {
             .card-header-v2 h3 { margin: 0; font-family: 'Inter'; font-size: 1.3rem; font-weight: 700; color: var(--text-heading); }
 
             /* Schedule Tabs V2 */
-            .pc-schedule-tab-v2 { display: flex; align-items: center; gap: 16px; padding: 16px; background: var(--bg-badge); border: 1.5px solid var(--border); border-radius: 20px; cursor: pointer; transition: 0.3s; position: relative; text-align: left; width: 100%; }
+            .pc-schedule-tab-v2 { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--bg-badge); border: 1.5px solid var(--border); border-radius: 14px; cursor: pointer; transition: 0.3s; position: relative; text-align: left; width: 100%; }
             .pc-schedule-tab-v2:hover { border-color: var(--primary); background: var(--bg-card); }
             .pc-schedule-tab-v2.active { border-color: var(--primary); background: var(--bg-card); box-shadow: 0 8px 20px rgba(0,0,0,0.04); }
-            .tab-icon-v2 { width: 44px; height: 44px; background: var(--bg-card); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); border: 1.5px solid var(--border); }
+            .tab-icon-v2 { width: 36px; height: 36px; background: var(--bg-card); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--text-muted); border: 1.5px solid var(--border); flex-shrink: 0; }
             .pc-schedule-tab-v2.active .tab-icon-v2 { color: var(--primary); border-color: var(--primary); }
-            .active-glow-v2 { position: absolute; right: 20px; width: 8px; height: 8px; background: var(--primary); border-radius: 50%; box-shadow: 0 0 12px var(--primary); }
+            .active-glow-v2 { position: absolute; right: 14px; width: 6px; height: 6px; background: var(--primary); border-radius: 50%; box-shadow: 0 0 10px var(--primary); }
 
             /* Inputs V2 */
             .pc-input-group-v2 { display: flex; flex-direction: column; gap: 8px; }
