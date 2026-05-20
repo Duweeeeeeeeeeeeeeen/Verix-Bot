@@ -264,6 +264,20 @@ export default function SocialsConfig() {
                         })}
                     </nav>
                 </div>
+                {!isLocked && currentPlatformConfig.enabled && activeTab === 'design' && (
+                    <div className="pc-sidebar-card-v2 socials-library-card">
+                        <span className="sidebar-label-v2">{t('embeds.manager.sidebar_title')}</span>
+                        <button className="socials-library-item active" type="button">
+                            <div className="p-icon-box-v2" style={{ background: 'var(--bg-badge)', color: pData.color }}>
+                                <Globe2 size={18} />
+                            </div>
+                            <div className="v-stack" style={{ flex: 1, textAlign: 'left' }}>
+                                <div className="p-name-v2">{platformName} {t('socials.announcement_label')}</div>
+                                <div className="nav-sync-tag-v2"><span>{t('socials.design_tab')}</span></div>
+                            </div>
+                        </button>
+                    </div>
+                )}
             </aside>
 
             {/* V2 Main Platform Studio Area */}
@@ -426,6 +440,7 @@ export default function SocialsConfig() {
                                              guildId={guildId}
                                              module="socials"
                                              compact
+                                             hideSidebar
                                              slugs={[
                                                  { key: pData.id, label: `${platformName} ${t('socials.announcement_label')}`, description: t('socials.announcement_desc', { platform: platformName }), variables: ['username', 'link', 'title', 'preview_url', 'platform'], group: t('socials.title'), groupIcon: Globe2 },
                                              ]}
@@ -494,6 +509,8 @@ export default function SocialsConfig() {
             .pc-tabs-v2 button.active { background: var(--bg-card); color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
 
             .pc-settings-layout-v2 { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.75fr); gap: 20px; align-items: start; }
+            .socials-library-card { animation: slideUp 0.25s ease-out; }
+            .socials-library-item { width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 14px; border: 1.5px solid rgba(var(--primary-rgb), 0.18); background: rgba(var(--primary-rgb), 0.06); color: var(--text-heading); cursor: default; }
             .socials-message-manager :global(.manager-layout) { grid-template-columns: 1fr !important; max-width: 100% !important; margin: 0 !important; }
             .socials-message-manager :global(.slug-sidebar) { position: static !important; }
             .socials-message-manager :global(.pc-editor-layout-v2) { grid-template-columns: 1fr !important; max-width: 100% !important; }

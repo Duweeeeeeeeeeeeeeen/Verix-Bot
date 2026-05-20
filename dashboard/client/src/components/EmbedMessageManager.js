@@ -27,7 +27,7 @@ import defaultMessagesMap from '../locales';
  * @param {Array} slugs - List of { key, label, description, variables, group, groupIcon }
  * @param {Function} extraButtons - Optional function (slug) => [buttons] for preview
  */
-export default function EmbedMessageManager({ guildId, module, slugs = [], extraButtons, compact = true }) {
+export default function EmbedMessageManager({ guildId, module, slugs = [], extraButtons, compact = true, hideSidebar = false }) {
   const { t, language } = useT();
   const defaultMessages = defaultMessagesMap[language] || defaultMessagesMap['en'];
   const [messages, setMessages] = useState({});
@@ -158,10 +158,10 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
   );
 
   return (
-    <div className={`message-manager ${compact ? 'compact' : ''}`}>
+    <div className={`message-manager ${compact ? 'compact' : ''} ${hideSidebar ? 'hide-sidebar' : ''}`}>
       <div className="manager-layout">
         {/* Sidebar Groups */}
-        <aside className="slug-sidebar">
+        {!hideSidebar && <aside className="slug-sidebar">
           <div className="sidebar-header">
             <Layers size={18} color="var(--primary)" />
             <h4>{t('embeds.manager.sidebar_title')}</h4>
@@ -206,7 +206,7 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
                );
             })}
           </div>
-        </aside>
+        </aside>}
 
         {/* Editor Area */}
         <main className="editor-area-v2">
@@ -295,6 +295,11 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
           grid-template-columns: 260px minmax(0, 1fr);
           max-width: 100%;
           margin: 0;
+        }
+
+        .message-manager.hide-sidebar .manager-layout,
+        .message-manager.compact.hide-sidebar .manager-layout {
+          grid-template-columns: minmax(0, 1fr);
         }
 
         .message-manager.compact .slug-sidebar {
