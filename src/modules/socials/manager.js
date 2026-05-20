@@ -41,6 +41,7 @@ const RSS_BRIDGE_INSTANCES = [
     'https://rss-bridge.cheredeprince.net'
 ];
 const RSS_TIMEOUT_MS = 8000;
+const TWITTER_NATIVE_TIMEOUT_MS = 10000;
 const WEB_SUB_TIMEOUT_MS = 8000;
 const YOUTUBE_RESOLVE_TIMEOUT_MS = 7000;
 const SOCIAL_SEEN_HISTORY_LIMIT = 100;
@@ -153,7 +154,7 @@ export class SocialManager {
 
                 // 3. Check Twitter (X)
                 if (config.platforms?.twitter?.enabled && config.platforms.twitter.accounts?.length > 0) {
-                    const changed = await this.checkGenericRSS(guildId, config.platforms.twitter, 'Twitter', 'http://localhost:3005/?action=display&bridge=TwitterBridge&context=By+username&u={username}&format=Mrss');
+                    const changed = await this.checkTwitterNative(guildId, config.platforms.twitter);
                     if (changed) configChanged = true;
                 }
 
@@ -559,6 +560,180 @@ export class SocialManager {
         return changed;
     }
 
+    cleanTwitterUsername(value = '') {
+        let username = String(value || '').trim();
+        if (!username) return '';
+
+        username = username
+            .replace(/^https?:\/\//i, '')
+            .replace(/^www\./i, '')
+            .replace(/^(twitter\.com|x\.com)\//i, '')
+            .split('/')[0]
+            .split('?')[0]
+            .replace(/^@/, '')
+            .trim();
+
+        return username;
+    }
+
+    decodeHtmlEntities(value = '') {
+        return String(value || '')
+            .replace(/&amp;/g, '&')
+            .replace(/&lt;/g, '<')
+            .replace(/&gt;/g, '>')
+            .replace(/&quot;/g, '"')
+            .replace(/&#39;/g, "'")
+            .replace(/&apos;/g, "'");
+    }
+
+    async fetchTwitterNativeTimeline(username) {
+        const url = `https://syndication.twitter.com/srv/timeline-profile/screen-name/${encodeURIComponent(username)}`;
+        const response = await axiosWithRetry({
+            method: 'GET',
+            url,
+            responseType: 'text',
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124 Safari/537.36 VerixBot/1.0',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                'Referer': 'https://publish.twitter.com/'
+            },
+            timeout: TWITTER_NATIVE_TIMEOUT_MS
+        });
+
+        const html = typeof response.data === 'string' ? response.data : String(response.data || '');
+        if (!html || html.toLowerCase().includes('rate limit exceeded')) {
+            throw new Error('X embedded timeline rate limit exceeded');
+        }
+
+        const match = html.match(/<script id="__NEXT_DATA__" type="application\/json">([\s\S]*?)<\/script>/);
+        if (!match) {
+            throw new Error('X embedded timeline payload not found');
+        }
+
+        const data = JSON.parse(match[1]);
+        const entries = data?.props?.pageProps?.timeline?.entries || [];
+        const profileImage = data?.props?.pageProps?.timeline?.user?.profile_image_url_https ||
+            data?.props?.pageProps?.timeline?.user?.profile_image_url ||
+            null;
+
+        const items = entries
+            .filter(entry => entry?.type === 'tweet' && entry?.content?.tweet)
+            .map(entry => {
+                const tweet = entry.content.tweet;
+                const entryId = String(entry.entry_id || '').replace(/^tweet-/, '');
+                const id = tweet.id_str || tweet.rest_id || entryId || tweet.conversation_id_str || String(tweet.id || '');
+                const author = tweet.user?.name || tweet.user?.screen_name || username;
+                const screenName = tweet.user?.screen_name || username;
+                const media = tweet.extended_entities?.media || tweet.entities?.media || [];
+                const photo = media.find(item => item.media_url_https || item.media_url);
+                const url = `https://x.com/${screenName}/status/${id}`;
+                const text = this.decodeHtmlEntities(tweet.full_text || tweet.text || '')
+                    .replace(/\s*https:\/\/t\.co\/\S+/g, '')
+                    .trim();
+                const createdAt = tweet.created_at ? new Date(tweet.created_at) : null;
+                const isoDate = createdAt && Number.isFinite(createdAt.getTime()) ? createdAt.toISOString() : null;
+
+                return {
+                    id,
+                    guid: id,
+                    link: url,
+                    title: text ? text.slice(0, 120) : `New post from ${screenName}`,
+                    contentSnippet: text,
+                    content: text,
+                    isoDate,
+                    pubDate: tweet.created_at,
+                    author,
+                    thumbnail: photo?.media_url_https || photo?.media_url || '',
+                    profileImage: tweet.user?.profile_image_url_https || tweet.user?.profile_image_url || profileImage || 'https://logo.clearbit.com/x.com',
+                    isVideo: media.some(item => item.type === 'video' || item.type === 'animated_gif')
+                };
+            })
+            .filter(item => item.id && item.link)
+            .sort((a, b) => this.getPostTime(b) - this.getPostTime(a));
+
+        if (!items.length) {
+            throw new Error('X embedded timeline returned no posts');
+        }
+
+        return {
+            title: `X / ${username}`,
+            image: { url: items[0]?.profileImage || 'https://logo.clearbit.com/x.com' },
+            items
+        };
+    }
+
+    async checkTwitterNative(guildId, platformConfig) {
+        let changed = false;
+        try {
+            for (const account of platformConfig.accounts) {
+                const username = this.cleanTwitterUsername(account.username);
+                account.lastCheckAt = new Date();
+                changed = true;
+
+                if (!username) continue;
+
+                if (this.isBridgeBackoffActive(account)) {
+                    continue;
+                }
+
+                try {
+                    const feed = await this.fetchTwitterNativeTimeline(username);
+                    if (this.ensureSeenState(account)) changed = true;
+                    if (account.lastPostId && account.seenPostIds.length === 0) {
+                        account.seenPostIds.push(account.lastPostId);
+                        changed = true;
+                    }
+
+                    const feedIds = feed.items.map(item => this.getPostId(item)).filter(Boolean);
+                    const latestItem = feed.items[0];
+
+                    if (this.clearBridgeErrorState(account)) {
+                        changed = true;
+                    }
+
+                    if (!account.lastPostId) {
+                        const latestId = this.getPostId(latestItem);
+                        logger.info(`[Socials/Twitter] Initialized lastPostId for ${username} to ${latestId} without notification`);
+                        account.lastPostId = latestId;
+                        account.seenPostIds = feedIds;
+                        account.cachedProfileImage = latestItem.profileImage || account.cachedProfileImage;
+                        changed = true;
+                        continue;
+                    }
+
+                    const item = this.getLatestUnseenItem(account, feed.items);
+                    if (item) {
+                        const itemId = this.getPostId(item);
+                        logger.info(`[Socials/Twitter] New post detected: ${item.title} (${itemId}) for guild ${guildId}`);
+
+                        await this.handleSocialPost(guildId, platformConfig, account, {
+                            title: item.title || 'New post!',
+                            url: item.link,
+                            author: item.author || username,
+                            description: item.contentSnippet || '',
+                            thumbnail: item.thumbnail || '',
+                            isVideo: item.isVideo,
+                            profileImage: item.profileImage || account.cachedProfileImage || 'https://logo.clearbit.com/x.com'
+                        }, 'Twitter');
+
+                        account.lastPostId = itemId;
+                        account.cachedProfileImage = item.profileImage || account.cachedProfileImage;
+                        changed = true;
+                    }
+
+                    if (this.rememberSeen(account, feedIds)) changed = true;
+                } catch (feedErr) {
+                    if (this.recordBridgeError(account, 'Twitter', username, feedErr.message)) {
+                        changed = true;
+                    }
+                }
+            }
+        } catch (error) {
+            logger.error(`[Socials/Twitter] Error checking guild ${guildId}:`, error);
+        }
+        return changed;
+    }
+
     async checkReddit(guildId, platformConfig) {
         let changed = false;
         try {
@@ -777,7 +952,7 @@ export class SocialManager {
         account.bridgeBackoffUntil = new Date(now + backoffMs);
 
         if (!previousErrorAt || now - previousErrorAt >= BRIDGE_ERROR_LOG_INTERVAL_MS) {
-            logger.warn(`[Socials/${platformName}] RSS bridge unavailable for ${username}; retrying in ${Math.round(backoffMs / 60000)} minutes. Reason: ${reason}`);
+            logger.warn(`[Socials/${platformName}] Feed source unavailable for ${username}; retrying in ${Math.round(backoffMs / 60000)} minutes. Reason: ${reason}`);
         }
 
         return true;
