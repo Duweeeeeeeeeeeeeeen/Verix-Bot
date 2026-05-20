@@ -23,6 +23,7 @@ export default function UtilityConfig() {
   const [saving, setSaving] = useState(false);
   const [clearing, setClearing] = useState(false);
   const [quickClear, setQuickClear] = useState({ channelId: '', amount: 10 });
+  const [activeTab, setActiveTab] = useState('settings');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
