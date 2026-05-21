@@ -13,6 +13,8 @@ import { checkBotPermissions } from '../../utils/permissionHelper.js';
 class ReactionRoleManager {
     constructor(client) {
         this.client = client;
+        this.customIdPrefix = 'rr_toggle';
+        this.customIdSeparator = '|';
     }
 
     async init() {
@@ -37,10 +39,10 @@ class ReactionRoleManager {
     async handleInteraction(interaction) {
         if (!interaction.isButton()) return;
 
-        const parts = interaction.customId.split('_');
-        if (parts.length < 4) return;
+        const parsed = this.parseToggleCustomId(interaction.customId);
+        if (!parsed) return;
 
-        const [,, panelId, roleId] = parts;
+        const { roleId } = parsed;
         const guild = interaction.guild;
         const member = await guild.members.fetch(interaction.user.id).catch(() => null);
 
@@ -88,6 +90,28 @@ class ReactionRoleManager {
                 await interaction.reply(payload).catch(() => null);
             }
         }
+    }
+
+    parseToggleCustomId(customId) {
+        const modernPrefix = `${this.customIdPrefix}${this.customIdSeparator}`;
+        if (customId.startsWith(modernPrefix)) {
+            const payload = customId.slice(modernPrefix.length);
+            const [panelId, roleId] = payload.split(this.customIdSeparator);
+            if (!panelId || !roleId) return null;
+            return { panelId, roleId };
+        }
+
+        const legacyPrefix = `${this.customIdPrefix}_`;
+        if (!customId.startsWith(legacyPrefix)) return null;
+
+        const payload = customId.slice(legacyPrefix.length);
+        const lastSeparatorIndex = payload.lastIndexOf('_');
+        if (lastSeparatorIndex === -1) return null;
+
+        const panelId = payload.slice(0, lastSeparatorIndex);
+        const roleId = payload.slice(lastSeparatorIndex + 1);
+        if (!panelId || !roleId) return null;
+        return { panelId, roleId };
     }
 
     async handleReaction(reaction, user, action) {
@@ -181,7 +205,7 @@ class ReactionRoleManager {
                 };
 
                 const btn = new ButtonBuilder()
-                    .setCustomId(`rr_toggle_${panel.id}_${r.roleId}`)
+                    .setCustomId(`${this.customIdPrefix}${this.customIdSeparator}${panel.id}${this.customIdSeparator}${r.roleId}`)
                     .setLabel(r.label || 'Role')
                     .setStyle(styleMap[r.style] || ButtonStyle.Primary);
 
