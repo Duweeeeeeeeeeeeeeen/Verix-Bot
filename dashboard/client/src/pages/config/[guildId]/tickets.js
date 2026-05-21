@@ -6,10 +6,11 @@ import { useT } from '../../../contexts/LanguageContext';
 import {
     Save, Ticket, Settings2, Shield, Plus, MessageSquare, Trash2,
     ChevronRight, CheckCircle2, Layout, Clock, UserPlus, FileText,
-    RotateCcw, Send, GripVertical, AlertCircle, Palette, SlidersHorizontal
+    RotateCcw, Send, GripVertical, AlertCircle, Palette, SlidersHorizontal, Eye
 } from 'lucide-react';
 import { DiscordSelector, CustomSelect, EmbedMessageManager, NotificationSettings, SystemMessagesSection } from '../../../components/LazyConfigComponents';
 import EmojiInput from '../../../components/EmojiInput';
+import EmbedPreviewDrawer from '../../../components/EmbedPreviewDrawer';
 import { mergeConfig } from '../../../utils/defaults';
 import Head from 'next/head';
 
@@ -73,6 +74,7 @@ export default function TicketConfig() {
   const [activeTab, setActiveTab] = useState('settings');
   const [mounted, setMounted] = useState(false);
   const [sendingPanel, setSendingPanel] = useState(false);
+  const [previewData, setPreviewData] = useState(null);
 
   useEffect(() => {
     setMounted(true);
@@ -210,6 +212,19 @@ export default function TicketConfig() {
   if (!mounted || loading || !config) return <Skeleton height="600px" />;
 
   const ticketTypes = config.types || config.enabledTypes || Object.keys(config.typesConfig || {});
+  const openTicketWelcomePreview = (id) => {
+    const typeConfig = config.typesConfig?.[id] || {};
+    setPreviewData({
+      title: `${typeConfig.emoji || '🎫'} ${typeConfig.label || id}`,
+      description: typeConfig.welcomeMessage || t('tickets.welcome_message_default'),
+      color: typeConfig.color || '#2ECC71',
+      fields: [
+        { name: t('tickets.target_category'), value: typeConfig.categoryId ? `<#${typeConfig.categoryId}>` : t('common.none'), inline: true },
+        { name: t('tickets.target_role'), value: typeConfig.pingRoleId ? `<@&${typeConfig.pingRoleId}>` : t('common.none'), inline: true }
+      ],
+      footer: 'Verix Ticket System'
+    });
+  };
 
   return (
     <div className="pc-premium-wrapper fade-in">
@@ -480,6 +495,9 @@ export default function TicketConfig() {
                                                         setConfig({ ...config, typesConfig: newTypes });
                                                     }} />
                                                 </div>
+                                                <button type="button" className="pc-btn-outline-v2 ticket-preview-btn" onClick={() => openTicketWelcomePreview(id)} title={t('preview.discord_title')}>
+                                                    <Eye size={18} />
+                                                </button>
                                                 {(config.inputType || 'SELECT') === 'BUTTONS' && (
                                                 <div className="pc-input-group-v2">
                                                     <label>{t('common.order')}</label>
@@ -676,6 +694,8 @@ export default function TicketConfig() {
 
         </div>
 
+        <EmbedPreviewDrawer open={!!previewData} onClose={() => setPreviewData(null)} data={previewData} />
+
         <style jsx>{`
             .pc-premium-wrapper { padding: 32px; max-width: 1650px; margin: 0 auto; font-family: 'Inter', sans-serif; }
             .ticket-category-list :global(.pc-sub-card-v2) {
@@ -716,6 +736,11 @@ export default function TicketConfig() {
             .ticket-style-picker button.active {
                 outline: 3px solid rgba(var(--primary-rgb), 0.18);
                 border-color: var(--primary);
+            }
+            .ticket-preview-btn {
+                height: 48px;
+                align-self: end;
+                justify-content: center;
             }
             
             @media (max-width: 1200px) {

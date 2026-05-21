@@ -5,8 +5,8 @@ import { DiscordSelector, CustomSelect, EmbedMessageManager, NotificationSetting
 import api from '../../../utils/api';
 import { useT } from '../../../contexts/LanguageContext';
 import { 
-    Save, Plus, Trash2, Settings2, Power, RefreshCcw, Server, Activity, Users, 
-    MessageSquare, Globe, Cpu, Info, X, Crown, Lock, ChevronRight, BellRing, Palette, 
+    Save, Plus, Trash2, Power, RefreshCcw, Server, Activity, Users,
+    Globe, Cpu, Info, X, Crown, Lock, ChevronRight, BellRing, Palette,
     Share2, Play, ExternalLink, Map, Zap, Layout, Terminal, Radio, Network, Wifi,
     Link2, MousePointer2, AlertCircle, Sparkles, Layers, RotateCcw
 } from 'lucide-react';
@@ -204,9 +204,6 @@ export default function FiveMConfig() {
             <button className={activeTab === 'design' ? 'active' : ''} onClick={() => setActiveTab('design')}>
                 <Palette size={16} /> <span>{t('fivem.visual_studio')}</span>
             </button>
-            <button className={activeTab === 'system_messages' ? 'active' : ''} onClick={() => setActiveTab('system_messages')}>
-                <Settings2 size={16} /> <span>{t('common.tab_system_messages')}</span>
-            </button>
         </nav>
 
         <div className="pc-content-v2">
@@ -319,11 +316,7 @@ export default function FiveMConfig() {
                             { key: 'offline_embed', label: t('fivem.status_offline_label'), description: t('fivem.status_offline_desc'), variables: ['server_name', 'ip'], group: t('fivem.network_ui'), groupIcon: Power }
                         ]}
                     />
-                </div>
-            )}
 
-            {activeTab === 'system_messages' && (
-                <div className="v-stack animate slide-up">
                     <SystemMessagesSection 
                         config={config}
                         onUpdate={setConfig}

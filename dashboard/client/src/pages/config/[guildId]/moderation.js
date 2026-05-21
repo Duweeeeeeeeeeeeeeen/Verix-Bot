@@ -6,7 +6,7 @@ import api from '../../../utils/api';
 import { useT } from '../../../contexts/LanguageContext';
 import { 
     Save, ShieldAlert, Settings2, Power, Clock, Trash2, Plus, X, AlertTriangle, Shield, Gavel, 
-    History, MessageSquare, Type, AtSign, List, Ghost, RefreshCcw, Link, UserPlus, Zap, Ban, 
+    History, Type, AtSign, List, Ghost, RefreshCcw, Link, UserPlus, Zap, Ban,
     Trash, Search, Settings, ShieldCheck, Lock, ChevronRight, ArrowRight, Info, AlertCircle, 
     Layout, Terminal, ShieldX, Activity, Eye, EyeOff, Globe, Layers, Palette, Users, 
     MessageCircle, Hash, Box, Filter, Sparkles, Star, MousePointer2, ShieldQuestion,
@@ -190,7 +190,6 @@ export default function ModerationConfig() {
                 { id: 'antiraid', icon: ShieldQuestion, label: t('mod.tab_raid'), status: config.antiRaid?.enabled },
                 { id: 'punishments', icon: Gavel, label: t('mod.tab_punishments') },
                 { id: 'settings', icon: EyeOff, label: t('mod.tab_whitelist') },
-                { id: 'system_messages', icon: MessageSquare, label: t('common.tab_system_messages') },
                 { id: 'messages', icon: Palette, label: t('mod.tab_policy') }
             ].map(tab => (
                 <button key={tab.id} className={activeTab === tab.id ? 'active' : ''} onClick={() => setActiveTab(tab.id)}>
@@ -457,11 +456,7 @@ export default function ModerationConfig() {
                             { key: 'ban', label: t('mod.ban_template_label'), description: t('mod.ban_template_desc'), variables: ['user', 'reason'], group: 'Policy', groupIcon: UserMinus }
                         ]}
                     />
-                </div>
-            )}
 
-            {activeTab === 'system_messages' && (
-                <div className="v-stack animate slide-up">
                     <SystemMessagesSection 
                         config={config}
                         onUpdate={setConfig}

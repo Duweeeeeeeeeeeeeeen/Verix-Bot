@@ -208,9 +208,6 @@ export default function AutomationsConfig() {
                     <RefreshCcw size={16} /> <span>{t('automations.tab_automessage')}</span>
                     {(config.autoMessage?.slots || []).length > 0 && <span className="tab-count-v2">{(config.autoMessage?.slots || []).length}</span>}
                 </button>
-                <button className={activeTab === 'system_messages' ? 'active' : ''} onClick={() => setActiveTab('system_messages')}>
-                    <Settings2 size={16} /> <span>{t('common.tab_system_messages')}</span>
-                </button>
             </div>
         </nav>
 
@@ -448,7 +445,7 @@ export default function AutomationsConfig() {
                 </div>
             )}
 
-            {activeTab === 'system_messages' && (
+            {activeTab === 'automessage' && editingEmbedIndex === null && (
                 <div className="v-stack animate slide-up">
                     <SystemMessagesSection 
                         config={config}

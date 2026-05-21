@@ -7,7 +7,7 @@ import { useT } from '../../../contexts/LanguageContext';
 import {
   Save, ShieldCheck, Settings2, ListChecks, Palette, Plus, Trash2, Power, Clock,
   RefreshCcw, Zap, Command, Mic2, Send, FileText, ChevronLeft, ChevronRight,
-  Sparkles, Award, CheckCircle2, XCircle, Layout, RotateCcw, MessageCircle
+  Sparkles, Award, CheckCircle2, XCircle, Layout, RotateCcw
 } from 'lucide-react';
 import Head from 'next/head';
 
@@ -114,7 +114,6 @@ export default function WhitelistConfig() {
     (config.mode === 'VOICE' || config.mode === 'HYBRID' || config.mode === 'FULL') ?
       { id: 'voice', name: t('whitelist.tab_voice'), icon: Mic2 } : null,
     { id: 'background', name: t('whitelist.staff_recruits'), icon: Command },
-    { id: 'system_messages', name: t('common.system_messages'), icon: MessageCircle },
     { id: 'design', name: t('whitelist.creative_design'), icon: Palette },
   ].filter(Boolean);
 
@@ -530,11 +529,7 @@ export default function WhitelistConfig() {
                             { key: 'dm_rejected', label: t('whitelist.msg_rejected'), description: t('whitelist.msg_rejected_desc') || 'Inviato in DM all\'utente bocciato.', variables: ['user', 'reason'], group: 'DM Alerts', groupIcon: XCircle }
                         ]}
                     />
-                </div>
-            )}
 
-            {activeTab === 'system_messages' && (
-                <div className="v-stack animate slide-up" style={{ gap: '32px' }}>
                     <section className="pc-card-v2">
                         <SystemMessagesSection
                             config={config}

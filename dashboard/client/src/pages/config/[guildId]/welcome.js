@@ -199,8 +199,7 @@ export default function WelcomeConfig() {
         <nav className="pc-tabs-v2" style={{ marginBottom: '32px' }}>
             {[
                 { id: 'settings', icon: Settings2, label: t('welcome.tab_channels') },
-                { id: 'personalization', icon: Palette, label: t('welcome.tab_creative') },
-                { id: 'system_messages', icon: MessageCircle, label: t('common.tab_system_messages') }
+                { id: 'personalization', icon: Palette, label: t('welcome.tab_creative') }
             ].map(tab => (
                 <button key={tab.id} className={activeTab === tab.id ? 'active' : ''} onClick={() => setActiveTab(tab.id)}>
                     <tab.icon size={16} /> <span>{tab.label}</span>
@@ -339,7 +338,7 @@ export default function WelcomeConfig() {
                 </div>
             )}
 
-            {activeTab === 'system_messages' && (
+            {activeTab === 'personalization' && (
                 <div className="v-stack animate slide-up">
                     <section className="pc-card-v2">
                         <SystemMessagesSection

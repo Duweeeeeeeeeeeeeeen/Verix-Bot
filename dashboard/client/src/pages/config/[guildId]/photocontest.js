@@ -5,7 +5,7 @@ import { DiscordSelector, EmbedMessageManager, SystemMessagesSection } from '../
 import api from '../../../utils/api';
 import { 
     Save, Settings2, Trash2, Plus, Calendar, Clock, Users, Bell, Layout, Type, 
-    MessageSquare, Play, Square, Trophy, Target, Shield, Hash, Zap,
+    Play, Square, Trophy, Target, Shield, Hash, Zap,
     ChevronRight, Search, Info, AlertCircle, Camera, Palette, CheckCircle2, 
     X, Image, Power, Layers, MousePointer2, Smartphone, Monitor,
     Gauge, Timer, Wand2, History, RotateCcw
@@ -190,8 +190,7 @@ export default function PhotoContestConfig() {
                 {[
                     { id: 'general', icon: <Settings2 size={18} />, label: t('pc.tab_core') },
                     { id: 'themes', icon: <Layers size={18} />, label: t('pc.tab_themes'), count: (config.themesList || []).length },
-                    { id: 'design', icon: <Palette size={18} />, label: t('pc.tab_design') },
-                    { id: 'system_messages', icon: <MessageSquare size={18} />, label: t('common.tab_system_messages') }
+                    { id: 'design', icon: <Palette size={18} />, label: t('pc.tab_design') }
                 ].map(tab => (
                     <button key={tab.id} className={activeTab === tab.id ? 'active' : ''} onClick={() => setActiveTab(tab.id)}>
                         {tab.icon} <span>{tab.label}</span>
@@ -355,11 +354,7 @@ export default function PhotoContestConfig() {
                             { key: 'end', label: t('pc.end_label'), description: t('pc.end_desc'), variables: ['theme'], group: 'Stato', groupIcon: Clock },
                         ]}
                     />
-                </div>
-            )}
 
-            {activeTab === 'system_messages' && (
-                <div className="v-stack animate slide-up">
                     <section className="pc-card-v2 pc-system-messages-shell">
                         <SystemMessagesSection
                             config={config}

@@ -235,9 +235,6 @@ export default function PollsConfig() {
                 <button className={activeTab === 'settings' ? 'active' : ''} onClick={() => setActiveTab('settings')}>
                     <ShieldCheck size={16} /> <span>{t('polls.tab_security')}</span>
                 </button>
-                <button className={activeTab === 'system_messages' ? 'active' : ''} onClick={() => setActiveTab('system_messages')}>
-                    <MessageSquare size={16} /> <span>{t('common.tab_system_messages')}</span>
-                </button>
             </div>
         </nav>
 
@@ -415,7 +412,7 @@ export default function PollsConfig() {
                 </div>
             )}
 
-            {activeTab === 'system_messages' && (
+            {activeTab === 'create' && (
                 <div className="v-stack animate slide-up">
                     <SystemMessagesSection 
                         config={config}

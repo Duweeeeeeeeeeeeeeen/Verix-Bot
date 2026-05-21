@@ -233,8 +233,7 @@ export default function GiveawayConfig() {
                 { id: 'create', icon: <Plus size={16} />, label: t('giveaway.tab_live') },
                 { id: 'live', icon: <Zap size={16} />, label: t('common.active'), count: activeGiveaways.length },
                 { id: 'logs', icon: <History size={16} />, label: t('giveaway.tab_logs') },
-                { id: 'settings', icon: <Shield size={16} />, label: t('giveaway.tab_perms') },
-                { id: 'system_messages', icon: <MessageSquare size={16} />, label: t('common.tab_system_messages') }
+                { id: 'settings', icon: <Shield size={16} />, label: t('giveaway.tab_perms') }
             ].map(tab => (
                 <button key={tab.id} className={activeTab === tab.id ? 'active' : ''} onClick={() => setActiveTab(tab.id)}>
                     {tab.icon} <span>{tab.label}</span>
@@ -490,7 +489,7 @@ export default function GiveawayConfig() {
                 </div>
             )}
 
-            {activeTab === 'system_messages' && (
+            {activeTab === 'create' && (
                 <div className="v-stack animate slide-up">
                     <SystemMessagesSection 
                         config={config}

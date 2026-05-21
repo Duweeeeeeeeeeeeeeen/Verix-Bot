@@ -204,9 +204,6 @@ export default function VerifyConfig() {
             <button className={activeTab === 'design' ? 'active' : ''} onClick={() => setActiveTab('design')}>
                 <Palette size={16} /> <span>{t('verify.design_studio')}</span>
             </button>
-            <button className={activeTab === 'system_messages' ? 'active' : ''} onClick={() => setActiveTab('system_messages')}>
-                <Settings2 size={16} /> <span>{t('common.tab_system_messages')}</span>
-            </button>
         </nav>
 
         <div className="pc-content-v2">
@@ -353,11 +350,6 @@ export default function VerifyConfig() {
                         ]}
                     />
 
-                </div>
-            )}
-
-            {activeTab === 'system_messages' && (
-                <div className="v-stack animate slide-up">
                     <section className="pc-card-v2">
                         <SystemMessagesSection
                             config={config}

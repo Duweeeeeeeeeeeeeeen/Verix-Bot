@@ -306,9 +306,6 @@ export default function ReactionRolesConfig() {
                     <button className={activeTab === 'settings' ? 'active' : ''} onClick={() => setActiveTab('settings')}>
                         <Layout size={16} /> <span>{t('rr.tab_studio')}</span>
                     </button>
-                    <button className={activeTab === 'system_messages' ? 'active' : ''} onClick={() => setActiveTab('system_messages')}>
-                        <MessageSquare size={16} /> <span>{t('common.tab_system_messages')}</span>
-                    </button>
                 </nav>
 
                 {activeTab === 'settings' && activePanel && (
@@ -568,7 +565,7 @@ export default function ReactionRolesConfig() {
                     </div>
                 )}
 
-                {activeTab === 'system_messages' && (
+                {activeTab === 'settings' && (
                     <div className="v-stack animate slide-up">
                         <SystemMessagesSection 
                             config={config}

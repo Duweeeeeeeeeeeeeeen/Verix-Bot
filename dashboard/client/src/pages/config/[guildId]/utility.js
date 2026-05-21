@@ -184,8 +184,7 @@ export default function UtilityConfig() {
 
         <nav className="pc-tabs-v2" style={{ marginBottom: '32px' }}>
             {[
-                { id: 'settings', icon: <Settings2 size={16} />, label: t('common.tab_settings') },
-                { id: 'system_messages', icon: <MessageSquare size={16} />, label: t('common.tab_system_messages') }
+                { id: 'settings', icon: <Settings2 size={16} />, label: t('common.tab_settings') }
             ].map(tab => (
                 <button key={tab.id} className={(activeTab || 'settings') === tab.id ? 'active' : ''} onClick={() => setActiveTab(tab.id)}>
                     {tab.icon} <span>{tab.label}</span>
@@ -282,7 +281,7 @@ export default function UtilityConfig() {
                 </div>
             )}
 
-            {(activeTab === 'system_messages') && (
+            {(activeTab === 'settings' || !activeTab) && (
                 <div className="v-stack animate slide-up">
                     <SystemMessagesSection 
                         config={config}

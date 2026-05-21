@@ -217,9 +217,6 @@ export default function TempVoiceConfig() {
                     <Users size={16} /> <span>{t('tempvoice.tab_active')}</span>
                     {activeRooms.length > 0 && <span className="pc-tab-badge-v2" style={{ background: 'var(--primary)', color: '#fff', fontSize: '0.7rem', padding: '2px 8px', borderRadius: '100px', marginLeft: '8px' }}>{activeRooms.length}</span>}
                 </button>
-                <button className={activeTab === 'system_messages' ? 'active' : ''} onClick={() => setActiveTab('system_messages')}>
-                    <MessageSquare size={16} /> <span>{t('common.tab_system_messages')}</span>
-                </button>
             </div>
         </nav>
 
@@ -308,7 +305,7 @@ export default function TempVoiceConfig() {
                 </div>
             )}
 
-            {activeTab === 'system_messages' && (
+            {activeTab === 'design' && (
                 <div className="v-stack animate slide-up">
                     <section className="pc-card-v2">
                         <SystemMessagesSection
