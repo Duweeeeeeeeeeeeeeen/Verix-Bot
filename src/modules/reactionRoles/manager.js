@@ -252,6 +252,16 @@ class ReactionRoleManager {
             }
 
             if (message) {
+                const messageHasButtons = message.components && message.components.length > 0;
+                const panelIsButton = panel.type === 'BUTTON';
+                if (messageHasButtons !== panelIsButton) {
+                    // Type changed between BUTTON and REACTION! Delete the old message and resend to prevent duplicates/stacking
+                    await message.delete().catch(() => null);
+                    message = null;
+                }
+            }
+
+            if (message) {
                 // If switching/deploying a BUTTON panel, clear reactions to avoid accumulation
                 if (panel.type === 'BUTTON') {
                     await message.reactions.removeAll().catch(() => null);
