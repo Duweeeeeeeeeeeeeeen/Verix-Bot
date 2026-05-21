@@ -631,8 +631,8 @@ async function renderTicketDashboard(channel, ticket, config, typeConfig, user, 
         if (dashboard) return dashboard.edit({ embeds: [embed], components: [btnRow, statusMenu] });
     }
 
-    const mention = staffRoles.length > 0 ? staffRoles.map(r => r.toString()).join(' ') : '@staff';
-    await channel.send({ content: mention, embeds: [embed], components: [btnRow, statusMenu] });
+    const mention = staffRoles.length > 0 ? staffRoles.map(r => r.toString()).join(' ') : '';
+    await channel.send({ content: mention || undefined, embeds: [embed], components: [btnRow, statusMenu] });
 }
 
 export { createTicket };

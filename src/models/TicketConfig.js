@@ -23,6 +23,7 @@ const ticketConfigSchema = new mongoose.Schema({
         type: Map,
         of: {
             label: { type: String }, // Optional custom label
+            description: { type: String, default: null }, // Short description for select menu
             color: { type: String, default: '#3498db' },
             emoji: { type: String, default: '🎫' },
             style: { type: String, default: 'PRIMARY' },

@@ -1254,11 +1254,15 @@ router.post('/:guildId/tickets/send-panel', adminCheck, async (req, res) => {
                 for (const [id, data] of typesSource) {
                     if (data.style === 'LINK') continue; // Select menu non supporta link esterni
                     
-                    options.push({
+                    const option = {
                         label: data.label || (id.charAt(0).toUpperCase() + id.slice(1)),
                         value: `ticket_type_${id}`,
                         emoji: data.emoji || '🎫'
-                    });
+                    };
+                    if (data.description && data.description.trim()) {
+                        option.description = data.description.substring(0, 100);
+                    }
+                    options.push(option);
                 }
             } else {
                  options.push({ label: 'Supporto Generale', value: 'ticket_type_supporto', emoji: '🎫' });

@@ -226,14 +226,17 @@ export default function TicketConfig() {
   const isButtonPanel = (config.inputType || 'SELECT') === 'BUTTONS';
   const openTicketWelcomePreview = (id) => {
     const typeConfig = config.typesConfig?.[id] || {};
+    const fields = [
+      { name: t('tickets.category_open'), value: config.categoryOpenId ? `<#${config.categoryOpenId}>` : t('common.none'), inline: true }
+    ];
+    if (typeConfig.pingRoleId) {
+      fields.push({ name: t('tickets.target_role'), value: `<@&${typeConfig.pingRoleId}>`, inline: true });
+    }
     setPreviewData({
       title: `${typeConfig.emoji || '🎫'} ${typeConfig.label || id}`,
       description: typeConfig.welcomeMessage || t('tickets.welcome_message_default'),
       color: typeConfig.color || '#2ECC71',
-      fields: [
-        { name: t('tickets.category_open'), value: config.categoryOpenId ? `<#${config.categoryOpenId}>` : t('common.none'), inline: true },
-        { name: t('tickets.target_role'), value: typeConfig.pingRoleId ? `<@&${typeConfig.pingRoleId}>` : t('common.none'), inline: true }
-      ],
+      fields,
       footer: 'Verix Ticket System'
     });
   };
@@ -528,6 +531,26 @@ export default function TicketConfig() {
                                             </div>
                                             )}
 
+                                            {!isButtonPanel && (
+                                                <div className="pc-input-group-v2" style={{ marginTop: '24px' }}>
+                                                    <label>{t('tickets.category_description')}</label>
+                                                    <input
+                                                        className="pc-input-modern-v2"
+                                                        value={config.typesConfig[id]?.description || ''}
+                                                        onChange={e => {
+                                                            const newTypes = { ...config.typesConfig };
+                                                            newTypes[id] = { ...newTypes[id], description: e.target.value };
+                                                            setConfig({ ...config, typesConfig: newTypes });
+                                                        }}
+                                                        placeholder={t('tickets.category_description_placeholder')}
+                                                        maxLength={100}
+                                                    />
+                                                    <p style={{ margin: '6px 0 0 0', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                                                        {(config.typesConfig[id]?.description || '').length}/100
+                                                    </p>
+                                                </div>
+                                            )}
+
                                             <div className="pc-input-group-v2" style={{ marginTop: '24px' }}>
                                                 <label>{t('tickets.welcome_message')}</label>
                                                 <textarea
@@ -565,10 +588,16 @@ export default function TicketConfig() {
                                     type: 'SELECT',
                                     label: t('tickets.input_select'),
                                     placeholder: t('tickets.cat_title_placeholder'),
-                                    options: ticketTypes.map(id => ({
-                                        label: config.typesConfig?.[id]?.label || id,
-                                        emoji: config.typesConfig?.[id]?.emoji || '🎫'
-                                    }))
+                                    options: ticketTypes.map(id => {
+                                        const opt = {
+                                            label: config.typesConfig?.[id]?.label || id,
+                                            emoji: config.typesConfig?.[id]?.emoji || '🎫'
+                                        };
+                                        if (config.typesConfig?.[id]?.description) {
+                                            opt.description = config.typesConfig[id].description;
+                                        }
+                                        return opt;
+                                    })
                                 }];
                             }
                             return ticketTypes.slice(0, 5).map(id => ({
@@ -578,6 +607,13 @@ export default function TicketConfig() {
                             }));
                         }}
                     />
+
+                    <div className="pc-info-note" style={{ margin: '18px 0 0 0', padding: '14px 18px', background: 'rgba(var(--primary-rgb), 0.06)', border: '1px solid rgba(var(--primary-rgb), 0.15)', borderRadius: '12px', display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                        <AlertCircle size={18} style={{ color: 'var(--primary)', flexShrink: 0, marginTop: '2px' }} />
+                        <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+                            {t('tickets.welcome_override_note')}
+                        </p>
+                    </div>
 
                     <section className="pc-card-v2" style={{ marginTop: '24px' }}>
                         <div className="card-header-v2">
