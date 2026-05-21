@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Skeleton from '../../../components/Skeleton';
-import { DiscordSelector, CustomSelect, EmbedMessageManager, NotificationSettings, SystemMessagesSection } from '../../../components/LazyConfigComponents';
+import { DiscordSelector, CustomSelect, EmbedMessageManager, NotificationSettings, SystemMessagesSection, EmbedEditor } from '../../../components/LazyConfigComponents';
 import api from '../../../utils/api';
 import { useT } from '../../../contexts/LanguageContext';
 import { 
@@ -115,6 +115,10 @@ export default function FiveMConfig() {
         serverIp: '', 
         statusChannelId: '',
         enabled: true,
+        onlineMessage: '',
+        offlineMessage: '',
+        onlineEmbed: { enabled: true, title: '', description: '', color: '#2ecc71', footer: '', timestamp: true },
+        offlineEmbed: { enabled: true, title: '', description: '', color: '#ff4757', footer: '', timestamp: true },
         buttons: []
     }];
     setConfig({ ...config, servers: newServers });
@@ -131,7 +135,7 @@ export default function FiveMConfig() {
 
   const addButton = (serverId) => {
     const server = config.servers.find(s => s.id === serverId);
-    const newButtons = [...(server.buttons || []), { label: t('fivem.connect_now'), url: '', style: 'LINK' }];
+    const newButtons = [...(server.buttons || []), { label: t('fivem.connect_now'), url: '', emoji: '🎮', style: 'LINK' }];
     updateServer(serverId, 'buttons', newButtons);
   };
 
@@ -249,7 +253,12 @@ export default function FiveMConfig() {
                                             </div>
                                             <div className="v-stack" style={{ gap: '12px' }}>
                                                 {(server.buttons || []).map((btn, idx) => (
-                                                    <div key={idx} className="pc-input-row-v2" style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                                                    <div key={idx} className="pc-input-row-v2" style={{ display: 'grid', gridTemplateColumns: '80px minmax(120px, 1fr) minmax(180px, 2fr) 42px', gap: '10px', alignItems: 'center' }}>
+                                                        <input className="pc-input-modern-v2" value={btn.emoji || ''} onChange={e => {
+                                                            const newBtns = [...server.buttons];
+                                                            newBtns[idx].emoji = e.target.value;
+                                                            updateServer(server.id, 'buttons', newBtns);
+                                                        }} placeholder="🎮" />
                                                         <input className="pc-input-modern-v2" style={{ flex: 1 }} value={btn.label || ''} onChange={e => {
                                                             const newBtns = [...server.buttons];
                                                             newBtns[idx].label = e.target.value;
@@ -267,6 +276,52 @@ export default function FiveMConfig() {
                                                     </div>
                                                 ))}
                                             </div>
+                                        </div>
+
+                                        <div className="pc-sub-card-v2" style={{ marginTop: '24px' }}>
+                                            <div className="card-header-v2" style={{ marginBottom: '16px' }}>
+                                                <div className="header-icon"><Activity size={18} /></div>
+                                                <h3 style={{ margin: 0 }}>Online status message</h3>
+                                            </div>
+                                            <div className="pc-input-group-v2">
+                                                <label>Content above embed</label>
+                                                <textarea
+                                                    className="pc-input-modern-v2"
+                                                    style={{ minHeight: '72px' }}
+                                                    value={server.onlineMessage || ''}
+                                                    onChange={e => updateServer(server.id, 'onlineMessage', e.target.value)}
+                                                    placeholder="Optional message content. Variables: {server}, {players}, {maxPlayers}, {ip}"
+                                                />
+                                            </div>
+                                            <EmbedEditor
+                                                compact
+                                                embed={server.onlineEmbed || { enabled: true, color: '#2ecc71' }}
+                                                onChange={embed => updateServer(server.id, 'onlineEmbed', embed)}
+                                                variables={['server', 'serverName', 'players', 'maxPlayers', 'ip', 'lastCheck']}
+                                            />
+                                        </div>
+
+                                        <div className="pc-sub-card-v2" style={{ marginTop: '24px' }}>
+                                            <div className="card-header-v2" style={{ marginBottom: '16px' }}>
+                                                <div className="header-icon"><Power size={18} /></div>
+                                                <h3 style={{ margin: 0 }}>Offline status message</h3>
+                                            </div>
+                                            <div className="pc-input-group-v2">
+                                                <label>Content above embed</label>
+                                                <textarea
+                                                    className="pc-input-modern-v2"
+                                                    style={{ minHeight: '72px' }}
+                                                    value={server.offlineMessage || ''}
+                                                    onChange={e => updateServer(server.id, 'offlineMessage', e.target.value)}
+                                                    placeholder="Optional message content. Variables: {server}, {ip}, {lastCheck}"
+                                                />
+                                            </div>
+                                            <EmbedEditor
+                                                compact
+                                                embed={server.offlineEmbed || { enabled: true, color: '#ff4757' }}
+                                                onChange={embed => updateServer(server.id, 'offlineEmbed', embed)}
+                                                variables={['server', 'serverName', 'ip', 'lastCheck']}
+                                            />
                                         </div>
                                     </div>
                                 </section>

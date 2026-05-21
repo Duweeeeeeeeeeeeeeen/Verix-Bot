@@ -375,6 +375,45 @@ export default function ReactionRolesConfig() {
                                             <label>{t('rr.embed_desc')}</label>
                                             <textarea className="pc-input-modern-v2" style={{ minHeight: '220px' }} value={activePanel.embed.description} onChange={e => updatePanel(activePanel.id, { embed: { ...activePanel.embed, description: e.target.value } })} />
                                         </div>
+                                        <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: 'minmax(140px, 180px) 1fr', gap: '16px', marginTop: '20px' }}>
+                                            <div className="pc-input-group-v2">
+                                                <label>{t('common.color')}</label>
+                                                <input
+                                                    type="color"
+                                                    className="pc-input-modern-v2"
+                                                    value={activePanel.embed.color || '#5865F2'}
+                                                    onChange={e => updatePanel(activePanel.id, { embed: { ...activePanel.embed, color: e.target.value } })}
+                                                />
+                                            </div>
+                                            <div className="pc-input-group-v2">
+                                                <label>Footer</label>
+                                                <input
+                                                    className="pc-input-modern-v2"
+                                                    value={activePanel.embed.footer || ''}
+                                                    onChange={e => updatePanel(activePanel.id, { embed: { ...activePanel.embed, footer: e.target.value } })}
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '20px' }}>
+                                            <div className="pc-input-group-v2">
+                                                <label>Thumbnail URL</label>
+                                                <input
+                                                    className="pc-input-modern-v2"
+                                                    value={activePanel.embed.thumbnail || ''}
+                                                    onChange={e => updatePanel(activePanel.id, { embed: { ...activePanel.embed, thumbnail: e.target.value } })}
+                                                    placeholder="https://..."
+                                                />
+                                            </div>
+                                            <div className="pc-input-group-v2">
+                                                <label>Image URL</label>
+                                                <input
+                                                    className="pc-input-modern-v2"
+                                                    value={activePanel.embed.image || ''}
+                                                    onChange={e => updatePanel(activePanel.id, { embed: { ...activePanel.embed, image: e.target.value } })}
+                                                    placeholder="https://..."
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
                                 </section>
 

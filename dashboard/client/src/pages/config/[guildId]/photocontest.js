@@ -52,8 +52,16 @@ export default function PhotoContestConfig() {
         interval: data?.interval || 24,
         duration: data?.duration || 24,
         multiWinner: data?.multiWinner ?? false,
+        winnersCount: data?.winnersCount || 1,
+        automaticThemes: data?.automaticThemes ?? false,
         themesList: (data?.themesList || data?.themes || []).map(theme => typeof theme === 'string' ? theme : theme.name).filter(Boolean),
         staffRoleIds: data?.staffRoleIds || data?.staffRoles || [],
+        submitLabel: data?.submitLabel || 'Submit Photo',
+        submitEmoji: data?.submitEmoji || '📸',
+        voteLabel: data?.voteLabel || 'Leaderboard',
+        voteEmoji: data?.voteEmoji || '🏆',
+        upvoteEmoji: data?.upvoteEmoji || '👍',
+        downvoteEmoji: data?.downvoteEmoji || '👎',
         notifications: data?.notifications || { mode: 'NONE', channelId: null },
         systemMessages: data?.systemMessages || {}
       });
@@ -287,6 +295,60 @@ export default function PhotoContestConfig() {
                                             <span className="pc-slider-v2"></span>
                                         </label>
                                     </div>
+                                    {config.multiWinner && (
+                                        <div className="pc-input-group-v2 animate slide-up" style={{ marginTop: '18px' }}>
+                                            <label>Winners count</label>
+                                            <input
+                                                type="number"
+                                                className="pc-input-modern-v2"
+                                                min="1"
+                                                max="10"
+                                                value={config.winnersCount || 1}
+                                                onChange={e => setConfig({...config, winnersCount: parseInt(e.target.value) || 1})}
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div style={{ marginTop: '20px', background: 'var(--bg-badge)', padding: '20px', borderRadius: '18px', border: '1px solid var(--border)' }}>
+                                    <div className="pc-toggle-row-v2" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <div className="v-stack" style={{ gap: '6px' }}>
+                                            <strong style={{ fontWeight: 700, color: 'var(--text-heading)' }}>Automatic themes</strong>
+                                            <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)', fontWeight: 700 }}>Rotate through the theme library automatically.</span>
+                                        </div>
+                                        <label className="pc-toggle-v2">
+                                            <input type="checkbox" checked={!!config.automaticThemes} onChange={e => setConfig({...config, automaticThemes: e.target.checked})} />
+                                            <span className="pc-slider-v2"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section className="pc-card-v2 animate slide-up">
+                            <div className="card-header-v2" style={{ marginBottom: '22px' }}>
+                                <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><MousePointer2 size={20} /></div>
+                                <h3 style={{ margin: 0 }}>Contest Controls</h3>
+                            </div>
+                            <div className="card-body-v2">
+                                <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                                    {[
+                                        ['submitEmoji', 'Submit emoji'],
+                                        ['submitLabel', 'Submit label'],
+                                        ['voteEmoji', 'Leaderboard emoji'],
+                                        ['voteLabel', 'Leaderboard label'],
+                                        ['upvoteEmoji', 'Upvote emoji'],
+                                        ['downvoteEmoji', 'Downvote emoji']
+                                    ].map(([key, label]) => (
+                                        <div key={key} className="pc-input-group-v2">
+                                            <label>{label}</label>
+                                            <input
+                                                className="pc-input-modern-v2"
+                                                value={config[key] || ''}
+                                                onChange={e => setConfig({...config, [key]: e.target.value})}
+                                            />
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                         </section>
@@ -349,6 +411,7 @@ export default function PhotoContestConfig() {
                         guildId={guildId}
                         module="photocontest"
                         slugs={[
+                            { key: 'panel', label: 'Contest Panel', description: 'Main message with the photo submission controls.', variables: ['theme', 'duration', 'channel'], group: 'Access', groupIcon: Layout },
                             { key: 'announcement', label: t('pc.announce_label'), description: t('pc.announce_desc'), variables: ['theme', 'duration', 'channel'], group: 'Comunicazioni', groupIcon: Bell },
                             { key: 'winner', label: t('pc.winner_label'), description: t('pc.winner_desc'), variables: ['user', 'theme', 'votes', 'image'], group: 'Vittoria', groupIcon: Trophy },
                             { key: 'end', label: t('pc.end_label'), description: t('pc.end_desc'), variables: ['theme'], group: 'Stato', groupIcon: Clock },

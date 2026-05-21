@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Skeleton from '../../../components/Skeleton';
-import { DiscordSelector, CustomSelect, EmbedMessageManager, SystemMessagesSection, HelpTooltip } from '../../../components/LazyConfigComponents';
+import { DiscordSelector, CustomSelect, EmbedMessageManager, SystemMessagesSection, HelpTooltip, NotificationSettings } from '../../../components/LazyConfigComponents';
 import api from '../../../utils/api';
 import { useT } from '../../../contexts/LanguageContext';
 import {
@@ -269,6 +269,15 @@ export default function VerifyConfig() {
                             </div>
                         </section>
 
+                        <section className="pc-card-v2">
+                            <NotificationSettings
+                                guildId={guildId}
+                                value={config.notifications || { mode: 'DM', channelId: null }}
+                                onChange={val => setNested('notifications', val)}
+                                title="User notification"
+                            />
+                        </section>
+
                         <div className="pc-card-v2" style={{ textAlign: 'center', background: 'var(--bg-badge)', border: '1.5px dashed var(--border)' }}>
                             <Send size={32} style={{ color: 'var(--primary)', marginBottom: '16px', opacity: 0.5 }} />
                             <h4 style={{ margin: '0 0 8px 0', color: 'var(--text-heading)' }}>{t('verify.send_panel')}</h4>
@@ -346,7 +355,10 @@ export default function VerifyConfig() {
                                     </section>
                                 )
                             },
-                            { key: 'success', label: t('verify.success_label'), description: t('verify.success_desc'), variables: ['user', 'guild'], group: 'UI', groupIcon: CheckCircle2 }
+                            { key: 'success', label: t('verify.success_label'), description: t('verify.success_desc'), variables: ['user', 'guild', 'user_mention', 'member_count'], group: 'User UI', groupIcon: CheckCircle2 },
+                            { key: 'success_reply', label: 'Success reply', description: 'Ephemeral confirmation shown after verification.', variables: ['user', 'guild'], group: 'User UI', groupIcon: CheckCircle2 },
+                            { key: 'already_verified', label: 'Already verified', description: 'Shown when the member already has the verification role.', variables: ['guild'], group: 'User UI', groupIcon: Shield },
+                            { key: 'staff_log', label: 'Staff log', description: 'Audit embed sent to the verification log channel.', variables: ['user', 'userId', 'role'], group: 'Staff UI', groupIcon: Shield }
                         ]}
                     />
 
