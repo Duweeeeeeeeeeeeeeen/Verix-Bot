@@ -280,9 +280,6 @@ export default function TicketConfig() {
             <button className={activeTab === 'responses' ? 'active' : ''} onClick={() => setActiveTab('responses')}>
                 <MessageSquare size={16} /> <span>{t('tickets.canned')}</span>
             </button>
-            <button className={activeTab === 'system_messages' ? 'active' : ''} onClick={() => setActiveTab('system_messages')}>
-                <Settings2 size={16} /> <span>{t('common.tab_system_messages')}</span>
-            </button>
         </nav>
 
         <div className="pc-content-v2">
@@ -406,7 +403,7 @@ export default function TicketConfig() {
                             </button>
                         </div>
                         <div className="card-body-v2">
-                            <div className="v-stack" style={{ gap: '24px' }}>
+                            <div className="v-stack ticket-category-list" style={{ gap: '14px' }}>
                                 {ticketTypes.map((id) => (
                                     <div key={id} className="pc-sub-card-v2 animate slide-up">
                                         <div className="pc-bb-content" style={{ padding: 0 }}>
@@ -443,12 +440,37 @@ export default function TicketConfig() {
 
                                             <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '18px', marginTop: '24px' }}>
                                                 <div className="pc-input-group-v2">
-                                                    <label>{t('tickets.btn_style')}</label>
-                                                    <CustomSelect value={config.typesConfig[id]?.style || 'PRIMARY'} onChange={v => {
-                                                        const newTypes = { ...config.typesConfig };
-                                                        newTypes[id] = { ...newTypes[id], style: v };
-                                                        setConfig({ ...config, typesConfig: newTypes });
-                                                    }} options={[...BUTTON_STYLE_OPTIONS, { value: 'LINK', label: t('tickets.btn_style_link') }]} />
+                                                    <label>{(config.inputType || 'SELECT') === 'BUTTONS' ? t('common.color') : t('common.order')}</label>
+                                                    {(config.inputType || 'SELECT') === 'BUTTONS' ? (
+                                                        <div className="ticket-style-picker">
+                                                            {[
+                                                                { value: 'PRIMARY', color: '#5865f2' },
+                                                                { value: 'SUCCESS', color: '#248046' },
+                                                                { value: 'DANGER', color: '#da373c' },
+                                                                { value: 'SECONDARY', color: '#4e5058' },
+                                                                { value: 'LINK', color: '#f3f4f6' }
+                                                            ].map(option => (
+                                                                <button
+                                                                    key={option.value}
+                                                                    type="button"
+                                                                    className={(config.typesConfig[id]?.style || 'PRIMARY') === option.value ? 'active' : ''}
+                                                                    onClick={() => {
+                                                                        const newTypes = { ...config.typesConfig };
+                                                                        newTypes[id] = { ...newTypes[id], style: option.value };
+                                                                        setConfig({ ...config, typesConfig: newTypes });
+                                                                    }}
+                                                                    style={{ background: option.color }}
+                                                                    title={option.value}
+                                                                />
+                                                            ))}
+                                                        </div>
+                                                    ) : (
+                                                        <input className="pc-input-modern-v2" type="number" value={config.typesConfig[id]?.order || 0} onChange={e => {
+                                                            const newTypes = { ...config.typesConfig };
+                                                            newTypes[id] = { ...newTypes[id], order: parseInt(e.target.value, 10) || 0 };
+                                                            setConfig({ ...config, typesConfig: newTypes });
+                                                        }} />
+                                                    )}
                                                 </div>
                                                 <div className="pc-input-group-v2">
                                                     <label>{t('tickets.target_role')}</label>
@@ -458,6 +480,7 @@ export default function TicketConfig() {
                                                         setConfig({ ...config, typesConfig: newTypes });
                                                     }} />
                                                 </div>
+                                                {(config.inputType || 'SELECT') === 'BUTTONS' && (
                                                 <div className="pc-input-group-v2">
                                                     <label>{t('common.order')}</label>
                                                     <input className="pc-input-modern-v2" type="number" value={config.typesConfig[id]?.order || 0} onChange={e => {
@@ -466,6 +489,7 @@ export default function TicketConfig() {
                                                         setConfig({ ...config, typesConfig: newTypes });
                                                     }} />
                                                 </div>
+                                                )}
                                             </div>
 
                                             {config.typesConfig[id]?.style === 'LINK' && (
@@ -581,6 +605,24 @@ export default function TicketConfig() {
                             </div>
                         </div>
                     </section>
+
+                    <section className="pc-card-v2" style={{ marginTop: '24px' }}>
+                        <SystemMessagesSection
+                            config={config}
+                            onUpdate={setConfig}
+                            title={t('tickets.system_messages')}
+                            description={t('tickets.system_messages_desc')}
+                            messages={[
+                                { key: 'cooldown', label: t('tickets.msg_cooldown'), placeholder: t('tickets.msg_cooldown_placeholder') },
+                                { key: 'already_exists', label: t('tickets.msg_already_exists'), placeholder: t('tickets.placeholder_already_exists') },
+                                { key: 'no_quick_replies', label: t('tickets.msg_no_quick_replies'), placeholder: t('tickets.placeholder_no_quick_replies') },
+                                { key: 'quick_reply_placeholder', label: t('tickets.msg_quick_reply_menu'), placeholder: t('tickets.msg_quick_reply_menu_desc') },
+                                { key: 'tag_placeholder', label: t('tickets.msg_tag_menu'), placeholder: t('tickets.msg_tag_menu_desc') },
+                                { key: 'status_updated_msg', label: t('tickets.msg_status_updated'), placeholder: t('tickets.placeholder_status_updated') },
+                                { key: 'new_ticket_ping', label: t('tickets.msg_new_ticket_ping'), placeholder: t('tickets.placeholder_new_ticket_ping') }
+                            ]}
+                        />
+                    </section>
                 </div>
             )}
 
@@ -632,29 +674,49 @@ export default function TicketConfig() {
                 </div>
             )}
 
-            {activeTab === 'system_messages' && (
-                <div className="v-stack animate slide-up">
-                    <section className="pc-card-v2">
-                        <SystemMessagesSection
-                            config={config}
-                            onUpdate={setConfig}
-                            messages={[
-                                { key: 'cooldown', label: t('tickets.msg_cooldown'), placeholder: t('tickets.msg_cooldown_placeholder') },
-                                { key: 'already_exists', label: t('tickets.msg_already_exists'), placeholder: t('tickets.placeholder_already_exists') },
-                                { key: 'no_quick_replies', label: t('tickets.msg_no_quick_replies'), placeholder: t('tickets.placeholder_no_quick_replies') },
-                                { key: 'quick_reply_placeholder', label: t('tickets.msg_quick_reply_menu'), placeholder: t('tickets.msg_quick_reply_menu_desc') },
-                                { key: 'tag_placeholder', label: t('tickets.msg_tag_menu'), placeholder: t('tickets.msg_tag_menu_desc') },
-                                { key: 'status_updated_msg', label: t('tickets.msg_status_updated'), placeholder: t('tickets.placeholder_status_updated') },
-                                { key: 'new_ticket_ping', label: t('tickets.msg_new_ticket_ping'), placeholder: t('tickets.placeholder_new_ticket_ping') }
-                            ]}
-                        />
-                    </section>
-                </div>
-            )}
         </div>
 
         <style jsx>{`
             .pc-premium-wrapper { padding: 32px; max-width: 1650px; margin: 0 auto; font-family: 'Inter', sans-serif; }
+            .ticket-category-list :global(.pc-sub-card-v2) {
+                padding: 18px !important;
+                border-radius: 16px !important;
+            }
+            .ticket-category-list :global(.pc-bb-content > div:first-child) {
+                margin-bottom: 16px !important;
+            }
+            .ticket-category-list :global(.pc-bb-columns) {
+                align-items: flex-end;
+                gap: 16px !important;
+            }
+            .ticket-category-list :global(.pc-input-grid-v2) {
+                gap: 14px !important;
+                margin-top: 16px !important;
+            }
+            .ticket-category-list textarea {
+                min-height: 64px !important;
+            }
+            .ticket-style-picker {
+                min-height: 48px;
+                display: flex;
+                align-items: center;
+                gap: 9px;
+                padding: 0 12px;
+                border: 1px solid var(--border);
+                border-radius: 12px;
+                background: var(--bg-input);
+            }
+            .ticket-style-picker button {
+                width: 22px;
+                height: 22px;
+                border-radius: 999px;
+                border: 2px solid transparent;
+                cursor: pointer;
+            }
+            .ticket-style-picker button.active {
+                outline: 3px solid rgba(var(--primary-rgb), 0.18);
+                border-color: var(--primary);
+            }
             
             @media (max-width: 1200px) {
                 .pc-layout-grid-v2 { grid-template-columns: 1fr !important; gap: 24px !important; }
