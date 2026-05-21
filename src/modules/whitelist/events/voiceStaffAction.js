@@ -162,11 +162,11 @@ export default {
             if (action === 'deny') {
                 const modal = new ModalBuilder()
                     .setCustomId(`deny_voice_modal_${userId}`)
-                    .setTitle('Motivo Rifiuto Whitelist Vocale');
+                    .setTitle('Voice Whitelist Rejection Reason');
 
                 const reasonInput = new TextInputBuilder()
                     .setCustomId('voice_rejection_reason')
-                    .setLabel('Inserisci il motivo del rifiuto')
+                    .setLabel('Enter the rejection reason')
                     .setStyle(TextInputStyle.Paragraph)
                     .setRequired(true)
                     .setMinLength(10);
@@ -190,7 +190,7 @@ export default {
                 { lastVoiceRejectionAt: new Date() }
             );
 
-            // Notifica Utente (Voice Specific)
+            // Notify user (voice specific)
             if (user) {
                 const oralRejectEmbed = await messageService.get(interaction.guild.id, 'voice', 'dm_rejected', {
                     user: user.username,

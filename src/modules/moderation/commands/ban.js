@@ -11,7 +11,7 @@ export default {
         .setName('ban')
         .setDescription('Banna un membro dal server.')
         .addUserOption(option => option.setName('target').setDescription('Membro da bannare').setRequired(true))
-        .addStringOption(option => option.setName('reason').setDescription('Motivo del ban'))
+        .addStringOption(option => option.setName('reason').setDescription('Reason for the ban'))
         .setDefaultMemberPermissions(PermissionFlagsBits.BanMembers),
     async execute(interaction) {
         const user = interaction.options.getUser('target');

@@ -15,11 +15,11 @@ export async function getDashboard(guildId) {
     const waitingQueue = await VoiceQueue.find({ guildId, status: 'WAITING' }).sort({ joinedAt: 1 });
     const recentAudits = await WhitelistAudit.find({ guildId, type: 'VOICE' }).sort({ timestamp: -1 }).limit(config.voiceSettings.recentActionsCount || 3);
 
-    const status = config.voiceSettings.paused ? '⏸️ PAUSATO' : '🟢 ATTIVO';
+    const status = config.voiceSettings.paused ? 'Paused' : 'Active';
     const color = config.voiceSettings.paused ? '#ff4757' : '#2ecc71';
 
     const embed = new EmbedBuilder()
-        .setTitle('🎙️ Elite Voice Whitelist Control Center')
+        .setTitle('Voice Whitelist Control Center')
         .setDescription(`**Stato**: ${status}\n**Uffici**: \`${activeSessions.length} / ${config.voiceSettings.maxConcurrent}\` | **In Coda**: \`${waitingQueue.length}\``)
         .setColor(color)
         .setTimestamp();
@@ -27,10 +27,10 @@ export async function getDashboard(guildId) {
     // Active Sessions
     if (activeSessions.length > 0) {
         const sessionList = activeSessions.map((s, i) => {
-            const time = s.staffJoinedAt ? `<t:${Math.floor(s.staffJoinedAt.getTime() / 1000)}:R>` : '⏳ In attesa staff';
+            const time = s.staffJoinedAt ? `<t:${Math.floor(s.staffJoinedAt.getTime() / 1000)}:R>` : 'Waiting for staff';
             return `**${i + 1}.** <@${s.userId}> | Staff: ${s.staffId ? `<@${s.staffId}>` : '❌'} | *${time}*`;
         }).join('\n');
-        embed.addFields({ name: `📋 Sessioni Attive`, value: sessionList || 'Nessuna', inline: false });
+        embed.addFields({ name: `Active Sessions`, value: sessionList || 'None', inline: false });
     }
 
     // Queue
@@ -38,16 +38,16 @@ export async function getDashboard(guildId) {
         const queueList = waitingQueue.slice(0, 5).map((s, i) => {
             return `**#${i + 1}.** <@${s.userId}> ${s.isVip ? '💎' : ''}`;
         }).join('\n');
-        embed.addFields({ name: `⏳ Prossimi in Coda`, value: queueList || 'Nessuno', inline: true });
+        embed.addFields({ name: `Next in Queue`, value: queueList || 'None', inline: true });
     }
 
     // Recent Activity
     if (recentAudits.length > 0) {
         const history = recentAudits.map(a => {
             const icon = a.action === 'ACCEPTED' ? '✅' : '❌';
-            return `${icon} <@${a.userId}> da <@${a.staffId}> (<t:${Math.floor(a.timestamp.getTime() / 1000)}:R>)`;
+            return `${icon} <@${a.userId}> by <@${a.staffId}> (<t:${Math.floor(a.timestamp.getTime() / 1000)}:R>)`;
         }).join('\n');
-        embed.addFields({ name: '📜 Ultime Azioni', value: history || 'Nessuna', inline: false });
+        embed.addFields({ name: 'Recent Actions', value: history || 'None', inline: false });
     }
 
     const rows = [];
@@ -57,16 +57,16 @@ export async function getDashboard(guildId) {
         new ButtonBuilder()
             .setCustomId('dashboard_refresh')
             .setEmoji('🔄')
-            .setLabel('Aggiorna')
+            .setLabel('Refresh')
             .setStyle(ButtonStyle.Secondary),
         new ButtonBuilder()
             .setCustomId(config.voiceSettings.paused ? 'dashboard_resume' : 'dashboard_pause')
-            .setLabel(config.voiceSettings.paused ? 'Riprendi' : 'Pausa')
+            .setLabel(config.voiceSettings.paused ? 'Resume' : 'Pause')
             .setEmoji(config.voiceSettings.paused ? '▶️' : '⏸️')
             .setStyle(config.voiceSettings.paused ? ButtonStyle.Success : ButtonStyle.Danger),
         new ButtonBuilder()
             .setCustomId('dashboard_skip')
-            .setLabel('Salta Prossimo')
+            .setLabel('Skip Next')
             .setEmoji('⏭️')
             .setStyle(ButtonStyle.Primary)
     );
@@ -76,7 +76,7 @@ export async function getDashboard(guildId) {
     if (waitingQueue.length > 0) {
         const selector = new StringSelectMenuBuilder()
             .setCustomId('promote_user_to_top')
-            .setPlaceholder('💎 Promuovi utente in testa alla coda...')
+            .setPlaceholder('Move a user to the front of the queue...')
             .addOptions(waitingQueue.slice(0, 25).map(s => ({
                 label: `Porta in testa: User ${s.userId}`, // We can't fetch username easily here, but we'll use ID
                 value: s.userId

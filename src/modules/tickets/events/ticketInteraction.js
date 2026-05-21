@@ -108,7 +108,7 @@ export default {
                         .setCustomId(`ticket_priority_select_${type}`)
                         .setPlaceholder(resolveSystemMessage(config, 'tickets', 'priority_placeholder', lang))
                         .addOptions([
-                            { label: resolveSystemMessage(config, 'tickets', 'priority_normal', lang), value: 'NORMALE', emoji: '🟢' },
+                            { label: resolveSystemMessage(config, 'tickets', 'priority_normal', lang), value: 'NORMALE', emoji: '??' },
                             { label: resolveSystemMessage(config, 'tickets', 'priority_important', lang), value: 'IMPORTANTE', emoji: '🟡' },
                             { label: resolveSystemMessage(config, 'tickets', 'priority_urgent', lang), value: 'URGENTE', emoji: '🔴' }
                         ])
@@ -163,7 +163,7 @@ export default {
 
             if (interaction.isButton() || interaction.isStringSelectMenu()) {
                 if (!ticket) {
-                    if (interaction.deferred) return messageService.reply(interaction, 'tickets', 'generic_error', { reason: 'Ticket non trovato nel database.' }, { ephemeral: true });
+                    if (interaction.deferred) return messageService.reply(interaction, 'tickets', 'generic_error', { reason: 'Ticket not found in the database.' }, { ephemeral: true });
                     return;
                 }
 
@@ -209,10 +209,10 @@ export default {
                 if (interaction.isStringSelectMenu() && customId === 'tk_quick_reply_send') {
                     const label = interaction.values[0];
                     const template = config.cannedResponses.find(r => r.label === label);
-                    if (!template) return interaction.editReply({ content: '❌ Errore: Template selezionato non trovato.' });
+                    if (!template) return interaction.editReply({ content: 'Template not found.' });
 
                     const permCheck = checkBotPermissions(interaction.channel, [PermissionFlagsBits.SendMessages]);
-                    if (!permCheck.hasPermission) return interaction.editReply({ content: `❌ Permessi insufficienti per inviare messaggi: ${permCheck.missing.join(', ')}` });
+                    if (!permCheck.hasPermission) return interaction.editReply({ content: `Missing permissions to send messages: ${permCheck.missing.join(', ')}` });
 
                     const responseContent = placeholderHelper.replace(template.content, {
                         user: `<@${ticket.userId}>`,
@@ -222,15 +222,15 @@ export default {
                     // Wrap quick reply in a simple embed for professionalism
                     const embed = new EmbedBuilder()
                         .setDescription(responseContent)
-                        .setColor('var(--primary)' || '#5865F2');
+                        .setColor('#5865F2');
 
                     await interaction.channel.send({ embeds: [embed] });
-                    return messageService.reply(interaction, 'tickets', 'success_open', { channel: 'Risposta inviata' }, { ephemeral: true });
+                    return messageService.reply(interaction, 'tickets', 'success_open', { channel: 'Reply sent' }, { ephemeral: true });
                 }
 
                 // TAGGING
                 if (customId === 'tk_tag') {
-                    const tags = ['Bug 🐛', 'Sospeso ⛔', 'Donazione 💰', 'RP Help 🎭', 'Risolto ✅'];
+                    const tags = ['Bug', 'Pending', 'Donation', 'Support', 'Resolved'];
                     const menu = new ActionRowBuilder().addComponents(
                         new StringSelectMenuBuilder()
                             .setCustomId('tk_tag_select')
@@ -248,7 +248,7 @@ export default {
 
                     const staffRoles = (config.staffRoleIds || []).map(id => interaction.guild.roles.cache.get(id)).filter(r => r);
                     await renderTicketDashboard(interaction.channel, ticket, config, config.typesConfig.get(ticket.type), interaction.user, staffRoles, true);
-                    return messageService.reply(interaction, 'tickets', 'note_success', { reason: 'Tag aggiunto' }, { ephemeral: true });
+                    return messageService.reply(interaction, 'tickets', 'note_success', { reason: 'Tag added' }, { ephemeral: true });
                 }
 
                 // CLAIM & STATUS
@@ -265,7 +265,7 @@ export default {
 
                     await messageService.reply(interaction, 'tickets', 'claim_success', {});
                     
-                    interaction.channel.setName(`⚙️-${interaction.channel.name}`).catch(() => {});
+                    interaction.channel.setName(`claimed-${interaction.channel.name}`).catch(() => {});
                     const staffRoles = (config.staffRoleIds || []).map(id => interaction.guild.roles.cache.get(id)).filter(r => r);
                     return renderTicketDashboard(interaction.channel, ticket, config, config.typesConfig.get(ticket.type), interaction.user, staffRoles, true);
                 }
@@ -293,12 +293,12 @@ export default {
                     if (closeMode === 'DELETE' && logChannel) {
                         const logPermCheck = checkBotPermissions(logChannel, [PermissionFlagsBits.SendMessages, PermissionFlagsBits.EmbedLinks, PermissionFlagsBits.AttachFiles]);
                         if (!logPermCheck.hasPermission) {
-                            return interaction.editReply({ content: `❌ Impossibile chiudere: il bot non ha i permessi nel canale log (${logPermCheck.missing.join(', ')})` });
+                            return interaction.editReply({ content: `Cannot close: the bot is missing permissions in the log channel (${logPermCheck.missing.join(', ')})` });
                         }
                     }
 
                     if (closeMode === 'MOVE' && !config.categoryClosedId) {
-                        return interaction.editReply({ content: '❌ Errore: Categoria per i ticket chiusi non configurata nella dashboard.' });
+                        return interaction.editReply({ content: 'Closed-ticket category is not configured in the dashboard.' });
                     }
 
                     await messageService.reply(interaction, 'tickets', 'close_started', {}, { ephemeral: true });
@@ -312,7 +312,7 @@ export default {
                             const logEmbed = await messageService.get(interaction.guild.id, 'tickets', 'staff_ticket_log', {
                                 user: `<@${ticket.userId}>`,
                                 type: ticket.type.toUpperCase(),
-                                staff: ticket.assignedStaffId ? `<@${ticket.assignedStaffId}>` : 'Nessuno'
+                                staff: ticket.assignedStaffId ? `<@${ticket.assignedStaffId}>` : 'None'
                             });
                             await logChannel.send({ embeds: [logEmbed], files: [transcript] });
                         }
@@ -349,7 +349,7 @@ export default {
                         guildId: interaction.guild.id,
                         guild: interaction.guild,
                         user: closingUser?.user || null,
-                        content: `🔒 Il tuo ticket è stato chiuso correttamente in **${interaction.guild.name}**.`
+                        content: `Your ticket was closed successfully in **${interaction.guild.name}**.`
                     });
                     return;
                 }
@@ -374,7 +374,7 @@ export default {
 
             // --- 5. MODAL SUBMISSIONS (Note) ---
             if (interaction.isModalSubmit() && interaction.customId === 'tk_note_modal') {
-                if (!ticket) return interaction.editReply({ content: '❌ Errore: Ticket non trovato.' });
+                if (!ticket) return interaction.editReply({ content: 'Ticket not found.' });
                 
                 // Staff check for modal too (Administrator, has one of the staff roles, or is the assigned operator)
                 const staffRoleIds = (Array.isArray(config.staffRoleIds) ? config.staffRoleIds : [])
@@ -418,7 +418,7 @@ export default {
             console.error('[TICKET_FATAL_ERROR]', error);
 
             logger.error('[TICKET_INTERACTION_FATAL]', error);
-            const fatalMsg = '❌ Errore critico nel sistema ticket. Contatta un amministratore.';
+            const fatalMsg = 'Critical ticket system error. Please contact an administrator.';
             if (interaction.deferred || interaction.replied) return interaction.editReply({ content: fatalMsg });
             return interaction.reply({ content: fatalMsg, flags: [MessageFlags.Ephemeral] });
         }
@@ -429,7 +429,7 @@ async function createTicket(interaction, type, config, metadata = {}) {
     try {
         const guild = interaction.guild;
         const user = interaction.user;
-        const priority = metadata.priority || 'NORMALE';
+        const priority = metadata.priority || 'NORMAL';
 
         // --- BLACKLIST CHECK ---
         if (config.blacklist && config.blacklist.includes(user.id)) {
@@ -441,7 +441,7 @@ async function createTicket(interaction, type, config, metadata = {}) {
         // Robust retrieval of typeConfig handling both Map and Object
         const typeConfig = (config.typesConfig instanceof Map 
             ? config.typesConfig.get(type) 
-            : config.typesConfig?.[type]) || { color: '#3498db', emoji: '🎫' };
+            : config.typesConfig?.[type]) || { color: '#3498db', emoji: '??' };
 
         const staffRoles = (config.staffRoleIds || []).map(id => guild.roles.cache.get(id)).filter(r => r);
         
@@ -451,7 +451,7 @@ async function createTicket(interaction, type, config, metadata = {}) {
         
         if (categoryId && !parentCategory) {
             logger.error(`[TICKET_CREATE] Category ${categoryId} not found in guild cache.`);
-            return interaction.editReply({ content: `❌ Errore: La categoria dei ticket (ID: \`${categoryId}\`) non esiste più. Contatta un amministratore.` });
+            return interaction.editReply({ content: `Ticket category (ID: ${categoryId}) no longer exists. Contact an administrator.` });
         }
 
         // --- PERMISSION CHECK ---
@@ -472,7 +472,7 @@ async function createTicket(interaction, type, config, metadata = {}) {
         const globalConfig = await GlobalConfig.findOne({ guildId: guild.id });
         const namingTemplate = globalConfig?.naming?.ticket || '{emoji}-{type}-{user}';
         
-        const priorityEmoji = priority === 'URGENTE' ? '🔴' : (priority === 'IMPORTANTE' ? '🟡' : '🟢');
+        const priorityEmoji = priority === 'URGENT' ? '??' : (priority === 'IMPORTANT' ? '??' : '??');
         const channelName = placeholderHelper.replace(namingTemplate, {
             emoji: priorityEmoji,
             type: type,

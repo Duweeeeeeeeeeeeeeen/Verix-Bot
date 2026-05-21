@@ -9,7 +9,7 @@ export default {
         .setName('kick')
         .setDescription('Espelle un membro dal server.')
         .addUserOption(option => option.setName('target').setDescription('Membro da espellere').setRequired(true))
-        .addStringOption(option => option.setName('reason').setDescription('Motivo dell\'espulsione'))
+        .addStringOption(option => option.setName('reason').setDescription('Reason for the kick'))
         .setDefaultMemberPermissions(PermissionFlagsBits.KickMembers),
     async execute(interaction) {
         const user = interaction.options.getUser('target');

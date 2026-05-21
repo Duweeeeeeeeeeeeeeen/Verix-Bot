@@ -39,12 +39,12 @@ export default {
 
             const panelChannel = interaction.guild.channels.cache.get(config.panelChannelId);
             if (!panelChannel) {
-                return messageService.reply(interaction, 'moderation', 'error', { reason: 'Il canale del pannello non è più valido. Riesegui /setup-wl.' }, { ephemeral: true });
+                return messageService.reply(interaction, 'moderation', 'error', { reason: 'The panel channel is no longer valid. Run /setup-wl again.' }, { ephemeral: true });
             }
 
             // Check if bot can send messages in that channel
             if (!panelChannel.permissionsFor(interaction.guild.members.me).has('SendMessages')) {
-                return messageService.reply(interaction, 'moderation', 'error', { reason: `Il bot non ha i permessi per inviare messaggi nel canale <#${config.panelChannelId}>.` }, { ephemeral: true });
+                return messageService.reply(interaction, 'moderation', 'error', { reason: `The bot cannot send messages in <#${config.panelChannelId}>.` }, { ephemeral: true });
             }
 
             const embed = new EmbedBuilder()
@@ -53,7 +53,7 @@ export default {
                 .setColor(color)
                 .setTimestamp();
 
-            const buttonSettings = config.embeds?.panel?.button || { label: 'Inizia Whitelist', emoji: '📝', style: 'PRIMARY' };
+            const buttonSettings = config.embeds?.panel?.button || { label: 'Start Application', emoji: '??', style: 'PRIMARY' };
             
             const button = new ActionRowBuilder().addComponents(
                 new ButtonBuilder()
@@ -93,7 +93,7 @@ export default {
         } catch (error) {
             logger.error('Error in WL Modal Submit:', error);
             if (!interaction.replied && !interaction.deferred) {
-                await messageService.reply(interaction, 'moderation', 'error', { reason: error.message || 'Errore interno' }, { ephemeral: true });
+                await messageService.reply(interaction, 'moderation', 'error', { reason: error.message || 'Internal error' }, { ephemeral: true });
             }
         }
     },

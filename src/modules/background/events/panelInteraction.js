@@ -15,13 +15,13 @@ export default {
         // Module enablement check
         const guildData = await Guild.findOne({ guildId: interaction.guild.id });
         if (!guildData || !guildData.enabledModules?.includes('background')) {
-            return messageService.reply(interaction, 'background', 'error', { reason: 'Il modulo Background non è attivo su questo server.' }, { ephemeral: true });
+            return messageService.reply(interaction, 'background', 'error', { reason: 'The Background module is not enabled on this server.' }, { ephemeral: true });
         }
 
         try {
             const config = await BackgroundConfig.findOne({ guildId: interaction.guild.id });
             if (!config) {
-                return messageService.reply(interaction, 'background', 'error', { reason: 'Configurazione del modulo non trovata.' }, { ephemeral: true });
+                return messageService.reply(interaction, 'background', 'error', { reason: 'Module configuration not found.' }, { ephemeral: true });
             }
 
             // Cooldown & Pending Check
@@ -77,12 +77,12 @@ export default {
             const row = new ActionRowBuilder().addComponents(
                 new ButtonBuilder()
                     .setCustomId('finalize_bg')
-                    .setLabel('Invia Modulo')
+                    .setLabel('Submit')
                     .setEmoji('📩')
                     .setStyle(ButtonStyle.Success),
                 new ButtonBuilder()
                     .setCustomId('cancel_bg')
-                    .setLabel('Annulla')
+                    .setLabel('Cancel')
                     .setStyle(ButtonStyle.Danger)
             );
 
@@ -91,7 +91,7 @@ export default {
 
         } catch (error) {
             logger.error('Error starting background submission:', error);
-            await messageService.reply(interaction, 'background', 'error', { reason: 'Si è verificato un errore critico.' }, { ephemeral: true });
+            await messageService.reply(interaction, 'background', 'error', { reason: 'A critical error occurred.' }, { ephemeral: true });
         }
     },
 };

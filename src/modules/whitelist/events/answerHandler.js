@@ -85,12 +85,12 @@ export default {
 
                 const fields = app.answers.slice(0, 25).map((ans, i) => ({
                     name: `${i + 1}. ${ans.question}`,
-                    value: ans.answer?.substring(0, 1024) || '*Nessuna risposta*'
+                    value: ans.answer?.substring(0, 1024) || '*No answer*'
                 }));
                 summaryEmbed.addFields(fields);
 
                 const row = new ActionRowBuilder().addComponents(
-                    new ButtonBuilder().setCustomId('confirm_wl').setLabel('Conferma Pratica').setStyle(ButtonStyle.Success),
+                    new ButtonBuilder().setCustomId('confirm_wl').setLabel('Confirm Application').setStyle(ButtonStyle.Success),
                     new ButtonBuilder().setCustomId('choice_edit_wl').setLabel('📝 Modifica Risposte').setStyle(ButtonStyle.Primary),
                     new ButtonBuilder().setCustomId('cancel_wl').setLabel('Ritira Domanda').setStyle(ButtonStyle.Danger)
                 );

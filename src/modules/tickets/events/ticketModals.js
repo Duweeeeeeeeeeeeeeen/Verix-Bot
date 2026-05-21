@@ -16,7 +16,7 @@ export default {
 
             try {
                 const member = await interaction.guild.members.fetch(userId).catch(() => null);
-                if (!member) return messageService.reply(interaction, 'tickets', 'error', { reason: 'Utente non trovato.' }, { ephemeral: true });
+                if (!member) return messageService.reply(interaction, 'tickets', 'error', { reason: 'User not found.' }, { ephemeral: true });
                 if (action === 'add') {
                     await interaction.channel.permissionOverwrites.edit(member, {
                         ViewChannel: true,
@@ -24,14 +24,14 @@ export default {
                         ReadMessageHistory: true,
                         AttachFiles: true
                     });
-                    await messageService.reply(interaction, 'tickets', 'user_managed', { user: `<@${userId}>`, action: 'aggiunto' });
+                    await messageService.reply(interaction, 'tickets', 'user_managed', { user: `<@${userId}>`, action: 'added' });
                 } else {
                     await interaction.channel.permissionOverwrites.delete(member);
-                    await messageService.reply(interaction, 'tickets', 'user_managed', { user: `<@${userId}>`, action: 'rimosso' });
+                    await messageService.reply(interaction, 'tickets', 'user_managed', { user: `<@${userId}>`, action: 'removed' });
                 }
             } catch (error) {
                 logger.error('Error managing user in ticket:', error);
-                await messageService.reply(interaction, 'tickets', 'error', { reason: 'Errore gestione utente.' }, { ephemeral: true });
+                await messageService.reply(interaction, 'tickets', 'error', { reason: 'Could not manage this user.' }, { ephemeral: true });
             }
         }
     },

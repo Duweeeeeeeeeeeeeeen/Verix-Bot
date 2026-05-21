@@ -96,7 +96,7 @@ export async function generateIntelligenceEmbed(guild, userId) {
         const bgApp = await Background.findOne({ userId, guildId: guild.id }).sort({ createdAt: -1 });
         embed.addFields({ 
             name: t('tickets.intelligence.background', lang), 
-            value: bgApp ? t('tickets.intelligence.status', lang, { status: bgApp.status }) : t('tickets.intelligence.no_dossier', lang), 
+            value: bgApp ? t('tickets.intelligence.status', lang, { status: bgApp.status }) : t('tickets.intelligence.no_application', lang), 
             inline: true 
         });
     }

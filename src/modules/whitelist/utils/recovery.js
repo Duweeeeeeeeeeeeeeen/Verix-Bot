@@ -7,14 +7,14 @@ import GlobalConfig from '../../../models/GlobalConfig.js';
 import { t } from '../../../locales/t.js';
 
 /**
- * Recupera e gestisce le sessioni di whitelist attive dopo un riavvio del bot.
+ * Recovers active whitelist sessions after a bot restart.
  * @param {import('discord.js').Client} client 
  */
 export async function recoverWhitelistSessions(client) {
-    logger.info('Inizio recupero sessioni whitelist attive...');
+    logger.info('Starting active whitelist session recovery...');
     
     if (mongoose.connection.readyState !== 1) {
-        logger.warn('Salto recupero sessioni whitelist: Database non connesso.');
+        logger.warn('Skipping whitelist session recovery: database not connected.');
         return;
     }
 
@@ -22,16 +22,16 @@ export async function recoverWhitelistSessions(client) {
         const pendingApps = await WhitelistApp.find({ status: 'PENDING' });
         
         if (pendingApps.length === 0) {
-            logger.info('Nessuna sessione whitelist in sospeso da recuperare.');
+            logger.info('No pending whitelist sessions to recover.');
             return;
         }
 
-        logger.info(`Trovate ${pendingApps.length} sessioni da controllare.`);
+        logger.info(`Found ${pendingApps.length} sessions to check.`);
 
         for (const app of pendingApps) {
             const config = await WhitelistConfig.findOne({ guildId: app.guildId });
             if (!config) {
-                logger.warn(`Configurazione non trovata per il server ${app.guildId}. Salto la sessione.`);
+                logger.warn(`Configuration not found for server ${app.guildId}. Skipping session.`);
                 continue;
             }
 
@@ -95,6 +95,6 @@ export async function recoverWhitelistSessions(client) {
 
         logger.info('Recupero sessioni whitelist completato.');
     } catch (error) {
-        logger.error('Errore durante il recupero delle sessioni whitelist:', error);
+        logger.error('Error recovering whitelist sessions:', error);
     }
 }

@@ -9,15 +9,15 @@ const MODULE_KEYS = {
         { label: 'Inizio (Start)', value: 'start' },
         { label: 'Domanda (Question)', value: 'question' },
         { label: 'Riepilogo (Review)', value: 'review' },
-        { label: 'Esito: Accettato (DM)', value: 'dm_accepted' },
-        { label: 'Esito: Rifiutato (DM)', value: 'dm_rejected' },
+        { label: 'Outcome: Accepted (DM)', value: 'dm_accepted' },
+        { label: 'Outcome: Rejected (DM)', value: 'dm_rejected' },
         { label: 'Log Staff (Received)', value: 'staff_received' }
     ],
     background: [
         { label: 'Pannello (Panel)', value: 'panel' },
         { label: 'Istruzioni (Instructions)', value: 'instructions' },
-        { label: 'Esito: Accettato (DM)', value: 'dm_accepted' },
-        { label: 'Esito: Rifiutato (DM)', value: 'dm_rejected' },
+        { label: 'Outcome: Accepted (DM)', value: 'dm_accepted' },
+        { label: 'Outcome: Rejected (DM)', value: 'dm_rejected' },
         { label: 'Log Staff (Received)', value: 'staff_received' }
     ]
 };

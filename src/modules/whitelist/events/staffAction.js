@@ -44,13 +44,13 @@ export default {
                         staffEmbed.setAuthor({ name: interaction.user.tag, iconURL: interaction.user.displayAvatarURL() });
                         staffEmbed.addFields(app.answers.map(ans => ({
                             name: `D: ${ans.question}`,
-                            value: ans.answer || '*Nessuna risposta*'
+                            value: ans.answer || '*No answer*'
                         })));
                     }
 
                     const row = new ActionRowBuilder().addComponents(
-                        new ButtonBuilder().setCustomId(`approve_wl_${app._id}`).setLabel('Accetta').setStyle(ButtonStyle.Success),
-                        new ButtonBuilder().setCustomId(`deny_wl_${app._id}`).setLabel('Rifiuta').setStyle(ButtonStyle.Danger)
+                        new ButtonBuilder().setCustomId(`approve_wl_${app._id}`).setLabel('Accept').setStyle(ButtonStyle.Success),
+                        new ButtonBuilder().setCustomId(`deny_wl_${app._id}`).setLabel('Reject').setStyle(ButtonStyle.Danger)
                     );
 
                     await logChannel.send({ embeds: [staffEmbed], components: [row] });
@@ -133,7 +133,7 @@ export default {
                     const slug = isHybrid ? 'dm_text_pass' : 'dm_accepted';
                     const resultEmbed = await messageService.get(interaction.guild.id, 'whitelist', slug, {
                         guild: interaction.guild.name,
-                        user: user?.username || 'Utente'
+                        user: user?.username || 'User'
                     });
 
                     await sendUserNotification(interaction.guild, user, config.notifications, {
@@ -141,27 +141,27 @@ export default {
                     });
 
                     // Update the staff embed to show status
-                    const dmStatus = 'Inviata (config)'; // Simplified since it now depends on config mode
+                    const dmStatus = 'Sent according to notification settings'; // Simplified since it now depends on config mode
 
                     const originalEmbed = interaction.message.embeds[0];
                     if (originalEmbed) {
                         const updatedEmbed = EmbedBuilder.from(originalEmbed)
-                            .setTitle(isHybrid ? '📝 Scritto SUPERATO' : '✅ Whitelist ACCETTATA')
+                            .setTitle(isHybrid ? 'Written Step Approved' : 'Whitelist Approved')
                             .setColor(isHybrid ? '#f1c40f' : '#2ecc71') // Yellow for waiting, Green for done
                             .addFields(
-                                { name: 'Esito', value: isHybrid ? `📝 Parte scritta approvata da ${interaction.user.tag}` : `✅ Accettata da ${interaction.user.tag}` },
-                                { name: 'Notifica DM', value: dmStatus, inline: true }
+                                { name: 'Result', value: isHybrid ? `Written step approved by ${interaction.user.tag}` : `Approved by ${interaction.user.tag}` },
+                                { name: 'DM Notification', value: dmStatus, inline: true }
                             );
 
                         if (isHybrid) {
-                            updatedEmbed.addFields({ name: 'Prossimo Step', value: '🎤 Attesa Colloquio Vocale', inline: true });
+                            updatedEmbed.addFields({ name: 'Next Step', value: 'Waiting for voice interview', inline: true });
                         }
 
                         await interaction.update({ embeds: [updatedEmbed], components: [] });
                     } else {
                         const msg = isHybrid 
-                            ? `✅ Parte scritta approvata da ${interaction.user.tag}. In attesa di colloquio vocale.`
-                            : `✅ Pratica approvata definitivamente da ${interaction.user.tag}.`;
+                            ? `Written step approved by ${interaction.user.tag}. Waiting for voice interview.`
+                            : `Application approved by ${interaction.user.tag}.`;
                         await interaction.update({ content: `${msg} (${dmStatus})`, embeds: [], components: [] });
                     }
 
@@ -170,8 +170,8 @@ export default {
                         guildId: interaction.guild.id,
                         guild: interaction.guild,
                         content: isHybrid 
-                            ? `📝 <@${app.userId}> ha superato la prova scritta (Staff: ${interaction.user}). Ora in attesa di colloquio vocale.`
-                            : `✅ Candidatura di <@${app.userId}> **accettata** da ${interaction.user} — Dossier: \`${app._id}\``
+                            ? `<@${app.userId}> passed the written step (Staff: ${interaction.user}). Waiting for voice interview.`
+                            : `Application for <@${app.userId}> approved by ${interaction.user} - ID: \`${app._id}\``
                     });
                     return;
                 }
@@ -180,13 +180,13 @@ export default {
                     // Open Modal for Reason
                     const modal = new ModalBuilder()
                         .setCustomId(`deny_modal_${app._id}`)
-                        .setTitle('Motivo Rifiuto Whitelist');
+                        .setTitle('Whitelist Rejection Reason');
 
                     const reasonInput = new TextInputBuilder()
                         .setCustomId('denial_reason')
-                        .setLabel('Inserisci il motivo del rifiuto')
+                        .setLabel('Enter the rejection reason')
                         .setStyle(TextInputStyle.Paragraph)
-                        .setPlaceholder('Es: Risposte troppo brevi, mancato rispetto delle regole RP...')
+                        .setPlaceholder('Example: answers too short, requirements not met...')
                         .setRequired(true)
                         .setMinLength(10)
                         .setMaxLength(500);
@@ -231,7 +231,7 @@ export default {
                 // Delegate Notification and Log
                 const rejectEmbed = await messageService.get(interaction.guild.id, 'whitelist', 'dm_rejected', {
                     guild: interaction.guild.name,
-                    user: user?.username || 'Utente',
+                    user: user?.username || 'User',
                     reason: reason
                 });
 
@@ -240,29 +240,29 @@ export default {
                 });
 
                 // Update the staff embed to show status
-                const dmStatus = 'Inviata (config)';
+                const dmStatus = 'Sent according to notification settings';
 
                 const originalEmbed = interaction.message.embeds[0];
                 if (originalEmbed) {
                     const updatedEmbed = EmbedBuilder.from(originalEmbed)
-                        .setTitle('❌ Whitelist RIFIUTATA')
+                        .setTitle('Whitelist Rejected')
                         .setColor('#e74c3c') // Red
                         .addFields(
-                            { name: 'Esito', value: `❌ Rifiutata da ${interaction.user.tag}` },
-                            { name: 'Motivo', value: reason || 'Nessuna motivazione' },
-                            { name: 'Notifica DM', value: dmStatus, inline: true }
+                            { name: 'Result', value: `Rejected by ${interaction.user.tag}` },
+                            { name: 'Reason', value: reason || 'No reason provided' },
+                            { name: 'DM Notification', value: dmStatus, inline: true }
                         );
 
                     await interaction.editReply({ embeds: [updatedEmbed], components: [] });
                 } else {
-                    await interaction.editReply({ content: `❌ Pratica rifiutata da ${interaction.user.tag} per: ${reason} (${dmStatus})`, embeds: [], components: [] });
+                    await interaction.editReply({ content: `Application rejected by ${interaction.user.tag}. Reason: ${reason} (${dmStatus})`, embeds: [], components: [] });
                 }
 
                 await sendLog({
                     event: 'whitelist.onReject',
                     guildId: interaction.guild.id,
                     guild: interaction.guild,
-                    content: `❌ Candidatura di <@${app.userId}> **rifiutata** da ${interaction.user} — Motivo: ${reason}`
+                    content: `Application for <@${app.userId}> rejected by ${interaction.user} - Reason: ${reason}`
                 });
             }
         }

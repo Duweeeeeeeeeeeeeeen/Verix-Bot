@@ -26,21 +26,21 @@ export default {
             // 1. CLICK "EDIT" BUTTON -> SHOW SELECT MENU
             if (isChoice) {
                 if (!app || app.answers.length === 0) {
-                    return messageService.reply(interaction, 'whitelist', 'edit_error', { reason: 'Non hai risposte da modificare.' }, { ephemeral: true });
+                    return messageService.reply(interaction, 'whitelist', 'edit_error', { reason: 'You do not have answers to edit.' }, { ephemeral: true });
                 }
 
                 const selectMenu = new StringSelectMenuBuilder()
                     .setCustomId('select_edit_wl')
-                    .setPlaceholder('Scegli la domanda da modificare...')
+                    .setPlaceholder('Choose the question to edit...')
                     .addOptions(app.answers.map((ans, i) => ({
-                        label: `Domanda ${i + 1}`,
+                        label: `Question ${i + 1}`,
                         description: ans.question.substring(0, 100),
                         value: i.toString()
                     })));
 
                 const closeButton = new ButtonBuilder()
                     .setCustomId('wl_close_edit_menu')
-                    .setLabel('Chiudi Menu')
+                    .setLabel('Close Menu')
                     .setStyle(ButtonStyle.Secondary);
 
                 const row = new ActionRowBuilder().addComponents(selectMenu);
@@ -69,11 +69,11 @@ export default {
 
                 const modal = new ModalBuilder()
                     .setCustomId(`modal_edit_wl_${questionIndex}`)
-                    .setTitle(`Modifica Risposta ${questionIndex + 1}`);
+                    .setTitle(`Edit Answer ${questionIndex + 1}`);
 
                 const textInput = new TextInputBuilder()
                     .setCustomId('edited_answer')
-                    .setLabel('La tua nuova risposta')
+                    .setLabel('Your new answer')
                     .setStyle(TextInputStyle.Paragraph)
                     .setRequired(true)
                     .setValue(answerData.answer);
@@ -113,7 +113,7 @@ export default {
                 if (summaryEmbed) {
                     const fields = app.answers.slice(0, 25).map((ans, i) => ({
                         name: `${i + 1}. ${ans.question}`,
-                        value: ans.answer?.substring(0, 1024) || '*Nessuna risposta*'
+                        value: ans.answer?.substring(0, 1024) || '*No answer*'
                     }));
                     summaryEmbed.addFields(fields);
                 }
@@ -133,16 +133,16 @@ export default {
                 // 3.2 Update the Ephemeral Message to show success and allow more edits
                 const selectMenu = new StringSelectMenuBuilder()
                     .setCustomId('select_edit_wl')
-                    .setPlaceholder('Modifica un\'altra domanda...')
+                    .setPlaceholder('Edit another question...')
                     .addOptions(app.answers.map((ans, i) => ({
-                        label: `Domanda ${i + 1}`,
+                        label: `Question ${i + 1}`,
                         description: ans.question.substring(0, 100),
                         value: i.toString()
                     })));
 
                 const finishedButton = new ButtonBuilder()
                     .setCustomId('wl_close_edit_menu')
-                    .setLabel('Ho Finito')
+                    .setLabel('Done')
                     .setStyle(ButtonStyle.Secondary);
 
                 const row = new ActionRowBuilder().addComponents(selectMenu);
@@ -156,7 +156,7 @@ export default {
 
         } catch (error) {
             logger.error('[Whitelist_Edit] Interaction Error:', error);
-            const errEmbed = await messageService.get(interaction.guild.id, 'whitelist', 'edit_error', { reason: 'Si è verificato un errore durante la modifica.' });
+            const errEmbed = await messageService.get(interaction.guild.id, 'whitelist', 'edit_error', { reason: 'An error occurred while editing.' });
             if (!interaction.replied && !interaction.deferred) {
                 await interaction.reply({ embeds: [errEmbed], flags: [MessageFlags.Ephemeral] }).catch(() => {});
             } else {
