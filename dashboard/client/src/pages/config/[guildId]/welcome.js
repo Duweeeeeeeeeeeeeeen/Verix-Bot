@@ -140,6 +140,8 @@ export default function WelcomeConfig() {
 
   if (!mounted || loading || !config) return <Skeleton height="600px" />;
 
+  const hasWarning = config.enabled && ((config.welcome?.enabled && !config.welcome?.channelId) || (config.leave?.enabled && !config.leave?.channelId) || (!config.welcome?.enabled && !config.leave?.enabled));
+
   return (
     <div className="pc-premium-wrapper fade-in">
         <Head>
@@ -147,16 +149,16 @@ export default function WelcomeConfig() {
         </Head>
 
         {/* V2 Header */}
-        <header className="pc-header-v2">
+        <header className={`pc-header-v2 ${hasWarning ? 'incomplete' : ''}`}>
             <div className="header-info">
                 <div className="pc-icon-box" style={{ background: 'var(--bg-badge)', color: '#6366f1', boxShadow: 'none' }}>
                     <UserPlus size={28} />
                 </div>
                 <div className="pc-title-row">
                     <h1>{t('welcome.header_title')}</h1>
-                    <div className={`pc-status-tag-v2 ${config.enabled ? 'on' : 'off'}`}>
+                    <div className={`pc-status-tag-v2 ${config.enabled ? (hasWarning ? 'warning' : 'on') : 'off'}`}>
                         <div className="status-dot-v2"></div>
-                        {config.enabled ? t('common.active_system') : t('common.inactive_system')}
+                        {config.enabled ? (hasWarning ? t('common.incomplete_system') : t('common.active_system')) : t('common.inactive_system')}
                     </div>
                 </div>
             </div>

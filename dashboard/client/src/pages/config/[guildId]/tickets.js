@@ -220,6 +220,8 @@ export default function TicketConfig() {
 
   if (!mounted || loading || !config) return <Skeleton height="600px" />;
 
+  const hasWarning = config.enabled && (!(config.staffRoleIds || []).length || !config.panelChannelId || !config.categoryOpenId || (config.closeMode === 'MOVE' && !config.categoryClosedId));
+
   const ticketTypes = config.types || config.enabledTypes || Object.keys(config.typesConfig || {});
   const isButtonPanel = (config.inputType || 'SELECT') === 'BUTTONS';
   const openTicketWelcomePreview = (id) => {
@@ -243,16 +245,16 @@ export default function TicketConfig() {
         </Head>
 
         {/* V2 Header */}
-        <header className="pc-header-v2">
+        <header className={`pc-header-v2 ${hasWarning ? 'incomplete' : ''}`}>
             <div className="header-info">
                 <div className="pc-icon-box" style={{ background: 'var(--bg-badge)', color: '#8b5cf6', boxShadow: 'none' }}>
                     <Ticket size={28} />
                 </div>
                 <div className="pc-title-row">
                     <h1>{t('tickets.title')}</h1>
-                    <div className={`pc-status-tag-v2 ${config.enabled ? 'on' : 'off'}`}>
+                    <div className={`pc-status-tag-v2 ${config.enabled ? (hasWarning ? 'warning' : 'on') : 'off'}`}>
                         <div className="status-dot-v2"></div>
-                        {config.enabled ? t('common.active_system') : t('common.inactive_system')}
+                        {config.enabled ? (hasWarning ? t('common.incomplete_system') : t('common.active_system')) : t('common.inactive_system')}
                     </div>
                 </div>
             </div>

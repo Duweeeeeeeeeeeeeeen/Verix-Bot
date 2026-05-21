@@ -141,6 +141,8 @@ export default function FiveMConfig() {
 
   if (!mounted || loading || !config) return <Skeleton height="600px" />;
 
+  const hasWarning = config.enabled && (!config.servers || config.servers.length === 0 || config.servers.some(server => server.enabled && (!server.serverIp || !server.statusChannelId)));
+
   const isPremium = guildData?.isPremium || ['premium', 'platinum'].includes(guildData?.premiumTier);
 
   return (
@@ -150,16 +152,16 @@ export default function FiveMConfig() {
         </Head>
 
         {/* V2 Header */}
-        <header className="pc-header-v2">
+        <header className={`pc-header-v2 ${hasWarning ? 'incomplete' : ''}`}>
             <div className="header-info">
                 <div className="pc-icon-box" style={{ background: 'var(--bg-badge)', color: '#14b8a6', boxShadow: 'none' }}>
                     <Globe size={28} />
                 </div>
                 <div className="pc-title-row">
                     <h1>{t('fivem.title')}</h1>
-                    <div className={`pc-status-tag-v2 ${config.enabled ? 'on' : 'off'}`}>
+                    <div className={`pc-status-tag-v2 ${config.enabled ? (hasWarning ? 'warning' : 'on') : 'off'}`}>
                         <div className="status-dot-v2"></div>
-                        {config.enabled ? t('fivem.active') : t('fivem.inactive')}
+                        {config.enabled ? (hasWarning ? t('common.incomplete_system') : t('common.active_system')) : t('common.inactive_system')}
                     </div>
                 </div>
             </div>

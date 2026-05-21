@@ -471,12 +471,12 @@ export default {
     verify: {
         panel: {
             title: '🛡️ Protocollo di Identificazione',
-            description: 'Per accedere alla città, devi confermare la tua identità cittadina. Clicca il pulsante qui sotto per procedere.',
+            description: 'Per accedere al server, devi verificare la tua identità. Clicca il pulsante qui sotto per procedere.',
             color: '#3BA4FF'
         },
         success: {
             title: '✅ Identità Confermata',
-            description: 'Ottime notizie cittadino! La tua registrazione presso **{guild}** è andata a buon fine.',
+            description: 'Ottime notizie! La tua registrazione presso **{guild}** è andata a buon fine.',
             color: '#2ecc71'
         },
         success_reply: {
@@ -495,7 +495,7 @@ export default {
             color: '#2ecc71'
         },
         staff_log: {
-            title: '🛂 Registro Entrate: Nuovo Cittadino',
+            title: '🛂 Registro Entrate: Nuovo Membro',
             description: 'Un nuovo utente ha completato la verifica.\n\n**IDENTITÀ:** {user}\n**ID:** `{userId}`\n**STATUS:** {role}',
             color: '#2ecc71'
         },
@@ -519,12 +519,12 @@ export default {
     },
     welcome: {
         welcome: {
-            title: '✈️ Nuovo Arrivo in Città',
+            title: '✈️ Nuovo Arrivo nel Server',
             description: 'Benvenuto **{user}** in **{guild}**! Siamo felici di vederti qui. Assicurati di leggere il regolamento.',
             color: '#2ecc71'
         },
         leave: {
-            title: '🚗 Un Cittadino ha Lasciato la Città',
+            title: '🚗 Un Membro ha Lasciato il Server',
             description: 'Spiace vedere **{user}** lasciare **{guild}**. Speriamo di rivederti presto.',
             color: '#e74c3c'
         }
@@ -702,12 +702,12 @@ export default {
         },
         dm_kick: {
             title: '👢 Espulsione Coatta',
-            description: '{user}, sei stato rimosso dalla città per gravi violazioni dei protocolli.\n\n**MOTIVO:** {reason}',
+            description: '{user}, sei stato rimosso dal server per gravi violazioni dei protocolli.\n\n**MOTIVO:** {reason}',
             color: '#e74c3c'
         },
         dm_ban: {
             title: '🚫 Esilio Definitivo',
-            description: '{user}, sei stato bandito permanentemente dalla città.\n\n**MOTIVO:** {reason}',
+            description: '{user}, sei stato bandito permanentemente dal server.\n\n**MOTIVO:** {reason}',
             color: '#000000'
         },
         command_ban: {

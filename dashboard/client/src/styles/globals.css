@@ -611,6 +611,10 @@ input:checked + .pc-slider-v2:before {
     box-shadow: var(--shadow-premium); 
     border: 1px solid var(--border); 
 }
+.pc-header-v2.incomplete {
+    border-color: rgba(239, 68, 68, 0.5) !important;
+    box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.2);
+}
 .pc-header-v2 .header-info {
     display: flex;
     align-items: center;
@@ -656,6 +660,7 @@ input:checked + .pc-slider-v2:before {
 }
 .pc-status-tag-v2.on { background: rgba(16, 185, 129, 0.1); color: #10b981; }
 .pc-status-tag-v2.off { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+.pc-status-tag-v2.warning { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
 .pc-status-tag-v2 .status-dot-v2 { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 
 

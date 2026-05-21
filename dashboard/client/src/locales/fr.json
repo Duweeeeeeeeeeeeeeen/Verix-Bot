@@ -619,6 +619,7 @@
   "common.actions": "Actions",
   "common.active": "Actif",
   "common.active_system": "SystèmeActive",
+  "common.incomplete_system": "Config Incomplète",
   "common.activity_loading": "Loading...",
   "common.add": "Ajouter",
   "common.advanced": "Avancé",

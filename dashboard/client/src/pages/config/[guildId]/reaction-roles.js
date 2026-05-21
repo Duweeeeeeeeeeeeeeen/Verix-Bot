@@ -504,7 +504,14 @@ export default function ReactionRolesConfig() {
                                                         </div>
 
                                                         {/* Color Swatches */}
-                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', width: '135px' }}>
+                                                        <div style={{ 
+                                                            display: 'flex', 
+                                                            flexDirection: 'column', 
+                                                            gap: '4px', 
+                                                            width: '135px',
+                                                            opacity: activePanel.type === 'REACTION' ? 0.35 : 1,
+                                                            pointerEvents: activePanel.type === 'REACTION' ? 'none' : 'auto'
+                                                        }}>
                                                             <label style={{ fontSize: '0.62rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('common.color')}</label>
                                                             <div className="pc-bb-color-picker" style={{ height: '44px', padding: '0 8px', gap: '6px', width: '100%' }}>
                                                                 {['PRIMARY', 'SUCCESS', 'DANGER', 'SECONDARY'].map(styleOption => (

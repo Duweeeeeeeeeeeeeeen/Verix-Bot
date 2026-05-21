@@ -48,6 +48,15 @@ class ReactionRoleManager {
 
         if (!member) return;
 
+        // Ensure reaction roles module is enabled
+        const config = await ReactionRoleConfig.findOne({ guildId: guild.id });
+        if (!config || !config.enabled) {
+            return interaction.reply({
+                content: 'The Reaction Roles module is currently disabled.',
+                flags: [MessageFlags.Ephemeral]
+            });
+        }
+
         try {
             const role = await guild.roles.fetch(roleId).catch(() => null);
             if (!role) {
@@ -116,22 +125,37 @@ class ReactionRoleManager {
 
     async handleReaction(reaction, user, action) {
         if (user.bot) return;
-        if (reaction.partial) await reaction.fetch().catch(() => null);
 
-        const guildId = reaction.message.guildId;
+        // Robust partial reaction/message fetching
+        if (reaction.partial) {
+            try {
+                await reaction.fetch();
+            } catch (error) {
+                logger.error('[ReactionRoles] Failed to fetch partial reaction:', error);
+                return;
+            }
+        }
+        if (reaction.message.partial) {
+            try {
+                await reaction.message.fetch();
+            } catch (error) {
+                logger.error('[ReactionRoles] Failed to fetch partial message:', error);
+                return;
+            }
+        }
+
+        const guildId = reaction.message.guildId || reaction.message.guild?.id;
+        if (!guildId) return;
+
         const messageId = reaction.message.id;
         const emoji = reaction.emoji.id || reaction.emoji.name;
 
-        const config = await ReactionRoleConfig.findOne({
-            guildId,
-            'panels.messageId': messageId,
-            'panels.type': 'REACTION'
-        });
-
+        // Simplify mongoose query to guildId to prevent Mongoose subdocument matching bugs
+        const config = await ReactionRoleConfig.findOne({ guildId });
         if (!config || !config.enabled) return;
 
         const panel = config.panels.find(p => p.messageId === messageId);
-        if (!panel) return;
+        if (!panel || panel.type !== 'REACTION') return;
 
         const roleMapping = panel.roles.find(r => {
             const cleanConfigEmoji = this.getCleanEmoji(r.emoji);
@@ -139,7 +163,9 @@ class ReactionRoleManager {
         });
         if (!roleMapping) return;
 
-        const guild = reaction.message.guild;
+        const guild = reaction.message.guild || await this.client.guilds.fetch(guildId).catch(() => null);
+        if (!guild) return;
+
         const member = await guild.members.fetch(user.id).catch(() => null);
         if (!member) return;
 
@@ -226,6 +252,10 @@ class ReactionRoleManager {
             }
 
             if (message) {
+                // If switching/deploying a BUTTON panel, clear reactions to avoid accumulation
+                if (panel.type === 'BUTTON') {
+                    await message.reactions.removeAll().catch(() => null);
+                }
                 await message.edit({ embeds: [embed], components: rows });
             } else {
                 message = await channel.send({ embeds: [embed], components: rows });
@@ -234,6 +264,8 @@ class ReactionRoleManager {
             }
 
             if (panel.type === 'REACTION') {
+                // Clear any existing reactions first to prevent accumulation
+                await message.reactions.removeAll().catch(() => null);
                 for (const r of panel.roles) {
                     if (r.emoji) {
                         const cleanEmoji = this.getCleanEmoji(r.emoji);

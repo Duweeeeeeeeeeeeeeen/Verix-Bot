@@ -888,7 +888,7 @@ export class SocialManager {
                             }
 
                             await this.handleSocialPost(guildId, platformConfig, account, {
-                                title: item.title || 'Nuovo Post!',
+                                title: item.title || 'New Post!',
                                 url: item.link,
                                 author: cleanAuthor,
                                 description: desc,
@@ -979,9 +979,10 @@ export class SocialManager {
                             logger.info(`[Socials/Steam] New Steam announcement detected: ${item.title} (${itemId}) for guild ${guildId}`);
 
                             await this.handleSocialPost(guildId, platformConfig, account, {
-                                title: item.title || 'Nuovo Annuncio!',
+                                title: item.title || 'New Announcement!',
                                 url: item.link,
                                 author: gameName,
+                                username: gameName,
                                 description: desc,
                                 thumbnail: thumbnail,
                                 profileImage: this.platformIcon('steam')
@@ -1467,7 +1468,7 @@ export class SocialManager {
             }
 
             const embedData = new EmbedBuilder()
-                .setTitle(formatText(customEmbed.title) || formatText(defaultTitles[platform]) || 'Nuovo post!')
+                .setTitle(formatText(customEmbed.title) || formatText(defaultTitles[platform]) || 'New Post!')
                 .setURL(optimizedUrl)
                 .setDescription(finalDescription)
                 .setColor(customEmbed.color ? parseInt(customEmbed.color.replace('#', ''), 16) : style.color)

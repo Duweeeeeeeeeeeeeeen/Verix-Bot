@@ -273,7 +273,7 @@ export class FiveMManager {
                 
                 if (embed) {
                     embed.addFields({
-                        name: 'IP Connessione',
+                        name: lang === 'it' ? 'IP Connessione' : 'Connection IP',
                         value: `\`${serverConfig.serverIp}\``,
                         inline: false
                     });
@@ -292,10 +292,14 @@ export class FiveMManager {
             payload.embeds.forEach(embed => {
                 // Remove existing "Last Check" fields if any (to prevent duplicates during edit)
                 if (embed.data && embed.data.fields) {
-                    embed.data.fields = embed.data.fields.filter(f => !f.name.includes('Controllo'));
+                    embed.data.fields = embed.data.fields.filter(f => 
+                        !f.name.includes('Controllo') && 
+                        !f.name.includes('Last Check') && 
+                        !f.name.includes('Control')
+                    );
                 }
                 embed.addFields({
-                    name: '🕒 Ultimo Controllo',
+                    name: lang === 'it' ? '🕒 Ultimo Controllo' : '🕒 Last Check',
                     value: placeholders.lastCheck,
                     inline: true
                 });

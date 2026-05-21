@@ -631,6 +631,7 @@
   "common.actions": "Actions",
   "common.active": "Active",
   "common.active_system": "System Active",
+  "common.incomplete_system": "Incomplete Config",
   "common.activity_loading": "Loading...",
   "common.add": "Add",
   "common.order": "Order",

@@ -67,6 +67,9 @@ export default {
                 return messageService.reply(interaction, 'tickets', 'config_not_found', {}, { ephemeral: true });
             }
 
+            const globalConfig = await GlobalConfig.findOne({ guildId: interaction.guildId });
+            const lang = globalConfig?.language || 'en';
+
             // --- 1. TICKET CATEGORY EXTRACTION ---
             let type = null;
             if (interaction.isStringSelectMenu() && customId === 'ticket_create_select') {
@@ -86,7 +89,10 @@ export default {
 
                 const permCheck = checkBotPermissions(interaction.channel, [PermissionFlagsBits.SendMessages, PermissionFlagsBits.EmbedLinks]);
                 if (!permCheck.hasPermission) {
-                    return interaction.editReply({ content: `❌ Il bot non ha i permessi necessari in questo canale: ${permCheck.missing.join(', ')}` });
+                    return interaction.editReply({ content: lang === 'it'
+                        ? `❌ Il bot non ha i permessi necessari in questo canale: ${permCheck.missing.join(', ')}`
+                        : `❌ The bot is missing required permissions in this channel: ${permCheck.missing.join(', ')}`
+                    });
                 }
 
                 const existing = await Ticket.findOne({ userId: interaction.user.id, guildId: interaction.guild.id, type, status: { $ne: 'CLOSED' } });
@@ -100,8 +106,6 @@ export default {
                     });
                 }
 
-                const globalConfig = await GlobalConfig.findOne({ guildId: interaction.guildId });
-                const lang = globalConfig?.language || 'en';
 
                 const priorityMenu = new ActionRowBuilder().addComponents(
                     new StringSelectMenuBuilder()
@@ -187,8 +191,6 @@ export default {
                     return messageService.reply(interaction, 'tickets', 'staff_only', {}, { ephemeral: true });
                 }
 
-                const globalConfig = await GlobalConfig.findOne({ guildId: interaction.guildId });
-                const lang = globalConfig?.language || 'en';
 
                 // QUICK REPLIES
                 if (customId === 'tk_quick_reply') {
@@ -426,6 +428,7 @@ export default {
 };
 
 async function createTicket(interaction, type, config, metadata = {}) {
+    let lang = 'en';
     try {
         const guild = interaction.guild;
         const user = interaction.user;
@@ -470,6 +473,7 @@ async function createTicket(interaction, type, config, metadata = {}) {
 
         // --- CHANNEL CREATION ---
         const globalConfig = await GlobalConfig.findOne({ guildId: guild.id });
+        lang = globalConfig?.language || 'en';
         const namingTemplate = globalConfig?.naming?.ticket || '{emoji}-{type}-{user}';
         
         const priorityEmoji = priority === 'URGENT' ? '??' : (priority === 'IMPORTANT' ? '??' : '??');
@@ -488,7 +492,10 @@ async function createTicket(interaction, type, config, metadata = {}) {
             });
         } catch (err) {
             logger.error('[TICKET_CREATE] Channel creation failed:', err);
-            return interaction.editReply({ content: `❌ Impossibile creare il canale del ticket. Assicurati che il bot abbia il permesso 'Gestire Canali' e che la categoria sia valida.\n\`Dettagli: ${err.message}\`` });
+            return interaction.editReply({ content: lang === 'it'
+                ? `❌ Impossibile creare il canale del ticket. Assicurati che il bot abbia il permesso 'Gestire Canali' e che la categoria sia valida.\n\`Dettagli: ${err.message}\``
+                : `❌ Failed to create ticket channel. Make sure the bot has the 'Manage Channels' permission and that the category is valid.\n\`Details: ${err.message}\``
+            });
         }
         
         await setInitialPermissions(channel, user, staffRoles);
@@ -525,7 +532,10 @@ async function createTicket(interaction, type, config, metadata = {}) {
     } catch (error) { 
         logger.error('[TICKET_CREATE_FATAL]', error);
         if (interaction.deferred || interaction.replied) {
-            await interaction.editReply({ content: '❌ Si è verificato un errore critico durante la creazione del ticket.' }).catch(() => {});
+            const fatalCreateMsg = lang === 'it'
+                ? '❌ Si è verificato un errore critico durante la creazione del ticket.'
+                : '❌ A critical error occurred while creating the ticket.';
+            await interaction.editReply({ content: fatalCreateMsg }).catch(() => {});
         }
     }
 }

@@ -141,6 +141,8 @@ export default function VerifyConfig() {
 
   if (!mounted || loading || !config) return <Skeleton height="600px" />;
 
+  const hasWarning = config.enabled && (!config.roleId || !config.channelId);
+
   return (
     <div className="pc-premium-wrapper fade-in">
         <Head>
@@ -148,16 +150,16 @@ export default function VerifyConfig() {
         </Head>
 
         {/* V2 Header */}
-        <header className="pc-header-v2">
+        <header className={`pc-header-v2 ${hasWarning ? 'incomplete' : ''}`}>
             <div className="header-info">
                 <div className="pc-icon-box" style={{ background: 'var(--bg-badge)', color: '#06b6d4', boxShadow: 'none' }}>
                     <Shield size={28} />
                 </div>
                 <div className="pc-title-row">
                     <h1>{t('verify.title')}</h1>
-                    <div className={`pc-status-tag-v2 ${config.enabled ? 'on' : 'off'}`}>
+                    <div className={`pc-status-tag-v2 ${config.enabled ? (hasWarning ? 'warning' : 'on') : 'off'}`}>
                         <div className="status-dot-v2"></div>
-                        {config.enabled ? t('common.active_system') : t('common.inactive_system')}
+                        {config.enabled ? (hasWarning ? t('common.incomplete_system') : t('common.active_system')) : t('common.inactive_system')}
                     </div>
                 </div>
             </div>
