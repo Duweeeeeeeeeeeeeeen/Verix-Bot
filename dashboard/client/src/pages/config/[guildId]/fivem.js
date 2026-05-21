@@ -281,17 +281,7 @@ export default function FiveMConfig() {
                                         <div className="pc-sub-card-v2" style={{ marginTop: '24px' }}>
                                             <div className="card-header-v2" style={{ marginBottom: '16px' }}>
                                                 <div className="header-icon"><Activity size={18} /></div>
-                                                <h3 style={{ margin: 0 }}>Online status message</h3>
-                                            </div>
-                                            <div className="pc-input-group-v2">
-                                                <label>Content above embed</label>
-                                                <textarea
-                                                    className="pc-input-modern-v2"
-                                                    style={{ minHeight: '72px' }}
-                                                    value={server.onlineMessage || ''}
-                                                    onChange={e => updateServer(server.id, 'onlineMessage', e.target.value)}
-                                                    placeholder="Optional message content. Variables: {server}, {players}, {maxPlayers}, {ip}"
-                                                />
+                                                <h3 style={{ margin: 0 }}>Online embed</h3>
                                             </div>
                                             <EmbedEditor
                                                 compact
@@ -304,17 +294,7 @@ export default function FiveMConfig() {
                                         <div className="pc-sub-card-v2" style={{ marginTop: '24px' }}>
                                             <div className="card-header-v2" style={{ marginBottom: '16px' }}>
                                                 <div className="header-icon"><Power size={18} /></div>
-                                                <h3 style={{ margin: 0 }}>Offline status message</h3>
-                                            </div>
-                                            <div className="pc-input-group-v2">
-                                                <label>Content above embed</label>
-                                                <textarea
-                                                    className="pc-input-modern-v2"
-                                                    style={{ minHeight: '72px' }}
-                                                    value={server.offlineMessage || ''}
-                                                    onChange={e => updateServer(server.id, 'offlineMessage', e.target.value)}
-                                                    placeholder="Optional message content. Variables: {server}, {ip}, {lastCheck}"
-                                                />
+                                                <h3 style={{ margin: 0 }}>Offline embed</h3>
                                             </div>
                                             <EmbedEditor
                                                 compact
