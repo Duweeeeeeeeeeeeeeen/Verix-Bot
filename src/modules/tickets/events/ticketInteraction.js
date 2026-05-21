@@ -446,7 +446,7 @@ async function createTicket(interaction, type, config, metadata = {}) {
         const staffRoles = (config.staffRoleIds || []).map(id => guild.roles.cache.get(id)).filter(r => r);
         
         // --- CATEGORY VALIDATION ---
-        const categoryId = config.categoryOpenId;
+        const categoryId = typeConfig?.categoryId || config.categoryOpenId;
         const parentCategory = categoryId ? guild.channels.cache.get(categoryId) : null;
         
         if (categoryId && !parentCategory) {

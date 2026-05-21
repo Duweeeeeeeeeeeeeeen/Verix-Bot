@@ -18,8 +18,10 @@ export default {
             for (const ticket of openTickets) {
                 const config = await TicketConfig.findOne({ guildId: ticket.guildId });
                 if (!config) continue;
+                if (!config.autoClose?.enabled) continue;
 
-                const timeoutMs = (config.inactivityTimeout || 24) * 60 * 60 * 1000;
+                const timeoutHours = config.autoClose?.hours || config.inactivityTimeout || 24;
+                const timeoutMs = timeoutHours * 60 * 60 * 1000;
                 const inactiveTime = Date.now() - new Date(ticket.lastActivityAt).getTime();
 
                 if (inactiveTime > timeoutMs) {

@@ -6,12 +6,61 @@ import { useT } from '../../../contexts/LanguageContext';
 import {
     Save, Ticket, Settings2, Shield, Plus, MessageSquare, Trash2,
     ChevronRight, CheckCircle2, Layout, Clock, UserPlus, FileText,
-    RotateCcw, Send, GripVertical, AlertCircle
+    RotateCcw, Send, GripVertical, AlertCircle, Palette, SlidersHorizontal
 } from 'lucide-react';
-import { DiscordSelector, CustomSelect, SystemMessagesSection } from '../../../components/LazyConfigComponents';
+import { DiscordSelector, CustomSelect, EmbedMessageManager, NotificationSettings, SystemMessagesSection } from '../../../components/LazyConfigComponents';
 import EmojiInput from '../../../components/EmojiInput';
 import { mergeConfig } from '../../../utils/defaults';
 import Head from 'next/head';
+
+const BUTTON_STYLE_OPTIONS = [
+  { value: 'PRIMARY', label: 'Primary' },
+  { value: 'SECONDARY', label: 'Secondary' },
+  { value: 'SUCCESS', label: 'Success' },
+  { value: 'DANGER', label: 'Danger' }
+];
+
+const PANEL_INPUT_OPTIONS = [
+  { value: 'SELECT', label: 'Select menu' },
+  { value: 'BUTTONS', label: 'Buttons' }
+];
+
+const CLOSE_MODE_OPTIONS = [
+  { value: 'DELETE', label: 'Delete channel' },
+  { value: 'MOVE', label: 'Move to category' }
+];
+
+const TICKET_MESSAGE_SLUGS = [
+  { key: 'panel', labelKey: 'tickets.msg_panel', descKey: 'tickets.msg_panel_desc', groupKey: 'tickets.group_access', variables: ['guild'], icon: Layout },
+  { key: 'ticket', labelKey: 'tickets.msg_ticket', descKey: 'tickets.msg_ticket_desc', groupKey: 'tickets.group_access', variables: ['type', 'user_id', 'priority', 'status', 'assignedStaff', 'tags'], icon: Ticket },
+  { key: 'priority_select', labelKey: 'tickets.msg_priority_select', descKey: 'tickets.msg_priority_select_desc', groupKey: 'tickets.group_access', variables: ['type'], icon: SlidersHorizontal },
+  { key: 'success_open', labelKey: 'tickets.msg_success_open', descKey: 'tickets.msg_success_open_desc', groupKey: 'tickets.group_access', variables: ['channel'], icon: CheckCircle2 },
+  { key: 'created_success', labelKey: 'tickets.msg_success_open', descKey: 'tickets.msg_success_open_desc', groupKey: 'tickets.group_access', variables: ['channelId'], icon: CheckCircle2 },
+  { key: 'already_exists', labelKey: 'tickets.msg_already_exists', descKey: 'tickets.msg_already_exists_desc', groupKey: 'tickets.group_errors', variables: ['type', 'channelId'], icon: AlertCircle },
+  { key: 'category_not_available', labelKey: 'tickets.msg_close_error_category', descKey: 'tickets.msg_close_error_category_desc', groupKey: 'tickets.group_errors', variables: [], icon: AlertCircle },
+  { key: 'blacklist_error', labelKey: 'tickets.msg_blacklisted', descKey: 'tickets.placeholder_blacklist_error', groupKey: 'tickets.group_errors', variables: [], icon: AlertCircle },
+  { key: 'staff_only', labelKey: 'tickets.msg_no_perms', descKey: 'tickets.msg_no_perms_placeholder', groupKey: 'tickets.group_errors', variables: [], icon: Shield },
+  { key: 'config_not_found', labelKey: 'tickets.msg_cannot_close', descKey: 'tickets.msg_cannot_close_desc', groupKey: 'tickets.group_errors', variables: [], icon: AlertCircle },
+  { key: 'staff_claimed', labelKey: 'tickets.msg_staff_claimed', descKey: 'tickets.msg_staff_claimed_desc', groupKey: 'tickets.group_staff', variables: ['staff'], icon: UserPlus },
+  { key: 'claim_already', labelKey: 'tickets.msg_already_claimed', descKey: 'tickets.msg_already_claimed_desc', groupKey: 'tickets.group_staff', variables: ['staffId'], icon: UserPlus },
+  { key: 'quick_reply_menu', labelKey: 'tickets.msg_quick_reply_menu', descKey: 'tickets.msg_quick_reply_menu_desc', groupKey: 'tickets.group_staff_tools', variables: [], icon: MessageSquare },
+  { key: 'tag_menu', labelKey: 'tickets.msg_tag_menu', descKey: 'tickets.msg_tag_menu_desc', groupKey: 'tickets.group_staff_tools', variables: [], icon: GripVertical },
+  { key: 'note_success', labelKey: 'tickets.msg_opened', descKey: 'tickets.placeholder_status_updated', groupKey: 'tickets.group_staff_tools', variables: [], icon: FileText },
+  { key: 'status_updated', labelKey: 'tickets.msg_status_updated', descKey: 'tickets.msg_status_updated_desc', groupKey: 'tickets.group_management', variables: ['status'], icon: Clock },
+  { key: 'close', labelKey: 'tickets.msg_close', descKey: 'tickets.msg_close_desc', groupKey: 'tickets.group_closure', variables: ['user'], icon: FileText },
+  { key: 'close_started', labelKey: 'tickets.msg_close_status', descKey: 'tickets.msg_close_status_desc', groupKey: 'tickets.group_closure', variables: [], icon: Clock },
+  { key: 'inactivity_close', labelKey: 'tickets.msg_inactivity_close', descKey: 'tickets.msg_inactivity_close_desc', groupKey: 'tickets.group_closure', variables: [], icon: Clock },
+  { key: 'staff_ticket_log', labelKey: 'tickets.msg_staff_ticket_log', descKey: 'tickets.msg_staff_ticket_log_desc', groupKey: 'tickets.group_closure', variables: ['user', 'type', 'staff'], icon: FileText }
+];
+
+const getTicketMessageSlugs = (t) => TICKET_MESSAGE_SLUGS.map(item => ({
+  key: item.key,
+  label: t(item.labelKey),
+  description: t(item.descKey),
+  group: t(item.groupKey),
+  groupIcon: item.icon,
+  variables: item.variables
+}));
 
 export default function TicketConfig() {
   const router = useRouter();
@@ -68,7 +117,16 @@ export default function TicketConfig() {
     try {
       await api.request(`/config/${guildId}/tickets`, {
         method: 'POST',
-        body: JSON.stringify(config)
+        body: JSON.stringify({
+          ...config,
+          autoClose: {
+            ...(config.autoClose || {}),
+            enabled: !!config.autoClose?.enabled,
+            hours: Number(config.autoClose?.hours || 24)
+          },
+          inactivityTimeout: Number(config.autoClose?.hours || config.inactivityTimeout || 24),
+          transcriptionEnabled: !!config.transcriptionEnabled
+        })
       });
       showToast(t('tickets.sync_success'));
     } catch (e) {
@@ -117,9 +175,11 @@ export default function TicketConfig() {
 
   const addTicketType = () => {
     const id = 'type_' + Date.now();
+    const currentTypes = config.types || config.enabledTypes || [];
     setConfig({
       ...config,
-      types: [...(config.types || []), id],
+      types: [...currentTypes, id],
+      enabledTypes: [...currentTypes, id],
       typesConfig: {
         ...(config.typesConfig || {}),
         [id]: { label: t('tickets.new_ticket_default'), emoji: '🎫', categoryId: '', welcomeMessage: t('tickets.welcome_message_default') }
@@ -128,10 +188,10 @@ export default function TicketConfig() {
   };
 
   const removeTicketType = (id) => {
-    const newTypes = config.types.filter(tid => tid !== id);
+    const newTypes = (config.types || config.enabledTypes || []).filter(tid => tid !== id);
     const newConfig = { ...config.typesConfig };
     delete newConfig[id];
-    setConfig({ ...config, types: newTypes, typesConfig: newConfig });
+    setConfig({ ...config, types: newTypes, enabledTypes: newTypes, typesConfig: newConfig });
   };
 
   const addCannedResponse = () => {
@@ -148,6 +208,8 @@ export default function TicketConfig() {
   };
 
   if (!mounted || loading || !config) return <Skeleton height="600px" />;
+
+  const ticketTypes = config.types || config.enabledTypes || Object.keys(config.typesConfig || {});
 
   return (
     <div className="pc-premium-wrapper fade-in">
@@ -212,6 +274,9 @@ export default function TicketConfig() {
             <button className={activeTab === 'categories' ? 'active' : ''} onClick={() => setActiveTab('categories')}>
                 <Layout size={16} /> <span>{t('tickets.categories')}</span>
             </button>
+            <button className={activeTab === 'design' ? 'active' : ''} onClick={() => setActiveTab('design')}>
+                <Palette size={16} /> <span>{t('tickets.design')}</span>
+            </button>
             <button className={activeTab === 'responses' ? 'active' : ''} onClick={() => setActiveTab('responses')}>
                 <MessageSquare size={16} /> <span>{t('tickets.canned')}</span>
             </button>
@@ -239,11 +304,31 @@ export default function TicketConfig() {
                                         <label>{t('tickets.panel_channel') || 'Canale Pannello'}</label>
                                         <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 0 || c.type === 5)} value={config.panelChannelId} onChange={v => setConfig({...config, panelChannelId: v})} error={config.enabled && !config.panelChannelId ? t('common.required_field') : ''} />
                                     </div>
+                                    <div className="pc-input-group-v2">
+                                        <label>{t('tickets.category_open')}</label>
+                                        <DiscordSelector type="channel" options={discordData.categories} value={config.categoryOpenId || ''} onChange={v => setConfig({...config, categoryOpenId: v})} error={config.enabled && !config.categoryOpenId ? t('common.required_field') : ''} />
+                                    </div>
+                                    <div className="pc-input-group-v2">
+                                        <label>{t('tickets.input_mode')}</label>
+                                        <CustomSelect value={config.inputType || 'SELECT'} onChange={v => setConfig({...config, inputType: v})} options={PANEL_INPUT_OPTIONS} />
+                                    </div>
                                 </div>
                                 <div className="pc-input-group-v2" style={{ marginTop: '24px' }}>
                                     <label>{t('tickets.log_channel')}</label>
                                     <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 0 || c.type === 5)} value={config.logChannelId} onChange={v => setConfig({...config, logChannelId: v})} />
                                     <p style={{ margin: '8px 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t('tickets.log_channel_help')}</p>
+                                </div>
+                                <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginTop: '24px' }}>
+                                    <div className="pc-input-group-v2">
+                                        <label>{t('tickets.close_mode')}</label>
+                                        <CustomSelect value={config.closeMode || 'DELETE'} onChange={v => setConfig({...config, closeMode: v})} options={CLOSE_MODE_OPTIONS} />
+                                    </div>
+                                    {config.closeMode === 'MOVE' && (
+                                        <div className="pc-input-group-v2">
+                                            <label>{t('tickets.category_closed')}</label>
+                                            <DiscordSelector type="channel" options={discordData.categories} value={config.categoryClosedId || ''} onChange={v => setConfig({...config, categoryClosedId: v})} error={config.enabled && config.closeMode === 'MOVE' && !config.categoryClosedId ? t('common.required_field') : ''} />
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </section>
@@ -260,14 +345,14 @@ export default function TicketConfig() {
                                         <span>{t('tickets.auto_close_desc')}</span>
                                     </div>
                                     <label className="pc-toggle-v2 mini">
-                                        <input type="checkbox" checked={config.autoCloseEnabled} onChange={e => setConfig({...config, autoCloseEnabled: e.target.checked})} />
+                                        <input type="checkbox" checked={!!config.autoClose?.enabled} onChange={e => setConfig({...config, autoClose: { ...(config.autoClose || {}), enabled: e.target.checked }})} />
                                         <span className="pc-slider-v2"></span>
                                     </label>
                                 </div>
-                                {config.autoCloseEnabled && (
+                                {config.autoClose?.enabled && (
                                     <div className="pc-input-group-v2 animate slide-up" style={{ marginTop: '24px' }}>
                                         <label>{t('tickets.inactivity_hours')}</label>
-                                        <input className="pc-input-modern-v2" type="number" value={config.autoCloseHours || 24} onChange={e => setConfig({...config, autoCloseHours: parseInt(e.target.value)})} min="1" max="168" />
+                                        <input className="pc-input-modern-v2" type="number" value={config.autoClose?.hours || 24} onChange={e => setConfig({...config, autoClose: { ...(config.autoClose || {}), hours: parseInt(e.target.value, 10) || 24 }})} min="1" max="168" />
                                     </div>
                                 )}
                             </div>
@@ -287,11 +372,21 @@ export default function TicketConfig() {
                                         <span>{t('tickets.transcript_desc')}</span>
                                     </div>
                                     <label className="pc-toggle-v2 mini">
-                                        <input type="checkbox" checked={config.transcriptEnabled} onChange={e => setConfig({...config, transcriptEnabled: e.target.checked})} />
+                                        <input type="checkbox" checked={!!config.transcriptionEnabled} onChange={e => setConfig({...config, transcriptionEnabled: e.target.checked})} />
                                         <span className="pc-slider-v2"></span>
                                     </label>
                                 </div>
                             </div>
+                        </section>
+
+                        <section className="pc-card-v2">
+                            <NotificationSettings
+                                value={config.notifications || { mode: 'DM', channelId: null }}
+                                onChange={notifications => setConfig({ ...config, notifications })}
+                                guildId={guildId}
+                                title={t('tickets.notif_user_title')}
+                                description={t('tickets.notif_user_desc')}
+                            />
                         </section>
                     </div>
                 </div>
@@ -312,7 +407,7 @@ export default function TicketConfig() {
                         </div>
                         <div className="card-body-v2">
                             <div className="v-stack" style={{ gap: '24px' }}>
-                                { (config.types || []).map((id) => (
+                                {ticketTypes.map((id) => (
                                     <div key={id} className="pc-sub-card-v2 animate slide-up">
                                         <div className="pc-bb-content" style={{ padding: 0 }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
@@ -346,6 +441,44 @@ export default function TicketConfig() {
                                                 </div>
                                             </div>
 
+                                            <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '18px', marginTop: '24px' }}>
+                                                <div className="pc-input-group-v2">
+                                                    <label>{t('tickets.btn_style')}</label>
+                                                    <CustomSelect value={config.typesConfig[id]?.style || 'PRIMARY'} onChange={v => {
+                                                        const newTypes = { ...config.typesConfig };
+                                                        newTypes[id] = { ...newTypes[id], style: v };
+                                                        setConfig({ ...config, typesConfig: newTypes });
+                                                    }} options={[...BUTTON_STYLE_OPTIONS, { value: 'LINK', label: t('tickets.btn_style_link') }]} />
+                                                </div>
+                                                <div className="pc-input-group-v2">
+                                                    <label>{t('tickets.target_role')}</label>
+                                                    <DiscordSelector type="role" options={discordData.roles} value={config.typesConfig[id]?.pingRoleId || ''} onChange={v => {
+                                                        const newTypes = { ...config.typesConfig };
+                                                        newTypes[id] = { ...newTypes[id], pingRoleId: v };
+                                                        setConfig({ ...config, typesConfig: newTypes });
+                                                    }} />
+                                                </div>
+                                                <div className="pc-input-group-v2">
+                                                    <label>{t('common.order')}</label>
+                                                    <input className="pc-input-modern-v2" type="number" value={config.typesConfig[id]?.order || 0} onChange={e => {
+                                                        const newTypes = { ...config.typesConfig };
+                                                        newTypes[id] = { ...newTypes[id], order: parseInt(e.target.value, 10) || 0 };
+                                                        setConfig({ ...config, typesConfig: newTypes });
+                                                    }} />
+                                                </div>
+                                            </div>
+
+                                            {config.typesConfig[id]?.style === 'LINK' && (
+                                                <div className="pc-input-group-v2" style={{ marginTop: '18px' }}>
+                                                    <label>URL</label>
+                                                    <input className="pc-input-modern-v2" value={config.typesConfig[id]?.url || ''} onChange={e => {
+                                                        const newTypes = { ...config.typesConfig };
+                                                        newTypes[id] = { ...newTypes[id], url: e.target.value };
+                                                        setConfig({ ...config, typesConfig: newTypes });
+                                                    }} placeholder="https://..." />
+                                                </div>
+                                            )}
+
                                             <div className="pc-input-group-v2" style={{ marginTop: '24px' }}>
                                                 <label>{t('tickets.welcome_message')}</label>
                                                 <textarea
@@ -360,6 +493,80 @@ export default function TicketConfig() {
                                                     placeholder={t('tickets.custom_welcome_placeholder')}
                                                 />
                                             </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            )}
+
+            {activeTab === 'design' && (
+                <div className="v-stack animate slide-up">
+                    <EmbedMessageManager
+                        guildId={guildId}
+                        module="tickets"
+                        slugs={getTicketMessageSlugs(t)}
+                        compact={true}
+                        extraButtons={(slug) => {
+                            if (slug !== 'panel') return null;
+                            if ((config.inputType || 'SELECT') === 'SELECT') {
+                                return [{ label: t('tickets.input_select'), style: 'SECONDARY', emoji: '🎫' }];
+                            }
+                            return ticketTypes.slice(0, 5).map(id => ({
+                                label: config.typesConfig?.[id]?.label || id,
+                                style: config.typesConfig?.[id]?.style || 'PRIMARY',
+                                emoji: config.typesConfig?.[id]?.emoji || '🎫'
+                            }));
+                        }}
+                    />
+
+                    <section className="pc-card-v2" style={{ marginTop: '24px' }}>
+                        <div className="card-header-v2">
+                            <div className="header-icon"><SlidersHorizontal size={18} /></div>
+                            <h3 style={{ margin: 0 }}>{t('tickets.button_branding')}</h3>
+                        </div>
+                        <div className="card-body-v2">
+                            <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '18px' }}>
+                                {[
+                                    ['claim', t('tickets.claim_btn'), '🙋'],
+                                    ['close', t('tickets.close_btn'), '🔒'],
+                                    ['quickReply', t('tickets.msg_quick_reply_menu'), '📝'],
+                                    ['tag', t('tickets.tag_btn'), '🏷️'],
+                                    ['transcript', t('tickets.transcripts'), '📄']
+                                ].map(([key, label, emoji]) => (
+                                    <div key={key} className="pc-sub-card-v2">
+                                        <div className="pc-input-group-v2">
+                                            <label>{label}</label>
+                                            <input
+                                                className="pc-input-modern-v2"
+                                                value={config.buttons?.[key]?.label || ''}
+                                                onChange={e => setConfig({
+                                                    ...config,
+                                                    buttons: {
+                                                        ...(config.buttons || {}),
+                                                        [key]: { ...(config.buttons?.[key] || {}), label: e.target.value }
+                                                    }
+                                                })}
+                                                placeholder={label}
+                                            />
+                                        </div>
+                                        <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '12px', marginTop: '12px' }}>
+                                            <EmojiInput value={config.buttons?.[key]?.emoji || emoji} hideInput={true} onChange={e => setConfig({
+                                                ...config,
+                                                buttons: {
+                                                    ...(config.buttons || {}),
+                                                    [key]: { ...(config.buttons?.[key] || {}), emoji: e.target.value }
+                                                }
+                                            })} />
+                                            <CustomSelect value={config.buttons?.[key]?.style || 'PRIMARY'} onChange={v => setConfig({
+                                                ...config,
+                                                buttons: {
+                                                    ...(config.buttons || {}),
+                                                    [key]: { ...(config.buttons?.[key] || {}), style: v }
+                                                }
+                                            })} options={BUTTON_STYLE_OPTIONS} />
                                         </div>
                                     </div>
                                 ))}
