@@ -112,7 +112,7 @@ export default {
                         .setCustomId(`ticket_priority_select_${type}`)
                         .setPlaceholder(resolveSystemMessage(config, 'tickets', 'priority_placeholder', lang))
                         .addOptions([
-                            { label: resolveSystemMessage(config, 'tickets', 'priority_normal', lang), value: 'NORMALE', emoji: '??' },
+                            { label: resolveSystemMessage(config, 'tickets', 'priority_normal', lang), value: 'NORMALE', emoji: '🟢' },
                             { label: resolveSystemMessage(config, 'tickets', 'priority_important', lang), value: 'IMPORTANTE', emoji: '🟡' },
                             { label: resolveSystemMessage(config, 'tickets', 'priority_urgent', lang), value: 'URGENTE', emoji: '🔴' }
                         ])
@@ -444,7 +444,7 @@ async function createTicket(interaction, type, config, metadata = {}) {
         // Robust retrieval of typeConfig handling both Map and Object
         const typeConfig = (config.typesConfig instanceof Map 
             ? config.typesConfig.get(type) 
-            : config.typesConfig?.[type]) || { color: '#3498db', emoji: '??' };
+            : config.typesConfig?.[type]) || { color: '#3498db', emoji: '🎫' };
 
         const staffRoles = (config.staffRoleIds || []).map(id => guild.roles.cache.get(id)).filter(r => r);
         
@@ -476,7 +476,7 @@ async function createTicket(interaction, type, config, metadata = {}) {
         lang = globalConfig?.language || 'en';
         const namingTemplate = globalConfig?.naming?.ticket || '{emoji}-{type}-{user}';
         
-        const priorityEmoji = priority === 'URGENT' ? '??' : (priority === 'IMPORTANT' ? '??' : '??');
+        const priorityEmoji = priority === 'URGENT' ? '🔴' : (priority === 'IMPORTANT' ? '🟡' : '🟢');
         const channelName = placeholderHelper.replace(namingTemplate, {
             emoji: priorityEmoji,
             type: type,

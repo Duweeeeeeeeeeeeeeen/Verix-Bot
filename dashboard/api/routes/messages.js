@@ -20,7 +20,16 @@ router.get('/:guildId/:module', adminCheck, async (req, res) => {
         const defaults = getDefaultMessages(lang)[module] || {};
         
         // Convert Map to plain object properly
-        const dbMessages = (config && config.messages) ? config.messages : {};
+        let dbMessages = {};
+        if (config && config.messages) {
+            if (config.messages instanceof Map || (config.messages.constructor && config.messages.constructor.name === 'Map')) {
+                dbMessages = Object.fromEntries(config.messages);
+            } else if (typeof config.messages.toObject === 'function') {
+                dbMessages = config.messages.toObject();
+            } else {
+                dbMessages = config.messages;
+            }
+        }
 
         // Merge defaults and DB overrides into a single flat object
         const mergedMessages = {};

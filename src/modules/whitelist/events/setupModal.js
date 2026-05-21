@@ -53,15 +53,22 @@ export default {
                 .setColor(color)
                 .setTimestamp();
 
-            const buttonSettings = config.embeds?.panel?.button || { label: 'Start Application', emoji: '??', style: 'PRIMARY' };
+            const buttonSettings = config.embeds?.panel?.button || { label: 'Start Application', emoji: '📝', style: 'PRIMARY' };
             
-            const button = new ActionRowBuilder().addComponents(
-                new ButtonBuilder()
-                    .setCustomId('start_wl')
-                    .setLabel(buttonSettings.label)
-                    .setEmoji(buttonSettings.emoji)
-                    .setStyle(getButtonStyle(buttonSettings.style))
-            );
+            const buttonBuilder = new ButtonBuilder()
+                .setCustomId('start_wl')
+                .setLabel(buttonSettings.label)
+                .setStyle(getButtonStyle(buttonSettings.style));
+
+            if (buttonSettings.emoji && buttonSettings.emoji !== '??') {
+                try {
+                    buttonBuilder.setEmoji(buttonSettings.emoji);
+                } catch (e) {
+                    logger.warn(`[Whitelist] Invalid emoji '${buttonSettings.emoji}' ignored.`);
+                }
+            }
+
+            const button = new ActionRowBuilder().addComponents(buttonBuilder);
 
             // --- ROBUST BULK CLEANUP ---
             try {

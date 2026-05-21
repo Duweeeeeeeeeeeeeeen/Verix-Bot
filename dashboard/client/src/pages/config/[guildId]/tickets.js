@@ -222,7 +222,7 @@ export default function TicketConfig() {
 
   const hasWarning = config.enabled && (!(config.staffRoleIds || []).length || !config.panelChannelId || !config.categoryOpenId || (config.closeMode === 'MOVE' && !config.categoryClosedId));
 
-  const ticketTypes = config.types || config.enabledTypes || Object.keys(config.typesConfig || {});
+  const ticketTypes = config.types || (config.typesConfig && Object.keys(config.typesConfig).length > 0 ? Object.keys(config.typesConfig) : config.enabledTypes || []);
   const isButtonPanel = (config.inputType || 'SELECT') === 'BUTTONS';
   const openTicketWelcomePreview = (id) => {
     const typeConfig = config.typesConfig?.[id] || {};

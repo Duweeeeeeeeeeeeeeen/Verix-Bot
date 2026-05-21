@@ -1311,11 +1311,23 @@ router.post('/:guildId/tickets/send-panel', adminCheck, async (req, res) => {
 
         // Cleanup old panels
         try {
+            if (config.panelMessageId) {
+                try {
+                    const oldMsg = await channel.messages.fetch(config.panelMessageId);
+                    if (oldMsg) {
+                        await oldMsg.delete().catch(() => {});
+                    }
+                } catch (err) {
+                    // Ignora se già eliminato o non trovato
+                }
+            }
+
             const messages = await channel.messages.fetch({ limit: 50 });
             const legacy = messages.filter(m => 
                 m.author.id === client.user.id && 
                 m.components.some(row => row.components.some(c => 
                     c.customId === 'open_ticket_select' || 
+                    c.customId === 'ticket_create_select' ||
                     c?.customId?.startsWith('ticket_type_')
                 ))
             );

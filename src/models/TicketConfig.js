@@ -34,10 +34,10 @@ const ticketConfigSchema = new mongoose.Schema({
             welcomeMessage: { type: String, default: null }
         },
         default: {
-            'support': { label: 'General Support', color: '#6366f1', emoji: '??' },
-            'report': { label: 'User Report', color: '#ef4444', emoji: '??' },
-            'donation': { label: 'Donations', color: '#f59e0b', emoji: '??' },
-            'bug': { label: 'Bug Report', color: '#10b981', emoji: '??' }
+            'support': { label: 'General Support', color: '#6366f1', emoji: '🎫' },
+            'report': { label: 'User Report', color: '#ef4444', emoji: '⚠️' },
+            'donation': { label: 'Donations', color: '#f59e0b', emoji: '💎' },
+            'bug': { label: 'Bug Report', color: '#10b981', emoji: '🐛' }
         }
     },
     transcriptionEnabled: { type: Boolean, default: true },
