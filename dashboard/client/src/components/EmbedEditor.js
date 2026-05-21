@@ -46,7 +46,7 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
 
     // Validazione base lato client
     if (file.size > 5 * 1024 * 1024) {
-        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Il file è troppo grande (max 5MB)', type: 'error' } }));
+        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('embeds.editor.upload_too_large'), type: 'error' } }));
         return;
     }
 
@@ -70,9 +70,9 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
         const result = await response.json();
         if (result.success) {
             updateEmbed(type, result.url);
-            window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: 'Immagine caricata con successo!', type: 'success' } }));
+            window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('embeds.editor.upload_success'), type: 'success' } }));
         } else {
-            throw new Error(result.error || 'Errore durante il caricamento');
+            throw new Error(result.error || t('embeds.editor.upload_error'));
         }
     } catch (error) {
       console.error('Upload error:', error);

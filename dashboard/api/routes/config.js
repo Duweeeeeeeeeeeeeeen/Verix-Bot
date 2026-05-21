@@ -983,7 +983,7 @@ router.post('/:guildId/background', adminCheck, validate(backgroundSchema), asyn
         res.json({ success: true, data: config });
     } catch (error) {
         console.error('Error updating background configuration:', error);
-        res.status(500).json({ success: false, error: error.message });
+        res.status(500).json({ success: false, error: 'Unable to save staff application configuration.' });
     }
 });
 
@@ -1200,14 +1200,14 @@ router.post('/:guildId/tickets', adminCheck, validate(ticketSchema), async (req,
         if (tier !== 'platinum') {
             const limit = tier === 'premium' ? 10 : (tier === 'lite' ? 5 : 2);
             if ((req.validatedData.categories || []).length > limit) {
-                return res.status(403).json({ success: false, error: `Il tuo piano (${tier.toUpperCase()}) permette massimo ${limit} categorie Ticket.` });
+                return res.status(403).json({ success: false, error: `Your plan (${tier.toUpperCase()}) allows up to ${limit} ticket categories.` });
             }
         }
 
         const config = await TicketConfig.findOneAndUpdate(
             { guildId },
             { $set: req.validatedData },
-            { returnDocument: 'after', upsert: true }
+            { returnDocument: 'after', upsert: true, runValidators: true }
         );
         
         invalidateCache(guildId);
@@ -1215,7 +1215,8 @@ router.post('/:guildId/tickets', adminCheck, validate(ticketSchema), async (req,
         
         res.json({ success: true, data: config });
     } catch (error) {
-        res.status(500).json({ success: false, error: 'Failed to update ticket config' });
+        console.error('Error updating ticket config:', error);
+        res.status(500).json({ success: false, error: 'Unable to save ticket configuration.' });
     }
 });
 
@@ -1390,22 +1391,23 @@ router.post('/:guildId/photocontest', adminCheck, validate(photoContestSchema), 
         if (tier !== 'platinum') {
             const limit = tier === 'premium' ? 10 : (tier === 'lite' ? 5 : 2);
             if ((data.themesList || []).length > limit) {
-                return res.status(403).json({ success: false, error: `Il tuo piano (${tier.toUpperCase()}) permette massimo ${limit} temi per il Contest.` });
+                return res.status(403).json({ success: false, error: `Your plan (${tier.toUpperCase()}) allows up to ${limit} photo contest themes.` });
             }
         }
 
         const config = await PhotoContestConfig.findOneAndUpdate(
             { guildId },
             { $set: data },
-            { returnDocument: 'after', upsert: true }
+            { returnDocument: 'after', upsert: true, runValidators: true }
         );
         
         invalidateCache(guildId);
-        await logAudit(req, 'UPDATE_PHOTO_CONTEST', req.validatedData);
+        await logAudit(req, 'UPDATE_PHOTO_CONTEST', data);
         
         res.json({ success: true, data: config });
     } catch (error) {
-        res.status(500).json({ success: false, error: 'Failed to update photo contest config' });
+        console.error('Error updating photo contest config:', error);
+        res.status(500).json({ success: false, error: 'Unable to save photo contest configuration.' });
     }
 });
 
@@ -1430,7 +1432,7 @@ router.post('/:guildId/verify', adminCheck, validate(verifySchema), async (req, 
         const config = await VerifyConfig.findOneAndUpdate(
             { guildId },
             { $set: req.validatedData },
-            { returnDocument: 'after', upsert: true }
+            { returnDocument: 'after', upsert: true, runValidators: true }
         );
         
         invalidateCache(guildId);
@@ -1610,7 +1612,7 @@ router.post('/:guildId/welcome', adminCheck, validate(welcomeSchema), async (req
         res.json({ success: true, data: config });
     } catch (error) {
         console.error('Error updating welcome config:', error);
-        res.status(500).json({ success: false, error: 'Errore durante il salvataggio della configurazione welcome' });
+        res.status(500).json({ success: false, error: 'Unable to save welcome configuration.' });
     }
 });
 
@@ -1798,7 +1800,7 @@ router.post('/:guildId/socials', adminCheck, validate(socialSchema), async (req,
         res.json({ success: true, data: config });
     } catch (error) {
         console.error('Error updating socials configuration:', error);
-        res.status(500).json({ success: false, error: error.message });
+        res.status(500).json({ success: false, error: 'Unable to save social feed configuration.' });
     }
 });
 
@@ -2172,7 +2174,7 @@ router.post('/:guildId/fivem', adminCheck, validate(fivemSchema), async (req, re
         const config = await FiveMConfig.findOneAndUpdate(
             { guildId },
             updateData,
-            { returnDocument: 'after', upsert: true }
+            { returnDocument: 'after', upsert: true, runValidators: true }
         );
 
         await logAudit(req, 'UPDATE_FIVEM', updateData);
@@ -2328,7 +2330,7 @@ router.post('/:guildId/welcome/test', adminCheck, async (req, res) => {
         const config = await WelcomeConfig.findOne({ guildId });
         
         if (!config || !config.enabled || !config.welcome?.enabled || !config.welcome?.channelId) {
-            return res.status(400).json({ success: false, error: 'Modulo Welcome disabilitato o canale non impostato.' });
+            return res.status(400).json({ success: false, error: 'Welcome module is disabled or the channel is not configured.' });
         }
 
         const client = req.discordClient;
@@ -2336,7 +2338,7 @@ router.post('/:guildId/welcome/test', adminCheck, async (req, res) => {
         const member = await guild.members.fetchMe();
 
         const channel = await guild.channels.fetch(config.welcome.channelId);
-        if (!channel) return res.status(404).json({ success: false, error: 'Canale non trovato.' });
+        if (!channel) return res.status(404).json({ success: false, error: 'Channel not found.' });
 
         const placeholders = {
             user: member.user.username,
@@ -2521,7 +2523,7 @@ router.post('/:guildId/support', adminCheck, validate(supportSchema), async (req
         res.json({ success: true, data: config });
     } catch (error) {
         console.error('Error updating support config:', error);
-        res.status(500).json({ success: false, error: 'Failed to update support config' });
+        res.status(500).json({ success: false, error: 'Unable to save support configuration.' });
     }
 });
 
@@ -2639,7 +2641,8 @@ router.post('/:guildId/reaction-roles/deploy/:panelId', adminCheck, async (req, 
             res.status(400).json({ success: false, error: result.error });
         }
     } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
+        console.error('Error deploying reaction role panel:', error);
+        res.status(500).json({ success: false, error: 'Unable to deploy reaction role panel.' });
     }
 });
 
@@ -2649,14 +2652,14 @@ router.post('/:guildId/polls/config', adminCheck, validate(pollConfigSchema), as
         const { guildId } = req.params;
         const config = await PollConfig.findOneAndUpdate(
             { guildId },
-            { $set: req.body },
-            { upsert: true, returnDocument: 'after' }
+            { $set: req.validatedData },
+            { upsert: true, returnDocument: 'after', runValidators: true }
         );
         invalidateCache(guildId);
-        await logAudit(req, 'UPDATE_POLL_CONFIG', req.body);
+        await logAudit(req, 'UPDATE_POLL_CONFIG', req.validatedData);
         res.json({ success: true, data: config });
     } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
+        res.status(500).json({ success: false, error: 'Unable to save poll configuration.' });
     }
 });
 
@@ -2666,18 +2669,18 @@ router.get('/:guildId/polls/active', adminCheck, async (req, res) => {
         const polls = await Poll.find({ guildId, ended: false }).sort({ createdAt: -1 });
         res.json(polls);
     } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
+        res.status(500).json({ success: false, error: 'Unable to load active polls.' });
     }
 });
 
 router.post('/:guildId/polls/create', adminCheck, validate(pollCreateSchema), async (req, res) => {
     try {
         const { guildId } = req.params;
-        const { channelId, question, options, duration, mode, color } = req.body;
+        const { channelId, question, options, duration, mode, color } = req.validatedData;
 
         const guild = req.discordClient.guilds.cache.get(guildId);
         const channel = await guild.channels.fetch(channelId).catch(() => null);
-        if (!channel) return res.status(400).json({ success: false, error: 'Canale non trovato.' });
+        if (!channel) return res.status(400).json({ success: false, error: 'Channel not found.' });
         if (!ensurePanelPermissions(channel, res)) return;
 
         const endTime = new Date(Date.now() + duration * 60000);
@@ -2724,7 +2727,8 @@ router.post('/:guildId/polls/create', adminCheck, validate(pollCreateSchema), as
 
         res.json({ success: true, pollId: poll._id });
     } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
+        console.error('Error creating poll:', error);
+        res.status(500).json({ success: false, error: 'Unable to create poll.' });
     }
 });
 
@@ -2979,7 +2983,8 @@ router.post('/:guildId/leveling', adminCheck, async (req, res) => {
         invalidateCache(guildId);
         res.json({ success: true, data: config });
     } catch (error) {
-        res.status(500).json({ success: false, error: 'Impossibile salvare la configurazione leveling' });
+        console.error('Error updating leveling config:', error);
+        res.status(500).json({ success: false, error: 'Unable to save leveling configuration.' });
     }
 });
 

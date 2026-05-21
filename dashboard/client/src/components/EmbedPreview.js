@@ -1,13 +1,15 @@
 import React from 'react';
+import { useT } from '../contexts/LanguageContext';
 
 /**
  * A high-fidelity Discord UI Simulator.
  * Emulates exactly how an embed looks in the Discord Dark Mode desktop client.
  */
 export default function EmbedPreview({ data, isMobile = false, theme = 'dark' }) {
+  const { t } = useT();
   if (!data) return (
     <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-dim)', border: '2px dashed var(--border)', borderRadius: '12px' }}>
-      Nessun dato da mostrare nell'anteprima
+      {t('embed_preview.empty')}
     </div>
   );
 
