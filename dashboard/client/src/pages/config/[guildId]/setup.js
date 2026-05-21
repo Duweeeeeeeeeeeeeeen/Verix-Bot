@@ -229,7 +229,7 @@ export default function SetupWizard() {
   return (
     <div className="setup-wizard-container">
       <Head>
-        <title>Verix Studio | Setup Wizard</title>
+        <title>{t('onboarding.meta_title')}</title>
       </Head>
 
       <div className="setup-card-v2">
@@ -332,8 +332,8 @@ export default function SetupWizard() {
                 >
                     <span className="flag">🇪🇸</span>
                     <div className="lang-info">
-                        <strong>Español</strong>
-                        <span>Establecer el bot en Español</span>
+                        <strong>{t('onboarding.lang_es')}</strong>
+                        <span>{t('onboarding.lang_es_desc')}</span>
                     </div>
                 </div>
                 <div 
@@ -342,21 +342,21 @@ export default function SetupWizard() {
                 >
                     <span className="flag">🇫🇷</span>
                     <div className="lang-info">
-                        <strong>Français</strong>
-                        <span>Mettre le bot en Français</span>
+                        <strong>{t('onboarding.lang_fr')}</strong>
+                        <span>{t('onboarding.lang_fr_desc')}</span>
                     </div>
                 </div>
             </div>
 
             <div className="essentials-grid" style={{ marginTop: '32px' }}>
                 <div className="channel-input-group">
-                    <label>PREFIX</label>
+                    <label>{t('onboarding.prefix_label')}</label>
                     <input type="text" value={prefix} onChange={(e) => setPrefix(e.target.value)} maxLength={3} />
                 </div>
                 {(guildInfo?.premiumTier === 'platinum' || guildInfo?.isPremium) && (
                     <div className="channel-input-group">
-                        <label>BOT NICKNAME (PREMIUM)</label>
-                        <input type="text" placeholder="Es: Verix Assistant" value={nickname} onChange={(e) => setNickname(e.target.value)} />
+                        <label>{t('onboarding.bot_nickname_label')}</label>
+                        <input type="text" placeholder={t('onboarding.bot_nickname_placeholder')} value={nickname} onChange={(e) => setNickname(e.target.value)} />
                     </div>
                 )}
             </div>
@@ -490,7 +490,7 @@ export default function SetupWizard() {
                         <h4><UserPlus size={18} /> {t('onboarding.welcome_style')}</h4>
                         <div className="toggle-switch-v2">
                             <button className={welcomeStyle === 'text' ? 'active' : ''} onClick={() => setWelcomeStyle('text')}>{t('common.text')}</button>
-                            <button className={welcomeStyle === 'embed' ? 'active' : ''} onClick={() => setWelcomeStyle('embed')}>Embed</button>
+                            <button className={welcomeStyle === 'embed' ? 'active' : ''} onClick={() => setWelcomeStyle('embed')}>{t('common.embed')}</button>
                         </div>
                     </div>
                 </div>

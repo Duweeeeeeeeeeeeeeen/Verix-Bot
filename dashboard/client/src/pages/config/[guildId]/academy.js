@@ -206,7 +206,7 @@ export default function AcademyPage() {
   return (
     <div className="academy-wrapper fade-in">
       <Head>
-        <title>Verix Academy | Impara a configurare il tuo server</title>
+        <title>{t('academy_page.meta_title')}</title>
       </Head>
 
       {/* Hero Section */}
@@ -214,7 +214,7 @@ export default function AcademyPage() {
         <div className="hero-content">
           <div className="badge-premium">
             <Sparkles size={14} />
-            <span>Verix Academy</span>
+            <span>{t('academy_page.badge')}</span>
           </div>
           <h1>{t('academy_page.hero_title')}</h1>
           <p>{t('academy_page.hero_subtitle')}</p>
@@ -280,7 +280,7 @@ export default function AcademyPage() {
             <div className="pro-tip-box">
               <div className="tip-header">
                 <Zap size={18} />
-                <span>Pro Tip</span>
+                <span>{t('academy_page.pro_tip')}</span>
               </div>
               <p>
                 {activeModule === 'global' && t('academy_page.tip_global')}

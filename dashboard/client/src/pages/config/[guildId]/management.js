@@ -398,7 +398,7 @@ export default function ManagementPage() {
                                                         <div className="align-center">
                                                             <div className="pc-dot-v2 blue"></div>
                                                             <div className="v-stack">
-                                                                <span style={{ fontWeight: 700 }}>SUBMITTED</span>
+                                                                <span style={{ fontWeight: 700 }}>{t('management.cards.staff.submitted')}</span>
                                                                 <span className="pc-hint-v2">{new Date(h.timestamp).toLocaleString(language === 'it' ? 'it-IT' : 'en-US')}</span>
                                                             </div>
                                                         </div>
@@ -482,7 +482,7 @@ export default function ManagementPage() {
                                 {filteredLogs.length === 0 && (
                                     <div className="pc-empty-state-v2" style={{ padding: '60px' }}>
                                         <History size={40} />
-                                        <h3>Nessun log trovato</h3>
+                                        <h3>{t('management.logs.empty')}</h3>
                                     </div>
                                 )}
                             </div>

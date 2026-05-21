@@ -2617,14 +2617,15 @@ router.post('/:guildId/reaction-roles', adminCheck, validate(reactionRoleSchema)
         const { guildId } = req.params;
         const config = await ReactionRoleConfig.findOneAndUpdate(
             { guildId },
-            { $set: req.body },
-            { upsert: true, returnDocument: 'after' }
+            { $set: req.validatedData },
+            { upsert: true, returnDocument: 'after', runValidators: true }
         );
         invalidateCache(guildId);
-        await logAudit(req, 'UPDATE_REACTION_ROLES', req.body);
+        await logAudit(req, 'UPDATE_REACTION_ROLES', req.validatedData);
         res.json({ success: true, data: config });
     } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
+        console.error('Error updating reaction roles config:', error);
+        res.status(500).json({ success: false, error: 'Unable to save reaction role configuration.' });
     }
 });
 

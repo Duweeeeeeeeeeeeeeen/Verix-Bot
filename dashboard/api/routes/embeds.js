@@ -17,13 +17,19 @@ import { checkBotPermissions, formatMissingPermissions } from '../../../src/util
 
 const router = express.Router();
 
+const sendEmbedError = (res, status, error, details = undefined) => {
+    const payload = { success: false, error };
+    if (details) payload.details = details;
+    return res.status(status).json(payload);
+};
+
 // GET all templates for a guild
 router.get('/:guildId/templates', adminCheck, async (req, res) => {
     try {
         const templates = await EmbedTemplate.find({ guildId: req.params.guildId });
         res.json(templates);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        sendEmbedError(res, 500, 'Unable to load embed templates.');
     }
 });
 
@@ -45,7 +51,7 @@ router.post('/:guildId/templates', adminCheck, validate(templateSchema), async (
             const count = await EmbedTemplate.countDocuments({ guildId });
 
             if (!isPremium && count >= 3) {
-                return res.status(403).json({ success: false, error: 'Free tier limit: 3 Templates. Upgrade to PRO for more.' });
+                return sendEmbedError(res, 403, 'Free tier limit: 3 templates. Upgrade to PRO for more.');
             }
 
             template = await EmbedTemplate.create({ guildId, name, targetChannelId, data });
@@ -55,7 +61,7 @@ router.post('/:guildId/templates', adminCheck, validate(templateSchema), async (
         invalidateCache(guildId);
         res.json(template);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        sendEmbedError(res, 500, 'Unable to save the embed template.');
     }
 });
 
@@ -73,7 +79,7 @@ router.delete('/:guildId/templates/:id', adminCheck, async (req, res) => {
         invalidateCache(guildId);
         res.json({ success: true });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        sendEmbedError(res, 500, 'Unable to delete the embed template.');
     }
 });
 
@@ -83,7 +89,7 @@ router.get('/:guildId/channels', adminCheck, async (req, res) => {
         const client = req.discordClient;
         const guild = await client.guilds.fetch(req.params.guildId).catch(() => null);
 
-        if (!guild) return res.status(404).json({ error: 'Guild not found by Bot' });
+        if (!guild) return sendEmbedError(res, 404, 'Bot is not available in this server.');
 
         const channelsFetched = await guild.channels.fetch().catch(() => guild.channels.cache);
         const channels = channelsFetched
@@ -99,7 +105,7 @@ router.get('/:guildId/channels', adminCheck, async (req, res) => {
         console.log(`[DEBUG API] Guild ${req.params.guildId}: fetched ${channels.length} channels for embeds select.`);
         res.json(channels);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        sendEmbedError(res, 500, 'Unable to load Discord channels.');
     }
 });
 
@@ -120,11 +126,11 @@ router.post('/:guildId/send', adminCheck, validate(sendEmbedSchema), async (req,
             }
 
             if (isNaN(scheduledAt.getTime())) {
-                return res.status(400).json({ success: false, error: 'Data di programmazione non valida.' });
+                return sendEmbedError(res, 400, 'Invalid scheduled date.');
             }
 
             if (scheduledAt <= new Date()) {
-                return res.status(400).json({ success: false, error: 'La data di programmazione deve essere nel futuro.' });
+                return sendEmbedError(res, 400, 'Scheduled date must be in the future.');
             }
 
             const newSchedule = await ScheduledEmbed.create({
@@ -137,11 +143,11 @@ router.post('/:guildId/send', adminCheck, validate(sendEmbedSchema), async (req,
             });
 
             await logAudit(req, 'SCHEDULE_EMBED', { channelId, scheduledAt, title: embed.title });
-            return res.json({ success: true, message: 'Embed programmato correttamente!', data: newSchedule });
+            return res.json({ success: true, message: 'Embed scheduled successfully!', data: newSchedule });
         }
         
         const channel = await client.channels.fetch(channelId).catch(() => null);
-        if (!channel) return res.status(404).json({ error: 'Canale non trovato o il bot non ha accesso.' });
+        if (!channel) return sendEmbedError(res, 404, 'Channel not found or not accessible by the bot.');
 
         // --- PERMISSION CHECK ---
         const permCheck = checkBotPermissions(channel, [
@@ -151,10 +157,7 @@ router.post('/:guildId/send', adminCheck, validate(sendEmbedSchema), async (req,
         ]);
 
         if (!permCheck.hasPermission) {
-            return res.status(403).json({ 
-                error: 'Permessi mancanti nel canale di Discord', 
-                details: permCheck.missing 
-            });
+            return sendEmbedError(res, 403, 'Missing bot permissions in the selected Discord channel.', permCheck.missing);
         }
 
         const discordEmbed = new EmbedBuilder();
@@ -200,10 +203,10 @@ router.post('/:guildId/send', adminCheck, validate(sendEmbedSchema), async (req,
         await channel.send(messageOptions);
         await logAudit(req, 'SEND_MANUAL_EMBED', { channelId, title: embed.title });
         
-        res.json({ success: true, message: 'Messaggio inviato con successo!' });
+        res.json({ success: true, message: 'Message sent successfully!' });
 
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        sendEmbedError(res, 500, 'Unable to send the embed message.');
     }
 });
 

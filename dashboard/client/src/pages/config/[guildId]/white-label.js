@@ -328,11 +328,11 @@ export default function BrandingPage() {
                                                             value={s.type || 0}
                                                             onChange={(e) => updateStatus(index, 'type', parseInt(e.target.value))}
                                                         >
-                                                            <option value="0">Playing</option>
-                                                            <option value="3">Watching</option>
-                                                            <option value="2">Listening</option>
-                                                            <option value="5">Competing</option>
-                                                            <option value="4">Custom</option>
+                                                            <option value="0">{t('wl.status_type_playing')}</option>
+                                                            <option value="3">{t('wl.status_type_watching')}</option>
+                                                            <option value="2">{t('wl.status_type_listening')}</option>
+                                                            <option value="5">{t('wl.status_type_competing')}</option>
+                                                            <option value="4">{t('wl.status_type_custom')}</option>
                                                         </select>
                                                     </div>
                                                     <input 
@@ -375,8 +375,8 @@ export default function BrandingPage() {
                                                     onChange={(e) => setRotationInterval(parseInt(e.target.value))}
                                                 />
                                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase' }}>
-                                                    <span>Velocità Alta (15s)</span>
-                                                    <span>Lento (1h)</span>
+                                                    <span>{t('wl.rotation_fast')}</span>
+                                                    <span>{t('wl.rotation_slow')}</span>
                                                 </div>
                                             </div>
                                         )}
@@ -407,7 +407,7 @@ export default function BrandingPage() {
                                 <section className="pc-card-v2 status-monitor-v2 animate slide-up">
                                     <div className="card-header-v2">
                                         <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><Power size={18} /></div>
-                                        <h3 style={{ margin: 0 }}>Stato Istanza</h3>
+                                        <h3 style={{ margin: 0 }}>{t('wl.instance_status')}</h3>
                                     </div>
                                     <div className="card-body-v2">
                                         {botData ? (
@@ -451,7 +451,7 @@ export default function BrandingPage() {
                                 <section className="pc-card-v2 animate slide-up" style={{ animationDelay: '0.1s' }}>
                                     <div className="card-header-v2">
                                         <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><Key size={18} /></div>
-                                        <h3 style={{ margin: 0 }}>Credenziali</h3>
+                                        <h3 style={{ margin: 0 }}>{t('wl.credentials')}</h3>
                                     </div>
                                     <div className="card-body-v2">
                                         <div className="pc-input-group-v2">
@@ -517,11 +517,11 @@ export default function BrandingPage() {
                                     <div className="v-stack" style={{ gap: '16px' }}>
                                         <div className="placeholder-item-v2">
                                             <code>{`{players}`}</code>
-                                            <span style={{ fontSize: '0.9rem', fontWeight: 700 }}>Giocatori Online</span>
+                                            <span style={{ fontSize: '0.9rem', fontWeight: 700 }}>{t('wl.placeholder_players')}</span>
                                         </div>
                                         <div className="placeholder-item-v2">
                                             <code>{`{max_players}`}</code>
-                                            <span style={{ fontSize: '0.9rem', fontWeight: 700 }}>Slot Totali</span>
+                                            <span style={{ fontSize: '0.9rem', fontWeight: 700 }}>{t('wl.placeholder_max_players')}</span>
                                         </div>
                                     </div>
                                 </div>
