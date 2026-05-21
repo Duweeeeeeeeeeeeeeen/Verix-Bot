@@ -2784,6 +2784,7 @@
   "tickets.system_messages": "Mensajes del sistema de tickets",
   "tickets.system_messages_desc": "Personalice los mensajes de error y alerta para el sistema de tickets.",
   "tickets.tag_btn": "Estado de actualización",
+  "tickets.embed_color": "Color del embed",
   "tickets.target_category": "Categoría de entrada",
   "tickets.target_category_help": "La categoría bajo la cual se abrirán nuevos canales de entradas.",
   "tickets.template_res_content": "Estimado usuario, gracias por contactarnos...",

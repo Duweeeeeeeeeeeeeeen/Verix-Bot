@@ -2856,6 +2856,7 @@
   "tickets.system_messages": "Ticket System Messages",
   "tickets.system_messages_desc": "Customize error and alert messages for the ticket system.",
   "tickets.tag_btn": "Update Status",
+  "tickets.embed_color": "Embed color",
   "tickets.target_role": "Role to ping",
   "tickets.target_category": "Ticket Category",
   "tickets.target_category_help": "The category under which new ticket channels will be opened.",

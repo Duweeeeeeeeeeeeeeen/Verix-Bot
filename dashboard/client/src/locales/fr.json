@@ -2784,6 +2784,7 @@
   "tickets.system_messages": "Messages du système de tickets",
   "tickets.system_messages_desc": "Personnalisez les messages d'erreur et d'alerte pour le système de tickets.",
   "tickets.tag_btn": "Statut de la mise à jour",
+  "tickets.embed_color": "Couleur de l'embed",
   "tickets.target_category": "Catégorie de billet",
   "tickets.target_category_help": "La catégorie dans laquelle de nouveaux canaux de billets seront ouverts.",
   "tickets.template_res_content": "Cher utilisateur, merci de nous avoir contactés...",
