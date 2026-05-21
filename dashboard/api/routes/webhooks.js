@@ -195,6 +195,7 @@ router.post('/youtube/:channelId', express.text({ type: ['application/atom+xml',
                         // Fetch profile image if missing
                         if (!trackingAccount.cachedProfileImage) {
                             trackingAccount.cachedProfileImage = await client.socialManager.fetchYouTubeProfileImage(channelId);
+                            configChanged = true;
                         }
 
                         const currentVideoId = video.id.replace('yt:video:', '');
@@ -207,6 +208,7 @@ router.post('/youtube/:channelId', express.text({ type: ['application/atom+xml',
                         }, 'YouTube');
 
                         trackingAccount.lastPostId = video.id;
+                        configChanged = true;
                     } else {
                         logger.info(`[WebSub] Skipping push of old video for ${channelId} in guild ${config.guildId}: ${video.title}`);
                     }
@@ -243,14 +245,35 @@ router.get('/image-proxy', async (req, res) => {
         const { url } = req.query;
         if (!url) return res.status(400).send('Missing url parameter');
 
-        // Decode URL
-        const decodedUrl = Buffer.from(url, 'base64').toString('utf-8');
+        let decodedUrl = Buffer.from(String(url), 'base64').toString('utf-8');
+        if (!/^https?:\/\//i.test(decodedUrl)) {
+            decodedUrl = decodeURIComponent(String(url));
+        }
 
         const allowedDomains = [
             'cdninstagram.com',
             'fbcdn.net',
             'twimg.com',
-            'fbsbx.com'
+            'fbsbx.com',
+            'pbs.twimg.com',
+            'video.twimg.com',
+            'ytimg.com',
+            'ggpht.com',
+            'googleusercontent.com',
+            'tiktokcdn.com',
+            'tiktokcdn-us.com',
+            'byteoversea.com',
+            'ibytedtos.com',
+            'redditmedia.com',
+            'redd.it',
+            'reddituploads.com',
+            'steamstatic.com',
+            'akamai.steamstatic.com',
+            'steamcdn-a.akamaihd.net',
+            'githubusercontent.com',
+            'githubassets.com',
+            'telegram.org',
+            't.me'
         ];
 
         let isAllowed = false;

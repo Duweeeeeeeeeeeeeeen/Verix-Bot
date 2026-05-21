@@ -711,7 +711,7 @@ export class SocialManager {
                     pubDate: tweet.created_at,
                     author,
                     thumbnail: photo?.media_url_https || photo?.media_url || '',
-                    profileImage: tweet.user?.profile_image_url_https || tweet.user?.profile_image_url || profileImage || 'https://logo.clearbit.com/x.com',
+                    profileImage: tweet.user?.profile_image_url_https || tweet.user?.profile_image_url || profileImage || this.platformIcon('x'),
                     isVideo: media.some(item => item.type === 'video' || item.type === 'animated_gif')
                 };
             })
@@ -724,7 +724,7 @@ export class SocialManager {
 
         return {
             title: `X / ${username}`,
-            image: { url: items[0]?.profileImage || 'https://logo.clearbit.com/x.com' },
+            image: { url: items[0]?.profileImage || this.platformIcon('x') },
             items
         };
     }
@@ -780,7 +780,7 @@ export class SocialManager {
                             description: item.contentSnippet || '',
                             thumbnail: item.thumbnail || '',
                             isVideo: item.isVideo,
-                            profileImage: item.profileImage || account.cachedProfileImage || 'https://logo.clearbit.com/x.com'
+                            profileImage: item.profileImage || account.cachedProfileImage || this.platformIcon('x')
                         }, 'Twitter');
 
                         account.lastPostId = itemId;
@@ -880,7 +880,7 @@ export class SocialManager {
                                 author: cleanAuthor,
                                 description: desc,
                                 thumbnail: thumbnail,
-                                profileImage: 'https://logo.clearbit.com/reddit.com'
+                                profileImage: this.platformIcon('reddit')
                             }, 'Reddit');
 
                             account.lastPostId = itemId;
@@ -971,7 +971,7 @@ export class SocialManager {
                                 author: gameName,
                                 description: desc,
                                 thumbnail: thumbnail,
-                                profileImage: 'https://logo.clearbit.com/steampowered.com'
+                                profileImage: this.platformIcon('steam')
                             }, 'Steam');
 
                             account.lastPostId = itemId;
@@ -1079,7 +1079,7 @@ export class SocialManager {
                 author: item.author || feed.title || username,
                 description: (item.contentSnippet || item.content || '').replace(/<[^>]*>/g, '').trim().substring(0, 500),
                 thumbnail: '',
-                profileImage: 'https://logo.clearbit.com/github.com'
+                profileImage: this.platformIcon('github')
             })
         );
     }
@@ -1099,7 +1099,7 @@ export class SocialManager {
                 author: feed.title || username,
                 description: (item.contentSnippet || item.content || '').replace(/<[^>]*>/g, '').trim().substring(0, 500),
                 thumbnail: this.extractThumbnail(item),
-                profileImage: feed.image?.url || 'https://logo.clearbit.com/rss.com'
+                profileImage: feed.image?.url || this.platformIcon('rss')
             })
         );
     }
@@ -1186,7 +1186,7 @@ export class SocialManager {
                             author: username,
                             description: item.contentSnippet || '',
                             thumbnail: this.normalizeImageUrl(item.thumbnail),
-                            profileImage: 'https://logo.clearbit.com/telegram.org'
+                            profileImage: this.platformIcon('telegram')
                         }, 'Telegram');
                         account.lastPostId = this.getPostId(item);
                         changed = true;
@@ -1232,7 +1232,7 @@ export class SocialManager {
                                 url: `https://kick.com/${channel.slug || username}`,
                                 author: channel.user?.username || username,
                                 thumbnail: this.normalizeImageUrl(stream.thumbnail?.url || channel.banner_image?.url || channel.offline_banner_image?.url || ''),
-                                profileImage: this.normalizeImageUrl(channel.user?.profile_pic) || 'https://logo.clearbit.com/kick.com'
+                                profileImage: this.normalizeImageUrl(channel.user?.profile_pic) || this.platformIcon('kick')
                             }, 'Kick');
                             account.isLive = true;
                             account.lastPostId = streamId;
@@ -1271,6 +1271,41 @@ export class SocialManager {
         return BRIDGE_ERROR_KEYWORDS.some(keyword => haystack.includes(keyword));
     }
 
+    getPublicBaseUrl() {
+        return (process.env.PUBLIC_APP_URL || process.env.NEXT_PUBLIC_APP_URL || process.env.DASHBOARD_URL || process.env.APP_URL || 'https://verixbot.com').replace(/\/+$/, '');
+    }
+
+    platformIcon(slug) {
+        return `${this.getPublicBaseUrl()}/img/social/${slug}.svg`;
+    }
+
+    shouldProxyImageUrl(url = '') {
+        const text = String(url || '').toLowerCase();
+        return [
+            'cdninstagram.com',
+            'fbcdn.net',
+            'twimg.com',
+            'ytimg.com',
+            'ggpht.com',
+            'tiktokcdn',
+            'redditmedia.com',
+            'redd.it',
+            'steamstatic.com',
+            'githubusercontent.com',
+            'telegram.org'
+        ].some(domain => text.includes(domain));
+    }
+
+    summarizeBridgeError(reason = '') {
+        const text = String(reason || '').toLowerCase();
+        if (text.includes('429') || text.includes('rate')) return 'Rate limited';
+        if (text.includes('404') || text.includes('not found')) return 'Feed not found';
+        if (text.includes('invalid') || text.includes('url')) return 'Invalid source';
+        if (text.includes('no posts') || text.includes('no public posts') || text.includes('no items')) return 'No public content';
+        if (text.includes('timeout') || text.includes('timed out')) return 'Request timeout';
+        return 'Temporary feed error';
+    }
+
     recordBridgeError(account, platformName, username, reason = 'Unknown bridge error') {
         const now = Date.now();
         const previousErrorAt = account.lastBridgeErrorAt ? new Date(account.lastBridgeErrorAt).getTime() : 0;
@@ -1278,6 +1313,7 @@ export class SocialManager {
         const backoffMs = Math.min(BRIDGE_ERROR_BASE_BACKOFF_MS * 2 ** (errorCount - 1), BRIDGE_ERROR_MAX_BACKOFF_MS);
 
         account.bridgeErrorCount = errorCount;
+        account.lastBridgeErrorReason = this.summarizeBridgeError(reason);
         account.lastBridgeErrorAt = new Date(now);
         account.bridgeBackoffUntil = new Date(now + backoffMs);
 
@@ -1289,11 +1325,12 @@ export class SocialManager {
     }
 
     clearBridgeErrorState(account) {
-        if (!account.bridgeErrorCount && !account.lastBridgeErrorAt && !account.bridgeBackoffUntil) {
+        if (!account.bridgeErrorCount && !account.lastBridgeErrorReason && !account.lastBridgeErrorAt && !account.bridgeBackoffUntil) {
             return false;
         }
 
         account.bridgeErrorCount = 0;
+        account.lastBridgeErrorReason = null;
         account.lastBridgeErrorAt = null;
         account.bridgeBackoffUntil = null;
         return true;
@@ -1358,19 +1395,19 @@ export class SocialManager {
             const defaultTitles = t('socials.default_titles', lang);
             const defaultDescs = t('socials.default_descriptions', lang);
 
-            // Default settings based on platform (Official brand icons via Clearbit Logo API)
+            // Default settings based on platform.
             const platformStyles = {
-                'Twitch': { color: 0x6441a5, icon: 'https://logo.clearbit.com/twitch.tv', label: 'Twitch Live' },
-                'YouTube': { color: 0xff0000, icon: 'https://logo.clearbit.com/youtube.com', label: 'YouTube Video' },
-                'Twitter': { color: 0x000000, icon: 'https://logo.clearbit.com/x.com', label: 'X (Twitter)' },
-                'Instagram': { color: 0xe1306c, icon: 'https://logo.clearbit.com/instagram.com', label: 'Instagram' },
-                'TikTok': { color: 0x000000, icon: 'https://logo.clearbit.com/tiktok.com', label: 'TikTok' },
-                'Reddit': { color: 0xff4500, icon: 'https://logo.clearbit.com/reddit.com', label: 'Reddit Post' },
-                'Steam': { color: 0x1b2838, icon: 'https://logo.clearbit.com/steampowered.com', label: 'Steam Announcement' },
-                'Kick': { color: 0x53fc18, icon: 'https://logo.clearbit.com/kick.com', label: 'Kick Live' },
-                'GitHub': { color: 0x24292f, icon: 'https://logo.clearbit.com/github.com', label: 'GitHub Update' },
-                'RSS': { color: 0xf97316, icon: 'https://logo.clearbit.com/rss.com', label: 'RSS Update' },
-                'Telegram': { color: 0x26a5e4, icon: 'https://logo.clearbit.com/telegram.org', label: 'Telegram Post' }
+                'Twitch': { color: 0x6441a5, icon: this.platformIcon('twitch'), label: 'Twitch Live' },
+                'YouTube': { color: 0xff0000, icon: this.platformIcon('youtube'), label: 'YouTube Video' },
+                'Twitter': { color: 0x000000, icon: this.platformIcon('x'), label: 'X (Twitter)' },
+                'Instagram': { color: 0xe1306c, icon: this.platformIcon('instagram'), label: 'Instagram' },
+                'TikTok': { color: 0x000000, icon: this.platformIcon('tiktok'), label: 'TikTok' },
+                'Reddit': { color: 0xff4500, icon: this.platformIcon('reddit'), label: 'Reddit Post' },
+                'Steam': { color: 0x1b2838, icon: this.platformIcon('steam'), label: 'Steam Announcement' },
+                'Kick': { color: 0x53fc18, icon: this.platformIcon('kick'), label: 'Kick Live' },
+                'GitHub': { color: 0x24292f, icon: this.platformIcon('github'), label: 'GitHub Update' },
+                'RSS': { color: 0xf97316, icon: this.platformIcon('rss'), label: 'RSS Update' },
+                'Telegram': { color: 0x26a5e4, icon: this.platformIcon('telegram'), label: 'Telegram Post' }
             };
 
             const style = platformStyles[platform] || { color: 0x7289da, icon: '', label: platform };
@@ -1416,7 +1453,7 @@ export class SocialManager {
                 // Main Image (Bottom) - The stream preview or post photo
                 let finalThumbnail = this.normalizeImageUrl(postData.thumbnail);
                 if (finalThumbnail) {
-                    if (finalThumbnail.includes('cdninstagram.com') || finalThumbnail.includes('fbcdn.net') || finalThumbnail.includes('twimg.com')) {
+                    if (this.shouldProxyImageUrl(finalThumbnail)) {
                         const base64Url = Buffer.from(finalThumbnail).toString('base64');
                         const apiUrl = process.env.API_URL || 'https://verixbot.com/api';
                         finalThumbnail = `${apiUrl}/webhooks/image-proxy?url=${encodeURIComponent(base64Url)}`;

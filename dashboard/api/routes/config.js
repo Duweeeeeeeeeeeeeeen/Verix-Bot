@@ -1777,6 +1777,7 @@ router.post('/:guildId/socials', adminCheck, validate(socialSchema), async (req,
                                 cachedProfileImage: oldAcc.cachedProfileImage,
                                 lastCheckAt: oldAcc.lastCheckAt,
                                 bridgeErrorCount: oldAcc.bridgeErrorCount,
+                                lastBridgeErrorReason: oldAcc.lastBridgeErrorReason,
                                 lastBridgeErrorAt: oldAcc.lastBridgeErrorAt,
                                 bridgeBackoffUntil: oldAcc.bridgeBackoffUntil,
                                 discordUserId: newAcc.discordUserId === undefined ? oldAcc.discordUserId : newAcc.discordUserId

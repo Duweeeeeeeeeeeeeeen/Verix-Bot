@@ -201,19 +201,21 @@ export default function SocialsConfig() {
     const isBackoff = backoffUntil && backoffUntil.getTime() > Date.now();
 
     if (isBackoff) {
+      const reason = account.lastBridgeErrorReason ? ` - ${account.lastBridgeErrorReason}` : '';
       return {
         tone: 'warn',
         label: t('socials.status_retrying'),
-        detail: `${t('socials.status_next_retry')} ${backoffUntil.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
+        detail: `${t('socials.status_next_retry')} ${backoffUntil.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}${reason}`,
         isBackoff: true
       };
     }
 
     if (account.bridgeErrorCount > 0) {
+      const reason = account.lastBridgeErrorReason ? ` - ${account.lastBridgeErrorReason}` : '';
       return {
         tone: 'warn',
         label: t('socials.status_unstable'),
-        detail: t('socials.status_unstable_desc'),
+        detail: `${t('socials.status_unstable_desc')}${reason}`,
         isBackoff: false
       };
     }
@@ -238,9 +240,9 @@ export default function SocialsConfig() {
   };
 
   const formatDiagnosticTime = (value) => {
-    if (!value) return 'Never';
+    if (!value) return t('socials.diagnostic_never');
     const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return 'Invalid';
+    if (Number.isNaN(date.getTime())) return t('socials.diagnostic_invalid');
     return date.toLocaleString([], {
       month: 'short',
       day: '2-digit',
@@ -252,11 +254,16 @@ export default function SocialsConfig() {
   const getAccountDiagnostics = (account) => {
     const backoffUntil = account.bridgeBackoffUntil ? new Date(account.bridgeBackoffUntil) : null;
     const isBackoff = backoffUntil && backoffUntil.getTime() > Date.now();
+    const feedHealth = isBackoff
+      ? `${t('socials.diagnostic_retry')} ${formatDiagnosticTime(backoffUntil)}${account.lastBridgeErrorReason ? ` - ${account.lastBridgeErrorReason}` : ''}`
+      : ((account.bridgeErrorCount || 0) > 0
+        ? t('socials.diagnostic_recent_errors', { count: account.bridgeErrorCount, reason: account.lastBridgeErrorReason || t('socials.diagnostic_temporary_error') })
+        : t('socials.diagnostic_healthy'));
     return [
-      { label: 'Last check', value: formatDiagnosticTime(account.lastCheckAt), tone: account.lastCheckAt ? 'ok' : 'idle' },
-      { label: activePlatform === 'twitch' ? 'Live state' : 'Last content', value: activePlatform === 'twitch' ? (account.isLive ? 'Live' : 'Offline') : (account.lastPostId ? 'Tracked' : 'Not initialized'), tone: account.lastPostId || account.isLive ? 'ok' : 'idle' },
-      { label: 'Seen cache', value: `${account.seenPostIds?.length || 0}/100`, tone: (account.seenPostIds?.length || 0) > 0 ? 'ok' : 'idle' },
-      { label: 'Feed health', value: isBackoff ? `Retry ${formatDiagnosticTime(backoffUntil)}` : ((account.bridgeErrorCount || 0) > 0 ? `${account.bridgeErrorCount} recent errors` : 'Healthy'), tone: isBackoff || (account.bridgeErrorCount || 0) > 0 ? 'warn' : 'ok' }
+      { label: t('socials.diagnostic_last_check'), value: formatDiagnosticTime(account.lastCheckAt), tone: account.lastCheckAt ? 'ok' : 'idle' },
+      { label: activePlatform === 'twitch' ? t('socials.diagnostic_live_state') : t('socials.diagnostic_last_content'), value: activePlatform === 'twitch' ? (account.isLive ? t('socials.diagnostic_live') : t('socials.diagnostic_offline')) : (account.lastPostId ? t('socials.diagnostic_tracked') : t('socials.diagnostic_not_initialized')), tone: account.lastPostId || account.isLive ? 'ok' : 'idle' },
+      { label: t('socials.diagnostic_seen_cache'), value: `${account.seenPostIds?.length || 0}/100`, tone: (account.seenPostIds?.length || 0) > 0 ? 'ok' : 'idle' },
+      { label: t('socials.diagnostic_feed_health'), value: feedHealth, tone: isBackoff || (account.bridgeErrorCount || 0) > 0 ? 'warn' : 'ok' }
     ];
   };
 
