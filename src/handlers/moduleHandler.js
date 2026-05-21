@@ -144,14 +144,15 @@ export default async (client) => {
                         if (moduleName.toLowerCase() !== 'admin' && !matchesModule) continue;
 
                         // Module activation check
-                        const config = await getModuleConfig(guildId, moduleName.toLowerCase());
+                        const registryName = folderToRegistryName[moduleName.toLowerCase()] || moduleName.toLowerCase();
+                        const config = await getModuleConfig(guildId, registryName);
                         if (!config || !config.enabled) {
                             if (matchesModule) {
                                 logger.warn(`[HUB] Module ${moduleName} is DISABLED for guild ${guildId} but received interaction ${target}`);
                                 // Send a response to avoid "Interaction failed"
                                 if (!interaction.replied && !interaction.deferred) {
                                     await interaction.reply({ 
-                                        content: `❌ Il modulo **${moduleName.toUpperCase()}** è attualmente disattivato in questo server.`, 
+                                        content: `❌ Il modulo **${registryName.toUpperCase()}** è attualmente disattivato in questo server.`, 
                                         flags: [MessageFlags.Ephemeral] 
                                     }).catch(() => {});
                                 }

@@ -1,4 +1,7 @@
 import messageService from '../../../utils/messageService.js';
+import WelcomeConfig from '../../../models/WelcomeConfig.js';
+import logger from '../../../utils/logger.js';
+import placeholderHelper from '../../../utils/placeholderHelper.js';
 
 export default {
     name: 'guildMemberAdd',
