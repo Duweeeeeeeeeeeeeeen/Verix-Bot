@@ -237,7 +237,7 @@ export default {
         },
         ticket: {
             title: '📂 Ticket di Supporto: {type}',
-            description: 'Benvenuto, <@{user_id}>. Un membro dello staff prenderà in carico la tua richiesta a breve.\n\n**DETTAGLI:**\n• Priorità: `{priority}`\n• Stato: `{status}`',
+            description: 'Benvenuto, <@{user_id}>. Un membro dello staff prenderà in carico la tua richiesta a breve.',
             color: '#2ECC71'
         },
         success_open: {

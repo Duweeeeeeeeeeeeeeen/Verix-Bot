@@ -30,23 +30,25 @@ export default {
         // 1. Log customId for debugging
         logger.debug(`[TICKET_INTERACTION] User: ${interaction.user.tag} | CustomID: ${customId}`);
 
-        // Special case: Priority selection for 'segnalazione' triggers a modal.
-        // Modals MUST be shown BEFORE deferReply and cannot be deferred.
-        if (interaction.isStringSelectMenu() && customId.startsWith('ticket_priority_select_')) {
+        // Early extraction of ticket type for special case (modal must be shown BEFORE deferReply)
+        let earlyType = null;
+        if (interaction.isStringSelectMenu() && customId === 'ticket_create_select') {
+            earlyType = interaction.values[0].replace('ticket_type_', '');
+        } else if (interaction.isButton() && (customId.startsWith('ticket_type_') || customId.startsWith('ticket_create_btn_'))) {
+            earlyType = customId.replace('ticket_type_', '').replace('ticket_create_btn_', '');
+        }
+
+        if (earlyType === 'segnalazione') {
             const config = await TicketConfig.findOne({ guildId: interaction.guildId });
             const globalConfig = await GlobalConfig.findOne({ guildId: interaction.guildId });
             const lang = globalConfig?.language || 'en';
-            const type = customId.replace('ticket_priority_select_', '');
-            const priority = interaction.values[0];
-
-            if (type === 'segnalazione') {
-                const modal = new ModalBuilder().setCustomId(`ticket_modal_report_${priority}`).setTitle(resolveSystemMessage(config, 'tickets', 'report_modal_title', lang));
-                modal.addComponents(
-                    new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('report_subject').setLabel(resolveSystemMessage(config, 'tickets', 'report_subject_label', lang)).setStyle(TextInputStyle.Short).setRequired(true)),
-                    new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('report_desc').setLabel(resolveSystemMessage(config, 'tickets', 'report_desc_label', lang)).setStyle(TextInputStyle.Paragraph).setRequired(true))
-                );
-                return interaction.showModal(modal);
-            }
+            
+            const modal = new ModalBuilder().setCustomId('ticket_modal_report_NORMALE').setTitle(resolveSystemMessage(config, 'tickets', 'report_modal_title', lang));
+            modal.addComponents(
+                new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('report_subject').setLabel(resolveSystemMessage(config, 'tickets', 'report_subject_label', lang)).setStyle(TextInputStyle.Short).setRequired(true)),
+                new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('report_desc').setLabel(resolveSystemMessage(config, 'tickets', 'report_desc_label', lang)).setStyle(TextInputStyle.Paragraph).setRequired(true))
+            );
+            return interaction.showModal(modal);
         }
 
         // 3. DeferReply BEFORE any await (to satisfy 3-second limit)
@@ -106,32 +108,7 @@ export default {
                     });
                 }
 
-
-                const priorityMenu = new ActionRowBuilder().addComponents(
-                    new StringSelectMenuBuilder()
-                        .setCustomId(`ticket_priority_select_${type}`)
-                        .setPlaceholder(resolveSystemMessage(config, 'tickets', 'priority_placeholder', lang))
-                        .addOptions([
-                            { label: resolveSystemMessage(config, 'tickets', 'priority_normal', lang), value: 'NORMALE', emoji: '🟢' },
-                            { label: resolveSystemMessage(config, 'tickets', 'priority_important', lang), value: 'IMPORTANTE', emoji: '🟡' },
-                            { label: resolveSystemMessage(config, 'tickets', 'priority_urgent', lang), value: 'URGENTE', emoji: '🔴' }
-                        ])
-                );
-
-                const embed = await messageService.get(interaction.guild.id, 'tickets', 'priority_select', { 
-                    type: type.toUpperCase() 
-                });
-                return interaction.editReply({ embeds: [embed], components: [priorityMenu] });
-            }
-
-            // --- 2. TICKET CREATION (Priority Selection) ---
-            if (interaction.isStringSelectMenu() && customId.startsWith('ticket_priority_select_')) {
-                const type = customId.replace('ticket_priority_select_', '');
-                const priority = interaction.values[0];
-
-                if (type === 'segnalazione') return; // Handled before defer
-
-                return createTicket(interaction, type, config, { priority });
+                return createTicket(interaction, type, config, { priority: 'NORMALE' });
             }
 
             // --- 3. MODAL SUBMISSIONS (Report) ---
@@ -269,22 +246,10 @@ export default {
                     
                     interaction.channel.setName(`claimed-${interaction.channel.name}`).catch(() => {});
                     const staffRoles = (config.staffRoleIds || []).map(id => interaction.guild.roles.cache.get(id)).filter(r => r);
-                    return renderTicketDashboard(interaction.channel, ticket, config, config.typesConfig.get(ticket.type), interaction.user, staffRoles, true);
-                }
-
-                if (interaction.isStringSelectMenu() && customId === 'tk_status_select') {
-                    ticket.status = interaction.values[0];
-                    await ticket.save();
-                    
-                    await messageService.reply(interaction, 'tickets', 'status_updated_msg', { status: ticket.status });
-                    
-                    const embed = await messageService.get(interaction.guild.id, 'tickets', 'status_updated', {
-                        status: ticket.status
-                    });
-                    await interaction.channel.send({ embeds: [embed] });
-                    
-                    const staffRoles = (config.staffRoleIds || []).map(id => interaction.guild.roles.cache.get(id)).filter(r => r);
-                    return renderTicketDashboard(interaction.channel, ticket, config, config.typesConfig.get(ticket.type), interaction.user, staffRoles, true);
+                    const typeConfig = (config.typesConfig instanceof Map 
+                        ? config.typesConfig.get(ticket.type) 
+                        : config.typesConfig?.[ticket.type]);
+                    return renderTicketDashboard(interaction.channel, ticket, config, typeConfig, interaction.user, staffRoles, true);
                 }
 
                 // Standard buttons (CLOSE)
@@ -356,59 +321,6 @@ export default {
                     return;
                 }
 
-                // INTERNAL NOTES
-                if (interaction.customId === 'tk_note') {
-                    const modal = new ModalBuilder()
-                        .setCustomId('tk_note_modal')
-                        .setTitle(resolveSystemMessage(config, 'tickets', 'note_modal_title', lang));
-
-                    const noteInput = new TextInputBuilder()
-                        .setCustomId('note_content')
-                        .setLabel(resolveSystemMessage(config, 'tickets', 'note_input_label', lang))
-                        .setStyle(TextInputStyle.Paragraph)
-                        .setPlaceholder(resolveSystemMessage(config, 'tickets', 'note_input_placeholder', lang))
-                        .setRequired(true);
-
-                    modal.addComponents(new ActionRowBuilder().addComponents(noteInput));
-                    return interaction.showModal(modal);
-                }
-            }
-
-            // --- 5. MODAL SUBMISSIONS (Note) ---
-            if (interaction.isModalSubmit() && interaction.customId === 'tk_note_modal') {
-                if (!ticket) return interaction.editReply({ content: 'Ticket not found.' });
-                
-                // Staff check for modal too (Administrator, has one of the staff roles, or is the assigned operator)
-                const staffRoleIds = (Array.isArray(config.staffRoleIds) ? config.staffRoleIds : [])
-                    .map(r => typeof r === 'string' ? r : (r.id || r._id || String(r)));
-                
-                const userRoles = interaction.member.roles.cache || interaction.member.roles;
-                const hasStaffRole = Array.isArray(userRoles) 
-                    ? staffRoleIds.some(roleId => userRoles.includes(roleId))
-                    : staffRoleIds.some(roleId => userRoles.has(roleId));
-
-                const isUserStaff = interaction.member.permissions.has(PermissionFlagsBits.Administrator) || 
-                                   interaction.guild.ownerId === interaction.user.id || 
-                                   hasStaffRole;
-
-                if (!isUserStaff) return messageService.reply(interaction, 'tickets', 'staff_only', {}, { ephemeral: true });
-
-                await interaction.deferReply({ flags: [MessageFlags.Ephemeral] });
-                const content = interaction.fields.getTextInputValue('note_content');
-                
-                ticket.internalNotes.push({
-                    staffId: interaction.user.id,
-                    content: content,
-                    createdAt: new Date()
-                });
-                await ticket.save();
-
-                const typeConfig = (config.typesConfig instanceof Map 
-                    ? config.typesConfig.get(ticket.type) 
-                    : config.typesConfig?.[ticket.type]);
-                const staffRoles = (config.staffRoleIds || []).map(id => interaction.guild.roles.cache.get(id)).filter(r => r);
-                await renderTicketDashboard(interaction.channel, ticket, config, typeConfig, interaction.user, staffRoles, true);
-                return messageService.reply(interaction, 'tickets', 'note_success', {}, { ephemeral: true });
             }
 
             // If we reached here without a response for a ticket interaction
@@ -582,11 +494,6 @@ async function renderTicketDashboard(channel, ticket, config, typeConfig, user, 
         embed.addFields({ name: t('tickets.intelligence.field_name', lang), value: stats, inline: false });
     }
 
-    if (ticket.internalNotes && ticket.internalNotes.length > 0) {
-        const notes = ticket.internalNotes.map(n => `• **<@${n.staffId}>**: ${n.content}`).join('\n');
-        embed.addFields({ name: resolveSystemMessage(config, 'tickets', 'internal_notes_label', lang), value: notes.substring(0, 1024), inline: false });
-    }
-
     if (typeConfig?.image) embed.setImage(typeConfig.image);
 
     const buttons = config.buttons || {};
@@ -606,33 +513,18 @@ async function renderTicketDashboard(channel, ticket, config, typeConfig, user, 
             .setCustomId('tk_quick_reply')
             .setLabel(buttons.quickReply?.label || resolveSystemMessage(config, 'tickets', 'quick_reply_btn', lang))
             .setEmoji(buttons.quickReply?.emoji || '📝')
-            .setStyle(ButtonStyle.Primary),
-        new ButtonBuilder()
-            .setCustomId('tk_note')
-            .setLabel(resolveSystemMessage(config, 'tickets', 'note_btn', lang))
-            .setEmoji('📌')
-            .setStyle(ButtonStyle.Secondary)
-    );
-
-    const statusMenu = new ActionRowBuilder().addComponents(
-        new StringSelectMenuBuilder()
-            .setCustomId('tk_status_select')
-            .setPlaceholder(resolveSystemMessage(config, 'tickets', 'status_placeholder', lang))
-            .addOptions([
-                { label: resolveSystemMessage(config, 'tickets', 'status_processing', lang), value: 'PROCESSING', emoji: '⚙️' },
-                { label: resolveSystemMessage(config, 'tickets', 'status_waiting', lang), value: 'WAITING', emoji: '⏳' }
-            ])
+            .setStyle(ButtonStyle.Primary)
     );
 
     if (isUpdate) {
         const messages = await channel.messages.fetch({ limit: 20 });
-        // Find dashboard by checking for the bot author and the specific title structure
-        const dashboard = messages.find(m => m.author.id === channel.client.user.id && m.embeds[0]?.title?.includes('Pratica'));
-        if (dashboard) return dashboard.edit({ embeds: [embed], components: [btnRow, statusMenu] });
+        // Find dashboard by checking for the bot author and presence of ticket control buttons
+        const dashboard = messages.find(m => m.author.id === channel.client.user.id && m.components.some(row => row.components.some(c => c.customId === 'tk_claim' || c.customId === 'tk_close')));
+        if (dashboard) return dashboard.edit({ embeds: [embed], components: [btnRow] });
     }
 
     const mention = staffRoles.length > 0 ? staffRoles.map(r => r.toString()).join(' ') : '';
-    await channel.send({ content: mention || undefined, embeds: [embed], components: [btnRow, statusMenu] });
+    await channel.send({ content: mention || undefined, embeds: [embed], components: [btnRow] });
 }
 
 export { createTicket };

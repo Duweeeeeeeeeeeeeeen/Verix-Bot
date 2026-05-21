@@ -368,7 +368,7 @@ export default {
         },
         "ticket": {
             "title": "📂 Support Ticket: {type}",
-            "description": "Welcome, <@{user_id}>. A staff member will handle your request shortly.\n\n**DETAILS:**\n• Priority: `{priority}`\n• Status: `{status}`",
+            "description": "Welcome, <@{user_id}>. A staff member will handle your request shortly.",
             "color": "#2ECC71"
         },
         "success_open": {
