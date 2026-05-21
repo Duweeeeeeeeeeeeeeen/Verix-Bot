@@ -176,7 +176,7 @@ export default function PollsConfig() {
         <header className="pc-header-v2">
             <div className="header-info">
                 <div className="pc-icon-box" style={{ background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%)' }}>
-                    <Vote size={28} />
+                    <ListChecks size={28} />
                 </div>
                 <div className="pc-title-row">
                     <h1>{t('polls.studio_title')}</h1>

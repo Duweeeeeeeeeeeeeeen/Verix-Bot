@@ -7,7 +7,7 @@ import {
     Save, Settings2, Trash2, Plus, Hash, 
     MessageSquare, BellRing, ChevronRight, Sparkles, Lock, Search, Zap, Users, 
     Info, Layout, ArrowRight, X, CheckCircle2, Monitor, Globe, Cpu, UserPlus, 
-    Power, Radio, Send, Bell, Palette, Globe2, Link2, Ghost, RotateCcw
+    Power, Radio, Send, Bell, Palette, Globe2, Link2, Ghost, RotateCcw, Tv
 } from 'lucide-react';
 import { useT } from '../../../contexts/LanguageContext';
 import Head from 'next/head';
@@ -272,7 +272,7 @@ export default function SocialsConfig() {
         <header className="pc-header-v2">
             <div className="header-info">
                 <div className="pc-icon-box" style={{ background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%)' }}>
-                    <Globe2 size={24} />
+                    <Tv size={28} />
                 </div>
                 <div className="pc-title-row">
                     <h1>{t('socials.studio_title')}</h1>

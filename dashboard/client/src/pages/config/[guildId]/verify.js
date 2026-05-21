@@ -151,7 +151,7 @@ export default function VerifyConfig() {
         <header className="pc-header-v2">
             <div className="header-info">
                 <div className="pc-icon-box" style={{ background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%)' }}>
-                    <ShieldCheck size={28} />
+                    <Shield size={28} />
                 </div>
                 <div className="pc-title-row">
                     <h1>{t('verify.title')}</h1>

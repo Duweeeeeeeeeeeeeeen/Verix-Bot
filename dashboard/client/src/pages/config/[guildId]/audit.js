@@ -85,7 +85,7 @@ export default function AuditPage() {
         <header className="pc-header-v2">
             <div className="header-info">
                 <div className="pc-icon-box" style={{ background: 'linear-gradient(135deg, #0f172a 0%, var(--text-main) 100%)' }}>
-                    <Fingerprint size={28} />
+                    <History size={28} />
                 </div>
                 <div className="pc-title-row">
                     <h1>{t('audit_studio.title')}</h1>
