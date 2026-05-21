@@ -150,7 +150,7 @@ export default function VerifyConfig() {
         {/* V2 Header */}
         <header className="pc-header-v2">
             <div className="header-info">
-                <div className="pc-icon-box" style={{ background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%)' }}>
+                <div className="pc-icon-box" style={{ background: 'var(--bg-badge)', color: '#06b6d4', boxShadow: 'none' }}>
                     <Shield size={28} />
                 </div>
                 <div className="pc-title-row">

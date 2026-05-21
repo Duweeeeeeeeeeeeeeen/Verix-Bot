@@ -102,7 +102,7 @@ export default function AnalyticsPage() {
                 <section className="pc-stat-card-v2 animate slide-up">
                     <div className="s-card-glow-v2" style={{ background: 'rgba(99, 102, 241, 0.05)' }}></div>
                     <div className="s-header-v2">
-                        <div className="s-icon-box-v2" style={{ background: '#f5f3ff', color: '#6366f1' }}>
+                        <div className="s-icon-box-v2" style={{ background: 'rgba(99, 102, 241, 0.08)', color: '#6366f1' }}>
                             <MessageSquare size={20} />
                         </div>
                         <div className="v-stack">
@@ -125,7 +125,7 @@ export default function AnalyticsPage() {
                 <section className="pc-stat-card-v2 animate slide-up" style={{ animationDelay: '0.1s' }}>
                     <div className="s-card-glow-v2" style={{ background: 'rgba(239, 68, 68, 0.05)' }}></div>
                     <div className="s-header-v2">
-                        <div className="s-icon-box-v2" style={{ background: '#fef2f2', color: '#ef4444' }}>
+                        <div className="s-icon-box-v2" style={{ background: 'rgba(239, 68, 68, 0.08)', color: '#ef4444' }}>
                             <Shield size={20} />
                         </div>
                         <div className="v-stack">
@@ -206,7 +206,7 @@ export default function AnalyticsPage() {
                             {/* Heatmap Section */}
                             <section className="pc-card-v2 animate slide-up">
                                 <div className="card-header-v2">
-                                    <div className="header-icon" style={{ background: '#ecfdf5', color: '#10b981' }}><Activity size={18} /></div>
+                                    <div className="header-icon" style={{ background: 'rgba(16, 185, 129, 0.08)', color: '#10b981' }}><Activity size={18} /></div>
                                     <div className="v-stack" style={{ flex: 1 }}>
                                         <h3 style={{ margin: 0 }}>{t('analytics.heatmap_title')}</h3>
                                         <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 650 }}>{t('analytics.heatmap_desc')}</p>
@@ -249,7 +249,7 @@ export default function AnalyticsPage() {
                             {/* Leveling & Engagement Studio */}
                             <section className="pc-card-v2 animate slide-up" style={{ animationDelay: '0.05s' }}>
                                 <div className="card-header-v2">
-                                    <div className="header-icon" style={{ background: '#eff6ff', color: '#3b82f6' }}><Sparkles size={18} /></div>
+                                    <div className="header-icon" style={{ background: 'rgba(59, 130, 246, 0.08)', color: '#3b82f6' }}><Sparkles size={18} /></div>
                                     <div className="v-stack" style={{ flex: 1 }}>
                                         <h3 style={{ margin: 0 }}>{t('analytics.leveling_stats_title')}</h3>
                                         <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 650 }}>{t('analytics.leveling_stats_desc')}</p>
@@ -282,7 +282,7 @@ export default function AnalyticsPage() {
                             {/* Growth Chart Section */}
                             <section className="pc-card-v2 animate slide-up" style={{ animationDelay: '0.1s' }}>
                                 <div className="card-header-v2">
-                                    <div className="header-icon" style={{ background: '#eff6ff', color: '#2563eb' }}><LineChart size={18} /></div>
+                                    <div className="header-icon" style={{ background: 'rgba(37, 99, 235, 0.08)', color: '#2563eb' }}><LineChart size={18} /></div>
                                     <div className="v-stack" style={{ flex: 1 }}>
                                         <h3 style={{ margin: 0 }}>{t('analytics.growth_trend_title')}</h3>
                                         <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 650 }}>{t('analytics.growth_trend_desc')}</p>
@@ -314,7 +314,7 @@ export default function AnalyticsPage() {
                         <aside className="v-stack" style={{ gap: '32px' }}>
                             <section className="pc-card-v2 animate slide-up" style={{ animationDelay: '0.2s' }}>
                                 <div className="card-header-v2">
-                                    <div className="header-icon" style={{ background: '#f5f3ff', color: '#7c3aed' }}><Target size={18} /></div>
+                                    <div className="header-icon" style={{ background: 'rgba(124, 58, 237, 0.08)', color: '#7c3aed' }}><Target size={18} /></div>
                                     <h3 style={{ margin: 0 }}>{t('analytics.staff_power')}</h3>
                                 </div>
                                 <div className="card-body-v2">

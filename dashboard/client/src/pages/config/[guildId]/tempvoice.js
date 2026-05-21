@@ -225,7 +225,7 @@ export default function TempVoiceConfig() {
                 <div className="v-stack animate slide-up" style={{ gap: '32px' }}>
                     <section className="pc-card-v2">
                         <div className="card-header-v2">
-                            <div className="header-icon" style={{ background: '#f0f9ff', color: '#0ea5e9' }}><Zap size={18} /></div>
+                            <div className="header-icon" style={{ background: 'rgba(14, 165, 233, 0.08)', color: '#0ea5e9' }}><Zap size={18} /></div>
                             <div className="v-stack" style={{ flex: 1 }}>
                                 <h3 style={{ margin: 0 }}>{t('tempvoice.generator_title')}</h3>
                                 <p style={{ margin: '4px 0 0 0', fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t('tempvoice.generator_desc')}</p>
@@ -264,7 +264,7 @@ export default function TempVoiceConfig() {
                 <div className="v-stack animate slide-up" style={{ gap: '32px' }}>
                     <section className="pc-card-v2">
                         <div className="card-header-v2">
-                            <div className="header-icon" style={{ background: '#f5f3ff', color: '#6366f1' }}><Layout size={18} /></div>
+                            <div className="header-icon" style={{ background: 'rgba(99, 102, 241, 0.08)', color: '#6366f1' }}><Layout size={18} /></div>
                             <div className="v-stack" style={{ flex: 1 }}>
                                 <h3 style={{ margin: 0 }}>{t('tempvoice.appearance_title')}</h3>
                                 <p style={{ margin: '4px 0 0 0', fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t('tempvoice.appearance_desc')}</p>
@@ -325,7 +325,7 @@ export default function TempVoiceConfig() {
                 <div className="v-stack animate slide-up" style={{ gap: '32px' }}>
                     <section className="pc-card-v2">
                         <div className="card-header-v2">
-                            <div className="header-icon" style={{ background: '#ecfdf5', color: '#10b981' }}><Users size={18} /></div>
+                            <div className="header-icon" style={{ background: 'rgba(16, 185, 129, 0.08)', color: '#10b981' }}><Users size={18} /></div>
                             <div className="v-stack" style={{ flex: 1 }}>
                                 <h3 style={{ margin: 0 }}>{t('tempvoice.tab_active')}</h3>
                                 <p style={{ margin: '4px 0 0 0', fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t('tempvoice.active_desc') || 'Manage and monitor all active voice rooms in real-time.'}</p>

@@ -102,7 +102,7 @@ export default function SupportConfig() {
         {/* V2 Header */}
         <header className="pc-header-v2">
             <div className="header-info">
-                <div className="pc-icon-box" style={{ background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%)' }}>
+                <div className="pc-icon-box" style={{ background: 'var(--bg-badge)', color: '#f43f5e', boxShadow: 'none' }}>
                     <Mic2 size={28} />
                 </div>
                 <div className="pc-title-row">
@@ -153,7 +153,7 @@ export default function SupportConfig() {
                     <div className="v-stack" style={{ gap: '32px' }}>
                         <section className="pc-card-v2 animate slide-up">
                             <div className="card-header-v2">
-                                <div className="header-icon" style={{ background: '#eff6ff', color: '#3b82f6' }}><Volume2 size={18} /></div>
+                                <div className="header-icon" style={{ background: 'rgba(59, 130, 246, 0.08)', color: '#3b82f6' }}><Volume2 size={18} /></div>
                                 <h3 style={{ margin: 0 }}>{t('support.sos_automation')}</h3>
                                 <div style={{ marginLeft: 'auto' }}>
                                     <label className="pc-toggle-v2 mini">
@@ -200,7 +200,7 @@ export default function SupportConfig() {
                         </section>
                         <section className="pc-card-v2 animate slide-up" style={{ animationDelay: '0.1s' }}>
                             <div className="card-header-v2">
-                                <div className="header-icon" style={{ background: '#fef2f2', color: '#ef4444' }}><BellRing size={18} /></div>
+                                <div className="header-icon" style={{ background: 'rgba(239, 68, 68, 0.08)', color: '#ef4444' }}><BellRing size={18} /></div>
                                 <h3 style={{ margin: 0 }}>{t('support.management_logic')}</h3>
                             </div>
                             <div className="card-body-v2">
@@ -232,7 +232,7 @@ export default function SupportConfig() {
                     <div className="v-stack" style={{ gap: '32px' }}>
                         <section className="pc-card-v2">
                             <div className="card-header-v2">
-                                <div className="header-icon" style={{ background: '#fdf4ff', color: '#d946ef' }}><ShieldCheck size={18} /></div>
+                                <div className="header-icon" style={{ background: 'rgba(217, 70, 239, 0.08)', color: '#d946ef' }}><ShieldCheck size={18} /></div>
                                 <h3 style={{ margin: 0 }}>{t('support.operative_team')}</h3>
                             </div>
                             <div className="card-body-v2">

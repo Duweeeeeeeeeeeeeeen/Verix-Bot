@@ -222,7 +222,7 @@ export default function EmbedBuilder() {
                 {/* Top Section: Library & Actions */}
                 <section className="pc-card-v2 animate slide-up">
                     <div className="card-header-v2">
-                        <div className="header-icon" style={{ background: '#ecfdf5', color: '#10b981' }}><FolderOpen size={18} /></div>
+                        <div className="header-icon" style={{ background: 'rgba(16, 185, 129, 0.08)', color: '#10b981' }}><FolderOpen size={18} /></div>
                         <div className="v-stack" style={{ flex: 1 }}>
                             <h3 style={{ margin: 0 }}>{t('embeds.library_title')}</h3>
                             <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 650 }}>{t('embeds.library_desc')}</p>
@@ -279,7 +279,7 @@ export default function EmbedBuilder() {
                         {/* Schedule Section */}
                         <section className="pc-card-v2 animate slide-up embeds-schedule-card" style={{ animationDelay: '0.2s' }}>
                             <div className="card-header-v2">
-                                <div className="header-icon" style={{ background: '#fef2f2', color: '#ef4444' }}><Clock size={18} /></div>
+                                <div className="header-icon" style={{ background: 'rgba(239, 68, 68, 0.08)', color: '#ef4444' }}><Clock size={18} /></div>
                                 <h3>{t('embeds.schedule_title')}</h3>
                             </div>
                             <div className="card-body-v2">
