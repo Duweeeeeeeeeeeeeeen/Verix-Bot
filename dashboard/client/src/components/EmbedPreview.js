@@ -207,7 +207,25 @@ export default function EmbedPreview({ data, isMobile = false, theme = 'dark' })
             {/* Simulated Discord Buttons */}
             {data.type !== 'REACTION' && (data.button || data.buttons) && (
                 <div style={{ marginTop: '8px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                    {data.buttons ? (
+                    {data.buttons?.[0]?.type === 'SELECT' ? (
+                        <div style={{
+                            width: '100%',
+                            maxWidth: '360px',
+                            background: theme === 'dark' ? '#1e1f22' : '#ebedef',
+                            color: colors.text_normal,
+                            border: `1px solid ${theme === 'dark' ? '#3f4147' : '#c7ccd1'}`,
+                            borderRadius: '4px',
+                            padding: '10px 12px',
+                            fontSize: '0.875rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            gap: '12px'
+                        }}>
+                            <span style={{ color: colors.text_muted }}>{data.buttons[0].placeholder || data.buttons[0].label}</span>
+                            <span style={{ color: colors.text_muted }}>⌄</span>
+                        </div>
+                    ) : data.buttons ? (
                         data.buttons.map((btn, i) => (
                             <button key={i} style={{
                                 background: btn.style === 'SUCCESS' ? '#248046' : (btn.style === 'DANGER' ? '#da373c' : (btn.style === 'SECONDARY' || btn.style === 'LINK' ? '#4e5058' : '#5865f2')),

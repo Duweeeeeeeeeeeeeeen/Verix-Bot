@@ -1242,7 +1242,7 @@ router.post('/:guildId/tickets/send-panel', adminCheck, async (req, res) => {
         const embed = await messageService.get(guildId, 'tickets', 'panel', { guild });
 
         let components = [];
-        const inputType = config.inputType || 'BUTTONS';
+        const inputType = config.inputType || 'SELECT';
 
         if (inputType === 'SELECT') {
             const options = [];

@@ -512,7 +512,15 @@ export default function TicketConfig() {
                         extraButtons={(slug) => {
                             if (slug !== 'panel') return null;
                             if ((config.inputType || 'SELECT') === 'SELECT') {
-                                return [{ label: t('tickets.input_select'), style: 'SECONDARY', emoji: '🎫' }];
+                                return [{
+                                    type: 'SELECT',
+                                    label: t('tickets.input_select'),
+                                    placeholder: t('tickets.cat_title_placeholder'),
+                                    options: ticketTypes.map(id => ({
+                                        label: config.typesConfig?.[id]?.label || id,
+                                        emoji: config.typesConfig?.[id]?.emoji || '🎫'
+                                    }))
+                                }];
                             }
                             return ticketTypes.slice(0, 5).map(id => ({
                                 label: config.typesConfig?.[id]?.label || id,
@@ -632,9 +640,12 @@ export default function TicketConfig() {
                             onUpdate={setConfig}
                             messages={[
                                 { key: 'cooldown', label: t('tickets.msg_cooldown'), placeholder: t('tickets.msg_cooldown_placeholder') },
-                                { key: 'limit_reached', label: t('tickets.msg_limit'), placeholder: t('tickets.msg_limit_placeholder') },
-                                { key: 'already_open', label: t('tickets.msg_already_open'), placeholder: t('tickets.msg_already_open_placeholder') },
-                                { key: 'no_perms', label: t('tickets.msg_no_perms'), placeholder: t('tickets.msg_no_perms_placeholder') }
+                                { key: 'already_exists', label: t('tickets.msg_already_exists'), placeholder: t('tickets.placeholder_already_exists') },
+                                { key: 'no_quick_replies', label: t('tickets.msg_no_quick_replies'), placeholder: t('tickets.placeholder_no_quick_replies') },
+                                { key: 'quick_reply_placeholder', label: t('tickets.msg_quick_reply_menu'), placeholder: t('tickets.msg_quick_reply_menu_desc') },
+                                { key: 'tag_placeholder', label: t('tickets.msg_tag_menu'), placeholder: t('tickets.msg_tag_menu_desc') },
+                                { key: 'status_updated_msg', label: t('tickets.msg_status_updated'), placeholder: t('tickets.placeholder_status_updated') },
+                                { key: 'new_ticket_ping', label: t('tickets.msg_new_ticket_ping'), placeholder: t('tickets.placeholder_new_ticket_ping') }
                             ]}
                         />
                     </section>
