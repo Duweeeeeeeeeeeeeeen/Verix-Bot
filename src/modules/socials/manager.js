@@ -880,7 +880,7 @@ export class SocialManager {
                                 author: cleanAuthor,
                                 description: desc,
                                 thumbnail: thumbnail,
-                                profileImage: this.platformIcon('reddit')
+                                profileImage: this.normalizeImageUrl(item.authorImage || item.creatorImage || feed.image?.url)
                             }, 'Reddit');
 
                             account.lastPostId = itemId;
@@ -1050,6 +1050,16 @@ export class SocialManager {
         return changed;
     }
 
+    cleanGitHubRepository(value) {
+        let input = String(value || '').trim();
+        if (!input) return '';
+        if (!/^https?:\/\//i.test(input)) input = `https://github.com/${input}`;
+        const url = new URL(input);
+        const parts = url.pathname.split('/').filter(Boolean);
+        if (parts.length < 2) throw new Error('GitHub source must be owner/repo or a GitHub repository URL');
+        return `${parts[0]}/${parts[1]}`;
+    }
+
     normalizeGithubFeedUrl(value) {
         let input = String(value || '').trim();
         if (!input) return '';
@@ -1073,14 +1083,18 @@ export class SocialManager {
             platformConfig,
             'GitHub',
             value => this.normalizeGithubFeedUrl(value),
-            ({ item, feed, username }) => ({
-                title: item.title || 'New GitHub update',
-                url: item.link,
-                author: item.author || feed.title || username,
-                description: (item.contentSnippet || item.content || '').replace(/<[^>]*>/g, '').trim().substring(0, 500),
-                thumbnail: '',
-                profileImage: this.platformIcon('github')
-            })
+            ({ item, feed, username }) => {
+                const repository = this.cleanGitHubRepository(username);
+                return {
+                    title: item.title || 'New GitHub update',
+                    url: item.link || `https://github.com/${repository}`,
+                    author: item.author || feed.title || repository,
+                    username: repository,
+                    description: (item.contentSnippet || item.content || '').replace(/<[^>]*>/g, '').trim().substring(0, 500),
+                    thumbnail: '',
+                    profileImage: ''
+                };
+            }
         );
     }
 
@@ -1296,6 +1310,16 @@ export class SocialManager {
         ].some(domain => text.includes(domain));
     }
 
+    getSocialProfileThumbnail(platform, profileImage, fallbackIcon = '') {
+        const normalizedProfile = this.normalizeImageUrl(profileImage);
+        if (normalizedProfile) return normalizedProfile;
+
+        const noFallbackThumbnail = new Set(['GitHub', 'Reddit', 'Instagram', 'TikTok']);
+        if (noFallbackThumbnail.has(platform)) return '';
+
+        return this.normalizeImageUrl(fallbackIcon);
+    }
+
     summarizeBridgeError(reason = '') {
         const text = String(reason || '').toLowerCase();
         if (text.includes('429') || text.includes('rate')) return 'Rate limited';
@@ -1375,6 +1399,9 @@ export class SocialManager {
 
                 return placeholderHelper.replace(text, {
                     streamer: postData.author || account.username,
+                    username: postData.username || account.username,
+                    author: postData.author || account.username,
+                    platform,
                     title: postData.title,
                     url: optimizedUrl,
                     description: (postData.description || '')
@@ -1413,7 +1440,7 @@ export class SocialManager {
             const style = platformStyles[platform] || { color: 0x7289da, icon: '', label: platform };
 
             // Clean up author name (strip " - Instagram" etc)
-            let authorName = postData.author || account.username;
+            let authorName = postData.author || postData.username || account.username;
             if (authorName.includes(' - ')) authorName = authorName.split(' - ')[0];
             if (authorName.includes(' | ')) authorName = authorName.split(' | ')[0];
 
@@ -1437,11 +1464,10 @@ export class SocialManager {
                     iconURL: this.client.user.displayAvatarURL()
                 });
 
-            // Use profile image if available, otherwise fallback to platform icon
-            const profileImage = this.normalizeImageUrl(postData.profileImage) || style.icon;
-
-            // Thumbnail (Right side) - The user explicitly requested the channel/streamer image here
-            embedData.setThumbnail(profileImage);
+            const profileImage = this.getSocialProfileThumbnail(platform, postData.profileImage, style.icon);
+            if (profileImage) {
+                embedData.setThumbnail(profileImage);
+            }
 
             // Author (Top) - Use the platform icon for branding
             embedData.setAuthor({
