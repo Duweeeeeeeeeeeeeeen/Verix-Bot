@@ -22,15 +22,14 @@ const mkLogo = (slug, color, fallbackLabel) => {
             alt={fallbackLabel}
             onError={(event) => {
                 event.currentTarget.style.display = 'none';
-                event.currentTarget.nextElementSibling.style.display = 'inline-flex';
             }}
-            style={{ borderRadius: '4px', objectFit: 'contain', display: 'block' }}
+            style={{ borderRadius: '4px', objectFit: 'contain', display: 'block', position: 'relative', zIndex: 2 }}
         />
     );
     const Wrapped = ({ size = 24 }) => (
-        <span className="brand-logo-wrap" style={{ width: size, height: size }}>
+        <span className="brand-logo-wrap" style={{ width: size, height: size, color }}>
+            <span className="brand-logo-fallback">{fallbackLabel}</span>
             <Comp size={size} />
-            <span className="brand-logo-fallback" style={{ display: 'none' }}>{fallbackLabel}</span>
         </span>
     );
     Wrapped.displayName = `${slug}Logo`;
@@ -582,8 +581,8 @@ export default function SocialsConfig() {
             .pc-nav-item-v2.active { background: var(--bg-badge); border-color: var(--primary); color: var(--primary); }
             .p-icon-box-v2 { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; transition: 0.2s; flex-shrink: 0; }
             .p-icon-box-v2 img { opacity: 1 !important; visibility: visible !important; filter: none !important; }
-            .brand-logo-wrap { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; line-height: 1; }
-            .brand-logo-fallback { align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 0.72rem; font-weight: 900; letter-spacing: 0; color: currentColor; }
+            .brand-logo-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; line-height: 1; }
+            .brand-logo-fallback { position: absolute; inset: 0; z-index: 1; display: inline-flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 0.72rem; font-weight: 900; letter-spacing: 0; color: currentColor; }
             .p-name-v2 { font-weight: 700; font-size: 0.9rem; color: var(--text-main); min-width: 0; max-width: 128px; line-height: 1.2; }
             .p-name-v2 span { min-width: 0; white-space: normal; overflow-wrap: anywhere; word-break: normal; }
             .p-name-v2 .nav-status-dot-mini { margin-top: 5px; flex-shrink: 0; }

@@ -1750,6 +1750,14 @@ router.post('/:guildId/socials', adminCheck, validate(socialSchema), async (req,
 
         const existing = await SocialConfig.findOne({ guildId });
         if (existing) {
+            const normalizeAccountKey = (value = '') => String(value || '')
+                .trim()
+                .toLowerCase()
+                .replace(/^https?:\/\//, '')
+                .replace(/^www\./, '')
+                .replace(/^@/, '')
+                .replace(/\/$/, '');
+
             // MERGE LOGIC: Preserve internal state (isLive, lastPostId) for existing accounts
             for (const platform of ['twitch', 'youtube', 'instagram', 'tiktok', 'twitter', 'reddit', 'steam', 'kick', 'github', 'rss', 'telegram']) {
                 if (data.platforms?.[platform]?.accounts) {
@@ -1757,7 +1765,8 @@ router.post('/:guildId/socials', adminCheck, validate(socialSchema), async (req,
                     const oldAccounts = existing.platforms[platform]?.accounts || [];
                     
                     data.platforms[platform].accounts = newAccounts.map(newAcc => {
-                        const oldAcc = oldAccounts.find(oa => oa.username === newAcc.username);
+                        const newKey = normalizeAccountKey(newAcc.username);
+                        const oldAcc = oldAccounts.find(oa => normalizeAccountKey(oa.username) === newKey);
                         if (oldAcc) {
                             return {
                                 ...newAcc,

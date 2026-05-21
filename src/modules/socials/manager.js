@@ -229,7 +229,25 @@ export class SocialManager {
     }
 
     getPostId(item) {
-        return item?.id || item?.guid || item?.link || null;
+        const rawId = item?.id || item?.guid || item?.link || null;
+        if (!rawId) return null;
+
+        const value = String(rawId).trim();
+        const ytMatch = value.match(/(?:yt:video:|youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+        if (ytMatch) return `yt:video:${ytMatch[1]}`;
+
+        try {
+            const parsed = new URL(value);
+            parsed.hash = '';
+            for (const key of [...parsed.searchParams.keys()]) {
+                if (/^(utm_|fbclid|gclid|igshid|si$|feature$)/i.test(key)) {
+                    parsed.searchParams.delete(key);
+                }
+            }
+            return parsed.toString().replace(/\/$/, '');
+        } catch {
+            return value;
+        }
     }
 
     getPostTime(item) {
@@ -310,6 +328,12 @@ export class SocialManager {
             if (imgMatch) thumbnail = imgMatch[1];
         }
 
+        if (!thumbnail) {
+            const content = item.content || item['content:encoded'] || item.summary || '';
+            const ogMatch = content.match(/(?:property|name)=["'](?:og:image|twitter:image)["'][^>]+content=["']([^"']+)["']/i);
+            if (ogMatch) thumbnail = ogMatch[1];
+        }
+
         if (!thumbnail && item.link) {
             if (item.link.includes('instagram.com')) {
                 thumbnail = item.link.replace('instagram.com', 'ddinstagram.com').replace('/p/', '/p/show/').replace('/reel/', '/reel/show/');
@@ -318,7 +342,16 @@ export class SocialManager {
             }
         }
 
-        return thumbnail || '';
+        return this.normalizeImageUrl(thumbnail);
+    }
+
+    normalizeImageUrl(value = '') {
+        let url = String(value || '').trim();
+        if (!url) return '';
+        url = this.decodeHtmlEntities(url);
+        if (url.startsWith('//')) url = `https:${url}`;
+        if (!/^https?:\/\//i.test(url)) return '';
+        return url;
     }
 
     async checkTwitch(guildId, platformConfig, liveStreams, userData = []) {
@@ -1152,7 +1185,7 @@ export class SocialManager {
                             url: item.link,
                             author: username,
                             description: item.contentSnippet || '',
-                            thumbnail: item.thumbnail,
+                            thumbnail: this.normalizeImageUrl(item.thumbnail),
                             profileImage: 'https://logo.clearbit.com/telegram.org'
                         }, 'Telegram');
                         account.lastPostId = this.getPostId(item);
@@ -1198,8 +1231,8 @@ export class SocialManager {
                                 title: stream.session_title || `${channel.user?.username || username} is live`,
                                 url: `https://kick.com/${channel.slug || username}`,
                                 author: channel.user?.username || username,
-                                thumbnail: stream.thumbnail?.url || channel.banner_image?.url || channel.offline_banner_image?.url || '',
-                                profileImage: channel.user?.profile_pic || 'https://logo.clearbit.com/kick.com'
+                                thumbnail: this.normalizeImageUrl(stream.thumbnail?.url || channel.banner_image?.url || channel.offline_banner_image?.url || ''),
+                                profileImage: this.normalizeImageUrl(channel.user?.profile_pic) || 'https://logo.clearbit.com/kick.com'
                             }, 'Kick');
                             account.isLive = true;
                             account.lastPostId = streamId;
@@ -1368,7 +1401,7 @@ export class SocialManager {
                 });
 
             // Use profile image if available, otherwise fallback to platform icon
-            const profileImage = postData.profileImage || style.icon;
+            const profileImage = this.normalizeImageUrl(postData.profileImage) || style.icon;
 
             // Thumbnail (Right side) - The user explicitly requested the channel/streamer image here
             embedData.setThumbnail(profileImage);
@@ -1381,13 +1414,15 @@ export class SocialManager {
 
             if (postData.thumbnail) {
                 // Main Image (Bottom) - The stream preview or post photo
-                let finalThumbnail = postData.thumbnail;
-                if (finalThumbnail.includes('cdninstagram.com') || finalThumbnail.includes('fbcdn.net') || finalThumbnail.includes('twimg.com')) {
-                    const base64Url = Buffer.from(finalThumbnail).toString('base64');
-                    const apiUrl = process.env.API_URL || 'https://verixbot.com/api';
-                    finalThumbnail = `${apiUrl}/webhooks/image-proxy?url=${encodeURIComponent(base64Url)}`;
+                let finalThumbnail = this.normalizeImageUrl(postData.thumbnail);
+                if (finalThumbnail) {
+                    if (finalThumbnail.includes('cdninstagram.com') || finalThumbnail.includes('fbcdn.net') || finalThumbnail.includes('twimg.com')) {
+                        const base64Url = Buffer.from(finalThumbnail).toString('base64');
+                        const apiUrl = process.env.API_URL || 'https://verixbot.com/api';
+                        finalThumbnail = `${apiUrl}/webhooks/image-proxy?url=${encodeURIComponent(base64Url)}`;
+                    }
+                    embedData.setImage(finalThumbnail);
                 }
-                embedData.setImage(finalThumbnail);
             }
 
             const buttonLabels = t('socials.button_labels', lang);
