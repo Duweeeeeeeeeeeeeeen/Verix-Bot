@@ -418,11 +418,11 @@ export default function TicketConfig() {
                             </button>
                         </div>
                         <div className="card-body-v2">
-                            <div className="v-stack ticket-category-list" style={{ gap: '14px' }}>
+                            <div className="v-stack ticket-category-list" style={{ gap: '12px' }}>
                                 {ticketTypes.map((id) => (
-                                    <div key={id} className="pc-sub-card-v2 animate slide-up">
+                                    <div key={id} className="pc-sub-card-v2 ticket-category-card animate slide-up">
                                         <div className="pc-bb-content" style={{ padding: 0 }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
+                                            <div className="ticket-category-head">
                                                 <input className="pc-input-ghost-v2" value={config.typesConfig[id]?.label || ''} onChange={e => {
                                                     const newTypes = { ...config.typesConfig };
                                                     newTypes[id] = { ...newTypes[id], label: e.target.value };
@@ -431,8 +431,8 @@ export default function TicketConfig() {
                                                 <button onClick={() => removeTicketType(id)} className="pc-btn-icon-danger-v2"><Trash2 size={20} /></button>
                                             </div>
 
-                                            <div className="pc-bb-columns">
-                                                <div className="pc-bb-col" style={{ width: '80px' }}>
+                                            <div className="pc-bb-columns ticket-category-primary-row">
+                                                <div className="pc-bb-col ticket-emoji-col">
                                                     <label>{t('common.emoji')}</label>
                                                     <div className="pc-bb-emoji-box">
                                                         <EmojiInput value={config.typesConfig[id]?.emoji || '🎫'} hideInput={true} onChange={e => {
@@ -453,7 +453,7 @@ export default function TicketConfig() {
                                                 </div>
                                             </div>
 
-                                            <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '18px', marginTop: '24px' }}>
+                                            <div className="pc-input-grid-v2 ticket-category-options">
                                                 <div className="pc-input-group-v2">
                                                     <label>{(config.inputType || 'SELECT') === 'BUTTONS' ? t('common.color') : t('common.order')}</label>
                                                     {(config.inputType || 'SELECT') === 'BUTTONS' ? (
@@ -698,23 +698,53 @@ export default function TicketConfig() {
 
         <style jsx>{`
             .pc-premium-wrapper { padding: 32px; max-width: 1650px; margin: 0 auto; font-family: 'Inter', sans-serif; }
-            .ticket-category-list :global(.pc-sub-card-v2) {
-                padding: 18px !important;
+            .ticket-category-list {
+                max-width: 1120px;
+            }
+            .ticket-category-card {
+                padding: 14px 16px !important;
                 border-radius: 16px !important;
+                background: var(--bg-card) !important;
             }
-            .ticket-category-list :global(.pc-bb-content > div:first-child) {
-                margin-bottom: 16px !important;
+            .ticket-category-head {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin-bottom: 14px;
+                padding-bottom: 12px;
+                border-bottom: 1px solid var(--border);
             }
-            .ticket-category-list :global(.pc-bb-columns) {
-                align-items: flex-end;
-                gap: 16px !important;
+            .ticket-category-head :global(.pc-input-ghost-v2) {
+                max-width: 340px;
+                font-size: 0.95rem !important;
             }
-            .ticket-category-list :global(.pc-input-grid-v2) {
+            .ticket-category-primary-row {
+                display: grid !important;
+                grid-template-columns: 76px minmax(260px, 1fr);
+                align-items: start;
                 gap: 14px !important;
-                margin-top: 16px !important;
+            }
+            .ticket-emoji-col {
+                width: 76px !important;
+            }
+            .ticket-category-primary-row :global(.pc-bb-emoji-box) {
+                width: 48px !important;
+                height: 48px !important;
+            }
+            .ticket-category-primary-row p {
+                margin-top: 6px !important;
+                font-size: 0.75rem !important;
+            }
+            .ticket-category-options {
+                display: grid;
+                grid-template-columns: minmax(180px, 220px) minmax(220px, 1fr) 52px minmax(92px, 120px);
+                gap: 12px !important;
+                margin-top: 14px !important;
+                align-items: end;
             }
             .ticket-category-list textarea {
-                min-height: 64px !important;
+                min-height: 56px !important;
+                max-height: 120px;
             }
             .ticket-style-picker {
                 min-height: 48px;
@@ -739,8 +769,19 @@ export default function TicketConfig() {
             }
             .ticket-preview-btn {
                 height: 48px;
+                width: 52px;
+                padding: 0 !important;
                 align-self: end;
                 justify-content: center;
+            }
+            @media (max-width: 900px) {
+                .ticket-category-primary-row,
+                .ticket-category-options {
+                    grid-template-columns: 1fr !important;
+                }
+                .ticket-preview-btn {
+                    width: 100%;
+                }
             }
             
             @media (max-width: 1200px) {
