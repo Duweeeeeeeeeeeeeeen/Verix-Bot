@@ -184,7 +184,7 @@ export default function TicketConfig() {
       enabledTypes: [...currentTypes, id],
       typesConfig: {
         ...(config.typesConfig || {}),
-        [id]: { label: t('tickets.new_ticket_default'), emoji: '🎫', categoryId: '', welcomeMessage: t('tickets.welcome_message_default') }
+        [id]: { label: t('tickets.new_ticket_default'), emoji: '🎫', welcomeMessage: t('tickets.welcome_message_default') }
       }
     });
   };
@@ -219,7 +219,7 @@ export default function TicketConfig() {
       description: typeConfig.welcomeMessage || t('tickets.welcome_message_default'),
       color: typeConfig.color || '#2ECC71',
       fields: [
-        { name: t('tickets.target_category'), value: typeConfig.categoryId ? `<#${typeConfig.categoryId}>` : t('common.none'), inline: true },
+        { name: t('tickets.category_open'), value: config.categoryOpenId ? `<#${config.categoryOpenId}>` : t('common.none'), inline: true },
         { name: t('tickets.target_role'), value: typeConfig.pingRoleId ? `<@&${typeConfig.pingRoleId}>` : t('common.none'), inline: true }
       ],
       footer: 'Verix Ticket System'
@@ -441,15 +441,6 @@ export default function TicketConfig() {
                                                             setConfig({ ...config, typesConfig: newTypes });
                                                         }} />
                                                     </div>
-                                                </div>
-                                                <div className="pc-bb-col">
-                                                    <label>{t('tickets.target_category')}</label>
-                                                    <DiscordSelector type="channel" options={discordData.categories} value={config.typesConfig[id]?.categoryId || ''} onChange={v => {
-                                                        const newTypes = { ...config.typesConfig };
-                                                        newTypes[id] = { ...newTypes[id], categoryId: v };
-                                                        setConfig({ ...config, typesConfig: newTypes });
-                                                    }} />
-                                                    <p style={{ margin: '8px 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t('tickets.target_category_help')}</p>
                                                 </div>
                                             </div>
 
@@ -719,8 +710,7 @@ export default function TicketConfig() {
                 font-size: 0.95rem !important;
             }
             .ticket-category-primary-row {
-                display: grid !important;
-                grid-template-columns: 76px minmax(260px, 1fr);
+                display: flex !important;
                 align-items: start;
                 gap: 14px !important;
             }
