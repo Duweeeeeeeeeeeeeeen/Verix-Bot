@@ -12,23 +12,18 @@ import {
 import { useT } from '../../../contexts/LanguageContext';
 import Head from 'next/head';
 
-// Official platform logos from Simple Icons, with a local text fallback if the CDN is blocked.
-const mkLogo = (slug, color, fallbackLabel) => {
+const mkLogo = (slug, color) => {
     const Comp = ({ size = 24 }) => (
         <img
-            src={`https://cdn.simpleicons.org/${slug}/${color.replace('#', '')}`}
+            src={`/img/social/${slug}.png`}
             width={size}
             height={size}
-            alt={fallbackLabel}
-            onError={(event) => {
-                event.currentTarget.style.display = 'none';
-            }}
+            alt=""
             style={{ borderRadius: '4px', objectFit: 'contain', display: 'block', position: 'relative', zIndex: 2 }}
         />
     );
     const Wrapped = ({ size = 24 }) => (
         <span className="brand-logo-wrap" style={{ width: size, height: size, color }}>
-            <span className="brand-logo-fallback">{fallbackLabel}</span>
             <Comp size={size} />
         </span>
     );
@@ -36,17 +31,17 @@ const mkLogo = (slug, color, fallbackLabel) => {
     return Wrapped;
 };
 
-const TwitchIcon    = mkLogo('twitch', '#9146ff', 'T');
-const YoutubeIcon   = mkLogo('youtube', '#ff0000', 'Y');
-const InstagramIcon = mkLogo('instagram', '#e1306c', 'I');
-const TikTokIcon    = mkLogo('tiktok', '#010101', 'T');
-const XIcon         = mkLogo('x', '#000000', 'X');
-const RedditIcon    = mkLogo('reddit', '#ff4500', 'R');
-const SteamIcon     = mkLogo('steam', '#1b2838', 'S');
-const KickIcon      = mkLogo('kick', '#53fc18', 'K');
-const GithubIcon    = mkLogo('github', '#24292f', 'G');
-const RssIcon       = mkLogo('rss', '#f97316', 'R');
-const TelegramIcon  = mkLogo('telegram', '#26a5e4', 'T');
+const TwitchIcon    = mkLogo('twitch', '#9146ff');
+const YoutubeIcon   = mkLogo('youtube', '#ff0000');
+const InstagramIcon = mkLogo('instagram', '#e1306c');
+const TikTokIcon    = mkLogo('tiktok', '#010101');
+const XIcon         = mkLogo('x', '#000000');
+const RedditIcon    = mkLogo('reddit', '#ff4500');
+const SteamIcon     = mkLogo('steam', '#1b2838');
+const KickIcon      = mkLogo('kick', '#53fc18');
+const GithubIcon    = mkLogo('github', '#24292f');
+const RssIcon       = mkLogo('rss', '#f97316');
+const TelegramIcon  = mkLogo('telegram', '#26a5e4');
 
 const PLATFORMS = [
     { id: 'twitch',    nameKey: 'socials.twitch_name',    icon: TwitchIcon,    color: '#9146ff', descKey: 'socials.twitch_desc' },
@@ -587,9 +582,8 @@ export default function SocialsConfig() {
             .pc-nav-item-v2:hover:not(.locked) { background: var(--bg-badge); color: var(--primary); }
             .pc-nav-item-v2.active { background: var(--bg-badge); border-color: var(--primary); color: var(--primary); }
             .p-icon-box-v2 { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; transition: 0.2s; flex-shrink: 0; }
-            .p-icon-box-v2 img { opacity: 1 !important; visibility: visible !important; filter: none !important; }
+            .p-icon-box-v2 img { opacity: 1 !important; visibility: visible !important; filter: none !important; width: 100%; height: 100%; }
             .brand-logo-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; line-height: 1; }
-            .brand-logo-fallback { position: absolute; inset: 0; z-index: 1; display: inline-flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 0.72rem; font-weight: 900; letter-spacing: 0; color: currentColor; }
             .p-name-v2 { font-weight: 700; font-size: 0.9rem; color: var(--text-main); min-width: 0; max-width: 128px; line-height: 1.2; }
             .p-name-v2 span { min-width: 0; white-space: normal; overflow-wrap: anywhere; word-break: normal; }
             .p-name-v2 .nav-status-dot-mini { margin-top: 5px; flex-shrink: 0; }

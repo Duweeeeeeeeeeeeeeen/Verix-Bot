@@ -42,6 +42,7 @@ const RSS_BRIDGE_INSTANCES = [
 ];
 const RSS_TIMEOUT_MS = 8000;
 const TWITTER_NATIVE_TIMEOUT_MS = 10000;
+const TWITTER_NATIVE_MIN_CHECK_MS = 15 * 60 * 1000;
 const WEB_SUB_TIMEOUT_MS = 8000;
 const YOUTUBE_RESOLVE_TIMEOUT_MS = 7000;
 const SOCIAL_SEEN_HISTORY_LIMIT = 100;
@@ -734,6 +735,7 @@ export class SocialManager {
         try {
             for (const account of platformConfig.accounts) {
                 const username = this.cleanTwitterUsername(account.username);
+                const previousTwitterFetchAt = account.lastTwitterFetchAt ? new Date(account.lastTwitterFetchAt).getTime() : 0;
                 account.lastCheckAt = new Date();
                 changed = true;
 
@@ -743,7 +745,18 @@ export class SocialManager {
                     continue;
                 }
 
+                if (
+                    previousTwitterFetchAt &&
+                    Number.isFinite(previousTwitterFetchAt) &&
+                    Date.now() - previousTwitterFetchAt < TWITTER_NATIVE_MIN_CHECK_MS
+                ) {
+                    continue;
+                }
+
                 try {
+                    account.lastTwitterFetchAt = new Date();
+                    changed = true;
+
                     const feed = await this.fetchTwitterNativeTimeline(username);
                     if (this.ensureSeenState(account)) changed = true;
                     if (account.lastPostId && account.seenPostIds.length === 0) {

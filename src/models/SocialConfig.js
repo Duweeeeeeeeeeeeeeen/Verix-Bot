@@ -24,6 +24,7 @@ const socialPlatformSchema = new mongoose.Schema({
         cachedProfileImage: { type: String, default: null },
         isLive: { type: Boolean, default: false }, // Specific to Twitch
         lastCheckAt: { type: Date, default: null },
+        lastTwitterFetchAt: { type: Date, default: null },
         bridgeErrorCount: { type: Number, default: 0 },
         lastBridgeErrorReason: { type: String, default: null },
         lastBridgeErrorAt: { type: Date, default: null },
