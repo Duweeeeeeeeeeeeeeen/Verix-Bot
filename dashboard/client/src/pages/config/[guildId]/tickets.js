@@ -6,7 +6,8 @@ import { useT } from '../../../contexts/LanguageContext';
 import {
     Save, Ticket, Settings2, Shield, Plus, MessageSquare, Trash2,
     ChevronRight, CheckCircle2, Layout, Clock, UserPlus, FileText,
-    RotateCcw, Send, GripVertical, AlertCircle, Palette, SlidersHorizontal, Eye
+    RotateCcw, Send, GripVertical, AlertCircle, Palette, SlidersHorizontal, Eye,
+    ChevronUp, ChevronDown
 } from 'lucide-react';
 import { DiscordSelector, CustomSelect, EmbedMessageManager, NotificationSettings, SystemMessagesSection } from '../../../components/LazyConfigComponents';
 import EmojiInput from '../../../components/EmojiInput';
@@ -194,6 +195,14 @@ export default function TicketConfig() {
     const newConfig = { ...config.typesConfig };
     delete newConfig[id];
     setConfig({ ...config, types: newTypes, enabledTypes: newTypes, typesConfig: newConfig });
+  };
+
+  const moveTicketType = (index, direction) => {
+    const currentTypes = [...(config.types || config.enabledTypes || [])];
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= currentTypes.length) return;
+    [currentTypes[index], currentTypes[targetIndex]] = [currentTypes[targetIndex], currentTypes[index]];
+    setConfig({ ...config, types: currentTypes, enabledTypes: currentTypes });
   };
 
   const addCannedResponse = () => {
@@ -419,7 +428,7 @@ export default function TicketConfig() {
                         </div>
                         <div className="card-body-v2">
                             <div className="v-stack ticket-category-list" style={{ gap: '12px' }}>
-                                {ticketTypes.map((id) => (
+                                {ticketTypes.map((id, index) => (
                                     <div key={id} className="pc-sub-card-v2 ticket-category-card animate slide-up">
                                         <div className="pc-bb-content" style={{ padding: 0 }}>
                                             <div className="ticket-category-head">
@@ -428,10 +437,21 @@ export default function TicketConfig() {
                                                     newTypes[id] = { ...newTypes[id], label: e.target.value };
                                                     setConfig({ ...config, typesConfig: newTypes });
                                                 }} placeholder={t('tickets.cat_title_placeholder')} />
+                                                <div className="ticket-category-actions">
+                                                    <button type="button" className="pc-btn-outline-v2 ticket-order-btn" onClick={() => moveTicketType(index, -1)} disabled={index === 0} title={t('rr.move_up') || 'Move up'}>
+                                                        <ChevronUp size={16} />
+                                                    </button>
+                                                    <button type="button" className="pc-btn-outline-v2 ticket-order-btn" onClick={() => moveTicketType(index, 1)} disabled={index === ticketTypes.length - 1} title={t('rr.move_down') || 'Move down'}>
+                                                        <ChevronDown size={16} />
+                                                    </button>
+                                                    <button type="button" className="pc-btn-outline-v2 ticket-preview-btn compact" onClick={() => openTicketWelcomePreview(id)} title={t('preview.discord_title')}>
+                                                        <Eye size={17} />
+                                                    </button>
+                                                </div>
                                                 <button onClick={() => removeTicketType(id)} className="pc-btn-icon-danger-v2"><Trash2 size={20} /></button>
                                             </div>
 
-                                            <div className="pc-bb-columns ticket-category-primary-row">
+                                            <div className="pc-bb-columns ticket-category-controls">
                                                 <div className="pc-bb-col ticket-emoji-col">
                                                     <label>{t('common.emoji')}</label>
                                                     <div className="pc-bb-emoji-box">
@@ -442,43 +462,32 @@ export default function TicketConfig() {
                                                         }} />
                                                     </div>
                                                 </div>
-                                            </div>
-
-                                            <div className="pc-input-grid-v2 ticket-category-options">
                                                 <div className="pc-input-group-v2">
-                                                    <label>{(config.inputType || 'SELECT') === 'BUTTONS' ? t('common.color') : t('common.order')}</label>
-                                                    {(config.inputType || 'SELECT') === 'BUTTONS' ? (
-                                                        <div className="ticket-style-picker">
-                                                            {[
-                                                                { value: 'PRIMARY', color: '#5865f2' },
-                                                                { value: 'SUCCESS', color: '#248046' },
-                                                                { value: 'DANGER', color: '#da373c' },
-                                                                { value: 'SECONDARY', color: '#4e5058' },
-                                                                { value: 'LINK', color: '#f3f4f6' }
-                                                            ].map(option => (
-                                                                <button
-                                                                    key={option.value}
-                                                                    type="button"
-                                                                    className={(config.typesConfig[id]?.style || 'PRIMARY') === option.value ? 'active' : ''}
-                                                                    onClick={() => {
-                                                                        const newTypes = { ...config.typesConfig };
-                                                                        newTypes[id] = { ...newTypes[id], style: option.value };
-                                                                        setConfig({ ...config, typesConfig: newTypes });
-                                                                    }}
-                                                                    style={{ background: option.color }}
-                                                                    title={option.value}
-                                                                />
-                                                            ))}
-                                                        </div>
-                                                    ) : (
-                                                        <input className="pc-input-modern-v2" type="number" value={config.typesConfig[id]?.order || 0} onChange={e => {
-                                                            const newTypes = { ...config.typesConfig };
-                                                            newTypes[id] = { ...newTypes[id], order: parseInt(e.target.value, 10) || 0 };
-                                                            setConfig({ ...config, typesConfig: newTypes });
-                                                        }} />
-                                                    )}
+                                                    <label>{t('common.color')}</label>
+                                                    <div className="ticket-style-picker">
+                                                        {[
+                                                            { value: 'PRIMARY', color: '#5865f2' },
+                                                            { value: 'SUCCESS', color: '#248046' },
+                                                            { value: 'DANGER', color: '#da373c' },
+                                                            { value: 'SECONDARY', color: '#4e5058' },
+                                                            { value: 'LINK', color: '#f3f4f6' }
+                                                        ].map(option => (
+                                                            <button
+                                                                key={option.value}
+                                                                type="button"
+                                                                className={(config.typesConfig[id]?.style || 'PRIMARY') === option.value ? 'active' : ''}
+                                                                onClick={() => {
+                                                                    const newTypes = { ...config.typesConfig };
+                                                                    newTypes[id] = { ...newTypes[id], style: option.value };
+                                                                    setConfig({ ...config, typesConfig: newTypes });
+                                                                }}
+                                                                style={{ background: option.color }}
+                                                                title={option.value}
+                                                            />
+                                                        ))}
+                                                    </div>
                                                 </div>
-                                                <div className="pc-input-group-v2">
+                                                <div className="pc-input-group-v2 ticket-role-field">
                                                     <label>{t('tickets.target_role')}</label>
                                                     <DiscordSelector type="role" options={discordData.roles} value={config.typesConfig[id]?.pingRoleId || ''} onChange={v => {
                                                         const newTypes = { ...config.typesConfig };
@@ -486,30 +495,19 @@ export default function TicketConfig() {
                                                         setConfig({ ...config, typesConfig: newTypes });
                                                     }} />
                                                 </div>
-                                                <button type="button" className="pc-btn-outline-v2 ticket-preview-btn" onClick={() => openTicketWelcomePreview(id)} title={t('preview.discord_title')}>
-                                                    <Eye size={18} />
-                                                </button>
-                                                {(config.inputType || 'SELECT') === 'BUTTONS' && (
-                                                <div className="pc-input-group-v2">
-                                                    <label>{t('common.order')}</label>
-                                                    <input className="pc-input-modern-v2" type="number" value={config.typesConfig[id]?.order || 0} onChange={e => {
-                                                        const newTypes = { ...config.typesConfig };
-                                                        newTypes[id] = { ...newTypes[id], order: parseInt(e.target.value, 10) || 0 };
-                                                        setConfig({ ...config, typesConfig: newTypes });
-                                                    }} />
-                                                </div>
-                                                )}
                                             </div>
 
-                                            {config.typesConfig[id]?.style === 'LINK' && (
-                                                <div className="pc-input-group-v2" style={{ marginTop: '18px' }}>
+                                            {(config.inputType || 'SELECT') === 'BUTTONS' && config.typesConfig[id]?.style === 'LINK' && (
+                                            <div className="pc-input-grid-v2 ticket-category-options">
+                                                <div className="pc-input-group-v2">
                                                     <label>URL</label>
                                                     <input className="pc-input-modern-v2" value={config.typesConfig[id]?.url || ''} onChange={e => {
-                                                        const newTypes = { ...config.typesConfig };
-                                                        newTypes[id] = { ...newTypes[id], url: e.target.value };
-                                                        setConfig({ ...config, typesConfig: newTypes });
+                                                            const newTypes = { ...config.typesConfig };
+                                                            newTypes[id] = { ...newTypes[id], url: e.target.value };
+                                                            setConfig({ ...config, typesConfig: newTypes });
                                                     }} placeholder="https://..." />
                                                 </div>
+                                            </div>
                                             )}
 
                                             <div className="pc-input-group-v2" style={{ marginTop: '24px' }}>
@@ -709,25 +707,43 @@ export default function TicketConfig() {
                 max-width: 340px;
                 font-size: 0.95rem !important;
             }
-            .ticket-category-primary-row {
-                display: flex !important;
-                align-items: start;
-                gap: 14px !important;
+            .ticket-category-actions {
+                margin-left: auto;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            .ticket-order-btn,
+            .ticket-preview-btn.compact {
+                width: 40px;
+                height: 40px;
+                min-height: 40px;
+                padding: 0 !important;
+                justify-content: center;
+            }
+            .ticket-order-btn:disabled {
+                opacity: 0.45;
+                cursor: not-allowed;
+            }
+            .ticket-category-controls {
+                display: grid !important;
+                grid-template-columns: 70px 210px minmax(220px, 360px);
+                align-items: end;
+                gap: 12px !important;
             }
             .ticket-emoji-col {
-                width: 76px !important;
+                width: 70px !important;
             }
-            .ticket-category-primary-row :global(.pc-bb-emoji-box) {
+            .ticket-category-controls :global(.pc-bb-emoji-box) {
                 width: 48px !important;
                 height: 48px !important;
             }
-            .ticket-category-primary-row p {
-                margin-top: 6px !important;
-                font-size: 0.75rem !important;
+            .ticket-role-field {
+                max-width: 360px;
             }
             .ticket-category-options {
                 display: grid;
-                grid-template-columns: minmax(180px, 220px) minmax(220px, 1fr) 52px minmax(92px, 120px);
+                grid-template-columns: minmax(240px, 420px);
                 gap: 12px !important;
                 margin-top: 14px !important;
                 align-items: end;
@@ -757,20 +773,13 @@ export default function TicketConfig() {
                 outline: 3px solid rgba(var(--primary-rgb), 0.18);
                 border-color: var(--primary);
             }
-            .ticket-preview-btn {
-                height: 48px;
-                width: 52px;
-                padding: 0 !important;
-                align-self: end;
-                justify-content: center;
-            }
             @media (max-width: 900px) {
-                .ticket-category-primary-row,
+                .ticket-category-controls,
                 .ticket-category-options {
                     grid-template-columns: 1fr !important;
                 }
-                .ticket-preview-btn {
-                    width: 100%;
+                .ticket-category-actions {
+                    margin-left: 0;
                 }
             }
             
