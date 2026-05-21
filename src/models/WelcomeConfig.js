@@ -24,8 +24,8 @@ const welcomeConfigSchema = new mongoose.Schema({
         default: () => ({
             enabled: false,
             embed: {
-                title: '✨ Benvenuto nel server!',
-                description: 'Ciao {user_mention}, benvenuto in **{guild}**! Sei il membro numero **{member_count}**.',
+                title: 'Welcome to the server!',
+                description: 'Hi {user_mention}, welcome to **{guild}**! You are member **#{member_count}**.',
                 color: '#5865F2'
             }
         })
@@ -36,8 +36,8 @@ const welcomeConfigSchema = new mongoose.Schema({
         default: () => ({
             enabled: false,
             embed: {
-                title: '👋 Arrivederci',
-                description: 'Oh no, {user_tag} ha lasciato il server. Ora siamo in {member_count}.',
+                title: 'Member left',
+                description: '{user_tag} left **{guild}**. We now have **{member_count}** members.',
                 color: '#ED4245'
             }
         })

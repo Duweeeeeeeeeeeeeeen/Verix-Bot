@@ -23,49 +23,49 @@ const backgroundConfigSchema = new mongoose.Schema({
     },
     embeds: {
         panel: {
-            title: { type: String, default: '📖 Archivio Storico - Deposito Background' },
-            description: { type: String, default: 'Benvenuto cittadino. In questa sezione puoi depositare il dossier relativo alla storia del tuo personaggio.\n\nAssicurati che il collegamento fornito (es. Google Doc) sia accessibile agli ufficiali.' },
+            title: { type: String, default: 'Background Submission' },
+            description: { type: String, default: 'Submit a background document for staff review. Make sure your link is accessible to reviewers.' },
             color: { type: String, default: 'primary' },
             image: { type: String, default: null },
             thumbnail: { type: String, default: null },
             button: {
-                label: { type: String, default: 'Invia Background' },
+                label: { type: String, default: 'Submit Background' },
                 emoji: { type: String, default: '📖' },
                 style: { type: String, default: 'PRIMARY' }
             }
         },
         instructions: {
-            title: { type: String, default: '📝 Direttive di Compilazione' },
-            description: { type: String, default: 'Salve {user}.\n\nUtilizza questo canale per preparare i tuoi allegati (immagini, documenti PDF). Quando sei pronto, procedi con l\'invio del modulo ufficiale per sottoporre la tua storia alla commissione.' },
+            title: { type: String, default: 'Submission Instructions' },
+            description: { type: String, default: 'Hi {user}. Use this channel to prepare your attachments and submit your official background for staff review.' },
             color: { type: String, default: 'primary' },
             image: { type: String, default: null },
             thumbnail: { type: String, default: null }
         },
         dm_received: {
-            title: { type: String, default: '✅ Dossier Background Ricevuto' },
-            description: { type: String, default: 'Il tuo dossier per {guild} è stato correttamente archiviato nei nostri sistemi. Un ufficiale della commissione lo revisionerà a breve.' },
+            title: { type: String, default: 'Background Received' },
+            description: { type: String, default: 'Your background for {guild} has been received. Staff will review it soon.' },
             color: { type: String, default: 'primary' },
             image: { type: String, default: null },
             thumbnail: { type: String, default: null }
         },
         dm_accepted: {
             enabled: { type: Boolean, default: true },
-            title: { type: String, default: '🎊 Storia Approvata!' },
-            description: { type: String, default: 'Ottime notizie {user}! Il background del tuo personaggio per {guild} è stato validato ufficialmente.' },
+            title: { type: String, default: 'Background Approved!' },
+            description: { type: String, default: 'Great news {user}! Your background for {guild} has been approved.' },
             color: { type: String, default: 'success' },
             image: { type: String, default: null },
             thumbnail: { type: String, default: null }
         },
         dm_rejected: {
             enabled: { type: Boolean, default: true },
-            title: { type: String, default: '❌ Storia Respinta' },
-            description: { type: String, default: 'Il dossier del tuo personaggio per {guild} non ha superato la revisione.\n\n**Motivazione Ufficiale:**\n>>> {reason}' },
+            title: { type: String, default: 'Background Rejected' },
+            description: { type: String, default: 'Your background for {guild} was not approved.\n\n**Reason:**\n>>> {reason}' },
             color: { type: String, default: 'error' },
             image: { type: String, default: null },
             thumbnail: { type: String, default: null }
         },
         staff_received: {
-            title: { type: String, default: '👀 Revisione Dossier Personaggio' },
+            title: { type: String, default: 'Background Review' },
             description: { type: String, default: 'Utente: {user}\nID: `{user_id}`\n\n**Sintesi:**\n>>> {bg_desc}\n\n**Documentazione:** [Consultabile Qui]({bg_link})' },
             color: { type: String, default: 'primary' },
             image: { type: String, default: null },
@@ -73,47 +73,47 @@ const backgroundConfigSchema = new mongoose.Schema({
             fields: {
                 type: [{ name: String, value: String, inline: Boolean }],
                 default: [
-                    { name: '📎 Allegati Aggiuntivi', value: '{bg_attachment}', inline: false }
+                    { name: 'Additional Attachments', value: '{bg_attachment}', inline: false }
                 ]
             }
         },
         staff_accepted: {
-            title: { type: String, default: '✅ Dossier VALIDATO' },
+            title: { type: String, default: 'Background Approved' },
             color: { type: String, default: 'success' },
             image: { type: String, default: null },
             thumbnail: { type: String, default: null },
             fields: {
                 type: [{ name: String, value: String, inline: Boolean }],
                 default: [
-                    { name: '👤 Soggetto', value: '{user}', inline: true },
-                    { name: '👮 Ufficiale', value: '{staff}', inline: true }
+                    { name: 'User', value: '{user}', inline: true },
+                    { name: 'Reviewer', value: '{staff}', inline: true }
                 ]
             }
         },
         staff_rejected: {
-            title: { type: String, default: '❌ Dossier RESPINTO' },
+            title: { type: String, default: 'Background Rejected' },
             color: { type: String, default: 'error' },
             image: { type: String, default: null },
             thumbnail: { type: String, default: null },
             fields: {
                 type: [{ name: String, value: String, inline: Boolean }],
                 default: [
-                    { name: '👤 Soggetto', value: '{user}', inline: true },
-                    { name: '👮 Ufficiale', value: '{staff}', inline: true },
-                    { name: '📝 Nota Commissione', value: '>>> {reason}', inline: false }
+                    { name: 'User', value: '{user}', inline: true },
+                    { name: 'Reviewer', value: '{staff}', inline: true },
+                    { name: 'Staff Note', value: '>>> {reason}', inline: false }
                 ]
             }
         },
         integrated_accepted: {
-            title: { type: String, default: '🎊 Storia Approvata!' },
-            description: { type: String, default: 'Ottime notizie {user}! La tua storia è stata validata ufficialmente dalla commissione.\n\nQuando sei pronto, clicca il pulsante qui sotto per iniziare il **Test Scritto**.' },
+            title: { type: String, default: 'Background Approved!' },
+            description: { type: String, default: 'Great news {user}! Your background has been approved. When you are ready, click the button below to start the written test.' },
             color: { type: String, default: 'success' },
             image: { type: String, default: null },
             thumbnail: { type: String, default: null }
         },
         integrated_rejected: {
-            title: { type: String, default: '⚠️ Revisione Storia: Feedback Staff' },
-            description: { type: String, default: 'Salve {user},\n\nIl tuo background ha bisogno di alcune correzioni prima di poter procedere.\n\n**Motivo del Rifiuto:**\n>>> {reason}\n\n**Cosa fare ora?**\nPotrai inviare nuovamente il tuo dossier corretto tra circa **{next_attempt}**. Prendi questo tempo per migliorare la tua storia seguendo le indicazioni dello staff.' },
+            title: { type: String, default: 'Background Feedback' },
+            description: { type: String, default: 'Hi {user}, your background needs changes before it can be approved.\n\n**Reason:**\n>>> {reason}\n\nYou can submit an updated version in about **{next_attempt}**.' },
             color: { type: String, default: 'error' },
             image: { type: String, default: null },
             thumbnail: { type: String, default: null }

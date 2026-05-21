@@ -1,5 +1,5 @@
 /**
- * Default English "Human RP" Messages for all modules.
+ * Default English messages for all modules.
  * Standard for every server if no override is found in DB.
  */
 export default {
@@ -45,13 +45,13 @@ export default {
             color: '#e74c3c'
         },
         module_already_in_state: {
-            title: 'ℹ️ State Unchanged',
+            title: 'ℹ️ server Unchanged',
             description: 'The **{module}** module is already in the state requested by protocols.',
             color: '#3498db'
         },
         module_not_found: {
             title: '❌ Unknown Subject',
-            description: 'The **{module}** module is not registered in our ministerial databases.',
+            description: 'The **{module}** module is not registered in the system.',
             color: '#e74c3c'
         }
     },
@@ -80,15 +80,15 @@ export default {
     whitelist: {
         panel: {
             title: '🛂 Immigration Office - City Entry',
-            description: 'Welcome to the access portal. To reside permanently in the city, you must undergo a civil suitability assessment.\n\nEnsure you answer the protocols submitted to you honestly.',
+            description: 'Welcome to the access portal. To obtain full access or request a specific role, complete the application form.\n\nMake sure to answer every question honestly and with enough detail.',
             color: '#3BA4FF',
-            footer: 'Civil Department | Verix RP'
+            footer: 'Application System | {guild}'
         },
         start: {
             title: '📄 Entry Application: {user_name}',
-            description: 'Welcome citizen. To be officially admitted, we must complete your information dossier.\n\n**MINISTERIAL DIRECTIVES:**\n• Answer honestly and in detail.\n• Respect time protocols to avoid application cancellation.',
+            description: 'Welcome. To proceed with your application, we need to collect the information required for staff review.\n\n**INSTRUCTIONS:**\n? Answer honestly and in detail.\n? Respect the time limits to avoid session cancellation.',
             color: '#3BA4FF',
-            footer: 'Welcome Office | Verix RP'
+            footer: 'Application System | {guild}'
         },
         question: {
             title: '❓ Interview: Question {current_index} of {total_questions}',
@@ -96,38 +96,38 @@ export default {
             color: '#3BA4FF'
         },
         review: {
-            title: '📋 Final Dossier Validation',
-            description: 'Read your institutional declarations carefully. Once confirmed, your application will pass to the Higher Commission for the final verdict.',
+            title: '📋 Final Application Review',
+            description: 'Review your answers carefully. Once confirmed, your application will be sent to staff for review.',
             color: '#2ecc71'
         },
         not_configured: {
             title: '⏳ Incomplete Configuration',
-            description: 'The procedure for entering the city has not yet been completed by staff. Please be patient a little longer.',
+            description: 'The procedure for starting this application has not yet been completed by staff. Please be patient a little longer.',
             color: '#f1c40f'
         },
         active_session: {
             title: '📄 Application in Progress',
-            description: 'There is already an open dossier in your name in the <#{channelId}> channel. Complete that procedure before starting a new one.',
+            description: 'There is already an open application in your name in the <#{channelId}> channel. Complete that procedure before starting a new one.',
             color: '#3498db'
         },
         already_submitted: {
-            title: '📂 Dossier under Evaluation',
+            title: '📂 Application under Evaluation',
             description: 'Your documentation has already been delivered and is currently on the staff\'s desk. You will receive a result shortly.',
             color: '#3498db'
         },
         already_passed: {
-            title: '✅ Citizenship Already Obtained',
-            description: 'Our records indicate that you are already a regular citizen of **{guild}**. It is not necessary to repeat the procedure.',
+            title: '✅ Membership Already Obtained',
+            description: 'Our records indicate that you are already a regular member of **{guild}**. It is not necessary to repeat the procedure.',
             color: '#2ecc71'
         },
         cooldown: {
             title: '⚠️ Cooldown Protocol',
-            description: 'Your last request was recently rejected. For bureaucratic reasons, you must wait **{time}** before submitting a new dossier.',
+            description: 'Your last request was recently rejected. For bureaucratic reasons, you must wait **{time}** before submitting a new application.',
             color: '#e74c3c'
         },
         start_success: {
             title: '✅ Path Started',
-            description: 'Your dossier has been opened correctly. Head to the <#{channelId}> channel to start the written interview.',
+            description: 'Your application has been opened correctly. Head to the <#{channelId}> channel to start the written interview.',
             color: '#2ecc71'
         },
         session_completed: {
@@ -142,17 +142,17 @@ export default {
         },
         dm_accepted: {
             title: '✅ Suitability Confirmed',
-            description: 'Congratulations citizen! Your application for **{guild}** has been approved by the Commission.\n\nYou can now access the official channels and start your experience.',
+            description: 'Congratulations member! Your application for **{guild}** has been approved by the staff team.\n\nYou can now access the official channels and start your experience.',
             color: '#2ecc71'
         },
         dm_rejected: {
             title: '❌ Negative Result',
-            description: 'Sorry, but the evaluation of your dossier at **{guild}** did not result in approval.\n\n**REASON:**\n{reason}\n\nYou can try submitting a new application after the cooldown period.',
+            description: 'Sorry, but the evaluation of your application at **{guild}** did not result in approval.\n\n**REASON:**\n{reason}\n\nYou can try submitting a new application after the cooldown period.',
             color: '#e74c3c'
         },
         dm_voice_rejected: {
             title: '⚠️ Oral Protocol Rejected',
-            description: 'You did not pass the oral evaluation at **{guild}**. We invite you to review the city protocols before reapplying.',
+            description: 'You did not pass the oral evaluation at **{guild}**. We invite you to review the server rules before reapplying.',
             color: '#e74c3c'
         },
         dm_text_pass: {
@@ -162,37 +162,37 @@ export default {
         },
         staff_received: {
             title: '📩 New Whitelist Application',
-            description: 'User **{user_name}** has submitted their dossier for evaluation.\n\n**INFO:**\n• Discord: <@{user_id}>\n• Application ID: `{app_id}`',
+            description: 'User **{user_name}** has submitted their application for evaluation.\n\n**INFO:**\n• Discord: <@{user_id}>\n• Application ID: `{app_id}`',
             color: '#3498db'
         },
         dm_submitted: {
-            title: '📋 Dossier Received',
-            description: 'Your application to join **{guild}** has been acquired by our systems.\n\nA Commission member will review it as soon as possible. You will be notified here as soon as there is a result.',
+            title: '📋 Application Received',
+            description: 'Your application to join **{guild}** has been acquired by our systems.\n\nA staff team member will review it as soon as possible. You will be notified here as soon as there is a result.',
             color: '#3498db'
         },
         submission_confirmed: {
-            title: '✅ Dossier Submitted',
-            description: 'Your documentation has been sent correctly to the competent offices. You will be notified shortly of the result.',
+            title: '✅ Application Submitted',
+            description: 'Your documentation has been sent correctly to the competent tickets. You will be notified shortly of the result.',
             color: '#2ecc71'
         },
         voice_procedural_error: {
             title: '❌ Procedural Error',
-            description: 'Sorry citizen, but the State does not provide oral interviews for the type of visa you requested.',
+            description: 'Sorry member, but the server does not provide oral interviews for the type of application you requested.',
             color: '#e74c3c'
         },
         queue_log: {
             title: '📢 Queue Protocol: New Entry',
-            description: 'A new citizen is waiting for the interview.\n\n**SUBJECT:** {user}\n**ID:** `{user_id}`\n**CURRENT QUEUE:** `{waiting_count}`',
+            description: 'A new member is waiting for the interview.\n\n**SUBJECT:** {user}\n**ID:** `{user_id}`\n**CURRENT QUEUE:** `{waiting_count}`',
             color: '#3498db'
         },
         promote_vip_success: {
             title: '💎 VIP Priority',
-            description: 'User **{user}** has been moved to the front of the ministerial queue.',
+            description: 'User **{user}** has been moved to the front of the review queue.',
             color: '#2ecc71'
         },
         pause_success: {
             title: '⏸️ System Paused',
-            description: 'Voice access protocols have been suspended. No new citizens can join the queue.',
+            description: 'Voice access protocols have been suspended. No new members can join the queue.',
             color: '#f1c40f'
         },
         resume_success: {
@@ -202,7 +202,7 @@ export default {
         },
         skip_success: {
             title: '⏭️ Session Skipped',
-            description: 'The current session has been forcibly archived. The next citizen in the queue will be invited.',
+            description: 'The current session has been forcibly archived. The next member in the queue will be invited.',
             color: '#3498db'
         },
         skip_error_no_session: {
@@ -212,7 +212,7 @@ export default {
         },
         app_not_found: {
             title: '❌ Application Not Found',
-            description: 'The requested dossier is not present in our digital archives.',
+            description: 'The requested application is not present in our digital archives.',
             color: '#e74c3c'
         },
         edit_menu: {
@@ -237,7 +237,7 @@ export default {
         },
         questions_list: {
             title: '📋 Whitelist Questions Register',
-            description: 'Here is the current list of ministerial queries:\n\n{questions}',
+            description: 'Here is the current list of application questions:\n\n{questions}',
             color: '#3498db'
         },
         question_added: {
@@ -252,7 +252,7 @@ export default {
         },
         dashboard_init_success: {
             title: '💻 Whitelist Dashboard Initialized',
-            description: 'The web interface for citizen management has been configured correctly.',
+            description: 'The web interface for member management has been configured correctly.',
             color: '#2ecc71'
         }
     },
@@ -261,16 +261,16 @@ export default {
             title: '📜 Historical Archive: Background Deposit',
             description: 'Start writing your character\'s story to get final approval for your background.\n\nClick the button below to start the deposit protocol.',
             color: '#5865f2',
-            footer: 'Vital Statistics Office | Verix RP'
+            footer: 'Background Review | {guild}'
         },
         instructions: {
             title: '✍️ Background Drafting',
-            description: 'You are starting to draft your background. Ensure you accurately describe your character\'s origins and ambitions.\n\n**REQUIREMENTS:**\n• Consistency with the city setting.\n• Respect for narrative guidelines.',
+            description: 'You are starting to draft your background. Ensure you accurately describe your character\'s origins and ambitions.\n\n**REQUIREMENTS:**\n• Consistency with the server guidelines.\n• Respect for narrative guidelines.',
             color: '#3498db'
         },
         dm_accepted: {
             title: '📜 Background Approved',
-            description: 'Your background has been officially deposited in the archives of **{guild}**. Your story is now an integral part of the city.',
+            description: 'Your background has been officially deposited in the archives of **{guild}**. Your story is now an integral part of the server.',
             color: '#2ecc71'
         },
         dm_rejected: {
@@ -284,8 +284,8 @@ export default {
             color: '#3498db'
         },
         submission_confirmed: {
-            title: '✅ Dossier Submitted',
-            description: 'Your documentation has been sent correctly to the competent offices. You will be notified shortly of the result.',
+            title: '✅ Application Submitted',
+            description: 'Your documentation has been sent correctly to the competent tickets. You will be notified shortly of the result.',
             color: '#2ecc71'
         },
         session_cancelled: {
@@ -294,8 +294,8 @@ export default {
             color: '#e74c3c'
         },
         dm_received: {
-            title: '✅ Background Dossier Received',
-            description: 'Your dossier for **{guild}** has been correctly archived in our systems. A commission official will review it shortly.',
+            title: '✅ Background Application Received',
+            description: 'Your application for **{guild}** has been correctly archived in our systems. A commission official will review it shortly.',
             color: '#2ecc71'
         },
         cooldown: {
@@ -336,44 +336,44 @@ export default {
     },
     tickets: {
         panel: {
-            title: '🎫 Secretariat: Citizen Desk',
-            description: 'Need support or wish to report something to staff? Open a support office by selecting the correct department.',
+            title: '🎫 Support Center',
+            description: 'Need support or wish to report something to staff? Open a support ticket by selecting the correct department.',
             color: '#2ECC71',
-            footer: 'Public Relations Department | Verix RP'
+            footer: 'Support Team | {guild}'
         },
         ticket: {
-            title: '📂 Support File: {type}',
+            title: '📂 Support Ticket: {type}',
             description: 'Welcome to the desk, <@{user_id}>. An operator will take charge of your request shortly.\n\n**DETAILS:**\n• Priority: `{priority}`\n• Status: `{status}`',
             color: '#2ECC71'
         },
         success_open: {
             title: '✅ Ticket Created',
-            description: 'Your support office has been opened correctly.\n\n**CHANNEL:** {channel}',
+            description: 'Your support ticket has been opened correctly.\n\n**CHANNEL:** {channel}',
             color: '#2ecc71'
         },
         close: {
-            title: '🔒 Archive: Case Concluded',
-            description: 'The documentation for this office has been correctly deposited in the archives.',
+            title: '🔒 Archive: Ticket Concluded',
+            description: 'The documentation for this ticket has been correctly deposited in the archives.',
             color: '#E74C3C'
         },
         already_exists: {
             title: '⚠️ Pending Protocol',
-            description: 'There is already an open case of type **{type}** in your name in the <#{channelId}> channel.',
+            description: 'There is already an open ticket of type **{type}** in your name in the <#{channelId}> channel.',
             color: '#f1c40f'
         },
         already_claimed: {
             title: '🙋‍♂️ Report Taken in Charge',
-            description: 'This case is already under the supervision of operator **<@{assignedStaffId}>**.',
+            description: 'This ticket is already under the supervision of operator **<@{assignedStaffId}>**.',
             color: '#f1c40f'
         },
         staff_claimed: {
             title: '⚙️ Taken in Charge',
-            description: 'Operator **{staff}** has taken over this case and will assist you shortly.',
+            description: 'Operator **{staff}** has taken over this ticket and will assist you shortly.',
             color: '#3498db'
         },
         status_updated: {
             title: '🔄 Protocol Updated',
-            description: 'The status of the case has been officially set to: **{status}**.',
+            description: 'The status of the ticket has been officially set to: **{status}**.',
             color: '#3498db'
         },
         staff_ticket_log: {
@@ -388,32 +388,32 @@ export default {
         },
         cannot_close: {
             title: '⚠️ Closing Denied',
-            description: 'The case could not be archived. Ensure all operational protocols have been concluded.',
+            description: 'The ticket could not be archived. Ensure all operational protocols have been concluded.',
             color: '#e74c3c'
         },
         default_welcome: {
             title: '🎫 Support Request',
-            description: 'Welcome to the support office. A staff member will be here shortly.\n\nReason: **{reason}**',
+            description: 'Welcome to the support ticket. A staff member will be here shortly.\n\nReason: **{reason}**',
             color: '#5865F2'
         },
         inactivity_close: {
             title: '⚠️ Inactivity Protocol',
-            description: 'This office was automatically closed by systems due to lack of recent communication.',
+            description: 'This ticket was automatically closed by systems due to lack of recent communication.',
             color: '#e74c3c'
         },
         claim_success: {
             title: '✅ Ticket Taken in Charge',
-            description: 'You have correctly assumed supervision of this case.',
+            description: 'You have correctly assumed supervision of this ticket.',
             color: '#2ecc71'
         },
         close_success: {
             title: '🔒 Ticket Archived',
-            description: 'The case has been closed and records saved.',
+            description: 'The ticket has been closed and records saved.',
             color: '#2ecc71'
         },
         priority_select: {
             title: '🎫 Priority Requested',
-            description: 'Select the urgency level for your case of type **{type}**.',
+            description: 'Select the urgency level for your ticket of type **{type}**.',
             color: '#3498db'
         },
         quick_reply_menu: {
@@ -423,7 +423,7 @@ export default {
         },
         tag_menu: {
             title: '🏷️ Tag Management',
-            description: 'Choose a protocol or tag to assign to this case.',
+            description: 'Choose a protocol or tag to assign to this ticket.',
             color: '#3498db'
         },
         close_error_logs: {
@@ -448,7 +448,7 @@ export default {
         },
         setup_success: {
             title: '🎫 Support Panel Configured',
-            description: 'The citizen desk portal has been sent successfully.\n\n**CHANNEL:** {channel}',
+            description: 'The member desk portal has been sent successfully.\n\n**CHANNEL:** {channel}',
             color: '#2ecc71'
         },
         stats_display: {
@@ -465,18 +465,18 @@ export default {
     },
     verify: {
         panel: {
-            title: '🛡️ Identification Protocol',
-            description: 'To access the city, you must confirm your citizen identity. Click the button below to proceed.',
+            title: '🛡️ Account Verification',
+            description: 'To access the server, verify your account. Click the button below to proceed.',
             color: '#3BA4FF'
         },
         success: {
             title: '✅ Identity Confirmed',
-            description: 'Great news citizen! Your registration at **{guild}** was successful.',
+            description: 'Your verification on **{guild}** was successful.',
             color: '#2ecc71'
         },
         success_reply: {
             title: '✅ Registration Completed',
-            description: 'Officially welcome among us, {user}! All permissions have been activated.',
+            description: 'Welcome, {user}! All permissions have been activated.',
             color: '#2ecc71'
         },
         already_verified: {
@@ -490,20 +490,20 @@ export default {
             color: '#2ecc71'
         },
         staff_log: {
-            title: '🛂 Entry Register: New Citizen',
-            description: 'A new user has completed verification.\n\n**IDENTITY:** {user}\n**ID:** `{userId}`\n**STATUS:** {role}',
+            title: '🛂 Verification Log: New Member',
+            description: 'A new user has completed verification.\n\n**USER:** {user}\n**ID:** `{userId}`\n**STATUS:** {role}',
             color: '#2ecc71'
         },
         error: {
             title: '❌ Identification Error',
-            description: 'A technical issue occurred while confirming your identity. Please contact a Ministry official or try again later.',
+            description: 'A technical issue occurred while confirming your identity. Please contact a staff member or try again later.',
             color: '#e74c3c'
         }
     },
     fivem: {
         status_embed: {
             title: '🏙️ City Status',
-            description: 'Real-time information on the FiveM server.\n\n📡 **Server:** {serverName}\n👥 **Citizens:** {players}/{maxPlayers}\n🟢 **Status:** Operational',
+            description: 'Real-time information on the FiveM server.\n\n📡 **Server:** {serverName}\n👥 **Members:** {players}/{maxPlayers}\n🟢 **Status:** Operational',
             color: '#2ecc71'
         },
         offline_embed: {
@@ -519,14 +519,14 @@ export default {
             color: '#2ecc71'
         },
         leave: {
-            title: '🚗 A Citizen has Left the City',
+            title: '🚗 A Member has Left the City',
             description: 'Sorry to see **{user}** leave **{guild}**. We hope to see you back soon.',
             color: '#e74c3c'
         }
     },
     economy: {
         balance: {
-            title: '💰 Bank Statement',
+            title: '💰 Bank serverment',
             description: 'Dear **{user}**, here is your financial summary:\n\n💵 **Cash:** `${cash}`\n🏦 **Bank:** `${bank}`',
             color: '#2ecc71'
         },
@@ -553,10 +553,10 @@ export default {
     },
     photocontest: {
         panel: {
-            title: '🖼️ Art Gallery: Photo Exhibition',
-            description: 'The city is looking for unique views. Capture a memorable moment and deposit it in this gallery to participate in the city contest.',
+            title: '🖼️ Photo Contest',
+            description: 'Submit your best photo and let the community vote for the winner.',
             color: '#F39C12',
-            footer: 'Culture Department | Verix RP'
+            footer: 'Photo Contest | {guild}'
         },
         submission: {
             title: '🎨 New Work Exhibited',
@@ -564,8 +564,8 @@ export default {
             color: '#3498db'
         },
         already_submitted: {
-            title: '⚠️ Participation Protocol',
-            description: 'You have already deposited a work for this contest. Regulations allow only one participation per citizen.',
+            title: '⚠️ Already Submitted',
+            description: 'You have already deposited a work for this contest. Only one submission is allowed per contest.',
             color: '#f1c40f'
         },
         vote_up: {
@@ -585,7 +585,7 @@ export default {
         },
         interaction_notify: {
             title: '📸 New Interaction!',
-            description: 'Someone just appreciated your work in the contest! Your popularity in the city is growing.',
+            description: 'Someone just appreciated your work in the contest! Your popularity in the server is growing.',
             color: '#00FF7F'
         },
         entry_not_found: {
@@ -631,7 +631,7 @@ export default {
     voice: {
         voice_waiting: {
             title: '⏳ Waiting Room: Oral Interview',
-            description: 'Your written dossier has been approved! You are now on the waiting list for the oral interview.\n\nAn examiner will contact you as soon as they are available. Stay tuned.',
+            description: 'Your written application has been approved! You are now on the waiting list for the oral interview.\n\nAn examiner will contact you as soon as they are available. Stay tuned.',
             color: '#f1c40f'
         },
         voice_guide: {
@@ -651,7 +651,7 @@ export default {
         },
         dm_accepted: {
             title: '✅ Suitability Confirmed',
-            description: 'Congratulations citizen! You have successfully passed the oral interview at **{guild}**.',
+            description: 'Congratulations member! You have successfully passed the oral interview at **{guild}**.',
             color: '#2ecc71'
         },
         dm_rejected: {
@@ -673,7 +673,7 @@ export default {
     moderation: {
         warn: {
             title: '⚠️ Official Warning',
-            description: '{user}, your behaviors have violated city protocols.\n\n**REASON:** {reason}',
+            description: '{user}, your behaviors have violated server rules.\n\n**REASON:** {reason}',
             color: '#f1c40f'
         },
         timeout: {
@@ -683,12 +683,12 @@ export default {
         },
         dm_kick: {
             title: '👢 Forced Expulsion',
-            description: '{user}, you were removed from the city for serious protocol violations.\n\n**REASON:** {reason}',
+            description: '{user}, you were removed from the server for serious rule violations.\n\n**REASON:** {reason}',
             color: '#e74c3c'
         },
         dm_ban: {
             title: '🚫 Permanent Exile',
-            description: '{user}, you were permanently banned from the city.\n\n**REASON:** {reason}',
+            description: '{user}, you were permanently banned from the server.\n\n**REASON:** {reason}',
             color: '#000000'
         },
         command_ban: {
@@ -715,7 +715,7 @@ export default {
         },
         cooldown: {
             title: '⏳ Cooldown Protocol',
-            description: 'You have already requested assistance recently. You must wait before opening a new office.',
+            description: 'You have already requested assistance recently. You must wait before opening a new ticket.',
             color: '#f1c40f'
         },
         queueFull: {
@@ -725,7 +725,7 @@ export default {
         },
         sessionStart: {
             title: '✅ Operator Available',
-            description: 'An office has been freed for you. You have been reallocated to your private support channel.',
+            description: 'An ticket has been freed for you. You have been reallocated to your private support channel.',
             color: '#2ecc71'
         },
         staffLog: {

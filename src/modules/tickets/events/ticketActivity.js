@@ -8,7 +8,7 @@ export default {
         if (!message.guild) return;
 
         // Try to find if this channel is a ticket channel
-        // We use a small optimization: check if channel name contains 'ticket' or 'pratica' or 'closed'
+        // Small optimization: check if channel name contains 'ticket' or 'closed'.
         // or just query the DB. Since this runs on every message, we should be careful.
         // However, with indexing on channelId, it's fast.
         

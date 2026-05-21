@@ -24,7 +24,7 @@ const PAGE_TITLES = {
   '/config/[guildId]/giveaway': 'Giveaway',
   '/config/[guildId]/photocontest': 'Photo Contest',
   '/config/[guildId]/socials': 'Social Notifiche',
-  '/config/[guildId]/welcome': 'Benvenuto',
+  '/config/[guildId]/welcome': 'Welcome',
   '/config/[guildId]/embeds': 'Embed Suite',
   '/config/[guildId]/autoclear': 'AutoClear',
   '/config/[guildId]/moderation': 'Moderazione',

@@ -33,7 +33,7 @@ const photoContestConfigSchema = new mongoose.Schema({
         },
         description: {
             type: String,
-            default: 'La città è alla ricerca di scorci unici. Cattura un momento memorabile e depositalo in questa galleria per partecipare al concorso cittadino.'
+            default: 'Submit your best photo and let the community vote for the winner.'
         },
         color: {
             type: String,
@@ -70,9 +70,9 @@ const photoContestConfigSchema = new mongoose.Schema({
             duration: { type: Number, default: null }
         }, { _id: false })],
         default: [
-            { name: 'Natura' }, { name: 'Architettura' }, { name: 'Tramonti' }, 
-            { name: 'Cibo' }, { name: 'Minimalismo' }, { name: 'Cyberpunk' }, 
-            { name: 'Ritratti' }, { name: 'Animali' }
+            { name: 'Nature' }, { name: 'Architecture' }, { name: 'Sunsets' },
+            { name: 'Food' }, { name: 'Minimalism' }, { name: 'Gaming' },
+            { name: 'Portraits' }, { name: 'Animals' }
         ]
     },
     notifications: {
@@ -86,7 +86,7 @@ const photoContestConfigSchema = new mongoose.Schema({
     },
     submitLabel: {
         type: String,
-        default: 'Invia Foto'
+        default: 'Submit Photo'
     },
     submitEmoji: {
         type: String,
@@ -94,7 +94,7 @@ const photoContestConfigSchema = new mongoose.Schema({
     },
     voteLabel: {
         type: String,
-        default: 'Classifica'
+        default: 'Leaderboard'
     },
     voteEmoji: {
         type: String,

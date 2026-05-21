@@ -161,7 +161,7 @@ export default {
             }
 
             const newEmbed = EmbedBuilder.from(oldEmbed)
-                .setDescription(`Questa fotografia è stata sottomessa per il contest cittadino.\n\n**Punteggio:** \`${submission.score} pt\`\n**Scadenza:** ${expiryPart}`);
+                .setDescription(`This photo was submitted for the contest.\n\n**Score:** \`${submission.score} pt\`\n**Deadline:** ${expiryPart}`);
 
             await interaction.message.edit({ embeds: [newEmbed] });
 

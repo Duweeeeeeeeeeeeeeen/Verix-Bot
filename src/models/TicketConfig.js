@@ -13,7 +13,7 @@ const ticketConfigSchema = new mongoose.Schema({
     logChannelId: { type: String },
     enabledTypes: { 
         type: [String], 
-        default: ['supporto', 'segnalazione', 'whitelist', 'staff', 'altro'] 
+        default: ['support', 'report', 'whitelist', 'staff', 'other'] 
     },
     notifications: {
         mode: { type: String, enum: ['DM', 'CHANNEL', 'BOTH', 'NONE'], default: 'DM' },
@@ -33,10 +33,10 @@ const ticketConfigSchema = new mongoose.Schema({
             welcomeMessage: { type: String, default: null }
         },
         default: {
-            'supporto': { label: 'Supporto Generale', color: '#6366f1', emoji: '🎫' },
-            'segnalazione': { label: 'Segnalazione Utente', color: '#ef4444', emoji: '🚨' },
-            'donazione': { label: 'Donazioni', color: '#f59e0b', emoji: '💰' },
-            'bug': { label: 'Segnalazione Bug', color: '#10b981', emoji: '🐛' }
+            'support': { label: 'General Support', color: '#6366f1', emoji: '??' },
+            'report': { label: 'User Report', color: '#ef4444', emoji: '??' },
+            'donation': { label: 'Donations', color: '#f59e0b', emoji: '??' },
+            'bug': { label: 'Bug Report', color: '#10b981', emoji: '??' }
         }
     },
     transcriptionEnabled: { type: Boolean, default: true },
@@ -53,21 +53,21 @@ const ticketConfigSchema = new mongoose.Schema({
     panelImage: { type: String, default: null },
     embeds: {
         panel: {
-            title: { type: String, default: '🎫 Segretariato: Sportello al Cittadino' },
-            description: { type: String, default: 'Hai bisogno di supporto o desideri segnalare qualcosa allo staff? Apri un ufficio assistenza selezionando il dipartimento corretto.' },
+            title: { type: String, default: 'Support Center' },
+            description: { type: String, default: 'Need help or want to report something to staff? Open a ticket by selecting the correct category.' },
             color: { type: String, default: '#2ECC71' },
             image: { type: String, default: null },
             thumbnail: { type: String, default: null },
-            footer: { type: String, default: 'Dipartimento Pubbliche Relazioni | Verix RP' }
+            footer: { type: String, default: 'Support Team | {guild}' }
         },
         ticket: {
-            title: { type: String, default: '{emoji} Pratica {type} - In Carico' },
-            description: { type: String, default: 'Benvenuto allo sportello assistenziale, <@{user_id}>. Un operatore prenderà in carico la tua richiesta a breve.\n\n**DETTAGLI PROTOCOLLO:**\n• Priorità Operativa: `{priority}`\n• Stato Corrente: `{status}`' },
+            title: { type: String, default: '{emoji} Ticket: {type}' },
+            description: { type: String, default: 'Welcome, <@{user_id}>. A staff member will handle your request shortly.\n\n**DETAILS:**\n- Priority: `{priority}`\n- Status: `{status}`' },
             color: { type: String, default: '#2ECC71' }
         },
         close: {
-            title: { type: String, default: '📂 Archivio: Pratica Conclusa' },
-            description: { type: String, default: 'La documentazione di questo ufficio è stata depositata correttamente negli archivi.' },
+            title: { type: String, default: 'Ticket Closed' },
+            description: { type: String, default: 'This ticket has been closed and archived.' },
             color: { type: String, default: '#E74C3C' }
         }
     },
@@ -85,22 +85,22 @@ const ticketConfigSchema = new mongoose.Schema({
     },
     buttons: {
         claim: { 
-            label: { type: String, default: 'Assumi' }, 
+            label: { type: String, default: 'Claim' }, 
             emoji: { type: String, default: '🙋‍♂️' }, 
             style: { type: String, default: 'SUCCESS' } 
         },
         close: { 
-            label: { type: String, default: 'Chiudi' }, 
+            label: { type: String, default: 'Close' }, 
             emoji: { type: String, default: '🔒' }, 
             style: { type: String, default: 'DANGER' } 
         },
         quickReply: { 
-            label: { type: String, default: 'Risposte Rapide' }, 
+            label: { type: String, default: 'Quick Replies' }, 
             emoji: { type: String, default: '📝' }, 
             style: { type: String, default: 'PRIMARY' } 
         },
         tag: { 
-            label: { type: String, default: 'Tagga' }, 
+            label: { type: String, default: 'Tag' }, 
             emoji: { type: String, default: '🏷️' }, 
             style: { type: String, default: 'SECONDARY' } 
         },

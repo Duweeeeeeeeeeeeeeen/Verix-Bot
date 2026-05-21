@@ -45,7 +45,7 @@ export default {
             color: '#e74c3c'
         },
         module_already_in_state: {
-            title: 'ℹ️ State Unchanged',
+            title: 'ℹ️ server Unchanged',
             description: 'The **{module}** module is already in the requested state.',
             color: '#3498db'
         },
@@ -142,17 +142,17 @@ export default {
         },
         dm_accepted: {
             title: '✅ Suitability Confirmed',
-            description: 'Congratulations citizen! Your application to **{guild}** has been approved by the Commission.\n\nYou can now access the official channels and begin your experience.',
+            description: 'Congratulations member! Your application to **{guild}** has been approved by the staff team.\n\nYou can now access the official channels and begin your experience.',
             color: '#2ecc71'
         },
         dm_rejected: {
             title: '❌ Negative Outcome',
-            description: 'Sorry, but the evaluation of your dossier at **{guild}** was not positive.\n\n**REASON:**\n{reason}\n\nYou can try submitting a new request after the cooldown period.',
+            description: 'Sorry, but the evaluation of your application at **{guild}** was not positive.\n\n**REASON:**\n{reason}\n\nYou can try submitting a new request after the cooldown period.',
             color: '#e74c3c'
         },
         dm_voice_rejected: {
             title: '⚠️ Oral Protocol Rejected',
-            description: 'You did not pass the oral assessment at **{guild}**. We invite you to review the city protocols before reapplying.',
+            description: 'You did not pass the oral assessment at **{guild}**. We invite you to review the server rules before reapplying.',
             color: '#e74c3c'
         },
         dm_text_pass: {
@@ -162,27 +162,27 @@ export default {
         },
         staff_received: {
             title: '📩 New Whitelist Application',
-            description: 'User **{user_name}** has submitted their dossier for evaluation.\n\n**INFO:**\n• Discord: <@{user_id}>\n• Application ID: `{app_id}`',
+            description: 'User **{user_name}** has submitted their application for evaluation.\n\n**INFO:**\n• Discord: <@{user_id}>\n• Application ID: `{app_id}`',
             color: '#3498db'
         },
         dm_submitted: {
-            title: '📋 Dossier Received',
-            description: 'Your application to enter **{guild}** has been acquired by our systems.\n\nA member of the Commission will review it as soon as possible. You will be notified here as soon as there is an outcome.',
+            title: '📋 Application Received',
+            description: 'Your application to enter **{guild}** has been acquired by our systems.\n\nA member of the staff team will review it as soon as possible. You will be notified here as soon as there is an outcome.',
             color: '#3498db'
         },
         submission_confirmed: {
-            title: '✅ Dossier Submitted',
-            description: 'Your documentation has been correctly sent to the relevant offices. You will be notified of the outcome shortly.',
+            title: '✅ Application Submitted',
+            description: 'Your documentation has been correctly sent to the relevant tickets. You will be notified of the outcome shortly.',
             color: '#2ecc71'
         },
         voice_procedural_error: {
             title: '❌ Procedural Error',
-            description: 'Sorry citizen, but the State does not provide oral interviews for the type of visa you requested.',
+            description: 'Sorry member, but the server does not provide oral interviews for the type of application you requested.',
             color: '#e74c3c'
         },
         queue_log: {
             title: '📢 Queue Protocol: New Entry',
-            description: 'A new citizen is waiting for an interview.\n\n**SUBJECT:** {user}\n**ID:** `{user_id}`\n**CURRENT QUEUE:** `{waiting_count}`',
+            description: 'A new member is waiting for an interview.\n\n**SUBJECT:** {user}\n**ID:** `{user_id}`\n**CURRENT QUEUE:** `{waiting_count}`',
             color: '#3498db'
         }
     },
@@ -195,7 +195,7 @@ export default {
         },
         instructions: {
             title: '✍️ Character Story Drafting',
-            description: 'You are starting to draft your story. Make sure to accurately describe your character\'s origins and ambitions.\n\n**REQUIREMENTS:**\n• Consistency with the city setting.\n• Respect for narrative guidelines.',
+            description: 'You are starting to draft your story. Make sure to accurately describe your character\'s origins and ambitions.\n\n**REQUIREMENTS:**\n• Consistency with the server guidelines.\n• Respect for narrative guidelines.',
             color: '#3498db'
         },
         modal_title: 'Story Details',
@@ -204,7 +204,7 @@ export default {
         desc_placeholder: 'Summarize your character story here...',
         dm_accepted: {
             title: '📜 Story Approved',
-            description: 'Your story has been officially deposited in the archives of **{guild}**. Your character is now an integral part of the city.',
+            description: 'Your story has been officially deposited in the archives of **{guild}**. Your character is now an integral part of the server.',
             color: '#2ecc71'
         },
         dm_rejected: {
@@ -364,7 +364,7 @@ export default {
             no_app: 'No application',
             last_wl: '📅 Last Whitelist',
             background: '📖 Background',
-            no_dossier: 'No dossiers',
+            no_application: 'No applications',
             footer: 'Staff Intelligence Module',
             field_name: '🔍 User Intelligence'
         },
@@ -437,13 +437,13 @@ export default {
     fivem: {
         status_embed: {
             title: '🏙️ City Status: Online',
-            description: 'The heart of the metropolis is active. Citizens are invited to connect and start their day.\n\n📡 **Server:** `{serverName}`\n👥 **Citizens in City:** `{players}/{maxPlayers}`\n🟢 **Status:** Operational',
+            description: 'The heart of the metropolis is active. Members are invited to connect and start their day.\n\n📡 **Server:** `{serverName}`\n👥 **Members in City:** `{players}/{maxPlayers}`\n🟢 **Status:** Operational',
             color: '#2ecc71',
             footer: 'Urban Monitoring | Verix RP'
         },
         offline_embed: {
             title: '🔴 City Status: Offline',
-            description: 'Attention citizens. Connection to the metropolis has been interrupted. Technicians are working to restore access protocols.\n\n⚠️ **Status:** Inaccessible / Maintenance',
+            description: 'Attention members. Connection to the metropolis has been interrupted. Technicians are working to restore access protocols.\n\n⚠️ **Status:** Inaccessible / Maintenance',
             color: '#e74c3c',
             footer: 'Urban Emergency | Verix RP'
         }

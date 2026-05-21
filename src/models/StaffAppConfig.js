@@ -21,25 +21,25 @@ const staffAppConfigSchema = new mongoose.Schema({
     },
     embeds: {
         panel: {
-            title: { type: String, default: '🛡️ Reclutamento Staff - Portale Candidature' },
-            description: { type: String, default: 'Vuoi entrare a far parte del nostro team? Inviando la tua candidatura verrai valutato dai responsabili HR.\n\nAssicurati di rispondere in modo esaustivo a tutte le domande.' },
+            title: { type: String, default: 'Staff Applications' },
+            description: { type: String, default: 'Want to join the staff team? Submit an application and the team will review it.\n\nMake sure to answer every question with enough detail.' },
             color: { type: String, default: 'primary' },
             button: {
-                label: { type: String, default: 'Candidati Ora' },
+                label: { type: String, default: 'Apply Now' },
                 emoji: { type: String, default: '🛡️' },
                 style: { type: String, default: 'PRIMARY' }
             }
         },
         dm_accepted: {
             enabled: { type: Boolean, default: true },
-            title: { type: String, default: '🎊 Candidatura Accettata!' },
-            description: { type: String, default: 'Ottime notizie {user}! La tua candidatura per lo staff di {guild} è stata approvata. Benvenuto nel team!' },
+            title: { type: String, default: 'Application Accepted!' },
+            description: { type: String, default: 'Great news {user}! Your staff application for {guild} has been approved. Welcome to the team!' },
             color: { type: String, default: 'success' }
         },
         dm_rejected: {
             enabled: { type: Boolean, default: true },
-            title: { type: String, default: '❌ Candidatura Respinta' },
-            description: { type: String, default: 'Siamo spiacenti {user}, ma la tua candidatura per {guild} non è stata approvata.\n\n**Motivazione:**\n>>> {reason}' },
+            title: { type: String, default: 'Application Rejected' },
+            description: { type: String, default: 'Sorry {user}, your staff application for {guild} was not approved.\n\n**Reason:**\n>>> {reason}' },
             color: { type: String, default: 'error' }
         }
     },

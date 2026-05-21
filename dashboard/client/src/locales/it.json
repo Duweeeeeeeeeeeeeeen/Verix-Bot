@@ -1067,6 +1067,7 @@
   "embeds.wait_minutes": "Minuti di attesa",
   "fivem.actions_title": "Azioni Rapide (Bottoni)",
   "fivem.active": "MONITORAGGIO ATTIVO",
+  "fivem.link_button_style_notice": "I bottoni URL di Discord usano sempre lo stile link. Discord non permette colori personalizzati sui bottoni con link esterno.",
   "fivem.add_btn": "Aggiungi Bottone",
   "fivem.add_new": "Aggiungi Istanza",
   "fivem.add_server": "Aggiungi Server",

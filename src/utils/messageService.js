@@ -119,8 +119,8 @@ class MessageService {
         if (!embedData) {
             logger.warn(`[MessageService] Message not found: ${module}.${slug}`);
             return new EmbedBuilder()
-                .setTitle('❌ Errore Configurazione')
-                .setDescription(`Messaggio mancante: \`${module}.${slug}\`.\nPer favore contatta lo staff o ripristina i default.`)
+                .setTitle('Configuration Error')
+                .setDescription(`Missing message: \`${module}.${slug}\`.\nPlease contact staff or restore the defaults.`)
                 .setColor('#e74c3c');
         }
 
@@ -132,7 +132,7 @@ class MessageService {
         
         // Ensure description is never empty as Discord API requires it
         if (!embed.data.description && !embed.data.title) {
-            embed.setDescription(`[Messaggio ${module}.${slug} vuoto]`);
+            embed.setDescription(`[Empty message: ${module}.${slug}]`);
         }
 
         return embed;
@@ -140,7 +140,7 @@ class MessageService {
 
     /**
      * Internal: Get the raw message object (DB or Default)
-     * Performs a field-by-field merge to avoid "Senza Titolo" placeholders.
+     * Performs a field-by-field merge to avoid empty placeholder values.
      */
     async getRaw(guildId, module, slug) {
         const cacheKey = `${guildId}_${module}`;

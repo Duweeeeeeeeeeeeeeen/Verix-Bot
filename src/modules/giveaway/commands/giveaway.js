@@ -28,7 +28,7 @@ export default {
             const durationMs = ms(durationStr);
             if (!durationMs) {
                 const errorEmbed = new EmbedBuilder()
-                    .setTitle('❌ Errore Configurazione')
+                    .setTitle('Configuration Error')
                     .setDescription('Formato durata non valido (usa es: `1h`, `30m`, `1d`).')
                     .setColor('#ff4757');
                 return interaction.reply({ embeds: [errorEmbed], flags: [MessageFlags.Ephemeral] });

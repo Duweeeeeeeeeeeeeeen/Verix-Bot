@@ -4,24 +4,24 @@ import Guild from '../../models/Guild.js';
 export default {
     data: new SlashCommandBuilder()
         .setName('help')
-        .setDescription('Mostra la lista dei comandi e i moduli attivi del bot.'),
+        .setDescription('Show the command list and active bot modules.'),
     
     async execute(interaction) {
         const guildData = await Guild.findOne({ guildId: interaction.guild.id });
         const prefix = guildData?.prefix || '!';
 
         const helpEmbed = new EmbedBuilder()
-            .setTitle('Verix Bot | Centro Supporto')
-            .setDescription(`Benvenuto nel centro assistenza di Verix. Il bot utilizza principalmente i **Comandi Slash** (digita \`/\`), ma supporta anche il prefisso personalizzato per questo server: \`${prefix}\`.`)
+            .setTitle('Verix Bot | Help Center')
+            .setDescription(`Welcome to the Verix help center. The bot mainly uses **slash commands** (type \`/\`), but it also supports the custom prefix for this server: \`${prefix}\`.`)
             .setColor('#3b82f6')
             .addFields(
-                { name: '🌐 Dashboard', value: 'Gestisci il bot dal web: [verixbot.com](https://verixbot.com)', inline: true },
-                { name: '🆘 Supporto', value: 'Unisciti al nostro [Server Discord](https://discord.gg/Ck3rGpSV7U)', inline: true },
-                { name: '📑 Documentazione', value: `[Leggi la guida](https://verixbot.com/config/${interaction.guild.id}/guide)`, inline: true },
+                { name: 'Dashboard', value: 'Manage the bot from the web: [verixbot.com](https://verixbot.com)', inline: true },
+                { name: 'Support', value: 'Join our [Discord Server](https://discord.gg/Ck3rGpSV7U)', inline: true },
+                { name: 'Documentation', value: `[Read the guide](https://verixbot.com/config/${interaction.guild.id}/guide)`, inline: true },
                 { name: '\u200B', value: '\u200B' },
                 { 
-                    name: '🛠️ Moduli Attivi', 
-                    value: (guildData?.enabledModules || []).map(m => `✅ \`${m.toUpperCase()}\``).join(' ') || 'Nessun modulo attivo.' 
+                    name: 'Active Modules', 
+                    value: (guildData?.enabledModules || []).map(m => `✅ \`${m.toUpperCase()}\``).join(' ') || 'No active modules.' 
                 }
             )
             .setFooter({ text: 'Verix Premium • V2 Edition', iconURL: interaction.client.user.displayAvatarURL() })

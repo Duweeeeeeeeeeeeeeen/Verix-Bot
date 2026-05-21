@@ -6,10 +6,10 @@ const socialPlatformSchema = new mongoose.Schema({
     roleId: { type: String, default: null }, // Role to mention
     liveRoleId: { type: String, default: null }, // Role to give when live
     mentionEveryone: { type: Boolean, default: false },
-    pingMessage: { type: String, default: '{role} **{username}** è live!' },
+    pingMessage: { type: String, default: '{role} **{username}** is live!' },
     embed: {
-        title: { type: String, default: 'Nuovo contenuto!' },
-        description: { type: String, default: '**{title}**\n\n[Guarda ora]({url})' },
+        title: { type: String, default: 'New content!' },
+        description: { type: String, default: '**{title}**\n\n[Open]({url})' },
         color: { type: String, default: '#ffffff' },
         thumbnail: { type: String, default: '' },
         image: { type: String, default: '' },
@@ -36,17 +36,17 @@ const socialPlatformSchema = new mongoose.Schema({
 const socialConfigSchema = new mongoose.Schema({
     guildId: { type: String, required: true, unique: true },
     platforms: {
-        twitch: { type: socialPlatformSchema, default: () => ({ embed: { color: '#6441a5', title: '📡 {streamer} è in diretta!', description: '### {title}\n\nEhi! **{streamer}** ha appena acceso la camera su Twitch. Non perderti lo show!\n\n[Entra in Live]({url})' } }) },
-        youtube: { type: socialPlatformSchema, default: () => ({ embed: { color: '#ff0000', title: '🎥 Nuovo video di {streamer}!', description: '### {title}\n\nÈ appena uscito un nuovo video sul canale! Corri a lasciare un like.' } }) },
-        instagram: { type: socialPlatformSchema, default: () => ({ embed: { color: '#e1306c', title: '📸 Nuovo post di {streamer}', description: '### {title}\n\nNuovo contenuto caricato su Instagram! Passa a dare un\'occhiata.' } }) },
-        tiktok: { type: socialPlatformSchema, default: () => ({ embed: { color: '#000000', title: '🎵 Nuovo TikTok di {streamer}', description: '### {title}\n\nÈ appena stato pubblicato un nuovo video su TikTok! Guarda subito.' } }) },
-        twitter: { type: socialPlatformSchema, default: () => ({ embed: { color: '#1da1f2', title: '🐦 Nuovo Tweet di {streamer}', description: '{description}' } }) },
-        reddit: { type: socialPlatformSchema, default: () => ({ embed: { color: '#ff4500', title: '👾 Nuovo Post su r/{username}!', description: '### {title}\n\n**{author}** ha pubblicato un nuovo contenuto su **r/{username}**!\n\n{description}' } }) },
-        steam: { type: socialPlatformSchema, default: () => ({ embed: { color: '#1b2838', title: '🎮 Nuovo Annuncio per {username}!', description: '### {title}\n\n**{username}** ha rilasciato un nuovo annuncio/aggiornamento!\n\n{description}' } }) },
-        kick: { type: socialPlatformSchema, default: () => ({ embed: { color: '#53fc18', title: '🟢 **{streamer}** is live on Kick!', description: '### {title}\n\nWatch the stream now on Kick.' } }) },
-        github: { type: socialPlatformSchema, default: () => ({ embed: { color: '#24292f', title: '🐙 New GitHub update for **{username}**', description: '### {title}\n\n{description}' } }) },
-        rss: { type: socialPlatformSchema, default: () => ({ embed: { color: '#f97316', title: '📰 New update from **{username}**', description: '### {title}\n\n{description}' } }) },
-        telegram: { type: socialPlatformSchema, default: () => ({ embed: { color: '#26a5e4', title: '✈️ New Telegram post from **{username}**', description: '### {title}\n\n{description}' } }) }
+        twitch: { type: socialPlatformSchema, default: () => ({ embed: { color: '#6441a5', title: '{streamer} is live!', description: '### {title}\n\n**{streamer}** just went live on Twitch.\n\n[Watch Live]({url})' } }) },
+        youtube: { type: socialPlatformSchema, default: () => ({ embed: { color: '#ff0000', title: 'New video from {streamer}!', description: '### {title}\n\nA new video has been published.\n\n[Watch]({url})' } }) },
+        instagram: { type: socialPlatformSchema, default: () => ({ embed: { color: '#e1306c', title: 'New Instagram post from {streamer}', description: '### {title}\n\nNew content was published on Instagram.\n\n[Open Post]({url})' } }) },
+        tiktok: { type: socialPlatformSchema, default: () => ({ embed: { color: '#000000', title: 'New TikTok from {streamer}', description: '### {title}\n\nA new TikTok was published.\n\n[Watch]({url})' } }) },
+        twitter: { type: socialPlatformSchema, default: () => ({ embed: { color: '#000000', title: 'New post from {streamer}', description: '{description}' } }) },
+        reddit: { type: socialPlatformSchema, default: () => ({ embed: { color: '#ff4500', title: 'New post in r/{username}!', description: '### {title}\n\n**{author}** published a new post.\n\n{description}' } }) },
+        steam: { type: socialPlatformSchema, default: () => ({ embed: { color: '#1b2838', title: 'New Steam update for {username}!', description: '### {title}\n\n{description}' } }) },
+        kick: { type: socialPlatformSchema, default: () => ({ embed: { color: '#53fc18', title: '{streamer} is live on Kick!', description: '### {title}\n\nWatch the stream now on Kick.' } }) },
+        github: { type: socialPlatformSchema, default: () => ({ embed: { color: '#24292f', title: 'New GitHub update for {username}', description: '### {title}\n\n{description}' } }) },
+        rss: { type: socialPlatformSchema, default: () => ({ embed: { color: '#f97316', title: 'New update from {username}', description: '### {title}\n\n{description}' } }) },
+        telegram: { type: socialPlatformSchema, default: () => ({ embed: { color: '#26a5e4', title: 'New Telegram post from {username}', description: '### {title}\n\n{description}' } }) }
     },
     colors: {
         primary: { type: String, default: '#5865F2' },

@@ -92,7 +92,7 @@ export function buildEmbed(embedConfig, placeholders = {}, fullConfig = {}) {
 
     // FINAL CHECK: Discord requires at least one field (title, description, etc)
     if (!embed.data.title && !embed.data.description && (!embed.data.fields || embed.data.fields.length === 0)) {
-        embed.setDescription('*(Nessun contenuto impostato)*');
+        embed.setDescription('*(No content set)*');
     }
 
     return embed;

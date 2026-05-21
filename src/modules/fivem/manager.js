@@ -308,7 +308,7 @@ export class FiveMManager {
             if (isOnline && serverConfig.buttons && serverConfig.buttons.length > 0) {
                  const row = new ActionRowBuilder();
                  for (const btn of serverConfig.buttons.slice(0, 5)) { // Discord limit
-                    const btnLabel = replacePlaceholders(btn.label || 'Connettiti', placeholders);
+                    const btnLabel = replacePlaceholders(btn.label || 'Connect', placeholders);
                     let targetIp = serverConfig.serverIp;
                     if (targetIp.includes('cfx.re/join/')) {
                         targetIp = targetIp.split('join/').pop().split('/')[0];

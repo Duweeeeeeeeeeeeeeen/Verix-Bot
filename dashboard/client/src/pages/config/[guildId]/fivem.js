@@ -251,6 +251,9 @@ export default function FiveMConfig() {
                                                 <strong>{t('fivem.actions_title')}</strong>
                                                 <button className="pc-btn-primary" style={{ padding: '6px 12px', fontSize: '0.8rem' }} onClick={() => addButton(server.id)}><Plus size={16} /> <span>{t('fivem.add_btn')}</span></button>
                                             </div>
+                                            <p style={{ margin: '0 0 14px', color: 'var(--text-muted)', fontSize: '0.78rem', lineHeight: 1.5 }}>
+                                                {t('fivem.link_button_style_notice')}
+                                            </p>
                                             <div className="v-stack" style={{ gap: '12px' }}>
                                                 {(server.buttons || []).map((btn, idx) => (
                                                     <div key={idx} className="pc-input-row-v2" style={{ display: 'grid', gridTemplateColumns: '80px minmax(120px, 1fr) minmax(180px, 2fr) 42px', gap: '10px', alignItems: 'center' }}>

@@ -40,35 +40,35 @@ const verifyConfigSchema = new mongoose.Schema({
     },
     embeds: {
         panel: {
-            title: { type: String, default: '🛡️ Checkpoint di Sicurezza - Dogana' },
-            description: { type: String, default: 'Per garantire l\'incolumità dei cittadini, è necessario confermare la tua identità prima di attraversare la dogana e accedere alla città.' },
+            title: { type: String, default: 'Server Verification' },
+            description: { type: String, default: 'Click the button below to verify your account and unlock the server.' },
             color: { type: String, default: '#9146FF' },
             image: { type: String, default: '' },
             thumbnail: { type: String, default: '' },
-            footer: { type: String, default: 'Dipartimento di Sicurezza Nazionale | Verix RP' },
+            footer: { type: String, default: 'Security System | {guild}' },
             fields: { type: Array, default: [] }
         },
         dm: {
-            title: { type: String, default: '✅ Identità Confermata' },
-            description: { type: String, default: 'Ottime notizie cittadino! La tua registrazione presso **{guild}** è stata confermata correttamente. Ora puoi attraversare i cancelli della città.' },
+            title: { type: String, default: 'Verification Complete' },
+            description: { type: String, default: 'You have been verified in **{guild}**. Welcome!' },
             color: { type: String, default: '#2ecc71' },
             image: { type: String, default: '' },
             thumbnail: { type: String, default: '' },
-            footer: { type: String, default: 'Dipartimento Doganale | Verix RP' },
+            footer: { type: String, default: 'Security System | {guild}' },
             fields: { type: Array, default: [] }
         }
     },
     buttons: {
         verify: {
-            label: { type: String, default: 'Verificati Ora' },
+            label: { type: String, default: 'Verify' },
             emoji: { type: String, default: '✅' },
             style: { type: String, default: 'SUCCESS' }
         }
     },
     messages: {
-        alreadyVerified: { type: String, default: 'ℹ️ **PROTOCOLLO ATTIVO:** Risulti già registrato nel database cittadino.' },
-        successResponse: { type: String, default: '✅ **IDENTITÀ VALIDATA:** Benvenuto oltre il perimetro.' },
-        errorResponse: { type: String, default: '❌ **ERRORE DI SISTEMA:** Impossibile validare i documenti al momento.' }
+        alreadyVerified: { type: String, default: 'You are already verified.' },
+        successResponse: { type: String, default: 'Verification completed successfully.' },
+        errorResponse: { type: String, default: 'Could not verify your account right now. Please try again later.' }
     },
     notifications: {
         mode: { type: String, enum: ['DM', 'CHANNEL', 'BOTH', 'NONE'], default: 'DM' },
