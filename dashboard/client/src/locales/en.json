@@ -3454,6 +3454,8 @@
   "voice.msg_not_owner": "Not Owner",
   "voice.msg_not_owner_desc": "Shown when a user tries to manage a room they do not own.",
   "common.no_options": "No options available",
+  "common.required_field": "Required to use this module",
+  "common.required_to_publish": "Required before publishing",
   "common.preview": "Preview",
   "preview.title": "Preview",
   "preview.discord_title": "Discord Preview",

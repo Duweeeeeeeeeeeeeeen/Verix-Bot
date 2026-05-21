@@ -360,11 +360,11 @@ export default function VoiceHubPage() {
                             <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
                                 <div className="pc-input-group-v2">
                                     <label>{t('voice.generator_master')}</label>
-                                    <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 2)} value={tempVoiceConfig.creatorChannelId || ''} onChange={val => setNested('tempvoice', 'creatorChannelId', val)} />
+                                    <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 2)} value={tempVoiceConfig.creatorChannelId || ''} onChange={val => setNested('tempvoice', 'creatorChannelId', val)} error={tempVoiceConfig.enabled && !tempVoiceConfig.creatorChannelId ? t('common.required_field') : ''} />
                                 </div>
                                 <div className="pc-input-group-v2">
                                     <label>{t('voice.target_category')}</label>
-                                    <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 4)} value={tempVoiceConfig.categoryId || ''} onChange={val => setNested('tempvoice', 'categoryId', val)} />
+                                    <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 4)} value={tempVoiceConfig.categoryId || ''} onChange={val => setNested('tempvoice', 'categoryId', val)} error={tempVoiceConfig.enabled && !tempVoiceConfig.categoryId ? t('common.required_field') : ''} />
                                 </div>
                             </div>
                         </div>
@@ -385,11 +385,11 @@ export default function VoiceHubPage() {
                                 <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
                                     <div className="pc-input-group-v2">
                                         <label>{t('voice.trigger_channel')}</label>
-                                        <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 2)} value={supportConfig.voiceSettings?.joinChannelId || ''} onChange={val => setNested('support', 'voiceSettings.joinChannelId', val)} />
+                                        <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 2)} value={supportConfig.voiceSettings?.joinChannelId || ''} onChange={val => setNested('support', 'voiceSettings.joinChannelId', val)} error={supportConfig.enabled && !supportConfig.voiceSettings?.joinChannelId ? t('common.required_field') : ''} />
                                     </div>
                                     <div className="pc-input-group-v2">
                                         <label>{t('voice.target_category')}</label>
-                                        <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 4)} value={supportConfig.voiceSettings?.categoryId || ''} onChange={val => setNested('support', 'voiceSettings.categoryId', val)} />
+                                        <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 4)} value={supportConfig.voiceSettings?.categoryId || ''} onChange={val => setNested('support', 'voiceSettings.categoryId', val)} error={supportConfig.enabled && !supportConfig.voiceSettings?.categoryId ? t('common.required_field') : ''} />
                                     </div>
                                     <div className="pc-input-group-v2">
                                         <label>{t('voice.max_instances')}</label>
@@ -434,7 +434,7 @@ export default function VoiceHubPage() {
                             <div className="card-body-v2">
                                 <div className="pc-input-group-v2">
                                     <label>{t('voice.staff_roles')}</label>
-                                    <DiscordSelector type="role" multiple={true} options={discordData.roles} value={supportConfig.staffRoleIds || []} onChange={val => setNested('support', 'staffRoleIds', val)} />
+                                    <DiscordSelector type="role" multiple={true} options={discordData.roles} value={supportConfig.staffRoleIds || []} onChange={val => setNested('support', 'staffRoleIds', val)} error={supportConfig.enabled && !(supportConfig.staffRoleIds || []).length ? t('common.required_field') : ''} />
                                 </div>
                                 <div className="pc-input-group-v2" style={{ marginTop: '24px' }}>
                                     <label>{t('voice.vip_role')}</label>

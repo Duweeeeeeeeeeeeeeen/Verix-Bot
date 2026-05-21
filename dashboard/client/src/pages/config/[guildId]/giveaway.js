@@ -265,15 +265,16 @@ export default function GiveawayConfig() {
                             <div className="card-body-v2">
                                 <div className="pc-input-group-v2">
                                     <label>{t('giveaway.prize_name')}</label>
-                                    <div className="pc-input-modern-v2">
+                                    <div className={`pc-input-modern-v2 ${!newGw.prize ? 'has-error' : ''}`}>
                                         <Gift size={18} />
                                         <input value={newGw.prize} onChange={e => setNewGw({...newGw, prize: e.target.value})} placeholder={t('giveaway.prize_placeholder')} />
                                     </div>
+                                    {!newGw.prize && <span className="pc-required-hint">{t('common.required_to_publish')}</span>}
                                 </div>
                                 <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr', gap: '20px', marginTop: '24px' }}>
                                     <div className="pc-input-group-v2">
                                         <label>{t('giveaway.target_channel')}</label>
-                                        <DiscordSelector type="channel" options={channels} value={newGw.channelId} onChange={v => setNewGw({...newGw, channelId: v})} />
+                                        <DiscordSelector type="channel" options={channels} value={newGw.channelId} onChange={v => setNewGw({...newGw, channelId: v})} error={!newGw.channelId ? t('common.required_to_publish') : ''} />
                                     </div>
                                     <div className="pc-input-group-v2">
                                         <label>{t('giveaway.winners_count')}</label>

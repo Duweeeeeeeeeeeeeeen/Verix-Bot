@@ -228,7 +228,7 @@ export default function WelcomeConfig() {
                             <div className="card-body-v2">
                                 <div className="pc-input-group-v2">
                                     <label>{t('welcome.channel_label')}</label>
-                                    <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 0 || c.type === 5)} value={config.welcome?.channelId || ''} onChange={v => updateMessageConfig('welcome', 'channelId', v)} />
+                                    <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 0 || c.type === 5)} value={config.welcome?.channelId || ''} onChange={v => updateMessageConfig('welcome', 'channelId', v)} error={config.enabled && config.welcome?.enabled && !config.welcome?.channelId ? t('common.required_field') : ''} />
                                     <p style={{ margin: '8px 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t('welcome.channel_help')}</p>
                                 </div>
                                 <div style={{ marginTop: '24px', background: 'var(--bg-badge)', padding: '16px', borderRadius: '14px', border: '1.5px solid var(--border)', textAlign: 'center' }}>
@@ -253,7 +253,7 @@ export default function WelcomeConfig() {
                             <div className="card-body-v2">
                                 <div className="pc-input-group-v2">
                                     <label>{t('welcome.channel_label')}</label>
-                                    <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 0 || c.type === 5)} value={config.leave?.channelId || ''} onChange={v => updateMessageConfig('leave', 'channelId', v)} />
+                                    <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 0 || c.type === 5)} value={config.leave?.channelId || ''} onChange={v => updateMessageConfig('leave', 'channelId', v)} error={config.enabled && config.leave?.enabled && !config.leave?.channelId ? t('common.required_field') : ''} />
                                     <p style={{ margin: '8px 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t('welcome.channel_help')}</p>
                                 </div>
                                 <div style={{ marginTop: '24px', background: 'var(--bg-badge)', padding: '16px', borderRadius: '14px', border: '1.5px solid var(--border)', textAlign: 'center' }}>

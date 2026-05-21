@@ -225,14 +225,14 @@ export default function VerifyConfig() {
                                             <label>{t('verify.role_to_assign')}</label>
                                             <HelpTooltip text={t('verify.role_to_assign_help')} />
                                         </div>
-                                        <DiscordSelector type="role" options={discordData.roles} value={config.roleId} onChange={v => setNested('roleId', v)} error={getRoleError(config.roleId)} />
+                                        <DiscordSelector type="role" options={discordData.roles} value={config.roleId} onChange={v => setNested('roleId', v)} error={getRoleError(config.roleId) || (config.enabled && !config.roleId ? t('common.required_field') : '')} />
                                     </div>
                                     <div className="pc-input-group-v2">
                                         <div className="pc-label-row">
                                             <label>{t('verify.publish_channel')}</label>
                                             <HelpTooltip text={t('verify.publish_channel_help')} />
                                         </div>
-                                        <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 0 || c.type === 5)} value={config.channelId} onChange={v => setNested('channelId', v)} />
+                                        <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 0 || c.type === 5)} value={config.channelId} onChange={v => setNested('channelId', v)} error={config.enabled && !config.channelId ? t('common.required_field') : ''} />
                                     </div>
                                     <div className="pc-input-group-v2" style={{ gridColumn: 'span 2', marginTop: '16px' }}>
                                         <label>{t('verify.role_to_remove')}</label>

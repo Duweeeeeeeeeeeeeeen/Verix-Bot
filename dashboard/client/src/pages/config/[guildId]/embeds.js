@@ -204,6 +204,7 @@ export default function EmbedBuilder() {
                         value={selectedChannel} 
                         onChange={setSelectedChannel} 
                         placeholder={t('embeds.target_channel_placeholder')} 
+                        error={!selectedChannel ? t('common.required_to_publish') : ''}
                     />
                 </div>
                 <button className="pc-btn-outline-v2" onClick={handleReset} title={t('common.reset_to_default')}>

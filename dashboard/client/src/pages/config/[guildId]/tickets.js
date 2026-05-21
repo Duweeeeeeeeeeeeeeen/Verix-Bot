@@ -233,11 +233,11 @@ export default function TicketConfig() {
                                 <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
                                     <div className="pc-input-group-v2">
                                         <label>{t('tickets.support_roles')}</label>
-                                        <DiscordSelector type="role" multiple={true} options={discordData.roles} value={config.staffRoleIds || []} onChange={v => setConfig({...config, staffRoleIds: v})} />
+                                        <DiscordSelector type="role" multiple={true} options={discordData.roles} value={config.staffRoleIds || []} onChange={v => setConfig({...config, staffRoleIds: v})} error={config.enabled && !(config.staffRoleIds || []).length ? t('common.required_field') : ''} />
                                     </div>
                                     <div className="pc-input-group-v2">
                                         <label>{t('tickets.panel_channel') || 'Canale Pannello'}</label>
-                                        <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 0 || c.type === 5)} value={config.panelChannelId} onChange={v => setConfig({...config, panelChannelId: v})} />
+                                        <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 0 || c.type === 5)} value={config.panelChannelId} onChange={v => setConfig({...config, panelChannelId: v})} error={config.enabled && !config.panelChannelId ? t('common.required_field') : ''} />
                                     </div>
                                 </div>
                                 <div className="pc-input-group-v2" style={{ marginTop: '24px' }}>

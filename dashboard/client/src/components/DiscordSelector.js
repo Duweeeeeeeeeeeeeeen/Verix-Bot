@@ -168,6 +168,13 @@ export default function DiscordSelector({
         </div>
       )}
 
+      {error && (
+        <div className="ds-error-text">
+          <AlertCircle size={13} />
+          <span>{error}</span>
+        </div>
+      )}
+
       <style jsx>{`
         .ds-container-v2 { position: relative; width: 100%; font-family: 'Inter', sans-serif; }
         
@@ -185,6 +192,11 @@ export default function DiscordSelector({
         }
         .ds-trigger-v2:hover { border-color: var(--primary-muted); }
         .ds-trigger-v2.active { border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-glow); }
+        .ds-trigger-v2.has-error {
+          border-color: var(--error);
+          background: rgba(239, 68, 68, 0.06);
+          box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+        }
         
         .ds-trigger-content { flex: 1; display: flex; align-items: center; min-width: 0; }
         .ds-placeholder { color: var(--text-muted); font-size: 0.95rem; font-weight: 600; }
@@ -272,6 +284,16 @@ export default function DiscordSelector({
         .ds-opt-name { font-weight: 700; font-size: 0.9rem; }
         .ds-check-icon { color: var(--primary); }
         .ds-no-results { padding: 32px; text-align: center; color: var(--text-muted); font-weight: 600; font-size: 0.9rem; }
+        .ds-error-text {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          margin-top: 8px;
+          color: var(--error);
+          font-size: 0.78rem;
+          font-weight: 700;
+        }
+        .ds-error-text svg { flex-shrink: 0; }
 
         /* Custom Scrollbar */
         .ds-options-list::-webkit-scrollbar { width: 6px; }

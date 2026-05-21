@@ -3454,6 +3454,8 @@
   "voice.msg_not_owner": "Non proprietario",
   "voice.msg_not_owner_desc": "Mostrato quando un utente prova a gestire una stanza che non possiede.",
   "common.no_options": "Nessuna opzione disponibile",
+  "common.required_field": "Obbligatorio per usare questo modulo",
+  "common.required_to_publish": "Obbligatorio prima della pubblicazione",
   "common.preview": "Anteprima",
   "preview.title": "Anteprima",
   "preview.discord_title": "Anteprima Discord",

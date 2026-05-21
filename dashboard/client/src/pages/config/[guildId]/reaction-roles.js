@@ -359,7 +359,7 @@ export default function ReactionRolesConfig() {
                                         </div>
                                         <div className="pc-input-group-v2" style={{ marginTop: '20px' }}>
                                             <label>{t('rr.target_channel')}</label>
-                                            <DiscordSelector type="channel" options={channels} value={activePanel.channelId || ''} onChange={val => updatePanel(activePanel.id, { channelId: val })} />
+                                            <DiscordSelector type="channel" options={channels} value={activePanel.channelId || ''} onChange={val => updatePanel(activePanel.id, { channelId: val })} error={config.enabled && !activePanel.channelId ? t('common.required_field') : ''} />
                                         </div>
                                     </div>
                                 </section>

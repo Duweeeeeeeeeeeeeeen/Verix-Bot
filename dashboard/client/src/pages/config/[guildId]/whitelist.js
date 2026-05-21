@@ -208,7 +208,7 @@ export default function WhitelistConfig() {
                                     </div>
                                     <div className="pc-input-group-v2" style={{ marginTop: '24px' }}>
                                         <label>{t('whitelist.panel_channel')}</label>
-                                        <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 0 || c.type === 5)} value={config.panelChannelId || ''} onChange={val => setConfig({...config, panelChannelId: val})} />
+                                        <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 0 || c.type === 5)} value={config.panelChannelId || ''} onChange={val => setConfig({...config, panelChannelId: val})} error={config.enabled && !config.panelChannelId ? t('common.required_field') : ''} />
                                     </div>
                                     <div className="pc-input-group-v2" style={{ marginTop: '24px' }}>
                                         <label>{t('whitelist.log_channel')}</label>

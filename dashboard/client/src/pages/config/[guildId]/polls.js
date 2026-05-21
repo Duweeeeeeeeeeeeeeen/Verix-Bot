@@ -270,18 +270,19 @@ export default function PollsConfig() {
                                 <div className="pc-input-group-v2">
                                     <label>{t('polls.project_q')}</label>
                                     <textarea 
-                                        className="pc-input-modern-v2" 
+                                        className={`pc-input-modern-v2 ${!newPoll.question ? 'has-error' : ''}`}
                                         style={{ minHeight: '120px', fontSize: '1.4rem', lineHeight: 1.4 }} 
                                         value={newPoll.question} 
                                         onChange={e => setNewPoll({...newPoll, question: e.target.value})} 
                                         placeholder={t('polls.q_placeholder')} 
                                     />
+                                    {!newPoll.question && <span className="pc-required-hint">{t('common.required_to_publish')}</span>}
                                     <p style={{ margin: '8px 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t('polls.question_help')}</p>
                                 </div>
                                 <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '32px', marginTop: '32px' }}>
                                     <div className="pc-input-group-v2">
                                         <label>{t('polls.launch_channel')}</label>
-                                        <DiscordSelector type="channel" options={channels} value={newPoll.channelId} onChange={v => setNewPoll({...newPoll, channelId: v})} />
+                                        <DiscordSelector type="channel" options={channels} value={newPoll.channelId} onChange={v => setNewPoll({...newPoll, channelId: v})} error={!newPoll.channelId ? t('common.required_to_publish') : ''} />
                                         <p style={{ margin: '8px 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t('polls.launch_channel_help')}</p>
                                     </div>
                                     <div className="pc-input-group-v2">
@@ -305,7 +306,7 @@ export default function PollsConfig() {
                                     </div>
                                     <div className="v-stack" style={{ gap: '16px' }}>
                                         {newPoll.options.map((opt, idx) => (
-                                            <div key={idx} className="pc-poll-option-v2 animate slide-up" style={{ display: 'flex', gap: '12px', alignItems: 'center', background: 'var(--bg-badge)', padding: '12px', borderRadius: '16px', border: '1.5px solid var(--border)', transition: '0.3s', boxShadow: '0 4px 12px rgba(0,0,0,0.02)' }}>
+                                            <div key={idx} className="pc-poll-option-v2 animate slide-up" style={{ display: 'flex', gap: '12px', alignItems: 'center', background: !opt.label ? 'rgba(239, 68, 68, 0.06)' : 'var(--bg-badge)', padding: '12px', borderRadius: '16px', border: !opt.label ? '1.5px solid var(--error)' : '1.5px solid var(--border)', transition: '0.3s', boxShadow: !opt.label ? '0 0 0 3px rgba(239, 68, 68, 0.12)' : '0 4px 12px rgba(0,0,0,0.02)' }}>
                                                 <div style={{ width: '42px', height: '42px', background: 'var(--bg-card)', borderRadius: '12px', border: '1.5px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 4px 8px rgba(0,0,0,0.03)' }}>
                                                     <input style={{ width: '100%', border: 'none', background: 'transparent', textAlign: 'center', fontSize: '1.2rem', outline: 'none' }} value={opt.emoji} onChange={e => {
                                                         const newOpts = [...newPoll.options];

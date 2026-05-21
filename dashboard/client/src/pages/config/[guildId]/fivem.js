@@ -233,14 +233,15 @@ export default function FiveMConfig() {
                                         <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                                             <div className="pc-input-group-v2">
                                                 <label>{t('fivem.status_channel')}</label>
-                                                <DiscordSelector type="channel" options={channels} value={server.statusChannelId || ''} onChange={val => updateServer(server.id, 'statusChannelId', val)} />
+                                                <DiscordSelector type="channel" options={channels} value={server.statusChannelId || ''} onChange={val => updateServer(server.id, 'statusChannelId', val)} error={config.enabled && !server.statusChannelId ? t('common.required_field') : ''} />
                                             </div>
                                             <div className="pc-input-group-v2">
                                                 <label>{t('fivem.endpoint_ip')}</label>
-                                                <div className="pc-input-modern-v2">
+                                                <div className={`pc-input-modern-v2 ${config.enabled && !server.serverIp ? 'has-error' : ''}`}>
                                                     <Globe size={16} />
                                                     <input placeholder="play.verix.gg" value={server.serverIp || ''} onChange={e => updateServer(server.id, 'serverIp', e.target.value)} />
                                                 </div>
+                                                {config.enabled && !server.serverIp && <span className="pc-required-hint">{t('common.required_field')}</span>}
                                             </div>
                                         </div>
 

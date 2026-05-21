@@ -2574,6 +2574,25 @@ h1, h2, h3, h4, h5, h6 {
   letter-spacing: 0 !important;
 }
 
+.dashboard-container .pc-input-modern-v2.has-error,
+.dashboard-container .pc-input-group-v2.has-error .pc-input-modern-v2,
+.dashboard-container .pc-input-group-v2.has-error textarea,
+.dashboard-container .pc-input-group-v2.has-error input {
+  border-color: var(--error) !important;
+  background: rgba(239, 68, 68, 0.06) !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12) !important;
+}
+
+.dashboard-container .pc-required-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  color: var(--error);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
 .dashboard-container textarea.pc-input-modern-v2,
 .dashboard-container textarea.form-control,
 .dashboard-container .system-message-textarea,
