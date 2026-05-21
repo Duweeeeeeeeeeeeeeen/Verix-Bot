@@ -221,6 +221,7 @@ export default function TicketConfig() {
   if (!mounted || loading || !config) return <Skeleton height="600px" />;
 
   const ticketTypes = config.types || config.enabledTypes || Object.keys(config.typesConfig || {});
+  const isButtonPanel = (config.inputType || 'SELECT') === 'BUTTONS';
   const openTicketWelcomePreview = (id) => {
     const typeConfig = config.typesConfig?.[id] || {};
     setPreviewData({
@@ -463,29 +464,44 @@ export default function TicketConfig() {
                                                     </div>
                                                 </div>
                                                 <div className="pc-input-group-v2">
-                                                    <label>{t('common.color')}</label>
-                                                    <div className="ticket-style-picker">
-                                                        {[
-                                                            { value: 'PRIMARY', color: '#5865f2' },
-                                                            { value: 'SUCCESS', color: '#248046' },
-                                                            { value: 'DANGER', color: '#da373c' },
-                                                            { value: 'SECONDARY', color: '#4e5058' },
-                                                            { value: 'LINK', color: '#f3f4f6' }
-                                                        ].map(option => (
-                                                            <button
-                                                                key={option.value}
-                                                                type="button"
-                                                                className={(config.typesConfig[id]?.style || 'PRIMARY') === option.value ? 'active' : ''}
-                                                                onClick={() => {
+                                                    <label>{isButtonPanel ? t('common.color') : t('tickets.embed_color') || 'Embed color'}</label>
+                                                    {isButtonPanel ? (
+                                                        <div className="ticket-style-picker">
+                                                            {[
+                                                                { value: 'PRIMARY', color: '#5865f2' },
+                                                                { value: 'SUCCESS', color: '#248046' },
+                                                                { value: 'DANGER', color: '#da373c' },
+                                                                { value: 'SECONDARY', color: '#4e5058' },
+                                                                { value: 'LINK', color: '#f3f4f6' }
+                                                            ].map(option => (
+                                                                <button
+                                                                    key={option.value}
+                                                                    type="button"
+                                                                    className={(config.typesConfig[id]?.style || 'PRIMARY') === option.value ? 'active' : ''}
+                                                                    onClick={() => {
+                                                                        const newTypes = { ...config.typesConfig };
+                                                                        newTypes[id] = { ...newTypes[id], style: option.value };
+                                                                        setConfig({ ...config, typesConfig: newTypes });
+                                                                    }}
+                                                                    style={{ background: option.color }}
+                                                                    title={option.value}
+                                                                />
+                                                            ))}
+                                                        </div>
+                                                    ) : (
+                                                        <div className="ticket-embed-color-control">
+                                                            <input
+                                                                type="color"
+                                                                value={config.typesConfig[id]?.color || '#3498db'}
+                                                                onChange={e => {
                                                                     const newTypes = { ...config.typesConfig };
-                                                                    newTypes[id] = { ...newTypes[id], style: option.value };
+                                                                    newTypes[id] = { ...newTypes[id], color: e.target.value };
                                                                     setConfig({ ...config, typesConfig: newTypes });
                                                                 }}
-                                                                style={{ background: option.color }}
-                                                                title={option.value}
                                                             />
-                                                        ))}
-                                                    </div>
+                                                            <span>{(config.typesConfig[id]?.color || '#3498db').toUpperCase()}</span>
+                                                        </div>
+                                                    )}
                                                 </div>
                                                 <div className="pc-input-group-v2 ticket-role-field">
                                                     <label>{t('tickets.target_role')}</label>
@@ -497,7 +513,7 @@ export default function TicketConfig() {
                                                 </div>
                                             </div>
 
-                                            {(config.inputType || 'SELECT') === 'BUTTONS' && config.typesConfig[id]?.style === 'LINK' && (
+                                            {isButtonPanel && config.typesConfig[id]?.style === 'LINK' && (
                                             <div className="pc-input-grid-v2 ticket-category-options">
                                                 <div className="pc-input-group-v2">
                                                     <label>URL</label>
@@ -772,6 +788,32 @@ export default function TicketConfig() {
             .ticket-style-picker button.active {
                 outline: 3px solid rgba(var(--primary-rgb), 0.18);
                 border-color: var(--primary);
+            }
+            .ticket-embed-color-control {
+                min-height: 48px;
+                width: 210px;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 7px 10px;
+                border: 1px solid var(--border);
+                border-radius: 12px;
+                background: var(--bg-input);
+            }
+            .ticket-embed-color-control input {
+                width: 30px;
+                height: 30px;
+                padding: 0;
+                border: none;
+                border-radius: 8px;
+                background: transparent;
+                cursor: pointer;
+            }
+            .ticket-embed-color-control span {
+                font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+                font-size: 0.8rem;
+                font-weight: 800;
+                color: var(--text-heading);
             }
             @media (max-width: 900px) {
                 .ticket-category-controls,
