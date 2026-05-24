@@ -36,6 +36,18 @@ class ReactionRoleManager {
         return clean;
     }
 
+    getReactionEmojiKey(emoji) {
+        if (!emoji) return '';
+        return this.getCleanEmoji(emoji.id || emoji.name || '');
+    }
+
+    emojiMatches(configEmoji, reactionEmoji) {
+        const configured = this.getCleanEmoji(configEmoji);
+        const reacted = this.getReactionEmojiKey(reactionEmoji);
+        if (!configured || !reacted) return false;
+        return configured === reacted;
+    }
+
     async handleInteraction(interaction) {
         if (!interaction.isButton()) return;
 
@@ -148,7 +160,7 @@ class ReactionRoleManager {
         if (!guildId) return;
 
         const messageId = reaction.message.id;
-        const emoji = this.getCleanEmoji(reaction.emoji.id || reaction.emoji.name);
+        const emoji = this.getReactionEmojiKey(reaction.emoji);
 
         // Simplify mongoose query to guildId to prevent Mongoose subdocument matching bugs
         const config = await ReactionRoleConfig.findOne({ guildId });
@@ -157,11 +169,12 @@ class ReactionRoleManager {
         const panel = config.panels.find(p => p.messageId === messageId);
         if (!panel || panel.type !== 'REACTION') return;
 
-        const roleMapping = panel.roles.find(r => {
-            const cleanConfigEmoji = this.getCleanEmoji(r.emoji);
-            return cleanConfigEmoji === emoji || cleanConfigEmoji === reaction.emoji.name;
-        });
-        if (!roleMapping) return;
+        const roleMapping = panel.roles.find(r => this.emojiMatches(r.emoji, reaction.emoji));
+        if (!roleMapping) {
+            logger.warn(`[ReactionRoles] No role mapping for emoji ${emoji} on message ${messageId} in guild ${guildId}. Configured: ${panel.roles.map(r => this.getCleanEmoji(r.emoji)).join(', ')}`);
+            return;
+        }
+        logger.info(`[ReactionRoles] ${action} emoji ${emoji} -> role ${roleMapping.roleId} in guild ${guildId}`);
 
         const guild = reaction.message.guild || await this.client.guilds.fetch(guildId).catch(() => null);
         if (!guild) return;
