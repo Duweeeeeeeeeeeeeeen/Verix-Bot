@@ -12,13 +12,14 @@ export const adminCheck = (req, res, next) => {
 
     if (!guild) {
         logger.warn(`[adminCheck] Guild ${guildId} not found in user guilds (user: ${req.user?.id})`);
-        return res.status(403).json({ error: 'Forbidden: Admin access required on this guild' });
+        return res.status(403).json({ error: 'Forbidden: Manage Server permission required on this guild' });
     }
 
-    // Discord permission 0x8 = ADMINISTRATOR
-    if (!(guild.permissions & 0x8)) {
-        logger.warn(`[adminCheck] User ${req.user?.id} has no ADMINISTRATOR on guild ${guildId}`);
-        return res.status(403).json({ error: 'Forbidden: Admin access required on this guild' });
+    // Discord permissions: 0x8 = Administrator, 0x20 = Manage Server.
+    // The selector already exposes both, so the API must accept both too.
+    if (!((guild.permissions & 0x8) || (guild.permissions & 0x20))) {
+        logger.warn(`[adminCheck] User ${req.user?.id} has no MANAGE_GUILD/ADMINISTRATOR on guild ${guildId}`);
+        return res.status(403).json({ error: 'Forbidden: Manage Server permission required on this guild' });
     }
 
     next();

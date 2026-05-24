@@ -64,8 +64,9 @@ export default function Selector() {
 
 
   // Filter logic
-  const filteredGuilds = user.guilds
+  const manageableGuilds = (user.guilds || [])
     .filter(g => (g.permissions & 0x8) || (g.permissions & 0x20)) // Admin or Manage Server
+  const filteredGuilds = manageableGuilds
     .filter(g => {
       if (filter === 'active') return g.botInGuild;
       if (filter === 'missing') return !g.botInGuild;
@@ -266,7 +267,18 @@ export default function Selector() {
                     </section>
                 )}
 
-                {filteredGuilds.length === 0 && (
+                {manageableGuilds.length === 0 && (
+                    <div className="pc-empty-selector-v2 glass-card">
+                        <div className="empty-icon-v2"><Shield size={48} /></div>
+                        <h3>{t('selector.no_manageable_servers')}</h3>
+                        <p>{t('selector.no_manageable_servers_desc')}</p>
+                        <button className="pc-btn-primary-v2" onClick={handleRefresh}>
+                            {t('selector.refresh_servers')}
+                        </button>
+                    </div>
+                )}
+
+                {manageableGuilds.length > 0 && filteredGuilds.length === 0 && (
                     <div className="pc-empty-selector-v2 glass-card">
                         <div className="empty-icon-v2"><Search size={48} /></div>
                         <h3>{t('selector.no_servers')}</h3>
