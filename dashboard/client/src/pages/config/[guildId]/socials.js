@@ -318,7 +318,7 @@ export default function SocialsConfig() {
                                     <div className="v-stack" style={{ flex: 1, textAlign: 'left' }}>
                                         <div className="p-name-v2" style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
                                             <span>{t(p.nameKey)}</span>
-                                            <div className={`nav-status-dot-mini ${isEnabled ? 'on' : 'off'}`} />
+                                            {isEnabled && <div className="nav-status-dot-mini on" />}
                                         </div>
                                         {isEnabled && <div className="nav-sync-tag-v2"><span>{t('socials.synchronized')}</span></div>}
                                     </div>

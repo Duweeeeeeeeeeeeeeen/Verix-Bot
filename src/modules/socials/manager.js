@@ -1163,7 +1163,10 @@ export class SocialManager {
             const idMatch = block.match(/data-post="([^"]+)"/);
             const textMatch = block.match(/<div class="tgme_widget_message_text[^"]*"[^>]*>([\s\S]*?)<\/div>/);
             const timeMatch = block.match(/datetime="([^"]+)"/);
-            const imageMatch = block.match(/background-image:url\('([^']+)'\)/);
+            const imageMatch =
+                block.match(/background-image:url\(['"]?([^'")]+)['"]?\)/) ||
+                block.match(/<a[^>]+class="[^"]*tgme_widget_message_photo_wrap[^"]*"[^>]+href=["']([^"']+)["']/) ||
+                block.match(/<img[^>]+src=["']([^"']+)["']/);
             const id = idMatch?.[1] || '';
             const text = this.decodeTelegramHtml(textMatch?.[1] || '');
             const [, channel, postId] = id.match(/^([^/]+)\/(.+)$/) || [];
@@ -1247,7 +1250,13 @@ export class SocialManager {
                         method: 'GET',
                         url: `https://kick.com/api/v2/channels/${encodeURIComponent(username)}`,
                         responseType: 'json',
-                        headers: { 'User-Agent': 'Mozilla/5.0 VerixBot/1.0', 'Accept': 'application/json' },
+                        headers: {
+                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
+                            'Accept': 'application/json, text/plain, */*',
+                            'Accept-Language': 'en-US,en;q=0.9,it;q=0.8',
+                            'Referer': `https://kick.com/${encodeURIComponent(username)}`,
+                            'Origin': 'https://kick.com'
+                        },
                         timeout: RSS_TIMEOUT_MS
                     });
                     const channel = response.data || {};
@@ -1337,6 +1346,7 @@ export class SocialManager {
     summarizeBridgeError(reason = '') {
         const text = String(reason || '').toLowerCase();
         if (text.includes('429') || text.includes('rate')) return 'Rate limited';
+        if (text.includes('403') || text.includes('security policy') || text.includes('blocked')) return 'Blocked by feed provider';
         if (text.includes('404') || text.includes('not found')) return 'Feed not found';
         if (text.includes('invalid') || text.includes('url')) return 'Invalid source';
         if (text.includes('no posts') || text.includes('no public posts') || text.includes('no items')) return 'No public content';
