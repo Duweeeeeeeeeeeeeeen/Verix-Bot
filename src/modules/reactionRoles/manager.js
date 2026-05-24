@@ -48,6 +48,45 @@ class ReactionRoleManager {
         return configured === reacted;
     }
 
+    async applyReactionRole({ guildId, messageId, emoji, userId, action }) {
+        if (!guildId || !messageId || !userId || userId === this.client.user?.id) return false;
+
+        const config = await ReactionRoleConfig.findOne({ guildId });
+        if (!config || !config.enabled) return false;
+
+        const panel = config.panels.find(p => p.messageId === messageId);
+        if (!panel || panel.type !== 'REACTION') return false;
+
+        const roleMapping = panel.roles.find(r => this.emojiMatches(r.emoji, emoji));
+        const emojiKey = this.getReactionEmojiKey(emoji);
+        if (!roleMapping) {
+            logger.warn(`[ReactionRoles] No role mapping for emoji ${emojiKey} on message ${messageId} in guild ${guildId}. Configured: ${panel.roles.map(r => this.getCleanEmoji(r.emoji)).join(', ')}`);
+            return false;
+        }
+
+        const guild = this.client.guilds.cache.get(guildId) || await this.client.guilds.fetch(guildId).catch(() => null);
+        if (!guild) return false;
+
+        const member = await guild.members.fetch(userId).catch(() => null);
+        if (!member || member.user?.bot) return false;
+
+        const role = await guild.roles.fetch(roleMapping.roleId).catch(() => null);
+        const botMember = guild.members.me || await guild.members.fetchMe().catch(() => null);
+        if (!role || !botMember?.permissions.has(PermissionFlagsBits.ManageRoles) || role.position >= botMember.roles.highest.position) {
+            logger.warn(`[ReactionRoles] Cannot manage role ${roleMapping.roleId} in guild ${guild.id}. Missing role, Manage Roles, or hierarchy.`);
+            return false;
+        }
+
+        if (action === 'ADD') {
+            await member.roles.add(roleMapping.roleId);
+        } else {
+            await member.roles.remove(roleMapping.roleId);
+        }
+
+        logger.info(`[ReactionRoles] ${action} emoji ${emojiKey} -> role ${roleMapping.roleId} for ${userId} in guild ${guildId}`);
+        return true;
+    }
+
     async handleInteraction(interaction) {
         if (!interaction.isButton()) return;
 
@@ -171,41 +210,28 @@ class ReactionRoleManager {
         const messageId = reaction.message.id;
         const emoji = this.getReactionEmojiKey(reaction.emoji);
 
-        // Simplify mongoose query to guildId to prevent Mongoose subdocument matching bugs
-        const config = await ReactionRoleConfig.findOne({ guildId });
-        if (!config || !config.enabled) return;
-
-        const panel = config.panels.find(p => p.messageId === messageId);
-        if (!panel || panel.type !== 'REACTION') return;
-
-        const roleMapping = panel.roles.find(r => this.emojiMatches(r.emoji, reaction.emoji));
-        if (!roleMapping) {
-            logger.warn(`[ReactionRoles] No role mapping for emoji ${emoji} on message ${messageId} in guild ${guildId}. Configured: ${panel.roles.map(r => this.getCleanEmoji(r.emoji)).join(', ')}`);
-            return;
-        }
-        logger.info(`[ReactionRoles] ${action} emoji ${emoji} -> role ${roleMapping.roleId} in guild ${guildId}`);
-
-        const guild = reaction.message.guild || await this.client.guilds.fetch(guildId).catch(() => null);
-        if (!guild) return;
-
-        const member = await guild.members.fetch(user.id).catch(() => null);
-        if (!member) return;
-
         try {
-            const role = await guild.roles.fetch(roleMapping.roleId).catch(() => null);
-            const botMember = guild.members.me || await guild.members.fetchMe().catch(() => null);
-            if (!role || !botMember?.permissions.has(PermissionFlagsBits.ManageRoles) || role.position >= botMember.roles.highest.position) {
-                logger.warn(`[ReactionRoles] Cannot manage role ${roleMapping.roleId} in guild ${guild.id}. Missing role, Manage Roles, or hierarchy.`);
-                return;
-            }
-
-            if (action === 'ADD') {
-                await member.roles.add(roleMapping.roleId);
-            } else {
-                await member.roles.remove(roleMapping.roleId);
-            }
+            await this.applyReactionRole({ guildId, messageId, emoji: reaction.emoji, userId: user.id, action });
         } catch (error) {
             logger.error(`[ReactionRoles] Error handling reaction ${action} for ${user.tag}:`, error);
+        }
+    }
+
+    async handleRawReaction(packet) {
+        const action = packet.t === 'MESSAGE_REACTION_ADD' ? 'ADD' : packet.t === 'MESSAGE_REACTION_REMOVE' ? 'REMOVE' : null;
+        if (!action) return;
+
+        const data = packet.d || {};
+        try {
+            await this.applyReactionRole({
+                guildId: data.guild_id,
+                messageId: data.message_id,
+                userId: data.user_id,
+                emoji: data.emoji,
+                action
+            });
+        } catch (error) {
+            logger.error(`[ReactionRoles] Error handling raw reaction ${action}:`, error);
         }
     }
 
