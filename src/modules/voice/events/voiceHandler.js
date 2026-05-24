@@ -69,13 +69,14 @@ export default {
                     ]
                 };
 
-                await newChannel.send({ embeds: [embed], components: [controlRow] });
+                const controlMessage = await newChannel.send({ embeds: [embed], components: [controlRow] });
 
                 // Track in DB
                 await TempVoice.create({
                     guildId: guild.id,
                     channelId: newChannel.id,
-                    ownerId: member.id
+                    ownerId: member.id,
+                    controlMessageId: controlMessage.id
                 });
 
                 logger.info(`[TempVoice] Created channel for ${member.user.tag} in ${guild.name}`);

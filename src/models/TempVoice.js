@@ -14,6 +14,10 @@ const tempVoiceSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    controlMessageId: {
+        type: String,
+        default: null
+    },
     createdAt: {
         type: Date,
         default: Date.now

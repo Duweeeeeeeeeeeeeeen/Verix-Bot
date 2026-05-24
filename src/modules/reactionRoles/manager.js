@@ -23,7 +23,7 @@ class ReactionRoleManager {
 
     getCleanEmoji(emojiStr) {
         if (!emojiStr) return '';
-        const clean = emojiStr.trim();
+        const clean = emojiStr.trim().replace(/[\uFE0E\uFE0F]/g, '');
 
         const customMatch = clean.match(/^<?a?:?([a-zA-Z0-9_]+):([0-9]+)>?$/);
         if (customMatch) return customMatch[2];
@@ -148,7 +148,7 @@ class ReactionRoleManager {
         if (!guildId) return;
 
         const messageId = reaction.message.id;
-        const emoji = reaction.emoji.id || reaction.emoji.name;
+        const emoji = this.getCleanEmoji(reaction.emoji.id || reaction.emoji.name);
 
         // Simplify mongoose query to guildId to prevent Mongoose subdocument matching bugs
         const config = await ReactionRoleConfig.findOne({ guildId });
@@ -170,6 +170,13 @@ class ReactionRoleManager {
         if (!member) return;
 
         try {
+            const role = await guild.roles.fetch(roleMapping.roleId).catch(() => null);
+            const botMember = guild.members.me || await guild.members.fetchMe().catch(() => null);
+            if (!role || !botMember?.permissions.has(PermissionFlagsBits.ManageRoles) || role.position >= botMember.roles.highest.position) {
+                logger.warn(`[ReactionRoles] Cannot manage role ${roleMapping.roleId} in guild ${guild.id}. Missing role, Manage Roles, or hierarchy.`);
+                return;
+            }
+
             if (action === 'ADD') {
                 await member.roles.add(roleMapping.roleId);
             } else {
