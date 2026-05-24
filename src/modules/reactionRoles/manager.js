@@ -138,6 +138,15 @@ class ReactionRoleManager {
     async handleReaction(reaction, user, action) {
         if (user.bot) return;
 
+        if (user.partial) {
+            try {
+                user = await user.fetch();
+            } catch (error) {
+                logger.error('[ReactionRoles] Failed to fetch partial user:', error);
+                return;
+            }
+        }
+
         // Robust partial reaction/message fetching
         if (reaction.partial) {
             try {
