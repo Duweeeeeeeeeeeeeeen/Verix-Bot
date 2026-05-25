@@ -13,6 +13,8 @@ import { DiscordSelector, CustomSelect, SystemMessagesSection } from '../../../c
 import EmbedPreviewDrawer from '../../../components/EmbedPreviewDrawer';
 import Head from 'next/head';
 
+const POLL_OPTION_EMOJIS = ['1\uFE0F\u20E3', '2\uFE0F\u20E3', '3\uFE0F\u20E3', '4\uFE0F\u20E3', '5\uFE0F\u20E3', '6\uFE0F\u20E3', '7\uFE0F\u20E3', '8\uFE0F\u20E3', '9\uFE0F\u20E3', '\uD83D\uDD1F'];
+
 export default function PollsConfig() {
   const { t } = useT();
   const router = useRouter();
@@ -26,6 +28,10 @@ export default function PollsConfig() {
   const [activeTab, setActiveTab] = useState('create');
   const [previewOpen, setPreviewOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const defaultPollOptions = () => ([
+      { emoji: POLL_OPTION_EMOJIS[0], label: t('polls.option_1') },
+      { emoji: POLL_OPTION_EMOJIS[1], label: t('polls.option_2') }
+  ]);
 
   useEffect(() => {
     setMounted(true);
@@ -42,6 +48,10 @@ export default function PollsConfig() {
       mode: 'SINGLE',
       color: '#6366f1'
   });
+
+  useEffect(() => {
+    setNewPoll(current => ({ ...current, options: defaultPollOptions() }));
+  }, []);
 
   const fetchData = async () => {
     if (!guildId || !mounted) return;
@@ -129,7 +139,7 @@ export default function PollsConfig() {
           showToast(t('polls.launch_success'));
           setActiveTab('active');
           fetchData();
-          setNewPoll({ ...newPoll, question: '', options: [{ emoji: '1️⃣', label: 'Option 1' }, { emoji: '2️⃣', label: 'Option 2' }] });
+          setNewPoll(current => ({ ...current, question: '', options: defaultPollOptions() }));
       }
     } catch (e) {
       showToast(t('polls.launch_error'), 'error');
@@ -143,7 +153,7 @@ export default function PollsConfig() {
       if (newPoll.options.length >= 10) return showToast(t('polls.limit_error'), 'error');
       const emojis = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
       const nextEmoji = emojis[newPoll.options.length] || '🔘';
-      setNewPoll({ ...newPoll, options: [...newPoll.options, { emoji: nextEmoji, label: `Choice ${newPoll.options.length + 1}` }] });
+      setNewPoll({ ...newPoll, options: [...newPoll.options, { emoji: POLL_OPTION_EMOJIS[newPoll.options.length] || nextEmoji, label: `Choice ${newPoll.options.length + 1}` }] });
   };
 
   const removeOption = (index) => {
@@ -387,9 +397,9 @@ export default function PollsConfig() {
             )}
 
             {activeTab === 'settings' && (
-                <div className="v-stack animate slide-up" style={{ gap: '32px' }}>
-                    <section className="pc-card-v2">
-                        <div className="card-header-v2" style={{ marginBottom: '32px' }}>
+                <div className="poll-settings-grid animate slide-up">
+                    <section className="pc-card-v2 poll-settings-card">
+                        <div className="card-header-v2">
                             <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><Settings2 size={18} /></div>
                             <h3 style={{ margin: 0 }}>{t('polls.protocol_defaults')}</h3>
                         </div>
@@ -398,13 +408,13 @@ export default function PollsConfig() {
                                 <label>{t('polls.target_results')}</label>
                                 <DiscordSelector type="channel" options={channels} value={config.logChannelId} onChange={val => setConfig({...config, logChannelId: val})} />
                             </div>
-                            <div className="pc-input-group-v2" style={{ marginTop: '40px' }}>
+                            <div className="pc-input-group-v2">
                                 <label>{t('polls.branding_color')}</label>
-                                <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-                                    <div style={{ width: '64px', height: '64px', borderRadius: '18px', background: config.defaultColor, border: '3.5px solid var(--border)', boxShadow: '0 12px 24px rgba(0,0,0,0.1)' }}></div>
+                                <div className="poll-color-row">
+                                    <div className="poll-color-swatch" style={{ background: config.defaultColor }}></div>
                                     <input type="color" style={{ width: '0', height: '0', opacity: 0, position: 'absolute' }} id="poll-def-color-studio" value={config.defaultColor} onChange={e => setConfig({...config, defaultColor: e.target.value})} />
-                                    <button onClick={() => document.getElementById('poll-def-color-studio').click()} className="pc-btn-outline-v2" style={{ background: 'var(--bg-badge)', padding: '16px 28px', borderRadius: '16px', fontWeight: 700, fontSize: '0.9rem', border: '1.5px solid var(--border)', cursor: 'pointer' }}>{t('polls.hex_picker')}</button>
-                                    <span style={{ fontSize: '1rem', color: 'var(--text-dim)', fontWeight: 700, fontFamily: 'monospace' }}>{config.defaultColor?.toUpperCase() || '#6366F1'}</span>
+                                    <button onClick={() => document.getElementById('poll-def-color-studio').click()} className="pc-btn-outline-v2 poll-color-button">{t('polls.hex_picker')}</button>
+                                    <span className="poll-color-value">{config.defaultColor?.toUpperCase() || '#6366F1'}</span>
                                 </div>
                             </div>
                         </div>
@@ -432,6 +442,8 @@ export default function PollsConfig() {
             
             @media (max-width: 1200px) {
                 .pc-layout-grid-v2 { grid-template-columns: 1fr !important; gap: 24px !important; }
+                .poll-settings-grid { grid-template-columns: 1fr; }
+                .poll-settings-card .card-body-v2 { grid-template-columns: 1fr; }
             }
             
             /* Header V2 */
@@ -469,6 +481,14 @@ export default function PollsConfig() {
 
             /* Card V2 */
             .pc-card-v2 { background: var(--bg-card); border: 1px solid var(--border); border-radius: 28px; padding: 32px; box-shadow: var(--shadow-premium); }
+            .poll-settings-grid { display: grid; grid-template-columns: minmax(0, 760px); gap: 20px; }
+            .poll-settings-card { padding: 22px !important; border-radius: 18px !important; box-shadow: none !important; }
+            .poll-settings-card .card-header-v2 { margin-bottom: 20px !important; }
+            .poll-settings-card .card-body-v2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 0.55fr); gap: 18px; align-items: start; }
+            .poll-color-row { display: flex; align-items: center; gap: 12px; min-height: 44px; }
+            .poll-color-swatch { width: 40px; height: 40px; border-radius: 12px; border: 1px solid var(--border); box-shadow: none; flex-shrink: 0; }
+            .poll-color-button { min-height: 40px; padding: 10px 14px !important; border-radius: 12px !important; background: var(--bg-badge) !important; font-weight: 700; }
+            .poll-color-value { color: var(--text-muted); font-family: monospace; font-size: 0.86rem; font-weight: 700; }
             .card-header-v2 { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
             .header-icon { width: 44px; height: 44px; background: var(--bg-badge); color: var(--primary); border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
             .card-header-v2 h3 { margin: 0; font-family: 'Inter'; font-size: 1.3rem; font-weight: 700; color: var(--text-heading); }

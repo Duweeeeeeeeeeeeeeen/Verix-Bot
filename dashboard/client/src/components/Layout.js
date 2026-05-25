@@ -400,6 +400,7 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
 
                   const Icon = item.icon;
                   const isActive = router.asPath === item.path;
+                  const showStatusDot = enabledModules[item.id] !== undefined && (enabledModules[item.id] || item.id !== 'socials');
                   
                   return (
                     <Link 
@@ -414,7 +415,7 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
                       {!isCollapsed && <span className="nav-link-text animate fade-in">{item.name}</span>}
                       
                       {/* New Status Indicator Dot */}
-                      {enabledModules[item.id] !== undefined && (
+                      {showStatusDot && (
                         <div className={`nav-status-dot ${isCollapsed ? 'collapsed' : ''} ${enabledModules[item.id] ? 'on' : 'off'}`} />
                       )}
 
@@ -518,7 +519,7 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
                         {(() => {
                             const activeItem = [...navigationGroups.flatMap(g => g.items), ...systemGroup.items]
                                 .find(i => router.asPath.includes(i.path));
-                            if (activeItem && enabledModules[activeItem.id] !== undefined) {
+                            if (activeItem && enabledModules[activeItem.id] !== undefined && (enabledModules[activeItem.id] || activeItem.id !== 'socials')) {
                                 return <div className={`nav-status-dot mini ${enabledModules[activeItem.id] ? 'on' : 'off'}`} style={{ position: 'static', marginLeft: '6px' }} />;
                             }
                             return null;

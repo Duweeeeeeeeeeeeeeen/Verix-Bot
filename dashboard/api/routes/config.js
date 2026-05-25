@@ -2692,7 +2692,7 @@ router.post('/:guildId/polls/config', adminCheck, validate(pollConfigSchema), as
 router.get('/:guildId/polls/active', adminCheck, async (req, res) => {
     try {
         const { guildId } = req.params;
-        const polls = await Poll.find({ guildId, ended: false }).sort({ createdAt: -1 });
+        const polls = await Poll.find({ guildId, status: 'ACTIVE' }).sort({ createdAt: -1 });
         res.json(polls);
     } catch (error) {
         res.status(500).json({ success: false, error: 'Unable to load active polls.' });
@@ -2710,6 +2710,16 @@ router.post('/:guildId/polls/create', adminCheck, validate(pollCreateSchema), as
         if (!ensurePanelPermissions(channel, res)) return;
 
         const endTime = new Date(Date.now() + duration * 60000);
+        const poll = new Poll({
+            guildId,
+            channelId,
+            question,
+            options: options.map(o => ({ emoji: o.emoji, label: o.label, votes: [] })),
+            endTime,
+            mode,
+            creatorId: req.user.id,
+            color
+        });
 
         const embed = new EmbedBuilder()
             .setTitle(`📊 Sondaggio: ${question}`)
@@ -2727,7 +2737,7 @@ router.post('/:guildId/polls/create', adminCheck, validate(pollCreateSchema), as
             }
             currentRow.addComponents(
                 new ButtonBuilder()
-                    .setCustomId(`poll_vote_${idx}`) // Index used for lookup in manager
+                    .setCustomId(`poll_vote_${poll._id}_${idx}`)
                     .setEmoji(opt.emoji)
                     .setStyle(ButtonStyle.Secondary)
             );
@@ -2735,20 +2745,13 @@ router.post('/:guildId/polls/create', adminCheck, validate(pollCreateSchema), as
         if (currentRow.components.length > 0) rows.push(currentRow);
 
         const message = await channel.send({ embeds: [embed], components: rows });
-
-        const poll = new Poll({
-            guildId,
-            channelId,
-            messageId: message.id,
-            question,
-            options: options.map(o => ({ emoji: o.emoji, label: o.label, votes: [] })),
-            endTime,
-            mode,
-            creatorId: req.user.discordId,
-            color
-        });
-
-        await poll.save();
+        try {
+            poll.messageId = message.id;
+            await poll.save();
+        } catch (saveError) {
+            await message.delete().catch(() => null);
+            throw saveError;
+        }
         await logAudit(req, 'CREATE_POLL', { question, channelId });
 
         res.json({ success: true, pollId: poll._id });

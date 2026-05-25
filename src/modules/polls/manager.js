@@ -49,10 +49,16 @@ class PollManager {
         if (parts.length < 3 || parts[0] !== 'poll') return;
 
         const action = parts[1]; // 'vote'
-        const pollId = parts[2];
-        const optionIndex = parseInt(parts[3]);
+        if (action !== 'vote') return;
 
-        const poll = await Poll.findOne({ messageId: interaction.message.id });
+        const hasPollId = parts.length >= 4;
+        const pollId = hasPollId ? parts[2] : null;
+        const optionIndex = parseInt(hasPollId ? parts[3] : parts[2], 10);
+        if (!Number.isInteger(optionIndex)) return;
+
+        const poll = pollId
+            ? await Poll.findOne({ _id: pollId, messageId: interaction.message.id }).catch(() => null)
+            : await Poll.findOne({ messageId: interaction.message.id });
         if (!poll || poll.status !== 'ACTIVE') {
             return interaction.reply({ content: '❌ Questo sondaggio è terminato.', flags: [MessageFlags.Ephemeral] });
         }
@@ -70,6 +76,9 @@ class PollManager {
         }
 
         const option = poll.options[optionIndex];
+        if (!option) {
+            return interaction.reply({ content: 'Invalid poll option.', flags: [MessageFlags.Ephemeral] });
+        }
         const hasVoted = option.votes.includes(userId);
 
         if (hasVoted) {
