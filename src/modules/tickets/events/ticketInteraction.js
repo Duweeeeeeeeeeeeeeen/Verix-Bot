@@ -341,6 +341,7 @@ export default {
 
 async function createTicket(interaction, type, config, metadata = {}) {
     let lang = 'en';
+    let interactionAcknowledged = false;
     try {
         const guild = interaction.guild;
         const user = interaction.user;
@@ -413,14 +414,28 @@ async function createTicket(interaction, type, config, metadata = {}) {
         await setInitialPermissions(channel, user, staffRoles);
 
         const ticket = await Ticket.create({ userId: user.id, guildId: guild.id, channelId: channel.id, type, priority, metadata });
-        await renderTicketDashboard(channel, ticket, config, typeConfig, user, staffRoles);
+        await messageService.reply(interaction, 'tickets', 'created_success', { channelId: channel.id }, { ephemeral: true });
+        interactionAcknowledged = true;
+
+        try {
+            await renderTicketDashboard(channel, ticket, config, typeConfig, user, staffRoles);
+        } catch (renderError) {
+            logger.error('[TICKET_CREATE] Dashboard render failed:', renderError);
+            const fallbackEmbed = await messageService.get(guild.id, 'tickets', 'ticket', {
+                type: typeConfig?.label?.toUpperCase() || type.toUpperCase(),
+                user_id: user.id,
+                priority,
+                status: ticket.status,
+                assignedStaff: resolveSystemMessage(config, 'tickets', 'waiting_staff', lang),
+                tags: resolveSystemMessage(config, 'tickets', 'none', lang)
+            });
+            await channel.send({ embeds: [fallbackEmbed] }).catch(() => {});
+        }
 
         // --- AUTO-PING ---
         const pingRoleId = typeConfig.pingRoleId;
         const pingContent = pingRoleId ? `<@&${pingRoleId}>` : '';
         
-        await messageService.reply(interaction, 'tickets', 'created_success', { channelId: channel.id }, { ephemeral: true });
-
         if (pingRoleId) {
             const embed = new EmbedBuilder()
                 .setDescription(resolveSystemMessage(config, 'tickets', 'new_ticket_ping', lang, { 
@@ -443,7 +458,7 @@ async function createTicket(interaction, type, config, metadata = {}) {
 
     } catch (error) { 
         logger.error('[TICKET_CREATE_FATAL]', error);
-        if (interaction.deferred || interaction.replied) {
+        if ((interaction.deferred || interaction.replied) && !interactionAcknowledged) {
             const fatalCreateMsg = lang === 'it'
                 ? '❌ Si è verificato un errore critico durante la creazione del ticket.'
                 : '❌ A critical error occurred while creating the ticket.';
