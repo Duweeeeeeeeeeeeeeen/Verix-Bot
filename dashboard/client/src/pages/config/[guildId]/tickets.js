@@ -822,10 +822,15 @@ export default function TicketConfig() {
                 border-radius: 999px;
                 border: 2px solid transparent;
                 cursor: pointer;
+                transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+            }
+            .ticket-style-picker button:hover {
+                transform: scale(1.1);
             }
             .ticket-style-picker button.active {
-                outline: 3px solid rgba(var(--primary-rgb), 0.18);
-                border-color: var(--primary);
+                border-color: var(--bg-input);
+                box-shadow: 0 0 0 2px var(--primary);
+                transform: scale(1.15);
             }
             .ticket-embed-color-control {
                 min-height: 48px;
