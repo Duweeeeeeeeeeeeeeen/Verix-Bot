@@ -781,19 +781,19 @@ export default function TicketConfig() {
             }
             .ticket-category-controls {
                 display: grid !important;
-                grid-template-columns: 70px 210px minmax(220px, 360px);
+                grid-template-columns: 60px 170px minmax(180px, 280px);
                 align-items: end;
                 gap: 12px !important;
             }
             .ticket-emoji-col {
-                width: 70px !important;
+                width: 60px !important;
             }
             .ticket-category-controls :global(.pc-bb-emoji-box) {
-                width: 48px !important;
-                height: 48px !important;
+                width: 40px !important;
+                height: 40px !important;
             }
             .ticket-role-field {
-                max-width: 360px;
+                max-width: 280px;
             }
             .ticket-category-options {
                 display: grid;
@@ -803,15 +803,19 @@ export default function TicketConfig() {
                 align-items: end;
             }
             .ticket-category-list textarea {
-                min-height: 56px !important;
-                max-height: 120px;
+                min-height: 130px !important;
+                max-height: 350px;
+                padding: 12px 14px !important;
+                line-height: 1.5;
+                font-size: 0.9rem;
             }
             .ticket-style-picker {
-                min-height: 48px;
+                min-height: 40px;
+                max-width: 170px;
                 display: flex;
                 align-items: center;
-                gap: 9px;
-                padding: 0 12px;
+                gap: 7px;
+                padding: 0 10px;
                 border: 1px solid var(--border);
                 border-radius: 12px;
                 background: var(--bg-input);
