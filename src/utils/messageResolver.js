@@ -35,6 +35,14 @@ export function resolveSystemMessage(config, moduleName, key, lang, placeholders
     if (!message) {
         // We look into the module's root for the key
         message = t(`${moduleName}.${key}`, lang, placeholders);
+
+        // If not found in the root (returns the query key itself), check under system_messages
+        if (message === `${moduleName}.${key}`) {
+            const nestedMessage = t(`${moduleName}.system_messages.${key}`, lang, placeholders);
+            if (nestedMessage !== `${moduleName}.system_messages.${key}`) {
+                message = nestedMessage;
+            }
+        }
     }
 
     const text = extractMessageText(message) || `[Missing message: ${moduleName}.${key}]`;

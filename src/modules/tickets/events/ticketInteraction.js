@@ -389,10 +389,17 @@ async function createTicket(interaction, type, config, metadata = {}) {
         lang = globalConfig?.language || 'en';
         const namingTemplate = globalConfig?.naming?.ticket || '{emoji}-{type}-{user}';
         
+        const cleanType = typeConfig?.label 
+            ? typeConfig.label.toLowerCase()
+                .replace(/[^a-z0-9\s-]/g, '')
+                .trim()
+                .replace(/\s+/g, '-')
+            : type;
+
         const priorityEmoji = priority === 'URGENT' ? '🔴' : (priority === 'IMPORTANT' ? '🟡' : '🟢');
         const channelName = placeholderHelper.replace(namingTemplate, {
             emoji: priorityEmoji,
-            type: type,
+            type: cleanType,
             user: user.username
         }).substring(0, 100);
 
