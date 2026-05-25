@@ -13,6 +13,8 @@ import AutomationManager from './automationManager.js';
 import GiveawayManager from '../modules/giveaway/manager.js';
 import AnalyticsManager from './analyticsManager.js';
 import cryptoHelper from '../utils/cryptoHelper.js';
+import ReactionRoleManager from '../modules/reactionRoles/manager.js';
+import PollManager from '../modules/polls/manager.js';
 
 class MultiBotManager {
     constructor() {
@@ -75,6 +77,7 @@ class MultiBotManager {
             client.commands = new Collection();
             client.isPrivateBot = true;
             client.ownerGuildId = guildId;
+            client.multiBotManager = this;
 
             // Load Handlers
             await eventHandler(client);
@@ -86,7 +89,12 @@ class MultiBotManager {
                 
                 // --- PROTECTION: Leave unauthorized guilds ---
                 const guilds = await client.guilds.fetch();
+                let hasTargetGuild = false;
                 for (const [id, guild] of guilds) {
+                    if (id === guildId) {
+                        hasTargetGuild = true;
+                        continue;
+                    }
                     if (id !== guildId) {
                         try {
                             const g = await client.guilds.fetch(id);
@@ -96,6 +104,18 @@ class MultiBotManager {
                             logger.error(`[MultiBot] Failed to leave unauthorized guild ${id}:`, e);
                         }
                     }
+                }
+                if (!hasTargetGuild) {
+                    const message = `Private bot is not in the target guild ${guildId}. Invite it there before enabling it.`;
+                    logger.warn(`[MultiBot] ${message}`);
+                    await PrivateBot.findByIdAndUpdate(botConfig._id, {
+                        enabled: false,
+                        status: 'error',
+                        lastError: message
+                    });
+                    this.enabledPrivateBotGuilds.delete(guildId);
+                    client.destroy();
+                    return;
                 }
                 // ---------------------------------------------
 
@@ -123,6 +143,12 @@ class MultiBotManager {
 
                 client.analyticsManager = new AnalyticsManager(client);
                 client.analyticsManager.start(1000 * 60 * 60);
+
+                client.reactionRoleManager = new ReactionRoleManager(client);
+                client.reactionRoleManager.init();
+
+                client.pollManager = new PollManager(client);
+                client.pollManager.init();
 
                 await PrivateBot.findByIdAndUpdate(botConfig._id, { 
                     status: 'online', 
@@ -158,7 +184,13 @@ class MultiBotManager {
 
         } catch (error) {
             logger.error(`[MultiBot] Failed to start private bot for guild ${guildId}:`, error);
-            await PrivateBot.findByIdAndUpdate(botConfig._id, { status: 'error', lastError: error.message });
+            this.enabledPrivateBotGuilds.delete(guildId);
+            this.instances.delete(guildId);
+            await PrivateBot.findByIdAndUpdate(botConfig._id, {
+                enabled: false,
+                status: 'error',
+                lastError: error.message
+            });
             
             // Notify owner via monitoring service
             if (this.mainClient && this.mainClient.monitoring) {

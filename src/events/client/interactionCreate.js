@@ -5,6 +5,7 @@ import logger from '../../utils/logger.js';
 import { resolveModule } from '../../core/moduleManager.js';
 import { getModuleConfig } from '../../core/configCache.js';
 import whiteLabelHelper from '../../utils/whiteLabelHelper.js';
+import multiBotManager from '../../core/multiBotManager.js';
 
 export default {
     name: Events.InteractionCreate,
@@ -13,6 +14,12 @@ export default {
 
         const guildId = interaction.guild.id;
         const client = interaction.client;
+
+        // If a Platinum private bot is enabled for this guild, the main Verix
+        // client must not process commands/interactions there.
+        if (!multiBotManager.shouldHandle(guildId, client)) {
+            return;
+        }
 
         // --- 0. PRIVATE BOT PROTECTION: Block interactions in unauthorized guilds ---
         if (client.isPrivateBot && client.ownerGuildId !== guildId) {

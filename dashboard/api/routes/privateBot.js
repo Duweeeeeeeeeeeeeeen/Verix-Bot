@@ -3,8 +3,12 @@ import PrivateBot from '../../../src/models/PrivateBot.js';
 import Guild from '../../../src/models/Guild.js';
 import cryptoHelper from '../../../src/utils/cryptoHelper.js';
 import logger from '../../../src/utils/logger.js';
+import multiBotManagerSingleton from '../../../src/core/multiBotManager.js';
+import { adminCheck } from '../middleware/adminCheck.js';
 
 const router = express.Router();
+
+router.use('/:guildId', adminCheck);
 
 // Get private bot config for a guild
 router.get('/:guildId', async (req, res) => {
@@ -26,7 +30,7 @@ router.get('/:guildId', async (req, res) => {
         delete botData.token;
 
         // Fetch live status & wsPing from multiBotManager
-        const multiBotManager = req.discordClient.multiBotManager;
+        const multiBotManager = req.discordClient.multiBotManager || multiBotManagerSingleton;
         if (multiBotManager) {
             const instance = multiBotManager.instances.get(guildId);
             if (instance) {
@@ -84,7 +88,7 @@ router.post('/:guildId', async (req, res) => {
         }
 
         // Handle process management
-        const multiBotManager = req.discordClient.multiBotManager;
+        const multiBotManager = req.discordClient.multiBotManager || multiBotManagerSingleton;
         if (bot.enabled) {
             if (multiBotManager.instances.has(guildId)) {
                 await multiBotManager.stopBot(guildId);
@@ -112,7 +116,7 @@ router.post('/:guildId/toggle', async (req, res) => {
         bot.enabled = !bot.enabled;
         await bot.save();
 
-        const multiBotManager = req.discordClient.multiBotManager;
+        const multiBotManager = req.discordClient.multiBotManager || multiBotManagerSingleton;
         if (bot.enabled) {
             await multiBotManager.startBot(bot);
         } else {
@@ -134,7 +138,7 @@ router.post('/:guildId/restart', async (req, res) => {
         if (!bot) return res.status(404).json({ success: false, error: 'Bot not found' });
         if (!bot.enabled) return res.status(400).json({ success: false, error: 'Bot is disabled' });
 
-        const multiBotManager = req.discordClient.multiBotManager;
+        const multiBotManager = req.discordClient.multiBotManager || multiBotManagerSingleton;
         
         // Restart sequence
         await multiBotManager.stopBot(guildId);

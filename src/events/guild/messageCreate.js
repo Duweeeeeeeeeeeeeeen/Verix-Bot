@@ -2,12 +2,14 @@ import { Events } from 'discord.js';
 import User from '../../models/User.js';
 import Guild from '../../models/Guild.js';
 import logger from '../../utils/logger.js';
+import multiBotManager from '../../core/multiBotManager.js';
 
 
 export default {
     name: Events.MessageCreate,
     async execute(message) {
         if (message.author.bot || !message.guild) return;
+        if (!multiBotManager.shouldHandle(message.guild.id, message.client)) return;
 
         // --- 1. COMMAND HANDLER (Legacy Prefix Support) ---
         try {

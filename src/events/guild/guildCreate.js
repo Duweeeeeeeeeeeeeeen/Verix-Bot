@@ -1,11 +1,13 @@
 import { Events } from 'discord.js';
 import Guild from '../../models/Guild.js';
 import logger from '../../utils/logger.js';
+import multiBotManager from '../../core/multiBotManager.js';
 
 export default {
     name: Events.GuildCreate,
     async execute(guild, client) {
         if (!guild) return;
+        if (!multiBotManager.shouldHandle(guild.id, client)) return;
 
         logger.info(`[Bot] Joined new guild: ${guild.name} (${guild.id})`);
 

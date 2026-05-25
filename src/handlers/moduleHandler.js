@@ -9,10 +9,9 @@ import multiBotManager from '../core/multiBotManager.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Store registered events to avoid duplicates on re-initialization
-// Global registry to prevent double-registration across reloads
+// Store loaded module events globally, but track listener registration per client.
 if (!global.eventRegistry) global.eventRegistry = new Map();
-if (!global.registeredEvents) global.registeredEvents = new Set();
+if (!global.registeredEventsByClient) global.registeredEventsByClient = new WeakMap();
 
 // Maps folder names (src/modules/<folder>) to their registry key when they differ
 const folderToRegistryName = {
@@ -21,7 +20,10 @@ const folderToRegistryName = {
 
 export default async (client) => {
     const eventRegistry = global.eventRegistry;
-    const registeredEvents = global.registeredEvents;
+    if (!global.registeredEventsByClient.has(client)) {
+        global.registeredEventsByClient.set(client, new Set());
+    }
+    const registeredEvents = global.registeredEventsByClient.get(client);
     
     const modulesPath = path.join(__dirname, '../modules');
     const modulesSubfolders = await fs.readdir(modulesPath);
