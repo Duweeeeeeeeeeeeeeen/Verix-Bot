@@ -44,7 +44,7 @@ export default function SetupWizard() {
 
   useEffect(() => {
     if (guildId) {
-      fetchInitialData();
+      router.replace(`/config/${guildId}`);
     }
   }, [guildId]);
 

@@ -645,10 +645,10 @@ export default function BrandingPage() {
             .step-media-v2 img { width: 100%; display: block; }
 
             /* Status monitor */
-            .pc-bot-identity-v2 { display: flex; align-items: center; gap: 20px; background: var(--bg-badge); padding: 20px; border-radius: 24px; }
+            .pc-bot-identity-v2 { display: flex; align-items: center; gap: 20px; background: var(--bg-badge); padding: 20px; border-radius: 24px; min-width: 0; overflow: hidden; }
             .bot-avatar { width: 64px; height: 64px; border-radius: 50%; border: 3px solid var(--border-strong); box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
-            .bot-info { display: flex; flex-direction: column; gap: 4px; }
-            .bot-name { font-weight: 800; font-size: 1.2rem; color: var(--text-heading); }
+            .bot-info { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; }
+            .bot-name { font-weight: 800; font-size: 1.05rem; color: var(--text-heading); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
             .pc-action-row-v2 { display: flex; justify-content: space-between; align-items: center; padding: 20px; background: var(--bg-card); border: 1.5px solid var(--border); border-radius: 20px; }
             .action-label { font-weight: 700; color: var(--text-heading); font-size: 0.95rem; }

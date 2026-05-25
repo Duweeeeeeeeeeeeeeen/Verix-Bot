@@ -72,7 +72,7 @@ export default function TicketConfig() {
   const [saving, setSaving] = useState(false);
   const [config, setConfig] = useState(null);
   const [discordData, setDiscordData] = useState({ roles: [], channels: [], categories: [] });
-  const [activeTab, setActiveTab] = useState('settings');
+  const [activeTab, setActiveTab] = useState('panels');
   const [mounted, setMounted] = useState(false);
   const [sendingPanel, setSendingPanel] = useState(false);
   const [previewData, setPreviewData] = useState(null);
@@ -356,11 +356,11 @@ export default function TicketConfig() {
 
         {/* V2 Navigation Tabs */}
         <nav className="pc-tabs-v2" style={{ marginBottom: '32px' }}>
+            <button className={activeTab === 'panels' ? 'active' : ''} onClick={() => setActiveTab('panels')}>
+                <SlidersHorizontal size={16} /> <span>Pannelli Ticket</span>
+            </button>
             <button className={activeTab === 'settings' ? 'active' : ''} onClick={() => setActiveTab('settings')}>
                 <Settings2 size={16} /> <span>{t('tickets.base_config')}</span>
-            </button>
-            <button className={activeTab === 'panels' ? 'active' : ''} onClick={() => setActiveTab('panels')}>
-                <SlidersHorizontal size={16} /> <span>Pannelli</span>
             </button>
             <button className={activeTab === 'categories' ? 'active' : ''} onClick={() => setActiveTab('categories')}>
                 <Layout size={16} /> <span>{t('tickets.categories')}</span>
@@ -389,16 +389,8 @@ export default function TicketConfig() {
                                         <DiscordSelector type="role" multiple={true} options={discordData.roles} value={config.staffRoleIds || []} onChange={v => setConfig({...config, staffRoleIds: v})} error={config.enabled && !(config.staffRoleIds || []).length ? t('common.required_field') : ''} />
                                     </div>
                                     <div className="pc-input-group-v2">
-                                        <label>{t('tickets.panel_channel') || 'Canale Pannello'}</label>
-                                        <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 0 || c.type === 5)} value={config.panelChannelId} onChange={v => setConfig({...config, panelChannelId: v})} error={config.enabled && !config.panelChannelId ? t('common.required_field') : ''} />
-                                    </div>
-                                    <div className="pc-input-group-v2">
                                         <label>{t('tickets.category_open')}</label>
                                         <DiscordSelector type="channel" options={discordData.categories} value={config.categoryOpenId || ''} onChange={v => setConfig({...config, categoryOpenId: v})} error={config.enabled && !config.categoryOpenId ? t('common.required_field') : ''} />
-                                    </div>
-                                    <div className="pc-input-group-v2">
-                                        <label>{t('tickets.input_mode')}</label>
-                                        <CustomSelect value={config.inputType || 'SELECT'} onChange={v => setConfig({...config, inputType: v})} options={PANEL_INPUT_OPTIONS} />
                                     </div>
                                 </div>
                                 <div className="pc-input-group-v2" style={{ marginTop: '24px' }}>

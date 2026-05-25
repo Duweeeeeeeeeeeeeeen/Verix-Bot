@@ -47,13 +47,6 @@ export default function GuildHome() {
 
       const [configData, statsData] = responses;
       
-      // Redirect to onboarding if setup is not completed or guild is newly created
-      if (configData && (configData.guild?.setupCompleted === false || !configData.guild?.hasOwnProperty('setupCompleted'))) {
-        console.log('[Dashboard] New guild detected or setup incomplete. Redirecting to wizard...');
-        router.push(`/config/${guildId}/setup`);
-        return;
-      }
-
       setConfig(configData);
       setStats(statsData?.data || statsData);
     } catch (err) {
@@ -104,7 +97,7 @@ export default function GuildHome() {
           detail: { message: t('hub.factory_reset_success'), type: 'success' } 
       }));
       
-      router.push(`/config/${guildId}/setup`);
+      router.push(`/config/${guildId}`);
     } catch (error) {
       console.error('Factory Reset error:', error);
       window.dispatchEvent(new CustomEvent('show-toast', { 
