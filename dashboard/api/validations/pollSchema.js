@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const pollConfigSchema = z.object({
     enabled: z.boolean().default(false),
-    logChannelId: z.string().nullable().default(null),
+    logChannelId: z.string().nullable().optional().transform(value => value || null),
     defaultColor: z.string().default('#5865F2')
 });
 

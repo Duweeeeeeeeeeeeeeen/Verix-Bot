@@ -111,10 +111,16 @@ export default function PollsConfig() {
     setSaving(true);
     window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
     try {
-      await api.request(`/config/${guildId}/polls/config`, {
+      const payload = {
+        enabled: Boolean(config.enabled),
+        logChannelId: config.logChannelId || null,
+        defaultColor: config.defaultColor || '#5865F2'
+      };
+      const res = await api.request(`/config/${guildId}/polls/config`, {
         method: 'POST',
-        body: JSON.stringify(config)
+        body: JSON.stringify(payload)
       });
+      if (res?.data) setConfig(res.data);
       showToast(t('polls.sync_success'));
     } catch (e) {
       showToast(t('common.save_error'), 'error');
