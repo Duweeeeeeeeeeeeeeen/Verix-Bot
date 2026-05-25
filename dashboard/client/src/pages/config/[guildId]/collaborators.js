@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import Layout from '../../../components/Layout';
 import LoadingScreen from '../../../components/LoadingScreen';
 import ConfirmModal from '../../../components/ConfirmModal';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -102,7 +101,7 @@ export default function Collaborators() {
   }
 
   return (
-    <Layout guildId={guildId}>
+    <>
       <div className="pc-collaborators-wrapper animate fade-in">
         <header className="page-header-v2">
           <div className="header-brand-v2">
@@ -545,6 +544,6 @@ export default function Collaborators() {
           }
         }
       `}</style>
-    </Layout>
+    </>
   );
 }
