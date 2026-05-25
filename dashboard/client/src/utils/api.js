@@ -145,6 +145,12 @@ export async function apiRequest(endpoint, options = {}) {
     // Return the data object directly if it follows the success: true, data: ... pattern.
     // If 'data' is missing but success is true, return the whole result.
     const data = (result.success && result.data !== undefined) ? result.data : result;
+    if (method !== 'GET' && typeof window !== 'undefined') {
+      const guildId = _guildFromEndpoint(endpoint);
+      if (guildId) {
+        window.dispatchEvent(new CustomEvent('refresh-module-status', { detail: { guildId } }));
+      }
+    }
     if (cacheKey) {
       _cache.set(cacheKey, { data: _cloneData(data), timestamp: Date.now() });
     }

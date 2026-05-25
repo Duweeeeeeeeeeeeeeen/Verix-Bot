@@ -72,6 +72,7 @@ export default function GuildHome() {
       });
       
       await fetchData();
+      window.dispatchEvent(new CustomEvent('refresh-module-status', { detail: { guildId } }));
       window.dispatchEvent(new CustomEvent('show-toast', { 
           detail: { message: t(!currentStatus ? 'hub.module_activated' : 'hub.module_disabled', { name: moduleName.toUpperCase() }), type: 'success' } 
       }));
@@ -92,12 +93,14 @@ export default function GuildHome() {
       await api.request(`/config/${guildId}/factory-reset`, {
         method: 'POST'
       });
+      await fetchData();
+      window.dispatchEvent(new CustomEvent('refresh-module-status', { detail: { guildId } }));
       
       window.dispatchEvent(new CustomEvent('show-toast', { 
           detail: { message: t('hub.factory_reset_success'), type: 'success' } 
       }));
       
-      router.push(`/config/${guildId}`);
+      router.replace(`/config/${guildId}`);
     } catch (error) {
       console.error('Factory Reset error:', error);
       window.dispatchEvent(new CustomEvent('show-toast', { 

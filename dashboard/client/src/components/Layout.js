@@ -193,23 +193,34 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
 
   const [enabledModules, setEnabledModules] = useState({});
 
-  useEffect(() => {
-    if (guildId && guildId !== 'undefined') {
-      const fetchModuleStatus = async () => {
-        try {
-          const response = await api.request(`/config/${guildId}/module-status`);
-          if (response) {
-            setEnabledModules(response.enabledModules || {});
-            setPremiumTier(response.premiumTier || 'none');
-          }
-        } catch (err) {
-          if (!api.isAuthError(err)) {
-            console.error("Failed to fetch sidebar status", err);
-          }
-        }
-      };
-      fetchModuleStatus();
+  const fetchModuleStatus = async () => {
+    if (!guildId || guildId === 'undefined') return;
+    try {
+      const response = await api.request(`/config/${guildId}/module-status`);
+      if (response) {
+        setEnabledModules(response.enabledModules || {});
+        setPremiumTier(response.premiumTier || 'none');
+      }
+    } catch (err) {
+      if (!api.isAuthError(err)) {
+        console.error("Failed to fetch sidebar status", err);
+      }
     }
+  };
+
+  useEffect(() => {
+    fetchModuleStatus();
+  }, [guildId]);
+
+  useEffect(() => {
+    const handleRefresh = (event) => {
+      if (!event.detail?.guildId || event.detail.guildId === guildId) {
+        fetchModuleStatus();
+      }
+    };
+
+    window.addEventListener('refresh-module-status', handleRefresh);
+    return () => window.removeEventListener('refresh-module-status', handleRefresh);
   }, [guildId]);
 
   const isPremium = premiumTier !== 'none';
