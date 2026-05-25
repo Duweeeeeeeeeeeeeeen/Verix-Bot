@@ -44,7 +44,7 @@ router.get('/user', async (req, res) => {
             }
         }
 
-        const inviteUrl = `https://discord.com/api/oauth2/authorize?client_id=${process.env.DISCORD_CLIENT_ID}&permissions=8&scope=bot%20applications.commands`;
+        const inviteUrl = `https://discord.com/api/oauth2/authorize?client_id=${process.env.DISCORD_CLIENT_ID}&permissions=335675454&scope=bot%20applications.commands`;
 
         // Check if guilds exist to avoid map errors
         const guilds = req.user.guilds || [];
