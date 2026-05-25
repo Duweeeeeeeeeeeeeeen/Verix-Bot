@@ -12,6 +12,7 @@ import {
 import { DiscordSelector, CustomSelect, SystemMessagesSection } from '../../../components/LazyConfigComponents';
 import EmbedPreviewDrawer from '../../../components/EmbedPreviewDrawer';
 import Head from 'next/head';
+import ConfirmModal from '../../../components/ConfirmModal';
 
 const POLL_OPTION_EMOJIS = ['1\uFE0F\u20E3', '2\uFE0F\u20E3', '3\uFE0F\u20E3', '4\uFE0F\u20E3', '5\uFE0F\u20E3', '6\uFE0F\u20E3', '7\uFE0F\u20E3', '8\uFE0F\u20E3', '9\uFE0F\u20E3', '\uD83D\uDD1F'];
 
@@ -28,6 +29,12 @@ export default function PollsConfig() {
   const [activeTab, setActiveTab] = useState('create');
   const [previewOpen, setPreviewOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [confirmModal, setConfirmModal] = useState({
+      isOpen: false,
+      title: '',
+      message: '',
+      onConfirm: () => {}
+  });
   const defaultPollOptions = () => ([
       { emoji: POLL_OPTION_EMOJIS[0], label: t('polls.option_1') },
       { emoji: POLL_OPTION_EMOJIS[1], label: t('polls.option_2') }
@@ -86,25 +93,30 @@ export default function PollsConfig() {
   };
 
   const handleReset = async () => {
-    if (!confirm(t('common.reset_confirm'))) return;
-    
-    setLoading(true);
-    window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
-    try {
-      const res = await api.request(`/config/${guildId}/polls/reset`, { method: 'POST' });
-      if (res.success) {
-        setConfig(res.data);
-        showToast(t('common.reset_success'));
+    setConfirmModal({
+      isOpen: true,
+      title: t('common.reset_confirm_title') || 'Ripristina Modulo',
+      message: t('common.reset_confirm') || 'Sei sicuro di voler ripristinare questo modulo ai valori di default?',
+      onConfirm: async () => {
+        setLoading(true);
+        window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
+        try {
+          const res = await api.request(`/config/${guildId}/polls/reset`, { method: 'POST' });
+          if (res.success) {
+            setConfig(res.data);
+            showToast(t('common.reset_success'));
+          }
+        } catch (error) {
+          if (!api.isAuthError(error)) {
+            console.error("Reset error:", error);
+          }
+          showToast(t('common.reset_error'), 'error');
+        } finally {
+          setLoading(false);
+          window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
+        }
       }
-    } catch (error) {
-      if (!api.isAuthError(error)) {
-        console.error("Reset error:", error);
-      }
-      showToast(t('common.reset_error'), 'error');
-    } finally {
-      setLoading(false);
-      window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
-    }
+    });
   };
 
   const handleSaveConfig = async () => {
@@ -441,6 +453,14 @@ export default function PollsConfig() {
                     />
                 </div>
             )}
+
+            <ConfirmModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                onConfirm={confirmModal.onConfirm}
+                title={confirmModal.title}
+                message={confirmModal.message}
+            />
         </div>
 
         <style jsx>{`

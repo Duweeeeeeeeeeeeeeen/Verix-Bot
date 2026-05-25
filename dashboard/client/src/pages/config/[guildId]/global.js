@@ -12,6 +12,7 @@ import {
 import { useT } from '../../../contexts/LanguageContext';
 import { DiscordSelector, CustomSelect } from '../../../components/LazyConfigComponents';
 import Head from 'next/head';
+import ConfirmModal from '../../../components/ConfirmModal';
 
 export default function GlobalConfigPage() {
   const { t, setLanguage: setDashboardLanguage } = useT();
@@ -26,6 +27,12 @@ export default function GlobalConfigPage() {
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState('general');
   const [mounted, setMounted] = useState(false);
+  const [confirmModal, setConfirmModal] = useState({
+      isOpen: false,
+      title: '',
+      message: '',
+      onConfirm: () => {}
+  });
 
   useEffect(() => {
     setMounted(true);
@@ -59,25 +66,30 @@ export default function GlobalConfigPage() {
   }, []);
 
   const handleReset = async () => {
-    if (!confirm(t('common.reset_confirm'))) return;
-
-    setLoading(true);
-    window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
-    try {
-      const res = await api.request(`/config/${guildId}/global/reset`, { method: 'POST' });
-      if (res.success) {
-        setConfig(res.data);
-        showToast(t('common.reset_success'));
+    setConfirmModal({
+      isOpen: true,
+      title: t('common.reset_confirm_title') || 'Ripristina Modulo',
+      message: t('common.reset_confirm') || 'Sei sicuro di voler ripristinare questo modulo ai valori di default?',
+      onConfirm: async () => {
+        setLoading(true);
+        window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
+        try {
+          const res = await api.request(`/config/${guildId}/global/reset`, { method: 'POST' });
+          if (res.success) {
+            setConfig(res.data);
+            showToast(t('common.reset_success'));
+          }
+        } catch (error) {
+          if (!api.isAuthError(error)) {
+            console.error("Reset error:", error);
+          }
+          showToast(t('common.reset_error'), 'error');
+        } finally {
+          setLoading(false);
+          window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
+        }
       }
-    } catch (error) {
-      if (!api.isAuthError(error)) {
-        console.error("Reset error:", error);
-      }
-      showToast(t('common.reset_error'), 'error');
-    } finally {
-      setLoading(false);
-      window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
-    }
+    });
   };
 
   const handleSave = async () => {
@@ -293,6 +305,14 @@ export default function GlobalConfigPage() {
                     </section>
                 </div>
             )}
+
+            <ConfirmModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                onConfirm={confirmModal.onConfirm}
+                title={confirmModal.title}
+                message={confirmModal.message}
+            />
         </div>
 
         <style jsx>{`

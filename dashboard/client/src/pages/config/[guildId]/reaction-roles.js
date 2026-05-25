@@ -13,6 +13,7 @@ import { DiscordSelector, CustomSelect, SystemMessagesSection } from '../../../c
 import EmojiInput from '../../../components/EmojiInput';
 import EmbedPreviewDrawer from '../../../components/EmbedPreviewDrawer';
 import Head from 'next/head';
+import ConfirmModal from '../../../components/ConfirmModal';
 
 const countryCodeToFlagEmoji = (code) => {
   if (!code || typeof code !== 'string') return code;
@@ -39,6 +40,12 @@ export default function ReactionRolesConfig() {
   const [activeTab, setActiveTab] = useState('settings');
   const [previewOpen, setPreviewOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [confirmModal, setConfirmModal] = useState({
+      isOpen: false,
+      title: '',
+      message: '',
+      onConfirm: () => {}
+  });
 
   useEffect(() => {
     setMounted(true);
@@ -107,35 +114,40 @@ export default function ReactionRolesConfig() {
   }, [guildId, mounted]);
 
   const handleReset = async () => {
-    if (!confirm(t('common.reset_confirm'))) return;
-    
-    setLoading(true);
-    window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
-    try {
-      const res = await api.request(`/config/${guildId}/reaction-roles/reset`, { method: 'POST' });
-      if (res.success) {
-        let rrConfig = res.data;
-        if (rrConfig && rrConfig.panels) {
-          rrConfig.panels.forEach(p => {
-            if (p.roles) {
-              p.roles.forEach(r => {
-                if (r.emoji) r.emoji = countryCodeToFlagEmoji(r.emoji);
+    setConfirmModal({
+      isOpen: true,
+      title: t('common.reset_confirm_title') || 'Ripristina Modulo',
+      message: t('common.reset_confirm') || 'Sei sicuro di voler ripristinare questo modulo ai valori di default?',
+      onConfirm: async () => {
+        setLoading(true);
+        window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
+        try {
+          const res = await api.request(`/config/${guildId}/reaction-roles/reset`, { method: 'POST' });
+          if (res.success) {
+            let rrConfig = res.data;
+            if (rrConfig && rrConfig.panels) {
+              rrConfig.panels.forEach(p => {
+                if (p.roles) {
+                  p.roles.forEach(r => {
+                    if (r.emoji) r.emoji = countryCodeToFlagEmoji(r.emoji);
+                  });
+                }
               });
             }
-          });
+            setConfig(rrConfig);
+            window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('common.reset_success'), type: 'success' } }));
+          }
+        } catch (error) {
+          if (!api.isAuthError(error)) {
+            console.error("Reset error:", error);
+          }
+          window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('common.reset_error'), type: 'error' } }));
+        } finally {
+          setLoading(false);
+          window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
         }
-        setConfig(rrConfig);
-        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('common.reset_success'), type: 'success' } }));
       }
-    } catch (error) {
-      if (!api.isAuthError(error)) {
-        console.error("Reset error:", error);
-      }
-      window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('common.reset_error'), type: 'error' } }));
-    } finally {
-      setLoading(false);
-      window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
-    }
+    });
   };
 
   const handleSave = async () => {
@@ -192,10 +204,16 @@ export default function ReactionRolesConfig() {
   };
 
   const removePanel = (id) => {
-      if (!confirm(t('rr.delete_confirm'))) return;
-      const filtered = config.panels.filter(p => p.id !== id);
-      setConfig({ ...config, panels: filtered });
-      if (activePanelId === id) setActivePanelId(filtered[0]?.id || null);
+      setConfirmModal({
+          isOpen: true,
+          title: t('rr.delete_confirm_title') || 'Elimina Pannello',
+          message: t('rr.delete_confirm') || 'Sei sicuro di voler eliminare questo pannello reaction role?',
+          onConfirm: () => {
+              const filtered = config.panels.filter(p => p.id !== id);
+              setConfig({ ...config, panels: filtered });
+              if (activePanelId === id) setActivePanelId(filtered[0]?.id || null);
+          }
+      });
   };
 
   const updatePanel = (id, data) => {
@@ -632,6 +650,14 @@ export default function ReactionRolesConfig() {
                     </div>
                 )}
             </main>
+
+            <ConfirmModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                onConfirm={confirmModal.onConfirm}
+                title={confirmModal.title}
+                message={confirmModal.message}
+            />
         </div>
 
         <style jsx>{`

@@ -15,6 +15,7 @@ import EmbedPreviewDrawer from '../../../components/EmbedPreviewDrawer';
 import EmbedEditor from '../../../components/EmbedEditor';
 import { mergeConfig } from '../../../utils/defaults';
 import Head from 'next/head';
+import ConfirmModal from '../../../components/ConfirmModal';
 
 const BUTTON_STYLE_OPTIONS = [
   { value: 'PRIMARY', label: 'Primary' },
@@ -78,6 +79,12 @@ export default function TicketConfig() {
   const [sendingPanel, setSendingPanel] = useState(false);
   const [previewData, setPreviewData] = useState(null);
   const [activePanelId, setActivePanelId] = useState(null);
+  const [confirmModal, setConfirmModal] = useState({
+      isOpen: false,
+      title: '',
+      message: '',
+      onConfirm: () => {}
+  });
 
   useEffect(() => {
     setMounted(true);
@@ -188,21 +195,27 @@ export default function TicketConfig() {
   };
 
   const handleReset = async () => {
-    if (!confirm(t('common.reset_confirm'))) return;
-    setSaving(true);
-    window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
-    try {
-      const res = await api.request(`/config/${guildId}/tickets/reset`, { method: 'POST' });
-      if (res.success) {
-        setConfig(mergeConfig(res.data, 'tickets'));
-        showToast(t('common.reset_success'));
+    setConfirmModal({
+      isOpen: true,
+      title: t('common.reset_confirm_title') || 'Ripristina Modulo',
+      message: t('common.reset_confirm') || 'Sei sicuro di voler ripristinare questo modulo ai valori di default?',
+      onConfirm: async () => {
+        setSaving(true);
+        window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
+        try {
+          const res = await api.request(`/config/${guildId}/tickets/reset`, { method: 'POST' });
+          if (res.success) {
+            setConfig(mergeConfig(res.data, 'tickets'));
+            showToast(t('common.reset_success'));
+          }
+        } catch (e) {
+          showToast(t('common.reset_error'), 'error');
+        } finally {
+          setSaving(false);
+          window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
+        }
       }
-    } catch (e) {
-      showToast(t('common.reset_error'), 'error');
-    } finally {
-      setSaving(false);
-      window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
-    }
+    });
   };
 
   const showToast = (message, type = 'success') => {
@@ -238,10 +251,16 @@ export default function TicketConfig() {
   };
 
   const removePanel = (id) => {
-      if (!confirm('Sei sicuro di voler eliminare questo pannello ticket?')) return;
-      const filtered = config.panels.filter(p => p.id !== id);
-      setConfig({ ...config, panels: filtered });
-      if (activePanelId === id) setActivePanelId(filtered[0]?.id || null);
+      setConfirmModal({
+          isOpen: true,
+          title: t('tickets.delete_confirm_title') || 'Elimina Pannello',
+          message: t('tickets.delete_confirm') || 'Sei sicuro di voler eliminare questo pannello ticket?',
+          onConfirm: () => {
+              const filtered = config.panels.filter(p => p.id !== id);
+              setConfig({ ...config, panels: filtered });
+              if (activePanelId === id) setActivePanelId(filtered[0]?.id || null);
+          }
+      });
   };
 
   const updatePanel = (id, data) => {
@@ -1059,6 +1078,14 @@ export default function TicketConfig() {
         </div>
 
         <EmbedPreviewDrawer open={!!previewData} onClose={() => setPreviewData(null)} data={previewData} />
+
+        <ConfirmModal
+            isOpen={confirmModal.isOpen}
+            onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+            onConfirm={confirmModal.onConfirm}
+            title={confirmModal.title}
+            message={confirmModal.message}
+        />
 
         <style jsx>{`
             .pc-premium-wrapper { padding: 32px; max-width: 1650px; margin: 0 auto; font-family: 'Inter', sans-serif; }
