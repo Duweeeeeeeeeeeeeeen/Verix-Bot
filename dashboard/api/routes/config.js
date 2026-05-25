@@ -1199,7 +1199,8 @@ router.post('/:guildId/tickets', adminCheck, validate(ticketSchema), async (req,
         // Enforcement based on Matrix: Standard (2), Premium (10), Platinum (Unlimited)
         if (tier !== 'platinum') {
             const limit = tier === 'premium' ? 10 : (tier === 'lite' ? 5 : 2);
-            if ((req.validatedData.categories || []).length > limit) {
+            const categoryCount = Object.keys(req.validatedData.typesConfig || {}).length || (req.validatedData.enabledTypes || []).length;
+            if (categoryCount > limit) {
                 return res.status(403).json({ success: false, error: `Your plan (${tier.toUpperCase()}) allows up to ${limit} ticket categories.` });
             }
         }

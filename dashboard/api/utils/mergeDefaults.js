@@ -98,26 +98,12 @@ export function mergeModuleDefaults(moduleName, dbConfig, lang = 'en') {
         if (value && typeof value === 'object' && !value.title && !value.description) {
             const dbValue = result[key] instanceof Map ? Object.fromEntries(result[key]) : (result[key] || {});
             
-            // Special case for typesConfig: deep merge each category to avoid losing fields or resetting colors
+            // Ticket categories are user-managed. Do not re-add deleted default
+            // categories when a saved typesConfig already exists in the DB.
             if (key === 'typesConfig') {
                 const dbCategories = dbValue || {};
                 const defaultCategories = value || {};
-                
-                // Get union of all category keys
-                const allKeys = Array.from(new Set([...Object.keys(defaultCategories), ...Object.keys(dbCategories)]));
-                
-                const mergedTypes = {};
-                for (const tKey of allKeys) {
-                    const defaultValue = defaultCategories[tKey] || {};
-                    const dbValueObj = dbCategories[tKey] || {};
-                    
-                    // Merge: DB overrides defaults
-                    mergedTypes[tKey] = { 
-                        ...defaultValue, 
-                        ...dbValueObj 
-                    };
-                }
-                result[key] = mergedTypes;
+                result[key] = Object.prototype.hasOwnProperty.call(result, key) ? dbCategories : defaultCategories;
                 continue;
             }
 

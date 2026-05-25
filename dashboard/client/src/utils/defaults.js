@@ -44,6 +44,11 @@ export function mergeConfig(dbConfig, moduleName, lang) {
                 result.embeds[eKey] = { ...(result.embeds[eKey] || {}), ...eValue };
             }
         } 
+        // Ticket categories are user-managed. If the DB contains typesConfig,
+        // preserve it exactly so deleted default categories do not reappear.
+        else if (key === 'typesConfig' && typeof value === 'object' && !Array.isArray(value)) {
+            result[key] = value;
+        }
         // If it's an object (like voiceSettings), shallow merge
         else if (typeof value === 'object' && !Array.isArray(value)) {
             result[key] = { ...(result[key] || {}), ...value };
