@@ -251,6 +251,7 @@ export default function Collaborators() {
         .pc-collaborators-wrapper {
           max-width: 1200px;
           margin: 0 auto;
+          padding: 28px 0;
         }
 
         .pc-grid-v2 {
@@ -261,11 +262,12 @@ export default function Collaborators() {
         }
 
         .pc-card-v2 {
-          background: rgba(15, 23, 42, 0.3) !important;
-          border: 1px solid rgba(255, 255, 255, 0.04) !important;
-          border-radius: 16px;
+          background: var(--bg-card) !important;
+          border: 1px solid var(--border) !important;
+          border-radius: 20px;
           overflow: hidden;
           padding: 24px;
+          box-shadow: var(--shadow-premium);
         }
 
         .card-header-v2 {
@@ -280,7 +282,7 @@ export default function Collaborators() {
           font-size: 1.15rem;
           font-weight: 750;
           margin: 0;
-          color: var(--text-main);
+          color: var(--text-heading);
         }
 
         .limit-badge-v2 {
@@ -315,16 +317,17 @@ export default function Collaborators() {
         .input-group-v2 {
           display: flex;
           gap: 8px;
-          background: rgba(0, 0, 0, 0.15);
-          border: 1.5px solid rgba(255, 255, 255, 0.04);
+          background: var(--bg-input);
+          border: 1.5px solid var(--border);
           border-radius: 12px;
           padding: 4px;
           transition: 0.2s;
         }
 
         .input-group-v2:focus-within {
-          border-color: var(--accent);
-          background: rgba(0, 0, 0, 0.25);
+          border-color: var(--primary);
+          background: var(--bg-card);
+          box-shadow: 0 0 0 4px rgba(var(--primary-rgb), 0.08);
         }
 
         .input-group-v2 input {
@@ -333,13 +336,17 @@ export default function Collaborators() {
           border: none;
           padding: 8px 12px;
           outline: none;
-          color: white;
+          color: var(--text-heading);
           font-weight: 600;
           font-size: 0.88rem;
         }
 
+        .input-group-v2 input::placeholder {
+          color: var(--text-dim);
+        }
+
         .pc-btn-primary {
-          background: var(--accent);
+          background: var(--primary);
           color: white;
           border: none;
           padding: 8px 16px;
@@ -355,7 +362,7 @@ export default function Collaborators() {
 
         .pc-btn-primary:hover:not(:disabled) {
           transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+          box-shadow: 0 8px 20px rgba(var(--primary-rgb), 0.2);
         }
 
         .pc-btn-primary:disabled {
@@ -380,9 +387,9 @@ export default function Collaborators() {
           display: flex;
           gap: 12px;
           padding: 14px;
-          background: rgba(255, 255, 255, 0.01) !important;
+          background: var(--bg-badge) !important;
           border-radius: 12px;
-          border: 1px solid rgba(255, 255, 255, 0.03) !important;
+          border: 1px solid var(--border) !important;
         }
 
         .info-icon {
@@ -395,7 +402,7 @@ export default function Collaborators() {
           font-size: 0.82rem;
           font-weight: 750;
           margin: 0 0 4px 0;
-          color: white;
+          color: var(--text-heading);
         }
 
         .info-text p {
@@ -411,7 +418,8 @@ export default function Collaborators() {
         }
 
         .empty-icon-v2 {
-          color: rgba(255, 255, 255, 0.06);
+          color: var(--text-dim);
+          opacity: 0.45;
           margin-bottom: 16px;
         }
 
@@ -420,7 +428,7 @@ export default function Collaborators() {
           font-size: 1.05rem;
           font-weight: 700;
           margin: 0 0 6px 0;
-          color: white;
+          color: var(--text-heading);
         }
 
         .empty-state-v2 p {
@@ -453,18 +461,18 @@ export default function Collaborators() {
           text-transform: uppercase;
           color: var(--text-muted);
           padding: 12px 16px;
-          border-bottom: 1.5px solid rgba(255, 255, 255, 0.03);
+          border-bottom: 1.5px solid var(--border);
           letter-spacing: 0.5px;
         }
 
         .pc-table-v2 td {
           padding: 14px 16px;
-          border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+          border-bottom: 1px solid var(--border);
           font-size: 0.82rem;
         }
 
         .table-row-v2:hover {
-          background: rgba(255, 255, 255, 0.01);
+          background: var(--bg-badge);
         }
 
         .collaborator-profile-v2 {
@@ -477,7 +485,7 @@ export default function Collaborators() {
           width: 36px;
           height: 36px;
           border-radius: 10px;
-          background: var(--accent);
+          background: linear-gradient(135deg, var(--primary), var(--primary-hover));
           color: white;
           display: flex;
           align-items: center;
@@ -494,7 +502,7 @@ export default function Collaborators() {
 
         .username-v2 {
           font-weight: 750;
-          color: white;
+          color: var(--text-heading);
         }
 
         .discord-id-v2 {
@@ -542,6 +550,22 @@ export default function Collaborators() {
           .pc-grid-v2 {
             grid-template-columns: 1fr;
           }
+        }
+
+        :global(.light-theme) .pc-collaborators-wrapper .pc-card-v2 {
+          box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06) !important;
+        }
+
+        :global(.light-theme) .pc-collaborators-wrapper .info-box-v2 {
+          background: #f8fafc !important;
+        }
+
+        :global(.light-theme) .pc-collaborators-wrapper .input-group-v2 {
+          background: #f8fafc;
+        }
+
+        :global(.light-theme) .pc-collaborators-wrapper .input-group-v2:focus-within {
+          background: #ffffff;
         }
       `}</style>
     </>
