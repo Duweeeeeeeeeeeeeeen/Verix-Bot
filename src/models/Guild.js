@@ -72,7 +72,15 @@ const guildSchema = new mongoose.Schema({
         default: []
     },
     statusRotationInterval: { type: Number, default: 60 }, // Seconds
-    hideBranding: { type: Boolean, default: false }
+    hideBranding: { type: Boolean, default: false },
+    collaborators: {
+        type: [{
+            userId: { type: String, required: true },
+            username: { type: String, required: true },
+            addedAt: { type: Date, default: Date.now }
+        }],
+        default: []
+    }
 }, { timestamps: true });
 
 export default mongoose.model('Guild', guildSchema);

@@ -34,6 +34,7 @@ import PollConfig from '../../../src/models/PollConfig.js';
 import LevelingConfig from '../../../src/models/LevelingConfig.js';
 import UserExperience from '../../../src/models/UserExperience.js';
 import TempVoice from '../../../src/models/TempVoice.js';
+import ModuleLock from '../../../src/models/ModuleLock.js';
 
 import { getButtonStyle } from '../../../src/utils/uiBuilder.js';
 import multiBotManager from '../../../src/core/multiBotManager.js';
@@ -320,20 +321,51 @@ router.use('/:guildId', (req, res, next) => {
     const { guildId } = req.params;
     if (guildId && multiBotManager.instances.has(guildId)) {
         req.discordClient = multiBotManager.instances.get(guildId);
-        // console.log(`[Dashboard_API] Using Private Bot for guild: ${guildId}`);
-    } else {
-        // console.log(`[Dashboard_API] Using Main Bot for guild: ${guildId}`);
     }
     next();
 });
 
-router.use('/:guildId', (req, res, next) => {
+// Real-time Concurrency Lock Checker Middleware
+router.use('/:guildId', async (req, res, next) => {
     const { guildId } = req.params;
-    if (guildId && multiBotManager.instances.has(guildId)) {
-        req.discordClient = multiBotManager.instances.get(guildId);
-        // console.log(`[Dashboard_API] Using Private Bot for guild: ${guildId}`);
-    } else {
-        // console.log(`[Dashboard_API] Using Main Bot for guild: ${guildId}`);
+    
+    // Only check lock for state-modifying requests (POST, DELETE, PUT)
+    if (req.method !== 'GET') {
+        const pathParts = req.path.split('/');
+        // req.path is relative to the router's base parameter, so it looks like "/module" or "/module/subpath"
+        let moduleName = pathParts[1]; 
+        
+        if (moduleName) {
+            // Normalizations
+            if (moduleName === 'giveaways') moduleName = 'giveaway';
+            if (moduleName === 'reaction-roles') moduleName = 'reactionroles';
+            if (moduleName === 'polls') moduleName = 'polls';
+
+            const lockableModules = [
+                'whitelist', 'tickets', 'automations', 'moderation', 'fivem', 'welcome', 
+                'verify', 'photocontest', 'giveaway', 'support', 'tempvoice', 'background', 
+                'leveling', 'socials', 'utility', 'global', 'reactionroles', 'polls'
+            ];
+
+            if (lockableModules.includes(moduleName)) {
+                try {
+                    const activeLock = await ModuleLock.findOne({
+                        guildId,
+                        module: moduleName,
+                        expiresAt: { $gt: new Date() }
+                    });
+
+                    if (activeLock && activeLock.userId !== req.user?.id) {
+                        return res.status(423).json({
+                            success: false,
+                            error: `Modifica bloccata: questa sezione è attualmente in fase di configurazione da parte di ${activeLock.username}.`
+                        });
+                    }
+                } catch (error) {
+                    console.error('[Dashboard_API] Concurrency lock check error:', error);
+                }
+            }
+        }
     }
     next();
 });

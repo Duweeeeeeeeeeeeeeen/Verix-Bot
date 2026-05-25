@@ -65,7 +65,7 @@ export default function Selector() {
 
   // Filter logic
   const manageableGuilds = (user.guilds || [])
-    .filter(g => (g.permissions & 0x8) || (g.permissions & 0x20)) // Admin or Manage Server
+    .filter(g => (g.permissions & 0x8) || (g.permissions & 0x20) || g.isCollaborator) // Admin, Manage Server, or Collaborator
   const filteredGuilds = manageableGuilds
     .filter(g => {
       if (filter === 'active') return g.botInGuild;

@@ -57,6 +57,8 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import ConfirmModal from './ConfirmModal';
+import { useModuleLock } from '../hooks/useModuleLock';
+import LockWarningBanner from './LockWarningBanner';
 
 const GuideSidebar = dynamic(() => import('./GuideSidebar'), {
   ssr: false,
@@ -75,6 +77,27 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
 
   // Use prop if available, otherwise fallback to context
   const guildId = propGuildId || currentGuildId || router.query.guildId;
+
+  // Real-time Concurrency locking
+  const currentPathParts = router.pathname.split('/');
+  const rawModule = currentPathParts[currentPathParts.length - 1];
+  
+  const lockableModules = [
+      'whitelist', 'tickets', 'automations', 'moderation', 'fivem', 'welcome', 
+      'verify', 'photocontest', 'giveaway', 'support', 'tempvoice', 'background', 
+      'leveling', 'socials', 'utility', 'global', 'reaction-roles', 'polls', 'sync', 'white-label'
+  ];
+  
+  const isLockable = lockableModules.includes(rawModule);
+  
+  let moduleToLock = null;
+  if (isLockable && guildId && guildId !== 'undefined') {
+      moduleToLock = rawModule;
+      if (moduleToLock === 'reaction-roles') moduleToLock = 'reactionroles';
+      if (moduleToLock === 'white-label') moduleToLock = 'global';
+  }
+  
+  const { isLocked, lockOwner, forceUnlock } = useModuleLock(guildId, moduleToLock);
 
   useEffect(() => {
     if (propGuildId) {
@@ -284,7 +307,10 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
       title: t('sidebar.group_administration') || 'Amministrazione',
       items: [
         { name: t('sidebar.management'), icon: History, path: `/config/${guildId}/management`, id: 'management' },
-        { name: t('management.audit_logs_title'), icon: Shield, path: `/config/${guildId}/audit`, id: 'audit' }
+        { name: t('management.audit_logs_title'), icon: Shield, path: `/config/${guildId}/audit`, id: 'audit' },
+        ...(!serverInfo.isCollaborator ? [
+          { name: t('sidebar.collaborators') || 'Collaboratori', icon: UserPlus, path: `/config/${guildId}/collaborators`, id: 'collaborators' }
+        ] : [])
       ]
     }
   ];
@@ -632,9 +658,12 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
         </header>
 
         <div className="content-container">
-          <div className={`content-transition-wrapper ${isNavigating ? 'navigating' : ''}`}>
-            {children}
-          </div>
+          <LockWarningBanner isLocked={isLocked} lockOwner={lockOwner} forceUnlock={forceUnlock} />
+          <fieldset style={{ border: 'none', padding: 0, margin: 0, minWidth: 0 }} disabled={isLocked}>
+            <div className={`content-transition-wrapper ${isNavigating ? 'navigating' : ''}`}>
+              {children}
+            </div>
+          </fieldset>
         </div>
       </main>
 

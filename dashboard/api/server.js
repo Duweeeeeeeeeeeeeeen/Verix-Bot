@@ -13,6 +13,8 @@ import messageRoutes from './routes/messages.js';
 import analyticsRoutes from './routes/analytics.js';
 import privateBotRoutes from './routes/privateBot.js';
 import adminRoutes from './routes/admin.js';
+import collaboratorsRoutes from './routes/collaborators.js';
+import locksRoutes from './routes/locks.js';
 import { stripeCheckoutRouter, stripeWebhookRouter } from './routes/stripe.js';
 import { ONE_WEEK_MS, buildSessionCookieOptions } from './utils/sessionConfig.js';
 
@@ -98,6 +100,8 @@ app.use('/api/messages', messageRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/private-bot', privateBotRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/collaborators', collaboratorsRoutes);
+app.use('/api/locks', locksRoutes);
 app.use('/api/stripe', stripeCheckoutRouter);
 
 // Health check endpoint

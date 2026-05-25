@@ -49,10 +49,53 @@ router.get('/user', async (req, res) => {
         // Check if guilds exist to avoid map errors
         const guilds = req.user.guilds || [];
         
+        // Find all guilds in the database where this user is a collaborator
+        const dbCollaboratorGuilds = await Guild.find({ 'collaborators.userId': req.user.id });
+        
         // Log for transparency
-        console.log(`[Dashboard_API] User ${req.user.username} (${req.user.id}) fetching guilds: ${guilds.length} found.`);
+        console.log(`[Dashboard_API] User ${req.user.username} (${req.user.id}) fetching guilds: ${guilds.length} found. DB Collaborators: ${dbCollaboratorGuilds.length}`);
 
-        const guildsWithPremium = await Promise.all(guilds.map(async (guild) => {
+        const mergedGuildsMap = new Map();
+        
+        // 1. First add all Discord user guilds
+        for (const guild of guilds) {
+            mergedGuildsMap.set(guild.id, {
+                ...guild,
+                isCollaborator: false // default false
+            });
+        }
+        
+        // 2. Add or mark DB collaborator guilds
+        for (const dbGuild of dbCollaboratorGuilds) {
+            const liveGuild = client.guilds.cache.get(dbGuild.guildId);
+            const isPrivateBotActive = dbGuild.privateBot?.enabled && dbGuild.privateBot?.token;
+            const premiumTier = dbGuild.premiumTier || (dbGuild.isPremium ? 'premium' : 'none');
+            const isBotInGuild = !!liveGuild || isPrivateBotActive || premiumTier === 'platinum';
+
+            if (mergedGuildsMap.has(dbGuild.guildId)) {
+                // If already in the list, just mark as collaborator
+                const existing = mergedGuildsMap.get(dbGuild.guildId);
+                existing.isCollaborator = true;
+            } else {
+                // If not in the list (user not in server / not synced), add it
+                mergedGuildsMap.set(dbGuild.guildId, {
+                    id: dbGuild.guildId,
+                    name: liveGuild?.name || dbGuild.guildName || 'Server Collaboratore',
+                    icon: liveGuild?.icon || null,
+                    owner: false,
+                    permissions: 0, // No native Discord admin permissions, but has isCollaborator
+                    features: [],
+                    isCollaborator: true,
+                    botInGuild: isBotInGuild,
+                    inviteUrl: `${inviteUrl}&guild_id=${dbGuild.guildId}`,
+                    isPremium: !!dbGuild.isPremium,
+                    premiumTier: premiumTier
+                });
+            }
+        }
+
+        // 3. Process all merged guilds (find premium status and bot status)
+        const guildsWithPremium = await Promise.all(Array.from(mergedGuildsMap.values()).map(async (guild) => {
             const guildSettings = await Guild.findOne({ guildId: guild.id });
             const premiumTier = guildSettings?.premiumTier || (guildSettings?.isPremium ? 'premium' : 'none');
             const isPrivateBotActive = guildSettings?.privateBot?.enabled && guildSettings?.privateBot?.token;
