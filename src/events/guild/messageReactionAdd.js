@@ -3,7 +3,8 @@ import logger from '../../utils/logger.js';
 
 export default {
     name: Events.MessageReactionAdd,
-    async execute(reaction, user, client) {
+    async execute(reaction, user, ...args) {
+        const client = args.at(-1);
         logger.info(`[ReactionRoles/Event] messageReactionAdd message=${reaction.message?.id || 'unknown'} emoji=${reaction.emoji?.id || reaction.emoji?.name || 'unknown'} user=${user?.id || 'unknown'}`);
         if (client.reactionRoleManager) {
             logger.info('[ReactionRoles/Event] Forwarding messageReactionAdd to reaction role manager.');
