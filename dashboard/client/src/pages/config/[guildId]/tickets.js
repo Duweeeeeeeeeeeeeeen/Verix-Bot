@@ -157,7 +157,6 @@ export default function TicketConfig() {
   const handleSendPanel = async (panelId) => {
     const panel = config.panels?.find(p => p.id === panelId);
     if (!panel || !panel.channelId) return showToast('Seleziona prima un canale per questo pannello.', 'error');
-    if (!panel.categories || panel.categories.length === 0) return showToast('Abilita almeno una categoria di ticket per questo pannello.', 'error');
     setSendingPanel(true);
     try {
         await handleSave();
@@ -316,8 +315,7 @@ export default function TicketConfig() {
     !panel.channelId ||
     !(panel.staffRoleIds || config.staffRoleIds || []).length ||
     !(panel.categoryOpenId || config.categoryOpenId) ||
-    ((panel.closeMode || config.closeMode) === 'MOVE' && !(panel.categoryClosedId || config.categoryClosedId)) ||
-    !(panel.categories || []).length
+    ((panel.closeMode || config.closeMode) === 'MOVE' && !(panel.categoryClosedId || config.categoryClosedId))
   )));
 
   const ticketTypes = config.types || (config.typesConfig && Object.keys(config.typesConfig).length > 0 ? Object.keys(config.typesConfig) : config.enabledTypes || []);
@@ -793,146 +791,6 @@ export default function TicketConfig() {
                                         </div>
                                     </section>
 
-                                    {/* Embed Builder */}
-                                    <section className="pc-card-v2">
-                                        <div className="card-header-v2">
-                                            <div className="header-icon"><Palette size={18} /></div>
-                                            <h3 style={{ margin: 0 }}>Design dell'Embed</h3>
-                                        </div>
-                                        <div className="card-body-v2">
-                                            <div className="pc-input-group-v2">
-                                                <label>Titolo dell'Embed</label>
-                                                <input className="pc-input-modern-v2" value={activePanel.embed?.title || ''} onChange={e => updatePanel(activePanel.id, { embed: { ...activePanel.embed, title: e.target.value } })} />
-                                            </div>
-                                            <div className="pc-input-group-v2" style={{ marginTop: '20px' }}>
-                                                <label>Descrizione dell'Embed</label>
-                                                <textarea className="pc-input-modern-v2" style={{ minHeight: '120px' }} value={activePanel.embed?.description || ''} onChange={e => updatePanel(activePanel.id, { embed: { ...activePanel.embed, description: e.target.value } })} />
-                                            </div>
-                                            <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: 'minmax(140px, 180px) 1fr', gap: '16px', marginTop: '20px' }}>
-                                                <div className="pc-input-group-v2">
-                                                    <label>Colore Embed</label>
-                                                    <input
-                                                        type="color"
-                                                        className="pc-input-modern-v2"
-                                                        value={activePanel.embed?.color || '#2ECC71'}
-                                                        onChange={e => updatePanel(activePanel.id, { embed: { ...activePanel.embed, color: e.target.value } })}
-                                                    />
-                                                </div>
-                                                <div className="pc-input-group-v2">
-                                                    <label>Testo Footer</label>
-                                                    <input
-                                                        className="pc-input-modern-v2"
-                                                        value={activePanel.embed?.footer || ''}
-                                                        onChange={e => updatePanel(activePanel.id, { embed: { ...activePanel.embed, footer: e.target.value } })}
-                                                    />
-                                                </div>
-                                            </div>
-                                            <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '20px' }}>
-                                                <div className="pc-input-group-v2">
-                                                    <label>Thumbnail URL</label>
-                                                    <input
-                                                        className="pc-input-modern-v2"
-                                                        value={activePanel.embed?.thumbnail || ''}
-                                                        onChange={e => updatePanel(activePanel.id, { embed: { ...activePanel.embed, thumbnail: e.target.value } })}
-                                                        placeholder="https://..."
-                                                    />
-                                                </div>
-                                                <div className="pc-input-group-v2">
-                                                    <label>Image URL</label>
-                                                    <input
-                                                        className="pc-input-modern-v2"
-                                                        value={activePanel.embed?.image || ''}
-                                                        onChange={e => updatePanel(activePanel.id, { embed: { ...activePanel.embed, image: e.target.value } })}
-                                                        placeholder="https://..."
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </section>
-
-                                    <section className="pc-card-v2">
-                                        <div className="card-header-v2">
-                                            <div className="header-icon"><MessageSquare size={18} /></div>
-                                            <div className="v-stack" style={{ flex: 1 }}>
-                                                <h3 style={{ margin: 0 }}>Risposte rapide del pannello</h3>
-                                                <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>Queste risposte compaiono solo nei ticket aperti da questo pannello.</p>
-                                            </div>
-                                            <button type="button" className="pc-btn-primary" onClick={() => addPanelCannedResponse(activePanel.id)}>
-                                                <Plus size={18} /> <span>{t('common.add')}</span>
-                                            </button>
-                                        </div>
-                                        <div className="card-body-v2">
-                                            <div className="v-stack" style={{ gap: '16px' }}>
-                                                {(activePanel.cannedResponses || []).length === 0 ? (
-                                                    <div style={{ textAlign: 'center', padding: '32px', background: 'var(--bg-badge)', borderRadius: '18px', border: '1.5px dashed var(--border)', color: 'var(--text-muted)', fontWeight: 700 }}>
-                                                        {t('tickets.canned_empty')}
-                                                    </div>
-                                                ) : (
-                                                    activePanel.cannedResponses.map((response, index) => (
-                                                        <div key={index} className="pc-sub-card-v2">
-                                                            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(180px, 260px) 1fr 42px', gap: '12px', alignItems: 'start' }}>
-                                                                <input
-                                                                    className="pc-input-modern-v2"
-                                                                    value={response.label || ''}
-                                                                    onChange={e => updatePanelCannedResponse(activePanel.id, index, { label: e.target.value })}
-                                                                    placeholder={t('tickets.cat_title_placeholder')}
-                                                                />
-                                                                <textarea
-                                                                    className="pc-input-modern-v2"
-                                                                    style={{ minHeight: '76px', resize: 'vertical' }}
-                                                                    value={response.content || ''}
-                                                                    onChange={e => updatePanelCannedResponse(activePanel.id, index, { content: e.target.value })}
-                                                                    placeholder={t('tickets.canned_placeholder')}
-                                                                />
-                                                                <button type="button" onClick={() => removePanelCannedResponse(activePanel.id, index)} className="pc-btn-icon-danger-v2">
-                                                                    <Trash2 size={18} />
-                                                                </button>
-                                                            </div>
-                                                        </div>
-                                                    ))
-                                                )}
-                                            </div>
-                                        </div>
-                                    </section>
-
-                                    {/* Ticket Categories Selector */}
-                                    <section className="pc-card-v2">
-                                        <div className="card-header-v2">
-                                            <div className="header-icon"><Ticket size={18} /></div>
-                                            <h3 style={{ margin: 0 }}>Categorie Abilitate in questo Pannello</h3>
-                                        </div>
-                                        <div className="card-body-v2">
-                                            <p style={{ margin: '0 0 20px 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                                                Seleziona quali delle categorie di ticket create vuoi mostrare su questo specifico pannello.
-                                            </p>
-                                            
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                                {Object.keys(config.typesConfig || {}).map(categoryId => {
-                                                    const category = config.typesConfig[categoryId] || {};
-                                                    const isChecked = activePanel.categories?.includes(categoryId);
-                                                    return (
-                                                        <div key={categoryId} className="pc-toggle-card-v2" style={{ border: '1px solid var(--border)', borderRadius: '16px', padding: '12px 20px', background: isChecked ? 'rgba(var(--primary-rgb), 0.03)' : 'transparent', transition: 'all 0.2s ease' }}>
-                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                                                <span style={{ fontSize: '1.25rem' }}>{category.emoji || '🎫'}</span>
-                                                                <div className="v-stack">
-                                                                    <strong>{category.label || categoryId}</strong>
-                                                                    <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>ID: {categoryId}</span>
-                                                                </div>
-                                                            </div>
-                                                            <label className="pc-toggle-v2 mini">
-                                                                <input 
-                                                                    type="checkbox" 
-                                                                    checked={isChecked} 
-                                                                    onChange={() => toggleCategoryInPanel(activePanel.id, categoryId)} 
-                                                                />
-                                                                <span className="pc-slider-v2"></span>
-                                                            </label>
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        </div>
-                                    </section>
 
                                 </div>
 
@@ -952,17 +810,13 @@ export default function TicketConfig() {
                                                 <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Input</span>
                                                 <strong>{activePanel.inputType || 'BUTTONS'}</strong>
                                             </div>
-                                            <div className="rr-summary-row" style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0' }}>
-                                                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Categorie</span>
-                                                <strong>{(activePanel.categories || []).length} Abilitate</strong>
-                                            </div>
                                         </div>
                                     </section>
 
                                     <button 
                                         type="button" 
                                         onClick={() => handleSendPanel(activePanel.id)} 
-                                        disabled={sendingPanel || !activePanel.channelId || (activePanel.categories || []).length === 0} 
+                                        disabled={sendingPanel || !activePanel.channelId} 
                                         className="pc-btn-primary" 
                                         style={{ height: '48px', justifyContent: 'center', width: '100%', gap: '8px' }}
                                     >

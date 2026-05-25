@@ -1298,21 +1298,26 @@ async function deployPanel(guildId, panelId, req, res) {
     }
     if (!ensurePanelPermissions(channel, res)) return;
 
+    const panelEmbed = config.embeds?.panel || panel.embed || {};
     const embed = new EmbedBuilder()
-        .setTitle(panel.embed?.title || 'Centro Supporto')
-        .setDescription(panel.embed?.description || 'Hai bisogno di aiuto? Apri un ticket selezionando la categoria corretta.')
-        .setColor(panel.embed?.color || '#2ECC71');
+        .setTitle(panelEmbed.title || 'Centro Supporto')
+        .setDescription(panelEmbed.description || 'Hai bisogno di aiuto? Apri un ticket selezionando la categoria corretta.')
+        .setColor(panelEmbed.color || '#2ECC71');
 
-    if (panel.embed?.footer) embed.setFooter({ text: panel.embed.footer.replace('{guild}', guild.name) });
-    if (panel.embed?.image) embed.setImage(panel.embed.image);
-    if (panel.embed?.thumbnail) embed.setThumbnail(panel.embed.thumbnail);
+    if (panelEmbed.footer) embed.setFooter({ text: panelEmbed.footer.replace('{guild}', guild.name) });
+    if (panelEmbed.image) embed.setImage(panelEmbed.image);
+    if (panelEmbed.thumbnail) embed.setThumbnail(panelEmbed.thumbnail);
 
     let components = [];
     const inputType = panel.inputType || 'BUTTONS';
 
+    const panelCategories = panel.categories?.length
+        ? panel.categories
+        : Array.from(config.typesConfig instanceof Map ? config.typesConfig.keys() : Object.keys(config.typesConfig || {}));
+
     if (inputType === 'SELECT') {
         const options = [];
-        for (const categoryId of panel.categories) {
+        for (const categoryId of panelCategories) {
             const categoryData = config.typesConfig instanceof Map 
                 ? config.typesConfig.get(categoryId) 
                 : config.typesConfig?.[categoryId];
@@ -1346,7 +1351,7 @@ async function deployPanel(guildId, panelId, req, res) {
         const row = new ActionRowBuilder();
         let buttonsCount = 0;
         
-        for (const categoryId of panel.categories) {
+        for (const categoryId of panelCategories) {
             const categoryData = config.typesConfig instanceof Map 
                 ? config.typesConfig.get(categoryId) 
                 : config.typesConfig?.[categoryId];
