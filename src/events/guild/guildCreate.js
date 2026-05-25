@@ -16,7 +16,7 @@ export default {
             const guildData = await Guild.findOneAndUpdate(
                 { guildId: guild.id },
                 { $set: { setupCompleted: false } },
-                { upsert: true, new: true, setDefaultsOnInsert: true }
+                { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
             );
             
             logger.success(`[Bot] Reset setupCompleted to false for guild: ${guild.name} to trigger dashboard onboarding.`);

@@ -63,7 +63,6 @@ const socialConfigSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
-socialConfigSchema.index({ guildId: 1 });
 socialConfigSchema.index({ 'platforms.youtube.enabled': 1 });
 
 export default mongoose.model('SocialConfig', socialConfigSchema);

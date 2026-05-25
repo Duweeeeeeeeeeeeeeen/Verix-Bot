@@ -42,7 +42,7 @@ router.post('/:guildId/:module/acquire', adminCheck, async (req, res) => {
         const lock = await ModuleLock.findOneAndUpdate(
             { guildId, module },
             { userId, username, expiresAt },
-            { upsert: true, new: true }
+            { upsert: true, returnDocument: 'after' }
         );
 
         res.json({
@@ -88,7 +88,7 @@ router.post('/:guildId/:module/heartbeat', adminCheck, async (req, res) => {
         const lock = await ModuleLock.findOneAndUpdate(
             { guildId, module },
             { userId, username: req.user.username, expiresAt },
-            { upsert: true, new: true }
+            { upsert: true, returnDocument: 'after' }
         );
 
         res.json({

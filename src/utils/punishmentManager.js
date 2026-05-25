@@ -48,7 +48,7 @@ export async function handleUserInfraction(member, reason = 'Violazione protocol
                     }
                 }
             ],
-            { upsert: true, new: true }
+            { upsert: true, returnDocument: 'after' }
         );
 
         // 3. Determine Punishment
