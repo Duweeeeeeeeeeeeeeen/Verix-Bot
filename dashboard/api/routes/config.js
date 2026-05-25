@@ -1349,6 +1349,99 @@ router.post('/:guildId/tickets/send-panel', adminCheck, async (req, res) => {
     }
 });
 
+// POST send standalone category ticket panel
+router.post('/:guildId/tickets/send-panel/:categoryId', adminCheck, async (req, res) => {
+    try {
+        const { guildId, categoryId } = req.params;
+        const config = await TicketConfig.findOne({ guildId });
+        
+        if (!config) {
+            return res.status(404).json({ success: false, error: 'Configurazione non trovata.' });
+        }
+
+        const categoryData = config.typesConfig instanceof Map 
+            ? config.typesConfig.get(categoryId) 
+            : config.typesConfig?.[categoryId];
+
+        if (!categoryData) {
+            return res.status(404).json({ success: false, error: 'Categoria ticket non trovata.' });
+        }
+
+        if (!categoryData.panelChannelId) {
+            return res.status(400).json({ success: false, error: 'Canale pannello non impostato per questa categoria.' });
+        }
+
+        const client = req.discordClient;
+        const guild = await client.guilds.fetch(guildId);
+        const channel = await guild.channels.fetch(categoryData.panelChannelId);
+
+        if (!channel) {
+            return res.status(404).json({ success: false, error: 'Canale pannello non trovato su Discord.' });
+        }
+        if (!ensurePanelPermissions(channel, res)) return;
+
+        const embed = new EmbedBuilder()
+            .setTitle(`${categoryData.emoji || '🎫'} ${categoryData.label || categoryId}`)
+            .setDescription(categoryData.description && categoryData.description.trim() 
+                ? categoryData.description 
+                : `Hai bisogno di assistenza per la categoria **${categoryData.label || categoryId}**? Clicca sul pulsante qui sotto per aprire un ticket e parlare con il nostro staff.`)
+            .setColor(categoryData.color || '#3498db');
+
+        if (categoryData.image) {
+            embed.setImage(categoryData.image);
+        }
+
+        const isLink = categoryData.style === 'LINK' && categoryData.url;
+        const btn = new ButtonBuilder()
+            .setLabel(categoryData.label || (categoryId.charAt(0).toUpperCase() + categoryId.slice(1)))
+            .setStyle(isLink ? ButtonStyle.Link : getButtonStyle(categoryData.style))
+            .setEmoji(categoryData.emoji || '🎫');
+
+        if (isLink) {
+            btn.setURL(categoryData.url);
+        } else {
+            btn.setCustomId(`ticket_type_${categoryId}`);
+        }
+
+        const components = [new ActionRowBuilder().addComponents(btn)];
+
+        // Cleanup old message if it exists
+        try {
+            if (categoryData.panelMessageId) {
+                try {
+                    const oldMsg = await channel.messages.fetch(categoryData.panelMessageId);
+                    if (oldMsg) {
+                        await oldMsg.delete().catch(() => {});
+                    }
+                } catch (err) {
+                    // Ignore if already deleted
+                }
+            }
+        } catch (err) {
+            console.error('Cleanup old standalone panel error:', err);
+        }
+
+        const sentMessage = await channel.send({ embeds: [embed], components });
+
+        if (config.typesConfig instanceof Map) {
+            const currentVal = config.typesConfig.get(categoryId);
+            currentVal.panelMessageId = sentMessage.id;
+            config.typesConfig.set(categoryId, currentVal);
+        } else {
+            config.typesConfig[categoryId].panelMessageId = sentMessage.id;
+        }
+        config.markModified('typesConfig');
+        await config.save();
+
+        invalidateCache(guildId);
+        await logAudit(req, 'SEND_STANDALONE_TICKET_PANEL', { channelId: categoryData.panelChannelId, messageId: sentMessage.id, categoryId });
+        res.json({ success: true, message: `Pannello standalone per la categoria ${categoryData.label || categoryId} inviato correttamente!` });
+    } catch (error) {
+        console.error('Error sending standalone ticket panel:', error);
+        res.status(500).json({ success: false, error: 'Errore durante l\'invio del pannello standalone.' });
+    }
+});
+
 // GET ticket statistics
 router.get('/:guildId/tickets/stats', adminCheck, async (req, res) => {
     try {

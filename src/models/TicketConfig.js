@@ -31,7 +31,9 @@ const ticketConfigSchema = new mongoose.Schema({
             image: { type: String, default: null },
             pingRoleId: { type: String, default: null },
             order: { type: Number, default: 0 },
-            welcomeMessage: { type: String, default: null }
+            welcomeMessage: { type: String, default: null },
+            panelChannelId: { type: String, default: null },
+            panelMessageId: { type: String, default: null }
         },
         default: {
             'support': { label: 'General Support', color: '#6366f1', emoji: '🎫' },

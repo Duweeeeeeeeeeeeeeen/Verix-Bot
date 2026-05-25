@@ -154,6 +154,23 @@ export default function TicketConfig() {
     }
   };
 
+  const handleSendStandalonePanel = async (categoryId) => {
+    const categoryConfig = config.typesConfig?.[categoryId];
+    if (!categoryConfig || !categoryConfig.panelChannelId) {
+      return showToast('Seleziona prima un canale per il pannello di questa categoria.', 'error');
+    }
+    setSendingPanel(true);
+    try {
+        await handleSave();
+        await api.request(`/config/${guildId}/tickets/send-panel/${categoryId}`, { method: 'POST' });
+        showToast(`Pannello standalone per la categoria "${categoryConfig.label || categoryId}" inviato correttamente!`);
+    } catch (e) {
+        showToast('Errore durante l\'invio del pannello standalone.', 'error');
+    } finally {
+        setSendingPanel(false);
+    }
+  };
+
   const handleReset = async () => {
     if (!confirm(t('common.reset_confirm'))) return;
     setSaving(true);
@@ -564,6 +581,44 @@ export default function TicketConfig() {
                                                     }}
                                                     placeholder={t('tickets.custom_welcome_placeholder')}
                                                 />
+                                            </div>
+
+                                            <div className="pc-divider" style={{ margin: '24px 0', borderTop: '1px dashed var(--border)' }} />
+                                            
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                                <div>
+                                                    <h4 style={{ margin: 0, fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-light)' }}>
+                                                        🎫 Pannello Autonomo (Canale Separato)
+                                                    </h4>
+                                                    <p style={{ margin: '4px 0 0 0', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                                                        Invia questa specifica categoria in un canale dedicato con un pulsante standalone.
+                                                     </p>
+                                                </div>
+                                                
+                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '16px', alignItems: 'end' }}>
+                                                     <div className="pc-input-group-v2" style={{ margin: 0 }}>
+                                                         <label>Canale del Pannello Separato</label>
+                                                         <DiscordSelector 
+                                                             type="channel" 
+                                                             options={discordData.channels} 
+                                                             value={config.typesConfig[id]?.panelChannelId || ''} 
+                                                             onChange={v => {
+                                                                 const newTypes = { ...config.typesConfig };
+                                                                 newTypes[id] = { ...newTypes[id], panelChannelId: v };
+                                                                 setConfig({ ...config, typesConfig: newTypes });
+                                                             }} 
+                                                         />
+                                                     </div>
+                                                     <button 
+                                                         type="button"
+                                                         className="pc-btn-primary" 
+                                                         style={{ height: '42px', padding: '0 20px', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '8px' }}
+                                                         disabled={!config.typesConfig[id]?.panelChannelId || sendingPanel}
+                                                         onClick={() => handleSendStandalonePanel(id)}
+                                                     >
+                                                         Invia Pannello Standalone
+                                                     </button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

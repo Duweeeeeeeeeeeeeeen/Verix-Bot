@@ -18,7 +18,9 @@ export const ticketSchema = z.object({
         style: z.enum(['PRIMARY', 'SECONDARY', 'SUCCESS', 'DANGER', 'LINK']).optional(),
         url: z.string().url().or(z.string().length(0)).optional().nullable(),
         image: z.string().url().or(z.string().length(0)).optional().nullable(),
-        staffRoleIds: z.array(z.string()).optional()
+        staffRoleIds: z.array(z.string()).optional(),
+        panelChannelId: discordId.or(z.literal('')).optional().nullable(),
+        panelMessageId: discordId.or(z.literal('')).optional().nullable()
     }).passthrough()).optional(),
     notifications: z.object({
         mode: z.enum(['DM', 'CHANNEL', 'BOTH', 'NONE']).default('DM'),
