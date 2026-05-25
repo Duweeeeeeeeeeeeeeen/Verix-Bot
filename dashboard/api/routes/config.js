@@ -1182,9 +1182,31 @@ router.get('/:guildId/tickets', adminCheck, async (req, res) => {
         let config = await TicketConfig.findOne({ guildId });
         if (!config) config = await TicketConfig.create({ guildId });
         
+        // Ensure panels exists (Backwards Compatibility)
+        if (!config.panels || config.panels.length === 0) {
+            config.panels = [{
+                id: 'panel-main',
+                name: 'Pannello Principale',
+                channelId: config.panelChannelId || '',
+                messageId: config.panelMessageId || null,
+                inputType: config.inputType || 'SELECT',
+                categories: Array.from(config.typesConfig instanceof Map ? config.typesConfig.keys() : Object.keys(config.typesConfig || {})),
+                embed: {
+                    title: config.embeds?.panel?.title || 'Centro Supporto',
+                    description: config.embeds?.panel?.description || 'Hai bisogno di aiuto o vuoi fare una segnalazione allo staff? Apri un ticket selezionando la categoria corretta.',
+                    color: config.embeds?.panel?.color || '#2ECC71',
+                    image: config.embeds?.panel?.image || null,
+                    thumbnail: config.embeds?.panel?.thumbnail || null,
+                    footer: config.embeds?.panel?.footer || 'Support Team | {guild}'
+                }
+            }];
+            await config.save();
+        }
+        
         const lang = await messageService.getGuildLanguage(guildId);
         res.json({ success: true, data: mergeModuleDefaults('tickets', config, lang) });
     } catch (error) {
+        console.error('Error loading tickets config:', error);
         res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione tickets' });
     }
 });
@@ -1226,221 +1248,176 @@ router.post('/:guildId/tickets/send-panel', adminCheck, async (req, res) => {
     try {
         const { guildId } = req.params;
         const config = await TicketConfig.findOne({ guildId });
-        
-        if (!config || !config.panelChannelId) {
-            return res.status(400).json({ success: false, error: 'Configurazione non trovata o canale pannello non impostato.' });
+        if (!config || !config.panels || config.panels.length === 0) {
+            return res.status(400).json({ success: false, error: 'Nessun pannello configurato.' });
         }
-
-        const client = req.discordClient;
-        const guild = await client.guilds.fetch(guildId);
-        const channel = await guild.channels.fetch(config.panelChannelId);
-
-        if (!channel) {
-            return res.status(404).json({ success: false, error: 'Canale pannello non trovato su Discord.' });
-        }
-        if (!ensurePanelPermissions(channel, res)) return;
-
-        const embed = await messageService.get(guildId, 'tickets', 'panel', { guild });
-
-        let components = [];
-        const inputType = config.inputType || 'SELECT';
-
-        if (inputType === 'SELECT') {
-            const options = [];
-            
-            // Convert Map or Object to entries
-            const typesSource = (config.typesConfig instanceof Map ? Array.from(config.typesConfig.entries()) : Object.entries(config.typesConfig || {})).sort((a, b) => (a[1].order || 0) - (b[1].order || 0));
-
-            if (typesSource.length > 0) {
-                for (const [id, data] of typesSource) {
-                    if (data.style === 'LINK') continue; // Select menu non supporta link esterni
-                    
-                    const option = {
-                        label: data.label || (id.charAt(0).toUpperCase() + id.slice(1)),
-                        value: `ticket_type_${id}`,
-                        emoji: data.emoji || '🎫'
-                    };
-                    if (data.description && data.description.trim()) {
-                        option.description = data.description.substring(0, 100);
-                    }
-                    options.push(option);
-                }
-            } else {
-                 options.push({ label: 'Supporto Generale', value: 'ticket_type_supporto', emoji: '🎫' });
-            }
-
-            components.push(new ActionRowBuilder().addComponents(
-                new StringSelectMenuBuilder()
-                    .setCustomId('ticket_create_select')
-                    .setPlaceholder('Seleziona una categoria...')
-                    .addOptions(options.slice(0, 25))
-            ));
-        } else {
-            // Default to buttons
-            const row = new ActionRowBuilder();
-             // Convert Map or Object to entries
-             const typesSource = (config.typesConfig instanceof Map ? Array.from(config.typesConfig.entries()) : Object.entries(config.typesConfig || {})).sort((a, b) => (a[1].order || 0) - (b[1].order || 0));
-
-            if (typesSource.length > 0) {
-                const entries = typesSource.slice(0, 5); // Discord limit
-                for (const [id, data] of entries) {
-                    const isLink = data.style === 'LINK' && data.url;
-                    const btn = new ButtonBuilder()
-                        .setLabel(data.label || (id.charAt(0).toUpperCase() + id.slice(1)))
-                        .setStyle(isLink ? ButtonStyle.Link : getButtonStyle(data.style))
-                        .setEmoji(data.emoji || '🎫');
-
-                    if (isLink) {
-                        btn.setURL(data.url);
-                    } else {
-                        btn.setCustomId(`ticket_type_${id}`);
-                    }
-
-                    row.addComponents(btn);
-                }
-            } else {
-                row.addComponents(
-                    new ButtonBuilder()
-                        .setCustomId('ticket_type_supporto')
-                        .setLabel('Apri Ticket')
-                        .setStyle(ButtonStyle.Primary)
-                        .setEmoji('🎫')
-                );
-            }
-            components.push(row);
-        }
-
-        // Cleanup old panels
-        try {
-            if (config.panelMessageId) {
-                try {
-                    const oldMsg = await channel.messages.fetch(config.panelMessageId);
-                    if (oldMsg) {
-                        await oldMsg.delete().catch(() => {});
-                    }
-                } catch (err) {
-                    // Ignora se già eliminato o non trovato
-                }
-            }
-
-            const messages = await channel.messages.fetch({ limit: 50 });
-            const legacy = messages.filter(m => 
-                m.author.id === client.user.id && 
-                m.components.some(row => row.components.some(c => 
-                    c.customId === 'open_ticket_select' || 
-                    c.customId === 'ticket_create_select' ||
-                    c?.customId?.startsWith('ticket_type_')
-                ))
-            );
-            for (const m of legacy.values()) await m.delete().catch(() => {});
-        } catch (err) { console.error('Cleanup error:', err); }
-
-        const sentMessage = await channel.send({ embeds: [embed], components });
-        
-        config.panelMessageId = sentMessage.id;
-        await config.save();
-
-        invalidateCache(guildId);
-        await logAudit(req, 'SEND_TICKETS_PANEL', { channelId: config.panelChannelId, messageId: sentMessage.id });
-        res.json({ success: true, message: 'Pannello ticket inviato correttamente!' });
+        return deployPanel(guildId, config.panels[0].id, req, res);
     } catch (error) {
-        console.error('Error sending tickets panel:', error);
-        res.status(500).json({ success: false, error: 'Errore durante l\'invio del pannello ticket.' });
+        console.error('Error sending default panel:', error);
+        res.status(500).json({ success: false, error: 'Errore durante l\'invio del pannello.' });
     }
 });
 
-// POST send standalone category ticket panel
-router.post('/:guildId/tickets/send-panel/:categoryId', adminCheck, async (req, res) => {
+// POST send tickets panel by ID
+router.post('/:guildId/tickets/send-panel/:panelId', adminCheck, async (req, res) => {
     try {
-        const { guildId, categoryId } = req.params;
-        const config = await TicketConfig.findOne({ guildId });
-        
-        if (!config) {
-            return res.status(404).json({ success: false, error: 'Configurazione non trovata.' });
-        }
-
-        const categoryData = config.typesConfig instanceof Map 
-            ? config.typesConfig.get(categoryId) 
-            : config.typesConfig?.[categoryId];
-
-        if (!categoryData) {
-            return res.status(404).json({ success: false, error: 'Categoria ticket non trovata.' });
-        }
-
-        if (!categoryData.panelChannelId) {
-            return res.status(400).json({ success: false, error: 'Canale pannello non impostato per questa categoria.' });
-        }
-
-        const client = req.discordClient;
-        const guild = await client.guilds.fetch(guildId);
-        const channel = await guild.channels.fetch(categoryData.panelChannelId);
-
-        if (!channel) {
-            return res.status(404).json({ success: false, error: 'Canale pannello non trovato su Discord.' });
-        }
-        if (!ensurePanelPermissions(channel, res)) return;
-
-        const embed = new EmbedBuilder()
-            .setTitle(`${categoryData.emoji || '🎫'} ${categoryData.label || categoryId}`)
-            .setDescription(categoryData.description && categoryData.description.trim() 
-                ? categoryData.description 
-                : `Hai bisogno di assistenza per la categoria **${categoryData.label || categoryId}**? Clicca sul pulsante qui sotto per aprire un ticket e parlare con il nostro staff.`)
-            .setColor(categoryData.color || '#3498db');
-
-        if (categoryData.image) {
-            embed.setImage(categoryData.image);
-        }
-
-        const isLink = categoryData.style === 'LINK' && categoryData.url;
-        const btn = new ButtonBuilder()
-            .setLabel(categoryData.label || (categoryId.charAt(0).toUpperCase() + categoryId.slice(1)))
-            .setStyle(isLink ? ButtonStyle.Link : getButtonStyle(categoryData.style))
-            .setEmoji(categoryData.emoji || '🎫');
-
-        if (isLink) {
-            btn.setURL(categoryData.url);
-        } else {
-            btn.setCustomId(`ticket_type_${categoryId}`);
-        }
-
-        const components = [new ActionRowBuilder().addComponents(btn)];
-
-        // Cleanup old message if it exists
-        try {
-            if (categoryData.panelMessageId) {
-                try {
-                    const oldMsg = await channel.messages.fetch(categoryData.panelMessageId);
-                    if (oldMsg) {
-                        await oldMsg.delete().catch(() => {});
-                    }
-                } catch (err) {
-                    // Ignore if already deleted
-                }
-            }
-        } catch (err) {
-            console.error('Cleanup old standalone panel error:', err);
-        }
-
-        const sentMessage = await channel.send({ embeds: [embed], components });
-
-        if (config.typesConfig instanceof Map) {
-            const currentVal = config.typesConfig.get(categoryId);
-            currentVal.panelMessageId = sentMessage.id;
-            config.typesConfig.set(categoryId, currentVal);
-        } else {
-            config.typesConfig[categoryId].panelMessageId = sentMessage.id;
-        }
-        config.markModified('typesConfig');
-        await config.save();
-
-        invalidateCache(guildId);
-        await logAudit(req, 'SEND_STANDALONE_TICKET_PANEL', { channelId: categoryData.panelChannelId, messageId: sentMessage.id, categoryId });
-        res.json({ success: true, message: `Pannello standalone per la categoria ${categoryData.label || categoryId} inviato correttamente!` });
+        const { guildId, panelId } = req.params;
+        return deployPanel(guildId, panelId, req, res);
     } catch (error) {
-        console.error('Error sending standalone ticket panel:', error);
-        res.status(500).json({ success: false, error: 'Errore durante l\'invio del pannello standalone.' });
+        console.error('Error sending panel:', error);
+        res.status(500).json({ success: false, error: 'Errore durante l\'invio del pannello.' });
     }
 });
+
+async function deployPanel(guildId, panelId, req, res) {
+    const config = await TicketConfig.findOne({ guildId });
+    if (!config) {
+        return res.status(404).json({ success: false, error: 'Configurazione non trovata.' });
+    }
+
+    const panel = config.panels.find(p => p.id === panelId);
+    if (!panel) {
+        return res.status(404).json({ success: false, error: 'Pannello non trovato.' });
+    }
+    if (!panel.channelId) {
+        return res.status(400).json({ success: false, error: 'Canale pannello non impostato.' });
+    }
+
+    const client = req.discordClient;
+    const guild = await client.guilds.fetch(guildId);
+    const channel = await guild.channels.fetch(panel.channelId);
+
+    if (!channel) {
+        return res.status(404).json({ success: false, error: 'Canale pannello non trovato su Discord.' });
+    }
+    if (!ensurePanelPermissions(channel, res)) return;
+
+    const embed = new EmbedBuilder()
+        .setTitle(panel.embed?.title || 'Centro Supporto')
+        .setDescription(panel.embed?.description || 'Hai bisogno di aiuto? Apri un ticket selezionando la categoria corretta.')
+        .setColor(panel.embed?.color || '#2ECC71');
+
+    if (panel.embed?.footer) embed.setFooter({ text: panel.embed.footer.replace('{guild}', guild.name) });
+    if (panel.embed?.image) embed.setImage(panel.embed.image);
+    if (panel.embed?.thumbnail) embed.setThumbnail(panel.embed.thumbnail);
+
+    let components = [];
+    const inputType = panel.inputType || 'BUTTONS';
+
+    if (inputType === 'SELECT') {
+        const options = [];
+        for (const categoryId of panel.categories) {
+            const categoryData = config.typesConfig instanceof Map 
+                ? config.typesConfig.get(categoryId) 
+                : config.typesConfig?.[categoryId];
+            
+            if (!categoryData) continue;
+            if (categoryData.style === 'LINK') continue; // Select menu non supporta link esterni
+
+            const option = {
+                label: categoryData.label || (categoryId.charAt(0).toUpperCase() + categoryId.slice(1)),
+                value: `ticket_type_${categoryId}`,
+                emoji: categoryData.emoji || '🎫'
+            };
+            if (categoryData.description && categoryData.description.trim()) {
+                option.description = categoryData.description.substring(0, 100);
+            }
+            options.push(option);
+        }
+
+        if (options.length === 0) {
+            options.push({ label: 'Supporto Generale', value: 'ticket_type_supporto', emoji: '🎫' });
+        }
+
+        components.push(new ActionRowBuilder().addComponents(
+            new StringSelectMenuBuilder()
+                .setCustomId('ticket_create_select')
+                .setPlaceholder('Seleziona una categoria...')
+                .addOptions(options.slice(0, 25))
+        ));
+    } else {
+        // BUTTONS
+        const row = new ActionRowBuilder();
+        let buttonsCount = 0;
+        
+        for (const categoryId of panel.categories) {
+            const categoryData = config.typesConfig instanceof Map 
+                ? config.typesConfig.get(categoryId) 
+                : config.typesConfig?.[categoryId];
+            
+            if (!categoryData) continue;
+            if (buttonsCount >= 5) break; // Discord limit per row
+
+            const isLink = categoryData.style === 'LINK' && categoryData.url;
+            const btn = new ButtonBuilder()
+                .setLabel(categoryData.label || (categoryId.charAt(0).toUpperCase() + categoryId.slice(1)))
+                .setStyle(isLink ? ButtonStyle.Link : getButtonStyle(categoryData.style))
+                .setEmoji(categoryData.emoji || '🎫');
+
+            if (isLink) {
+                btn.setURL(categoryData.url);
+            } else {
+                btn.setCustomId(`ticket_type_${categoryId}`);
+            }
+
+            row.addComponents(btn);
+            buttonsCount++;
+        }
+
+        if (buttonsCount === 0) {
+            row.addComponents(
+                new ButtonBuilder()
+                    .setCustomId('ticket_type_supporto')
+                    .setLabel('Apri Ticket')
+                    .setStyle(ButtonStyle.Primary)
+                    .setEmoji('🎫')
+            );
+        }
+        components.push(row);
+    }
+
+    // Cleanup old message
+    try {
+        if (panel.messageId) {
+            try {
+                const oldMsg = await channel.messages.fetch(panel.messageId);
+                if (oldMsg) {
+                    await oldMsg.delete().catch(() => {});
+                }
+            } catch (err) {
+                // Ignore
+            }
+        }
+        
+        // Also cleanup generic legacy panels in that channel
+        const messages = await channel.messages.fetch({ limit: 30 });
+        const legacy = messages.filter(m => 
+            m.author.id === client.user.id && 
+            m.components.some(row => row.components.some(c => 
+                c.customId === 'open_ticket_select' || 
+                c.customId === 'ticket_create_select' ||
+                c?.customId?.startsWith('ticket_type_')
+            ))
+        );
+        for (const m of legacy.values()) {
+            if (m.id !== panel.messageId) {
+                await m.delete().catch(() => {});
+            }
+        }
+    } catch (err) {
+        console.error('Cleanup old panel error:', err);
+    }
+
+    const sentMessage = await channel.send({ embeds: [embed], components });
+
+    panel.messageId = sentMessage.id;
+    config.markModified('panels');
+    await config.save();
+
+    invalidateCache(guildId);
+    await logAudit(req, 'SEND_TICKETS_PANEL', { channelId: panel.channelId, messageId: sentMessage.id, panelId });
+    return res.json({ success: true, messageId: sentMessage.id, message: 'Pannello ticket inviato correttamente!' });
+}
 
 // GET ticket statistics
 router.get('/:guildId/tickets/stats', adminCheck, async (req, res) => {

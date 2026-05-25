@@ -112,6 +112,25 @@ const ticketConfigSchema = new mongoose.Schema({
             emoji: { type: String, default: '📄' }, 
             style: { type: String, default: 'SECONDARY' } 
         }
+    },
+    panels: {
+        type: [{
+            id: { type: String, required: true },
+            name: { type: String, required: true },
+            channelId: { type: String, default: null },
+            messageId: { type: String, default: null },
+            inputType: { type: String, enum: ['BUTTONS', 'SELECT'], default: 'BUTTONS' },
+            categories: { type: [String], default: [] },
+            embed: {
+                title: { type: String, default: 'Centro Supporto' },
+                description: { type: String, default: 'Hai bisogno di aiuto? Apri un ticket selezionando la categoria corretta.' },
+                color: { type: String, default: '#2ECC71' },
+                image: { type: String, default: null },
+                thumbnail: { type: String, default: null },
+                footer: { type: String, default: null }
+            }
+        }],
+        default: []
     }
 });
 

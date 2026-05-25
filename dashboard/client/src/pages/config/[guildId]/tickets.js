@@ -76,6 +76,7 @@ export default function TicketConfig() {
   const [mounted, setMounted] = useState(false);
   const [sendingPanel, setSendingPanel] = useState(false);
   const [previewData, setPreviewData] = useState(null);
+  const [activePanelId, setActivePanelId] = useState(null);
 
   useEffect(() => {
     setMounted(true);
@@ -95,7 +96,11 @@ export default function TicketConfig() {
       ]);
 
       const rawConfig = configRes?.data || configRes || { enabled: false };
-      setConfig(mergeConfig(rawConfig, 'tickets'));
+      const merged = mergeConfig(rawConfig, 'tickets');
+      setConfig(merged);
+      if (merged.panels && merged.panels.length > 0) {
+        setActivePanelId(merged.panels[0].id);
+      }
 
       if (discordRes) {
         setDiscordData({
@@ -140,32 +145,21 @@ export default function TicketConfig() {
     }
   };
 
-  const handleSendPanel = async () => {
-    if (!config.panelChannelId) return showToast(t('tickets.panel_no_channel') || 'Seleziona prima un canale per il pannello.', 'error');
+  const handleSendPanel = async (panelId) => {
+    const panel = config.panels?.find(p => p.id === panelId);
+    if (!panel || !panel.channelId) return showToast('Seleziona prima un canale per questo pannello.', 'error');
+    if (!panel.categories || panel.categories.length === 0) return showToast('Abilita almeno una categoria di ticket per questo pannello.', 'error');
     setSendingPanel(true);
     try {
         await handleSave();
-        await api.request(`/config/${guildId}/tickets/send-panel`, { method: 'POST' });
-        showToast(t('tickets.panel_success') || 'Pannello ticket inviato correttamente!');
+        const res = await api.request(`/config/${guildId}/tickets/send-panel/${panelId}`, { method: 'POST' });
+        showToast('Pannello ticket inviato correttamente!');
+        if (res.success && res.messageId) {
+            const newPanels = config.panels.map(p => p.id === panelId ? { ...p, messageId: res.messageId } : p);
+            setConfig({ ...config, panels: newPanels });
+        }
     } catch (e) {
-        showToast(t('tickets.panel_error') || 'Errore durante l\'invio del pannello.', 'error');
-    } finally {
-        setSendingPanel(false);
-    }
-  };
-
-  const handleSendStandalonePanel = async (categoryId) => {
-    const categoryConfig = config.typesConfig?.[categoryId];
-    if (!categoryConfig || !categoryConfig.panelChannelId) {
-      return showToast('Seleziona prima un canale per il pannello di questa categoria.', 'error');
-    }
-    setSendingPanel(true);
-    try {
-        await handleSave();
-        await api.request(`/config/${guildId}/tickets/send-panel/${categoryId}`, { method: 'POST' });
-        showToast(`Pannello standalone per la categoria "${categoryConfig.label || categoryId}" inviato correttamente!`);
-    } catch (e) {
-        showToast('Errore durante l\'invio del pannello standalone.', 'error');
+        showToast('Errore durante l\'invio del pannello ticket.', 'error');
     } finally {
         setSendingPanel(false);
     }
@@ -191,6 +185,51 @@ export default function TicketConfig() {
 
   const showToast = (message, type = 'success') => {
     window.dispatchEvent(new CustomEvent('show-toast', { detail: { message, type } }));
+  };
+
+  const addPanel = () => {
+      const newPanel = {
+          id: 'panel-' + Math.random().toString(36).substr(2, 6),
+          name: 'Nuovo Pannello Ticket',
+          channelId: '',
+          messageId: null,
+          inputType: 'BUTTONS',
+          categories: [],
+          embed: {
+              title: 'Centro Supporto',
+              description: 'Hai bisogno di aiuto o vuoi fare una segnalazione allo staff? Apri un ticket selezionando la categoria corretta.',
+              color: '#2ECC71',
+              footer: 'Support Team | {guild}'
+          }
+      };
+      setConfig({ ...config, panels: [...(config.panels || []), newPanel] });
+      setActivePanelId(newPanel.id);
+  };
+
+  const removePanel = (id) => {
+      if (!confirm('Sei sicuro di voler eliminare questo pannello ticket?')) return;
+      const filtered = config.panels.filter(p => p.id !== id);
+      setConfig({ ...config, panels: filtered });
+      if (activePanelId === id) setActivePanelId(filtered[0]?.id || null);
+  };
+
+  const updatePanel = (id, data) => {
+      setConfig({
+          ...config,
+          panels: config.panels.map(p => p.id === id ? { ...p, ...data } : p)
+      });
+  };
+
+  const toggleCategoryInPanel = (panelId, categoryId) => {
+      const panel = config.panels.find(p => p.id === panelId);
+      if (!panel) return;
+      
+      const currentCategories = panel.categories || [];
+      const newCategories = currentCategories.includes(categoryId)
+          ? currentCategories.filter(id => id !== categoryId)
+          : [...currentCategories, categoryId];
+          
+      updatePanel(panelId, { categories: newCategories });
   };
 
   const addTicketType = () => {
@@ -297,15 +336,17 @@ export default function TicketConfig() {
                 <button className="pc-btn-outline-v2" onClick={handleReset} title={t('common.reset_to_default')}>
                     <RotateCcw size={18} />
                 </button>
-                <button
-                    className="pc-btn-outline-v2"
-                    onClick={handleSendPanel}
-                    disabled={sendingPanel || !config.panelChannelId}
-                    title={t('tickets.send_panel') || 'Invia Panel Ticket'}
-                    style={{ color: 'var(--primary)', borderColor: sendingPanel ? 'var(--border)' : 'rgba(var(--primary-rgb), 0.2)' }}
-                >
-                    {sendingPanel ? <RotateCcw size={18} className="animate-spin" /> : <Send size={18} />}
-                </button>
+                {activePanelId && (
+                    <button
+                        className="pc-btn-outline-v2"
+                        onClick={() => handleSendPanel(activePanelId)}
+                        disabled={sendingPanel}
+                        title="Invia Pannello Attivo"
+                        style={{ color: 'var(--primary)', borderColor: 'rgba(var(--primary-rgb), 0.2)' }}
+                    >
+                        {sendingPanel ? <RotateCcw size={18} className="animate-spin" /> : <Send size={18} />}
+                    </button>
+                )}
                 <button className="pc-btn-primary" onClick={handleSave} disabled={saving}>
                     <Save size={18} />
                     <span>{saving ? t('common.saving') : t('common.save_changes')}</span>
@@ -317,6 +358,9 @@ export default function TicketConfig() {
         <nav className="pc-tabs-v2" style={{ marginBottom: '32px' }}>
             <button className={activeTab === 'settings' ? 'active' : ''} onClick={() => setActiveTab('settings')}>
                 <Settings2 size={16} /> <span>{t('tickets.base_config')}</span>
+            </button>
+            <button className={activeTab === 'panels' ? 'active' : ''} onClick={() => setActiveTab('panels')}>
+                <SlidersHorizontal size={16} /> <span>Pannelli</span>
             </button>
             <button className={activeTab === 'categories' ? 'active' : ''} onClick={() => setActiveTab('categories')}>
                 <Layout size={16} /> <span>{t('tickets.categories')}</span>
@@ -582,50 +626,244 @@ export default function TicketConfig() {
                                                     placeholder={t('tickets.custom_welcome_placeholder')}
                                                 />
                                             </div>
-
-                                            <div className="pc-divider" style={{ margin: '24px 0', borderTop: '1px dashed var(--border)' }} />
-                                            
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                                                <div>
-                                                    <h4 style={{ margin: 0, fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-light)' }}>
-                                                        🎫 Pannello Autonomo (Canale Separato)
-                                                    </h4>
-                                                    <p style={{ margin: '4px 0 0 0', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                                                        Invia questa specifica categoria in un canale dedicato con un pulsante standalone.
-                                                     </p>
-                                                </div>
-                                                
-                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '16px', alignItems: 'end' }}>
-                                                     <div className="pc-input-group-v2" style={{ margin: 0 }}>
-                                                         <label>Canale del Pannello Separato</label>
-                                                         <DiscordSelector 
-                                                             type="channel" 
-                                                             options={discordData.channels} 
-                                                             value={config.typesConfig[id]?.panelChannelId || ''} 
-                                                             onChange={v => {
-                                                                 const newTypes = { ...config.typesConfig };
-                                                                 newTypes[id] = { ...newTypes[id], panelChannelId: v };
-                                                                 setConfig({ ...config, typesConfig: newTypes });
-                                                             }} 
-                                                         />
-                                                     </div>
-                                                     <button 
-                                                         type="button"
-                                                         className="pc-btn-primary" 
-                                                         style={{ height: '42px', padding: '0 20px', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '8px' }}
-                                                         disabled={!config.typesConfig[id]?.panelChannelId || sendingPanel}
-                                                         onClick={() => handleSendStandalonePanel(id)}
-                                                     >
-                                                         Invia Pannello Standalone
-                                                     </button>
-                                                </div>
-                                            </div>
                                         </div>
                                     </div>
                                 ))}
                             </div>
                         </div>
                     </section>
+                </div>
+            )}
+
+            {activeTab === 'panels' && (
+                <div className="v-stack animate slide-up" style={{ gap: '20px' }}>
+                    {/* Fleet Repository Horizontal Top Bar */}
+                    <section className="rr-top-bar" style={{ display: 'flex', alignItems: 'center', gap: '24px', padding: '16px 24px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '24px', boxShadow: 'var(--shadow-premium)' }}>
+                        <div className="top-bar-header" style={{ display: 'flex', alignItems: 'center', gap: '16px', paddingRight: '24px', borderRight: '1.5px solid var(--border)' }}>
+                            <div className="v-stack">
+                                <span className="top-bar-label" style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Pannelli Disponibili</span>
+                                <span className="top-bar-count" style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--primary)' }}>{(config.panels || []).length} Pannelli</span>
+                            </div>
+                            <button type="button" onClick={addPanel} className="pc-btn-icon-v2 add-panel-btn" style={{ width: '36px', height: '36px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Plus size={20} /></button>
+                        </div>
+                        <div className="rr-horizontal-list" style={{ display: 'flex', gap: '12px', overflowX: 'auto', padding: '4px 0', flex: 1 }}>
+                            {(config.panels || []).map(p => (
+                                <button 
+                                    type="button"
+                                    key={p.id}
+                                    className={`pc-panel-nav-btn-horizontal ${activePanelId === p.id ? 'active' : ''}`}
+                                    onClick={() => setActivePanelId(p.id)}
+                                    style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 18px', background: 'var(--bg-badge)', border: '1.5px solid var(--border)', borderRadius: '16px', cursor: 'pointer', transition: 'all 0.2s ease', flexShrink: 0 }}
+                                >
+                                    <div className="nav-icon-horizontal" style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'var(--bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: activePanelId === p.id ? 'var(--primary)' : 'var(--text-muted)' }}><Layout size={18} /></div>
+                                    <div className="nav-info-horizontal" style={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
+                                        <span className="nav-name-horizontal" style={{ fontWeight: 700, color: 'var(--text-heading)', fontSize: '0.85rem' }}>{p.name}</span>
+                                        <span className="nav-meta-horizontal" style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>{(p.categories || []).length} Categorie • {p.inputType || 'BUTTONS'}</span>
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+                    </section>
+
+                    {activePanelId && (config.panels || []).find(p => p.id === activePanelId) && (() => {
+                        const activePanel = config.panels.find(p => p.id === activePanelId);
+                        return (
+                            <div className="pc-layout-grid-v2 rr-layout-inner" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 320px', gap: '24px', alignItems: 'start' }}>
+                                <div className="v-stack" style={{ gap: '32px' }}>
+                                    
+                                    {/* Panel Identity */}
+                                    <section className="pc-card-v2">
+                                        <div className="card-header-v2">
+                                            <div className="header-icon"><Settings2 size={18} /></div>
+                                            <h3 style={{ margin: 0 }}>Identità Pannello</h3>
+                                        </div>
+                                        <div className="card-body-v2">
+                                            <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                                                <div className="pc-input-group-v2">
+                                                    <label>Nome Visualizzato</label>
+                                                    <input className="pc-input-modern-v2" value={activePanel.name} onChange={e => updatePanel(activePanel.id, { name: e.target.value })} />
+                                                </div>
+                                                <div className="pc-input-group-v2">
+                                                    <label>Modalità Input</label>
+                                                    <CustomSelect 
+                                                        options={[
+                                                            { value: 'BUTTONS', label: 'Bottoni (Consigliato)' },
+                                                            { value: 'SELECT', label: 'Menu a tendina' }
+                                                        ]} 
+                                                        value={activePanel.inputType || 'BUTTONS'} 
+                                                        onChange={val => updatePanel(activePanel.id, { inputType: val })} 
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="pc-input-group-v2" style={{ marginTop: '20px' }}>
+                                                <label>Canale di Destinazione</label>
+                                                <DiscordSelector 
+                                                    type="channel" 
+                                                    options={discordData.channels} 
+                                                    value={activePanel.channelId || ''} 
+                                                    onChange={val => updatePanel(activePanel.id, { channelId: val })} 
+                                                    error={config.enabled && !activePanel.channelId ? t('common.required_field') : ''} 
+                                                />
+                                            </div>
+                                        </div>
+                                    </section>
+
+                                    {/* Embed Builder */}
+                                    <section className="pc-card-v2">
+                                        <div className="card-header-v2">
+                                            <div className="header-icon"><Palette size={18} /></div>
+                                            <h3 style={{ margin: 0 }}>Design dell'Embed</h3>
+                                        </div>
+                                        <div className="card-body-v2">
+                                            <div className="pc-input-group-v2">
+                                                <label>Titolo dell'Embed</label>
+                                                <input className="pc-input-modern-v2" value={activePanel.embed?.title || ''} onChange={e => updatePanel(activePanel.id, { embed: { ...activePanel.embed, title: e.target.value } })} />
+                                            </div>
+                                            <div className="pc-input-group-v2" style={{ marginTop: '20px' }}>
+                                                <label>Descrizione dell'Embed</label>
+                                                <textarea className="pc-input-modern-v2" style={{ minHeight: '120px' }} value={activePanel.embed?.description || ''} onChange={e => updatePanel(activePanel.id, { embed: { ...activePanel.embed, description: e.target.value } })} />
+                                            </div>
+                                            <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: 'minmax(140px, 180px) 1fr', gap: '16px', marginTop: '20px' }}>
+                                                <div className="pc-input-group-v2">
+                                                    <label>Colore Embed</label>
+                                                    <input
+                                                        type="color"
+                                                        className="pc-input-modern-v2"
+                                                        value={activePanel.embed?.color || '#2ECC71'}
+                                                        onChange={e => updatePanel(activePanel.id, { embed: { ...activePanel.embed, color: e.target.value } })}
+                                                    />
+                                                </div>
+                                                <div className="pc-input-group-v2">
+                                                    <label>Testo Footer</label>
+                                                    <input
+                                                        className="pc-input-modern-v2"
+                                                        value={activePanel.embed?.footer || ''}
+                                                        onChange={e => updatePanel(activePanel.id, { embed: { ...activePanel.embed, footer: e.target.value } })}
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '20px' }}>
+                                                <div className="pc-input-group-v2">
+                                                    <label>Thumbnail URL</label>
+                                                    <input
+                                                        className="pc-input-modern-v2"
+                                                        value={activePanel.embed?.thumbnail || ''}
+                                                        onChange={e => updatePanel(activePanel.id, { embed: { ...activePanel.embed, thumbnail: e.target.value } })}
+                                                        placeholder="https://..."
+                                                    />
+                                                </div>
+                                                <div className="pc-input-group-v2">
+                                                    <label>Image URL</label>
+                                                    <input
+                                                        className="pc-input-modern-v2"
+                                                        value={activePanel.embed?.image || ''}
+                                                        onChange={e => updatePanel(activePanel.id, { embed: { ...activePanel.embed, image: e.target.value } })}
+                                                        placeholder="https://..."
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </section>
+
+                                    {/* Ticket Categories Selector */}
+                                    <section className="pc-card-v2">
+                                        <div className="card-header-v2">
+                                            <div className="header-icon"><Ticket size={18} /></div>
+                                            <h3 style={{ margin: 0 }}>Categorie Abilitate in questo Pannello</h3>
+                                        </div>
+                                        <div className="card-body-v2">
+                                            <p style={{ margin: '0 0 20px 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                                                Seleziona quali delle categorie di ticket create vuoi mostrare su questo specifico pannello.
+                                            </p>
+                                            
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                                {Object.keys(config.typesConfig || {}).map(categoryId => {
+                                                    const category = config.typesConfig[categoryId] || {};
+                                                    const isChecked = activePanel.categories?.includes(categoryId);
+                                                    return (
+                                                        <div key={categoryId} className="pc-toggle-card-v2" style={{ border: '1px solid var(--border)', borderRadius: '16px', padding: '12px 20px', background: isChecked ? 'rgba(var(--primary-rgb), 0.03)' : 'transparent', transition: 'all 0.2s ease' }}>
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                                <span style={{ fontSize: '1.25rem' }}>{category.emoji || '🎫'}</span>
+                                                                <div className="v-stack">
+                                                                    <strong>{category.label || categoryId}</strong>
+                                                                    <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>ID: {categoryId}</span>
+                                                                </div>
+                                                            </div>
+                                                            <label className="pc-toggle-v2 mini">
+                                                                <input 
+                                                                    type="checkbox" 
+                                                                    checked={isChecked} 
+                                                                    onChange={() => toggleCategoryInPanel(activePanel.id, categoryId)} 
+                                                                />
+                                                                <span className="pc-slider-v2"></span>
+                                                            </label>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    </section>
+
+                                </div>
+
+                                {/* Sidebar Control for Deleting / Deploying Panel */}
+                                <aside className="v-stack" style={{ gap: '16px' }}>
+                                    <section className="pc-card-v2 rr-summary-card">
+                                        <div className="card-header-v2">
+                                            <div className="header-icon"><SlidersHorizontal size={18} /></div>
+                                            <h3 style={{ margin: 0 }}>Stato Pannello</h3>
+                                        </div>
+                                        <div className="v-stack" style={{ gap: '12px' }}>
+                                            <div className="rr-summary-row" style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--border)' }}>
+                                                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Canale</span>
+                                                <strong className={activePanel.channelId ? 'ok' : 'warn'} style={{ color: activePanel.channelId ? '#10b981' : '#ef4444' }}>{activePanel.channelId ? 'Selezionato' : 'Mancante'}</strong>
+                                            </div>
+                                            <div className="rr-summary-row" style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--border)' }}>
+                                                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Input</span>
+                                                <strong>{activePanel.inputType || 'BUTTONS'}</strong>
+                                            </div>
+                                            <div className="rr-summary-row" style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0' }}>
+                                                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Categorie</span>
+                                                <strong>{(activePanel.categories || []).length} Abilitate</strong>
+                                            </div>
+                                        </div>
+                                    </section>
+
+                                    <button 
+                                        type="button" 
+                                        onClick={() => handleSendPanel(activePanel.id)} 
+                                        disabled={sendingPanel || !activePanel.channelId || (activePanel.categories || []).length === 0} 
+                                        className="pc-btn-primary" 
+                                        style={{ height: '48px', justifyContent: 'center', width: '100%', gap: '8px' }}
+                                    >
+                                        <Send size={18} />
+                                        <span>Invia Pannello su Discord</span>
+                                    </button>
+
+                                    <button 
+                                        type="button" 
+                                        onClick={() => removePanel(activePanel.id)} 
+                                        className="pc-btn-outline-v2" 
+                                        style={{ height: '48px', justifyContent: 'center', width: '100%', gap: '8px', color: '#ef4444', borderColor: 'rgba(239, 68, 68, 0.2)' }}
+                                    >
+                                        <Trash2 size={18} />
+                                        <span>Elimina Pannello</span>
+                                    </button>
+                                </aside>
+                            </div>
+                        );
+                    })()}
+
+                    {(!config.panels || config.panels.length === 0) && (
+                        <div style={{ textAlign: 'center', padding: '100px 32px' }}>
+                            <Ticket size={64} style={{ color: 'var(--primary)', marginBottom: '24px', opacity: 0.5 }} />
+                            <h2 style={{ fontFamily: 'Inter', fontWeight: 700, fontSize: '2rem', color: 'var(--text-heading)' }}>Nessun Pannello Creato</h2>
+                            <p style={{ color: 'var(--text-muted)', marginBottom: '32px' }}>Crea un pannello per inviare i bottoni o il menu a tendina su un canale Discord.</p>
+                            <button type="button" onClick={addPanel} className="pc-btn-primary" style={{ margin: '0 auto' }}>
+                                <Plus size={20} /> <span>Nuovo Pannello</span>
+                            </button>
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -917,6 +1155,35 @@ export default function TicketConfig() {
                 font-weight: 800;
                 color: var(--text-heading);
             }
+            .rr-layout-inner { display: grid !important; grid-template-columns: minmax(0, 1fr) 320px !important; gap: 24px !important; align-items: start !important; }
+            .rr-summary-card { position: sticky; top: 24px; padding: 20px !important; }
+            .rr-summary-card .card-header-v2 { margin-bottom: 16px; }
+            .rr-summary-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+            .rr-summary-row:last-child { border-bottom: none; }
+            .rr-summary-row span { color: var(--text-muted); font-size: 0.78rem; font-weight: 750; }
+            .rr-summary-row strong { color: var(--text-heading); font-size: 0.82rem; font-weight: 800; text-align: right; }
+            
+            /* Horizontal Top Bar styles */
+            .rr-top-bar { display: flex; align-items: center; gap: 24px; padding: 16px 24px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 24px; box-shadow: var(--shadow-premium); margin-bottom: 32px; }
+            .top-bar-header { display: flex; align-items: center; gap: 16px; padding-right: 24px; border-right: 1.5px solid var(--border); }
+            .top-bar-label { font-size: 0.65rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+            .top-bar-count { font-size: 0.8rem; font-weight: 800; color: var(--primary); }
+            .add-panel-btn { width: 36px !important; height: 36px !important; border-radius: 10px !important; }
+            
+            .rr-horizontal-list { display: flex; gap: 12px; overflow-x: auto; padding: 4px 0; flex: 1; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+            .rr-horizontal-list::-webkit-scrollbar { height: 4px; }
+            .rr-horizontal-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+            
+            .pc-panel-nav-btn-horizontal { display: flex; align-items: center; gap: 12px; padding: 10px 18px; background: var(--bg-badge); border: 1.5px solid var(--border); border-radius: 16px; cursor: pointer; transition: all 0.2s ease; flex-shrink: 0; }
+            .pc-panel-nav-btn-horizontal:hover { border-color: var(--primary); }
+            .pc-panel-nav-btn-horizontal.active { background: var(--bg-card); border-color: var(--primary); box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.08); }
+            
+            .nav-icon-horizontal { width: 32px; height: 32px; border-radius: 8px; background: var(--bg-card); display: flex; align-items: center; justify-content: center; color: var(--text-muted); transition: 0.2s; }
+            .pc-panel-nav-btn-horizontal.active .nav-icon-horizontal { color: var(--primary); background: var(--bg-badge); }
+            
+            .nav-info-horizontal { display: flex; flex-direction: column; text-align: left; }
+            .nav-name-horizontal { font-weight: 700; color: var(--text-heading); font-size: 0.85rem; }
+            .nav-meta-horizontal { font-size: 0.62rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; }
             @media (max-width: 900px) {
                 .ticket-category-controls,
                 .ticket-category-options {

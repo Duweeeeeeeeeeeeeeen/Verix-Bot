@@ -66,5 +66,21 @@ export const ticketSchema = z.object({
         quickReply: z.object({ label: z.string(), emoji: z.string(), style: z.string() }).partial().passthrough().optional(),
         tag: z.object({ label: z.string(), emoji: z.string(), style: z.string() }).partial().passthrough().optional(),
         transcript: z.object({ label: z.string(), emoji: z.string(), style: z.string() }).partial().passthrough().optional()
-    }).partial().passthrough().optional().nullable()
+    }).partial().passthrough().optional().nullable(),
+    panels: z.array(z.object({
+        id: z.string(),
+        name: z.string().min(1).max(50),
+        channelId: discordId.or(z.literal('')).optional().nullable(),
+        messageId: z.string().optional().nullable(),
+        inputType: z.enum(['BUTTONS', 'SELECT']).optional(),
+        categories: z.array(z.string()).optional(),
+        embed: z.object({
+            title: z.string().optional(),
+            description: z.string().optional(),
+            color: colorHex.optional(),
+            image: z.string().url().or(z.string().length(0)).optional().nullable(),
+            thumbnail: z.string().url().or(z.string().length(0)).optional().nullable(),
+            footer: z.string().optional().nullable()
+        }).partial().optional().nullable()
+    })).optional()
 }).passthrough();
