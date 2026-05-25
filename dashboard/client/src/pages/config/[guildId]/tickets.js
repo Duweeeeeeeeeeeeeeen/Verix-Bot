@@ -401,9 +401,6 @@ export default function TicketConfig() {
             <button className={activeTab === 'settings' ? 'active' : ''} onClick={() => setActiveTab('settings')}>
                 <Settings2 size={16} /> <span>{t('tickets.base_config')}</span>
             </button>
-            <button className={activeTab === 'defaults' ? 'active' : ''} onClick={() => setActiveTab('defaults')}>
-                <Shield size={16} /> <span>Global Defaults</span>
-            </button>
             <button className={activeTab === 'categories' ? 'active' : ''} onClick={() => setActiveTab('categories')}>
                 <Layout size={16} /> <span>{t('tickets.categories')}</span>
             </button>
@@ -416,7 +413,7 @@ export default function TicketConfig() {
         </nav>
 
         <div className="pc-content-v2">
-            {activeTab === 'settings' && (
+            {activeTab === 'globalDefaultsHidden' && (
                 <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(280px, 360px)', gap: '32px' }}>
                     <div className="v-stack" style={{ gap: '32px' }}>
                         <section className="pc-card-v2 animate slide-up">
@@ -669,7 +666,7 @@ export default function TicketConfig() {
                 </div>
             )}
 
-            {activeTab === 'defaults' && (
+            {activeTab === 'settings' && (
                 <div className="v-stack animate slide-up" style={{ gap: '20px' }}>
                     {/* Fleet Repository Horizontal Top Bar */}
                     <section className="rr-top-bar" style={{ display: 'flex', alignItems: 'center', gap: '24px', padding: '16px 24px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '24px', boxShadow: 'var(--shadow-premium)' }}>
