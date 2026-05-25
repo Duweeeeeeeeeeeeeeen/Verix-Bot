@@ -527,23 +527,17 @@ export default function WhitelistConfig() {
                         guildId={guildId}
                         module="whitelist"
                         slugs={[
-                            { key: 'panel', label: t('whitelist.msg_panel'), description: t('whitelist.msg_panel_desc') || 'Messaggio principale per l\'accesso.', variables: ['guild'], group: 'Entry UI', groupIcon: Layout },
-                            { key: 'dm_accepted', label: t('whitelist.msg_accepted'), description: t('whitelist.msg_accepted_desc') || 'Inviato in DM all\'utente promosso.', variables: ['user'], group: 'DM Alerts', groupIcon: CheckCircle2 },
-                            { key: 'dm_rejected', label: t('whitelist.msg_rejected'), description: t('whitelist.msg_rejected_desc') || 'Inviato in DM all\'utente bocciato.', variables: ['user', 'reason'], group: 'DM Alerts', groupIcon: XCircle }
+                            // Whitelist Module
+                            { key: 'panel', label: t('whitelist.msg_panel'), description: t('whitelist.msg_panel_desc') || 'Messaggio principale per l\'accesso.', variables: ['guild'], group: 'Whitelist (Accesso)', groupIcon: Layout, module: 'whitelist' },
+                            { key: 'dm_accepted', label: t('whitelist.msg_accepted'), description: t('whitelist.msg_accepted_desc') || 'Inviato in DM all\'utente promosso.', variables: ['user'], group: 'Whitelist (DMs)', groupIcon: CheckCircle2, module: 'whitelist' },
+                            { key: 'dm_rejected', label: t('whitelist.msg_rejected'), description: t('whitelist.msg_rejected_desc') || 'Inviato in DM all\'utente bocciato.', variables: ['user', 'reason'], group: 'Whitelist (DMs)', groupIcon: XCircle, module: 'whitelist' },
+                            
+                            // Recruitment Module
+                            { key: 'panel', label: t('background.msg_panel') || 'Pannello Candidature', description: t('background.msg_panel_desc') || 'Messaggio principale per l\'invio delle candidature.', variables: ['guild'], group: 'Recruitment (Candidature)', groupIcon: Layout, module: 'background' },
+                            { key: 'dm_accepted', label: t('background.msg_accepted') || 'Candidatura Accettata', description: t('background.msg_accepted_desc') || 'Inviato in DM all\'utente approvato.', variables: ['user'], group: 'Recruitment (DMs)', groupIcon: CheckCircle2, module: 'background' },
+                            { key: 'dm_rejected', label: t('background.msg_rejected') || 'Candidatura Respinta', description: t('background.msg_rejected_desc') || 'Inviato in DM all\'utente respinto.', variables: ['user', 'reason'], group: 'Recruitment (DMs)', groupIcon: XCircle, module: 'background' }
                         ]}
                     />
-
-                    <div style={{ marginTop: '48px' }}>
-                        <EmbedMessageManager
-                            guildId={guildId}
-                            module="background"
-                            slugs={[
-                                { key: 'panel', label: t('background.msg_panel') || 'Pannello Candidature', description: t('background.msg_panel_desc') || 'Messaggio principale per l\'invio delle candidature.', variables: ['guild'], group: 'Recruitment UI', groupIcon: Layout },
-                                { key: 'dm_accepted', label: t('background.msg_accepted') || 'Candidatura Accettata', description: t('background.msg_accepted_desc') || 'Inviato in DM all\'utente approvato.', variables: ['user'], group: 'DM Alerts', groupIcon: CheckCircle2 },
-                                { key: 'dm_rejected', label: t('background.msg_rejected') || 'Candidatura Respinta', description: t('background.msg_rejected_desc') || 'Inviato in DM all\'utente respinto.', variables: ['user', 'reason'], group: 'DM Alerts', groupIcon: XCircle }
-                            ]}
-                        />
-                    </div>
 
                     <section className="pc-card-v2">
                         <SystemMessagesSection

@@ -22,9 +22,10 @@ import defaultMessagesMap from '../locales';
 
 /**
  * Manages multiple configurable messages for a module, grouped by context.
+ * Supports different backend modules per slug dynamically.
  * @param {string} guildId
- * @param {string} module - Module name (whitelist, tickets, verify, system)
- * @param {Array} slugs - List of { key, label, description, variables, group, groupIcon }
+ * @param {string} module - Default module name
+ * @param {Array} slugs - List of { key, label, description, variables, group, groupIcon, module }
  * @param {Function} extraButtons - Optional function (slug) => [buttons] for preview
  */
 export default function EmbedMessageManager({ guildId, module, slugs = [], extraButtons, compact = true, hideSidebar = false }) {
@@ -36,6 +37,9 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
   const [openGroups, setOpenGroups] = useState({});
+
+  // Unique modules list
+  const modules = Array.from(new Set(slugs.map(s => s.module || module)));
 
   // Grouping logic
   const groups = slugs.reduce((acc, slug) => {
@@ -51,8 +55,7 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
     }
   }, [guildId, module]);
 
-  // Open the group containing the active slug (runs only when activeSlug changes,
-  // avoids re-running fetchMessages unnecessarily)
+  // Open the group containing the active slug
   useEffect(() => {
     if (!activeSlug) return;
     const activeGroup = Object.values(groups).find(g => g.items.some(s => s.key === activeSlug));
@@ -60,42 +63,44 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
       setOpenGroups(prev => ({ ...prev, [activeGroup.name]: true }));
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeSlug]); // `groups` is derived from `slugs` which is stable — no extra dep needed
+  }, [activeSlug]);
 
   const fetchMessages = async () => {
     setLoading(true);
     try {
-      const res = await api.request(`/messages/${guildId}/${module}`);
-      const dbData = res || {};
-      const defaults = defaultMessages[module] || {};
-      
-      // Ensure every slug has at least the default content
-      const merged = { ...dbData };
-      slugs.forEach(slug => {
-        if (!merged[slug.key]) {
-          merged[slug.key] = defaults[slug.key] || {
-            title: t('embeds.manager.missing_title'),
-            description: t('embeds.manager.missing_desc'),
-            color: '#6366f1'
-          };
-        }
+      const resArray = await Promise.all(modules.map(m => api.request(`/messages/${guildId}/${m}`)));
+      const merged = {};
+      modules.forEach((m, idx) => {
+        merged[m] = resArray[idx] || {};
+        const defaults = defaultMessages[m] || {};
+        slugs.filter(s => (s.module || module) === m).forEach(slug => {
+          if (!merged[m][slug.key]) {
+            merged[m][slug.key] = defaults[slug.key] || {
+              title: t('embeds.manager.missing_title'),
+              description: t('embeds.manager.missing_desc'),
+              color: '#6366f1'
+            };
+          }
+        });
       });
 
       setMessages(merged);
       setError(null);
     } catch (err) {
       console.error('Error fetching messages:', err);
-      // Fallback to defaults
-      const defaults = defaultMessages[module] || {};
-      const fallback = {};
-      slugs.forEach(slug => {
-        fallback[slug.key] = defaults[slug.key] || {
-          title: t('embeds.manager.missing_title'),
-          description: t('embeds.manager.missing_desc'),
-          color: '#6366f1'
-        };
+      const merged = {};
+      modules.forEach(m => {
+        merged[m] = {};
+        const defaults = defaultMessages[m] || {};
+        slugs.filter(s => (s.module || module) === m).forEach(slug => {
+          merged[m][slug.key] = defaults[slug.key] || {
+            title: t('embeds.manager.missing_title'),
+            description: t('embeds.manager.missing_desc'),
+            color: '#6366f1'
+          };
+        });
       });
-      setMessages(fallback);
+      setMessages(merged);
       setError(null); 
     } finally {
       setLoading(false);
@@ -104,10 +109,12 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
 
   const handleSave = async () => {
     setSaving(true);
+    const activeSlugData = slugs.find(s => s.key === activeSlug);
+    const activeModule = activeSlugData?.module || module;
     try {
-      await api.request(`/messages/${guildId}/${module}`, {
+      await api.request(`/messages/${guildId}/${activeModule}`, {
         method: 'POST',
-        body: JSON.stringify(messages)
+        body: JSON.stringify(messages[activeModule] || {})
       });
       window.dispatchEvent(new CustomEvent('show-toast', { 
         detail: { message: t('common.saved_success'), type: 'success' } 
@@ -123,9 +130,13 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
   };
 
   const updateMessage = (slug, data) => {
+    const slugMod = slugs.find(s => s.key === slug)?.module || module;
     setMessages(prev => ({
       ...prev,
-      [slug]: data
+      [slugMod]: {
+        ...(prev[slugMod] || {}),
+        [slug]: data
+      }
     }));
   };
 
@@ -134,13 +145,13 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
   };
 
   const activeSlugData = slugs.find(s => s.key === activeSlug);
+  const activeModule = activeSlugData?.module || module;
 
   const getGroupStyles = (name) => {
     const n = name.toLowerCase();
-    // Keywords mapping for styles (supporting multiple languages if needed, or just generic tags)
-    const BLUE = ['avvio', 'start', 'apertura', 'open', 'entrata', 'join', 'welcome'];
+    const BLUE = ['avvio', 'start', 'apertura', 'open', 'entrata', 'join', 'welcome', 'whitelist (accesso)'];
     const AMBER = ['domande', 'questions', 'gestione', 'management', 'coda', 'queue', 'pending'];
-    const GREEN = ['esito', 'result', 'successo', 'success', 'colloquio', 'interview', 'accepted'];
+    const GREEN = ['esito', 'result', 'successo', 'success', 'colloquio', 'interview', 'accepted', 'whitelist (dms)', 'recruitment (dms)'];
     const RED = ['errore', 'error', 'timeout', 'chiusura', 'close', 'denied', 'rejected'];
 
     if (BLUE.some(k => n.includes(k))) return { color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.1)' };
@@ -224,7 +235,7 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
                   <button 
                     onClick={() => {
                       if (window.confirm(t('embeds.manager.reset_confirm'))) {
-                        const defaults = defaultMessages[module] || {};
+                        const defaults = defaultMessages[activeModule] || {};
                         const fallback = defaults[activeSlug] || {
                           title: t('embeds.manager.missing_title'),
                           description: t('embeds.manager.missing_desc'),
@@ -252,7 +263,7 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
 
               <div className="editor-card-p">
                 <EmbedEditor
-                  embed={messages[activeSlug] || defaultMessages[module]?.[activeSlug] || {
+                  embed={messages[activeModule]?.[activeSlug] || defaultMessages[activeModule]?.[activeSlug] || {
                     title: t('embeds.manager.missing_title'),
                     description: t('embeds.manager.missing_desc'),
                     color: '#6366f1'
@@ -594,4 +605,3 @@ export default function EmbedMessageManager({ guildId, module, slugs = [], extra
     </div>
   );
 }
-
