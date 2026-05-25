@@ -1,4 +1,7 @@
 import mongoose from 'mongoose';
+import crypto from 'crypto';
+
+const createWebhookToken = () => crypto.randomBytes(24).toString('hex');
 
 const socialPlatformSchema = new mongoose.Schema({
     enabled: { type: Boolean, default: false },
@@ -30,7 +33,7 @@ const socialPlatformSchema = new mongoose.Schema({
         lastBridgeErrorAt: { type: Date, default: null },
         bridgeBackoffUntil: { type: Date, default: null }
     }],
-    webhookToken: { type: String, default: () => Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15) }
+    webhookToken: { type: String, default: createWebhookToken }
 });
 
 const socialConfigSchema = new mongoose.Schema({
@@ -59,5 +62,8 @@ const socialConfigSchema = new mongoose.Schema({
         default: {}
     }
 }, { timestamps: true });
+
+socialConfigSchema.index({ guildId: 1 });
+socialConfigSchema.index({ 'platforms.youtube.enabled': 1 });
 
 export default mongoose.model('SocialConfig', socialConfigSchema);

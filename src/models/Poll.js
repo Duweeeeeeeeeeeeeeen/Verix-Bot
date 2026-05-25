@@ -20,5 +20,6 @@ const pollSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 pollSchema.index({ status: 1, endTime: 1 });
+pollSchema.index({ guildId: 1, status: 1, createdAt: -1 });
 
 export default mongoose.model('Poll', pollSchema);

@@ -157,13 +157,15 @@ router.post('/youtube/:channelId', express.text({ type: ['application/atom+xml',
             const platformConfig = config.platforms.youtube;
             if (!platformConfig || !platformConfig.accounts) continue;
 
-            const trackingAccount = platformConfig.accounts.find(acc => acc.username.includes(channelId) || acc.resolvedId === channelId);
+            const accountIndex = platformConfig.accounts.findIndex(acc => acc.username.includes(channelId) || acc.resolvedId === channelId);
+            const trackingAccount = accountIndex >= 0 ? platformConfig.accounts[accountIndex] : null;
             if (!trackingAccount) continue;
 
             // Multi-bot protection
             if (client.multiBotManager && !client.multiBotManager.shouldHandle(config.guildId, client)) continue;
 
             let configChanged = false;
+            let reservedVideo = false;
 
             // Initialize seenPostIds if empty and lastPostId is set, or if lastPostId is not set
             if (!Array.isArray(trackingAccount.seenPostIds)) {
@@ -191,11 +193,34 @@ router.post('/youtube/:channelId', express.text({ type: ['application/atom+xml',
                 if (!isDuplicate) {
                     if (isRecent) {
                         logger.info(`[WebSub] Processing new video push for ${channelId} in guild ${config.guildId}: ${video.title}`);
+                        const feedIdsToReserve = Array.from(new Set([video.id, ...feedIds])).slice(-100);
+                        const reserveResult = await SocialConfig.updateOne(
+                            {
+                                _id: config._id,
+                                [`platforms.youtube.accounts.${accountIndex}.seenPostIds`]: { $ne: video.id }
+                            },
+                            {
+                                $addToSet: {
+                                    [`platforms.youtube.accounts.${accountIndex}.seenPostIds`]: { $each: feedIdsToReserve }
+                                },
+                                $set: {
+                                    [`platforms.youtube.accounts.${accountIndex}.lastPostId`]: video.id
+                                }
+                            }
+                        );
+                        if (reserveResult.modifiedCount === 0) {
+                            logger.info(`[WebSub] Duplicate push ignored for ${channelId} in guild ${config.guildId}: ${video.id}`);
+                            continue;
+                        }
+                        reservedVideo = true;
 
                         // Fetch profile image if missing
                         if (!trackingAccount.cachedProfileImage) {
                             trackingAccount.cachedProfileImage = await client.socialManager.fetchYouTubeProfileImage(channelId);
-                            configChanged = true;
+                            await SocialConfig.updateOne(
+                                { _id: config._id },
+                                { $set: { [`platforms.youtube.accounts.${accountIndex}.cachedProfileImage`]: trackingAccount.cachedProfileImage } }
+                            );
                         }
 
                         const currentVideoId = video.id.replace('yt:video:', '');
@@ -207,8 +232,6 @@ router.post('/youtube/:channelId', express.text({ type: ['application/atom+xml',
                             profileImage: trackingAccount.cachedProfileImage
                         }, 'YouTube');
 
-                        trackingAccount.lastPostId = video.id;
-                        configChanged = true;
                     } else {
                         logger.info(`[WebSub] Skipping push of old video for ${channelId} in guild ${config.guildId}: ${video.title}`);
                     }
@@ -226,7 +249,7 @@ router.post('/youtube/:channelId', express.text({ type: ['application/atom+xml',
                 configChanged = true;
             }
 
-            if (configChanged) {
+            if (configChanged && !reservedVideo) {
                 await config.save();
             }
         }

@@ -4,6 +4,18 @@ import Guild from '../../models/Guild.js';
 import logger from '../../utils/logger.js';
 import multiBotManager from '../../core/multiBotManager.js';
 
+const prefixCache = new Map();
+const PREFIX_TTL = 5 * 60 * 1000;
+
+async function getGuildPrefix(guildId) {
+    const cached = prefixCache.get(guildId);
+    if (cached && cached.expires > Date.now()) return cached.prefix;
+
+    const guildData = await Guild.findOne({ guildId }).select('prefix').lean();
+    const prefix = guildData?.prefix || '!';
+    prefixCache.set(guildId, { prefix, expires: Date.now() + PREFIX_TTL });
+    return prefix;
+}
 
 export default {
     name: Events.MessageCreate,
@@ -13,8 +25,7 @@ export default {
 
         // --- 1. COMMAND HANDLER (Legacy Prefix Support) ---
         try {
-            const guildData = await Guild.findOne({ guildId: message.guild.id });
-            const prefix = guildData?.prefix || '!';
+            const prefix = await getGuildPrefix(message.guild.id);
 
             if (message.content.startsWith(prefix)) {
                 const args = message.content.slice(prefix.length).trim().split(/ +/);

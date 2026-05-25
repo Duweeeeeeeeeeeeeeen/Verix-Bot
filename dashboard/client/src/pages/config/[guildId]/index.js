@@ -92,7 +92,8 @@ export default function GuildHome() {
     window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
     try {
       await api.request(`/config/${guildId}/factory-reset`, {
-        method: 'POST'
+        method: 'POST',
+        body: JSON.stringify({ confirm: true })
       });
       await fetchData();
       window.dispatchEvent(new CustomEvent('refresh-module-status', { detail: { guildId } }));

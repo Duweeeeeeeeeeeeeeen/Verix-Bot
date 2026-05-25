@@ -1,6 +1,7 @@
 import express from 'express';
 import { z } from 'zod';
 import { PermissionFlagsBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder } from 'discord.js';
+import crypto from 'crypto';
 
 
 import WhitelistConfig from '../../../src/models/WhitelistConfig.js';
@@ -92,6 +93,15 @@ function ensurePanelPermissions(channel, res) {
     });
     return false;
 }
+
+async function fetchGuildOr404(client, guildId, res) {
+    const guild = await client.guilds.fetch(guildId).catch(() => null);
+    if (guild) return guild;
+    res.status(404).json({ success: false, error: 'Bot non presente nel server o server non raggiungibile.' });
+    return null;
+}
+
+const createWebhookToken = () => crypto.randomBytes(24).toString('hex');
 
 router.get('/:guildId/module-status', adminCheck, async (req, res) => {
     try {
@@ -375,25 +385,25 @@ router.get('/:guildId', adminCheck, async (req, res) => {
     try {
         const { guildId } = req.params;
         
-        // Fetch or create all configurations atomically in parallel using upsert
+        // Fetch configs without creating module documents from a read-only dashboard overview.
         let [wlConfig, tkConfig, photoConfig, verifyConfig, guildData, globalConfig, wlcmConfig, utilConfig, fmConfig, socConfig, autoClearConfig, modConfig, suppConfig, rrConfig, pollConfig, bgConfig, staffConfig] = await Promise.all([
-            WhitelistConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }),
-            TicketConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }),
-            PhotoContestConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }),
-            VerifyConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }),
+            WhitelistConfig.findOne({ guildId }),
+            TicketConfig.findOne({ guildId }),
+            PhotoContestConfig.findOne({ guildId }),
+            VerifyConfig.findOne({ guildId }),
             Guild.findOneAndUpdate({ guildId }, {}, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }),
-            GlobalConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }),
-            WelcomeConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }),
-            UtilityConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }),
-            FiveMConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }),
-            SocialConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }),
-            AutoClearConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }),
-            ModerationConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }),
-            SupportConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }),
-            ReactionRoleConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }),
-            PollConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }),
-            BackgroundConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }),
-            StaffAppConfig.findOneAndUpdate({ guildId }, {}, { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true })
+            GlobalConfig.findOne({ guildId }),
+            WelcomeConfig.findOne({ guildId }),
+            UtilityConfig.findOne({ guildId }),
+            FiveMConfig.findOne({ guildId }),
+            SocialConfig.findOne({ guildId }),
+            AutoClearConfig.findOne({ guildId }),
+            ModerationConfig.findOne({ guildId }),
+            SupportConfig.findOne({ guildId }),
+            ReactionRoleConfig.findOne({ guildId }),
+            PollConfig.findOne({ guildId }),
+            BackgroundConfig.findOne({ guildId }),
+            StaffAppConfig.findOne({ guildId })
         ]);
 
         guildData = await ensureLegacySetupCompleted(guildData, {
@@ -453,16 +463,16 @@ router.get('/:guildId', adminCheck, async (req, res) => {
                 premiumTier: guildData?.premiumTier || (guildData?.isPremium ? 'premium' : 'none'),
                 mainBotMissing: !req.mainClient.guilds.cache.has(guildId),
                 mainBotInviteUrl: `https://discord.com/api/oauth2/authorize?client_id=${process.env.DISCORD_CLIENT_ID || process.env.CLIENT_ID}&permissions=335670358&scope=bot%20applications.commands&guild_id=${guildId}`,
-                globalConfig,
+                globalConfig: globalConfig || {},
                 welcome: mergeModuleDefaults('welcome', wlcmConfig, lang),
                 utility: mergeModuleDefaults('utility', utilConfig, lang),
                 fivem: mergeModuleDefaults('fivem', fmConfig, lang),
-                socials: socConfig,
-                autoclear: autoClearConfig,
+                socials: socConfig || { enabled: false, platforms: {} },
+                autoclear: autoClearConfig || { enabled: false, slots: [] },
                 moderation: mergeModuleDefaults('moderation', modConfig, lang),
                 support: mergeModuleDefaults('support', suppConfig, lang),
-                reactionRoles: rrConfig,
-                polls: pollConfig,
+                reactionRoles: rrConfig || { enabled: false, panels: [] },
+                polls: pollConfig || { enabled: false },
                 background: mergeModuleDefaults('background', bgConfig, lang),
                 staffapps: mergeModuleDefaults('staffapps', staffConfig, lang),
                 roles,
@@ -993,7 +1003,8 @@ router.post('/:guildId/autoclear/manual', adminCheck, async (req, res) => {
         }
 
         const client = req.discordClient;
-        const guild = await client.guilds.fetch(guildId);
+        const guild = await fetchGuildOr404(client, guildId, res);
+        if (!guild) return;
         const channel = await guild.channels.fetch(channelId);
 
         if (!channel || !channel.isTextBased()) {
@@ -1068,7 +1079,8 @@ router.post('/:guildId/background/send-panel', adminCheck, async (req, res) => {
         }
 
         const client = req.discordClient;
-        const guild = await client.guilds.fetch(guildId);
+        const guild = await fetchGuildOr404(client, guildId, res);
+        if (!guild) return;
         const channel = await guild.channels.fetch(targetChannelId);
 
         if (!channel) {
@@ -1175,7 +1187,8 @@ router.post('/:guildId/whitelist/send-panel', adminCheck, async (req, res) => {
         }
 
         const client = req.discordClient;
-        const guild = await client.guilds.fetch(guildId);
+        const guild = await fetchGuildOr404(client, guildId, res);
+        if (!guild) return;
         const channel = await guild.channels.fetch(targetChannelId);
 
         if (!channel) {
@@ -1364,7 +1377,8 @@ async function deployPanel(guildId, panelId, req, res) {
     }
 
     const client = req.discordClient;
-    const guild = await client.guilds.fetch(guildId);
+    const guild = await fetchGuildOr404(client, guildId, res);
+    if (!guild) return;
     const channel = await guild.channels.fetch(panel.channelId);
 
     if (!channel) {
@@ -1638,7 +1652,8 @@ router.post('/:guildId/verify/send-panel', adminCheck, async (req, res) => {
         }
 
         const client = req.discordClient;
-        const guild = await client.guilds.fetch(guildId);
+        const guild = await fetchGuildOr404(client, guildId, res);
+        if (!guild) return;
         const channel = await guild.channels.fetch(config.channelId);
 
         if (!channel) {
@@ -1711,9 +1726,9 @@ router.post('/:guildId/guild', adminCheck, validate(guildSchema), async (req, re
         invalidateCache(guildId);
         await logAudit(req, 'UPDATE_GUILD', req.validatedData);
         
-        res.json(guild);
+        res.json({ success: true, data: guild });
     } catch (error) {
-        res.status(500).json({ error: 'Failed to update guild settings' });
+        res.status(500).json({ success: false, error: 'Failed to update guild settings' });
     }
 });
 
@@ -1847,7 +1862,8 @@ router.post('/:guildId/utility/clear', adminCheck, async (req, res) => {
         }
 
         const client = req.discordClient;
-        const guild = await client.guilds.fetch(guildId);
+        const guild = await fetchGuildOr404(client, guildId, res);
+        if (!guild) return;
         const channel = await guild.channels.fetch(channelId);
 
         if (!channel || ![0, 5].includes(channel.type)) { // Text or Announcement
@@ -1888,7 +1904,7 @@ router.get('/:guildId/socials', adminCheck, async (req, res) => {
                 modified = true;
             }
             if (!config.platforms[p].webhookToken) {
-                config.platforms[p].webhookToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+                config.platforms[p].webhookToken = createWebhookToken();
                 modified = true;
             }
         }
@@ -2045,25 +2061,6 @@ router.post('/:guildId/reset/:module', adminCheck, async (req, res) => {
         res.json({ success: true, message: `Modulo ${module} resettato correttamente` });
     } catch (error) {
         res.status(500).json({ error: 'Failed to reset configuration' });
-    }
-});
-
-// GET guild configuration (Premium info and White-label)
-router.get('/:guildId/guild', adminCheck, async (req, res) => {
-    try {
-        const { guildId } = req.params;
-        const guild = await Guild.findOne({ guildId });
-        
-        if (!guild) {
-            // Create a default entry if it doesn't exist
-            const newGuild = new Guild({ guildId });
-            await newGuild.save();
-            return res.json({ success: true, data: newGuild });
-        }
-
-        res.json({ success: true, data: guild });
-    } catch (error) {
-        res.status(500).json({ success: false, error: 'Errore nel caricamento dei dati del server' });
     }
 });
 
@@ -2431,7 +2428,8 @@ router.post('/:guildId/fivem/send-panel', adminCheck, async (req, res) => {
         }
 
         const client = req.discordClient;
-        const guild = await client.guilds.fetch(guildId);
+        const guild = await fetchGuildOr404(client, guildId, res);
+        if (!guild) return;
         const channel = await guild.channels.fetch(server.statusChannelId);
 
         if (!channel) {
@@ -2526,7 +2524,8 @@ router.post('/:guildId/welcome/test', adminCheck, async (req, res) => {
         }
 
         const client = req.discordClient;
-        const guild = await client.guilds.fetch(guildId);
+        const guild = await fetchGuildOr404(client, guildId, res);
+        if (!guild) return;
         const member = await guild.members.fetchMe();
 
         const channel = await guild.channels.fetch(config.welcome.channelId);
@@ -2735,11 +2734,20 @@ router.post('/:guildId/sync', adminCheck, async (req, res) => {
             return res.status(403).json({ success: false, error: 'La Sincronizzazione Globale è un\'esclusiva Platinum.' });
         }
 
-        // 2. Check if user has access to source guild (using session data)
+        // 2. Check if user has current access to source guild.
         const userGuilds = req.user.guilds || [];
-        const sourceInUserGuilds = userGuilds.find(g => g.id === sourceGuildId && (g.permissions & 0x8));
+        const sourceInUserGuilds = userGuilds.find(g => g.id === sourceGuildId && ((g.permissions & 0x8) || (g.permissions & 0x20)));
         if (!sourceInUserGuilds) {
-            return res.status(403).json({ success: false, error: 'Non hai i permessi di Amministratore nel server sorgente.' });
+            return res.status(403).json({ success: false, error: 'Non hai i permessi nel server sorgente.' });
+        }
+
+        const sourceGuild = await req.mainClient.guilds.fetch(sourceGuildId).catch(() => null);
+        if (!sourceGuild) {
+            return res.status(403).json({ success: false, error: 'Il bot non è presente nel server sorgente.' });
+        }
+        const sourceMember = await sourceGuild.members.fetch(req.user.id).catch(() => null);
+        if (!sourceMember?.permissions?.has(PermissionFlagsBits.ManageGuild) && !sourceMember?.permissions?.has(PermissionFlagsBits.Administrator)) {
+            return res.status(403).json({ success: false, error: 'I permessi sul server sorgente non sono più validi.' });
         }
 
         // 3. Define modules to sync
@@ -2760,14 +2768,16 @@ router.post('/:guildId/sync', adminCheck, async (req, res) => {
             socials: SocialConfig,
             utility: UtilityConfig,
             global: GlobalConfig,
-            reactionroles: ReactionRoleConfig,
-            reactionRoles: ReactionRoleConfig,
             'reaction-roles': ReactionRoleConfig,
             polls: PollConfig
         };
+        const moduleAliases = {
+            reactionRoles: 'reaction-roles',
+            reactionroles: 'reaction-roles'
+        };
 
         const syncedModules = [];
-        const modulesToSync = modules || Object.keys(moduleModels);
+        const modulesToSync = Array.from(new Set((modules || Object.keys(moduleModels)).map(mod => moduleAliases[mod] || mod)));
 
         for (const mod of modulesToSync) {
             const Model = moduleModels[mod];
@@ -2858,8 +2868,8 @@ router.post('/:guildId/polls/config', adminCheck, validate(pollConfigSchema), as
 router.get('/:guildId/polls/active', adminCheck, async (req, res) => {
     try {
         const { guildId } = req.params;
-        const polls = await Poll.find({ guildId, status: 'ACTIVE' }).sort({ createdAt: -1 });
-        res.json(polls);
+        const polls = await Poll.find({ guildId, status: 'ACTIVE' }).sort({ createdAt: -1 }).lean();
+        res.json({ success: true, data: polls });
     } catch (error) {
         res.status(500).json({ success: false, error: 'Unable to load active polls.' });
     }
@@ -3086,6 +3096,9 @@ router.post('/:guildId/:module/reset', adminCheck, async (req, res) => {
 router.post('/:guildId/factory-reset', adminCheck, async (req, res) => {
     try {
         const { guildId } = req.params;
+        if (req.body?.confirm !== true) {
+            return res.status(400).json({ success: false, error: 'Factory reset requires confirm: true.' });
+        }
         const modelMap = {
             whitelist: WhitelistConfig,
             tickets: TicketConfig,
@@ -3108,7 +3121,7 @@ router.post('/:guildId/factory-reset', adminCheck, async (req, res) => {
         };
 
         // 1. Delete all specific module configs
-        const deletePromises = Object.values(modelMap).map(Model => Model.deleteOne({ guildId }));
+        const deletePromises = Array.from(new Set(Object.values(modelMap))).map(Model => Model.deleteOne({ guildId }));
         await Promise.all(deletePromises);
 
         // 2. Reset Guild main document
@@ -3143,7 +3156,7 @@ router.post('/:guildId/onboarding/skip', adminCheck, async (req, res) => {
         const { guildId } = req.params;
         await Guild.findOneAndUpdate({ guildId }, { $set: { setupCompleted: true } }, { upsert: true });
         invalidateCache(guildId);
-        await logAudit(req, guildId, 'ONBOARDING_SKIPPED', 'User skipped onboarding setup');
+        await logAudit(req, 'ONBOARDING_SKIPPED', { message: 'User skipped onboarding setup' });
         res.json({ success: true, message: 'Onboarding saltato con successo!' });
     } catch (error) {
         console.error('[Onboarding_Skip] Error:', error);
@@ -3189,7 +3202,8 @@ router.get('/:guildId/leveling/leaderboard', adminCheck, async (req, res) => {
         const { guildId } = req.params;
         const leaderboard = await UserExperience.find({ guildId })
             .sort({ xp: -1 })
-            .limit(100);
+            .limit(100)
+            .lean();
         res.json({ success: true, data: leaderboard });
     } catch (error) {
         res.status(500).json({ success: false, error: 'Impossibile caricare la leaderboard' });

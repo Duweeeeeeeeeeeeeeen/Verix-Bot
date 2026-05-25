@@ -21,4 +21,6 @@ const pollConfigSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
+pollConfigSchema.index({ enabled: 1 });
+
 export default mongoose.model('PollConfig', pollConfigSchema);

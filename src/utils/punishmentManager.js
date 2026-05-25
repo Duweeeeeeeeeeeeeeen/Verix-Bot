@@ -22,23 +22,34 @@ export async function handleUserInfraction(member, reason = 'Violazione protocol
         const config = await ModerationConfig.findOne({ guildId });
         if (!config || !config.enabled) return;
 
-        // 2. Fetch/Update Infractions
-        let infraction = await Infraction.findOne({ guildId, userId });
+        // 2. Update infractions atomically to avoid losing counts on simultaneous events.
         const now = new Date();
-
-        if (infraction) {
-            // Check for reset (convert resetTime days to ms)
-            const resetMs = config.resetTime * 24 * 60 * 60 * 1000;
-            if (now - infraction.lastInfraction > resetMs) {
-                infraction.count = 1;
-            } else {
-                infraction.count += 1;
-            }
-            infraction.lastInfraction = now;
-            await infraction.save();
-        } else {
-            infraction = await Infraction.create({ guildId, userId, count: 1, lastInfraction: now });
-        }
+        const resetMs = config.resetTime * 24 * 60 * 60 * 1000;
+        const infraction = await Infraction.findOneAndUpdate(
+            { guildId, userId },
+            [
+                {
+                    $set: {
+                        guildId,
+                        userId,
+                        count: {
+                            $cond: [
+                                {
+                                    $gt: [
+                                        { $subtract: [now, { $ifNull: ['$lastInfraction', new Date(0)] }] },
+                                        resetMs
+                                    ]
+                                },
+                                1,
+                                { $add: [{ $ifNull: ['$count', 0] }, 1] }
+                            ]
+                        },
+                        lastInfraction: now
+                    }
+                }
+            ],
+            { upsert: true, new: true }
+        );
 
         // 3. Determine Punishment
         // Sort punishments by level descending to find the highest threshold reached

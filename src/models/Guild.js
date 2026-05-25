@@ -83,4 +83,6 @@ const guildSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
+guildSchema.index({ stripeSubscriptionId: 1 }, { sparse: true });
+
 export default mongoose.model('Guild', guildSchema);

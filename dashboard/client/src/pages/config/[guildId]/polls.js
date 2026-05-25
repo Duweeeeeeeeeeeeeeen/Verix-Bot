@@ -47,10 +47,7 @@ export default function PollsConfig() {
   const [newPoll, setNewPoll] = useState({
       channelId: '',
       question: '',
-      options: [
-          { emoji: '1️⃣', label: t('polls.option_1') },
-          { emoji: '2️⃣', label: t('polls.option_2') }
-      ],
+      options: defaultPollOptions(),
       duration: 60,
       mode: 'SINGLE',
       color: '#6366f1'
