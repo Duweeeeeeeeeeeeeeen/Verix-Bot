@@ -15,8 +15,10 @@ const autoMessageSlotSchema = new mongoose.Schema({
     content: { type: String, default: '' },
     useEmbed: { type: Boolean, default: false },
     embed: { type: Object, default: null },
-    triggerType: { type: String, enum: ['TIME', 'MESSAGES'], default: 'TIME' },
+    triggerType: { type: String, enum: ['TIME', 'MESSAGES', 'ONCE'], default: 'TIME' },
     triggerValue: { type: Number, required: true, min: 1 },
+    scheduledAt: { type: Date, default: null },
+    completedAt: { type: Date, default: null },
     enabled: { type: Boolean, default: true },
     lastTriggeredAt: { type: Date, default: null },
     messageCountSinceLast: { type: Number, default: 0 },
@@ -35,6 +37,7 @@ const autoMessageSlotSchema = new mongoose.Schema({
 
 const automationConfigSchema = new mongoose.Schema({
     guildId: { type: String, required: true, unique: true },
+    enabled: { type: Boolean, default: true },
     autoClear: {
         enabled: { type: Boolean, default: true },
         slots: [autoClearSlotSchema]

@@ -29,6 +29,7 @@ class AutomationManager {
             await this.flushBuffers();
 
             const configs = await AutomationConfig.find({ 
+                enabled: { $ne: false },
                 $or: [
                     { "autoClear.enabled": true },
                     { "autoMessage.enabled": true }
@@ -42,6 +43,8 @@ class AutomationManager {
                 if (this.client.multiBotManager && !this.client.multiBotManager.shouldHandle(guildId, this.client)) {
                     continue;
                 }
+
+                if (config.enabled === false) continue;
 
                 let updated = false;
 
@@ -65,10 +68,26 @@ class AutomationManager {
                     }
                 }
 
-                // 2. Handle Auto Message (Time-based)
+                // 2. Handle Auto Message (Time-based and one-off scheduled)
                 if (config.autoMessage?.enabled) {
                     for (const slot of config.autoMessage.slots) {
-                        if (!slot.enabled || slot.triggerType !== 'TIME') continue;
+                        if (!slot.enabled) continue;
+
+                        if (slot.triggerType === 'ONCE') {
+                            if (!slot.scheduledAt || slot.completedAt) continue;
+                            if (now >= slot.scheduledAt) {
+                                const success = await this.sendMessage(config.guildId, slot.channelId, slot);
+                                if (success) {
+                                    slot.completedAt = now;
+                                    slot.lastTriggeredAt = now;
+                                    slot.enabled = false;
+                                    updated = true;
+                                }
+                            }
+                            continue;
+                        }
+
+                        if (slot.triggerType !== 'TIME') continue;
 
                         const intervalMs = slot.triggerValue * 60 * 1000;
                         const nextMsgAt = slot.lastTriggeredAt 
@@ -208,27 +227,30 @@ class AutomationManager {
             if (!channel || !channel.isTextBased()) return false;
 
             const messageOptions = {};
+            const variables = await this.buildVariables(guild, channel);
+            const renderText = (value) => this.renderVariables(value, variables);
 
             if (slot.useEmbed && slot.embed) {
                 const embed = new EmbedBuilder();
-                if (slot.embed.title) embed.setTitle(slot.embed.title);
-                if (slot.embed.description) embed.setDescription(slot.embed.description);
+                if (slot.embed.title) embed.setTitle(renderText(slot.embed.title));
+                if (slot.embed.description) embed.setDescription(renderText(slot.embed.description));
                 if (slot.embed.color) embed.setColor(slot.embed.color);
                 if (slot.embed.thumbnail) embed.setThumbnail(slot.embed.thumbnail);
                 if (slot.embed.image) embed.setImage(slot.embed.image);
-                if (slot.embed.footerText) embed.setFooter({ text: slot.embed.footerText, iconURL: slot.embed.footerIcon });
-                if (slot.embed.authorName) embed.setAuthor({ name: slot.embed.authorName, iconURL: slot.embed.authorIcon });
+                if (slot.embed.footerText) embed.setFooter({ text: renderText(slot.embed.footerText), iconURL: slot.embed.footerIcon });
+                if (slot.embed.authorName) embed.setAuthor({ name: renderText(slot.embed.authorName), iconURL: slot.embed.authorIcon });
                 if (slot.embed.timestamp) embed.setTimestamp();
                 
                 if (slot.embed.fields && Array.isArray(slot.embed.fields)) {
                     slot.embed.fields.forEach(f => {
-                        if (f.name && f.value) embed.addFields({ name: f.name, value: f.value, inline: !!f.inline });
+                        if (f.name && f.value) embed.addFields({ name: renderText(f.name), value: renderText(f.value), inline: !!f.inline });
                     });
                 }
 
                 messageOptions.embeds = [embed];
+                if (slot.content) messageOptions.content = renderText(slot.content);
             } else {
-                messageOptions.content = slot.content;
+                messageOptions.content = renderText(slot.content);
             }
 
             if (!messageOptions.content && (!messageOptions.embeds || messageOptions.embeds.length === 0)) {
@@ -242,6 +264,23 @@ class AutomationManager {
             logger.error(`[AutomationManager] Auto-Message Error in channel ${channelId}:`, error);
             return false;
         }
+    }
+
+    async buildVariables(guild, channel) {
+        const now = new Date();
+        return {
+            guild: guild.name,
+            server: guild.name,
+            channel: channel.name,
+            member_count: guild.memberCount?.toString() || '0',
+            date: now.toLocaleDateString('en-US'),
+            time: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+        };
+    }
+
+    renderVariables(value, variables) {
+        if (typeof value !== 'string') return value;
+        return value.replace(/\{([a-zA-Z0-9_]+)\}/g, (match, key) => variables[key] ?? match);
     }
 
     stop() {

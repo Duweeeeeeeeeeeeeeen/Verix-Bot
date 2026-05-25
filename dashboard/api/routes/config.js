@@ -532,6 +532,7 @@ router.get('/:guildId/automations', adminCheck, async (req, res) => {
             if (oldAutoClear) {
                 config = await AutomationConfig.create({
                     guildId,
+                    enabled: true,
                     autoClear: {
                         enabled: true,
                         slots: oldAutoClear.slots
@@ -541,6 +542,7 @@ router.get('/:guildId/automations', adminCheck, async (req, res) => {
             } else {
                 config = await AutomationConfig.create({ 
                     guildId, 
+                    enabled: true,
                     autoClear: { enabled: true, slots: [] },
                     autoMessage: { enabled: true, slots: [] }
                 });
@@ -558,7 +560,7 @@ router.get('/:guildId/automations', adminCheck, async (req, res) => {
 router.post('/:guildId/automations', adminCheck, async (req, res) => {
     try {
         const { guildId } = req.params;
-        const { autoClear, autoMessage } = req.body;
+        const { enabled, autoClear, autoMessage } = req.body;
 
         const guild = await Guild.findOne({ guildId });
         const tier = guild?.premiumTier || (guild?.isPremium ? 'premium' : 'none');
@@ -576,7 +578,7 @@ router.post('/:guildId/automations', adminCheck, async (req, res) => {
 
         const config = await AutomationConfig.findOneAndUpdate(
             { guildId },
-            { $set: { autoClear, autoMessage } },
+            { $set: { enabled: enabled !== false, autoClear, autoMessage } },
             { returnDocument: 'after', upsert: true }
         );
 

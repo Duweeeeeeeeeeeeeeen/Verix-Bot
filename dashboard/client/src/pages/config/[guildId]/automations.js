@@ -82,6 +82,16 @@ export default function AutomationsConfig() {
   };
 
   const handleSave = async () => {
+    const invalidScheduled = (config.autoMessage?.slots || []).find(slot => {
+      if (!slot.enabled || slot.triggerType !== 'ONCE') return false;
+      if (!slot.scheduledAt) return true;
+      return new Date(slot.scheduledAt).getTime() <= Date.now();
+    });
+    if (invalidScheduled) {
+      showToast(t('automations.schedule_required') || 'Choose a future scheduled time.', 'error');
+      return;
+    }
+
     setSaving(true);
     window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
     try {
@@ -129,6 +139,8 @@ export default function AutomationsConfig() {
         content: '', 
         triggerType: 'TIME', 
         triggerValue: 60, 
+        scheduledAt: '',
+        completedAt: null,
         enabled: true,
         useEmbed: false,
         embed: {}
@@ -144,6 +156,35 @@ export default function AutomationsConfig() {
   const updateMessageSlot = (index, field, value) => {
     const newSlots = [...config.autoMessage.slots];
     newSlots[index] = { ...newSlots[index], [field]: value };
+    setConfig({ ...config, autoMessage: { ...config.autoMessage, slots: newSlots } });
+  };
+
+  const updateMessageTriggerType = (index, value) => {
+    const newSlots = [...config.autoMessage.slots];
+    newSlots[index] = {
+        ...newSlots[index],
+        triggerType: value,
+        completedAt: value === 'ONCE' ? null : newSlots[index].completedAt
+    };
+    setConfig({ ...config, autoMessage: { ...config.autoMessage, slots: newSlots } });
+  };
+
+  const toDateTimeLocal = (value) => {
+    if (!value) return '';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+    const offsetMs = date.getTimezoneOffset() * 60000;
+    return new Date(date.getTime() - offsetMs).toISOString().slice(0, 16);
+  };
+
+  const updateScheduledAt = (index, value) => {
+    const newSlots = [...config.autoMessage.slots];
+    newSlots[index] = {
+        ...newSlots[index],
+        scheduledAt: value,
+        completedAt: null,
+        enabled: true
+    };
     setConfig({ ...config, autoMessage: { ...config.autoMessage, slots: newSlots } });
   };
 
@@ -357,20 +398,42 @@ export default function AutomationsConfig() {
                                                 <CustomSelect 
                                                     options={[
                                                         { value: 'TIME', label: t('automations.trigger_time') },
-                                                        { value: 'MESSAGES', label: t('automations.trigger_messages') }
+                                                        { value: 'MESSAGES', label: t('automations.trigger_messages') },
+                                                        { value: 'ONCE', label: t('automations.trigger_once') || 'Scheduled once' }
                                                     ]} 
                                                     value={slot.triggerType || 'TIME'} 
-                                                    onChange={val => updateMessageSlot(index, 'triggerType', val)} 
+                                                    onChange={val => updateMessageTriggerType(index, val)}
                                                 />
                                             </div>
-                                            <div className="pc-input-group-v2">
-                                                <label>{t('automations.trigger_value')}</label>
-                                                <div className="pc-input-modern-v2">
-                                                    <Activity size={18} style={{ color: 'var(--primary)' }} />
-                                                    <input type="number" style={{ width: '100%', border: 'none', background: 'transparent', fontWeight: 700, color: 'var(--text-heading)', outline: 'none' }} value={slot.triggerValue || 60} onChange={e => updateMessageSlot(index, 'triggerValue', parseInt(e.target.value))} />
+                                            {slot.triggerType === 'ONCE' ? (
+                                                <div className="pc-input-group-v2">
+                                                    <label>{t('automations.scheduled_at') || 'Scheduled time'}</label>
+                                                    <div className="pc-input-modern-v2">
+                                                        <Clock size={18} style={{ color: 'var(--primary)' }} />
+                                                        <input
+                                                            type="datetime-local"
+                                                            value={toDateTimeLocal(slot.scheduledAt)}
+                                                            onChange={e => updateScheduledAt(index, e.target.value ? new Date(e.target.value).toISOString() : '')}
+                                                        />
+                                                    </div>
                                                 </div>
-                                            </div>
+                                            ) : (
+                                                <div className="pc-input-group-v2">
+                                                    <label>{t('automations.trigger_value')}</label>
+                                                    <div className="pc-input-modern-v2">
+                                                        <Activity size={18} style={{ color: 'var(--primary)' }} />
+                                                        <input type="number" style={{ width: '100%', border: 'none', background: 'transparent', fontWeight: 700, color: 'var(--text-heading)', outline: 'none' }} value={slot.triggerValue || 60} onChange={e => updateMessageSlot(index, 'triggerValue', parseInt(e.target.value))} />
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
+
+                                        {slot.triggerType === 'ONCE' && slot.completedAt && (
+                                            <div style={{ marginTop: '14px', color: '#10b981', fontSize: '0.82rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <CheckCircle2 size={16} />
+                                                <span>{t('automations.once_completed') || 'This scheduled message has already been sent.'}</span>
+                                            </div>
+                                        )}
 
                                         <div className="pc-input-group-v2" style={{ marginTop: '28px' }}>
                                             <label>{t('automations.message_text')} {slot.useEmbed && t('automations.message_text_hint')}</label>
