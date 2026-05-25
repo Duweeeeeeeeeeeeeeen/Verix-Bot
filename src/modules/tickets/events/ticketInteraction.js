@@ -30,25 +30,11 @@ export default {
         // 1. Log customId for debugging
         logger.debug(`[TICKET_INTERACTION] User: ${interaction.user.tag} | CustomID: ${customId}`);
 
-        // Early extraction of ticket type for special case (modal must be shown BEFORE deferReply)
-        let earlyType = null;
+        // Reset select menu in panel message to its placeholder state immediately (to allow selecting the same category again)
         if (interaction.isStringSelectMenu() && customId === 'ticket_create_select') {
-            earlyType = interaction.values[0].replace('ticket_type_', '');
-        } else if (interaction.isButton() && (customId.startsWith('ticket_type_') || customId.startsWith('ticket_create_btn_'))) {
-            earlyType = customId.replace('ticket_type_', '').replace('ticket_create_btn_', '');
-        }
-
-        if (earlyType === 'segnalazione') {
-            const config = await TicketConfig.findOne({ guildId: interaction.guildId });
-            const globalConfig = await GlobalConfig.findOne({ guildId: interaction.guildId });
-            const lang = globalConfig?.language || 'en';
-            
-            const modal = new ModalBuilder().setCustomId('ticket_modal_report_NORMALE').setTitle(resolveSystemMessage(config, 'tickets', 'report_modal_title', lang));
-            modal.addComponents(
-                new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('report_subject').setLabel(resolveSystemMessage(config, 'tickets', 'report_subject_label', lang)).setStyle(TextInputStyle.Short).setRequired(true)),
-                new ActionRowBuilder().addComponents(new TextInputBuilder().setCustomId('report_desc').setLabel(resolveSystemMessage(config, 'tickets', 'report_desc_label', lang)).setStyle(TextInputStyle.Paragraph).setRequired(true))
-            );
-            return interaction.showModal(modal);
+            interaction.message.edit({
+                components: interaction.message.components
+            }).catch(() => {});
         }
 
         // 3. DeferReply BEFORE any await (to satisfy 3-second limit)
@@ -109,19 +95,6 @@ export default {
                 }
 
                 return createTicket(interaction, type, config, { priority: 'NORMALE' });
-            }
-
-            // --- 3. MODAL SUBMISSIONS (Report) ---
-            if (interaction.isModalSubmit() && customId.startsWith('ticket_modal_report_')) {
-                const priority = customId.replace('ticket_modal_report_', '');
-                const subject = interaction.fields.getTextInputValue('report_subject');
-                const description = interaction.fields.getTextInputValue('report_desc');
-
-                return createTicket(interaction, 'segnalazione', config, { 
-                    priority, 
-                    subject, 
-                    description 
-                });
             }
 
             // --- 4. PRODUCTIVITY TOOLS & MODALS ---
