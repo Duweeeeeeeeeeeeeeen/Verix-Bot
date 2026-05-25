@@ -533,6 +533,18 @@ export default function WhitelistConfig() {
                         ]}
                     />
 
+                    <div style={{ marginTop: '48px' }}>
+                        <EmbedMessageManager
+                            guildId={guildId}
+                            module="background"
+                            slugs={[
+                                { key: 'panel', label: t('background.msg_panel') || 'Pannello Candidature', description: t('background.msg_panel_desc') || 'Messaggio principale per l\'invio delle candidature.', variables: ['guild'], group: 'Recruitment UI', groupIcon: Layout },
+                                { key: 'dm_accepted', label: t('background.msg_accepted') || 'Candidatura Accettata', description: t('background.msg_accepted_desc') || 'Inviato in DM all\'utente approvato.', variables: ['user'], group: 'DM Alerts', groupIcon: CheckCircle2 },
+                                { key: 'dm_rejected', label: t('background.msg_rejected') || 'Candidatura Respinta', description: t('background.msg_rejected_desc') || 'Inviato in DM all\'utente respinto.', variables: ['user', 'reason'], group: 'DM Alerts', groupIcon: XCircle }
+                            ]}
+                        />
+                    </div>
+
                     <section className="pc-card-v2">
                         <SystemMessagesSection
                             config={config}
