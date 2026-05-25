@@ -55,10 +55,13 @@ export default function WhitelistConfig() {
   }, [guildId, mounted]);
 
   const handleSendPanel = async () => {
-    if (!config.panelChannelId) return window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('whitelist.panel_channel_error'), type: 'error' } }));
+    const isBg = activeTab === 'background';
+    const targetChannel = isBg ? bgConfig?.panelChannelId : config.panelChannelId;
+    if (!targetChannel) return window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('whitelist.panel_channel_error') || 'Canale non impostato!', type: 'error' } }));
     setSendingPanel(true);
     try {
-      await api.request(`/config/${guildId}/whitelist/send-panel`, { method: 'POST' });
+      const endpoint = isBg ? `/config/${guildId}/background/send-panel` : `/config/${guildId}/whitelist/send-panel`;
+      await api.request(endpoint, { method: 'POST' });
       window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('whitelist.panel_success') || 'Pannello inviato!', type: 'success' } }));
     } catch (e) {
       window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('whitelist.panel_error') || 'Errore invio pannello', type: 'error' } }));
@@ -159,8 +162,8 @@ export default function WhitelistConfig() {
                 <button
                     className="pc-btn-outline-v2"
                     onClick={handleSendPanel}
-                    disabled={sendingPanel || !config.panelChannelId}
-                    title={t('whitelist.send_panel')}
+                    disabled={sendingPanel || (activeTab === 'background' ? !bgConfig?.panelChannelId : !config.panelChannelId)}
+                    title={activeTab === 'background' ? t('whitelist.send_panel_bg') : t('whitelist.send_panel_wl')}
                     style={{ color: 'var(--primary)', borderColor: sendingPanel ? 'var(--border)' : 'rgba(var(--primary-rgb), 0.2)' }}
                 >
                     {sendingPanel ? <RotateCcw size={18} className="animate-spin" /> : <Send size={18} />}
