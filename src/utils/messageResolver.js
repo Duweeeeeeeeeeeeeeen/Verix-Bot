@@ -1,6 +1,14 @@
 import { t } from '../locales/t.js';
 import placeholderHelper from './placeholderHelper.js';
 
+function extractMessageText(message) {
+    if (typeof message === 'string') return message;
+    if (!message || typeof message !== 'object') return null;
+
+    const raw = message.toObject ? message.toObject() : message;
+    return raw.content || raw.description || raw.title || null;
+}
+
 /**
  * Resolves a system message by checking module configuration overrides first,
  * then falling back to the localized default messages.
@@ -27,14 +35,10 @@ export function resolveSystemMessage(config, moduleName, key, lang, placeholders
     if (!message) {
         // We look into the module's root for the key
         message = t(`${moduleName}.${key}`, lang, placeholders);
-        
-        // If t() already handled placeholders, we return it
-        // (t utility handles basic {var} placeholders if passed)
-        return message;
     }
 
-    // 4. If we found an override, manually replace placeholders
-    return placeholderHelper.replace(message, placeholders);
+    const text = extractMessageText(message) || `[Missing message: ${moduleName}.${key}]`;
+    return placeholderHelper.replace(text, placeholders);
 }
 
 export default {
