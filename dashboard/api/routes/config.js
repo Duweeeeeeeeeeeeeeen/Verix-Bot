@@ -420,7 +420,7 @@ router.get('/:guildId', adminCheck, async (req, res) => {
                 isPremium: guildData?.isPremium || ['premium', 'platinum'].includes(guildData?.premiumTier),
                 premiumTier: guildData?.premiumTier || (guildData?.isPremium ? 'premium' : 'none'),
                 mainBotMissing: !req.mainClient.guilds.cache.has(guildId),
-                mainBotInviteUrl: `https://discord.com/api/oauth2/authorize?client_id=${process.env.DISCORD_CLIENT_ID || process.env.CLIENT_ID}&permissions=335675454&scope=bot%20applications.commands&guild_id=${guildId}`,
+                mainBotInviteUrl: `https://discord.com/api/oauth2/authorize?client_id=${process.env.DISCORD_CLIENT_ID || process.env.CLIENT_ID}&permissions=335670358&scope=bot%20applications.commands&guild_id=${guildId}`,
                 globalConfig,
                 welcome: mergeModuleDefaults('welcome', wlcmConfig, lang),
                 utility: mergeModuleDefaults('utility', utilConfig, lang),
