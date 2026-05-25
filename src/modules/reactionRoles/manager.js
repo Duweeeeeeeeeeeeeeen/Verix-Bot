@@ -51,6 +51,7 @@ class ReactionRoleManager {
 
     async applyReactionRole({ guildId, messageId, emoji, userId, action }) {
         const emojiKey = this.getReactionEmojiKey(emoji);
+        logger.info(`[ReactionRoles] applyReactionRole start action=${action} guild=${guildId || 'none'} message=${messageId || 'none'} emoji=${emojiKey || 'none'} user=${userId || 'none'}`);
         if (!guildId || !messageId || !userId) {
             logger.warn(`[ReactionRoles] Ignored ${action} reaction with missing identifiers guild=${guildId || 'none'} message=${messageId || 'none'} user=${userId || 'none'} emoji=${emojiKey || 'none'}`);
             return false;
