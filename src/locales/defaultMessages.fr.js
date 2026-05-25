@@ -227,14 +227,14 @@ export default {
     },
     staffapps: {
         panel: {
-            title: '🛡️ Recrutement Staff - Portail de Candidature',
-            description: 'Voulez-vous rejoindre notre équipe ? En soumettant votre candidature, vous serez évalué par les responsables RH.\n\nAssurez-vous de répondre à toutes les questions de manière exhaustive.',
+            title: '📝 Portail de Candidature',
+            description: 'Voulez-vous soumettre une candidature ? Cliquez sur le bouton ci-dessous pour commencer.\n\nAssurez-vous de répondre à toutes les questions de manière exhaustive.',
             color: '#a855f7',
-            footer: 'Département RH | {guild}'
+            footer: 'Portail de Candidature | {guild}'
         },
         dm_accepted: {
             title: '🎊 Candidature Acceptée !',
-            description: 'Excellente nouvelle {user} ! Votre candidature pour le staff de {guild} a été approuvée. Bienvenue dans l\'équipe !',
+            description: 'Excellente nouvelle {user} ! Votre candidature pour {guild} a été approuvée !',
             color: '#2ecc71'
         },
         dm_rejected: {
@@ -243,8 +243,8 @@ export default {
             color: '#ff4757'
         },
         staff_received: {
-            title: '🛡️ Nouvelle Candidature Staff',
-            description: 'L\'utilisateur **<@{userId}>** a soumis une nouvelle candidature pour l\'équipe staff.',
+            title: '📩 Nouvelle Candidature Reçue',
+            description: 'L\'utilisateur **<@{userId}>** a soumis une nouvelle candidature.',
             color: '#a855f7'
         }
     },

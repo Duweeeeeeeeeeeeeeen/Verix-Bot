@@ -227,14 +227,14 @@ export default {
     },
     staffapps: {
         panel: {
-            title: '🛡️ Reclutamiento de Staff - Portal de Solicitudes',
-            description: '¿Quieres unirte a nuestro equipo? Al enviar tu solicitud, serás evaluado por los gerentes de RR.HH.\n\nAsegúrate de responder exhaustivamente a todas las preguntas.',
+            title: '📝 Portal de Solicitudes',
+            description: '¿Quieres enviar una solicitud? Haz clic en el botón de abajo para comenzar.\n\nAsegúrate de responder exhaustivamente a todas las preguntas.',
             color: '#a855f7',
-            footer: 'Departamento de RR.HH. | {guild}'
+            footer: 'Portal de Solicitudes | {guild}'
         },
         dm_accepted: {
             title: '🎊 ¡Solicitud Aceptada!',
-            description: '¡Grandes noticias {user}! Tu solicitud para el staff de {guild} ha sido aprobada. ¡Bienvenido al equipo!',
+            description: '¡Grandes noticias {user}! ¡Tu solicitud para {guild} ha sido aprobada!',
             color: '#2ecc71'
         },
         dm_rejected: {
@@ -243,8 +243,8 @@ export default {
             color: '#ff4757'
         },
         staff_received: {
-            title: '🛡️ Nueva Solicitud de Staff',
-            description: 'El usuario **<@{userId}>** ha enviado una nueva solicitud para el equipo de staff.',
+            title: '📩 Nueva Solicitud Recibida',
+            description: 'El usuario **<@{userId}>** ha enviado una nueva solicitud.',
             color: '#a855f7'
         }
     },

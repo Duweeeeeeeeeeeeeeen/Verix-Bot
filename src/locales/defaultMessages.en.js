@@ -338,14 +338,14 @@ export default {
     },
     "staffapps": {
         "panel": {
-            "title": "🛡️ Staff Recruitment - Application Portal",
-            "description": "Do you want to join our team? By submitting your application, you will be evaluated by the HR managers.\n\nMake sure to answer all questions comprehensively.",
+            "title": "📝 Application Portal",
+            "description": "Do you want to submit an application? Click the button below to get started.\n\nMake sure to answer all questions comprehensively.",
             "color": "#a855f7",
-            "footer": "HR Department | {guild}"
+            "footer": "Application Portal | {guild}"
         },
         "dm_accepted": {
             "title": "🎊 Application Accepted!",
-            "description": "Great news {user}! Your application for the staff of {guild} has been approved. Welcome to the team!",
+            "description": "Great news {user}! Your application for {guild} has been approved!",
             "color": "#2ecc71"
         },
         "dm_rejected": {
@@ -354,8 +354,8 @@ export default {
             "color": "#ff4757"
         },
         "staff_received": {
-            "title": "🛡️ New Staff Application",
-            "description": "User **<@{userId}>** has submitted a new application for the staff team.",
+            "title": "📩 New Application Received",
+            "description": "User **<@{userId}>** has submitted a new application.",
             "color": "#a855f7"
         }
     },

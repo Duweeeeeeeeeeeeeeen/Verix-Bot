@@ -370,7 +370,7 @@ export default function WhitelistConfig() {
                         <div className="card-header-v2">
                             <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><ListChecks size={18} /></div>
                             <div className="v-stack" style={{ flex: 1 }}>
-                                <h3 style={{ margin: 0 }}>{t('whitelist.questions_bank')} (Staff)</h3>
+                                <h3 style={{ margin: 0 }}>{t('whitelist.questions_bank')}</h3>
                                 <p style={{ margin: '4px 0 0 0', color: 'var(--text-muted)', fontSize: '0.9rem', fontWeight: 650 }}>{t('whitelist.staff_questions_desc')}</p>
                             </div>
                             <button className="pc-btn-primary mini-v2" onClick={() => setBgConfig({...bgConfig, questions: [{ text: '', minLength: 50 }, ...(bgConfig.questions || [])]})}>
