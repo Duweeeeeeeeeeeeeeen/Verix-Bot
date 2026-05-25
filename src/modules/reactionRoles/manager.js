@@ -15,6 +15,7 @@ class ReactionRoleManager {
         this.client = client;
         this.customIdPrefix = 'rr_toggle';
         this.customIdSeparator = '|';
+        this.rawReactionCache = new Map();
     }
 
     async init() {
@@ -84,6 +85,30 @@ class ReactionRoleManager {
         }
 
         logger.info(`[ReactionRoles] ${action} emoji ${emojiKey} -> role ${roleMapping.roleId} for ${userId} in guild ${guildId}`);
+        return true;
+    }
+
+    getReactionEventKey({ guildId, messageId, emoji, userId, action }) {
+        return [guildId, messageId, this.getReactionEmojiKey(emoji), userId, action].join(':');
+    }
+
+    rememberRawReaction(eventKey) {
+        this.rawReactionCache.set(eventKey, Date.now() + 5000);
+        if (this.rawReactionCache.size > 500) {
+            const now = Date.now();
+            for (const [key, expires] of this.rawReactionCache.entries()) {
+                if (expires <= now) this.rawReactionCache.delete(key);
+            }
+        }
+    }
+
+    wasHandledByRaw(eventKey) {
+        const expires = this.rawReactionCache.get(eventKey);
+        if (!expires) return false;
+        if (expires <= Date.now()) {
+            this.rawReactionCache.delete(eventKey);
+            return false;
+        }
         return true;
     }
 
@@ -209,11 +234,13 @@ class ReactionRoleManager {
 
         const messageId = reaction.message.id;
         const emoji = this.getReactionEmojiKey(reaction.emoji);
+        const eventKey = this.getReactionEventKey({ guildId, messageId, emoji: reaction.emoji, userId: user.id, action });
+        if (this.wasHandledByRaw(eventKey)) return;
 
         try {
             await this.applyReactionRole({ guildId, messageId, emoji: reaction.emoji, userId: user.id, action });
         } catch (error) {
-            logger.error(`[ReactionRoles] Error handling reaction ${action} for ${user.tag}:`, error);
+            logger.error(`[ReactionRoles] Error handling reaction ${action} for ${user.tag}: ${error.message}`, error);
         }
     }
 
@@ -223,6 +250,14 @@ class ReactionRoleManager {
 
         const data = packet.d || {};
         try {
+            const eventKey = this.getReactionEventKey({
+                guildId: data.guild_id,
+                messageId: data.message_id,
+                userId: data.user_id,
+                emoji: data.emoji,
+                action
+            });
+            this.rememberRawReaction(eventKey);
             await this.applyReactionRole({
                 guildId: data.guild_id,
                 messageId: data.message_id,
@@ -231,7 +266,7 @@ class ReactionRoleManager {
                 action
             });
         } catch (error) {
-            logger.error(`[ReactionRoles] Error handling raw reaction ${action}:`, error);
+            logger.error(`[ReactionRoles] Error handling raw reaction ${action}: ${error.message}`, error);
         }
     }
 
