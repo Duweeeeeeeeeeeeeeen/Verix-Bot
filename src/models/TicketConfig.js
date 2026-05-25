@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const ticketConfigSchema = new mongoose.Schema({
     guildId: { type: String, required: true, unique: true },
-    enabled: { type: Boolean, default: true },
+    enabled: { type: Boolean, default: false },
     closeMode: { type: String, enum: ['MOVE', 'DELETE'], default: 'DELETE' },
     inputType: { type: String, enum: ['BUTTONS', 'SELECT'], default: 'SELECT' },
     panelChannelId: { type: String },

@@ -40,12 +40,13 @@ export default function GuildHome() {
     setError(null);
     window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
     try {
-      const responses = await Promise.all([
+      const [configData, statsData] = await Promise.all([
         api.request(`/config/${guildId}`),
-        api.request(`/config/${guildId}/stats`)
+        api.request(`/config/${guildId}/stats`).catch(err => {
+          console.warn('Stats fetch failed:', err);
+          return { openTickets: 0, pendingWhitelist: 0, activeVoiceSessions: 0 };
+        })
       ]);
-
-      const [configData, statsData] = responses;
       
       setConfig(configData);
       setStats(statsData?.data || statsData);

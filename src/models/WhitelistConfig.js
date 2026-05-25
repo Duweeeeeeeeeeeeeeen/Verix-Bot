@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const whitelistConfigSchema = new mongoose.Schema({
     guildId: { type: String, required: true, unique: true },
-    enabled: { type: Boolean, default: true },
+    enabled: { type: Boolean, default: false },
     title: { type: String, default: 'Application System' },
     description: { type: String, default: 'Welcome. Complete the application to request access or a specific role on this server.' },
     color: { type: String, default: '#3BA4FF' },

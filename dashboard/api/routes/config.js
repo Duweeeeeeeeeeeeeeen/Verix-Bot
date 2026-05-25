@@ -120,14 +120,17 @@ router.get('/:guildId/module-status', adminCheck, async (req, res) => {
             GiveawayConfig.findOne({ guildId }).select('enabled').lean(),
             PhotoContestConfig.findOne({ guildId }).select('enabled').lean(),
             PollConfig.findOne({ guildId }).select('enabled').lean(),
-            TicketConfig.findOne({ guildId }).select('enabled').lean(),
+            TicketConfig.findOne({ guildId }).select('enabled panelChannelId categoryOpenId staffRoleIds logChannelId panels').lean(),
             SupportConfig.findOne({ guildId }).select('enabled').lean(),
             TempVoiceConfig.findOne({ guildId }).select('enabled').lean(),
             ModerationConfig.findOne({ guildId }).select('enabled').lean(),
             FiveMConfig.findOne({ guildId }).select('enabled').lean(),
-            WhitelistConfig.findOne({ guildId }).select('enabled').lean(),
+            WhitelistConfig.findOne({ guildId }).select('enabled panelChannelId categoryOpenId staffRoleIds logChannelId voiceSettings.joinChannelId voiceSettings.categoryId').lean(),
             LevelingConfig.findOne({ guildId }).select('enabled').lean()
         ]);
+
+        const ticketEnabled = !!tickets?.enabled && hasTicketSetup(tickets);
+        const whitelistEnabled = !!whitelist?.enabled && hasWhitelistSetup(whitelist);
 
         res.json({
             success: true,
@@ -141,12 +144,12 @@ router.get('/:guildId/module-status', adminCheck, async (req, res) => {
                     giveaway: !!giveaway?.enabled,
                     photocontest: !!photocontest?.enabled,
                     polls: !!polls?.enabled,
-                    tickets: !!tickets?.enabled,
+                    tickets: ticketEnabled,
                     support: !!support?.enabled,
                     tempvoice: !!tempvoice?.enabled,
                     moderation: !!moderation?.enabled,
                     fivem: !!fivem?.enabled,
-                    whitelist: !!whitelist?.enabled,
+                    whitelist: whitelistEnabled,
                     leveling: !!leveling?.enabled
                 }
             }
@@ -200,6 +203,35 @@ const hasLegacyConfiguration = (configs) => {
         support?.enabled
     );
 };
+
+const hasWhitelistSetup = (config) => Boolean(
+    hasValue(config?.panelChannelId) ||
+    hasValue(config?.categoryOpenId) ||
+    hasValue(config?.staffRoleIds) ||
+    hasValue(config?.logChannelId) ||
+    hasValue(config?.voiceSettings?.joinChannelId) ||
+    hasValue(config?.voiceSettings?.categoryId)
+);
+
+const hasTicketSetup = (config) => Boolean(
+    hasValue(config?.panelChannelId) ||
+    hasValue(config?.categoryOpenId) ||
+    hasValue(config?.staffRoleIds) ||
+    hasValue(config?.logChannelId) ||
+    (Array.isArray(config?.panels) && config.panels.some(panel => (
+        hasValue(panel?.channelId) ||
+        hasValue(panel?.categoryOpenId) ||
+        hasValue(panel?.staffRoleIds) ||
+        hasValue(panel?.logChannelId)
+    )))
+);
+
+async function disableEmptyLegacyModule(config, Model, hasSetup) {
+    if (!config?.enabled || hasSetup(config)) return config;
+    config.enabled = false;
+    await Model.updateOne({ guildId: config.guildId }, { $set: { enabled: false } });
+    return config;
+}
 
 const ensureLegacySetupCompleted = async (guildData, configs) => {
     if (!guildData || guildData.setupCompleted === true || !hasLegacyConfiguration(configs)) {
@@ -344,6 +376,9 @@ router.get('/:guildId', adminCheck, async (req, res) => {
             fivem: fmConfig,
             support: suppConfig
         });
+
+        wlConfig = await disableEmptyLegacyModule(wlConfig, WhitelistConfig, hasWhitelistSetup);
+        tkConfig = await disableEmptyLegacyModule(tkConfig, TicketConfig, hasTicketSetup);
 
         // Fetch roles and channels from Discord Client with fallback
         let client = req.discordClient;
