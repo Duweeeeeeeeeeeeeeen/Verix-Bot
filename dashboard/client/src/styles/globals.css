@@ -2702,3 +2702,77 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
+/* ============================================================
+   PREMIUM COLOR PICKER GLOBAL STYLES
+   ============================================================ */
+
+/* Global browser overrides for standard color inputs */
+input[type="color"] {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    width: 44px;
+    height: 44px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: inline-block;
+    vertical-align: middle;
+    outline: none;
+}
+input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+input[type="color"]::-webkit-color-swatch {
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    transition: border-color 0.2s, transform 0.2s;
+}
+input[type="color"]::-moz-color-swatch {
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    transition: border-color 0.2s, transform 0.2s;
+}
+input[type="color"]:hover::-webkit-color-swatch {
+    border-color: var(--primary);
+    transform: scale(1.05);
+}
+input[type="color"]:hover::-moz-color-swatch {
+    border-color: var(--primary);
+    transform: scale(1.05);
+}
+
+/* Unified Side-by-Side Swatch & HEX text input wrapper */
+.pc-color-picker-wrapper-v2 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+}
+.pc-color-picker-wrapper-v2 input[type="color"] {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+}
+.pc-color-picker-wrapper-v2 .hex-input-v2 {
+    flex: 1;
+    min-width: 0;
+    height: 44px;
+    background: var(--bg-badge) !important;
+    border: 1.5px solid var(--border) !important;
+    border-radius: 14px !important;
+    padding: 0 14px !important;
+    font-weight: 700 !important;
+    color: var(--text-heading) !important;
+    outline: none !important;
+    transition: 0.2s !important;
+    font-size: 0.9rem !important;
+}
+.pc-color-picker-wrapper-v2 .hex-input-v2:focus {
+    border-color: var(--primary) !important;
+}
+
+

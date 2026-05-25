@@ -378,12 +378,19 @@ export default function ReactionRolesConfig() {
                                         <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: 'minmax(140px, 180px) 1fr', gap: '16px', marginTop: '20px' }}>
                                             <div className="pc-input-group-v2">
                                                 <label>{t('common.color')}</label>
-                                                <input
-                                                    type="color"
-                                                    className="pc-input-modern-v2"
-                                                    value={activePanel.embed.color || '#5865F2'}
-                                                    onChange={e => updatePanel(activePanel.id, { embed: { ...activePanel.embed, color: e.target.value } })}
-                                                />
+                                                <div className="pc-color-picker-wrapper-v2">
+                                                    <input
+                                                        type="color"
+                                                        value={activePanel.embed.color?.startsWith('#') ? activePanel.embed.color : '#5865F2'}
+                                                        onChange={e => updatePanel(activePanel.id, { embed: { ...activePanel.embed, color: e.target.value } })}
+                                                    />
+                                                    <input
+                                                        className="hex-input-v2"
+                                                        value={activePanel.embed.color || ''}
+                                                        onChange={e => updatePanel(activePanel.id, { embed: { ...activePanel.embed, color: e.target.value } })}
+                                                        placeholder="#HEX"
+                                                    />
+                                                </div>
                                             </div>
                                             <div className="pc-input-group-v2">
                                                 <label>Footer</label>
