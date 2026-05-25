@@ -50,26 +50,42 @@ class ReactionRoleManager {
     }
 
     async applyReactionRole({ guildId, messageId, emoji, userId, action }) {
-        if (!guildId || !messageId || !userId || userId === this.client.user?.id) return false;
+        const emojiKey = this.getReactionEmojiKey(emoji);
+        if (!guildId || !messageId || !userId) {
+            logger.warn(`[ReactionRoles] Ignored ${action} reaction with missing identifiers guild=${guildId || 'none'} message=${messageId || 'none'} user=${userId || 'none'} emoji=${emojiKey || 'none'}`);
+            return false;
+        }
+        if (userId === this.client.user?.id) return false;
 
         const config = await ReactionRoleConfig.findOne({ guildId });
-        if (!config || !config.enabled) return false;
+        if (!config || !config.enabled) {
+            logger.warn(`[ReactionRoles] Ignored ${action} reaction because config is ${config ? 'disabled' : 'missing'} for guild ${guildId}.`);
+            return false;
+        }
 
         const panel = config.panels.find(p => p.messageId === messageId);
-        if (!panel || panel.type !== 'REACTION') return false;
+        if (!panel || panel.type !== 'REACTION') {
+            logger.warn(`[ReactionRoles] Ignored ${action} reaction for message ${messageId}: panel ${panel ? `is ${panel.type}` : 'not found'}.`);
+            return false;
+        }
 
         const roleMapping = panel.roles.find(r => this.emojiMatches(r.emoji, emoji));
-        const emojiKey = this.getReactionEmojiKey(emoji);
         if (!roleMapping) {
             logger.warn(`[ReactionRoles] No role mapping for emoji ${emojiKey} on message ${messageId} in guild ${guildId}. Configured: ${panel.roles.map(r => this.getCleanEmoji(r.emoji)).join(', ')}`);
             return false;
         }
 
         const guild = this.client.guilds.cache.get(guildId) || await this.client.guilds.fetch(guildId).catch(() => null);
-        if (!guild) return false;
+        if (!guild) {
+            logger.warn(`[ReactionRoles] Ignored ${action} reaction because guild ${guildId} could not be fetched.`);
+            return false;
+        }
 
         const member = await guild.members.fetch(userId).catch(() => null);
-        if (!member || member.user?.bot) return false;
+        if (!member || member.user?.bot) {
+            logger.warn(`[ReactionRoles] Ignored ${action} reaction because member ${userId} is ${member ? 'a bot' : 'not fetchable'} in guild ${guildId}.`);
+            return false;
+        }
 
         const role = await guild.roles.fetch(roleMapping.roleId).catch(() => null);
         const botMember = guild.members.me || await guild.members.fetchMe().catch(() => null);
@@ -78,10 +94,16 @@ class ReactionRoleManager {
             return false;
         }
 
-        if (action === 'ADD') {
-            await member.roles.add(roleMapping.roleId);
-        } else {
-            await member.roles.remove(roleMapping.roleId);
+        try {
+            logger.info(`[ReactionRoles] Applying ${action} emoji ${emojiKey} -> role ${role.id} (${role.name}) for ${userId} in guild ${guildId}`);
+            if (action === 'ADD') {
+                await member.roles.add(role, 'Reaction role');
+            } else {
+                await member.roles.remove(role, 'Reaction role');
+            }
+        } catch (error) {
+            logger.error(`[ReactionRoles] Discord role update failed action=${action} guild=${guildId} user=${userId} role=${role.id}: ${error.code || 'NO_CODE'} ${error.message}`, error);
+            return false;
         }
 
         logger.info(`[ReactionRoles] ${action} emoji ${emojiKey} -> role ${roleMapping.roleId} for ${userId} in guild ${guildId}`);
@@ -257,14 +279,14 @@ class ReactionRoleManager {
                 emoji: data.emoji,
                 action
             });
-            this.rememberRawReaction(eventKey);
-            await this.applyReactionRole({
+            const handled = await this.applyReactionRole({
                 guildId: data.guild_id,
                 messageId: data.message_id,
                 userId: data.user_id,
                 emoji: data.emoji,
                 action
             });
+            if (handled) this.rememberRawReaction(eventKey);
         } catch (error) {
             logger.error(`[ReactionRoles] Error handling raw reaction ${action}: ${error.message}`, error);
         }
