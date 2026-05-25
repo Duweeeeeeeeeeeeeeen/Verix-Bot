@@ -121,6 +121,24 @@ const ticketConfigSchema = new mongoose.Schema({
             messageId: { type: String, default: null },
             inputType: { type: String, enum: ['BUTTONS', 'SELECT'], default: 'BUTTONS' },
             categories: { type: [String], default: [] },
+            enabledTypes: { type: [String], default: [] },
+            types: { type: [String], default: [] },
+            typesConfig: {
+                type: Map,
+                of: {
+                    label: { type: String },
+                    description: { type: String, default: null },
+                    color: { type: String, default: '#3498db' },
+                    emoji: { type: String, default: '🎫' },
+                    style: { type: String, default: 'PRIMARY' },
+                    url: { type: String, default: null },
+                    image: { type: String, default: null },
+                    pingRoleId: { type: String, default: null },
+                    order: { type: Number, default: 0 },
+                    welcomeMessage: { type: String, default: null }
+                },
+                default: {}
+            },
             staffRoleIds: { type: [String], default: [] },
             categoryOpenId: { type: String, default: null },
             categoryClosedId: { type: String, default: null },

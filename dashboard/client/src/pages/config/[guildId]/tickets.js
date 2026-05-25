@@ -9,9 +9,10 @@ import {
     RotateCcw, Send, GripVertical, AlertCircle, Palette, SlidersHorizontal, Eye,
     ChevronUp, ChevronDown
 } from 'lucide-react';
-import { DiscordSelector, CustomSelect, EmbedMessageManager, NotificationSettings, SystemMessagesSection } from '../../../components/LazyConfigComponents';
+import { DiscordSelector, CustomSelect, NotificationSettings, SystemMessagesSection } from '../../../components/LazyConfigComponents';
 import EmojiInput from '../../../components/EmojiInput';
 import EmbedPreviewDrawer from '../../../components/EmbedPreviewDrawer';
+import EmbedEditor from '../../../components/EmbedEditor';
 import { mergeConfig } from '../../../utils/defaults';
 import Head from 'next/head';
 
@@ -97,14 +98,27 @@ export default function TicketConfig() {
 
       const rawConfig = configRes?.data || configRes || { enabled: false };
       const merged = mergeConfig(rawConfig, 'tickets');
-      merged.panels = (merged.panels || []).map(panel => ({
+      const globalTypeIds = Array.from(new Set([
+        ...(merged.types || merged.enabledTypes || []),
+        ...Object.keys(merged.typesConfig || {})
+      ]));
+      merged.panels = (merged.panels || []).map((panel, index) => ({
         ...panel,
-        staffRoleIds: panel.staffRoleIds || merged.staffRoleIds || [],
-        categoryOpenId: panel.categoryOpenId || merged.categoryOpenId || '',
-        categoryClosedId: panel.categoryClosedId || merged.categoryClosedId || '',
-        logChannelId: panel.logChannelId || merged.logChannelId || '',
-        closeMode: panel.closeMode || merged.closeMode || 'DELETE',
-        cannedResponses: panel.cannedResponses || merged.cannedResponses || []
+        staffRoleIds: panel.staffRoleIds || [],
+        categoryOpenId: panel.categoryOpenId || '',
+        categoryClosedId: panel.categoryClosedId || '',
+        logChannelId: panel.logChannelId || '',
+        closeMode: panel.closeMode || 'DELETE',
+        cannedResponses: panel.cannedResponses || [],
+        types: panel.types || (index === 0 ? globalTypeIds : []),
+        enabledTypes: panel.enabledTypes || panel.types || (index === 0 ? globalTypeIds : []),
+        typesConfig: panel.typesConfig || (index === 0 ? (merged.typesConfig || {}) : {}),
+        embed: panel.embed || (index === 0 ? (merged.embeds?.panel || {}) : {
+          title: 'Support Center',
+          description: 'Need help or want to report something to staff? Open a ticket by selecting the correct category.',
+          color: '#2ECC71',
+          footer: 'Support Team | {guild}'
+        })
       }));
       setConfig(merged);
       if (merged.panels && merged.panels.length > 0) {
@@ -203,15 +217,18 @@ export default function TicketConfig() {
           messageId: null,
           inputType: 'BUTTONS',
           categories: [],
-          staffRoleIds: config.staffRoleIds || [],
-          categoryOpenId: config.categoryOpenId || '',
-          categoryClosedId: config.categoryClosedId || '',
-          logChannelId: config.logChannelId || '',
-          closeMode: config.closeMode || 'DELETE',
-          cannedResponses: config.cannedResponses || [],
+          staffRoleIds: [],
+          categoryOpenId: '',
+          categoryClosedId: '',
+          logChannelId: '',
+          closeMode: 'DELETE',
+          cannedResponses: [],
+          types: [],
+          enabledTypes: [],
+          typesConfig: {},
           embed: {
-              title: 'Centro Supporto',
-              description: 'Hai bisogno di aiuto o vuoi fare una segnalazione allo staff? Apri un ticket selezionando la categoria corretta.',
+              title: 'Support Center',
+              description: 'Need help or want to report something to staff? Open a ticket by selecting the correct category.',
               color: '#2ECC71',
               footer: 'Support Team | {guild}'
           }
@@ -232,6 +249,14 @@ export default function TicketConfig() {
           ...config,
           panels: config.panels.map(p => p.id === id ? { ...p, ...data } : p)
       });
+  };
+
+  const getActivePanel = () => (config.panels || []).find(p => p.id === activePanelId) || null;
+
+  const updateActivePanel = (data) => {
+      const activePanel = getActivePanel();
+      if (!activePanel) return;
+      updatePanel(activePanel.id, data);
   };
 
   const toggleCategoryInPanel = (panelId, categoryId) => {
@@ -268,62 +293,76 @@ export default function TicketConfig() {
   };
 
   const addTicketType = () => {
+    const activePanel = getActivePanel();
+    if (!activePanel) return;
     const id = 'type_' + Date.now();
-    const currentTypes = config.types || config.enabledTypes || [];
-    setConfig({
-      ...config,
+    const currentTypes = activePanel.types || activePanel.enabledTypes || [];
+    updatePanel(activePanel.id, {
       types: [...currentTypes, id],
       enabledTypes: [...currentTypes, id],
       typesConfig: {
-        ...(config.typesConfig || {}),
+        ...(activePanel.typesConfig || {}),
         [id]: { label: t('tickets.new_ticket_default'), emoji: '🎫', welcomeMessage: t('tickets.welcome_message_default') }
       }
     });
   };
 
   const removeTicketType = (id) => {
-    const newTypes = (config.types || config.enabledTypes || []).filter(tid => tid !== id);
-    const newConfig = { ...config.typesConfig };
+    const activePanel = getActivePanel();
+    if (!activePanel) return;
+    const newTypes = (activePanel.types || activePanel.enabledTypes || []).filter(tid => tid !== id);
+    const newConfig = { ...(activePanel.typesConfig || {}) };
     delete newConfig[id];
-    setConfig({ ...config, types: newTypes, enabledTypes: newTypes, typesConfig: newConfig });
+    updatePanel(activePanel.id, { types: newTypes, enabledTypes: newTypes, typesConfig: newConfig });
   };
 
   const moveTicketType = (index, direction) => {
-    const currentTypes = [...(config.types || config.enabledTypes || [])];
+    const activePanel = getActivePanel();
+    if (!activePanel) return;
+    const currentTypes = [...(activePanel.types || activePanel.enabledTypes || [])];
     const targetIndex = index + direction;
     if (targetIndex < 0 || targetIndex >= currentTypes.length) return;
     [currentTypes[index], currentTypes[targetIndex]] = [currentTypes[targetIndex], currentTypes[index]];
-    setConfig({ ...config, types: currentTypes, enabledTypes: currentTypes });
+    updatePanel(activePanel.id, { types: currentTypes, enabledTypes: currentTypes });
   };
 
   const addCannedResponse = () => {
-    setConfig({
-      ...config,
-      cannedResponses: [...(config.cannedResponses || []), { label: '', content: '' }]
+    const activePanel = getActivePanel();
+    if (!activePanel) return;
+    updatePanel(activePanel.id, {
+      cannedResponses: [...(activePanel.cannedResponses || []), { label: '', content: '' }]
     });
   };
 
   const removeCannedResponse = (index) => {
-    const newResponses = [...config.cannedResponses];
+    const activePanel = getActivePanel();
+    if (!activePanel) return;
+    const newResponses = [...(activePanel.cannedResponses || [])];
     newResponses.splice(index, 1);
-    setConfig({ ...config, cannedResponses: newResponses });
+    updatePanel(activePanel.id, { cannedResponses: newResponses });
   };
 
   if (!mounted || loading || !config) return <Skeleton height="600px" />;
 
   const hasWarning = config.enabled && (!(config.panels || []).length || (config.panels || []).some(panel => (
     !panel.channelId ||
-    !(panel.staffRoleIds || config.staffRoleIds || []).length ||
-    !(panel.categoryOpenId || config.categoryOpenId) ||
-    ((panel.closeMode || config.closeMode) === 'MOVE' && !(panel.categoryClosedId || config.categoryClosedId))
+    !((panel.types || panel.enabledTypes || []).length || Object.keys(panel.typesConfig || {}).length) ||
+    !(panel.staffRoleIds || []).length ||
+    !panel.categoryOpenId ||
+    ((panel.closeMode || 'DELETE') === 'MOVE' && !panel.categoryClosedId)
   )));
 
-  const ticketTypes = config.types || (config.typesConfig && Object.keys(config.typesConfig).length > 0 ? Object.keys(config.typesConfig) : config.enabledTypes || []);
-  const isButtonPanel = (config.inputType || 'SELECT') === 'BUTTONS';
+  const activePanel = getActivePanel();
+  const activeTypesConfig = activePanel?.typesConfig || {};
+  const ticketTypes = activePanel
+    ? (activePanel.types || (Object.keys(activeTypesConfig).length > 0 ? Object.keys(activeTypesConfig) : activePanel.enabledTypes || []))
+    : [];
+  const isButtonPanel = (activePanel?.inputType || 'BUTTONS') === 'BUTTONS';
   const openTicketWelcomePreview = (id) => {
-    const typeConfig = config.typesConfig?.[id] || {};
+    const panel = getActivePanel();
+    const typeConfig = panel?.typesConfig?.[id] || {};
     const fields = [
-      { name: t('tickets.category_open'), value: config.categoryOpenId ? `<#${config.categoryOpenId}>` : t('common.none'), inline: true }
+      { name: t('tickets.category_open'), value: panel?.categoryOpenId ? `<#${panel.categoryOpenId}>` : t('common.none'), inline: true }
     ];
     if (typeConfig.pingRoleId) {
       fields.push({ name: t('tickets.target_role'), value: `<@&${typeConfig.pingRoleId}>`, inline: true });
@@ -528,10 +567,10 @@ export default function TicketConfig() {
                                     <div key={id} className="pc-sub-card-v2 ticket-category-card animate slide-up">
                                         <div className="pc-bb-content" style={{ padding: 0 }}>
                                             <div className="ticket-category-head">
-                                                <input className="pc-input-ghost-v2" value={config.typesConfig[id]?.label || ''} onChange={e => {
-                                                    const newTypes = { ...config.typesConfig };
+                                                <input className="pc-input-ghost-v2" value={activeTypesConfig[id]?.label || ''} onChange={e => {
+                                                    const newTypes = { ...activeTypesConfig };
                                                     newTypes[id] = { ...newTypes[id], label: e.target.value };
-                                                    setConfig({ ...config, typesConfig: newTypes });
+                                                    updateActivePanel({ typesConfig: newTypes });
                                                 }} placeholder={t('tickets.cat_title_placeholder')} />
                                                 <div className="ticket-category-actions">
                                                     <button type="button" className="pc-btn-outline-v2 ticket-order-btn" onClick={() => moveTicketType(index, -1)} disabled={index === 0} title={t('rr.move_up') || 'Move up'}>
@@ -551,10 +590,10 @@ export default function TicketConfig() {
                                                 <div className="pc-bb-col ticket-emoji-col">
                                                     <label>{t('common.emoji')}</label>
                                                     <div className="pc-bb-emoji-box">
-                                                        <EmojiInput value={config.typesConfig[id]?.emoji || '🎫'} hideInput={true} onChange={e => {
-                                                            const newTypes = { ...config.typesConfig };
+                                                        <EmojiInput value={activeTypesConfig[id]?.emoji || '🎫'} hideInput={true} onChange={e => {
+                                                            const newTypes = { ...activeTypesConfig };
                                                             newTypes[id] = { ...newTypes[id], emoji: e.target.value };
-                                                            setConfig({ ...config, typesConfig: newTypes });
+                                                            updateActivePanel({ typesConfig: newTypes });
                                                         }} />
                                                     </div>
                                                 </div>
@@ -572,11 +611,11 @@ export default function TicketConfig() {
                                                                 <button
                                                                     key={option.value}
                                                                     type="button"
-                                                                    className={(config.typesConfig[id]?.style || 'PRIMARY') === option.value ? 'active' : ''}
+                                                                    className={(activeTypesConfig[id]?.style || 'PRIMARY') === option.value ? 'active' : ''}
                                                                     onClick={() => {
-                                                                        const newTypes = { ...config.typesConfig };
+                                                                        const newTypes = { ...activeTypesConfig };
                                                                         newTypes[id] = { ...newTypes[id], style: option.value };
-                                                                        setConfig({ ...config, typesConfig: newTypes });
+                                                                        updateActivePanel({ typesConfig: newTypes });
                                                                     }}
                                                                     style={{ background: option.color }}
                                                                     title={option.value}
@@ -587,35 +626,35 @@ export default function TicketConfig() {
                                                         <div className="ticket-embed-color-control">
                                                             <input
                                                                 type="color"
-                                                                value={config.typesConfig[id]?.color || '#3498db'}
+                                                                value={activeTypesConfig[id]?.color || '#3498db'}
                                                                 onChange={e => {
-                                                                    const newTypes = { ...config.typesConfig };
+                                                                    const newTypes = { ...activeTypesConfig };
                                                                     newTypes[id] = { ...newTypes[id], color: e.target.value };
-                                                                    setConfig({ ...config, typesConfig: newTypes });
+                                                                    updateActivePanel({ typesConfig: newTypes });
                                                                 }}
                                                             />
-                                                            <span>{(config.typesConfig[id]?.color || '#3498db').toUpperCase()}</span>
+                                                            <span>{(activeTypesConfig[id]?.color || '#3498db').toUpperCase()}</span>
                                                         </div>
                                                     )}
                                                 </div>
                                                 <div className="pc-input-group-v2 ticket-role-field">
                                                     <label>{t('tickets.target_role')}</label>
-                                                    <DiscordSelector type="role" options={discordData.roles} value={config.typesConfig[id]?.pingRoleId || ''} onChange={v => {
-                                                        const newTypes = { ...config.typesConfig };
+                                                    <DiscordSelector type="role" options={discordData.roles} value={activeTypesConfig[id]?.pingRoleId || ''} onChange={v => {
+                                                        const newTypes = { ...activeTypesConfig };
                                                         newTypes[id] = { ...newTypes[id], pingRoleId: v };
-                                                        setConfig({ ...config, typesConfig: newTypes });
+                                                        updateActivePanel({ typesConfig: newTypes });
                                                     }} />
                                                 </div>
                                             </div>
 
-                                            {isButtonPanel && config.typesConfig[id]?.style === 'LINK' && (
+                                            {isButtonPanel && activeTypesConfig[id]?.style === 'LINK' && (
                                             <div className="pc-input-grid-v2 ticket-category-options">
                                                 <div className="pc-input-group-v2">
                                                     <label>URL</label>
-                                                    <input className="pc-input-modern-v2" value={config.typesConfig[id]?.url || ''} onChange={e => {
-                                                            const newTypes = { ...config.typesConfig };
+                                                    <input className="pc-input-modern-v2" value={activeTypesConfig[id]?.url || ''} onChange={e => {
+                                                            const newTypes = { ...activeTypesConfig };
                                                             newTypes[id] = { ...newTypes[id], url: e.target.value };
-                                                            setConfig({ ...config, typesConfig: newTypes });
+                                                            updateActivePanel({ typesConfig: newTypes });
                                                     }} placeholder="https://..." />
                                                 </div>
                                             </div>
@@ -626,17 +665,17 @@ export default function TicketConfig() {
                                                     <label>{t('tickets.category_description')}</label>
                                                     <input
                                                         className="pc-input-modern-v2"
-                                                        value={config.typesConfig[id]?.description || ''}
+                                                        value={activeTypesConfig[id]?.description || ''}
                                                         onChange={e => {
-                                                            const newTypes = { ...config.typesConfig };
+                                                            const newTypes = { ...activeTypesConfig };
                                                             newTypes[id] = { ...newTypes[id], description: e.target.value };
-                                                            setConfig({ ...config, typesConfig: newTypes });
+                                                            updateActivePanel({ typesConfig: newTypes });
                                                         }}
                                                         placeholder={t('tickets.category_description_placeholder')}
                                                         maxLength={100}
                                                     />
                                                     <p style={{ margin: '6px 0 0 0', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                                                        {(config.typesConfig[id]?.description || '').length}/100
+                                                        {(activeTypesConfig[id]?.description || '').length}/100
                                                     </p>
                                                 </div>
                                             )}
@@ -646,11 +685,11 @@ export default function TicketConfig() {
                                                 <textarea
                                                     className="pc-input-modern-v2"
                                                     style={{ minHeight: '80px', width: '100%', resize: 'vertical' }}
-                                                    value={config.typesConfig[id]?.welcomeMessage || ''}
+                                                    value={activeTypesConfig[id]?.welcomeMessage || ''}
                                                     onChange={e => {
-                                                        const newTypes = { ...config.typesConfig };
+                                                        const newTypes = { ...activeTypesConfig };
                                                         newTypes[id] = { ...newTypes[id], welcomeMessage: e.target.value };
-                                                        setConfig({ ...config, typesConfig: newTypes });
+                                                        updateActivePanel({ typesConfig: newTypes });
                                                     }}
                                                     placeholder={t('tickets.custom_welcome_placeholder')}
                                                 />
@@ -687,7 +726,7 @@ export default function TicketConfig() {
                                     <div className="nav-icon-horizontal" style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'var(--bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: activePanelId === p.id ? 'var(--primary)' : 'var(--text-muted)' }}><Layout size={18} /></div>
                                     <div className="nav-info-horizontal" style={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
                                         <span className="nav-name-horizontal" style={{ fontWeight: 700, color: 'var(--text-heading)', fontSize: '0.85rem' }}>{p.name}</span>
-                                        <span className="nav-meta-horizontal" style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>{(p.categories || []).length} Categorie • {p.inputType || 'BUTTONS'}</span>
+                                        <span className="nav-meta-horizontal" style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>{((p.types || p.enabledTypes || []).length || Object.keys(p.typesConfig || {}).length)} Categorie • {p.inputType || 'BUTTONS'}</span>
                                     </div>
                                 </button>
                             ))}
@@ -853,37 +892,42 @@ export default function TicketConfig() {
 
             {activeTab === 'design' && (
                 <div className="v-stack animate slide-up">
-                    <EmbedMessageManager
-                        guildId={guildId}
-                        module="tickets"
-                        slugs={getTicketMessageSlugs(t)}
-                        compact={true}
-                        extraButtons={(slug) => {
-                            if (slug !== 'panel') return null;
-                            if ((config.inputType || 'SELECT') === 'SELECT') {
-                                return [{
-                                    type: 'SELECT',
-                                    label: t('tickets.input_select'),
-                                    placeholder: t('tickets.cat_title_placeholder'),
-                                    options: ticketTypes.map(id => {
-                                        const opt = {
-                                            label: config.typesConfig?.[id]?.label || id,
-                                            emoji: config.typesConfig?.[id]?.emoji || '🎫'
-                                        };
-                                        if (config.typesConfig?.[id]?.description) {
-                                            opt.description = config.typesConfig[id].description;
-                                        }
-                                        return opt;
-                                    })
-                                }];
-                            }
-                            return ticketTypes.slice(0, 5).map(id => ({
-                                label: config.typesConfig?.[id]?.label || id,
-                                style: config.typesConfig?.[id]?.style || 'PRIMARY',
-                                emoji: config.typesConfig?.[id]?.emoji || '🎫'
-                            }));
-                        }}
-                    />
+                    <section className="pc-card-v2">
+                        <div className="card-header-v2" style={{ marginBottom: '24px' }}>
+                            <div className="header-icon"><Palette size={18} /></div>
+                            <div className="v-stack" style={{ flex: 1 }}>
+                                <h3 style={{ margin: 0 }}>{activePanel?.name || t('tickets.msg_panel')}</h3>
+                                <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                                    {t('tickets.msg_panel_desc')}
+                                </p>
+                            </div>
+                        </div>
+                        <EmbedEditor
+                            embed={activePanel?.embed || {
+                                title: 'Support Center',
+                                description: 'Need help or want to report something to staff? Open a ticket by selecting the correct category.',
+                                color: '#2ECC71',
+                                footer: 'Support Team | {guild}'
+                            }}
+                            onChange={(embed) => updateActivePanel({ embed })}
+                            variables={['guild']}
+                            previewButtons={(activePanel?.inputType || 'BUTTONS') === 'SELECT' ? [{
+                                type: 'SELECT',
+                                label: t('tickets.input_select'),
+                                placeholder: t('tickets.cat_title_placeholder'),
+                                options: ticketTypes.map(id => ({
+                                    label: activeTypesConfig?.[id]?.label || id,
+                                    emoji: activeTypesConfig?.[id]?.emoji || '🎫',
+                                    description: activeTypesConfig?.[id]?.description || undefined
+                                }))
+                            }] : ticketTypes.slice(0, 5).map(id => ({
+                                label: activeTypesConfig?.[id]?.label || id,
+                                style: activeTypesConfig?.[id]?.style || 'PRIMARY',
+                                emoji: activeTypesConfig?.[id]?.emoji || '🎫'
+                            }))}
+                            compact={true}
+                        />
+                    </section>
 
                     <div className="pc-info-note" style={{ margin: '18px 0 0 0', padding: '14px 18px', background: 'rgba(var(--primary-rgb), 0.06)', border: '1px solid rgba(var(--primary-rgb), 0.15)', borderRadius: '12px', display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
                         <AlertCircle size={18} style={{ color: 'var(--primary)', flexShrink: 0, marginTop: '2px' }} />
@@ -979,28 +1023,28 @@ export default function TicketConfig() {
                         </div>
                         <div className="card-body-v2">
                             <div className="v-stack" style={{ gap: '24px' }}>
-                                {(config.cannedResponses || []).length === 0 ? (
+                                {((activePanel?.cannedResponses || []) || []).length === 0 ? (
                                     <div style={{ textAlign: 'center', padding: '40px', background: 'var(--bg-badge)', borderRadius: '20px', border: '1.5px dashed var(--border)' }}>
                                         <MessageSquare size={48} style={{ opacity: 0.1, marginBottom: '16px' }} />
                                         <p style={{ margin: 0, color: 'var(--text-muted)', fontWeight: 700 }}>{t('tickets.canned_empty')}</p>
                                     </div>
                                 ) : (
-                                    (config.cannedResponses || []).map((res, index) => (
+                                    ((activePanel?.cannedResponses || []) || []).map((res, index) => (
                                         <div key={index} className="pc-sub-card-v2 animate slide-up">
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
                                                 <input className="pc-input-ghost-v2" value={res.label || ''} onChange={e => {
-                                                    const newRes = [...config.cannedResponses];
+                                                    const newRes = [...(activePanel?.cannedResponses || [])];
                                                     newRes[index] = { ...res, label: e.target.value };
-                                                    setConfig({ ...config, cannedResponses: newRes });
+                                                    updateActivePanel({ cannedResponses: newRes });
                                                 }} placeholder={t('tickets.cat_title_placeholder')} />
                                                 <button onClick={() => removeCannedResponse(index)} className="pc-btn-icon-danger-v2"><Trash2 size={20} /></button>
                                             </div>
                                             <div className="pc-input-group-v2">
                                                 <label>{t('tickets.canned_responses')}</label>
                                                 <textarea className="pc-input-modern-v2" style={{ minHeight: '100px', width: '100%', resize: 'vertical' }} value={res.content || ''} onChange={e => {
-                                                    const newRes = [...config.cannedResponses];
+                                                    const newRes = [...(activePanel?.cannedResponses || [])];
                                                     newRes[index] = { ...res, content: e.target.value };
-                                                    setConfig({ ...config, cannedResponses: newRes });
+                                                    updateActivePanel({ cannedResponses: newRes });
                                                 }} placeholder={t('tickets.canned_placeholder')} />
                                             </div>
                                         </div>

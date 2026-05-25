@@ -30,6 +30,21 @@ function getConfigValue(config, key, panelId = null) {
     return config[key];
 }
 
+function getTicketTypeConfig(config, type, panelId = null) {
+    const panel = panelId && Array.isArray(config.panels)
+        ? config.panels.find(p => p.id === panelId)
+        : null;
+    const panelTypesConfig = panel?.typesConfig;
+    const panelType = panelTypesConfig instanceof Map
+        ? panelTypesConfig.get(type)
+        : panelTypesConfig?.[type];
+    if (panelType) return panelType;
+
+    return (config.typesConfig instanceof Map
+        ? config.typesConfig.get(type)
+        : config.typesConfig?.[type]);
+}
+
 function getPanelIdFromTicket(ticket) {
     const metadata = ticket?.metadata;
     if (!metadata) return null;
@@ -108,9 +123,7 @@ export default {
             const { type, panelId } = parseTicketCreateInteraction(interaction, customId);
 
             if (type) {
-                const typeConfig = (config.typesConfig instanceof Map 
-                    ? config.typesConfig.get(type) 
-                    : config.typesConfig?.[type]);
+                const typeConfig = getTicketTypeConfig(config, type, panelId);
 
                 if (!typeConfig && type !== 'supporto') {
                     return messageService.reply(interaction, 'tickets', 'category_not_available', {}, { ephemeral: true });
@@ -242,9 +255,7 @@ export default {
 
                     const dashboardStaffRoleIds = getConfigValue(config, 'staffRoleIds', ticketPanelId) || [];
                     const staffRoles = dashboardStaffRoleIds.map(id => interaction.guild.roles.cache.get(id)).filter(r => r);
-                    const typeConfig = (config.typesConfig instanceof Map 
-                        ? config.typesConfig.get(ticket.type) 
-                        : config.typesConfig?.[ticket.type]);
+                    const typeConfig = getTicketTypeConfig(config, ticket.type, ticketPanelId);
                     await renderTicketDashboard(interaction.channel, ticket, config, typeConfig, interaction.user, staffRoles, true);
                     return messageService.reply(interaction, 'tickets', 'note_success', { reason: 'Tag added' }, { ephemeral: true });
                 }
@@ -266,9 +277,7 @@ export default {
                     interaction.channel.setName(`claimed-${interaction.channel.name}`).catch(() => {});
                     const dashboardStaffRoleIds = getConfigValue(config, 'staffRoleIds', ticketPanelId) || [];
                     const staffRoles = dashboardStaffRoleIds.map(id => interaction.guild.roles.cache.get(id)).filter(r => r);
-                    const typeConfig = (config.typesConfig instanceof Map 
-                        ? config.typesConfig.get(ticket.type) 
-                        : config.typesConfig?.[ticket.type]);
+                    const typeConfig = getTicketTypeConfig(config, ticket.type, ticketPanelId);
                     return renderTicketDashboard(interaction.channel, ticket, config, typeConfig, interaction.user, staffRoles, true);
                 }
 
@@ -376,12 +385,8 @@ async function createTicket(interaction, type, config, metadata = {}) {
 
         logger.debug(`[TICKET_CREATE] Starting creation for ${user.tag} (Type: ${type}, Priority: ${priority})`);
 
-        // Robust retrieval of typeConfig handling both Map and Object
-        const typeConfig = (config.typesConfig instanceof Map 
-            ? config.typesConfig.get(type) 
-            : config.typesConfig?.[type]) || { color: '#3498db', emoji: '🎫' };
-
         const panelId = metadata.panelId || null;
+        const typeConfig = getTicketTypeConfig(config, type, panelId) || { color: '#3498db', emoji: '🎫' };
         const staffRoleIds = getConfigValue(config, 'staffRoleIds', panelId) || [];
         const staffRoles = staffRoleIds.map(id => guild.roles.cache.get(id)).filter(r => r);
         

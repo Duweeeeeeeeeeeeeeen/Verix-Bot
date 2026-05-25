@@ -1227,7 +1227,14 @@ router.post('/:guildId/tickets', adminCheck, validate(ticketSchema), async (req,
         // Enforcement based on Matrix: Standard (2), Premium (10), Platinum (Unlimited)
         if (tier !== 'platinum') {
             const limit = tier === 'premium' ? 10 : (tier === 'lite' ? 5 : 2);
-            const categoryCount = Object.keys(req.validatedData.typesConfig || {}).length || (req.validatedData.enabledTypes || []).length;
+            const panelCategoryCounts = (req.validatedData.panels || []).map(panel =>
+                Object.keys(panel.typesConfig || {}).length || (panel.enabledTypes || panel.types || []).length
+            );
+            const categoryCount = Math.max(
+                Object.keys(req.validatedData.typesConfig || {}).length || (req.validatedData.enabledTypes || []).length,
+                ...panelCategoryCounts,
+                0
+            );
             if (categoryCount > limit) {
                 return res.status(403).json({ success: false, error: `Your plan (${tier.toUpperCase()}) allows up to ${limit} ticket categories.` });
             }
@@ -1298,7 +1305,7 @@ async function deployPanel(guildId, panelId, req, res) {
     }
     if (!ensurePanelPermissions(channel, res)) return;
 
-    const panelEmbed = config.embeds?.panel || panel.embed || {};
+    const panelEmbed = panel.embed || config.embeds?.panel || {};
     const embed = new EmbedBuilder()
         .setTitle(panelEmbed.title || 'Centro Supporto')
         .setDescription(panelEmbed.description || 'Hai bisogno di aiuto? Apri un ticket selezionando la categoria corretta.')
@@ -1311,16 +1318,26 @@ async function deployPanel(guildId, panelId, req, res) {
     let components = [];
     const inputType = panel.inputType || 'BUTTONS';
 
-    const panelCategories = panel.categories?.length
-        ? panel.categories
-        : Array.from(config.typesConfig instanceof Map ? config.typesConfig.keys() : Object.keys(config.typesConfig || {}));
+    const panelTypesConfig = panel.typesConfig && (
+        panel.typesConfig instanceof Map
+            ? panel.typesConfig
+            : new Map(Object.entries(panel.typesConfig || {}))
+    );
+    const legacyTypesConfig = config.typesConfig instanceof Map
+        ? config.typesConfig
+        : new Map(Object.entries(config.typesConfig || {}));
+    const typeConfigSource = panelTypesConfig?.size ? panelTypesConfig : legacyTypesConfig;
+    const panelCategories = (panel.types?.length ? panel.types : panel.enabledTypes?.length ? panel.enabledTypes : panel.categories?.length ? panel.categories : [])
+        .filter(categoryId => typeConfigSource.has(categoryId));
+
+    if (panelCategories.length === 0) {
+        return res.status(400).json({ success: false, error: 'Configura almeno una categoria per questo pannello.' });
+    }
 
     if (inputType === 'SELECT') {
         const options = [];
         for (const categoryId of panelCategories) {
-            const categoryData = config.typesConfig instanceof Map 
-                ? config.typesConfig.get(categoryId) 
-                : config.typesConfig?.[categoryId];
+            const categoryData = typeConfigSource.get(categoryId);
             
             if (!categoryData) continue;
             if (categoryData.style === 'LINK') continue; // Select menu non supporta link esterni
@@ -1352,9 +1369,7 @@ async function deployPanel(guildId, panelId, req, res) {
         let buttonsCount = 0;
         
         for (const categoryId of panelCategories) {
-            const categoryData = config.typesConfig instanceof Map 
-                ? config.typesConfig.get(categoryId) 
-                : config.typesConfig?.[categoryId];
+            const categoryData = typeConfigSource.get(categoryId);
             
             if (!categoryData) continue;
             if (buttonsCount >= 5) break; // Discord limit per row
