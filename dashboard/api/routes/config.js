@@ -1191,6 +1191,12 @@ router.get('/:guildId/tickets', adminCheck, async (req, res) => {
                 messageId: config.panelMessageId || null,
                 inputType: config.inputType || 'SELECT',
                 categories: Array.from(config.typesConfig instanceof Map ? config.typesConfig.keys() : Object.keys(config.typesConfig || {})),
+                staffRoleIds: config.staffRoleIds || [],
+                categoryOpenId: config.categoryOpenId || null,
+                categoryClosedId: config.categoryClosedId || null,
+                logChannelId: config.logChannelId || null,
+                closeMode: config.closeMode || 'DELETE',
+                cannedResponses: config.cannedResponses || [],
                 embed: {
                     title: config.embeds?.panel?.title || 'Centro Supporto',
                     description: config.embeds?.panel?.description || 'Hai bisogno di aiuto o vuoi fare una segnalazione allo staff? Apri un ticket selezionando la categoria corretta.',
@@ -1331,7 +1337,7 @@ async function deployPanel(guildId, panelId, req, res) {
 
         components.push(new ActionRowBuilder().addComponents(
             new StringSelectMenuBuilder()
-                .setCustomId('ticket_create_select')
+                .setCustomId(`ticket_create_select::${panel.id}`)
                 .setPlaceholder('Seleziona una categoria...')
                 .addOptions(options.slice(0, 25))
         ));
@@ -1357,7 +1363,7 @@ async function deployPanel(guildId, panelId, req, res) {
             if (isLink) {
                 btn.setURL(categoryData.url);
             } else {
-                btn.setCustomId(`ticket_type_${categoryId}`);
+                btn.setCustomId(`ticket_type::${panel.id}::${categoryId}`);
             }
 
             row.addComponents(btn);
@@ -1367,7 +1373,7 @@ async function deployPanel(guildId, panelId, req, res) {
         if (buttonsCount === 0) {
             row.addComponents(
                 new ButtonBuilder()
-                    .setCustomId('ticket_type_supporto')
+                    .setCustomId(`ticket_type::${panel.id}::supporto`)
                     .setLabel('Apri Ticket')
                     .setStyle(ButtonStyle.Primary)
                     .setEmoji('🎫')
@@ -1396,6 +1402,8 @@ async function deployPanel(guildId, panelId, req, res) {
             m.components.some(row => row.components.some(c => 
                 c.customId === 'open_ticket_select' || 
                 c.customId === 'ticket_create_select' ||
+                c.customId?.startsWith('ticket_create_select::') ||
+                c.customId?.startsWith('ticket_type::') ||
                 c?.customId?.startsWith('ticket_type_')
             ))
         );

@@ -74,6 +74,15 @@ export const ticketSchema = z.object({
         messageId: z.string().optional().nullable(),
         inputType: z.enum(['BUTTONS', 'SELECT']).optional(),
         categories: z.array(z.string()).optional(),
+        staffRoleIds: z.array(z.string()).optional(),
+        categoryOpenId: discordId.or(z.literal('')).optional().nullable(),
+        categoryClosedId: discordId.or(z.literal('')).optional().nullable(),
+        logChannelId: discordId.or(z.literal('')).optional().nullable(),
+        closeMode: z.enum(['MOVE', 'DELETE']).optional(),
+        cannedResponses: z.array(z.object({
+            label: z.string().min(1).max(50),
+            content: z.string().min(1).max(2000)
+        })).optional(),
         embed: z.object({
             title: z.string().optional(),
             description: z.string().optional(),

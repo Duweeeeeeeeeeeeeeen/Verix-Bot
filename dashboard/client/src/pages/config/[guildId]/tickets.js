@@ -72,7 +72,7 @@ export default function TicketConfig() {
   const [saving, setSaving] = useState(false);
   const [config, setConfig] = useState(null);
   const [discordData, setDiscordData] = useState({ roles: [], channels: [], categories: [] });
-  const [activeTab, setActiveTab] = useState('panels');
+  const [activeTab, setActiveTab] = useState('settings');
   const [mounted, setMounted] = useState(false);
   const [sendingPanel, setSendingPanel] = useState(false);
   const [previewData, setPreviewData] = useState(null);
@@ -97,6 +97,15 @@ export default function TicketConfig() {
 
       const rawConfig = configRes?.data || configRes || { enabled: false };
       const merged = mergeConfig(rawConfig, 'tickets');
+      merged.panels = (merged.panels || []).map(panel => ({
+        ...panel,
+        staffRoleIds: panel.staffRoleIds || merged.staffRoleIds || [],
+        categoryOpenId: panel.categoryOpenId || merged.categoryOpenId || '',
+        categoryClosedId: panel.categoryClosedId || merged.categoryClosedId || '',
+        logChannelId: panel.logChannelId || merged.logChannelId || '',
+        closeMode: panel.closeMode || merged.closeMode || 'DELETE',
+        cannedResponses: panel.cannedResponses || merged.cannedResponses || []
+      }));
       setConfig(merged);
       if (merged.panels && merged.panels.length > 0) {
         setActivePanelId(merged.panels[0].id);
@@ -195,6 +204,12 @@ export default function TicketConfig() {
           messageId: null,
           inputType: 'BUTTONS',
           categories: [],
+          staffRoleIds: config.staffRoleIds || [],
+          categoryOpenId: config.categoryOpenId || '',
+          categoryClosedId: config.categoryClosedId || '',
+          logChannelId: config.logChannelId || '',
+          closeMode: config.closeMode || 'DELETE',
+          cannedResponses: config.cannedResponses || [],
           embed: {
               title: 'Centro Supporto',
               description: 'Hai bisogno di aiuto o vuoi fare una segnalazione allo staff? Apri un ticket selezionando la categoria corretta.',
@@ -230,6 +245,27 @@ export default function TicketConfig() {
           : [...currentCategories, categoryId];
           
       updatePanel(panelId, { categories: newCategories });
+  };
+
+  const addPanelCannedResponse = (panelId) => {
+      const panel = config.panels.find(p => p.id === panelId);
+      updatePanel(panelId, {
+          cannedResponses: [...(panel?.cannedResponses || []), { label: '', content: '' }]
+      });
+  };
+
+  const updatePanelCannedResponse = (panelId, index, data) => {
+      const panel = config.panels.find(p => p.id === panelId);
+      const responses = [...(panel?.cannedResponses || [])];
+      responses[index] = { ...responses[index], ...data };
+      updatePanel(panelId, { cannedResponses: responses });
+  };
+
+  const removePanelCannedResponse = (panelId, index) => {
+      const panel = config.panels.find(p => p.id === panelId);
+      const responses = [...(panel?.cannedResponses || [])];
+      responses.splice(index, 1);
+      updatePanel(panelId, { cannedResponses: responses });
   };
 
   const addTicketType = () => {
@@ -276,7 +312,13 @@ export default function TicketConfig() {
 
   if (!mounted || loading || !config) return <Skeleton height="600px" />;
 
-  const hasWarning = config.enabled && (!(config.staffRoleIds || []).length || !config.panelChannelId || !config.categoryOpenId || (config.closeMode === 'MOVE' && !config.categoryClosedId));
+  const hasWarning = config.enabled && (!(config.panels || []).length || (config.panels || []).some(panel => (
+    !panel.channelId ||
+    !(panel.staffRoleIds || config.staffRoleIds || []).length ||
+    !(panel.categoryOpenId || config.categoryOpenId) ||
+    ((panel.closeMode || config.closeMode) === 'MOVE' && !(panel.categoryClosedId || config.categoryClosedId)) ||
+    !(panel.categories || []).length
+  )));
 
   const ticketTypes = config.types || (config.typesConfig && Object.keys(config.typesConfig).length > 0 ? Object.keys(config.typesConfig) : config.enabledTypes || []);
   const isButtonPanel = (config.inputType || 'SELECT') === 'BUTTONS';
@@ -356,11 +398,11 @@ export default function TicketConfig() {
 
         {/* V2 Navigation Tabs */}
         <nav className="pc-tabs-v2" style={{ marginBottom: '32px' }}>
-            <button className={activeTab === 'panels' ? 'active' : ''} onClick={() => setActiveTab('panels')}>
-                <SlidersHorizontal size={16} /> <span>Pannelli Ticket</span>
-            </button>
             <button className={activeTab === 'settings' ? 'active' : ''} onClick={() => setActiveTab('settings')}>
                 <Settings2 size={16} /> <span>{t('tickets.base_config')}</span>
+            </button>
+            <button className={activeTab === 'defaults' ? 'active' : ''} onClick={() => setActiveTab('defaults')}>
+                <Shield size={16} /> <span>Global Defaults</span>
             </button>
             <button className={activeTab === 'categories' ? 'active' : ''} onClick={() => setActiveTab('categories')}>
                 <Layout size={16} /> <span>{t('tickets.categories')}</span>
@@ -627,7 +669,7 @@ export default function TicketConfig() {
                 </div>
             )}
 
-            {activeTab === 'panels' && (
+            {activeTab === 'defaults' && (
                 <div className="v-stack animate slide-up" style={{ gap: '20px' }}>
                     {/* Fleet Repository Horizontal Top Bar */}
                     <section className="rr-top-bar" style={{ display: 'flex', alignItems: 'center', gap: '24px', padding: '16px 24px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '24px', boxShadow: 'var(--shadow-premium)' }}>
@@ -697,6 +739,60 @@ export default function TicketConfig() {
                                                     error={config.enabled && !activePanel.channelId ? t('common.required_field') : ''} 
                                                 />
                                             </div>
+                                            <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginTop: '20px' }}>
+                                                <div className="pc-input-group-v2">
+                                                    <label>{t('tickets.support_roles')}</label>
+                                                    <DiscordSelector
+                                                        type="role"
+                                                        multiple={true}
+                                                        options={discordData.roles}
+                                                        value={activePanel.staffRoleIds || []}
+                                                        onChange={val => updatePanel(activePanel.id, { staffRoleIds: val })}
+                                                        error={config.enabled && !(activePanel.staffRoleIds || []).length ? t('common.required_field') : ''}
+                                                    />
+                                                </div>
+                                                <div className="pc-input-group-v2">
+                                                    <label>{t('tickets.category_open')}</label>
+                                                    <DiscordSelector
+                                                        type="channel"
+                                                        options={discordData.categories}
+                                                        value={activePanel.categoryOpenId || ''}
+                                                        onChange={val => updatePanel(activePanel.id, { categoryOpenId: val })}
+                                                        error={config.enabled && !activePanel.categoryOpenId ? t('common.required_field') : ''}
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '20px', marginTop: '20px' }}>
+                                                <div className="pc-input-group-v2">
+                                                    <label>{t('tickets.log_channel')}</label>
+                                                    <DiscordSelector
+                                                        type="channel"
+                                                        options={discordData.channels}
+                                                        value={activePanel.logChannelId || ''}
+                                                        onChange={val => updatePanel(activePanel.id, { logChannelId: val })}
+                                                    />
+                                                </div>
+                                                <div className="pc-input-group-v2">
+                                                    <label>{t('tickets.close_mode')}</label>
+                                                    <CustomSelect
+                                                        value={activePanel.closeMode || 'DELETE'}
+                                                        onChange={val => updatePanel(activePanel.id, { closeMode: val })}
+                                                        options={CLOSE_MODE_OPTIONS}
+                                                    />
+                                                </div>
+                                                {(activePanel.closeMode || 'DELETE') === 'MOVE' && (
+                                                    <div className="pc-input-group-v2">
+                                                        <label>{t('tickets.category_closed')}</label>
+                                                        <DiscordSelector
+                                                            type="channel"
+                                                            options={discordData.categories}
+                                                            value={activePanel.categoryClosedId || ''}
+                                                            onChange={val => updatePanel(activePanel.id, { categoryClosedId: val })}
+                                                            error={config.enabled && !activePanel.categoryClosedId ? t('common.required_field') : ''}
+                                                        />
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     </section>
 
@@ -753,6 +849,51 @@ export default function TicketConfig() {
                                                         placeholder="https://..."
                                                     />
                                                 </div>
+                                            </div>
+                                        </div>
+                                    </section>
+
+                                    <section className="pc-card-v2">
+                                        <div className="card-header-v2">
+                                            <div className="header-icon"><MessageSquare size={18} /></div>
+                                            <div className="v-stack" style={{ flex: 1 }}>
+                                                <h3 style={{ margin: 0 }}>Risposte rapide del pannello</h3>
+                                                <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>Queste risposte compaiono solo nei ticket aperti da questo pannello.</p>
+                                            </div>
+                                            <button type="button" className="pc-btn-primary" onClick={() => addPanelCannedResponse(activePanel.id)}>
+                                                <Plus size={18} /> <span>{t('common.add')}</span>
+                                            </button>
+                                        </div>
+                                        <div className="card-body-v2">
+                                            <div className="v-stack" style={{ gap: '16px' }}>
+                                                {(activePanel.cannedResponses || []).length === 0 ? (
+                                                    <div style={{ textAlign: 'center', padding: '32px', background: 'var(--bg-badge)', borderRadius: '18px', border: '1.5px dashed var(--border)', color: 'var(--text-muted)', fontWeight: 700 }}>
+                                                        {t('tickets.canned_empty')}
+                                                    </div>
+                                                ) : (
+                                                    activePanel.cannedResponses.map((response, index) => (
+                                                        <div key={index} className="pc-sub-card-v2">
+                                                            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(180px, 260px) 1fr 42px', gap: '12px', alignItems: 'start' }}>
+                                                                <input
+                                                                    className="pc-input-modern-v2"
+                                                                    value={response.label || ''}
+                                                                    onChange={e => updatePanelCannedResponse(activePanel.id, index, { label: e.target.value })}
+                                                                    placeholder={t('tickets.cat_title_placeholder')}
+                                                                />
+                                                                <textarea
+                                                                    className="pc-input-modern-v2"
+                                                                    style={{ minHeight: '76px', resize: 'vertical' }}
+                                                                    value={response.content || ''}
+                                                                    onChange={e => updatePanelCannedResponse(activePanel.id, index, { content: e.target.value })}
+                                                                    placeholder={t('tickets.canned_placeholder')}
+                                                                />
+                                                                <button type="button" onClick={() => removePanelCannedResponse(activePanel.id, index)} className="pc-btn-icon-danger-v2">
+                                                                    <Trash2 size={18} />
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    ))
+                                                )}
                                             </div>
                                         </div>
                                     </section>

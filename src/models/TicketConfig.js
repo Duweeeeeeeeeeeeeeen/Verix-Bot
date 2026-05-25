@@ -121,6 +121,15 @@ const ticketConfigSchema = new mongoose.Schema({
             messageId: { type: String, default: null },
             inputType: { type: String, enum: ['BUTTONS', 'SELECT'], default: 'BUTTONS' },
             categories: { type: [String], default: [] },
+            staffRoleIds: { type: [String], default: [] },
+            categoryOpenId: { type: String, default: null },
+            categoryClosedId: { type: String, default: null },
+            logChannelId: { type: String, default: null },
+            closeMode: { type: String, enum: ['MOVE', 'DELETE'], default: 'DELETE' },
+            cannedResponses: [{
+                label: { type: String, required: true },
+                content: { type: String, required: true }
+            }],
             embed: {
                 title: { type: String, default: 'Centro Supporto' },
                 description: { type: String, default: 'Hai bisogno di aiuto? Apri un ticket selezionando la categoria corretta.' },

@@ -17,6 +17,52 @@ import StaffStatsService from '../../../services/staffStatsService.js';
 import { t } from '../../../locales/t.js';
 import { resolveSystemMessage } from '../../../utils/messageResolver.js';
 
+function getConfigValue(config, key, panelId = null) {
+    const panel = panelId && Array.isArray(config.panels)
+        ? config.panels.find(p => p.id === panelId)
+        : null;
+
+    if (panel && panel[key] !== undefined && panel[key] !== null && panel[key] !== '') {
+        if (Array.isArray(panel[key]) && panel[key].length === 0) return config[key];
+        return panel[key];
+    }
+
+    return config[key];
+}
+
+function getPanelIdFromTicket(ticket) {
+    const metadata = ticket?.metadata;
+    if (!metadata) return null;
+    if (metadata instanceof Map) return metadata.get('panelId') || null;
+    return metadata.panelId || null;
+}
+
+function parseTicketCreateInteraction(interaction, customId) {
+    if (interaction.isStringSelectMenu() && customId.startsWith('ticket_create_select')) {
+        const [, panelId = null] = customId.split('::');
+        return {
+            type: interaction.values[0].replace('ticket_type_', ''),
+            panelId
+        };
+    }
+
+    if (!interaction.isButton()) return { type: null, panelId: null };
+
+    if (customId.startsWith('ticket_type::')) {
+        const [, panelId = null, ...typeParts] = customId.split('::');
+        return { type: typeParts.join('::'), panelId };
+    }
+
+    if (customId.startsWith('ticket_type_') || customId.startsWith('ticket_create_btn_')) {
+        return {
+            type: customId.replace('ticket_type_', '').replace('ticket_create_btn_', ''),
+            panelId: null
+        };
+    }
+
+    return { type: null, panelId: null };
+}
+
 export default {
     name: Events.InteractionCreate,
     async execute(interaction, client) {
@@ -31,7 +77,7 @@ export default {
         logger.debug(`[TICKET_INTERACTION] User: ${interaction.user.tag} | CustomID: ${customId}`);
 
         // Reset select menu in panel message to its placeholder state immediately (to allow selecting the same category again)
-        if (interaction.isStringSelectMenu() && customId === 'ticket_create_select') {
+        if (interaction.isStringSelectMenu() && customId.startsWith('ticket_create_select')) {
             interaction.message.edit({
                 components: interaction.message.components
             }).catch(() => {});
@@ -59,12 +105,7 @@ export default {
             const lang = globalConfig?.language || 'en';
 
             // --- 1. TICKET CATEGORY EXTRACTION ---
-            let type = null;
-            if (interaction.isStringSelectMenu() && customId === 'ticket_create_select') {
-                type = interaction.values[0].replace('ticket_type_', '');
-            } else if (interaction.isButton() && (customId.startsWith('ticket_type_') || customId.startsWith('ticket_create_btn_'))) {
-                type = customId.replace('ticket_type_', '').replace('ticket_create_btn_', '');
-            }
+            const { type, panelId } = parseTicketCreateInteraction(interaction, customId);
 
             if (type) {
                 const typeConfig = (config.typesConfig instanceof Map 
@@ -94,14 +135,15 @@ export default {
                     });
                 }
 
-                return createTicket(interaction, type, config, { priority: 'NORMALE' });
+                return createTicket(interaction, type, config, { priority: 'NORMALE', panelId });
             }
 
             // --- 4. PRODUCTIVITY TOOLS & MODALS ---
             const ticket = await Ticket.findOne({ channelId: interaction.channel.id });
             
             // Robust staff check (handles both string IDs and object IDs from older dashboard saves)
-            const staffRoleIds = (Array.isArray(config.staffRoleIds) ? config.staffRoleIds : [])
+            const ticketPanelId = getPanelIdFromTicket(ticket);
+            const staffRoleIds = (Array.isArray(getConfigValue(config, 'staffRoleIds', ticketPanelId)) ? getConfigValue(config, 'staffRoleIds', ticketPanelId) : [])
                 .map(r => typeof r === 'string' ? r : (r.id || r._id || String(r)));
             
             const userRoles = interaction.member.roles.cache || interaction.member.roles;
@@ -113,8 +155,6 @@ export default {
                            interaction.guild.ownerId === interaction.user.id || 
                            hasStaffRole;
             
-            const isAssigned = ticket.assignedStaffId === interaction.user.id;
-
             if (interaction.isButton() || interaction.isStringSelectMenu()) {
                 if (!ticket) {
                     if (interaction.deferred) return messageService.reply(interaction, 'tickets', 'generic_error', { reason: 'Ticket not found in the database.' }, { ephemeral: true });
@@ -144,7 +184,8 @@ export default {
 
                 // QUICK REPLIES
                 if (customId === 'tk_quick_reply') {
-                    if (!config.cannedResponses || !config.cannedResponses.length) {
+                    const cannedResponses = getConfigValue(config, 'cannedResponses', ticketPanelId) || [];
+                    if (!cannedResponses.length) {
                         return interaction.editReply({ content: resolveSystemMessage(config, 'tickets', 'no_quick_replies', lang) });
                     }
 
@@ -152,7 +193,7 @@ export default {
                         new StringSelectMenuBuilder()
                             .setCustomId('tk_quick_reply_send')
                             .setPlaceholder(resolveSystemMessage(config, 'tickets', 'quick_reply_placeholder', lang))
-                            .addOptions(config.cannedResponses.map(r => ({ label: r.label, value: r.label })))
+                            .addOptions(cannedResponses.map(r => ({ label: r.label, value: r.label })))
                     );
                     const embed = await messageService.get(interaction.guild.id, 'tickets', 'quick_reply_menu', {});
                     return interaction.editReply({ embeds: [embed], components: [menu] });
@@ -160,7 +201,8 @@ export default {
 
                 if (interaction.isStringSelectMenu() && customId === 'tk_quick_reply_send') {
                     const label = interaction.values[0];
-                    const template = config.cannedResponses.find(r => r.label === label);
+                    const cannedResponses = getConfigValue(config, 'cannedResponses', ticketPanelId) || [];
+                    const template = cannedResponses.find(r => r.label === label);
                     if (!template) return interaction.editReply({ content: 'Template not found.' });
 
                     const permCheck = checkBotPermissions(interaction.channel, [PermissionFlagsBits.SendMessages]);
@@ -198,8 +240,12 @@ export default {
                     if (!ticket.tags.includes(tag)) ticket.tags.push(tag);
                     await ticket.save();
 
-                    const staffRoles = (config.staffRoleIds || []).map(id => interaction.guild.roles.cache.get(id)).filter(r => r);
-                    await renderTicketDashboard(interaction.channel, ticket, config, config.typesConfig.get(ticket.type), interaction.user, staffRoles, true);
+                    const dashboardStaffRoleIds = getConfigValue(config, 'staffRoleIds', ticketPanelId) || [];
+                    const staffRoles = dashboardStaffRoleIds.map(id => interaction.guild.roles.cache.get(id)).filter(r => r);
+                    const typeConfig = (config.typesConfig instanceof Map 
+                        ? config.typesConfig.get(ticket.type) 
+                        : config.typesConfig?.[ticket.type]);
+                    await renderTicketDashboard(interaction.channel, ticket, config, typeConfig, interaction.user, staffRoles, true);
                     return messageService.reply(interaction, 'tickets', 'note_success', { reason: 'Tag added' }, { ephemeral: true });
                 }
 
@@ -218,7 +264,8 @@ export default {
                     await messageService.reply(interaction, 'tickets', 'claim_success', {});
                     
                     interaction.channel.setName(`claimed-${interaction.channel.name}`).catch(() => {});
-                    const staffRoles = (config.staffRoleIds || []).map(id => interaction.guild.roles.cache.get(id)).filter(r => r);
+                    const dashboardStaffRoleIds = getConfigValue(config, 'staffRoleIds', ticketPanelId) || [];
+                    const staffRoles = dashboardStaffRoleIds.map(id => interaction.guild.roles.cache.get(id)).filter(r => r);
                     const typeConfig = (config.typesConfig instanceof Map 
                         ? config.typesConfig.get(ticket.type) 
                         : config.typesConfig?.[ticket.type]);
@@ -227,8 +274,9 @@ export default {
 
                 // Standard buttons (CLOSE)
                 if (customId === 'tk_close') {
-                    const logChannel = config.logChannelId ? interaction.guild.channels.cache.get(config.logChannelId) : null;
-                    const closeMode = config.closeMode || 'DELETE';
+                    const logChannelId = getConfigValue(config, 'logChannelId', ticketPanelId);
+                    const logChannel = logChannelId ? interaction.guild.channels.cache.get(logChannelId) : null;
+                    const closeMode = getConfigValue(config, 'closeMode', ticketPanelId) || 'DELETE';
 
                     if (closeMode === 'DELETE' && logChannel) {
                         const logPermCheck = checkBotPermissions(logChannel, [PermissionFlagsBits.SendMessages, PermissionFlagsBits.EmbedLinks, PermissionFlagsBits.AttachFiles]);
@@ -237,7 +285,8 @@ export default {
                         }
                     }
 
-                    if (closeMode === 'MOVE' && !config.categoryClosedId) {
+                    const categoryClosedId = getConfigValue(config, 'categoryClosedId', ticketPanelId);
+                    if (closeMode === 'MOVE' && !categoryClosedId) {
                         return interaction.editReply({ content: 'Closed-ticket category is not configured in the dashboard.' });
                     }
 
@@ -268,7 +317,7 @@ export default {
                     if (closeMode === 'MOVE') {
                         try {
                             const newName = `closed-${interaction.channel.name}`.substring(0, 100);
-                            await interaction.channel.setParent(config.categoryClosedId, { lockPermissions: false });
+                            await interaction.channel.setParent(categoryClosedId, { lockPermissions: false });
                             await interaction.channel.setName(newName);
                             await interaction.channel.permissionOverwrites.edit(ticket.userId, { ViewChannel: false });
 
@@ -332,10 +381,12 @@ async function createTicket(interaction, type, config, metadata = {}) {
             ? config.typesConfig.get(type) 
             : config.typesConfig?.[type]) || { color: '#3498db', emoji: '🎫' };
 
-        const staffRoles = (config.staffRoleIds || []).map(id => guild.roles.cache.get(id)).filter(r => r);
+        const panelId = metadata.panelId || null;
+        const staffRoleIds = getConfigValue(config, 'staffRoleIds', panelId) || [];
+        const staffRoles = staffRoleIds.map(id => guild.roles.cache.get(id)).filter(r => r);
         
         // --- CATEGORY VALIDATION ---
-        const categoryId = config.categoryOpenId;
+        const categoryId = getConfigValue(config, 'categoryOpenId', panelId);
         const parentCategory = categoryId ? guild.channels.cache.get(categoryId) : null;
         
         if (categoryId && !parentCategory) {
