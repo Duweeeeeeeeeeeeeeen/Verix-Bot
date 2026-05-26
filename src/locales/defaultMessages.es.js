@@ -192,7 +192,62 @@ export default {
         bg_story_title: 'Historia del Personaje de {user}',
         written_archive_title: 'Respuestas Escritas de {user}',
         bg_link_label: 'Enlace de Background',
-        bg_link_value: '[Abrir Documento]({link})'
+        bg_link_value: '[Abrir Documento]({link})',
+        edit_closed: {
+            title: 'Edición Cerrada',
+            description: 'El menú de edición se ha cerrado. Ahora puedes continuar.',
+            color: '#2ecc71'
+        },
+        edit_error: {
+            title: 'Error de Edición',
+            description: 'No se pudo editar tu respuesta. {reason}',
+            color: '#e74c3c'
+        },
+        edit_menu: {
+            title: 'Editar Solicitud',
+            description: 'Selecciona la respuesta que deseas editar del menú de abajo.',
+            color: '#3498db'
+        },
+        edit_success: {
+            title: 'Respuesta Actualizada',
+            description: 'Tu respuesta a la pregunta **{index}** se ha guardado correctamente.',
+            color: '#2ecc71'
+        },
+        promote_vip_success: {
+            title: 'Prioridad Actualizada',
+            description: 'El usuario <@{userId}> ha sido movido al frente de la cola.',
+            color: '#2ecc71'
+        },
+        session_cancelled: {
+            title: 'Sesión Cancelada',
+            description: 'La sesión ha sido cancelada. Este canal se eliminará en **{time}**.',
+            color: '#e74c3c'
+        },
+        session_not_found: {
+            title: 'Sesión No Encontrada',
+            description: 'No se pudo encontrar la sesión solicitada.',
+            color: '#e74c3c'
+        },
+        setup_success: {
+            title: 'Whitelist Configurada',
+            description: 'El panel de whitelist se ha configurado correctamente.',
+            color: '#2ecc71'
+        },
+        skip_error_no_session: {
+            title: 'Sin Sesión Activa',
+            description: 'No hay ninguna sesión de voz activa para saltar.',
+            color: '#e74c3c'
+        },
+        skip_success: {
+            title: 'Sesión Saltada',
+            description: 'La sesión de voz actual ha sido saltada.',
+            color: '#3498db'
+        },
+        voice_guide: {
+            title: 'Guía de Entrevista de Voz',
+            description: 'Estás evaluando al usuario **<@{userId}>**. Usa los controles de abajo para aprobar o rechazar la entrevista.',
+            color: '#3498db'
+        }
     },
     background: {
         panel: {
@@ -482,7 +537,27 @@ export default {
         },
         status_none: 'Ninguno',
         owner_field: '👑 Propietario',
-        limit_field: '👥 Límite'
+        limit_field: '👥 Límite',
+        dm_accepted: {
+            title: 'Entrevista de Voz Aprobada',
+            description: '¡Felicidades {user}! Tu entrevista de voz para **{guild}** ha sido aprobada.',
+            color: '#2ecc71'
+        },
+        dm_rejected: {
+            title: 'Entrevista de Voz Rechazada',
+            description: 'Tu entrevista de voz para **{guild}** no ha sido aprobada.\n\n**Motivo:** {reason}',
+            color: '#e74c3c'
+        },
+        staff_approved: {
+            title: 'Evaluación de Voz Aprobada',
+            description: 'El usuario **<@{userId}>** ha sido aprobado por **{staff}**.',
+            color: '#2ecc71'
+        },
+        staff_denied: {
+            title: 'Evaluación de Voz Rechazada',
+            description: 'El usuario **<@{userId}>** ha sido rechazado por **{staff}**.\n\n**Motivo:** {reason}',
+            color: '#e74c3c'
+        }
     },
     moderation: {
         no_reason: 'Sin motivo proporcionado',

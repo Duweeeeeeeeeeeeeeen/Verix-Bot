@@ -192,7 +192,62 @@ export default {
         bg_story_title: 'Histoire du Personnage de {user}',
         written_archive_title: 'Réponses Écrites de {user}',
         bg_link_label: 'Lien du Background',
-        bg_link_value: '[Ouvrir le Document]({link})'
+        bg_link_value: '[Ouvrir le Document]({link})',
+        edit_closed: {
+            title: 'Édition Fermée',
+            description: 'Le menu d\'édition a été fermé. Vous pouvez maintenant continuer.',
+            color: '#2ecc71'
+        },
+        edit_error: {
+            title: 'Erreur d\'Édition',
+            description: 'Impossible de modifier votre réponse. {reason}',
+            color: '#e74c3c'
+        },
+        edit_menu: {
+            title: 'Modifier la Demande',
+            description: 'Sélectionnez la réponse que vous souhaitez modifier dans le menu ci-dessous.',
+            color: '#3498db'
+        },
+        edit_success: {
+            title: 'Réponse Mise à Jour',
+            description: 'Votre réponse à la question **{index}** a été enregistrée avec succès.',
+            color: '#2ecc71'
+        },
+        promote_vip_success: {
+            title: 'Priorité Mise à Jour',
+            description: 'L\'utilisateur <@{userId}> a été déplacé en tête de file.',
+            color: '#2ecc71'
+        },
+        session_cancelled: {
+            title: 'Session Annulée',
+            description: 'La session a été annulée. Ce salon sera supprimé dans **{time}**.',
+            color: '#e74c3c'
+        },
+        session_not_found: {
+            title: 'Session Introuvable',
+            description: 'La session demandée est introuvable.',
+            color: '#e74c3c'
+        },
+        setup_success: {
+            title: 'Whitelist Configurée',
+            description: 'Le panneau de la whitelist a été configuré avec succès.',
+            color: '#2ecc71'
+        },
+        skip_error_no_session: {
+            title: 'Aucune Session Active',
+            description: 'Il n\'y a aucune session vocale active à passer.',
+            color: '#e74c3c'
+        },
+        skip_success: {
+            title: 'Session Passée',
+            description: 'La session vocale actuelle a été passée.',
+            color: '#3498db'
+        },
+        voice_guide: {
+            title: 'Guide d\'Entretien Vocal',
+            description: 'Vous évaluez l\'utilisateur **<@{userId}>**. Utilisez les commandes ci-dessous pour approuver ou rejeter l\'entretien.',
+            color: '#3498db'
+        }
     },
     background: {
         panel: {
@@ -482,7 +537,27 @@ export default {
         },
         status_none: 'Aucun',
         owner_field: '👑 Propriétaire',
-        limit_field: '👥 Limite'
+        limit_field: '👥 Limite',
+        dm_accepted: {
+            title: 'Entretien Vocal Approuvé',
+            description: 'Félicitations {user} ! Votre entretien vocal pour **{guild}** a été approuvé.',
+            color: '#2ecc71'
+        },
+        dm_rejected: {
+            title: 'Entretien Vocal Rejeté',
+            description: 'Votre entretien vocal pour **{guild}** n\'a pas été approuvé.\n\n**Raison :** {reason}',
+            color: '#e74c3c'
+        },
+        staff_approved: {
+            title: 'Évaluation Vocale Approuvée',
+            description: 'L\'utilisateur **<@{userId}>** a été approuvé par **{staff}**.',
+            color: '#2ecc71'
+        },
+        staff_denied: {
+            title: 'Évaluation Vocale Rejetée',
+            description: 'L\'utilisateur **<@{userId}>** a été rejeté par **{staff}**.\n\n**Raison :** {reason}',
+            color: '#e74c3c'
+        }
     },
     moderation: {
         no_reason: 'Aucune raison fournie',
