@@ -54,13 +54,16 @@ export default function WhitelistConfig() {
     fetchData();
   }, [guildId, mounted]);
 
+  const isIntegratedBackgroundFlow = ['BG_TEXT', 'BG_VOICE', 'FULL'].includes(config?.mode);
+
   const handleSendPanel = async () => {
     const isBg = activeTab === 'background';
-    const targetChannel = isBg ? bgConfig?.panelChannelId : config.panelChannelId;
+    const shouldSendIntegratedPanel = isBg && isIntegratedBackgroundFlow;
+    const targetChannel = shouldSendIntegratedPanel ? config.panelChannelId : (isBg ? bgConfig?.panelChannelId : config.panelChannelId);
     if (!targetChannel) return window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('whitelist.panel_channel_error') || 'Canale non impostato!', type: 'error' } }));
     setSendingPanel(true);
     try {
-      const endpoint = isBg ? `/config/${guildId}/background/send-panel` : `/config/${guildId}/whitelist/send-panel`;
+      const endpoint = shouldSendIntegratedPanel || !isBg ? `/config/${guildId}/whitelist/send-panel` : `/config/${guildId}/background/send-panel`;
       await api.request(endpoint, { method: 'POST' });
       window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('whitelist.panel_success') || 'Pannello inviato!', type: 'success' } }));
     } catch (e) {
@@ -74,10 +77,15 @@ export default function WhitelistConfig() {
     setSaving(true);
     window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
     try {
+      const normalizedBgConfig = {
+        ...bgConfig,
+        entryPoint: isIntegratedBackgroundFlow ? 'INTEGRATED' : (bgConfig?.entryPoint || 'PANEL')
+      };
       await Promise.all([
         api.request(`/config/${guildId}/whitelist`, { method: 'POST', body: JSON.stringify(config) }),
-        api.request(`/config/${guildId}/background`, { method: 'POST', body: JSON.stringify(bgConfig) })
+        api.request(`/config/${guildId}/background`, { method: 'POST', body: JSON.stringify(normalizedBgConfig) })
       ]);
+      setBgConfig(normalizedBgConfig);
       window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('whitelist.sync_success'), type: 'success' } }));
     } catch (error) {
        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('common.save_error'), type: 'error' } }));
@@ -162,8 +170,8 @@ export default function WhitelistConfig() {
                 <button
                     className="pc-btn-outline-v2"
                     onClick={handleSendPanel}
-                    disabled={sendingPanel || (activeTab === 'background' ? !bgConfig?.panelChannelId : !config.panelChannelId)}
-                    title={activeTab === 'background' ? t('whitelist.send_panel_bg') : t('whitelist.send_panel_wl')}
+                    disabled={sendingPanel || ((activeTab === 'background' && !isIntegratedBackgroundFlow) ? !bgConfig?.panelChannelId : !config.panelChannelId)}
+                    title={(activeTab === 'background' && !isIntegratedBackgroundFlow) ? t('whitelist.send_panel_bg') : t('whitelist.send_panel_wl')}
                     style={{ color: 'var(--primary)', borderColor: sendingPanel ? 'var(--border)' : 'rgba(var(--primary-rgb), 0.2)' }}
                 >
                     {sendingPanel ? <RotateCcw size={18} className="animate-spin" /> : <Send size={18} />}

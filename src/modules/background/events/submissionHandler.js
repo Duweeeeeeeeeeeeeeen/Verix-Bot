@@ -32,6 +32,16 @@ export default {
                 const wlConfig = await WhitelistConfig.findOne({ guildId: interaction.guild.id });
                 if (!wlConfig) return messageService.reply(interaction, 'whitelist', 'not_configured', {}, { ephemeral: true });
 
+                const bgApproved = await Background.findOne({
+                    channelId: channel.id,
+                    userId: interaction.user.id,
+                    guildId: interaction.guild.id,
+                    status: 'ACCEPTED'
+                });
+                if (!bgApproved) {
+                    return messageService.reply(interaction, 'background', 'error', { reason: 'Background approval is required before starting the written test.' }, { ephemeral: true });
+                }
+
                 const { startWrittenSession } = await import('../../whitelist/utils/sessionHandler.js');
                 
                 await messageService.reply(interaction, 'whitelist', 'start_success', { channelId: channel.id }, { ephemeral: true });

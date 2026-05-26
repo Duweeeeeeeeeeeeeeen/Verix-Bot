@@ -5,6 +5,7 @@ import Guild from '../../../models/Guild.js';
 import User from '../../../models/User.js';
 import { buildEmbed } from '../../../utils/embedHelper.js';
 import logger from '../../../utils/logger.js';
+import messageService from '../../../utils/messageService.js';
 
 export default {
     name: Events.InteractionCreate,
