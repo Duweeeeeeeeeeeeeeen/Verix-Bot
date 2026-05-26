@@ -196,6 +196,7 @@ export default {
         },
         bg_story_title: 'Storia del Personaggio di {user}',
         written_archive_title: 'Risposte Scritte di {user}',
+        voice_staff_present: 'Staff presente',
         bg_link_label: 'Link del Background',
         bg_link_value: '[Apri Documento]({link})',
         confirm_btn: 'Conferma Candidatura',
@@ -557,7 +558,9 @@ export default {
         },
         status_none: 'Nessuno',
         owner_field: '👑 Proprietario',
-        limit_field: '👥 Limite'
+        limit_field: '👥 Limite',
+        rejection_modal_title: 'Rifiuto colloquio orale',
+        rejection_modal_label: 'Motivo del rifiuto'
     },
     moderation: {
         no_reason: 'Nessun motivo fornito',

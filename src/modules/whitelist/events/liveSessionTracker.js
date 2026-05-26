@@ -3,6 +3,8 @@ import WhitelistConfig from '../../../models/WhitelistConfig.js';
 import VoiceQueue from '../../../models/VoiceQueue.js';
 import { updateDashboard } from '../utils/voiceDashboard.js';
 import logger from '../../../utils/logger.js';
+import GlobalConfig from '../../../models/GlobalConfig.js';
+import { t } from '../../../locales/t.js';
 
 export default {
     name: Events.VoiceStateUpdate,
@@ -30,6 +32,8 @@ export default {
 
             // Find the staff log message and update it
             if (config.logChannelId) {
+                const globalConfig = await GlobalConfig.findOne({ guildId: guild.id });
+                const lang = globalConfig?.language || 'en';
                 const logChannel = guild.channels.cache.get(config.logChannelId);
                 if (logChannel) {
                     // We need to find the specific message. 
@@ -43,7 +47,7 @@ export default {
                             .setColor('#3498db')
                             .addFields([
                                 { name: '👮 Staff Presente', value: `${member}`, inline: true },
-                                { name: '⏱️ Inizio Colloquio', value: `<t:${Math.floor(Date.now() / 1000)}:R>`, inline: true }
+                                { name: `⏱️ ${t('common.start_time', lang)}`, value: `<t:${Math.floor(Date.now() / 1000)}:R>`, inline: true }
                             ]);
 
                         await targetMsg.edit({ embeds: [newEmbed] });

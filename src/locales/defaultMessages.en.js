@@ -257,6 +257,7 @@ export default {
         "start_written": "Start Written Test",
         "bg_story_title": "Character Story of {user}",
         "written_archive_title": "Written Answers of {user}",
+        "voice_staff_present": "Staff Present",
         "bg_link_label": "Background Link",
         "bg_link_value": "[Open Document]({link})",
         "confirm_btn": "Confirm Application",
@@ -654,7 +655,9 @@ export default {
             "title": "Voice Review Rejected",
             "description": "User **<@{userId}>** was rejected by **{staff}**.\n\n**Reason:** {reason}",
             "color": "#e74c3c"
-        }
+        },
+        "rejection_modal_title": "Voice Interview Rejection",
+        "rejection_modal_label": "Rejection reason"
     },
     "moderation": {
         "no_reason": "No reason provided",

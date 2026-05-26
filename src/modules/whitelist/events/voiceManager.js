@@ -15,6 +15,48 @@ import GlobalConfig from '../../../models/GlobalConfig.js';
 import { t } from '../../../locales/t.js';
 
 const antiSpam = new Map();
+const DEFAULT_BUTTON_LABELS = {
+    approve: ['Accetta', 'Accept', 'Aceptar', 'Accepter', 'Approve'],
+    deny: ['Rifiuta', 'Reject', 'Rechazar', 'Rejeter', 'Deny'],
+    reset: ['Riavvia Timer', 'Reset Timer', 'Reiniciar Timer', 'Redemarrer le minuteur', 'Redémarrer le minuteur']
+};
+
+function resolveVoiceButton(buttons = {}, key, lang) {
+    const defaults = {
+        approve: { label: t('background.approve_btn', lang), emoji: '✅', style: 'SUCCESS' },
+        deny: { label: t('background.deny_btn', lang), emoji: '❌', style: 'DANGER' },
+        reset: { label: t('common.reset_timer', lang), emoji: '⏱️', style: 'SECONDARY' }
+    };
+    const configured = buttons[key] || {};
+    const configuredLabel = configured.label?.trim();
+    const label = configuredLabel && !DEFAULT_BUTTON_LABELS[key]?.includes(configuredLabel)
+        ? configuredLabel
+        : defaults[key].label;
+
+    return {
+        label,
+        emoji: configured.emoji || defaults[key].emoji,
+        style: configured.style || defaults[key].style
+    };
+}
+
+function buildVoiceGuideEmbed(config, lang, placeholders, brandingOptions = {}) {
+    const embed = buildEmbed({
+        title: t('whitelist.voice_guide.title', lang),
+        description: t('whitelist.voice_guide.description', lang, placeholders),
+        color: config.colors?.primary || config.embeds?.voice_guide?.color || '#3498db'
+    }, placeholders, { ...config, ...brandingOptions });
+
+    if (embed) {
+        embed.setFields([]);
+        embed.addFields({
+            name: `⏱️ ${t('common.start_time', lang)}`,
+            value: placeholders.start_time
+        });
+    }
+
+    return embed;
+}
 
 export default {
     name: Events.VoiceStateUpdate,
@@ -200,6 +242,12 @@ export default {
  * Starts a new voice session for a member.
  */
 async function startVoiceSession(member, guild, config, client, lang) {
+    const guildData = await Guild.findOne({ guildId: guild.id }).select('isPremium premiumTier hideBranding').lean();
+    const brandingOptions = {
+        isPremium: !!guildData?.isPremium || ['premium', 'platinum'].includes(guildData?.premiumTier),
+        hideBranding: !!guildData?.hideBranding
+    };
+
     // Increment session counter and fetch the new number
     const updatedConfig = await WhitelistConfig.findOneAndUpdate(
         { guildId: guild.id },
@@ -311,16 +359,22 @@ async function startVoiceSession(member, guild, config, client, lang) {
     }
 
     // Send Control Panel in the Temp VC (Text-in-Voice)
-    const controlEmbed = buildEmbed(config.embeds.voice_guide, {
+    const startTime = `<t:${Math.floor(Date.now() / 1000)}:R>`;
+    const controlEmbed = buildVoiceGuideEmbed(config, lang, {
+        userId: member.id,
         user: member.user,
-        start_time: `<t:${Math.floor(Date.now() / 1000)}:R>`
-    }, config);
+        start_time: startTime
+    }, brandingOptions);
 
     if (controlEmbed) {
         // Enforce a completely clean guide embed overriding whatever old broken configurations are in the DB
-        controlEmbed.setDescription(null);
+        controlEmbed.setDescription(t('whitelist.voice_guide.description', lang, { userId: member.id, user: member.user, start_time: startTime }));
         controlEmbed.setFields([]); // Remove all old broken fields
         controlEmbed.addFields({ name: '⏱️ ' + t('common.start_time', lang), value: `<t:${Math.floor(Date.now() / 1000)}:R>` });
+    }
+
+    if (controlEmbed) {
+        controlEmbed.setFields([{ name: `Timer - ${t('common.start_time', lang)}`, value: startTime }]);
     }
 
     const recapEmbed = new EmbedBuilder()
@@ -329,22 +383,25 @@ async function startVoiceSession(member, guild, config, client, lang) {
         .setColor(config.colors?.primary || '#3BA4FF');
 
     const buttons = config.voiceSettings.voiceButtons || {};
+    const approveButton = resolveVoiceButton(buttons, 'approve', lang);
+    const denyButton = resolveVoiceButton(buttons, 'deny', lang);
+    const resetButton = resolveVoiceButton(buttons, 'reset', lang);
     const controlRow = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
             .setCustomId(`approve_voice_${member.id}`)
-            .setLabel(buttons.approve?.label || t('background.approve_btn', lang))
-            .setEmoji(buttons.approve?.emoji || '✅')
-            .setStyle(getButtonStyle(buttons.approve?.style)),
+            .setLabel(approveButton.label)
+            .setEmoji(approveButton.emoji)
+            .setStyle(getButtonStyle(approveButton.style)),
         new ButtonBuilder()
             .setCustomId(`deny_voice_${member.id}`)
-            .setLabel(buttons.deny?.label || t('background.deny_btn', lang))
-            .setEmoji(buttons.deny?.emoji || '❌')
-            .setStyle(getButtonStyle(buttons.deny?.style)),
+            .setLabel(denyButton.label)
+            .setEmoji(denyButton.emoji)
+            .setStyle(getButtonStyle(denyButton.style)),
         new ButtonBuilder()
             .setCustomId(`reset_timer_voice_${member.id}`)
-            .setLabel(buttons.reset?.label || t('common.reset_timer', lang))
-            .setEmoji(buttons.reset?.emoji || '⏱️')
-            .setStyle(getButtonStyle(buttons.reset?.style))
+            .setLabel(resetButton.label)
+            .setEmoji(resetButton.emoji)
+            .setStyle(getButtonStyle(resetButton.style))
     );
 
     if (controlEmbed) {

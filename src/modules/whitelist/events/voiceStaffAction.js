@@ -10,6 +10,14 @@ import messageService from '../../../utils/messageService.js';
 import GlobalConfig from '../../../models/GlobalConfig.js';
 import { t } from '../../../locales/t.js';
 
+function buildVoiceGuideEmbed(lang, userId, startTime, color = '#3498db') {
+    return new EmbedBuilder()
+        .setTitle(t('whitelist.voice_guide.title', lang))
+        .setDescription(t('whitelist.voice_guide.description', lang, { userId, start_time: startTime }))
+        .setColor(color)
+        .addFields({ name: `⏱️ ${t('common.start_time', lang)}`, value: startTime });
+}
+
 export default {
     name: Events.InteractionCreate,
     async execute(interaction, client) {
@@ -64,30 +72,30 @@ export default {
         if (interaction.isButton() && interaction.customId.startsWith('reset_timer_voice_')) {
             const userId = interaction.customId.split('_')[3];
             const now = new Date();
+            const globalConfig = await GlobalConfig.findOne({ guildId: interaction.guild?.id });
+            const lang = globalConfig?.language || 'en';
+            const config = await WhitelistConfig.findOne({ guildId: interaction.guild.id });
+            const startTime = `<t:${Math.floor(now.getTime() / 1000)}:R>`;
 
             await VoiceQueue.findOneAndUpdate(
                 { userId: userId, guildId: interaction.guild.id, status: 'ACTIVE' },
                 { staffJoinedAt: now }
             );
 
-            // Rebuild the guide embed to refresh the timer/placeholder if needed
-            const member = await interaction.guild.members.fetch(userId).catch(() => null);
-            const newEmbed = await messageService.get(interaction.guild.id, 'whitelist', 'voice_guide', {
-                userId: userId,
-                start_time: `<t:${Math.floor(now.getTime() / 1000)}:R>`
-            });
+            // Rebuild the guide embed from locale defaults, not stale DB content.
+            const newEmbed = buildVoiceGuideEmbed(lang, userId, startTime, config?.colors?.primary || '#3498db');
 
             if (newEmbed) {
-                newEmbed.addFields({ name: '⏱️ Inizio Colloquio', value: `<t:${Math.floor(now.getTime() / 1000)}:R>` });
+                newEmbed.setFields([{ name: `⏱️ ${t('common.start_time', lang)}`, value: startTime }]);
                 
                 const oldEmbeds = interaction.message.embeds;
                 const updatedEmbeds = [newEmbed];
                 if (oldEmbeds.length > 1) {
-                    updatedEmbeds.push(oldEmbeds[1]); // Retain the recap embed
+                    updatedEmbeds.push(...oldEmbeds.slice(1)); // Retain recap embeds
                 }
                 await interaction.update({ embeds: updatedEmbeds, content: null });
             } else {
-                await interaction.update({ content: `⏱️ Timer Riavviato: <t:${Math.floor(now.getTime() / 1000)}:R>` });
+                await interaction.update({ content: `${t('common.reset_timer', lang)}: ${startTime}` });
             }
             await updateDashboard(interaction.guild, client);
             return;
@@ -116,6 +124,7 @@ export default {
 
             if (action === 'approve') {
                 if (interaction.deferred || interaction.replied) return;
+                await interaction.deferUpdate();
 
                 // Mark Whitelist Application as ACCEPTED
                 await WhitelistApp.findOneAndUpdate(
@@ -171,17 +180,19 @@ export default {
                     staff: interaction.user.tag
                 });
                 
-                return interaction.update({ embeds: [replyEmbed], components: [], content: null });
+                return interaction.message.edit({ embeds: [replyEmbed], components: [], content: null });
             }
 
             if (action === 'deny') {
+                const globalConfig = await GlobalConfig.findOne({ guildId: interaction.guild?.id });
+                const lang = globalConfig?.language || 'en';
                 const modal = new ModalBuilder()
                     .setCustomId(`deny_voice_modal_${userId}`)
-                    .setTitle('Voice Whitelist Rejection Reason');
+                    .setTitle(t('voice.rejection_modal_title', lang));
 
                 const reasonInput = new TextInputBuilder()
                     .setCustomId('voice_rejection_reason')
-                    .setLabel('Enter the rejection reason')
+                    .setLabel(t('voice.rejection_modal_label', lang))
                     .setStyle(TextInputStyle.Paragraph)
                     .setRequired(true)
                     .setMinLength(10);

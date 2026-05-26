@@ -191,6 +191,7 @@ export default {
         start_written: 'Commencer le Test Écrit',
         bg_story_title: 'Histoire du Personnage de {user}',
         written_archive_title: 'Réponses Écrites de {user}',
+        voice_staff_present: 'Staff présent',
         bg_link_label: 'Lien du Background',
         bg_link_value: '[Ouvrir le Document]({link})',
         edit_closed: {
@@ -564,7 +565,9 @@ export default {
             title: 'Évaluation Vocale Rejetée',
             description: 'L\'utilisateur **<@{userId}>** a été rejeté par **{staff}**.\n\n**Raison :** {reason}',
             color: '#e74c3c'
-        }
+        },
+        rejection_modal_title: 'Refus de l\'entretien vocal',
+        rejection_modal_label: 'Raison du refus'
     },
     moderation: {
         no_reason: 'Aucune raison fournie',
