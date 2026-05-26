@@ -32,6 +32,8 @@ export default {
                 if (buttonId === 'confirm_wl') {
                     const config = await WhitelistConfig.findOne({ guildId: interaction.guild.id });
                     if (!config) return messageService.reply(interaction, 'whitelist', 'not_configured', {}, { ephemeral: true });
+                    const globalConfig = await GlobalConfig.findOne({ guildId: interaction.guild.id });
+                    const lang = globalConfig?.language || 'en';
                     
                     const logChannel = interaction.guild.channels.cache.get(config.logChannelId);
                     if (!logChannel) return messageService.reply(interaction, 'whitelist', 'not_configured', {}, { ephemeral: true });
@@ -96,13 +98,13 @@ export default {
 
                 const config = await WhitelistConfig.findOne({ guildId: interaction.guild.id });
                 if (!config) return messageService.reply(interaction, 'whitelist', 'not_configured', {}, { ephemeral: true });
+                const globalConfig = await GlobalConfig.findOne({ guildId: interaction.guild.id });
+                const lang = globalConfig?.language || 'en';
 
                 // Permission Check: Allow Server Administrator or users with configured staffRoleIds
                 const isUserAdmin = interaction.member.permissions.has('Administrator');
                 if (!isUserAdmin && config.staffRoleIds && config.staffRoleIds.length > 0) {
                     if (!interaction.member.roles.cache.some(role => config.staffRoleIds.includes(role.id))) {
-                        const globalConfig = await GlobalConfig.findOne({ guildId: interaction.guild?.id });
-                        const lang = globalConfig?.language || 'en';
                         return messageService.reply(interaction, 'whitelist', 'edit_error', { reason: t('system.no_permission.description', lang) }, { ephemeral: true });
                     }
                 }
@@ -156,20 +158,20 @@ export default {
                     });
 
                     // Update the staff embed to show status
-                    const dmStatus = 'Sent according to notification settings'; // Simplified since it now depends on config mode
+                    const dmStatus = t('common.sent', lang) || 'Sent'; // Simplified since it now depends on config mode
 
                     const originalEmbed = interaction.message.embeds[0];
                     if (originalEmbed) {
                         const updatedEmbed = EmbedBuilder.from(originalEmbed)
-                            .setTitle(isHybrid ? 'Written Step Approved' : 'Whitelist Approved')
+                            .setTitle(isHybrid ? t('whitelist.written_step_approved', lang) : t('whitelist.approved_title', lang))
                             .setColor(isHybrid ? '#f1c40f' : '#2ecc71') // Yellow for waiting, Green for done
                             .addFields(
-                                { name: 'Result', value: isHybrid ? `Written step approved by ${interaction.user.tag}` : `Approved by ${interaction.user.tag}` },
-                                { name: 'DM Notification', value: dmStatus, inline: true }
+                                { name: t('common.result', lang), value: isHybrid ? t('whitelist.written_step_approved_by', lang, { staff: interaction.user.tag }) : t('whitelist.approved_by', lang, { staff: interaction.user.tag }) },
+                                { name: t('whitelist.dm_notification', lang), value: dmStatus, inline: true }
                             );
 
                         if (isHybrid) {
-                            updatedEmbed.addFields({ name: 'Next Step', value: 'Waiting for voice interview', inline: true });
+                            updatedEmbed.addFields({ name: t('common.next_step', lang), value: t('whitelist.waiting_voice_interview', lang), inline: true });
                         }
 
                         await interaction.update({ embeds: [updatedEmbed], components: [] });
@@ -195,13 +197,13 @@ export default {
                     // Open Modal for Reason
                     const modal = new ModalBuilder()
                         .setCustomId(`deny_modal_${app._id}`)
-                        .setTitle('Whitelist Rejection Reason');
+                        .setTitle(t('whitelist.rejection_modal_title', lang));
 
                     const reasonInput = new TextInputBuilder()
                         .setCustomId('denial_reason')
-                        .setLabel('Enter the rejection reason')
+                        .setLabel(t('whitelist.rejection_modal_label', lang))
                         .setStyle(TextInputStyle.Paragraph)
-                        .setPlaceholder('Example: answers too short, requirements not met...')
+                        .setPlaceholder(t('whitelist.rejection_modal_placeholder', lang))
                         .setRequired(true)
                         .setMinLength(10)
                         .setMaxLength(500);
@@ -225,6 +227,8 @@ export default {
                 if (!app) return messageService.reply(interaction, 'whitelist', 'app_not_found', {}, { ephemeral: true });
 
                 const config = await WhitelistConfig.findOne({ guildId: interaction.guild.id });
+                const globalConfig = await GlobalConfig.findOne({ guildId: interaction.guild.id });
+                const lang = globalConfig?.language || 'en';
                 const user = await client.users.fetch(app.userId).catch(() => null);
 
                 app.status = 'REJECTED';
@@ -255,17 +259,17 @@ export default {
                 });
 
                 // Update the staff embed to show status
-                const dmStatus = 'Sent according to notification settings';
+                const dmStatus = t('common.sent', lang) || 'Sent';
 
                 const originalEmbed = interaction.message.embeds[0];
                 if (originalEmbed) {
                     const updatedEmbed = EmbedBuilder.from(originalEmbed)
-                        .setTitle('Whitelist Rejected')
+                        .setTitle(t('whitelist.rejected_title', lang))
                         .setColor('#e74c3c') // Red
                         .addFields(
-                            { name: 'Result', value: `Rejected by ${interaction.user.tag}` },
-                            { name: 'Reason', value: reason || 'No reason provided' },
-                            { name: 'DM Notification', value: dmStatus, inline: true }
+                            { name: t('common.result', lang), value: t('whitelist.rejected_by', lang, { staff: interaction.user.tag }) },
+                            { name: t('common.reason', lang), value: reason || t('common.no_reason', lang) },
+                            { name: t('whitelist.dm_notification', lang), value: dmStatus, inline: true }
                         );
 
                     await interaction.editReply({ embeds: [updatedEmbed], components: [] });

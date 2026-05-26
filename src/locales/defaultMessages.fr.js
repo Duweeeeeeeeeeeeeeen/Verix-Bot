@@ -192,6 +192,27 @@ export default {
         bg_story_title: 'Histoire du Personnage de {user}',
         written_archive_title: 'Réponses Écrites de {user}',
         voice_staff_present: 'Staff présent',
+        rejection_modal_title: 'Refus de candidature',
+        rejection_modal_label: 'Raison du refus',
+        rejection_modal_placeholder: 'Exemple : r?ponses trop courtes, pr?requis non respect?s...',
+        approved_title: 'Candidature approuv?e',
+        rejected_title: 'Candidature refus?e',
+        written_step_approved: '?tape ?crite approuv?e',
+        approved_by: 'Approuv?e par {staff}',
+        rejected_by: 'Refus?e par {staff}',
+        written_step_approved_by: '?tape ?crite approuv?e par {staff}',
+        waiting_voice_interview: 'En attente de l?entretien vocal',
+        dm_notification: 'Notification DM',
+        bg_not_accepted: 'Votre background n?a pas encore ?t? approuv?.',
+        written_not_accepted: 'Votre candidature ?crite n?a pas encore ?t? approuv?e.',
+        voice_rejection_cooldown: 'Vous devez attendre {hours} heure(s) avant de retenter un entretien vocal.',
+        vip_priority: 'Priorit? VIP active.',
+        voice_session_start_log: 'Session whitelist vocale d?marr?e pour {user} dans {channel}.',
+        no_written_found: 'Aucune r?ponse ?crite trouv?e.',
+        session_expired_title: 'Session expir?e',
+        session_expired_desc: 'Cette session de candidature a expir? et a ?t? ferm?e.',
+        time_expired_title: 'Temps ?coul?',
+        time_expired_desc: 'Le d?lai de candidature a expir?. D?marrez une nouvelle session si n?cessaire.',
         bg_link_label: 'Lien du Background',
         bg_link_value: '[Ouvrir le Document]({link})',
         edit_closed: {
@@ -571,6 +592,10 @@ export default {
     },
     moderation: {
         no_reason: 'Aucune raison fournie',
+        result: 'R?sultat',
+        reason: 'Raison',
+        next_step: '?tape suivante',
+        sent: 'Envoy?',
         error: {
             title: '❌ Erreur de Modération',
             description: 'Une erreur s\'est produite lors de l\'exécution de la commande.',
@@ -776,10 +801,19 @@ export default {
     },
     common: {
         no_reason: 'Aucune raison fournie',
+        result: 'R?sultat',
+        reason: 'Raison',
+        next_step: '?tape suivante',
+        sent: 'Envoy?',
         none: 'Aucun',
         loading: 'Chargement...',
         error: 'Une erreur s\'est produite.',
         immediately: 'immédiatement',
-        start_time: 'Heure de Début'
+        start_time: 'Heure de Début',
+        reset_timer: 'R?initialiser le minuteur',
+        antispam: 'Veuillez patienter avant de r?essayer.'
+    },
+    support: {
+        paused_reason: 'La file vocale est actuellement en pause.'
     }
 };

@@ -21,11 +21,17 @@ const DEFAULT_BUTTON_LABELS = {
     reset: ['Riavvia Timer', 'Reset Timer', 'Reiniciar Timer', 'Redemarrer le minuteur', 'Redémarrer le minuteur']
 };
 
+const VOICE_BUTTON_DEFAULTS = {
+    approve: { emoji: '✅', style: 'SUCCESS' },
+    deny: { emoji: '❌', style: 'DANGER' },
+    reset: { emoji: '⏱️', style: 'SECONDARY' }
+};
+
 function resolveVoiceButton(buttons = {}, key, lang) {
     const defaults = {
-        approve: { label: t('background.approve_btn', lang), emoji: '✅', style: 'SUCCESS' },
-        deny: { label: t('background.deny_btn', lang), emoji: '❌', style: 'DANGER' },
-        reset: { label: t('common.reset_timer', lang), emoji: '⏱️', style: 'SECONDARY' }
+        approve: { label: t('background.approve_btn', lang), ...VOICE_BUTTON_DEFAULTS.approve },
+        deny: { label: t('background.deny_btn', lang), ...VOICE_BUTTON_DEFAULTS.deny },
+        reset: { label: t('common.reset_timer', lang), ...VOICE_BUTTON_DEFAULTS.reset }
     };
     const configured = buttons[key] || {};
     const configuredLabel = configured.label?.trim();
@@ -50,7 +56,7 @@ function buildVoiceGuideEmbed(config, lang, placeholders, brandingOptions = {}) 
     if (embed) {
         embed.setFields([]);
         embed.addFields({
-            name: `⏱️ ${t('common.start_time', lang)}`,
+            name: `Time - ${t('common.start_time', lang)}`,
             value: placeholders.start_time
         });
     }
@@ -121,7 +127,7 @@ export default {
                 }
 
                 // 2. Background Prerequisite
-                const requiresBG = ['BG_VOICE', 'FULL'].includes(m) || config.flowRequirements.requireBackground;
+                const requiresBG = ['BG_VOICE', 'FULL'].includes(m) || config.flowRequirements?.requireBackground;
                 if (requiresBG) {
                     const bgApp = await Background.findOne({ userId: member.id, guildId: guild.id, status: 'ACCEPTED' });
                     if (!bgApp) {
@@ -130,7 +136,7 @@ export default {
                 }
 
                 // 3. Written WL Prerequisite
-                const requiresWritten = ['HYBRID', 'FULL'].includes(m) || config.flowRequirements.requireTextWL;
+                const requiresWritten = ['HYBRID', 'FULL'].includes(m) || config.flowRequirements?.requireTextWL;
                 if (requiresWritten) {
                     const textApp = await WhitelistApp.findOne({ 
                         userId: member.id, 
@@ -155,8 +161,8 @@ export default {
                 }
 
                 if (reasons.length > 0) {
-                    const errorEmbed = buildEmbed(config.embeds.voice_error_flow, { user: member.user, reason: reasons.join('\n') });
-                    await member.send({ embeds: [errorEmbed] }).catch(() => {});
+                    const errorEmbed = buildEmbed(config.embeds.voice_error_flow, { user: member.user, reason: reasons.join('\n') }, { ...config });
+                    if (errorEmbed) await member.send({ embeds: [errorEmbed] }).catch(() => {});
                     await member.voice.disconnect(t('whitelist.not_configured', lang));
                     return;
                 }
@@ -366,17 +372,6 @@ async function startVoiceSession(member, guild, config, client, lang) {
         start_time: startTime
     }, brandingOptions);
 
-    if (controlEmbed) {
-        // Enforce a completely clean guide embed overriding whatever old broken configurations are in the DB
-        controlEmbed.setDescription(t('whitelist.voice_guide.description', lang, { userId: member.id, user: member.user, start_time: startTime }));
-        controlEmbed.setFields([]); // Remove all old broken fields
-        controlEmbed.addFields({ name: '⏱️ ' + t('common.start_time', lang), value: `<t:${Math.floor(Date.now() / 1000)}:R>` });
-    }
-
-    if (controlEmbed) {
-        controlEmbed.setFields([{ name: `Timer - ${t('common.start_time', lang)}`, value: startTime }]);
-    }
-
     const recapEmbed = new EmbedBuilder()
         .setTitle(t('whitelist.written_archive_title', lang, { user: member.user.username }))
         .setDescription(recap)
@@ -415,26 +410,26 @@ async function startVoiceSession(member, guild, config, client, lang) {
     if (config.logChannelId) {
         const logChannel = guild.channels.cache.get(config.logChannelId);
         if (logChannel) {
-            const logEmbed = buildEmbed(config.embeds.voice_staff_log, { user: member.user, voice_channel: tempChannel.name });
+            const logEmbed = buildEmbed(config.embeds.voice_staff_log, { user: member.user, voice_channel: tempChannel.name }, { ...config, ...brandingOptions });
             const buttons = config.voiceSettings.voiceButtons || {};
             const row = new ActionRowBuilder().addComponents(
                 new ButtonBuilder()
                     .setCustomId(`approve_voice_${member.id}`)
                     .setLabel(buttons.approve?.label || t('background.approve_btn', lang))
-                    .setEmoji(buttons.approve?.emoji || '✅')
+                    .setEmoji(buttons.approve?.emoji || VOICE_BUTTON_DEFAULTS.approve.emoji)
                     .setStyle(getButtonStyle(buttons.approve?.style)),
                 new ButtonBuilder()
                     .setCustomId(`deny_voice_${member.id}`)
                     .setLabel(buttons.deny?.label || t('background.deny_btn', lang))
-                    .setEmoji(buttons.deny?.emoji || '❌')
+                    .setEmoji(buttons.deny?.emoji || VOICE_BUTTON_DEFAULTS.deny.emoji)
                     .setStyle(getButtonStyle(buttons.deny?.style))
             );
-            await logChannel.send({ embeds: [logEmbed], components: [row] });
+            if (logEmbed) await logChannel.send({ embeds: [logEmbed], components: [row] });
         }
     }
 
-    const startEmbed = buildEmbed(config.embeds.voice_waiting, { user: member.user });
-    await member.send({ embeds: [startEmbed] }).catch(() => {});
+    const startEmbed = buildEmbed(config.embeds.voice_waiting, { user: member.user }, { ...config, ...brandingOptions });
+    if (startEmbed) await member.send({ embeds: [startEmbed] }).catch(() => {});
 }
 
 /**

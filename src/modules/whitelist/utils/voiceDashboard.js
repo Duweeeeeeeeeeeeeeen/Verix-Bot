@@ -20,7 +20,7 @@ export async function getDashboard(guildId) {
 
     const embed = new EmbedBuilder()
         .setTitle('Voice Whitelist Control Center')
-        .setDescription(`**Stato**: ${status}\n**Uffici**: \`${activeSessions.length} / ${config.voiceSettings.maxConcurrent}\` | **In Coda**: \`${waitingQueue.length}\``)
+        .setDescription(`**Status**: ${status}\n**Rooms**: \`${activeSessions.length} / ${config.voiceSettings.maxConcurrent}\` | **Queue**: \`${waitingQueue.length}\``)
         .setColor(color)
         .setTimestamp();
 
@@ -28,7 +28,7 @@ export async function getDashboard(guildId) {
     if (activeSessions.length > 0) {
         const sessionList = activeSessions.map((s, i) => {
             const time = s.staffJoinedAt ? `<t:${Math.floor(s.staffJoinedAt.getTime() / 1000)}:R>` : 'Waiting for staff';
-            return `**${i + 1}.** <@${s.userId}> | Staff: ${s.staffId ? `<@${s.staffId}>` : '❌'} | *${time}*`;
+            return `**${i + 1}.** <@${s.userId}> | Staff: ${s.staffId ? `<@${s.staffId}>` : 'None'} | *${time}*`;
         }).join('\n');
         embed.addFields({ name: `Active Sessions`, value: sessionList || 'None', inline: false });
     }
@@ -36,7 +36,7 @@ export async function getDashboard(guildId) {
     // Queue
     if (waitingQueue.length > 0) {
         const queueList = waitingQueue.slice(0, 5).map((s, i) => {
-            return `**#${i + 1}.** <@${s.userId}> ${s.isVip ? '💎' : ''}`;
+            return `**#${i + 1}.** <@${s.userId}> ${s.isVip ? 'VIP' : ''}`;
         }).join('\n');
         embed.addFields({ name: `Next in Queue`, value: queueList || 'None', inline: true });
     }
@@ -44,7 +44,7 @@ export async function getDashboard(guildId) {
     // Recent Activity
     if (recentAudits.length > 0) {
         const history = recentAudits.map(a => {
-            const icon = a.action === 'ACCEPTED' ? '✅' : '❌';
+            const icon = a.action === 'ACCEPTED' ? 'OK' : 'NO';
             return `${icon} <@${a.userId}> by <@${a.staffId}> (<t:${Math.floor(a.timestamp.getTime() / 1000)}:R>)`;
         }).join('\n');
         embed.addFields({ name: 'Recent Actions', value: history || 'None', inline: false });
@@ -56,18 +56,15 @@ export async function getDashboard(guildId) {
     const btnRow = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
             .setCustomId('dashboard_refresh')
-            .setEmoji('🔄')
             .setLabel('Refresh')
             .setStyle(ButtonStyle.Secondary),
         new ButtonBuilder()
             .setCustomId(config.voiceSettings.paused ? 'dashboard_resume' : 'dashboard_pause')
             .setLabel(config.voiceSettings.paused ? 'Resume' : 'Pause')
-            .setEmoji(config.voiceSettings.paused ? '▶️' : '⏸️')
             .setStyle(config.voiceSettings.paused ? ButtonStyle.Success : ButtonStyle.Danger),
         new ButtonBuilder()
             .setCustomId('dashboard_skip')
             .setLabel('Skip Next')
-            .setEmoji('⏭️')
             .setStyle(ButtonStyle.Primary)
     );
     rows.push(btnRow);
@@ -78,7 +75,7 @@ export async function getDashboard(guildId) {
             .setCustomId('promote_user_to_top')
             .setPlaceholder('Move a user to the front of the queue...')
             .addOptions(waitingQueue.slice(0, 25).map(s => ({
-                label: `Porta in testa: User ${s.userId}`, // We can't fetch username easily here, but we'll use ID
+                label: `Move to front: User ${s.userId}`, // We can't fetch username easily here, but we'll use ID
                 value: s.userId
             })));
         

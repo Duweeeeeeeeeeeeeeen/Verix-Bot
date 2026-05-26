@@ -46,8 +46,8 @@ export default {
                         const newEmbed = EmbedBuilder.from(oldEmbed)
                             .setColor('#3498db')
                             .addFields([
-                                { name: '👮 Staff Presente', value: `${member}`, inline: true },
-                                { name: `⏱️ ${t('common.start_time', lang)}`, value: `<t:${Math.floor(Date.now() / 1000)}:R>`, inline: true }
+                                { name: `Staff - ${t('whitelist.voice_staff_present', lang)}`, value: `${member}`, inline: true },
+                                { name: `Time - ${t('common.start_time', lang)}`, value: `<t:${Math.floor(Date.now() / 1000)}:R>`, inline: true }
                             ]);
 
                         await targetMsg.edit({ embeds: [newEmbed] });

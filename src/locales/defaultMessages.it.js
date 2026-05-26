@@ -197,6 +197,27 @@ export default {
         bg_story_title: 'Storia del Personaggio di {user}',
         written_archive_title: 'Risposte Scritte di {user}',
         voice_staff_present: 'Staff presente',
+        bg_not_accepted: 'Il tuo background non ? ancora stato approvato.',
+        written_not_accepted: 'La tua candidatura scritta non ? ancora stata approvata.',
+        voice_rejection_cooldown: 'Devi attendere {hours} ora/e prima di riprovare il colloquio orale.',
+        vip_priority: 'Priorit? VIP attiva.',
+        voice_session_start_log: 'Sessione whitelist orale avviata per {user} in {channel}.',
+        no_written_found: 'Nessuna risposta scritta trovata.',
+        session_expired_title: 'Sessione scaduta',
+        session_expired_desc: 'Questa sessione di candidatura ? scaduta ed ? stata chiusa.',
+        time_expired_title: 'Tempo scaduto',
+        time_expired_desc: 'Il tempo della candidatura ? scaduto. Avvia una nuova sessione se necessario.',
+        rejection_modal_title: 'Rifiuto candidatura',
+        rejection_modal_label: 'Motivo del rifiuto',
+        rejection_modal_placeholder: 'Esempio: risposte troppo brevi, requisiti non rispettati...',
+        approved_title: 'Candidatura approvata',
+        rejected_title: 'Candidatura rifiutata',
+        written_step_approved: 'Step scritto approvato',
+        approved_by: 'Approvata da {staff}',
+        rejected_by: 'Rifiutata da {staff}',
+        written_step_approved_by: 'Step scritto approvato da {staff}',
+        waiting_voice_interview: 'In attesa del colloquio orale',
+        dm_notification: 'Notifica DM',
         bg_link_label: 'Link del Background',
         bg_link_value: '[Apri Documento]({link})',
         confirm_btn: 'Conferma Candidatura',
@@ -564,6 +585,10 @@ export default {
     },
     moderation: {
         no_reason: 'Nessun motivo fornito',
+        result: 'Risultato',
+        reason: 'Motivo',
+        next_step: 'Prossimo step',
+        sent: 'Inviato',
         error: {
             title: '❌ Errore Moderazione',
             description: 'Si è verificato un errore durante l\'esecuzione del comando.',
@@ -797,10 +822,19 @@ export default {
     },
     common: {
         no_reason: 'Nessuna motivazione fornita',
+        result: 'Risultato',
+        reason: 'Motivo',
+        next_step: 'Prossimo step',
+        sent: 'Inviato',
         none: 'Nessuno',
         loading: 'Caricamento in corso...',
         error: 'Si è verificato un errore.',
         immediately: 'subito',
-        start_time: 'Ora di Inizio'
+        start_time: 'Ora di Inizio',
+        reset_timer: 'Riavvia timer',
+        antispam: 'Attendi prima di riprovare.'
+    },
+    support: {
+        paused_reason: 'La coda vocale ? momentaneamente in pausa.'
     }
 };

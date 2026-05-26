@@ -192,6 +192,27 @@ export default {
         bg_story_title: 'Historia del Personaje de {user}',
         written_archive_title: 'Respuestas Escritas de {user}',
         voice_staff_present: 'Staff presente',
+        bg_not_accepted: 'Tu background a?n no ha sido aprobado.',
+        written_not_accepted: 'Tu solicitud escrita a?n no ha sido aprobada.',
+        voice_rejection_cooldown: 'Debes esperar {hours} hora(s) antes de intentar otra entrevista de voz.',
+        vip_priority: 'Prioridad VIP activa.',
+        voice_session_start_log: 'Sesi?n de whitelist de voz iniciada para {user} en {channel}.',
+        no_written_found: 'No se encontraron respuestas escritas.',
+        session_expired_title: 'Sesi?n expirada',
+        session_expired_desc: 'Esta sesi?n de solicitud expir? y fue cerrada.',
+        time_expired_title: 'Tiempo agotado',
+        time_expired_desc: 'El tiempo de la solicitud expir?. Inicia una nueva sesi?n si es necesario.',
+        rejection_modal_title: 'Rechazo de solicitud',
+        rejection_modal_label: 'Motivo del rechazo',
+        rejection_modal_placeholder: 'Ejemplo: respuestas demasiado cortas, requisitos no cumplidos...',
+        approved_title: 'Solicitud aprobada',
+        rejected_title: 'Solicitud rechazada',
+        written_step_approved: 'Paso escrito aprobado',
+        approved_by: 'Aprobada por {staff}',
+        rejected_by: 'Rechazada por {staff}',
+        written_step_approved_by: 'Paso escrito aprobado por {staff}',
+        waiting_voice_interview: 'Esperando la entrevista de voz',
+        dm_notification: 'Notificaci?n por DM',
         bg_link_label: 'Enlace de Background',
         bg_link_value: '[Abrir Documento]({link})',
         edit_closed: {
@@ -776,10 +797,19 @@ export default {
     },
     common: {
         no_reason: 'Sin motivo proporcionado',
+        result: 'Resultado',
+        reason: 'Motivo',
+        next_step: 'Siguiente paso',
+        sent: 'Enviado',
         none: 'Ninguno',
         loading: 'Cargando...',
         error: 'Ha ocurrido un error.',
         immediately: 'inmediatamente',
-        start_time: 'Hora de Inicio'
+        start_time: 'Hora de Inicio',
+        reset_timer: 'Reiniciar temporizador',
+        antispam: 'Espera antes de intentarlo de nuevo.'
+    },
+    support: {
+        paused_reason: 'La cola de voz est? en pausa temporalmente.'
     }
 };

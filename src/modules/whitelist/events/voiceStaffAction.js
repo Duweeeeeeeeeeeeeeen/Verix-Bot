@@ -15,7 +15,7 @@ function buildVoiceGuideEmbed(lang, userId, startTime, color = '#3498db') {
         .setTitle(t('whitelist.voice_guide.title', lang))
         .setDescription(t('whitelist.voice_guide.description', lang, { userId, start_time: startTime }))
         .setColor(color)
-        .addFields({ name: `⏱️ ${t('common.start_time', lang)}`, value: startTime });
+        .addFields({ name: `Time - ${t('common.start_time', lang)}`, value: startTime });
 }
 
 export default {
@@ -86,7 +86,7 @@ export default {
             const newEmbed = buildVoiceGuideEmbed(lang, userId, startTime, config?.colors?.primary || '#3498db');
 
             if (newEmbed) {
-                newEmbed.setFields([{ name: `⏱️ ${t('common.start_time', lang)}`, value: startTime }]);
+                newEmbed.setFields([{ name: `Time - ${t('common.start_time', lang)}`, value: startTime }]);
                 
                 const oldEmbeds = interaction.message.embeds;
                 const updatedEmbeds = [newEmbed];
@@ -204,6 +204,7 @@ export default {
 
         // Handle Voice Rejection Modal
         if (interaction.isModalSubmit() && interaction.customId.startsWith('deny_voice_modal_')) {
+            if (!interaction.deferred && !interaction.replied) await interaction.deferUpdate();
             const userId = interaction.customId.split('_')[3];
             const reason = interaction.fields.getTextInputValue('voice_rejection_reason');
 
@@ -264,7 +265,7 @@ export default {
                 staff: interaction.user.tag,
                 reason: reason
             });
-            await interaction.update({ embeds: [replyEmbed], components: [], content: null });
+            if (replyEmbed) await interaction.message?.edit({ embeds: [replyEmbed], components: [], content: null });
         }
     } catch (error) {
         logger.error('[Whitelist_VoiceStaffAction] Interaction Error:', error);
