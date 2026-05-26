@@ -1093,11 +1093,11 @@ router.post('/:guildId/background/send-panel', adminCheck, async (req, res) => {
         const embed = await messageService.get(guildId, 'background', 'panel', { guild });
 
         // Background Submission Button
-        const btnData = config?.embeds?.panel?.button || { label: 'Invia Background', emoji: '📖', style: 'PRIMARY' };
+        const btnData = config?.embeds?.panel?.button || { label: 'Submit Background', emoji: '📖', style: 'PRIMARY' };
         const submitButton = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
                 .setCustomId('start_bg')
-                .setLabel(btnData.label || 'Invia Background')
+                .setLabel(btnData.label || 'Submit Background')
                 .setStyle(getButtonStyle(btnData.style))
                 .setEmoji(btnData.emoji || '📖')
         );
@@ -1120,7 +1120,7 @@ router.post('/:guildId/background/send-panel', adminCheck, async (req, res) => {
 
         invalidateCache(guildId);
         await logAudit(req, 'SEND_BACKGROUND_PANEL', { channelId: targetChannelId });
-        res.json({ success: true, message: 'Pannello inviato correttamente!' });
+        res.json({ success: true, message: 'Panel sent successfully.' });
     } catch (error) {
         console.error('Error sending background panel:', error);
         res.status(500).json({ success: false, error: 'Error while sending the panel.' });
@@ -1201,11 +1201,11 @@ router.post('/:guildId/whitelist/send-panel', adminCheck, async (req, res) => {
         const embed = await messageService.get(guildId, 'whitelist', 'panel', { guild });
 
         // Whitelist Start Button
-        const btnData = config?.embeds?.panel?.button || { label: 'Invia Candidatura', emoji: '📝', style: 'PRIMARY' };
+        const btnData = config?.embeds?.panel?.button || { label: 'Start Application', emoji: '📝', style: 'PRIMARY' };
         const isLink = btnData.style === 'LINK' && btnData.url;
 
         const startButton = new ButtonBuilder()
-            .setLabel(btnData.label || 'Inizia Whitelist')
+            .setLabel(btnData.label || 'Start Application')
             .setStyle(isLink ? ButtonStyle.Link : getButtonStyle(btnData.style))
             .setEmoji(btnData.emoji || '📝');
 
@@ -1250,7 +1250,7 @@ router.post('/:guildId/whitelist/send-panel', adminCheck, async (req, res) => {
 
         invalidateCache(guildId);
         await logAudit(req, 'SEND_WHITELIST_PANEL', { channelId: targetChannelId, messageId: sentMessage.id });
-        res.json({ success: true, message: 'Pannello inviato correttamente!' });
+        res.json({ success: true, message: 'Panel sent successfully.' });
     } catch (error) {
         console.error('Error sending whitelist panel:', error);
         res.status(500).json({ success: false, error: 'Error while sending the panel.' });

@@ -202,7 +202,17 @@ class MessageService {
         const isPlaceholder = (val) => {
             if (!val || (typeof val === 'string' && val.trim() === '')) return true;
             const placeholders = ['Senza Titolo', 'Nessun contenuto impostato.', 'Untitled', 'No content set.'];
-            return placeholders.includes(val);
+            const legacyDefaults = [
+                'Immigration Office',
+                'Historical Archive',
+                'Character Story',
+                'deposit protocol',
+                'bureaucratic reasons',
+                'competent tickets',
+                'Evaluation Office',
+                'Registry Office'
+            ];
+            return placeholders.includes(val) || legacyDefaults.some(legacy => val.includes(legacy));
         };
 
         // Ensure we have a plain object if dbEmbed is a Mongoose document

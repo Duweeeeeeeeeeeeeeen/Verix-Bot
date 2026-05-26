@@ -65,7 +65,7 @@ export default {
             const hasWritten = ['TEXT', 'HYBRID', 'BG_TEXT', 'FULL'].includes(m);
             if (!hasWritten) {
                 const embed = await messageService.get(interaction.guild.id, 'system', 'module_disabled', {
-                    module: 'Whitelist Scritta'
+                    module: 'Written application'
                 });
                 return interaction.editReply({ embeds: [embed] });
             }
@@ -135,12 +135,12 @@ export default {
                         const submitButton = new ActionRowBuilder().addComponents(
                             new ButtonBuilder()
                                 .setCustomId('submit_background')
-                                .setLabel('Conferma Invio Dossier')
+                                .setLabel('Submit Background')
                                 .setStyle(ButtonStyle.Success)
                                 .setEmoji('✅')
                         );
 
-                        await channel.send({ content: `${interaction.user} (Fase 1: Background)`, embeds: [bgInstructions], components: [submitButton] });
+                        await channel.send({ content: `${interaction.user} (Step 1: Background)`, embeds: [bgInstructions], components: [submitButton] });
                         
                         const startMsg = await messageService.get(interaction.guild.id, 'whitelist', 'start_success', {
                             channelId: channel.id
@@ -150,7 +150,7 @@ export default {
 
                     // ELSE (PANEL FLOW): Standard blocking behavior
                     const embed = await messageService.get(interaction.guild.id, 'system', 'module_disabled', {
-                        module: 'Dossier Personale'
+                        module: 'Background submission'
                     });
                     return interaction.editReply({ embeds: [embed] });
                 }

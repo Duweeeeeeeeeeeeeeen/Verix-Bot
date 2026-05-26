@@ -71,7 +71,7 @@ export default {
                         event: 'whitelist.onSubmit',
                         guildId: interaction.guild.id,
                         guild: interaction.guild,
-                        content: `📋 Nuova candidatura da <@${interaction.user.id}> (ID: \`${interaction.user.id}\`)`
+                        content: `New application from <@${interaction.user.id}> (ID: \`${interaction.user.id}\`)`
                     });
 
                     app.deletionScheduledAt = new Date(Date.now() + 10000);

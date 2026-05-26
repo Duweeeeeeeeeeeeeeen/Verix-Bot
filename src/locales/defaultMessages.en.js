@@ -75,110 +75,110 @@ export default {
     },
     "whitelist": {
         "panel": {
-            "title": "📋 Application System",
-            "description": "Welcome to the access portal. To obtain full access or request a specific role, you must complete the application form.\n\nMake sure to answer honestly to the questions presented to you.",
+            "title": "Server Application",
+            "description": "Apply for access to **{guild}**. Staff will review your answers and contact you when a decision is ready.\n\nClick the button below to start.",
             "color": "#3BA4FF",
-            "footer": "Application Management | {guild}"
+            "footer": "{guild} Applications"
         },
         "start": {
-            "title": "📄 New Application: {user_name}",
-            "description": "Welcome. To proceed with your request, we must collect some information necessary for evaluation.\n\n**INSTRUCTIONS:**\n• Answer honestly and with plenty of detail.\n• Respect time protocols to avoid cancellation of the session.",
+            "title": "Application Started: {user_name}",
+            "description": "Welcome. Please answer each question with clear and useful detail.\n\n**Before you begin**\n- Answer honestly.\n- Keep your replies relevant to the question.\n- Submit before the session expires.",
             "color": "#3BA4FF",
-            "footer": "Evaluation Office | {guild}"
+            "footer": "{guild} Applications"
         },
         "question": {
-            "title": "❓ Question: {current_index} of {total_questions}",
+            "title": "Question {current_index} of {total_questions}",
             "description": ">>> {question}",
             "color": "#3BA4FF"
         },
         "review": {
-            "title": "📋 Final Review",
-            "description": "Carefully review your statements. Once confirmed, your application will pass to the staff for the final verdict.",
+            "title": "Review Your Answers",
+            "description": "Check your answers before submitting. Once confirmed, your application will be sent to staff for review.",
             "color": "#2ecc71"
         },
         "not_configured": {
-            "title": "⏳ Incomplete Configuration",
-            "description": "The application procedure has not yet been finalized by staff. Please try again later.",
+            "title": "Application Not Ready",
+            "description": "This application system is not fully configured yet. Please contact staff or try again later.",
             "color": "#f1c40f"
         },
         "active_session": {
-            "title": "📄 Ongoing Session",
-            "description": "There is already an open application session in your name in channel <#{channelId}>. Conclude that procedure before starting a new one.",
+            "title": "Application Already Open",
+            "description": "You already have an open application in <#{channelId}>. Finish that session before starting another one.",
             "color": "#3498db"
         },
         "already_submitted": {
-            "title": "📂 Under Evaluation",
-            "description": "Your documentation has already been delivered and is currently on the staff's desk. You will receive a result shortly.",
+            "title": "Application Under Review",
+            "description": "Your application has already been submitted. Staff will review it and notify you when there is an update.",
             "color": "#3498db"
         },
         "already_passed": {
-            "title": "✅ Access Already Obtained",
-            "description": "Our records indicate that you are already an approved member of **{guild}**. It is not necessary to repeat the procedure.",
+            "title": "Already Approved",
+            "description": "Our records show that you have already been approved for **{guild}**.",
             "color": "#2ecc71"
         },
         "cooldown": {
-            "title": "⚠️ Waiting Period",
-            "description": "Your last request was recently rejected. For organizational reasons, you must wait **{time}** before submitting a new application.",
+            "title": "Cooldown Active",
+            "description": "You must wait **{time}** before submitting another application.",
             "color": "#e74c3c"
         },
         "start_success": {
-            "title": "✅ Session Started",
-            "description": "Your application has been correctly opened. Head to channel <#{channelId}> to start providing your information.",
+            "title": "Application Created",
+            "description": "Your private application channel is ready: <#{channelId}>.",
             "color": "#2ecc71"
         },
         "session_completed": {
-            "title": "📝 Interview Transcribed",
-            "description": "You have answered all interview questions. Staff will analyze your application shortly.\n\nCheck your answers above and use the buttons to confirm or cancel the submission.",
+            "title": "Answers Complete",
+            "description": "You answered all questions. Review your answers above, then confirm or cancel the submission.",
             "color": "#3498db"
         },
         "min_length_error": {
-            "title": "⚠️ Insufficient Detail",
-            "description": "Your answer must contain at least **{minLength}** characters to be considered valid. Please try to explain yourself a bit better.",
+            "title": "More Detail Needed",
+            "description": "Your answer must contain at least **{minLength}** characters. Please add more detail and try again.",
             "color": "#f1c40f"
         },
         "dm_accepted": {
-            "title": "✅ Suitability Confirmed",
-            "description": "Congratulations member! Your application to **{guild}** has been approved by the staff team.\n\nYou can now access the official channels and begin your experience.",
+            "title": "Application Approved",
+            "description": "Congratulations {user}! Your application for **{guild}** has been approved.",
             "color": "#2ecc71"
         },
         "dm_rejected": {
-            "title": "❌ Negative Outcome",
-            "description": "Sorry, but the evaluation of your application at **{guild}** was not positive.\n\n**REASON:**\n{reason}\n\nYou can try submitting a new request after the cooldown period.",
+            "title": "Application Rejected",
+            "description": "Your application for **{guild}** was not approved.\n\n**Reason:**\n>>> {reason}\n\nYou can submit another application after the cooldown expires.",
             "color": "#e74c3c"
         },
         "dm_voice_rejected": {
-            "title": "⚠️ Oral Protocol Rejected",
-            "description": "You did not pass the oral assessment at **{guild}**. We invite you to review the server rules before reapplying.",
+            "title": "Voice Interview Rejected",
+            "description": "Your voice interview for **{guild}** was not approved. Please review the requirements before trying again.",
             "color": "#e74c3c"
         },
         "dm_text_pass": {
-            "title": "📝 Written Test Passed",
-            "description": "You passed the written test on **{guild}**! Now you can go to the waiting voice channel for the final interview.",
+            "title": "Written Step Approved",
+            "description": "You passed the written step for **{guild}**. Join the configured voice channel when you are ready for the interview.",
             "color": "#f1c40f"
         },
         "staff_received": {
-            "title": "📩 New Whitelist Application",
-            "description": "User **{user_name}** has submitted their application for evaluation.\n\n**INFO:**\n• Discord: <@{user_id}>\n• Application ID: `{app_id}`",
+            "title": "New Application Submitted",
+            "description": "**{user_name}** submitted an application for review.\n\n**Info**\n- Discord: <@{user_id}>\n- Application ID: `{app_id}`",
             "color": "#3498db"
         },
         "dm_submitted": {
-            "title": "📋 Application Received",
-            "description": "Your application to enter **{guild}** has been acquired by our systems.\n\nA member of the staff team will review it as soon as possible. You will be notified here as soon as there is an outcome.",
+            "title": "Application Received",
+            "description": "Your application for **{guild}** has been submitted. Staff will review it soon and notify you when there is an outcome.",
             "color": "#3498db"
         },
         "submission_confirmed": {
-            "title": "✅ Application Submitted",
-            "description": "Your documentation has been correctly sent to the relevant tickets. You will be notified of the outcome shortly.",
+            "title": "Application Submitted",
+            "description": "Your application was sent to staff. You will be notified when a decision is ready.",
             "color": "#2ecc71"
         },
         "voice_procedural_error": {
-            "title": "❌ Procedural Error",
-            "description": "Sorry member, but the server does not provide oral interviews for the type of application you requested.",
+            "title": "Voice Interview Unavailable",
+            "description": "A voice interview is not available for this application flow.",
             "color": "#e74c3c"
         },
         "queue_log": {
-            "title": "📢 Queue Protocol: New Entry",
-            "description": "A new member is waiting for an interview.\n\n**SUBJECT:** {user}\n**ID:** `{user_id}`\n**CURRENT QUEUE:** `{waiting_count}`",
+            "title": "New Voice Queue Entry",
+            "description": "{user} is waiting for a voice interview.\n\n**User ID:** `{user_id}`\n**Queue size:** `{waiting_count}`",
             "color": "#3498db"
         },
         "already_exists": {
@@ -254,41 +254,41 @@ export default {
     },
     "background": {
         "panel": {
-            "title": "📜 Historical Archive: Character Story Deposit",
-            "description": "Start writing your character's story to get final background approval.\n\nClick the button below to start the deposit protocol.",
+            "title": "Background Submission",
+            "description": "Submit your background information for staff review.\n\nClick the button below to begin.",
             "color": "#5865f2",
-            "footer": "Registry Office | {guild}"
+            "footer": "{guild} Background Review"
         },
         "instructions": {
-            "title": "✍️ Character Story Drafting",
-            "description": "You are starting to draft your story. Make sure to accurately describe your character's origins and ambitions.\n\n**REQUIREMENTS:**\n• Consistency with the server guidelines.\n• Respect for narrative guidelines.",
+            "title": "Background Instructions",
+            "description": "Use this channel to prepare and submit your background for review.\n\n**Requirements**\n- Follow the server guidelines.\n- Make sure any document link is accessible to staff.\n- Add enough context for reviewers to understand your submission.",
             "color": "#3498db"
         },
-        "modal_title": "Story Details",
-        "link_label": "Link to Story (e.g. Google Doc)",
+        "modal_title": "Background Details",
+        "link_label": "Background Link (e.g. Google Doc)",
         "desc_label": "Short Description (Optional)",
-        "desc_placeholder": "Summarize your character story here...",
+        "desc_placeholder": "Summarize your background submission here...",
         "dm_accepted": {
-            "title": "📜 Story Approved",
-            "description": "Your story has been officially deposited in the archives of **{guild}**. Your character is now an integral part of the server.",
+            "title": "Background Approved",
+            "description": "Your background for **{guild}** has been approved.",
             "color": "#2ecc71"
         },
         "dm_rejected": {
-            "title": "⚠️ Revision Requested",
-            "description": "Your story proposal for **{guild}** has been rejected or requires revisions.\n\n**STAFF NOTES:**\n{reason}",
+            "title": "Background Rejected",
+            "description": "Your background for **{guild}** was not approved.\n\n**Staff notes:**\n>>> {reason}",
             "color": "#e74c3c"
         },
         "staff_received": {
-            "title": "📖 New Story Received",
-            "description": "A user has submitted a story for review.\n\n**User:** <@{userId}>\n**Link:** [Open Document]({bg_link})\n**Description:** {bg_desc}\n**ID:** `{app_id}`",
+            "title": "New Background Submitted",
+            "description": "A user submitted a background for review.\n\n**User:** <@{userId}>\n**Link:** [Open Document]({bg_link})\n**Description:** {bg_desc}\n**ID:** `{app_id}`",
             "color": "#3498db"
         },
         "approve_btn": "Approve",
         "deny_btn": "Reject",
-        "accepted_title": "✅ Story APPROVED",
-        "rejected_title": "❌ Story REJECTED",
-        "staff_tag": "👮 Staff Member",
-        "subject_tag": "👤 Subject",
+        "accepted_title": "Background Approved",
+        "rejected_title": "Background Rejected",
+        "staff_tag": "Staff Member",
+        "subject_tag": "Applicant",
         "outcome_tag": "Staff Outcome",
         "already_exists": {
             "title": "Background Already Submitted",

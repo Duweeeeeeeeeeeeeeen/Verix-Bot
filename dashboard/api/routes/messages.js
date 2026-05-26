@@ -43,7 +43,17 @@ router.get('/:guildId/:module', adminCheck, async (req, res) => {
             const isPlaceholder = (val) => {
                 if (!val || (typeof val === 'string' && val.trim() === '')) return true;
                 const placeholders = ['Untitled', 'No content set.', 'Untitled', 'No content set.'];
-                return placeholders.includes(val);
+                const legacyDefaults = [
+                    'Immigration Office',
+                    'Historical Archive',
+                    'Character Story',
+                    'deposit protocol',
+                    'bureaucratic reasons',
+                    'competent tickets',
+                    'Evaluation Office',
+                    'Registry Office'
+                ];
+                return placeholders.includes(val) || legacyDefaults.some(legacy => val.includes(legacy));
             };
 
             mergedMessages[key] = {

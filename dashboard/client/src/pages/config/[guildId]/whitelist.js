@@ -70,14 +70,14 @@ export default function WhitelistConfig() {
     const isBg = activeTab === 'background';
     const shouldSendIntegratedPanel = isBg && usesSinglePanelFlow;
     const targetChannel = shouldSendIntegratedPanel ? config.panelChannelId : (isBg ? bgConfig?.panelChannelId : config.panelChannelId);
-    if (!targetChannel) return window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('whitelist.panel_channel_error') || 'Canale non impostato!', type: 'error' } }));
+    if (!targetChannel) return window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('whitelist.panel_channel_error') || 'Panel channel is not configured.', type: 'error' } }));
     setSendingPanel(true);
     try {
       const endpoint = shouldSendIntegratedPanel || !isBg ? `/config/${guildId}/whitelist/send-panel` : `/config/${guildId}/background/send-panel`;
       await api.request(endpoint, { method: 'POST' });
-      window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('whitelist.panel_success') || 'Pannello inviato!', type: 'success' } }));
+      window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('whitelist.panel_success') || 'Panel sent successfully.', type: 'success' } }));
     } catch (e) {
-      window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('whitelist.panel_error') || 'Errore invio pannello', type: 'error' } }));
+      window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('whitelist.panel_error') || 'Unable to send the panel.', type: 'error' } }));
     } finally {
       setSendingPanel(false);
     }
@@ -598,9 +598,9 @@ export default function WhitelistConfig() {
                         module="whitelist"
                         slugs={[
                             // Whitelist Module
-                            { key: 'panel', label: t('whitelist.msg_panel'), description: t('whitelist.msg_panel_desc') || 'Messaggio principale per l\'accesso.', variables: ['guild'], group: 'Whitelist (Accesso)', groupIcon: Layout, module: 'whitelist' },
-                            { key: 'dm_accepted', label: t('whitelist.msg_accepted'), description: t('whitelist.msg_accepted_desc') || 'Inviato in DM all\'utente promosso.', variables: ['user'], group: 'Whitelist (DMs)', groupIcon: CheckCircle2, module: 'whitelist' },
-                            { key: 'dm_rejected', label: t('whitelist.msg_rejected'), description: t('whitelist.msg_rejected_desc') || 'Inviato in DM all\'utente bocciato.', variables: ['user', 'reason'], group: 'Whitelist (DMs)', groupIcon: XCircle, module: 'whitelist' },
+                            { key: 'panel', label: t('whitelist.msg_panel'), description: t('whitelist.msg_panel_desc') || 'Main message for starting an application.', variables: ['guild'], group: 'Whitelist (Access)', groupIcon: Layout, module: 'whitelist' },
+                            { key: 'dm_accepted', label: t('whitelist.msg_accepted'), description: t('whitelist.msg_accepted_desc') || 'DM sent when an application is approved.', variables: ['user'], group: 'Whitelist (DMs)', groupIcon: CheckCircle2, module: 'whitelist' },
+                            { key: 'dm_rejected', label: t('whitelist.msg_rejected'), description: t('whitelist.msg_rejected_desc') || 'DM sent when an application is rejected.', variables: ['user', 'reason'], group: 'Whitelist (DMs)', groupIcon: XCircle, module: 'whitelist' },
                             
                             // Background Module
                             { key: 'panel', label: t('background.msg_panel') || 'Background Panel', description: t('background.msg_panel_desc') || 'Main message for background submissions.', variables: ['guild'], group: 'Background (Panel)', groupIcon: Layout, module: 'background' },

@@ -12,7 +12,7 @@ export async function startWrittenSession(interaction, channel, config, user) {
     try {
         const targetUser = user?.user || user || interaction.user;
         const targetId = targetUser.id;
-        const targetUsername = targetUser.username || "Utente";
+        const targetUsername = targetUser.username || 'User';
         
         // 1. Randomization Logic: Shuffle and Slice Question Bank
         const shuffled = [...config.questions].sort(() => 0.5 - Math.random());

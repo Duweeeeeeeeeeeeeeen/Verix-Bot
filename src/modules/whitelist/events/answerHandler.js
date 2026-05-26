@@ -91,8 +91,8 @@ export default {
 
                 const row = new ActionRowBuilder().addComponents(
                     new ButtonBuilder().setCustomId('confirm_wl').setLabel('Confirm Application').setStyle(ButtonStyle.Success),
-                    new ButtonBuilder().setCustomId('choice_edit_wl').setLabel('📝 Modifica Risposte').setStyle(ButtonStyle.Primary),
-                    new ButtonBuilder().setCustomId('cancel_wl').setLabel('Ritira Domanda').setStyle(ButtonStyle.Danger)
+                    new ButtonBuilder().setCustomId('choice_edit_wl').setLabel('Edit Answers').setStyle(ButtonStyle.Primary),
+                    new ButtonBuilder().setCustomId('cancel_wl').setLabel('Cancel Application').setStyle(ButtonStyle.Danger)
                 );
 
                 const sentMsg = await message.channel.send({ embeds: [summaryEmbed], components: [row] });

@@ -66,7 +66,7 @@ const backgroundConfigSchema = new mongoose.Schema({
         },
         staff_received: {
             title: { type: String, default: 'Background Review' },
-            description: { type: String, default: 'Utente: {user}\nID: `{user_id}`\n\n**Sintesi:**\n>>> {bg_desc}\n\n**Documentazione:** [Consultabile Qui]({bg_link})' },
+            description: { type: String, default: 'User: {user}\nID: `{user_id}`\n\n**Summary:**\n>>> {bg_desc}\n\n**Document:** [Open Document]({bg_link})' },
             color: { type: String, default: 'primary' },
             image: { type: String, default: null },
             thumbnail: { type: String, default: null },

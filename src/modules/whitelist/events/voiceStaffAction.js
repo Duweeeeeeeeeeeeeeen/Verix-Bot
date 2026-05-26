@@ -132,8 +132,8 @@ export default {
                     const toRemove = config.voiceSettings.rolesToRemove || [];
                     
                     try {
-                        if (toAdd.length > 0) await member.roles.add(toAdd, 'Whitelist Vocale Superata');
-                        if (toRemove.length > 0) await member.roles.remove(toRemove, 'Whitelist Vocale Superata (Rimozione Ruoli Precedenti)');
+                        if (toAdd.length > 0) await member.roles.add(toAdd, 'Voice whitelist approved');
+                        if (toRemove.length > 0) await member.roles.remove(toRemove, 'Voice whitelist approved (previous role cleanup)');
                     } catch (roleError) {
                         logger.error(`Error managing roles for ${member.user.tag}:`, roleError);
                     }
