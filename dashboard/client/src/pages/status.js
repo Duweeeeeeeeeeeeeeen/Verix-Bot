@@ -381,8 +381,7 @@ export default function StatusPage() {
           align-items: center;
           gap: 12px;
           margin-bottom: 16px;
-          color: var(--text-muted);
-          opacity: 0.8;
+          color: var(--text-main);
         }
 
         .card-header h3 {
@@ -412,18 +411,18 @@ export default function StatusPage() {
         .status-value {
           font-size: 1.4rem;
           font-weight: 800;
-          color: #ffffff;
+          color: var(--text-heading);
         }
 
         .status-sub {
           font-size: 0.85rem;
-          color: #71717a;
+          color: var(--text-muted);
         }
 
         .status-footer {
           margin-top: 60px;
           text-align: center;
-          color: #52525b;
+          color: var(--text-muted);
           font-size: 0.9rem;
         }
 
@@ -493,7 +492,7 @@ export default function StatusPage() {
           width: 16px;
           height: 16px;
           border-radius: 50%;
-          border: 3px solid #0b0f19;
+          border: 3px solid var(--bg-card);
         }
         .avatar-status-dot.online { background: #10b981; box-shadow: 0 0 10px #10b981; }
         .avatar-status-dot.offline { background: #ef4444; box-shadow: 0 0 10px #ef4444; }
@@ -529,8 +528,8 @@ export default function StatusPage() {
           display: inline-flex;
           align-items: center;
           gap: 8px;
-          background: rgba(255, 255, 255, 0.03);
-          border: 1px solid rgba(255, 255, 255, 0.05);
+          background: var(--bg-badge);
+          border: 1px solid var(--border);
           padding: 6px 14px;
           border-radius: 12px;
           font-size: 0.85rem;
