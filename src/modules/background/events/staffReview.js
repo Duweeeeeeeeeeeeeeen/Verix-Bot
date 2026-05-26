@@ -31,7 +31,7 @@ export default {
             // Permission Check
             if (config.staffRoleIds && config.staffRoleIds.length > 0) {
                 if (!interaction.member.roles.cache.some(role => config.staffRoleIds.includes(role.id))) {
-                    return messageService.reply(interaction, 'background', 'error', { reason: t('background.error_no_permission', lang) }, { ephemeral: true });
+                    return messageService.reply(interaction, 'background', 'error', { reason: t('system.no_permission.description', lang) }, { ephemeral: true });
                 }
             }
 
