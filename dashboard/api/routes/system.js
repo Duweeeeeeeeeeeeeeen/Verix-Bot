@@ -31,7 +31,7 @@ const storage = multer.diskStorage({
     }
 });
 
-const upload = multer({ 
+const upload = multer({
     storage,
     limits: { fileSize: 15 * 1024 * 1024 }, // 15MB limit
     fileFilter: (req, file, cb) => {
@@ -60,9 +60,9 @@ router.post('/broadcast', ownerCheck, async (req, res) => {
         }
 
         // Fetch all guild configs that have a log channel
-        const configs = await GlobalConfig.find({ 
-            'logs.enabled': true, 
-            'logs.channelId': { $ne: null } 
+        const configs = await GlobalConfig.find({
+            'logs.enabled': true,
+            'logs.channelId': { $ne: null }
         });
 
         const stats = {
@@ -82,9 +82,9 @@ router.post('/broadcast', ownerCheck, async (req, res) => {
         if (image) embed.setImage(image);
 
         if (changes && Array.isArray(changes) && changes.length > 0) {
-            embed.addFields({ 
-                name: '🛠️ Changelog', 
-                value: changes.map(c => `• ${c}`).join('\n') 
+            embed.addFields({
+                name: '🛠️ Changelog',
+                value: changes.map(c => `• ${c}`).join('\n')
             });
         }
 
@@ -107,7 +107,7 @@ router.post('/broadcast', ownerCheck, async (req, res) => {
 
         res.json({
             success: true,
-            message: `Annuncio inviato con successo a ${stats.success} server.`,
+            message: `Announcement successfully sent to ${stats.success} server.`,
             stats
         });
 
@@ -133,7 +133,7 @@ router.post('/broadcast', ownerCheck, async (req, res) => {
 
     } catch (error) {
         console.error('[System_API] Broadcast Error:', error);
-        res.status(500).json({ success: false, error: 'Errore durante l\'invio del broadcast.' });
+        res.status(500).json({ success: false, error: 'Error while sending the broadcast.' });
     }
 });
 
@@ -146,7 +146,7 @@ router.get('/history', ownerCheck, async (req, res) => {
         const history = await SystemBroadcast.find().sort({ sentAt: -1 }).limit(50);
         res.json({ success: true, data: history });
     } catch (error) {
-        res.status(500).json({ success: false, error: 'Errore nel recupero della cronologia.' });
+        res.status(500).json({ success: false, error: 'Error while fetching history.' });
     }
 });
 
@@ -157,7 +157,7 @@ router.get('/history', ownerCheck, async (req, res) => {
 router.post('/upload', ownerCheck, upload.single('image'), (req, res) => {
     try {
         if (!req.file) {
-            return res.status(400).json({ success: false, error: 'Nessun file caricato.' });
+            return res.status(400).json({ success: false, error: 'No file uploaded.' });
         }
 
         const fileName = req.file.filename;
@@ -171,7 +171,7 @@ router.post('/upload', ownerCheck, upload.single('image'), (req, res) => {
         });
     } catch (error) {
         logger.error('[System_API] Upload Error:', error);
-        res.status(500).json({ success: false, error: 'Errore durante il caricamento dell\'immagine.' });
+        res.status(500).json({ success: false, error: 'Error while uploading the image.' });
     }
 });
 
@@ -222,7 +222,7 @@ router.post('/guild/:guildId/tier', ownerCheck, async (req, res) => {
         }
 
         const isPremium = tier !== 'none';
-        
+
         const guild = await Guild.findOneAndUpdate(
             { guildId: req.params.guildId },
             { $set: { premiumTier: tier, isPremium } },
@@ -264,21 +264,21 @@ router.get('/logs', ownerCheck, async (req, res) => {
     try {
         // Absolute path to the log file on the VPS/Local
         const logPath = 'e:\\BOT Discord\\bot.log';
-        
+
         try {
             const stats = await fs.stat(logPath);
             const fileSize = stats.size;
-            
+
             // Read the last 64KB of the file
             const readSize = Math.min(fileSize, 64 * 1024);
             const buffer = Buffer.alloc(readSize);
             const fileHandle = await fs.open(logPath, 'r');
-            
+
             await fileHandle.read(buffer, 0, readSize, fileSize - readSize);
             await fileHandle.close();
-            
+
             let content = buffer.toString('utf8');
-            
+
             // If we didn't read from the start, trim the first partial line
             if (readSize < fileSize) {
                 const firstNewline = content.indexOf('\n');
@@ -286,7 +286,7 @@ router.get('/logs', ownerCheck, async (req, res) => {
                     content = content.substring(firstNewline + 1);
                 }
             }
-            
+
             res.json({ success: true, data: content });
         } catch (err) {
             if (err.code === 'ENOENT') {

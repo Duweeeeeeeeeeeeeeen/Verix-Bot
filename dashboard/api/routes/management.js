@@ -40,7 +40,7 @@ router.get('/:guildId/users', adminCheck, async (req, res) => {
         res.json({ success: true, data: formattedUsers });
     } catch (error) {
         console.error('[Management_API] Users List Error:', error);
-        res.status(500).json({ success: false, error: 'Errore nel recupero della lista utenti.' });
+        res.status(500).json({ success: false, error: 'Error while fetching the user list.' });
     }
 });
 
@@ -78,7 +78,7 @@ router.get('/:guildId/search/:userId', adminCheck, async (req, res) => {
         });
     } catch (error) {
         console.error('[Management_API] Search Error:', error);
-        res.status(500).json({ success: false, error: 'Errore durante la ricerca dei record.' });
+        res.status(500).json({ success: false, error: 'Error while searching records.' });
     }
 });
 
@@ -106,7 +106,7 @@ router.delete('/:guildId/records/:type/:id', adminCheck, async (req, res) => {
         }
 
         if (!result) {
-            return res.status(404).json({ success: false, error: 'Record non trovato o già eliminato.' });
+            return res.status(404).json({ success: false, error: 'Record not found or already deleted.' });
         }
 
         await logAudit(req, `DELETE_RECORD_${type.toUpperCase()}`, { id });
@@ -114,7 +114,7 @@ router.delete('/:guildId/records/:type/:id', adminCheck, async (req, res) => {
         res.json({ success: true, message: 'Record eliminato con successo.' });
     } catch (error) {
         console.error('[Management_API] Delete Error:', error);
-        res.status(500).json({ success: false, error: 'Errore durante l\'eliminazione.' });
+        res.status(500).json({ success: false, error: 'Error while deleting.' });
     }
 });
 
@@ -136,11 +136,11 @@ router.post('/:guildId/reset-user/:userId', adminCheck, async (req, res) => {
         // Clear cooldowns in User model
         await User.updateOne(
             { discordId: userId },
-            { 
-                $set: { 
+            {
+                $set: {
                     lastWhitelistAttempt: null,
                     lastBackgroundAttempt: null
-                } 
+                }
             }
         );
 
@@ -148,7 +148,7 @@ router.post('/:guildId/reset-user/:userId', adminCheck, async (req, res) => {
 
         res.json({
             success: true,
-            message: 'Stato utente resettato con successo.',
+            message: 'User state reset successfully.',
             summary: {
                 whitelistDeleted: wlResult.deletedCount,
                 backgroundDeleted: bgResult.deletedCount,
@@ -157,7 +157,7 @@ router.post('/:guildId/reset-user/:userId', adminCheck, async (req, res) => {
         });
     } catch (error) {
         console.error('[Management_API] Reset Error:', error);
-        res.status(500).json({ success: false, error: 'Errore durante il reset dell\'utente.' });
+        res.status(500).json({ success: false, error: 'Error while resetting the user.' });
     }
 });
 

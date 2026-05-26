@@ -14,7 +14,7 @@ router.use('/:guildId', adminCheck);
 router.get('/:guildId', async (req, res) => {
     try {
         const { guildId } = req.params;
-        
+
         // Check tier
         const guild = await Guild.findOne({ guildId });
         if (!guild || guild.premiumTier !== 'platinum') {
@@ -98,7 +98,7 @@ router.post('/:guildId', async (req, res) => {
             await multiBotManager.stopBot(guildId);
         }
 
-        res.json({ success: true, message: 'Configurazione salvata con successo' });
+        res.json({ success: true, message: 'Configuration saved successfully' });
     } catch (error) {
         logger.error('[API] Error saving private bot:', error);
         res.status(500).json({ success: false, error: 'Failed to save private bot' });
@@ -139,7 +139,7 @@ router.post('/:guildId/restart', async (req, res) => {
         if (!bot.enabled) return res.status(400).json({ success: false, error: 'Bot is disabled' });
 
         const multiBotManager = req.discordClient.multiBotManager || multiBotManagerSingleton;
-        
+
         // Restart sequence
         await multiBotManager.stopBot(guildId);
         await multiBotManager.startBot(bot);

@@ -79,7 +79,7 @@ export function startDashboard(client) {
         'http://localhost:3001'
     ].filter(Boolean);
 
-    app.use(cors({ 
+    app.use(cors({
         origin: function (origin, callback) {
             if (!origin) return callback(null, true);
             if (allowedOrigins.indexOf(origin) !== -1 || origin.startsWith('http://localhost:')) {
@@ -87,10 +87,10 @@ export function startDashboard(client) {
             } else {
                 callback(new Error('Not allowed by CORS'));
             }
-        }, 
-        credentials: true 
+        },
+        credentials: true
     }));
-    
+
     const secret = process.env.SESSION_SECRET;
     if (!secret) {
         if (process.env.NODE_ENV === 'production' || process.env.REQUIRE_SESSION_SECRET === 'true') {
@@ -109,7 +109,7 @@ export function startDashboard(client) {
         proxy: true,
         store: MongoStore.create({
             mongoUrl: process.env.MONGODB_URI || process.env.MONGO_URI,
-            mongoOptions: { 
+            mongoOptions: {
                 serverSelectionTimeoutMS: 5000,
                 family: 4 // Force IPv4
             }
@@ -127,7 +127,7 @@ export function startDashboard(client) {
         max: 120,
         standardHeaders: true,
         legacyHeaders: false,
-        message: { success: false, error: 'Troppe richieste. Riprova tra un minuto.' }
+        message: { success: false, error: 'Too many requests. Please try again in one minute.' }
     });
     app.use('/api/config', apiLimiter);
     app.use('/api/messages', apiLimiter);
@@ -163,7 +163,7 @@ export function startDashboard(client) {
     app.use((req, res) => {
         res.status(404).json({
             success: false,
-            error: 'Endpoint non trovato'
+            error: 'Endpoint not found'
         });
     });
 
@@ -172,8 +172,8 @@ export function startDashboard(client) {
         logger.error('[Dashboard_API] Unhandled Error:', err);
         res.status(err.status || 500).json({
             success: false,
-            error: process.env.NODE_ENV === 'production' 
-                ? 'Internal Server Error' 
+            error: process.env.NODE_ENV === 'production'
+                ? 'Internal Server Error'
                 : err.message
         });
     });

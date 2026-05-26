@@ -131,20 +131,17 @@ export default {
 
                 const permCheck = checkBotPermissions(interaction.channel, [PermissionFlagsBits.SendMessages, PermissionFlagsBits.EmbedLinks]);
                 if (!permCheck.hasPermission) {
-                    return interaction.editReply({ content: lang === 'it'
-                        ? `❌ Il bot non ha i permessi necessari in questo canale: ${permCheck.missing.join(', ')}`
-                        : `❌ The bot is missing required permissions in this channel: ${permCheck.missing.join(', ')}`
-                    });
+                    return interaction.editReply({ content: `The bot is missing required permissions in this channel: ${permCheck.missing.join(', ')}` });
                 }
 
                 const existing = await Ticket.findOne({ userId: interaction.user.id, guildId: interaction.guild.id, type, status: { $ne: 'CLOSED' } });
                 if (existing) {
-                    return interaction.editReply({ 
+                    return interaction.editReply({
                         content: resolveSystemMessage(config, 'tickets', 'already_exists', lang, {
                             type: type.toUpperCase(),
                             channelId: existing.channelId,
                             channel: `<#${existing.channelId}>`
-                        }) 
+                        })
                     });
                 }
 
@@ -153,21 +150,21 @@ export default {
 
             // --- 4. PRODUCTIVITY TOOLS & MODALS ---
             const ticket = await Ticket.findOne({ channelId: interaction.channel.id });
-            
+
             // Robust staff check (handles both string IDs and object IDs from older dashboard saves)
             const ticketPanelId = getPanelIdFromTicket(ticket);
             const staffRoleIds = (Array.isArray(getConfigValue(config, 'staffRoleIds', ticketPanelId)) ? getConfigValue(config, 'staffRoleIds', ticketPanelId) : [])
                 .map(r => typeof r === 'string' ? r : (r.id || r._id || String(r)));
-            
+
             const userRoles = interaction.member.roles.cache || interaction.member.roles;
-            const hasStaffRole = Array.isArray(userRoles) 
+            const hasStaffRole = Array.isArray(userRoles)
                 ? staffRoleIds.some(roleId => userRoles.includes(roleId))
                 : staffRoleIds.some(roleId => userRoles.has(roleId));
 
-            const isStaff = interaction.member.permissions.has(PermissionFlagsBits.Administrator) || 
-                           interaction.guild.ownerId === interaction.user.id || 
+            const isStaff = interaction.member.permissions.has(PermissionFlagsBits.Administrator) ||
+                           interaction.guild.ownerId === interaction.user.id ||
                            hasStaffRole;
-            
+
             if (interaction.isButton() || interaction.isStringSelectMenu()) {
                 if (!ticket) {
                     if (interaction.deferred) return messageService.reply(interaction, 'tickets', 'generic_error', { reason: 'Ticket not found in the database.' }, { ephemeral: true });
@@ -177,7 +174,7 @@ export default {
                 // --- PERMISSION PROTECTION ---
                 // Staff-only tools list
                 const staffOnlyButtons = [
-                    'tk_claim', 'tk_quick_reply', 'tk_tag', 'tk_status_select', 
+                    'tk_claim', 'tk_quick_reply', 'tk_tag', 'tk_status_select',
                     'tk_note', 'tk_quick_reply_send', 'tk_tag_select'
                 ];
 
@@ -268,12 +265,12 @@ export default {
                     ticket.assignedStaffId = interaction.user.id;
                     ticket.status = 'PROCESSING';
                     await ticket.save();
-                    
+
                     // Record Stats
                     await StaffStatsService.recordClaim(interaction.guildId, interaction.user.id);
 
                     await messageService.reply(interaction, 'tickets', 'claim_success', {});
-                    
+
                     interaction.channel.setName(`claimed-${interaction.channel.name}`).catch(() => {});
                     const dashboardStaffRoleIds = getConfigValue(config, 'staffRoleIds', ticketPanelId) || [];
                     const staffRoles = dashboardStaffRoleIds.map(id => interaction.guild.roles.cache.get(id)).filter(r => r);
@@ -300,7 +297,7 @@ export default {
                     }
 
                     await messageService.reply(interaction, 'tickets', 'close_started', {}, { ephemeral: true });
-                    
+
                     ticket.status = 'CLOSED';
                     ticket.closedAt = new Date();
 
@@ -322,7 +319,7 @@ export default {
                         const responseTimeMs = ticket.firstResponseAt ? (ticket.firstResponseAt.getTime() - ticket.openedAt.getTime()) : 0;
                         await StaffStatsService.recordClose(interaction.guildId, ticket.assignedStaffId, responseTimeMs);
                     }
-                    
+
                     if (closeMode === 'MOVE') {
                         try {
                             const newName = `closed-${interaction.channel.name}`.substring(0, 100);
@@ -338,7 +335,7 @@ export default {
                             console.error('[TICKET_CLOSE_ERROR]', e);
                         }
                     }
-                    
+
                     await ticket.save();
 
                     const closingUser = await interaction.guild.members.fetch(ticket.userId).catch(() => null);
@@ -389,11 +386,11 @@ async function createTicket(interaction, type, config, metadata = {}) {
         const typeConfig = getTicketTypeConfig(config, type, panelId) || { color: '#3498db', emoji: '🎫' };
         const staffRoleIds = getConfigValue(config, 'staffRoleIds', panelId) || [];
         const staffRoles = staffRoleIds.map(id => guild.roles.cache.get(id)).filter(r => r);
-        
+
         // --- CATEGORY VALIDATION ---
         const categoryId = getConfigValue(config, 'categoryOpenId', panelId);
         const parentCategory = categoryId ? guild.channels.cache.get(categoryId) : null;
-        
+
         if (categoryId && !parentCategory) {
             logger.error(`[TICKET_CREATE] Category ${categoryId} not found in guild cache.`);
             return interaction.editReply({ content: `Ticket category (ID: ${categoryId}) no longer exists. Contact an administrator.` });
@@ -417,8 +414,8 @@ async function createTicket(interaction, type, config, metadata = {}) {
         const globalConfig = await GlobalConfig.findOne({ guildId: guild.id });
         lang = globalConfig?.language || 'en';
         const namingTemplate = globalConfig?.naming?.ticket || '{emoji}-{type}-{user}';
-        
-        const cleanType = typeConfig?.label 
+
+        const cleanType = typeConfig?.label
             ? typeConfig.label.toLowerCase()
                 .replace(/[^a-z0-9\s-]/g, '')
                 .trim()
@@ -434,19 +431,16 @@ async function createTicket(interaction, type, config, metadata = {}) {
 
         let channel;
         try {
-            channel = await guild.channels.create({ 
-                name: channelName, 
-                type: ChannelType.GuildText, 
-                parent: categoryId 
+            channel = await guild.channels.create({
+                name: channelName,
+                type: ChannelType.GuildText,
+                parent: categoryId
             });
         } catch (err) {
             logger.error('[TICKET_CREATE] Channel creation failed:', err);
-            return interaction.editReply({ content: lang === 'it'
-                ? `❌ Impossibile creare il canale del ticket. Assicurati che il bot abbia il permesso 'Gestire Canali' e che la categoria sia valida.\n\`Dettagli: ${err.message}\``
-                : `❌ Failed to create ticket channel. Make sure the bot has the 'Manage Channels' permission and that the category is valid.\n\`Details: ${err.message}\``
-            });
+            return interaction.editReply({ content: `Failed to create ticket channel. Make sure the bot has the 'Manage Channels' permission and that the category is valid.\n\`Details: ${err.message}\`` });
         }
-        
+
         await setInitialPermissions(channel, user, staffRoles);
 
         const ticket = await Ticket.create({ userId: user.id, guildId: guild.id, channelId: channel.id, type, priority, metadata });
@@ -471,12 +465,12 @@ async function createTicket(interaction, type, config, metadata = {}) {
         // --- AUTO-PING ---
         const pingRoleId = typeConfig.pingRoleId;
         const pingContent = pingRoleId ? `<@&${pingRoleId}>` : '';
-        
+
         if (pingRoleId) {
             const embed = new EmbedBuilder()
-                .setDescription(resolveSystemMessage(config, 'tickets', 'new_ticket_ping', lang, { 
-                    ping: pingContent, 
-                    type: typeConfig.label || type 
+                .setDescription(resolveSystemMessage(config, 'tickets', 'new_ticket_ping', lang, {
+                    ping: pingContent,
+                    type: typeConfig.label || type
                 }))
                 .setColor(typeConfig.color || '#3498db');
 
@@ -489,15 +483,13 @@ async function createTicket(interaction, type, config, metadata = {}) {
             event: 'tickets.onOpen',
             guildId: guild.id,
             guild,
-            content: `🎫 Nuovo ticket \`${type.toUpperCase()}\` aperto da <@${user.id}> — ${channel}`
+            content: `New ${type.toUpperCase()} ticket opened by <@${user.id}> - ${channel}`
         });
 
-    } catch (error) { 
+    } catch (error) {
         logger.error('[TICKET_CREATE_FATAL]', error);
         if ((interaction.deferred || interaction.replied) && !interactionAcknowledged) {
-            const fatalCreateMsg = lang === 'it'
-                ? '❌ Si è verificato un errore critico durante la creazione del ticket.'
-                : '❌ A critical error occurred while creating the ticket.';
+            const fatalCreateMsg = 'A critical error occurred while creating the ticket.';
             await interaction.editReply({ content: fatalCreateMsg }).catch(() => {});
         }
     }
@@ -538,7 +530,7 @@ async function renderTicketDashboard(channel, ticket, config, typeConfig, user, 
     if (ticket.assignedStaffId) {
         embed.addFields({ name: resolveSystemMessage(config, 'tickets', 'assigned_staff_label', lang), value: `<@${ticket.assignedStaffId}>`, inline: true });
     }
-    
+
     // Add Intelligence directly into the main embed (Compact)
     if (intelEmbed && intelEmbed.data.fields && intelEmbed.data.fields.length > 1) {
         const stats = intelEmbed.data.fields.map(f => `${f.name}: ${f.value}`).join('\n');

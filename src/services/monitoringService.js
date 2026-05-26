@@ -46,7 +46,7 @@ class MonitoringService {
     }
 
     async notifyPrivateBotError(guildId, error) {
-        await this.sendAlert(`Errore critico nel Private Bot per la Guild **${guildId}**:\n\`\`\`${error}\`\`\``, 'ERROR');
+        await this.sendAlert(`Critical error in Private Bot for Guild **${guildId}**:\n\`\`\`${error}\`\`\``, 'ERROR');
     }
 }
 

@@ -8,7 +8,7 @@ const moderationConfigSchema = new mongoose.Schema({
         mode: { type: String, enum: ['DM', 'CHANNEL', 'BOTH', 'NONE'], default: 'DM' },
         channelId: { type: String, default: null }
     },
-    
+
     // [ ANTI SPAM ]
     antispam: {
         enabled: { type: Boolean, default: false },
@@ -93,16 +93,16 @@ const moderationConfigSchema = new mongoose.Schema({
             message: { type: String, default: '' }
         }],
         default: [
-            { level: 1, action: 'warn', message: '⚠️ {user}, primo avviso per comportamento scorretto.' },
-            { level: 2, action: 'timeout', duration: 10, message: '🔇 {user}, sei stato messo in timeout per 10 minuti.' },
-            { level: 3, action: 'kick', message: '👢 {user}, espulso dal server per infrazioni multiple.' }
+            { level: 1, action: 'warn', message: '{user}, first warning for inappropriate behavior.' },
+            { level: 2, action: 'timeout', duration: 10, message: '{user}, timed out for 10 minutes.' },
+            { level: 3, action: 'kick', message: '{user}, kicked from the server for repeated violations.' }
         ]
     },
 
     // [ ECCEZIONI ]
     ignoredRoles: { type: [String], default: [] },
     ignoredChannels: { type: [String], default: [] },
-    
+
     // Global reset
     resetTime: { type: Number, default: 30 },
 

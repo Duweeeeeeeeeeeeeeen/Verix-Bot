@@ -34,15 +34,15 @@ export default {
 
         // --- 1. PRE-EXECUTION MIDDLEWARE: MODULE SYNC CHECK (CACHED) ---
         const moduleName = resolveModule(interaction);
-        
+
         // If it's a module interaction and not core 'admin', check if it's enabled
         if (moduleName && moduleName !== 'admin') {
             const config = await getModuleConfig(guildId, moduleName);
-            
+
             if (!config || !config.enabled) {
                 logger.warn(`[MODULE BLOCKED] ${moduleName} -> ${guildId} (User: ${interaction.user.tag})`);
                 const message = `❌ Il modulo **${moduleName.toUpperCase()}** è attualmente disattivato. Puoi riattivarlo dalla dashboard amministrativa.`;
-                
+
                 // Block any further execution
                 if (!interaction.replied && !interaction.deferred) {
                     return interaction.reply({ content: message, flags: [MessageFlags.Ephemeral] });
@@ -86,8 +86,8 @@ export default {
                 await command.execute(interaction);
             } catch (error) {
                 logger.error(`Error executing command ${interaction.commandName}`, error);
-                const errorMsg = { content: 'Si è verificato un errore durante l\'esecuzione di questo comando!', flags: [MessageFlags.Ephemeral] };
-                
+                const errorMsg = { content: 'An error occurred while executing this command.', flags: [MessageFlags.Ephemeral] };
+
                 try {
                     if (interaction.replied || interaction.deferred) {
                         await interaction.followUp(errorMsg);
@@ -99,8 +99,8 @@ export default {
                 }
             }
         }
-        
-        // --- 4. OTHER INTERACTIONS (Buttons, Menus, Modals) --- 
+
+        // --- 4. OTHER INTERACTIONS (Buttons, Menus, Modals) ---
         if (interaction.isButton()) {
             if (interaction.customId.startsWith('rr_')) {
                 return client.reactionRoleManager.handleInteraction(interaction);

@@ -16,7 +16,7 @@ export const reactionRoleSchema = z.object({
         })),
         embed: z.object({
             title: z.string().default('Assegnazione Ruoli'),
-            description: z.string().default('Seleziona i ruoli che desideri ottenere.'),
+            description: z.string().default('Select the roles you want to receive.'),
             color: z.string().default('#5865F2'),
             image: z.string().nullable().default(null),
             thumbnail: z.string().nullable().default(null),

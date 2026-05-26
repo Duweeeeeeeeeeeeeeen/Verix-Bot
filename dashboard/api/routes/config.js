@@ -97,7 +97,7 @@ function ensurePanelPermissions(channel, res) {
 async function fetchGuildOr404(client, guildId, res) {
     const guild = await client.guilds.fetch(guildId).catch(() => null);
     if (guild) return guild;
-    res.status(404).json({ success: false, error: 'Bot non presente nel server o server non raggiungibile.' });
+    res.status(404).json({ success: false, error: 'Bot is not in this server or the server is unreachable.' });
     return null;
 }
 
@@ -338,13 +338,13 @@ router.use('/:guildId', (req, res, next) => {
 // Real-time Concurrency Lock Checker Middleware
 router.use('/:guildId', async (req, res, next) => {
     const { guildId } = req.params;
-    
+
     // Only check lock for state-modifying requests (POST, DELETE, PUT)
     if (req.method !== 'GET') {
         const pathParts = req.path.split('/');
         // req.path is relative to the router's base parameter, so it looks like "/module" or "/module/subpath"
-        let moduleName = pathParts[1]; 
-        
+        let moduleName = pathParts[1];
+
         if (moduleName) {
             // Normalizations
             if (moduleName === 'giveaways') moduleName = 'giveaway';
@@ -352,8 +352,8 @@ router.use('/:guildId', async (req, res, next) => {
             if (moduleName === 'polls') moduleName = 'polls';
 
             const lockableModules = [
-                'whitelist', 'tickets', 'automations', 'moderation', 'fivem', 'welcome', 
-                'verify', 'photocontest', 'giveaway', 'support', 'tempvoice', 'background', 
+                'whitelist', 'tickets', 'automations', 'moderation', 'fivem', 'welcome',
+                'verify', 'photocontest', 'giveaway', 'support', 'tempvoice', 'background',
                 'leveling', 'socials', 'utility', 'global', 'reactionroles', 'polls'
             ];
 
@@ -384,7 +384,7 @@ router.use('/:guildId', async (req, res, next) => {
 router.get('/:guildId', adminCheck, async (req, res) => {
     try {
         const { guildId } = req.params;
-        
+
         // Fetch configs without creating module documents from a read-only dashboard overview.
         let [wlConfig, tkConfig, photoConfig, verifyConfig, guildData, globalConfig, wlcmConfig, utilConfig, fmConfig, socConfig, autoClearConfig, modConfig, suppConfig, rrConfig, pollConfig, bgConfig, staffConfig] = await Promise.all([
             WhitelistConfig.findOne({ guildId }),
@@ -427,10 +427,10 @@ router.get('/:guildId', adminCheck, async (req, res) => {
         let roles = [];
         let channels = [];
         let guild = null;
-        
+
         try {
             guild = await client.guilds.fetch(guildId).catch(() => null);
-            
+
             // FALLBACK: If Private Bot is not in guild, try Main Bot
             if (!guild && client !== req.mainClient) {
                 console.log(`[Dashboard_API] Private bot ${client.user?.tag} not in guild ${guildId}. Falling back to Main Bot for overview.`);
@@ -498,7 +498,7 @@ router.get('/:guildId/guild', adminCheck, async (req, res) => {
         res.json({ success: true, data: guild });
     } catch (error) {
         console.error('Error fetching guild info:', error);
-        res.status(500).json({ success: false, error: 'Impossibile caricare le info del server' });
+        res.status(500).json({ success: false, error: 'Unable to load server info' });
     }
 });
 
@@ -507,11 +507,11 @@ router.get('/:guildId/whitelist', adminCheck, async (req, res) => {
     try {
         const { guildId } = req.params;
         let config = await WhitelistConfig.findOne({ guildId });
-        
+
         if (!config) {
             config = await WhitelistConfig.create({ guildId });
         }
-        
+
         const lang = await messageService.getGuildLanguage(guildId);
         res.json({ success: true, data: mergeModuleDefaults('whitelist', config, lang) });
     } catch (error) {
@@ -525,7 +525,7 @@ router.get('/:guildId/automations', adminCheck, async (req, res) => {
     try {
         const { guildId } = req.params;
         let config = await AutomationConfig.findOne({ guildId });
-        
+
         if (!config) {
             // Migration attempt from old AutoClearConfig
             const oldAutoClear = await AutoClearConfig.findOne({ guildId });
@@ -540,15 +540,15 @@ router.get('/:guildId/automations', adminCheck, async (req, res) => {
                     autoMessage: { enabled: true, slots: [] }
                 });
             } else {
-                config = await AutomationConfig.create({ 
-                    guildId, 
+                config = await AutomationConfig.create({
+                    guildId,
                     enabled: true,
                     autoClear: { enabled: true, slots: [] },
                     autoMessage: { enabled: true, slots: [] }
                 });
             }
         }
-        
+
         res.json({ success: true, data: config });
     } catch (error) {
         console.error('Error fetching automations:', error);
@@ -601,7 +601,7 @@ router.get('/:guildId/tempvoice', adminCheck, async (req, res) => {
         const { guildId } = req.params;
         let config = await TempVoiceConfig.findOne({ guildId });
         if (!config) config = await TempVoiceConfig.create({ guildId });
-        
+
         const lang = await messageService.getGuildLanguage(guildId);
         res.json({ success: true, data: mergeModuleDefaults('tempvoice', config, lang) });
     } catch (error) {
@@ -692,7 +692,7 @@ router.post('/:guildId/tempvoice/active/:channelId/rename', adminCheck, async (r
         const { guildId, channelId } = req.params;
         const { newName } = req.body;
         if (!newName || newName.trim() === '') {
-            return res.status(400).json({ success: false, error: 'Nome canale non valido' });
+            return res.status(400).json({ success: false, error: 'Invalid channel name' });
         }
 
         const client = req.discordClient;
@@ -703,7 +703,7 @@ router.post('/:guildId/tempvoice/active/:channelId/rename', adminCheck, async (r
         if (!record) return res.status(404).json({ success: false, error: 'Canale non registrato come temporaneo' });
 
         const channel = guild.channels.cache.get(channelId) || await guild.channels.fetch(channelId).catch(() => null);
-        if (!channel) return res.status(404).json({ success: false, error: 'Canale non trovato su Discord' });
+        if (!channel) return res.status(404).json({ success: false, error: 'Channel not found on Discord' });
 
         await channel.setName(newName);
         await logAudit(req, 'RENAME_TEMPVOICE_CHANNEL', { channelId, oldName: channel.name, newName });
@@ -711,7 +711,7 @@ router.post('/:guildId/tempvoice/active/:channelId/rename', adminCheck, async (r
         res.json({ success: true });
     } catch (error) {
         console.error('Error renaming active temp voice channel:', error);
-        res.status(500).json({ success: false, error: 'Impossibile rinominare il canale' });
+        res.status(500).json({ success: false, error: 'Unable to rename the channel' });
     }
 });
 
@@ -732,7 +732,7 @@ router.post('/:guildId/tempvoice/active/:channelId/limit', adminCheck, async (re
         if (!record) return res.status(404).json({ success: false, error: 'Canale non registrato come temporaneo' });
 
         const channel = guild.channels.cache.get(channelId) || await guild.channels.fetch(channelId).catch(() => null);
-        if (!channel) return res.status(404).json({ success: false, error: 'Canale non trovato su Discord' });
+        if (!channel) return res.status(404).json({ success: false, error: 'Channel not found on Discord' });
 
         await channel.setUserLimit(limit);
         await logAudit(req, 'LIMIT_TEMPVOICE_CHANNEL', { channelId, limit });
@@ -767,7 +767,7 @@ router.delete('/:guildId/tempvoice/active/:channelId', adminCheck, async (req, r
         res.json({ success: true });
     } catch (error) {
         console.error('Error deleting active temp voice channel:', error);
-        res.status(500).json({ success: false, error: 'Impossibile eliminare il canale vocale' });
+        res.status(500).json({ success: false, error: 'Unable to delete the voice channel' });
     }
 });
 
@@ -777,7 +777,7 @@ router.get('/:guildId/giveaway', adminCheck, async (req, res) => {
         const { guildId } = req.params;
         let config = await GiveawayConfig.findOne({ guildId });
         if (!config) config = await GiveawayConfig.create({ guildId });
-        
+
         const lang = await messageService.getGuildLanguage(guildId);
         res.json({ success: true, data: mergeModuleDefaults('giveaway', config, lang) });
     } catch (error) {
@@ -851,11 +851,11 @@ router.post('/:guildId/giveaways/create', adminCheck, async (req, res) => {
         // If not scheduled (start now), send message immediately
         if (!scheduledStart || startTime <= new Date()) {
             const channel = await client.channels.fetch(channelId).catch(() => null);
-            if (!channel) return res.status(400).json({ success: false, error: 'Canale non trovato' });
+            if (!channel) return res.status(400).json({ success: false, error: 'Channel not found' });
 
             const title = customTitle || `🎉 GIVEAWAY: ${prize}`;
             let description = customDescription || `Clicca il tasto qui sotto per partecipare!\n\n⌛ **Termina:** <t:${Math.floor(endTime.getTime() / 1000)}:R>`;
-            
+
             // Global placeholder replacement
             description = placeholderHelper.replace(description, {
                 prize: prize,
@@ -930,7 +930,7 @@ router.post('/:guildId/giveaways/create', adminCheck, async (req, res) => {
         }
     } catch (error) {
         console.error('[Giveaway] Create error:', error);
-        res.status(500).json({ success: false, error: 'Errore durante la creazione del giveaway' });
+        res.status(500).json({ success: false, error: 'Error while creating the giveaway' });
     }
 });
 
@@ -939,11 +939,11 @@ router.delete('/:guildId/giveaways/:messageId', adminCheck, async (req, res) => 
     try {
         const { guildId, messageId } = req.params;
         // Search by messageId (active) OR _id (scheduled)
-        const giveaway = await Giveaway.findOne({ 
-            guildId, 
-            $or: [{ messageId: messageId }, { _id: messageId.length === 24 ? messageId : null }] 
+        const giveaway = await Giveaway.findOne({
+            guildId,
+            $or: [{ messageId: messageId }, { _id: messageId.length === 24 ? messageId : null }]
         });
-        if (!giveaway) return res.status(404).json({ success: false, error: 'Giveaway non trovato' });
+        if (!giveaway) return res.status(404).json({ success: false, error: 'Giveaway not found' });
 
         const client = req.discordClient;
         const channel = await client.channels.fetch(giveaway.channelId).catch(() => null);
@@ -955,7 +955,7 @@ router.delete('/:guildId/giveaways/:messageId', adminCheck, async (req, res) => 
         await Giveaway.deleteOne({ _id: giveaway._id });
         res.json({ success: true });
     } catch (error) {
-        res.status(500).json({ success: false, error: 'Errore durante l\'eliminazione' });
+        res.status(500).json({ success: false, error: 'Error while deleting' });
     }
 });
 
@@ -966,7 +966,7 @@ router.post('/:guildId/giveaways/:messageId/remove-participant', adminCheck, asy
         const { userId } = req.body;
 
         const giveaway = await Giveaway.findOne({ guildId, messageId });
-        if (!giveaway) return res.status(404).json({ success: false, error: 'Giveaway non trovato' });
+        if (!giveaway) return res.status(404).json({ success: false, error: 'Giveaway not found' });
 
         giveaway.participants = giveaway.participants.filter(id => id !== userId);
         await giveaway.save();
@@ -985,7 +985,7 @@ router.post('/:guildId/giveaways/:messageId/remove-participant', adminCheck, asy
 
         res.json({ success: true, data: giveaway });
     } catch (error) {
-        res.status(500).json({ success: false, error: 'Errore durante la rimozione' });
+        res.status(500).json({ success: false, error: 'Error while removing' });
     }
 });
 
@@ -996,7 +996,7 @@ router.post('/:guildId/autoclear/manual', adminCheck, async (req, res) => {
         const { channelId, amount } = req.body;
 
         if (!channelId || !amount) {
-            return res.status(400).json({ success: false, error: 'Parametri mancanti (canale o quantità).' });
+            return res.status(400).json({ success: false, error: 'Missing parameters (channel or amount).' });
         }
 
         const parsedAmount = parseInt(amount, 10);
@@ -1010,13 +1010,13 @@ router.post('/:guildId/autoclear/manual', adminCheck, async (req, res) => {
         const channel = await guild.channels.fetch(channelId);
 
         if (!channel || !channel.isTextBased()) {
-            return res.status(404).json({ success: false, error: 'Canale non trovato o non testuale.' });
+            return res.status(404).json({ success: false, error: 'Channel not found o non testuale.' });
         }
 
         const deleted = await channel.bulkDelete(Math.min(parsedAmount, 100), true);
 
         await logAudit(req, 'manual_clear', { message: 'Manual Clear Executed', channelId, amount: deleted.size });
-        
+
         res.json({ success: true, data: { count: deleted.size } });
     } catch (error) {
         console.error('Error in manual clear:', error);
@@ -1029,11 +1029,11 @@ router.get('/:guildId/background', adminCheck, async (req, res) => {
     try {
         const { guildId } = req.params;
         let config = await BackgroundConfig.findOne({ guildId });
-        
+
         if (!config) {
             config = await BackgroundConfig.create({ guildId });
         }
-        
+
         const lang = await messageService.getGuildLanguage(guildId);
         res.json({ success: true, data: mergeModuleDefaults('background', config, lang) }); // Background uses its own defaults now
     } catch (error) {
@@ -1059,7 +1059,7 @@ router.post('/:guildId/background', adminCheck, validate(backgroundSchema), asyn
 
         invalidateCache(guildId);
         await logAudit(req, 'UPDATE_BACKGROUND', data);
-        
+
         res.json({ success: true, data: config });
     } catch (error) {
         console.error('Error updating background configuration:', error);
@@ -1073,9 +1073,9 @@ router.post('/:guildId/background/send-panel', adminCheck, async (req, res) => {
         const { guildId } = req.params;
         const { channelId } = req.body;
         const config = await BackgroundConfig.findOne({ guildId });
-        
+
         const targetChannelId = channelId || config?.panelChannelId;
-        
+
         if (!targetChannelId) {
             return res.status(400).json({ success: false, error: 'Canale non specificato.' });
         }
@@ -1086,7 +1086,7 @@ router.post('/:guildId/background/send-panel', adminCheck, async (req, res) => {
         const channel = await guild.channels.fetch(targetChannelId);
 
         if (!channel) {
-            return res.status(404).json({ success: false, error: 'Canale non trovato su Discord.' });
+            return res.status(404).json({ success: false, error: 'Channel not found on Discord.' });
         }
         if (!ensurePanelPermissions(channel, res)) return;
 
@@ -1105,8 +1105,8 @@ router.post('/:guildId/background/send-panel', adminCheck, async (req, res) => {
         // Purge old panels
         try {
             const messages = await channel.messages.fetch({ limit: 20 });
-            const legacy = messages.filter(m => 
-                m.author.id === client.user.id && 
+            const legacy = messages.filter(m =>
+                m.author.id === client.user.id &&
                 m.components.some(row => row.components.some(c => c.customId === 'start_background'))
             );
             for (const m of legacy.values()) await m.delete().catch(() => {});
@@ -1123,7 +1123,7 @@ router.post('/:guildId/background/send-panel', adminCheck, async (req, res) => {
         res.json({ success: true, message: 'Pannello inviato correttamente!' });
     } catch (error) {
         console.error('Error sending background panel:', error);
-        res.status(500).json({ success: false, error: 'Errore durante l\'invio del pannello.' });
+        res.status(500).json({ success: false, error: 'Error while sending the panel.' });
     }
 });
 
@@ -1171,7 +1171,7 @@ router.post('/:guildId/whitelist', adminCheck, validate(whitelistSchema), async 
         res.json({ success: true, data: config });
     } catch (error) {
         console.error('[whitelist update error]:', error.message);
-        res.status(500).json({ success: false, error: 'Errore durante il salvataggio della whitelist.' });
+        res.status(500).json({ success: false, error: 'Error while saving the whitelist.' });
     }
 });
 
@@ -1181,9 +1181,9 @@ router.post('/:guildId/whitelist/send-panel', adminCheck, async (req, res) => {
         const { guildId } = req.params;
         const { channelId } = req.body;
         const config = await WhitelistConfig.findOne({ guildId });
-        
+
         const targetChannelId = channelId || (config?.panelChannelId);
-        
+
         if (!targetChannelId) {
             return res.status(400).json({ success: false, error: 'Canale non specificato nella richiesta e non configurato nel database.' });
         }
@@ -1194,7 +1194,7 @@ router.post('/:guildId/whitelist/send-panel', adminCheck, async (req, res) => {
         const channel = await guild.channels.fetch(targetChannelId);
 
         if (!channel) {
-            return res.status(404).json({ success: false, error: 'Canale non trovato su Discord.' });
+            return res.status(404).json({ success: false, error: 'Channel not found on Discord.' });
         }
         if (!ensurePanelPermissions(channel, res)) return;
 
@@ -1203,7 +1203,7 @@ router.post('/:guildId/whitelist/send-panel', adminCheck, async (req, res) => {
         // Whitelist Start Button
         const btnData = config?.embeds?.panel?.button || { label: 'Invia Candidatura', emoji: '📝', style: 'PRIMARY' };
         const isLink = btnData.style === 'LINK' && btnData.url;
-        
+
         const startButton = new ButtonBuilder()
             .setLabel(btnData.label || 'Inizia Whitelist')
             .setStyle(isLink ? ButtonStyle.Link : getButtonStyle(btnData.style))
@@ -1239,12 +1239,12 @@ router.post('/:guildId/whitelist/send-panel', adminCheck, async (req, res) => {
         // Store new message ID and its location for next cleanup
         await WhitelistConfig.updateOne(
             { guildId },
-            { 
-                $set: { 
+            {
+                $set: {
                     panelMessageId: sentMessage.id,
                     lastPanelMessageId: sentMessage.id,
                     lastPanelChannelId: targetChannelId
-                } 
+                }
             }
         );
 
@@ -1253,7 +1253,7 @@ router.post('/:guildId/whitelist/send-panel', adminCheck, async (req, res) => {
         res.json({ success: true, message: 'Pannello inviato correttamente!' });
     } catch (error) {
         console.error('Error sending whitelist panel:', error);
-        res.status(500).json({ success: false, error: 'Errore durante l\'invio del pannello.' });
+        res.status(500).json({ success: false, error: 'Error while sending the panel.' });
     }
 });
 
@@ -1263,7 +1263,7 @@ router.get('/:guildId/tickets', adminCheck, async (req, res) => {
         const { guildId } = req.params;
         let config = await TicketConfig.findOne({ guildId });
         if (!config) config = await TicketConfig.create({ guildId });
-        
+
         // Ensure panels exists (Backwards Compatibility)
         if (!config.panels || config.panels.length === 0) {
             config.panels = [{
@@ -1290,7 +1290,7 @@ router.get('/:guildId/tickets', adminCheck, async (req, res) => {
             }];
             await config.save();
         }
-        
+
         const lang = await messageService.getGuildLanguage(guildId);
         res.json({ success: true, data: mergeModuleDefaults('tickets', config, lang) });
     } catch (error) {
@@ -1305,7 +1305,7 @@ router.post('/:guildId/tickets', adminCheck, validate(ticketSchema), async (req,
         const { guildId } = req.params;
         const guild = await Guild.findOne({ guildId });
         const tier = guild?.premiumTier || (guild?.isPremium ? 'premium' : 'none');
-        
+
         // Enforcement based on Matrix: Standard (2), Premium (10), Platinum (Unlimited)
         if (tier !== 'platinum') {
             const limit = tier === 'premium' ? 10 : (tier === 'lite' ? 5 : 2);
@@ -1327,10 +1327,10 @@ router.post('/:guildId/tickets', adminCheck, validate(ticketSchema), async (req,
             { $set: req.validatedData },
             { returnDocument: 'after', upsert: true, runValidators: true }
         );
-        
+
         invalidateCache(guildId);
         await logAudit(req, 'UPDATE_TICKETS', req.validatedData);
-        
+
         res.json({ success: true, data: config });
     } catch (error) {
         console.error('Error updating ticket config:', error);
@@ -1344,12 +1344,12 @@ router.post('/:guildId/tickets/send-panel', adminCheck, async (req, res) => {
         const { guildId } = req.params;
         const config = await TicketConfig.findOne({ guildId });
         if (!config || !config.panels || config.panels.length === 0) {
-            return res.status(400).json({ success: false, error: 'Nessun pannello configurato.' });
+            return res.status(400).json({ success: false, error: 'No panel configured.' });
         }
         return deployPanel(guildId, config.panels[0].id, req, res);
     } catch (error) {
         console.error('Error sending default panel:', error);
-        res.status(500).json({ success: false, error: 'Errore durante l\'invio del pannello.' });
+        res.status(500).json({ success: false, error: 'Error while sending the panel.' });
     }
 });
 
@@ -1360,19 +1360,19 @@ router.post('/:guildId/tickets/send-panel/:panelId', adminCheck, async (req, res
         return deployPanel(guildId, panelId, req, res);
     } catch (error) {
         console.error('Error sending panel:', error);
-        res.status(500).json({ success: false, error: 'Errore durante l\'invio del pannello.' });
+        res.status(500).json({ success: false, error: 'Error while sending the panel.' });
     }
 });
 
 async function deployPanel(guildId, panelId, req, res) {
     const config = await TicketConfig.findOne({ guildId });
     if (!config) {
-        return res.status(404).json({ success: false, error: 'Configurazione non trovata.' });
+        return res.status(404).json({ success: false, error: 'Configuration not found.' });
     }
 
     const panel = config.panels.find(p => p.id === panelId);
     if (!panel) {
-        return res.status(404).json({ success: false, error: 'Pannello non trovato.' });
+        return res.status(404).json({ success: false, error: 'Panel not found.' });
     }
     if (!panel.channelId) {
         return res.status(400).json({ success: false, error: 'Canale pannello non impostato.' });
@@ -1384,7 +1384,7 @@ async function deployPanel(guildId, panelId, req, res) {
     const channel = await guild.channels.fetch(panel.channelId);
 
     if (!channel) {
-        return res.status(404).json({ success: false, error: 'Canale pannello non trovato su Discord.' });
+        return res.status(404).json({ success: false, error: 'Panel channel not found on Discord.' });
     }
     if (!ensurePanelPermissions(channel, res)) return;
 
@@ -1421,7 +1421,7 @@ async function deployPanel(guildId, panelId, req, res) {
         const options = [];
         for (const categoryId of panelCategories) {
             const categoryData = typeConfigSource.get(categoryId);
-            
+
             if (!categoryData) continue;
             if (categoryData.style === 'LINK') continue; // Select menu non supporta link esterni
 
@@ -1443,17 +1443,17 @@ async function deployPanel(guildId, panelId, req, res) {
         components.push(new ActionRowBuilder().addComponents(
             new StringSelectMenuBuilder()
                 .setCustomId(`ticket_create_select::${panel.id}`)
-                .setPlaceholder('Seleziona una categoria...')
+                .setPlaceholder('Select a category...')
                 .addOptions(options.slice(0, 25))
         ));
     } else {
         // BUTTONS
         const row = new ActionRowBuilder();
         let buttonsCount = 0;
-        
+
         for (const categoryId of panelCategories) {
             const categoryData = typeConfigSource.get(categoryId);
-            
+
             if (!categoryData) continue;
             if (buttonsCount >= 5) break; // Discord limit per row
 
@@ -1497,13 +1497,13 @@ async function deployPanel(guildId, panelId, req, res) {
                 // Ignore
             }
         }
-        
+
         // Also cleanup generic legacy panels in that channel
         const messages = await channel.messages.fetch({ limit: 30 });
-        const legacy = messages.filter(m => 
-            m.author.id === client.user.id && 
-            m.components.some(row => row.components.some(c => 
-                c.customId === 'open_ticket_select' || 
+        const legacy = messages.filter(m =>
+            m.author.id === client.user.id &&
+            m.components.some(row => row.components.some(c =>
+                c.customId === 'open_ticket_select' ||
                 c.customId === 'ticket_create_select' ||
                 c.customId?.startsWith('ticket_create_select::') ||
                 c.customId?.startsWith('ticket_type::') ||
@@ -1534,7 +1534,7 @@ async function deployPanel(guildId, panelId, req, res) {
 router.get('/:guildId/tickets/stats', adminCheck, async (req, res) => {
     try {
         const { guildId } = req.params;
-        
+
         const [total, open, closed, avgResponseData] = await Promise.all([
             Ticket.countDocuments({ guildId }),
             Ticket.countDocuments({ guildId, status: { $in: ['OPEN', 'PROCESSING', 'WAITING'] } }),
@@ -1546,7 +1546,7 @@ router.get('/:guildId/tickets/stats', adminCheck, async (req, res) => {
         ]);
 
         const avgResponseMs = avgResponseData.length > 0 ? avgResponseData[0].avgResponse : 0;
-        
+
         res.json({
             success: true,
             data: {
@@ -1558,7 +1558,7 @@ router.get('/:guildId/tickets/stats', adminCheck, async (req, res) => {
         });
     } catch (error) {
         console.error('Error fetching ticket stats:', error);
-        res.status(500).json({ success: false, error: 'Errore durante il recupero delle statistiche.' });
+        res.status(500).json({ success: false, error: 'Error while fetching statistics.' });
     }
 });
 
@@ -1568,7 +1568,7 @@ router.get('/:guildId/photocontest', adminCheck, async (req, res) => {
         const { guildId } = req.params;
         let config = await PhotoContestConfig.findOne({ guildId });
         if (!config) config = await PhotoContestConfig.create({ guildId });
-        
+
         const lang = await messageService.getGuildLanguage(guildId);
         res.json({ success: true, data: mergeModuleDefaults('photocontest', config, lang) });
     } catch (error) {
@@ -1598,10 +1598,10 @@ router.post('/:guildId/photocontest', adminCheck, validate(photoContestSchema), 
             { $set: data },
             { returnDocument: 'after', upsert: true, runValidators: true }
         );
-        
+
         invalidateCache(guildId);
         await logAudit(req, 'UPDATE_PHOTO_CONTEST', data);
-        
+
         res.json({ success: true, data: config });
     } catch (error) {
         console.error('Error updating photo contest config:', error);
@@ -1615,7 +1615,7 @@ router.get('/:guildId/verify', adminCheck, async (req, res) => {
         const { guildId } = req.params;
         let config = await VerifyConfig.findOne({ guildId });
         if (!config) config = await VerifyConfig.create({ guildId });
-        
+
         const lang = await messageService.getGuildLanguage(guildId);
         res.json({ success: true, data: mergeModuleDefaults('verify', config, lang) });
     } catch (error) {
@@ -1632,14 +1632,14 @@ router.post('/:guildId/verify', adminCheck, validate(verifySchema), async (req, 
             { $set: req.validatedData },
             { returnDocument: 'after', upsert: true, runValidators: true }
         );
-        
+
         invalidateCache(guildId);
         await logAudit(req, 'UPDATE_VERIFY', req.validatedData);
-        
+
         res.json({ success: true, data: config });
     } catch (error) {
         console.error('Error updating verify config:', error);
-        res.status(500).json({ success: false, error: 'Errore durante l\'aggiornamento della verifica' });
+        res.status(500).json({ success: false, error: 'Error while updating verification' });
     }
 });
 
@@ -1648,9 +1648,9 @@ router.post('/:guildId/verify/send-panel', adminCheck, async (req, res) => {
     try {
         const { guildId } = req.params;
         const config = await VerifyConfig.findOne({ guildId });
-        
+
         if (!config || !config.channelId) {
-            return res.status(400).json({ success: false, error: 'Configurazione non trovata o canale di verifica non impostato.' });
+            return res.status(400).json({ success: false, error: 'Configuration not found or verification channel not set.' });
         }
 
         const client = req.discordClient;
@@ -1659,7 +1659,7 @@ router.post('/:guildId/verify/send-panel', adminCheck, async (req, res) => {
         const channel = await guild.channels.fetch(config.channelId);
 
         if (!channel) {
-            return res.status(404).json({ success: false, error: 'Canale di verifica non trovato su Discord.' });
+            return res.status(404).json({ success: false, error: 'Verification channel not found on Discord.' });
         }
         if (!ensurePanelPermissions(channel, res)) return;
 
@@ -1711,7 +1711,7 @@ router.post('/:guildId/verify/send-panel', adminCheck, async (req, res) => {
         res.json({ success: true, message: 'Pannello di verifica inviato correttamente!' });
     } catch (error) {
         console.error('Error sending verify panel:', error);
-        res.status(500).json({ success: false, error: 'Errore durante l\'invio del pannello di verifica.' });
+        res.status(500).json({ success: false, error: 'Error while sending the verification panel.' });
     }
 });
 
@@ -1724,10 +1724,10 @@ router.post('/:guildId/guild', adminCheck, validate(guildSchema), async (req, re
             { $set: req.validatedData },
             { returnDocument: 'after', upsert: true }
         );
-        
+
         invalidateCache(guildId);
         await logAudit(req, 'UPDATE_GUILD', req.validatedData);
-        
+
         res.json({ success: true, data: guild });
     } catch (error) {
         res.status(500).json({ success: false, error: 'Failed to update guild settings' });
@@ -1776,7 +1776,7 @@ router.post('/:guildId/global', adminCheck, validate(globalConfigSchema), async 
         res.json({ success: true, data: config });
     } catch (error) {
         console.error('Error updating global config:', error);
-        res.status(500).json({ success: false, error: 'Errore durante il salvataggio della configurazione globale' });
+        res.status(500).json({ success: false, error: 'Error while saving global configuration' });
     }
 });
 
@@ -1786,7 +1786,7 @@ router.get('/:guildId/welcome', adminCheck, async (req, res) => {
         const { guildId } = req.params;
         let config = await WelcomeConfig.findOne({ guildId });
         if (!config) config = await WelcomeConfig.create({ guildId });
-        
+
         const lang = await messageService.getGuildLanguage(guildId);
         res.json({ success: true, data: mergeModuleDefaults('welcome', config, lang) });
     } catch (error) {
@@ -1844,7 +1844,7 @@ router.post('/:guildId/utility', adminCheck, validate(utilitySchema), async (req
         res.json({ success: true, data: config });
     } catch (error) {
         console.error('Error updating utility config:', error);
-        res.status(500).json({ success: false, error: 'Errore durante il salvataggio della configurazione utility' });
+        res.status(500).json({ success: false, error: 'Error while saving utility configuration' });
     }
 });
 
@@ -1869,15 +1869,15 @@ router.post('/:guildId/utility/clear', adminCheck, async (req, res) => {
         const channel = await guild.channels.fetch(channelId);
 
         if (!channel || ![0, 5].includes(channel.type)) { // Text or Announcement
-            return res.status(404).json({ success: false, error: 'Canale testuale non trovato.' });
+            return res.status(404).json({ success: false, error: 'Text channel not found.' });
         }
 
         const deleted = await channel.bulkDelete(clearAmount, true);
 
-        await logAudit(req, 'DASHBOARD_CLEAR', { 
-            channelId, 
+        await logAudit(req, 'DASHBOARD_CLEAR', {
+            channelId,
             channelName: channel.name,
-            amount: deleted.size 
+            amount: deleted.size
         });
 
         res.json({ success: true, message: `Eliminati con successo ${deleted.size} messaggi.` });
@@ -1892,7 +1892,7 @@ router.get('/:guildId/socials', adminCheck, async (req, res) => {
     try {
         const { guildId } = req.params;
         let config = await SocialConfig.findOne({ guildId });
-        
+
         if (!config) {
             config = await SocialConfig.create({ guildId });
         }
@@ -1914,7 +1914,7 @@ router.get('/:guildId/socials', adminCheck, async (req, res) => {
         if (modified) {
             await config.save();
         }
-        
+
         res.json({ success: true, data: config });
     } catch (error) {
         console.error('Error fetching socials configuration:', error);
@@ -1963,7 +1963,7 @@ router.post('/:guildId/socials', adminCheck, validate(socialSchema), async (req,
                 if (data.platforms?.[platform]?.accounts) {
                     const newAccounts = data.platforms[platform].accounts;
                     const oldAccounts = existing.platforms[platform]?.accounts || [];
-                    
+
                     data.platforms[platform].accounts = newAccounts.map(newAcc => {
                         const newKey = normalizeAccountKey(newAcc.username);
                         const oldAcc = oldAccounts.find(oa => normalizeAccountKey(oa.username) === newKey);
@@ -2006,7 +2006,7 @@ router.post('/:guildId/socials', adminCheck, validate(socialSchema), async (req,
 
         invalidateCache(guildId);
         await logAudit(req, 'UPDATE_SOCIALS', data);
-        
+
         res.json({ success: true, data: config });
     } catch (error) {
         console.error('Error updating socials configuration:', error);
@@ -2020,12 +2020,12 @@ const resetModuleSchema = z.enum(['whitelist', 'tickets', 'photocontest', 'voice
 router.post('/:guildId/reset/:module', adminCheck, async (req, res) => {
     try {
         const { guildId, module } = req.params;
-        
+
         const moduleValidation = resetModuleSchema.safeParse(module);
         if (!moduleValidation.success) {
             return res.status(400).json({ error: 'Invalid module name for reset' });
         }
-        
+
         if (module === 'whitelist') {
             await WhitelistConfig.findOneAndDelete({ guildId });
         } else if (module === 'tickets') {
@@ -2059,7 +2059,7 @@ router.post('/:guildId/reset/:module', adminCheck, async (req, res) => {
 
         invalidateCache(guildId);
         await logAudit(req, 'RESET_MODULE', { module });
-        
+
         res.json({ success: true, message: `Modulo ${module} resettato correttamente` });
     } catch (error) {
         res.status(500).json({ error: 'Failed to reset configuration' });
@@ -2095,7 +2095,7 @@ router.patch('/:guildId/guild', adminCheck, async (req, res) => {
         // Trigger immediate synchronization
         try {
             let discordGuild = req.discordClient.guilds.cache.get(guildId);
-            
+
             // Fallback to main bot if private bot doesn't see the guild
             if (!discordGuild && req.discordClient !== req.mainClient) {
                 discordGuild = req.mainClient.guilds.cache.get(guildId);
@@ -2104,7 +2104,7 @@ router.patch('/:guildId/guild', adminCheck, async (req, res) => {
             if (discordGuild) {
                 await whiteLabelHelper.syncGuildIdentity(discordGuild);
             }
-            
+
             // Sync global status for the current client (and main client if different)
             await whiteLabelHelper.syncGlobalStatus(req.discordClient, true);
             if (req.discordClient !== req.mainClient) {
@@ -2147,19 +2147,19 @@ router.get('/:guildId/audit-logs', adminCheck, async (req, res) => {
 router.delete('/:guildId/audit-logs', adminCheck, async (req, res) => {
     try {
         const { guildId } = req.params;
-        
+
         // Delete all logs for this guild
         await DashboardAuditLog.deleteMany({ guildId });
-        
+
         // Log the deletion action itself
-        await logAudit(req, 'RESET_AUDIT_LOGS', { 
-            message: 'All audit logs have been cleared by an administrator' 
+        await logAudit(req, 'RESET_AUDIT_LOGS', {
+            message: 'All audit logs have been cleared by an administrator'
         });
 
         res.json({ success: true, message: 'Log resettati con successo' });
     } catch (error) {
         console.error('Error clearing audit logs:', error);
-        res.status(500).json({ success: false, error: 'Errore durante la cancellazione dei log' });
+        res.status(500).json({ success: false, error: 'Error while clearing logs' });
     }
 });
 
@@ -2182,7 +2182,7 @@ router.get('/:guildId/stats', adminCheck, async (req, res) => {
             }
         });
     } catch (error) {
-        res.status(500).json({ success: false, error: 'Errore nel recupero delle statistiche: riprova tra qualche secondo.' });
+        res.status(500).json({ success: false, error: 'Error while fetching statistics: try again in a few seconds.' });
     }
 });
 
@@ -2193,15 +2193,15 @@ router.get('/:guildId/discord-data', adminCheck, async (req, res) => {
         let client = req.discordClient;
         // 1. Check if bot is ready
         if (!client.isReady()) {
-            return res.status(503).json({ 
-                success: false, 
-                error: 'Il bot si sta ancora avviando. Riprova tra qualche secondo.' 
+            return res.status(503).json({
+                success: false,
+                error: 'The bot is still starting. Try again in a few seconds.'
             });
         }
 
         // 2. Robust Presence Check with Fallback
         let guild = client.guilds.cache.get(guildId);
-        
+
         if (!guild) {
             guild = await client.guilds.fetch(guildId).catch(() => null);
         }
@@ -2223,8 +2223,8 @@ router.get('/:guildId/discord-data', adminCheck, async (req, res) => {
 
         if (!guild) {
             console.error(`[Dashboard_API] No bot (Main or Private) found in guild ${guildId}`);
-            return res.status(404).json({ 
-                success: false, 
+            return res.status(404).json({
+                success: false,
                 error: 'Il bot non è presente in questo server. Assicurati di averlo invitato correttamente.',
                 debug: {
                     mainBotId: req.mainClient.user?.id,
@@ -2269,9 +2269,9 @@ router.get('/:guildId/discord-data', adminCheck, async (req, res) => {
         // 6. Map to exact output format
         const roles = rolesFetched
             .filter(r => r.name !== '@everyone' && !r.managed)
-            .map(r => ({ 
-                id: r.id, 
-                name: r.name, 
+            .map(r => ({
+                id: r.id,
+                name: r.name,
                 color: r.hexColor,
                 position: r.position,
                 assignable: r.position < botHighestPosition && manageRoles
@@ -2280,14 +2280,14 @@ router.get('/:guildId/discord-data', adminCheck, async (req, res) => {
 
         const channels = channelsFetched
             .filter(c => [0, 2, 4, 5].includes(c.type)) // Text, Voice, Category or Announcement
-            .map(c => ({ 
-                id: c.id, 
-                name: c.name, 
+            .map(c => ({
+                id: c.id,
+                name: c.name,
                 type: c.type,
                 occupiedBy: occupiedChannels[c.id] || null
             }))
             .sort((a, b) => a.name.localeCompare(b.name));
-            
+
         const members = Array.from(membersFetched.values())
             .filter(m => !m.user.bot)
             .map(m => ({
@@ -2299,17 +2299,17 @@ router.get('/:guildId/discord-data', adminCheck, async (req, res) => {
 
         // 7. Enhanced Empty State Check & Debug
         if (roles.length === 0 && channels.length === 0) {
-            let errorMsg = 'Nessun ruolo o canale trovato.';
+            let errorMsg = 'No roles or channels found.';
             if (!viewChannels) errorMsg += ' Attenzione: Il bot non ha il permesso "Visualizza Canali".';
             if (!manageRoles) errorMsg += ' Attenzione: Il bot non ha il permesso "Gestisci Ruoli".';
-            
+
             return res.status(200).json({ success: true, warning: errorMsg, data: { roles: [], channels: [], members } });
         }
 
-        res.json({ 
-            success: true, 
-            data: { 
-                roles, 
+        res.json({
+            success: true,
+            data: {
+                roles,
                 channels,
                 members,
                 botHighestPosition,
@@ -2317,13 +2317,13 @@ router.get('/:guildId/discord-data', adminCheck, async (req, res) => {
                     manageRoles,
                     viewChannels
                 }
-            } 
+            }
         });
     } catch (error) {
         console.error('[CRITICAL] Error fetching discord data:', error);
-        res.status(500).json({ 
-            success: false, 
-            error: 'Errore interno nel recupero dei dati Discord. Verifica i log del bot.' 
+        res.status(500).json({
+            success: false,
+            error: 'Internal error while fetching Discord data. Check bot logs.'
         });
     }
 });
@@ -2336,7 +2336,7 @@ router.get('/:guildId/fivem', adminCheck, async (req, res) => {
         if (!config) {
             config = await FiveMConfig.create({ guildId });
         }
-        
+
         const lang = await messageService.getGuildLanguage(guildId);
         res.json({ success: true, data: mergeModuleDefaults('fivem', config, lang) });
     } catch (error) {
@@ -2374,7 +2374,7 @@ router.post('/:guildId/fivem', adminCheck, validate(fivemSchema), async (req, re
         res.json({ success: true, data: config });
     } catch (error) {
         console.error('Error updating fivem configuration:', error);
-        res.status(500).json({ success: false, error: 'Errore durante il salvataggio della configurazione FiveM' });
+        res.status(500).json({ success: false, error: 'Error while saving FiveM configuration' });
     }
 });
 
@@ -2382,12 +2382,12 @@ router.post('/:guildId/fivem', adminCheck, validate(fivemSchema), async (req, re
 router.post('/:guildId/fivem/ping', adminCheck, async (req, res) => {
     try {
         const { serverIp } = req.body;
-        if (!serverIp) return res.status(400).json({ success: false, error: "Nessun IP fornito." });
+        if (!serverIp) return res.status(400).json({ success: false, error: "No IP provided." });
 
         const baseUrl = serverIp.startsWith('http') ? serverIp : `http://${serverIp}`;
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), 6000);
-        
+
         const [infoRes, playersRes] = await Promise.all([
             fetch(`${baseUrl}/info.json`, { signal: controller.signal }).catch(() => null),
             fetch(`${baseUrl}/players.json`, { signal: controller.signal }).catch(() => null)
@@ -2397,7 +2397,7 @@ router.post('/:guildId/fivem/ping', adminCheck, async (req, res) => {
         if (!infoRes || !infoRes.ok || !playersRes || !playersRes.ok) {
             return res.status(404).json({ success: false, error: "Server non raggiungibile (Timeout) o endpoint invalido." });
         }
-        
+
         const info = await infoRes.json();
         const players = await playersRes.json();
         let sName = info.vars?.sv_hostname || info.server || serverIp;
@@ -2405,7 +2405,7 @@ router.post('/:guildId/fivem/ping', adminCheck, async (req, res) => {
 
         res.json({ success: true, data: { name: sName, maxPlayers: info.vars?.sv_maxClients || 0, players: Array.isArray(players) ? players.length : 0 }});
     } catch (error) {
-         res.status(500).json({ success: false, error: 'Errore generico durante il pinging.' });
+         res.status(500).json({ success: false, error: 'Generic error while pinging.' });
     }
 });
 
@@ -2414,15 +2414,15 @@ router.post('/:guildId/fivem/send-panel', adminCheck, async (req, res) => {
     try {
         const { guildId } = req.params;
         const { serverId } = req.body; // Can specify which server to send, or all
-        
+
         const config = await FiveMConfig.findOne({ guildId });
         if (!config || !config.servers || config.servers.length === 0) {
-            return res.status(400).json({ success: false, error: 'Configurazione FiveM non trovata o nessun server configurato.' });
+            return res.status(400).json({ success: false, error: 'FiveM configuration not found or no server configured.' });
         }
 
         const server = config.servers.find(s => s.id === serverId);
         if (!server) {
-            return res.status(404).json({ success: false, error: 'Server specifico non trovato nella configurazione.' });
+            return res.status(404).json({ success: false, error: 'Selected server was not found in the configuration.' });
         }
 
         if (!server.statusChannelId) {
@@ -2435,7 +2435,7 @@ router.post('/:guildId/fivem/send-panel', adminCheck, async (req, res) => {
         const channel = await guild.channels.fetch(server.statusChannelId);
 
         if (!channel) {
-            return res.status(404).json({ success: false, error: 'Canale Discord non trovato o inaccessibile.' });
+            return res.status(404).json({ success: false, error: 'Discord channel not found or inaccessible.' });
         }
         if (!ensurePanelPermissions(channel, res)) return;
 
@@ -2454,7 +2454,7 @@ router.post('/:guildId/fivem/send-panel', adminCheck, async (req, res) => {
         res.json({ success: true, message: 'LiveBoard inviata con successo! Il bot inizierà a aggiornarla tra pochi istanti.' });
     } catch (error) {
         console.error('Error sending fivem panel:', error);
-        res.status(500).json({ success: false, error: 'Errore durante l\'invio della LiveBoard.' });
+        res.status(500).json({ success: false, error: 'Error while sending the LiveBoard.' });
     }
 });
 
@@ -2463,7 +2463,7 @@ router.post('/:guildId/photocontest/force-start', adminCheck, async (req, res) =
     try {
         const { guildId } = req.params;
         const config = await PhotoContestConfig.findOne({ guildId });
-        
+
         if (!config || !config.enabled) {
             return res.status(400).json({ success: false, error: 'Modulo Photo Contest disabilitato o non configurato.' });
         }
@@ -2480,11 +2480,11 @@ router.post('/:guildId/photocontest/force-start', adminCheck, async (req, res) =
             await config.save();
             res.json({ success: true, message: 'Contest pianificato per l\'avvio immediato (entro 1 minuto).' });
         }
-        
+
         await logAudit(req, 'FORCE_START_PHOTOCONTEST', { guildId });
     } catch (error) {
         console.error('Error force starting photocontest:', error);
-        res.status(500).json({ success: false, error: 'Errore durante l\'avvio del contest.' });
+        res.status(500).json({ success: false, error: 'Error while starting the contest.' });
     }
 });
 
@@ -2493,9 +2493,9 @@ router.post('/:guildId/photocontest/force-end', adminCheck, async (req, res) => 
     try {
         const { guildId } = req.params;
         const activeContest = await PhotoContest.findOne({ guildId, status: 'ACTIVE' });
-        
+
         if (!activeContest) {
-            return res.status(400).json({ success: false, error: 'Nessun contest attivo da terminare.' });
+            return res.status(400).json({ success: false, error: 'No active contest to end.' });
         }
 
         if (req.discordClient.photocontestManager) {
@@ -2507,11 +2507,11 @@ router.post('/:guildId/photocontest/force-end', adminCheck, async (req, res) => 
             await activeContest.save();
             res.json({ success: true, message: 'Contest pianificato per il termine immediato (entro 1 minuto).' });
         }
-        
+
         await logAudit(req, 'FORCE_END_PHOTOCONTEST', { guildId });
     } catch (error) {
         console.error('Error force ending photocontest:', error);
-        res.status(500).json({ success: false, error: 'Errore durante il termine del contest.' });
+        res.status(500).json({ success: false, error: 'Error while ending the contest.' });
     }
 });
 
@@ -2520,7 +2520,7 @@ router.post('/:guildId/welcome/test', adminCheck, async (req, res) => {
     try {
         const { guildId } = req.params;
         const config = await WelcomeConfig.findOne({ guildId });
-        
+
         if (!config || !config.enabled || !config.welcome?.enabled || !config.welcome?.channelId) {
             return res.status(400).json({ success: false, error: 'Welcome module is disabled or the channel is not configured.' });
         }
@@ -2543,7 +2543,7 @@ router.post('/:guildId/welcome/test', adminCheck, async (req, res) => {
         };
 
         const wEmbed = config.welcome.embed || {};
-        const isPlaceholder = (val) => !val || (typeof val === 'string' && (val.trim() === '' || val === 'Senza Titolo' || val === 'Nessun contenuto impostato.'));
+        const isPlaceholder = (val) => !val || (typeof val === 'string' && (val.trim() === '' || val === 'Untitled' || val === 'No content set.'));
 
         const rawTitle = isPlaceholder(wEmbed.title) ? '✈️ Benvenuto in Città' : wEmbed.title;
         const rawDesc = isPlaceholder(wEmbed.description) ? 'Un nuovo cittadino, **{user}**, è appena atterrato! Ti auguriamo una permanenza prospera.' : wEmbed.description;
@@ -2567,7 +2567,7 @@ router.post('/:guildId/welcome/test', adminCheck, async (req, res) => {
         await logAudit(req, 'TEST_WELCOME', { channelId: config.welcome.channelId });
     } catch (error) {
         console.error('Error testing welcome:', error);
-        res.status(500).json({ success: false, error: 'Errore durante l\'invio del test.' });
+        res.status(500).json({ success: false, error: 'Error while sending the test.' });
     }
 });
 
@@ -2580,7 +2580,7 @@ router.post('/:guildId/onboarding', adminCheck, validate(onboardingSchema), asyn
         // 1. Update Global Config
         await GlobalConfig.findOneAndUpdate(
             { guildId },
-            { 
+            {
                 language: data.language,
                 adminRoleIds: data.adminRoleIds,
                 'logs.channelId': data.logChannelId,
@@ -2632,7 +2632,7 @@ router.post('/:guildId/onboarding', adminCheck, validate(onboardingSchema), asyn
         res.json({ success: true, message: 'Onboarding completato con successo!' });
     } catch (error) {
         console.error('Error during onboarding save:', error);
-        res.status(500).json({ success: false, error: 'Errore durante il salvataggio dell\'onboarding.' });
+        res.status(500).json({ success: false, error: 'Error while saving onboarding.' });
     }
 });
 
@@ -2643,7 +2643,7 @@ router.get('/:guildId/moderation', adminCheck, async (req, res) => {
         const { guildId } = req.params;
         let config = await ModerationConfig.findOne({ guildId });
         if (!config) config = await ModerationConfig.create({ guildId });
-        
+
         const lang = await messageService.getGuildLanguage(guildId);
         res.json({ success: true, data: mergeModuleDefaults('moderation', config, lang) });
     } catch (error) {
@@ -2665,7 +2665,7 @@ router.post('/:guildId/moderation', adminCheck, validate(moderationSchema), asyn
         res.json({ success: true, data: config });
     } catch (error) {
         console.error('Error updating moderation config:', error);
-        res.status(500).json({ success: false, error: 'Errore durante il salvataggio della configurazione moderazione' });
+        res.status(500).json({ success: false, error: 'Error while saving moderation configuration' });
     }
 });
 
@@ -2740,16 +2740,16 @@ router.post('/:guildId/sync', adminCheck, async (req, res) => {
         const userGuilds = req.user.guilds || [];
         const sourceInUserGuilds = userGuilds.find(g => g.id === sourceGuildId && ((g.permissions & 0x8) || (g.permissions & 0x20)));
         if (!sourceInUserGuilds) {
-            return res.status(403).json({ success: false, error: 'Non hai i permessi nel server sorgente.' });
+            return res.status(403).json({ success: false, error: 'You do not have permissions in the source server.' });
         }
 
         const sourceGuild = await req.mainClient.guilds.fetch(sourceGuildId).catch(() => null);
         if (!sourceGuild) {
-            return res.status(403).json({ success: false, error: 'Il bot non è presente nel server sorgente.' });
+            return res.status(403).json({ success: false, error: 'The bot is not in the source server.' });
         }
         const sourceMember = await sourceGuild.members.fetch(req.user.id).catch(() => null);
         if (!sourceMember?.permissions?.has(PermissionFlagsBits.ManageGuild) && !sourceMember?.permissions?.has(PermissionFlagsBits.Administrator)) {
-            return res.status(403).json({ success: false, error: 'I permessi sul server sorgente non sono più validi.' });
+            return res.status(403).json({ success: false, error: 'Source server permissions are no longer valid.' });
         }
 
         // 3. Define modules to sync
@@ -2806,14 +2806,14 @@ router.post('/:guildId/sync', adminCheck, async (req, res) => {
         invalidateCache(guildId);
         await logAudit(req, 'SYNC_CONFIG', { sourceGuildId, modules: syncedModules });
 
-        res.json({ 
-            success: true, 
+        res.json({
+            success: true,
             message: `Sincronizzati ${syncedModules.length} moduli con successo.`,
-            syncedModules 
+            syncedModules
         });
     } catch (error) {
         console.error('Sync error:', error);
-        res.status(500).json({ success: false, error: 'Errore durante la sincronizzazione.' });
+        res.status(500).json({ success: false, error: 'Error while syncing.' });
     }
 });
 
@@ -2944,11 +2944,11 @@ router.post('/:guildId/polls/create', adminCheck, validate(pollCreateSchema), as
 router.post('/:guildId/onboarding/complete', adminCheck, async (req, res) => {
     try {
         const { guildId } = req.params;
-        const { 
-            modules, 
-            autoChannels, 
-            adminRoles, 
-            staffRole, 
+        const {
+            modules,
+            autoChannels,
+            adminRoles,
+            staffRole,
             customChannelNames,
             language,
             prefix,
@@ -2961,7 +2961,7 @@ router.post('/:guildId/onboarding/complete', adminCheck, async (req, res) => {
         const guild = await client.guilds.fetch(guildId).catch(() => null);
 
         if (!guild) {
-            return res.status(404).json({ success: false, error: 'Server non trovato o bot non presente.' });
+            return res.status(404).json({ success: false, error: 'Server not found or bot not present.' });
         }
 
         let createdChannels = {};
@@ -2972,33 +2972,33 @@ router.post('/:guildId/onboarding/complete', adminCheck, async (req, res) => {
         // 1. Mark setup as completed and enable modules
         await Guild.findOneAndUpdate(
             { guildId },
-            { 
-                $set: { 
+            {
+                $set: {
                     setupCompleted: true,
                     enabledModules: modules
-                } 
+                }
             },
             { upsert: true }
         );
 
         // 2. Initialize specific module configs with channels and roles
-        await initializeModuleConfigs(guildId, createdChannels, { 
+        await initializeModuleConfigs(guildId, createdChannels, {
             modules,
-            adminRoles, 
-            staffRole, 
-            language, 
-            prefix, 
-            nickname, 
-            ticketCategory, 
-            welcomeStyle 
+            adminRoles,
+            staffRole,
+            language,
+            prefix,
+            nickname,
+            ticketCategory,
+            welcomeStyle
         }, guild);
 
         await logAudit(req, 'ONBOARDING_COMPLETED', { message: 'Onboarding Setup Finished', modules, autoChannels });
-        
+
         res.json({ success: true, message: 'Setup completato con successo!' });
     } catch (error) {
         console.error('[Onboarding] Error:', error);
-        res.status(500).json({ success: false, error: 'Errore durante la finalizzazione del setup.' });
+        res.status(500).json({ success: false, error: 'Error while finalizing setup.' });
     }
 });
 
@@ -3015,7 +3015,7 @@ router.post('/:guildId/leave', adminCheck, async (req, res) => {
         const guild = client.guilds.cache.get(guildId);
 
         if (!guild) {
-            return res.status(404).json({ success: false, message: 'Server non trovato nella cache del bot.' });
+            return res.status(404).json({ success: false, message: 'Server not found in bot cache.' });
         }
 
         // Security check: Only owner or hardcoded super-admins
@@ -3023,21 +3023,21 @@ router.post('/:guildId/leave', adminCheck, async (req, res) => {
         const isHardcodedAdmin = ['361159834688552960', '314417452395626496'].includes(req.user.id);
 
         if (!isOwner && !isHardcodedAdmin) {
-            return res.status(403).json({ 
-                success: false, 
-                message: 'Azione protetta: Solo il proprietario del server o gli sviluppatori Verix possono eseguire questa operazione.' 
+            return res.status(403).json({
+                success: false,
+                message: 'Protected action: only the server owner or Verix developers can run this operation.'
             });
         }
 
-        await logAudit(req, 'GUILD_LEAVE', { message: 'Il bot ha lasciato il server tramite dashboard' });
-        
+        await logAudit(req, 'GUILD_LEAVE', { message: 'The bot left the server from the dashboard' });
+
         // Final action
         await guild.leave();
 
-        res.json({ success: true, message: 'Il bot ha lasciato il server con successo.' });
+        res.json({ success: true, message: 'The bot left the server successfully.' });
     } catch (err) {
         console.error('[API_ERROR] Failed to leave guild:', err);
-        res.status(500).json({ success: false, message: 'Errore interno durante l\'esecuzione dell\'uscita.' });
+        res.status(500).json({ success: false, message: 'Internal error while leaving the server.' });
     }
 });
 
@@ -3067,14 +3067,14 @@ router.post('/:guildId/:module/reset', adminCheck, async (req, res) => {
 
         const targetModule = module.toLowerCase();
         const Model = modelMap[targetModule];
-        
+
         if (!Model) {
             return res.status(400).json({ success: false, error: 'Modulo non valido o non supportato per il reset.' });
         }
 
         // Delete existing config
         await Model.deleteOne({ guildId });
-        
+
         // Re-create with defaults
         const newConfig = await Model.findOneAndUpdate(
             { guildId },
@@ -3083,7 +3083,7 @@ router.post('/:guildId/:module/reset', adminCheck, async (req, res) => {
         );
 
         invalidateCache(guildId, targetModule);
-        
+
         const lang = await messageService.getGuildLanguage(guildId);
         const data = mergeModuleDefaults(targetModule, newConfig, lang);
 
@@ -3092,7 +3092,7 @@ router.post('/:guildId/:module/reset', adminCheck, async (req, res) => {
         res.json({ success: true, data });
     } catch (error) {
         console.error('[RESET_ERROR]:', error);
-        res.status(500).json({ success: false, error: 'Errore durante il ripristino del modulo.' });
+        res.status(500).json({ success: false, error: 'Error while resetting the module.' });
     }
 });
 router.post('/:guildId/factory-reset', adminCheck, async (req, res) => {
@@ -3129,26 +3129,26 @@ router.post('/:guildId/factory-reset', adminCheck, async (req, res) => {
         // 2. Reset Guild main document
         await Guild.findOneAndUpdate(
             { guildId },
-            { 
-                $set: { 
+            {
+                $set: {
                     setupCompleted: false,
                     enabledModules: [],
                     logChannelId: null,
                     welcomeChannelId: null,
                     prefix: '!'
-                } 
+                }
             }
         );
 
         // 3. Clear all caches for this guild
         invalidateCache(guildId);
-        
+
         await logAudit(req, 'FACTORY_RESET', { message: 'System completely reset to factory defaults' });
 
         res.json({ success: true, message: 'Sistema ripristinato con successo. Verrai reindirizzato al setup.' });
     } catch (error) {
         console.error('[FACTORY_RESET_ERROR]:', error);
-        res.status(500).json({ success: false, error: 'Errore durante il ripristino globale.' });
+        res.status(500).json({ success: false, error: 'Error while running the global reset.' });
     }
 });
 
@@ -3162,7 +3162,7 @@ router.post('/:guildId/onboarding/skip', adminCheck, async (req, res) => {
         res.json({ success: true, message: 'Onboarding saltato con successo!' });
     } catch (error) {
         console.error('[Onboarding_Skip] Error:', error);
-        res.status(500).json({ success: false, error: 'Errore durante il salto dell\'onboarding.' });
+        res.status(500).json({ success: false, error: 'Error while skipping onboarding.' });
     }
 });
 

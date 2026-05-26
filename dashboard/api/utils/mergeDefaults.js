@@ -10,11 +10,11 @@ import { getDefaultMessages } from '../../../src/locales/t.js';
 export function mergeModuleDefaults(moduleName, dbConfig, lang = 'en') {
     const defaultMessages = getDefaultMessages(lang);
     if (!dbConfig) return defaultMessages[moduleName] || {};
-    
+
     const defaults = defaultMessages[moduleName] || {};
     // Extract plain object if it's a Mongoose document
     const result = typeof dbConfig.toObject === 'function' ? dbConfig.toObject({ flattenMaps: true }) : JSON.parse(JSON.stringify(dbConfig));
-    
+
     if (moduleName === 'tickets') {
         console.log(`[DEBUG] Merging Tickets: Found ${Object.keys(result.typesConfig || {}).length} categories in DB`);
     }
@@ -25,15 +25,15 @@ export function mergeModuleDefaults(moduleName, dbConfig, lang = 'en') {
     const mergeEmbed = (dbEmbed, defEmbed) => {
         if (!defEmbed) return dbEmbed || {};
         const db = dbEmbed || {};
-        
+
         // Helper to check if a value is a generic placeholder
         const isPlaceholder = (val) => !val || val.trim() === '' || val === 'Senza Titolo' || val === 'Nessun contenuto impostato.';
 
         return {
             ...defEmbed,
             ...db,
-            title: !isPlaceholder(db.title) ? db.title : (defEmbed.title || '⚠️ Protocollo Titolo Mancante'),
-            description: !isPlaceholder(db.description) ? db.description : (defEmbed.description || 'Nessun contenuto informativo rilevato nei registri.'),
+            title: !isPlaceholder(db.title) ? db.title : (defEmbed.title || '⚠️ Missing title'),
+            description: !isPlaceholder(db.description) ? db.description : (defEmbed.description || 'No informative content was detected for this module.'),
             color: db.color || defEmbed.color || '#5865F2',
             footer: !isPlaceholder(db.footer) ? db.footer : (defEmbed.footer || ''),
             enabled: db.enabled !== undefined ? db.enabled : (defEmbed.enabled !== undefined ? defEmbed.enabled : true)
@@ -97,7 +97,7 @@ export function mergeModuleDefaults(moduleName, dbConfig, lang = 'en') {
         // Handle nested objects (voiceSettings, typesConfig, etc.)
         if (value && typeof value === 'object' && !value.title && !value.description) {
             const dbValue = result[key] instanceof Map ? Object.fromEntries(result[key]) : (result[key] || {});
-            
+
             // Ticket categories are user-managed. Do not re-add deleted default
             // categories when a saved typesConfig already exists in the DB.
             if (key === 'typesConfig') {

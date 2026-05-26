@@ -14,7 +14,7 @@ const reactionRolePanelSchema = new mongoose.Schema({
     }],
     embed: {
         title: { type: String, default: 'Assegnazione Ruoli' },
-        description: { type: String, default: 'Seleziona i ruoli che desideri ottenere cliccando sui bottoni o reagendo.' },
+        description: { type: String, default: 'Select the roles you want to receive by clicking the buttons or reacting.' },
         color: { type: String, default: '#5865F2' },
         image: { type: String, default: null },
         thumbnail: { type: String, default: null },

@@ -21,12 +21,12 @@ if (process.env.STRIPE_SECRET_KEY) {
  */
 stripeCheckoutRouter.post('/checkout', adminCheck, async (req, res) => {
     if (!stripe) {
-        return res.status(500).json({ error: 'Stripe non configurato sul server.' });
+        return res.status(500).json({ error: 'Stripe is not configured on the server.' });
     }
 
     try {
         const { guildId, planType } = req.body;
-        
+
         if (!guildId) {
             return res.status(400).json({ error: 'guildId è richiesto' });
         }
@@ -83,7 +83,7 @@ stripeCheckoutRouter.post('/checkout', adminCheck, async (req, res) => {
         res.json({ url: session.url });
     } catch (error) {
         logger.error(`[Stripe Checkout Error] ${error.message}`);
-        res.status(500).json({ error: 'Errore durante la creazione della sessione di pagamento.' });
+        res.status(500).json({ error: 'Error while creating the payment session.' });
     }
 });
 
@@ -116,7 +116,7 @@ stripeWebhookRouter.post('/webhook', express.raw({ type: 'application/json' }), 
                  const session = event.data.object;
                  const guildId = session.client_reference_id || session.metadata.guildId;
                  let planType = session.metadata.planType || 'premium';
- 
+
                  if (guildId) {
                      const isLifetime = planType.endsWith('_lifetime');
                      if (planType.endsWith('_yearly')) {
@@ -125,11 +125,11 @@ stripeWebhookRouter.post('/webhook', express.raw({ type: 'application/json' }), 
                          planType = planType.replace('_lifetime', '');
                      }
                      logger.info(`[Stripe] Payment successful for guild ${guildId} (Plan: ${planType})`);
-                     
+
                      // Update database
                      await Guild.findOneAndUpdate(
                          { guildId },
-                         { 
+                         {
                              isPremium: true,
                              premiumTier: planType,
                              stripeSubscriptionId: isLifetime ? null : session.subscription,
@@ -146,10 +146,10 @@ stripeWebhookRouter.post('/webhook', express.raw({ type: 'application/json' }), 
                 // Handle cancellation
                 const subscription = event.data.object;
                 logger.info(`[Stripe] Subscription deleted: ${subscription.id}`);
-                
+
                 await Guild.findOneAndUpdate(
                     { stripeSubscriptionId: subscription.id },
-                    { 
+                    {
                         isPremium: false,
                         premiumTier: 'none',
                         stripeSubscriptionId: null,

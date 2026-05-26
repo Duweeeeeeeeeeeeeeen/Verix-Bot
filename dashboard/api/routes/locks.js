@@ -38,7 +38,7 @@ router.post('/:guildId/:module/acquire', adminCheck, async (req, res) => {
 
         // 3. Otherwise, set/renew lock for 30 seconds
         const expiresAt = new Date(Date.now() + 30000); // 30s lock duration
-        
+
         const lock = await ModuleLock.findOneAndUpdate(
             { guildId, module },
             { userId, username, expiresAt },
@@ -101,7 +101,7 @@ router.post('/:guildId/:module/heartbeat', adminCheck, async (req, res) => {
         });
     } catch (error) {
         logger.error('[Locks_API] Heartbeat Error:', error);
-        res.status(500).json({ success: false, error: 'Errore durante il rinnovo del blocco.' });
+        res.status(500).json({ success: false, error: 'Error while renewing the lock.' });
     }
 });
 
@@ -127,7 +127,7 @@ router.delete('/:guildId/:module/release', adminCheck, async (req, res) => {
         });
     } catch (error) {
         logger.error('[Locks_API] Lock Release Error:', error);
-        res.status(500).json({ success: false, error: 'Errore durante il rilascio del blocco.' });
+        res.status(500).json({ success: false, error: 'Error while releasing the lock.' });
     }
 });
 
@@ -151,7 +151,7 @@ router.post('/:guildId/:module/force-unlock', nativeAdminCheck, async (req, res)
         });
     } catch (error) {
         logger.error('[Locks_API] Force Unlock Error:', error);
-        res.status(500).json({ success: false, error: 'Errore durante lo sblocco forzato.' });
+        res.status(500).json({ success: false, error: 'Error while force unlocking.' });
     }
 });
 

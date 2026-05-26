@@ -18,19 +18,19 @@ const supportConfigSchema = new mongoose.Schema({
             channelId: { type: String, default: null }
         },
         pingStaffOnJoin: { type: Boolean, default: true },
-        channelNameTemplate: { type: String, default: 'assistenza-{user}' },
+        channelNameTemplate: { type: String, default: 'support-{user}' },
         sessionCounter: { type: Number, default: 0 },
         messages: {
-            paused: { type: String, default: '⏸️ **ASSISTENZA SOSPESA:** Il servizio di assistenza vocale è temporaneamente chiuso.' },
-            cooldown: { type: String, default: '⚠️ Hai richiesto assistenza troppo recentemente. Attendi qualche minuto.' },
-            queueFull: { type: String, default: '⏳ Tutti gli uffici assistenza sono occupati. Sei in coda. Verrai spostato automaticamente appena un operatore si libera.' },
-            sessionStart: { type: String, default: '🎧 **Richiesta Presa in Carico:** Sei stato spostato in un canale privato. Un operatore dello staff si unirà a breve.' }
+            paused: { type: String, default: '**SUPPORT PAUSED:** Voice support is temporarily closed.' },
+            cooldown: { type: String, default: 'You requested support too recently. Please wait a few minutes.' },
+            queueFull: { type: String, default: 'All support rooms are busy. You are queued and will be moved automatically when a staff member is available.' },
+            sessionStart: { type: String, default: '**Support Request Accepted:** You have been moved to a private channel. A staff member will join shortly.' }
         }
     },
     embeds: {
         staffLog: {
-            title: { type: String, default: '🆘 Nuova Richiesta Assistenza' },
-            description: { type: String, default: 'L\'utente {user} ha richiesto assistenza vocale ed è in attesa nel canale: {voice_channel}.' },
+            title: { type: String, default: 'New Support Request' },
+            description: { type: String, default: 'User {user} requested voice support and is waiting in channel: {voice_channel}.' },
             color: { type: String, default: '#f1c40f' }
         }
     },

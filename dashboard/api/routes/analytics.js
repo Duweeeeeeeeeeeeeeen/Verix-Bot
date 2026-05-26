@@ -24,9 +24,9 @@ router.get('/:guildId', adminCheck, async (req, res) => {
         const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
         // 1. Member Growth (Last 30 days)
-        const growth = await GuildStats.find({ 
-            guildId, 
-            timestamp: { $gte: thirtyDaysAgo } 
+        const growth = await GuildStats.find({
+            guildId,
+            timestamp: { $gte: thirtyDaysAgo }
         }).sort({ timestamp: 1 });
 
         // 2. Ticket Stats
@@ -57,10 +57,10 @@ router.get('/:guildId', adminCheck, async (req, res) => {
 
         // 7 days x 24 hours
         const heatmap = Array.from({ length: 7 }, () => new Array(24).fill(0));
-        
-        [...ticketTimeline.map(t => t.openedAt), 
-         ...infractionTimeline.map(i => i.createdAt), 
-         ...wlTimeline.map(w => w.timestamp), 
+
+        [...ticketTimeline.map(t => t.openedAt),
+         ...infractionTimeline.map(i => i.createdAt),
+         ...wlTimeline.map(w => w.timestamp),
          ...auditTimeline.map(a => a.timestamp)
         ].forEach(date => {
             if (!date) return;
@@ -73,13 +73,13 @@ router.get('/:guildId', adminCheck, async (req, res) => {
         // 6. Leveling Real-time Stats
         const currentExpAgg = await UserExperience.aggregate([
             { $match: { guildId } },
-            { 
-                $group: { 
-                    _id: null, 
-                    totalXp: { $sum: "$xp" }, 
+            {
+                $group: {
+                    _id: null,
+                    totalXp: { $sum: "$xp" },
                     totalMessages: { $sum: "$totalMessages" },
                     userCount: { $sum: 1 }
-                } 
+                }
             }
         ]);
         const currentTotalXp = currentExpAgg[0]?.totalXp || 0;
@@ -101,8 +101,8 @@ router.get('/:guildId', adminCheck, async (req, res) => {
             success: true,
             isPro: true,
             data: {
-                growth: growth.map(s => ({ 
-                    t: s.timestamp, 
+                growth: growth.map(s => ({
+                    t: s.timestamp,
                     count: s.memberCount,
                     totalXp: s.totalXp || 0,
                     totalMessages: s.totalMessages || 0
@@ -132,7 +132,7 @@ router.get('/:guildId', adminCheck, async (req, res) => {
 
     } catch (error) {
         console.error('[Analytics_API] Error:', error);
-        res.status(500).json({ success: false, error: 'Errore durante il recupero dei dati analytics.' });
+        res.status(500).json({ success: false, error: 'Error while fetching analytics data.' });
     }
 });
 

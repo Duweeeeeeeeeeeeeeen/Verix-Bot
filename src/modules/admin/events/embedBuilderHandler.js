@@ -54,12 +54,12 @@ export default {
             const row = new ActionRowBuilder().addComponents(
                 new StringSelectMenuBuilder()
                     .setCustomId(`eb_select_key_${moduleName}`)
-                    .setPlaceholder(`Seleziona l'embed di ${moduleName.toUpperCase()} da modificare...`)
+                    .setPlaceholder(`Select the ${moduleName.toUpperCase()} embed to edit...`)
                     .addOptions(options)
             );
 
             return interaction.update({
-                content: `📁 **Modulo Selezionato:** \`${moduleName.toUpperCase()}\`\nScegli quale embed specifico vuoi personalizzare.`,
+                content: `**Selected module:** \`${moduleName.toUpperCase()}\`\nChoose which embed you want to customize.`,
                 components: [row]
             });
         }
@@ -75,8 +75,8 @@ export default {
         // --- 3. Property Buttons (Open Modals) ---
         if (interaction.isButton() && interaction.customId.startsWith('eb_edit_')) {
             const [,, property, moduleName, embedKey] = interaction.customId.split('_');
-            
-            const config = moduleName === 'whitelist' 
+
+            const config = moduleName === 'whitelist'
                 ? await WhitelistConfig.findOne({ guildId: interaction.guild.id })
                 : await BackgroundConfig.findOne({ guildId: interaction.guild.id });
 
@@ -85,25 +85,25 @@ export default {
             if (property === 'addfield') {
                 const modal = new ModalBuilder()
                     .setCustomId(`eb_modal_addfield_${moduleName}_${embedKey}`)
-                    .setTitle('Aggiungi Campo');
+                    .setTitle('Add Field');
 
                 const nameInput = new TextInputBuilder()
                     .setCustomId('field_name')
-                    .setLabel('Nome del Campo')
+                    .setLabel('Field Name')
                     .setStyle(TextInputStyle.Short)
                     .setRequired(true);
 
                 const valueInput = new TextInputBuilder()
                     .setCustomId('field_value')
-                    .setLabel('Valore del Campo')
+                    .setLabel('Field Value')
                     .setStyle(TextInputStyle.Paragraph)
                     .setRequired(true);
 
                 const inlineInput = new TextInputBuilder()
                     .setCustomId('field_inline')
-                    .setLabel('Inline? (si/no)')
+                    .setLabel('Inline? (yes/no)')
                     .setStyle(TextInputStyle.Short)
-                    .setPlaceholder('si o no')
+                    .setPlaceholder('yes or no')
                     .setRequired(false);
 
                 modal.addComponents(
@@ -116,17 +116,17 @@ export default {
 
             if (property === 'clearfields') {
                 await config.updateOne({ $set: { [`embeds.${embedKey}.fields`]: [] } });
-                await interaction.reply({ content: '🗑️ Tutti i campi sono stati rimossi.', flags: [MessageFlags.Ephemeral] });
+                await interaction.reply({ content: 'All fields have been removed.', flags: [MessageFlags.Ephemeral] });
                 return renderEditor(interaction, moduleName, embedKey);
             }
 
             const modal = new ModalBuilder()
                 .setCustomId(`eb_modal_${property}_${moduleName}_${embedKey}`)
-                .setTitle(`Modifica ${property.toUpperCase()}`);
+                .setTitle(`Edit ${property.toUpperCase()}`);
 
             const input = new TextInputBuilder()
                 .setCustomId('new_value')
-                .setLabel(`Inserisci nuovo valore per ${property}`)
+                .setLabel(`Enter new value for ${property}`)
                 .setStyle(property === 'description' ? TextInputStyle.Paragraph : TextInputStyle.Short)
                 .setValue(embedConfig[property] || '')
                 .setRequired(false);
@@ -142,7 +142,7 @@ export default {
             const moduleName = parts[3];
             const embedKey = parts[4];
 
-            let config = moduleName === 'whitelist' 
+            let config = moduleName === 'whitelist'
                 ? await WhitelistConfig.findOne({ guildId: interaction.guild.id })
                 : await BackgroundConfig.findOne({ guildId: interaction.guild.id });
 
@@ -150,10 +150,10 @@ export default {
             if (property === 'addfield') {
                 const name = interaction.fields.getTextInputValue('field_name');
                 const value = interaction.fields.getTextInputValue('field_value');
-                const inline = interaction.fields.getTextInputValue('field_inline').toLowerCase() === 'si';
+                const inline = interaction.fields.getTextInputValue('field_inline').toLowerCase() === 'yes';
 
-                await config.updateOne({ 
-                    $push: { [`embeds.${embedKey}.fields`]: { name, value, inline } } 
+                await config.updateOne({
+                    $push: { [`embeds.${embedKey}.fields`]: { name, value, inline } }
                 });
             } else {
                 const newValue = interaction.fields.getTextInputValue('new_value');
@@ -173,11 +173,11 @@ export default {
             const embedKey = parts[3];
 
             if (action === 'done') {
-                return interaction.update({ content: '✅ **Configurazione completata.** L\'editor è stato chiuso.', embeds: [], components: [] });
+                return interaction.update({ content: 'Configuration completed. The editor has been closed.', embeds: [], components: [] });
             }
 
             if (action === 'reset') {
-                let config = moduleName === 'whitelist' 
+                let config = moduleName === 'whitelist'
                     ? await WhitelistConfig.findOne({ guildId: interaction.guild.id })
                     : await BackgroundConfig.findOne({ guildId: interaction.guild.id });
 
@@ -187,7 +187,7 @@ export default {
                 properties.forEach(p => resetData[`embeds.${embedKey}.${p}`] = undefined); // mongoose will use defaults on next save/load if undefined or we can set specific defaults
 
                 await config.updateOne({ $unset: resetData });
-                
+
                 await interaction.followUp({ content: '🔄 Embed ripristinato ai valori predefiniti.', flags: [MessageFlags.Ephemeral] });
                 return renderEditor(interaction, moduleName, embedKey);
             }
@@ -200,7 +200,7 @@ export default {
  */
 async function renderEditor(interaction, moduleName, embedKey, config = null) {
     if (!config) {
-        config = moduleName === 'whitelist' 
+        config = moduleName === 'whitelist'
             ? await WhitelistConfig.findOne({ guildId: interaction.guild.id })
             : await BackgroundConfig.findOne({ guildId: interaction.guild.id });
     }

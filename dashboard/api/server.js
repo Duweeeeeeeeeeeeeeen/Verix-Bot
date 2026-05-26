@@ -30,8 +30,14 @@ app.set('trust proxy', 1); // Trust the proxy (Nginx/VPS) to allow session cooki
 const PORT = process.env.DASHBOARD_API_PORT || 5000;
 const isProduction = process.env.NODE_ENV === 'production';
 
+const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI;
+if (!mongoUri) {
+    console.error('FATAL: MONGODB_URI or MONGO_URI environment variable is not defined. Refusing to start.');
+    process.exit(1);
+}
+
 // Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI)
+mongoose.connect(mongoUri)
     .then(() => console.log('✅ Dashboard API connected to MongoDB'))
     .catch(err => console.error('❌ MongoDB Connection Error:', err));
 
@@ -64,7 +70,7 @@ app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
+    store: MongoStore.create({ mongoUrl: mongoUri }),
     proxy: true,
     rolling: true,
     cookie: buildSessionCookieOptions({ maxAge: ONE_WEEK_MS })
@@ -139,4 +145,3 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
     console.log(`🚀 Dashboard API listening on port ${PORT}`);
 });
-

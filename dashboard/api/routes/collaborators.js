@@ -24,7 +24,7 @@ router.get('/:guildId', nativeAdminCheck, async (req, res) => {
     try {
         const { guildId } = req.params;
         const guildSettings = await Guild.findOne({ guildId });
-        
+
         if (!guildSettings) {
             return res.json({ success: true, collaborators: [], limit: 1 });
         }
@@ -37,7 +37,7 @@ router.get('/:guildId', nativeAdminCheck, async (req, res) => {
         });
     } catch (error) {
         logger.error('[Collaborators_API] Error fetching collaborators:', error);
-        res.status(500).json({ success: false, error: 'Errore durante il recupero dei collaboratori.' });
+        res.status(500).json({ success: false, error: 'Error while fetching collaborators.' });
     }
 });
 
@@ -79,7 +79,7 @@ router.post('/:guildId', nativeAdminCheck, async (req, res) => {
         // 3. Check if user is already a collaborator
         const exists = guildSettings.collaborators?.some(c => c.userId === userId);
         if (exists) {
-            return res.status(400).json({ success: false, error: 'Questo utente è già un collaboratore.' });
+            return res.status(400).json({ success: false, error: 'This user is already a collaborator.' });
         }
 
         // 4. Fetch username using Discord client to ensure user validity
@@ -91,7 +91,7 @@ router.post('/:guildId', nativeAdminCheck, async (req, res) => {
             }
         } catch (discordErr) {
             logger.warn(`[Collaborators_API] Failed to fetch user profile for ID ${userId}:`, discordErr.message);
-            return res.status(404).json({ success: false, error: 'Membro Discord non trovato. Verifica che l\'ID sia corretto.' });
+            return res.status(404).json({ success: false, error: 'Discord member not found. Make sure the ID is correct.' });
         }
 
         // 5. Add to database
@@ -107,7 +107,7 @@ router.post('/:guildId', nativeAdminCheck, async (req, res) => {
         });
     } catch (error) {
         logger.error('[Collaborators_API] Add Collaborator Error:', error);
-        res.status(500).json({ success: false, error: 'Errore durante l\'aggiunta del collaboratore.' });
+        res.status(500).json({ success: false, error: 'Error while adding the collaborator.' });
     }
 });
 
@@ -121,7 +121,7 @@ router.delete('/:guildId/:userId', nativeAdminCheck, async (req, res) => {
 
         const guildSettings = await Guild.findOne({ guildId });
         if (!guildSettings) {
-            return res.status(404).json({ success: false, error: 'Impostazioni server non trovate.' });
+            return res.status(404).json({ success: false, error: 'Server settings not found.' });
         }
 
         // Find and remove collaborator
@@ -129,7 +129,7 @@ router.delete('/:guildId/:userId', nativeAdminCheck, async (req, res) => {
         guildSettings.collaborators = guildSettings.collaborators.filter(c => c.userId !== userId);
 
         if (guildSettings.collaborators.length === initialLength) {
-            return res.status(404).json({ success: false, error: 'Collaboratore non trovato.' });
+            return res.status(404).json({ success: false, error: 'Collaborator not found.' });
         }
 
         await guildSettings.save();
@@ -143,7 +143,7 @@ router.delete('/:guildId/:userId', nativeAdminCheck, async (req, res) => {
         });
     } catch (error) {
         logger.error('[Collaborators_API] Remove Collaborator Error:', error);
-        res.status(500).json({ success: false, error: 'Errore durante la rimozione del collaboratore.' });
+        res.status(500).json({ success: false, error: 'Error while removing del collaboratore.' });
     }
 });
 

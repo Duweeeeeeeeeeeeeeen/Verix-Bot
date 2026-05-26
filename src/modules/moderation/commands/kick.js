@@ -13,7 +13,7 @@ export default {
         .setDefaultMemberPermissions(PermissionFlagsBits.KickMembers),
     async execute(interaction) {
         const user = interaction.options.getUser('target');
-        const reason = interaction.options.getString('reason') || 'Nessun motivo fornito';
+        const reason = interaction.options.getString('reason') || 'No reason provided';
         const member = await interaction.guild.members.fetch(user.id);
 
         if (!member || !member.kickable) {

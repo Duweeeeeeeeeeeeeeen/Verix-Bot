@@ -14,11 +14,11 @@ router.get('/:guildId/:module', adminCheck, async (req, res) => {
     try {
         const { guildId, module } = req.params;
         const config = await MessageConfig.findOne({ guildId, module }).lean();
-        
+
         // Fetch guild language and get localized defaults
         const lang = await messageService.getGuildLanguage(guildId);
         const defaults = getDefaultMessages(lang)[module] || {};
-        
+
         // Convert Map to plain object properly
         let dbMessages = {};
         if (config && config.messages) {
@@ -42,7 +42,7 @@ router.get('/:guildId/:module', adminCheck, async (req, res) => {
             // Helper to check if a value is a generic placeholder
             const isPlaceholder = (val) => {
                 if (!val || (typeof val === 'string' && val.trim() === '')) return true;
-                const placeholders = ['Senza Titolo', 'Nessun contenuto impostato.', 'Untitled', 'No content set.'];
+                const placeholders = ['Untitled', 'No content set.', 'Untitled', 'No content set.'];
                 return placeholders.includes(val);
             };
 
@@ -50,8 +50,8 @@ router.get('/:guildId/:module', adminCheck, async (req, res) => {
                 ...def,
                 ...db,
                 // Force professional defaults if DB fields are TRULY empty or generic placeholders
-                title: !isPlaceholder(db.title) ? db.title : (def.title || 'Senza Titolo'),
-                description: !isPlaceholder(db.description) ? db.description : (def.description || 'Nessun contenuto impostato.'),
+                title: !isPlaceholder(db.title) ? db.title : (def.title || 'Untitled'),
+                description: !isPlaceholder(db.description) ? db.description : (def.description || 'No content set.'),
                 color: db.color || def.color || '#5865F2',
                 footer: !isPlaceholder(db.footer) ? db.footer : (def.footer || ''),
                 enabled: db.enabled !== undefined ? db.enabled : (def.enabled !== undefined ? def.enabled : true)

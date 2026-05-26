@@ -14,7 +14,7 @@ export default {
 
         const embed = new EmbedBuilder()
             .setTitle('🚀 Verix Dashboard')
-            .setDescription(`Gestisci tutte le impostazioni del server direttamente dal web.\n\n**[Clicca qui per accedere alla Dashboard](${dashboardUrl})**`)
+            .setDescription(`Manage all server settings directly from the web.\n\n**[Open the Dashboard](${dashboardUrl})**`)
             .setColor('#5865F2')
             .setThumbnail(interaction.client.user.displayAvatarURL())
             .setFooter({ text: 'Verix Bot - Powering your community', iconURL: interaction.client.user.displayAvatarURL() });

@@ -16,7 +16,7 @@ export default {
                 .setMaxValue(100))
         .addUserOption(option =>
             option.setName('target')
-                .setDescription('Filtra i messaggi di un utente specifico'))
+                .setDescription('Filter messages from a specific user'))
         .setDefaultMemberPermissions(PermissionFlagsBits.ManageMessages),
 
     async execute(interaction) {

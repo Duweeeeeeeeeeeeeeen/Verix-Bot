@@ -30,11 +30,11 @@ class GiveawayManager {
     async checkGiveaways() {
         try {
             const now = new Date();
-            
+
             // 1. End active giveaways that reached their endTime
-            const giveawaysToEnd = await Giveaway.find({ 
-                endTime: { $lte: now }, 
-                status: 'ACTIVE' 
+            const giveawaysToEnd = await Giveaway.find({
+                endTime: { $lte: now },
+                status: 'ACTIVE'
             });
 
             for (const giveaway of giveawaysToEnd) {
@@ -69,7 +69,7 @@ class GiveawayManager {
 
             let title = giveaway.customTitle || `🎉 GIVEAWAY: ${giveaway.prize}`;
             let description = giveaway.customDescription || `Clicca il tasto qui sotto per partecipare!\n\n⌛ **Termina:** <t:${Math.floor(giveaway.endTime.getTime() / 1000)}:R>`;
-            
+
             // Global placeholder replacement
             const placeholders = {
                 prize: giveaway.prize,
@@ -104,7 +104,7 @@ class GiveawayManager {
                 );
 
             const msg = await channel.send({ embeds: [embed], components: [row] });
-            
+
             giveaway.messageId = msg.id;
             giveaway.status = 'ACTIVE';
             await giveaway.save();
@@ -129,15 +129,15 @@ class GiveawayManager {
             if (!channel) return;
 
             const message = await channel.messages.fetch(giveaway.messageId).catch(() => null);
-            
+
             if (giveaway.participants.length === 0) {
                 if (message) {
                     const endedEmbed = EmbedBuilder.from(message.embeds[0])
-                        .setDescription('❌ **Giveaway terminato!** Nessun partecipante.')
+                        .setDescription('**Giveaway ended!** No participants.')
                         .setColor('#ff4757');
                     await message.edit({ embeds: [endedEmbed], components: [] });
                 }
-                
+
                 return messageService.send(channel, 'giveaway', 'no_participants', {
                     prize: giveaway.prize
                 });
@@ -169,7 +169,7 @@ class GiveawayManager {
                 prize: giveaway.prize,
                 winners: winnersMention
             });
-            
+
             logger.info(`[Giveaway] Ended in ${guild.name}. Winners: ${winners.join(', ')}`);
         } catch (error) {
             logger.error(`[Giveaway] Error ending giveaway ${giveaway._id}:`, error);

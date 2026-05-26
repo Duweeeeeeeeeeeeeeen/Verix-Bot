@@ -28,7 +28,7 @@ async function refreshControlPanelLimit(channel, tempChannel, limit) {
     const embed = currentEmbed.toJSON();
     const fields = Array.isArray(embed.fields) ? [...embed.fields] : [];
     const limitIndex = fields.findIndex(field => field.name?.toLowerCase().includes('limit') || field.name?.toLowerCase().includes('limite'));
-    const displayLimit = limit > 0 ? String(limit) : (fields[limitIndex]?.name?.toLowerCase().includes('limite') ? 'Nessuno' : 'None');
+    const displayLimit = limit > 0 ? String(limit) : (fields[limitIndex]?.name?.toLowerCase().includes('limite') ? 'None' : 'None');
 
     if (limitIndex >= 0) {
         fields[limitIndex] = { ...fields[limitIndex], value: displayLimit };
@@ -102,7 +102,7 @@ export default {
             if (interaction.customId === 'tv_modal_rename') {
                 const newName = interaction.fields.getTextInputValue('new_name');
                 const tempChannel = await TempVoice.findOne({ channelId: interaction.channelId });
-                
+
                 if (!tempChannel || tempChannel.ownerId !== interaction.user.id) {
                     return messageService.reply(interaction, 'tempvoice', 'not_owner', {}, { ephemeral: true });
                 }
