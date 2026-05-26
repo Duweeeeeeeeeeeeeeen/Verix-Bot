@@ -7,12 +7,15 @@ import { updateDashboard, getDashboard } from '../utils/voiceDashboard.js';
 import { sendUserNotification } from '../../../utils/notificationService.js';
 import logger from '../../../utils/logger.js';
 import messageService from '../../../utils/messageService.js';
+import GlobalConfig from '../../../models/GlobalConfig.js';
+import { t } from '../../../locales/t.js';
 
 export default {
     name: Events.InteractionCreate,
     async execute(interaction, client) {
-        // --- 1. Queue Promotion (Select Menu) ---
-        if (interaction.isStringSelectMenu() && interaction.customId === 'promote_user_to_top') {
+        try {
+            // --- 1. Queue Promotion (Select Menu) ---
+            if (interaction.isStringSelectMenu() && interaction.customId === 'promote_user_to_top') {
             const userId = interaction.values[0];
             
             await VoiceQueue.findOneAndUpdate(
@@ -97,6 +100,18 @@ export default {
             const userId = parts[2];
 
             const config = await WhitelistConfig.findOne({ guildId: interaction.guild.id });
+            if (!config) return;
+
+            // Permission Check: Allow Server Administrator or users with configured staffRoleIds
+            const isUserAdmin = interaction.member.permissions.has('Administrator');
+            if (!isUserAdmin && config.staffRoleIds && config.staffRoleIds.length > 0) {
+                if (!interaction.member.roles.cache.some(role => config.staffRoleIds.includes(role.id))) {
+                    const globalConfig = await GlobalConfig.findOne({ guildId: interaction.guild?.id });
+                    const lang = globalConfig?.language || 'en';
+                    return messageService.reply(interaction, 'whitelist', 'edit_error', { reason: t('system.no_permission.description', lang) }, { ephemeral: true });
+                }
+            }
+
             const user = await client.users.fetch(userId).catch(() => null);
 
             if (action === 'approve') {
@@ -238,8 +253,23 @@ export default {
                 staff: interaction.user.tag,
                 reason: reason
             });
-            
             await interaction.update({ embeds: [replyEmbed], components: [], content: null });
         }
-    },
+    } catch (error) {
+        logger.error('[Whitelist_VoiceStaffAction] Interaction Error:', error);
+        const globalConfig = await GlobalConfig.findOne({ guildId: interaction.guild?.id });
+        const lang = globalConfig?.language || 'en';
+        
+        const errEmbed = new EmbedBuilder()
+            .setTitle(t('whitelist.edit_error.title', lang) || 'Error')
+            .setDescription(t('whitelist.edit_error.description', lang, { reason: error.message || 'An error occurred.' }) || `An error occurred: ${error.message}`)
+            .setColor('#e74c3c');
+
+        if (!interaction.replied && !interaction.deferred) {
+            await interaction.reply({ embeds: [errEmbed], flags: [MessageFlags.Ephemeral] }).catch(() => {});
+        } else {
+            await interaction.followUp({ embeds: [errEmbed], flags: [MessageFlags.Ephemeral] }).catch(() => {});
+        }
+    }
+},
 };
