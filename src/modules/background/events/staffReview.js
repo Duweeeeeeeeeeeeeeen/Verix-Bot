@@ -29,7 +29,8 @@ export default {
             if (!config) return;
 
             // Permission Check
-            if (config.staffRoleIds && config.staffRoleIds.length > 0) {
+            const isUserAdmin = interaction.member.permissions.has('Administrator');
+            if (!isUserAdmin && config.staffRoleIds && config.staffRoleIds.length > 0) {
                 if (!interaction.member.roles.cache.some(role => config.staffRoleIds.includes(role.id))) {
                     return messageService.reply(interaction, 'background', 'error', { reason: t('system.no_permission.description', lang) }, { ephemeral: true });
                 }
