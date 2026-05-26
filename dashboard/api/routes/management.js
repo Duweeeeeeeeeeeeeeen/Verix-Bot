@@ -57,22 +57,49 @@ router.get('/:guildId/search/:userId', adminCheck, async (req, res) => {
             return res.status(400).json({ success: false, error: 'ID Utente non valido.' });
         }
 
-        // Fetch everything in parallel
         const [user, whitelistApps, backgrounds, voiceEntries] = await Promise.all([
             User.findOne({ discordId: userId }).select('-__v'),
-            WhitelistApp.find({ guildId, userId }).select('status createdAt').sort({ createdAt: -1 }),
-            Background.find({ guildId, userId }).select('status createdAt').sort({ createdAt: -1 }),
+            WhitelistApp.find({ guildId, userId })
+                .select('status channelId startTime submittedAt reviewedBy rejectionReason deletionScheduledAt')
+                .sort({ startTime: -1 }),
+            Background.find({ guildId, userId })
+                .select('status channelId link description reviewedBy rejectionReason createdAt submittedAt deletionScheduledAt')
+                .sort({ createdAt: -1 }),
             VoiceQueue.find({ guildId, userId }).select('status joinedAt').sort({ joinedAt: -1 })
         ]);
 
         console.log(`[Management_API] Results for ${userId}: WL=${whitelistApps.length}, BG=${backgrounds.length}`);
 
+        const formatRecord = (record, fallbackDateField = 'createdAt') => ({
+            _id: record._id,
+            status: record.status,
+            channelId: record.channelId,
+            reviewedBy: record.reviewedBy,
+            rejectionReason: record.rejectionReason,
+            timestamp: record.submittedAt || record.startTime || record.createdAt || record[fallbackDateField],
+            deletionScheduledAt: record.deletionScheduledAt
+        });
+
+        const formattedWhitelist = whitelistApps.map(record => formatRecord(record, 'startTime'));
+        const formattedBackgrounds = backgrounds.map(record => ({
+            ...formatRecord(record, 'createdAt'),
+            link: record.link,
+            description: record.description
+        }));
+
         res.json({
             success: true,
             data: {
                 user: user || { discordId: userId, info: 'Utente non ancora nel database globale' },
-                whitelist: whitelistApps,
-                backgrounds: backgrounds,
+                whitelist: {
+                    status: formattedWhitelist[0]?.status || null,
+                    history: formattedWhitelist
+                },
+                background: {
+                    status: formattedBackgrounds[0]?.status || null,
+                    history: formattedBackgrounds
+                },
+                backgrounds: formattedBackgrounds,
                 voice: voiceEntries
             }
         });

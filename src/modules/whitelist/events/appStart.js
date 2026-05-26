@@ -59,6 +59,7 @@ export default {
 
             // --- 1.5 FLOW PREREQUISITES (New Master Mode logic) ---
             const m = config.mode;
+            let bgApproved = null;
             
             // Block access if Written WL is not part of this mode
             const hasWritten = ['TEXT', 'HYBRID', 'BG_TEXT', 'FULL'].includes(m);
@@ -72,7 +73,7 @@ export default {
             // Check Background requirement
             const requiresBG = ['BG_TEXT', 'FULL'].includes(m) || config.flowRequirements?.requireBackground;
             if (requiresBG) {
-                const bgApproved = await Background.findOne({ 
+                bgApproved = await Background.findOne({ 
                     userId: interaction.user.id, 
                     guildId: interaction.guild.id, 
                     status: 'ACCEPTED' 
@@ -165,20 +166,26 @@ export default {
 
             if (existingApp) {
                 if (existingApp.status === 'PENDING' || existingApp.status === 'WAITING_BACKGROUND' || existingApp.status === 'SUBMITTED_BACKGROUND') {
-                    // VERIFICATION: Check if the channel still exists on Discord
-                    const channelExists = interaction.guild.channels.cache.has(existingApp.channelId) || 
-                                         await interaction.guild.channels.fetch(existingApp.channelId).catch(() => null);
-
-                    if (!channelExists) {
-                        // Channel was manually deleted, mark app as CANCELLED and proceed
-                        logger.info(`[Whitelist] Cleaning up stale session for ${interaction.user.tag} (Channel ${existingApp.channelId} not found)`);
+                    if (['WAITING_BACKGROUND', 'SUBMITTED_BACKGROUND'].includes(existingApp.status) && bgApproved) {
+                        logger.info(`[Whitelist] Closing stale background gate for ${interaction.user.tag}; background is already accepted.`);
                         existingApp.status = 'CANCELLED';
                         await existingApp.save();
                     } else {
-                        const embed = await messageService.get(interaction.guild.id, 'whitelist', 'already_exists', {
-                            channelId: existingApp.channelId
-                        });
-                        return interaction.editReply({ embeds: [embed] });
+                        // VERIFICATION: Check if the channel still exists on Discord
+                        const channelExists = interaction.guild.channels.cache.has(existingApp.channelId) || 
+                                             await interaction.guild.channels.fetch(existingApp.channelId).catch(() => null);
+
+                        if (!channelExists) {
+                            // Channel was manually deleted, mark app as CANCELLED and proceed
+                            logger.info(`[Whitelist] Cleaning up stale session for ${interaction.user.tag} (Channel ${existingApp.channelId} not found)`);
+                            existingApp.status = 'CANCELLED';
+                            await existingApp.save();
+                        } else {
+                            const embed = await messageService.get(interaction.guild.id, 'whitelist', 'already_exists', {
+                                channelId: existingApp.channelId
+                            });
+                            return interaction.editReply({ embeds: [embed] });
+                        }
                     }
                 } else if (existingApp.status === 'SUBMITTED') {
                     const embed = await messageService.get(interaction.guild.id, 'whitelist', 'already_exists', {
