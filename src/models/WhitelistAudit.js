@@ -4,7 +4,7 @@ const whitelistAuditSchema = new mongoose.Schema({
     staffId: { type: String, required: true },
     userId: { type: String, required: true },
     guildId: { type: String, required: true },
-    action: { type: String, enum: ['ACCEPTED', 'REJECTED'], required: true },
+    action: { type: String, enum: ['ACCEPTED', 'REJECTED', 'WAITING_VOICE'], required: true },
     type: { type: String, enum: ['TEXT', 'VOICE'], default: 'TEXT' },
     reason: { type: String },
     timestamp: { type: Date, default: Date.now },
