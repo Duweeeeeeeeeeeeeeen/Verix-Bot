@@ -193,7 +193,11 @@ export default {
             title: 'Guida Intervista Vocale',
             description: 'Stai esaminando l\'utente **<@{userId}>**. Usa i controlli qui sotto per approvare o rifiutare l\'intervista.',
             color: '#3498db'
-        }
+        },
+        bg_story_title: 'Storia del Personaggio di {user}',
+        written_archive_title: 'Risposte Scritte di {user}',
+        bg_link_label: 'Link del Background',
+        bg_link_value: '[Apri Documento]({link})'
     },
     background: {
         panel: {
@@ -786,6 +790,7 @@ export default {
         none: 'Nessuno',
         loading: 'Caricamento in corso...',
         error: 'Si è verificato un errore.',
-        immediately: 'subito'
+        immediately: 'subito',
+        start_time: 'Ora di Inizio'
     }
 };

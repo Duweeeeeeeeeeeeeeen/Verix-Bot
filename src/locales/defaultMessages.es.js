@@ -188,7 +188,11 @@ export default {
         next_step_written: 'El siguiente paso es completar el Test Escrito. Cuando estés listo, haz clic en el botón de abajo.',
         next_step_voice: 'El siguiente paso es completar el Test de Voz. Por favor, espera a que un miembro del staff se una a ti.',
         written_finish: 'Tu proceso de whitelist ha finalizado.',
-        start_written: 'Iniciar Test Escrito'
+        start_written: 'Iniciar Test Escrito',
+        bg_story_title: 'Historia del Personaje de {user}',
+        written_archive_title: 'Respuestas Escritas de {user}',
+        bg_link_label: 'Enlace de Background',
+        bg_link_value: '[Abrir Documento]({link})'
     },
     background: {
         panel: {
@@ -690,6 +694,7 @@ export default {
         none: 'Ninguno',
         loading: 'Cargando...',
         error: 'Ha ocurrido un error.',
-        immediately: 'inmediatamente'
+        immediately: 'inmediatamente',
+        start_time: 'Hora de Inicio'
     }
 };

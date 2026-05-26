@@ -254,7 +254,11 @@ export default {
         "next_step_written": "The next step is to complete the Written Test. When you are ready, click the button below.",
         "next_step_voice": "The next step is to complete the Voice Test. Please wait for a staff member to join you.",
         "written_finish": "Your whitelist process is complete.",
-        "start_written": "Start Written Test"
+        "start_written": "Start Written Test",
+        "bg_story_title": "Character Story of {user}",
+        "written_archive_title": "Written Answers of {user}",
+        "bg_link_label": "Background Link",
+        "bg_link_value": "[Open Document]({link})"
     },
     "background": {
         "panel": {
@@ -1025,7 +1029,8 @@ export default {
         "none": "None",
         "loading": "Loading...",
         "error": "An error occurred.",
-        "immediately": "immediately"
+        "immediately": "immediately",
+        "start_time": "Start Time"
     },
     "support": {
         "queue_log": {
