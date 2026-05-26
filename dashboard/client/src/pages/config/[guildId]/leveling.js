@@ -307,7 +307,7 @@ export default function LevelingConfigPage() {
                                                                 borderRadius: '12px',
                                                                 border: '1px solid',
                                                                 borderColor: isSelected ? 'var(--primary)' : 'var(--border)',
-                                                                background: isSelected ? 'rgba(245, 158, 11, 0.05)' : 'rgba(255, 255, 255, 0.02)',
+                                                                background: isSelected ? 'rgba(245, 158, 11, 0.05)' : 'var(--bg-card)',
                                                                 cursor: 'pointer',
                                                                 transition: '0.2s'
                                                             }}
@@ -316,7 +316,7 @@ export default function LevelingConfigPage() {
                                                                 <div style={{
                                                                     width: '18px', height: '18px', borderRadius: '50%',
                                                                     border: '2px solid',
-                                                                    borderColor: isSelected ? 'var(--primary)' : 'rgba(255, 255, 255, 0.3)',
+                                                                    borderColor: isSelected ? 'var(--primary)' : 'var(--border-strong, var(--border))',
                                                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                                                                     position: 'relative'
                                                                 }}>
@@ -327,7 +327,7 @@ export default function LevelingConfigPage() {
                                                                         }}></div>
                                                                     )}
                                                                 </div>
-                                                                <strong style={{ fontSize: '0.9rem', color: isSelected ? 'var(--primary)' : 'inherit' }}>{styleOption.label}</strong>
+                                                                <strong style={{ fontSize: '0.9rem', color: isSelected ? 'var(--primary)' : 'var(--text-heading)' }}>{styleOption.label}</strong>
                                                             </div>
                                                             <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)' }}>{styleOption.desc}</p>
                                                         </div>
@@ -418,7 +418,7 @@ export default function LevelingConfigPage() {
                                 <h3 style={{ margin: 0 }}>{t('leveling.system_preview')}</h3>
                             </div>
                             <div className="card-body-v2" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                                <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', borderRadius: '16px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '16px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                         <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{t('leveling.module_status')}</span>
                                         <span style={{ 

@@ -306,8 +306,8 @@ export default function GiveawayConfig() {
                                                     className={`pc-tag-v2 ${isActive ? 'active' : ''}`} 
                                                     style={{ 
                                                         cursor: 'pointer',
-                                                        background: isActive ? 'linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%)' : 'rgba(255, 255, 255, 0.03)',
-                                                        color: isActive ? '#fff' : 'var(--text-muted)',
+                                                        background: isActive ? 'linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%)' : 'var(--bg-card)',
+                                                        color: isActive ? '#fff' : 'var(--text-heading)',
                                                         borderColor: isActive ? 'var(--primary)' : 'var(--border)',
                                                         fontWeight: isActive ? '700' : '500',
                                                         boxShadow: isActive ? '0 4px 12px var(--primary-glow)' : 'none',
