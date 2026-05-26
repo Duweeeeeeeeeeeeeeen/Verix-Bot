@@ -317,7 +317,7 @@ export default {
         },
         "error": {
             "title": "Background Error",
-            "description": "Could not process your request. {reason}",
+            "description": "An error occurred while processing the background. {reason}",
             "color": "#e74c3c"
         },
         "session_cancelled": {

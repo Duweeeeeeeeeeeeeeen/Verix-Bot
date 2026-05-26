@@ -182,6 +182,11 @@ export default {
             description: 'Il tuo dossier per **{guild}** è stato correttamente archiviato nei nostri sistemi. Un ufficiale della commissione lo revisionerà a breve.',
             color: '#2ecc71'
         },
+        error: {
+            title: '❌ Errore Background',
+            description: 'Impossibile completare l\'azione sul background. {reason}',
+            color: '#e74c3c'
+        },
         cooldown_error: {
             title: '⚠️ Protocollo Cooldown',
             description: 'Hai inviato un background troppo recentemente. Potrai sottomettere una nuova versione tra **{time}**.',
