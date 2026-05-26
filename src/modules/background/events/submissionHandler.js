@@ -33,10 +33,13 @@ export default {
                 if (!wlConfig) return messageService.reply(interaction, 'whitelist', 'not_configured', {}, { ephemeral: true });
 
                 const bgApproved = await Background.findOne({
-                    channelId: channel.id,
                     userId: interaction.user.id,
                     guildId: interaction.guild.id,
-                    status: 'ACCEPTED'
+                    status: 'ACCEPTED',
+                    $or: [
+                        { channelId: channel.id },
+                        { channelId: { $exists: true } }
+                    ]
                 });
                 if (!bgApproved) {
                     return messageService.reply(interaction, 'background', 'error', { reason: 'Background approval is required before starting the written test.' }, { ephemeral: true });
