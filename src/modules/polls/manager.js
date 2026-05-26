@@ -2,6 +2,7 @@ import Poll from '../../models/Poll.js';
 import PollConfig from '../../models/PollConfig.js';
 import logger from '../../utils/logger.js';
 import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, MessageFlags } from 'discord.js';
+import messageService from '../../utils/messageService.js';
 
 class PollManager {
     constructor(client) {
@@ -60,7 +61,7 @@ class PollManager {
             ? await Poll.findOne({ _id: pollId, messageId: interaction.message.id }).catch(() => null)
             : await Poll.findOne({ messageId: interaction.message.id });
         if (!poll || poll.status !== 'ACTIVE') {
-            return interaction.reply({ content: '❌ Questo sondaggio è terminato.', flags: [MessageFlags.Ephemeral] });
+            return messageService.reply(interaction, 'poll', 'ended', {}, { ephemeral: true });
         }
 
         const userId = interaction.user.id;
@@ -77,16 +78,16 @@ class PollManager {
 
         const option = poll.options[optionIndex];
         if (!option) {
-            return interaction.reply({ content: 'Invalid poll option.', flags: [MessageFlags.Ephemeral] });
+            return messageService.reply(interaction, 'poll', 'invalid_option', {}, { ephemeral: true });
         }
         const hasVoted = option.votes.includes(userId);
 
         if (hasVoted) {
             option.votes = option.votes.filter(id => id !== userId);
-            await interaction.reply({ content: '✅ Voto rimosso.', flags: [MessageFlags.Ephemeral] });
+            await messageService.reply(interaction, 'poll', 'vote_removed', {}, { ephemeral: true });
         } else {
             option.votes.push(userId);
-            await interaction.reply({ content: '✅ Voto registrato.', flags: [MessageFlags.Ephemeral] });
+            await messageService.reply(interaction, 'poll', 'vote_recorded', {}, { ephemeral: true });
         }
 
         await poll.save();

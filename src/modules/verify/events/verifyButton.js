@@ -26,10 +26,7 @@ export default {
 
             const role = guild.roles.cache.get(config.roleId);
             if (!role) {
-                return interaction.reply({ 
-                    content: '❌ ' + t(lang, 'verify.role_not_found'), 
-                    flags: [MessageFlags.Ephemeral] 
-                });
+                return messageService.reply(interaction, 'verify', 'role_not_found', {}, { ephemeral: true });
             }
 
             // Check if user already has the role

@@ -432,7 +432,13 @@ export default {
             title: '🛂 Journal de Vérification : Nouveau Membre',
             description: 'Un nouvel utilisateur a terminé la vérification.\n\n**Utilisateur :** {user}\n**ID :** `{userId}`',
             color: '#2ecc71'
-        }
+        },
+        role_not_found: {
+            title: 'Role de verification manquant',
+            description: 'Le role de verification n est plus disponible. Contactez le staff.',
+            color: '#e74c3c'
+        },
+
     },
     fivem: {
         status_embed: {
@@ -662,6 +668,18 @@ export default {
             unranked: 'Non classé',
             color: '#5865f2'
         }
+    },
+    poll: {
+        ended: { title: 'Sondage ferm?', description: 'Ce sondage est d?j? termin?.', color: '#f1c40f' },
+        invalid_option: { title: 'Option invalide', description: 'Cette option du sondage n?est plus disponible.', color: '#e74c3c' },
+        vote_removed: { title: 'Vote retir?', description: 'Votre vote a bien ?t? retir?.', color: '#2ecc71' },
+        vote_recorded: { title: 'Vote enregistr?', description: 'Votre vote a bien ?t? enregistr?.', color: '#2ecc71' }
+    },
+    reactionroles: {
+        role_not_found: { title: 'Role introuvable', description: 'Le role configure n existe plus. Contactez un administrateur.', color: '#e74c3c' },
+        role_removed: { title: 'R?le retir?', description: 'R?le **{role}** retir? avec succ?s.', color: '#2ecc71' },
+        role_assigned: { title: 'R?le attribu?', description: 'R?le **{role}** attribu? avec succ?s.', color: '#2ecc71' },
+        update_error: { title: 'Echec de mise a jour du role', description: 'Impossible de mettre a jour le role. Verifiez les permissions du bot et la hierarchie des roles.', color: '#e74c3c' }
     },
     common: {
         no_reason: 'Aucune raison fournie',

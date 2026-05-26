@@ -432,7 +432,13 @@ export default {
             title: '🛂 Registro de Verificación: Nuevo Miembro',
             description: 'Un nuevo usuario ha completado la verificación.\n\n**Usuario:** {user}\n**ID:** `{userId}`',
             color: '#2ecc71'
-        }
+        },
+        role_not_found: {
+            title: 'Rol de verificacion no encontrado',
+            description: 'El rol de verificacion ya no esta disponible. Contacta con el staff.',
+            color: '#e74c3c'
+        },
+
     },
     fivem: {
         status_embed: {
@@ -662,6 +668,18 @@ export default {
             unranked: 'Sin Rango',
             color: '#5865f2'
         }
+    },
+    poll: {
+        ended: { title: 'Encuesta cerrada', description: 'Esta encuesta ya ha terminado.', color: '#f1c40f' },
+        invalid_option: { title: 'Opci?n no v?lida', description: 'Esta opci?n de la encuesta ya no est? disponible.', color: '#e74c3c' },
+        vote_removed: { title: 'Voto eliminado', description: 'Tu voto se elimin? correctamente.', color: '#2ecc71' },
+        vote_recorded: { title: 'Voto registrado', description: 'Tu voto se registr? correctamente.', color: '#2ecc71' }
+    },
+    reactionroles: {
+        role_not_found: { title: 'Rol no encontrado', description: 'El rol configurado ya no existe. Contacta con un administrador.', color: '#e74c3c' },
+        role_removed: { title: 'Rol eliminado', description: 'Rol **{role}** eliminado correctamente.', color: '#2ecc71' },
+        role_assigned: { title: 'Rol asignado', description: 'Rol **{role}** asignado correctamente.', color: '#2ecc71' },
+        update_error: { title: 'Error al actualizar el rol', description: 'No se pudo actualizar el rol. Revisa los permisos del bot y la jerarqu?a de roles.', color: '#e74c3c' }
     },
     common: {
         no_reason: 'Sin motivo proporcionado',

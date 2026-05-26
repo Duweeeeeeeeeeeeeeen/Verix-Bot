@@ -6,6 +6,7 @@ import { resolveModule } from '../../core/moduleManager.js';
 import { getModuleConfig } from '../../core/configCache.js';
 import whiteLabelHelper from '../../utils/whiteLabelHelper.js';
 import multiBotManager from '../../core/multiBotManager.js';
+import messageService from '../../utils/messageService.js';
 
 export default {
     name: Events.InteractionCreate,
@@ -41,11 +42,16 @@ export default {
 
             if (!config || !config.enabled) {
                 logger.warn(`[MODULE BLOCKED] ${moduleName} -> ${guildId} (User: ${interaction.user.tag})`);
-                const message = `❌ Il modulo **${moduleName.toUpperCase()}** è attualmente disattivato. Puoi riattivarlo dalla dashboard amministrativa.`;
 
                 // Block any further execution
                 if (!interaction.replied && !interaction.deferred) {
-                    return interaction.reply({ content: message, flags: [MessageFlags.Ephemeral] });
+                    return messageService.reply(
+                        interaction,
+                        'system',
+                        'module_disabled',
+                        { module: moduleName.toUpperCase() },
+                        { ephemeral: true }
+                    );
                 }
                 return; // Silent stop if already processed
             }

@@ -188,7 +188,7 @@ export default {
 
                 await config.updateOne({ $unset: resetData });
 
-                await interaction.followUp({ content: '🔄 Embed ripristinato ai valori predefiniti.', flags: [MessageFlags.Ephemeral] });
+                await interaction.followUp({ content: 'Embed restored to default values.', flags: [MessageFlags.Ephemeral] });
                 return renderEditor(interaction, moduleName, embedKey);
             }
         }

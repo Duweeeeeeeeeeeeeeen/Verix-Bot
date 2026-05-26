@@ -150,7 +150,7 @@ const ticketConfigSchema = new mongoose.Schema({
             }],
             embed: {
                 title: { type: String, default: 'Centro Supporto' },
-                description: { type: String, default: 'Hai bisogno di aiuto? Apri un ticket selezionando la categoria corretta.' },
+                description: { type: String, default: 'Need help? Open a ticket by selecting the right category.' },
                 color: { type: String, default: '#2ECC71' },
                 image: { type: String, default: null },
                 thumbnail: { type: String, default: null },

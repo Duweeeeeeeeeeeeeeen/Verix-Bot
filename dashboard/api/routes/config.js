@@ -167,7 +167,7 @@ router.get('/:guildId/module-status', adminCheck, async (req, res) => {
         });
     } catch (error) {
         console.error('Error fetching module status:', error);
-        res.status(500).json({ success: false, error: 'Impossibile caricare lo stato dei moduli.' });
+        res.status(500).json({ success: false, error: 'Unable to load module status.' });
     }
 });
 
@@ -368,7 +368,7 @@ router.use('/:guildId', async (req, res, next) => {
                     if (activeLock && activeLock.userId !== req.user?.id) {
                         return res.status(423).json({
                             success: false,
-                            error: `Modifica bloccata: questa sezione è attualmente in fase di configurazione da parte di ${activeLock.username}.`
+                            error: `Edit locked: this section is currently being configured by ${activeLock.username}.`
                         });
                     }
                 } catch (error) {
@@ -482,7 +482,7 @@ router.get('/:guildId', adminCheck, async (req, res) => {
 
     } catch (error) {
         console.error('Error fetching configurations:', error);
-        res.status(500).json({ success: false, error: 'Impossibile caricare le impostazioni. Verifica la connessione al database o ricarica la pagina.' });
+        res.status(500).json({ success: false, error: 'Unable to load settings. Check the database connection or refresh the page.' });
     }
 });
 
@@ -516,7 +516,7 @@ router.get('/:guildId/whitelist', adminCheck, async (req, res) => {
         res.json({ success: true, data: mergeModuleDefaults('whitelist', config, lang) });
     } catch (error) {
         console.error('Error fetching whitelist configuration:', error);
-        res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione whitelist' });
+        res.status(500).json({ success: false, error: 'Unable to load whitelist configuration.' });
     }
 });
 
@@ -552,7 +552,7 @@ router.get('/:guildId/automations', adminCheck, async (req, res) => {
         res.json({ success: true, data: config });
     } catch (error) {
         console.error('Error fetching automations:', error);
-        res.status(500).json({ success: false, error: 'Impossibile caricare le automazioni' });
+        res.status(500).json({ success: false, error: 'Unable to load automations.' });
     }
 });
 
@@ -586,7 +586,7 @@ router.post('/:guildId/automations', adminCheck, async (req, res) => {
         res.json({ success: true, data: config });
     } catch (error) {
         console.error('Error updating automations:', error);
-        res.status(500).json({ success: false, error: 'Impossibile salvare le automazioni' });
+        res.status(500).json({ success: false, error: 'Unable to save automations.' });
     }
 });
 
@@ -605,7 +605,7 @@ router.get('/:guildId/tempvoice', adminCheck, async (req, res) => {
         const lang = await messageService.getGuildLanguage(guildId);
         res.json({ success: true, data: mergeModuleDefaults('tempvoice', config, lang) });
     } catch (error) {
-        res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione vocale' });
+        res.status(500).json({ success: false, error: 'Unable to load voice configuration.' });
     }
 });
 
@@ -646,7 +646,7 @@ router.post('/:guildId/tempvoice', adminCheck, async (req, res) => {
         res.json({ success: true, data: config });
     } catch (error) {
         console.error('Error updating tempvoice config:', error);
-        res.status(500).json({ success: false, error: 'Impossibile salvare la configurazione vocale' });
+        res.status(500).json({ success: false, error: 'Unable to save voice configuration.' });
     }
 });
 
@@ -682,7 +682,7 @@ router.get('/:guildId/tempvoice/active', adminCheck, async (req, res) => {
         res.json({ success: true, data: list });
     } catch (error) {
         console.error('Error fetching active temp voice channels:', error);
-        res.status(500).json({ success: false, error: 'Impossibile caricare i canali attivi' });
+        res.status(500).json({ success: false, error: 'Unable to load active channels.' });
     }
 });
 
@@ -740,7 +740,7 @@ router.post('/:guildId/tempvoice/active/:channelId/limit', adminCheck, async (re
         res.json({ success: true });
     } catch (error) {
         console.error('Error setting user limit for temp voice channel:', error);
-        res.status(500).json({ success: false, error: 'Impossibile impostare il limite utenti' });
+        res.status(500).json({ success: false, error: 'Unable to update the user limit.' });
     }
 });
 
@@ -782,7 +782,7 @@ router.get('/:guildId/giveaway', adminCheck, async (req, res) => {
         res.json({ success: true, data: mergeModuleDefaults('giveaway', config, lang) });
     } catch (error) {
         console.error('[Giveaway] Config GET Error:', error);
-        res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione giveaway' });
+        res.status(500).json({ success: false, error: 'Unable to load giveaway configuration.' });
     }
 });
 
@@ -797,7 +797,7 @@ router.post('/:guildId/giveaway', adminCheck, async (req, res) => {
         );
         res.json({ success: true, data: config });
     } catch (error) {
-        res.status(500).json({ success: false, error: 'Impossibile salvare la configurazione giveaway' });
+        res.status(500).json({ success: false, error: 'Unable to save giveaway configuration.' });
     }
 });
 
@@ -808,7 +808,7 @@ router.get('/:guildId/giveaways/active', adminCheck, async (req, res) => {
         const active = await Giveaway.find({ guildId, status: 'ACTIVE' }).sort({ endTime: -1 });
         res.json({ success: true, data: active });
     } catch (error) {
-        res.status(500).json({ success: false, error: 'Impossibile caricare i giveaway attivi' });
+        res.status(500).json({ success: false, error: 'Unable to load active giveaways.' });
     }
 });
 
@@ -822,7 +822,7 @@ router.get('/:guildId/giveaways/logs', adminCheck, async (req, res) => {
             .limit(20);
         res.json({ success: true, data: logs });
     } catch (error) {
-        res.status(500).json({ success: false, error: 'Impossibile caricare i log dei giveaway' });
+        res.status(500).json({ success: false, error: 'Unable to load giveaway logs.' });
     }
 });
 
@@ -833,7 +833,7 @@ router.get('/:guildId/giveaways/scheduled', adminCheck, async (req, res) => {
         const scheduled = await Giveaway.find({ guildId, status: 'SCHEDULED' }).sort({ startTime: 1 });
         res.json({ success: true, data: scheduled });
     } catch (error) {
-        res.status(500).json({ success: false, error: 'Impossibile caricare i giveaway programmati' });
+        res.status(500).json({ success: false, error: 'Unable to load scheduled giveaways.' });
     }
 });
 
@@ -1020,7 +1020,7 @@ router.post('/:guildId/autoclear/manual', adminCheck, async (req, res) => {
         res.json({ success: true, data: { count: deleted.size } });
     } catch (error) {
         console.error('Error in manual clear:', error);
-        res.status(500).json({ success: false, error: 'Impossibile eseguire la pulizia manuale. Verifica i permessi del bot.' });
+        res.status(500).json({ success: false, error: 'Unable to run manual cleanup. Check the bot permissions.' });
     }
 });
 
@@ -1038,7 +1038,7 @@ router.get('/:guildId/background', adminCheck, async (req, res) => {
         res.json({ success: true, data: mergeModuleDefaults('background', config, lang) }); // Background uses its own defaults now
     } catch (error) {
         console.error('Error fetching background configuration:', error);
-        res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione background' });
+        res.status(500).json({ success: false, error: 'Unable to load background configuration.' });
     }
 });
 
@@ -1164,7 +1164,7 @@ router.post('/:guildId/whitelist', adminCheck, validate(whitelistSchema), async 
             { returnDocument: 'after', upsert: true, runValidators: true }
         );
 
-        if (!config) throw new Error('Impossibile trovare o creare la configurazione.');
+        if (!config) throw new Error('Unable to find or create the configuration.');
 
         invalidateCache(guildId);
         await logAudit(req, 'UPDATE_WHITELIST', data);
@@ -1281,7 +1281,7 @@ router.get('/:guildId/tickets', adminCheck, async (req, res) => {
                 cannedResponses: config.cannedResponses || [],
                 embed: {
                     title: config.embeds?.panel?.title || 'Centro Supporto',
-                    description: config.embeds?.panel?.description || 'Hai bisogno di aiuto o vuoi fare una segnalazione allo staff? Apri un ticket selezionando la categoria corretta.',
+                    description: config.embeds?.panel?.description || 'Need help or want to report something to staff? Open a ticket by selecting the right category.',
                     color: config.embeds?.panel?.color || '#2ECC71',
                     image: config.embeds?.panel?.image || null,
                     thumbnail: config.embeds?.panel?.thumbnail || null,
@@ -1295,7 +1295,7 @@ router.get('/:guildId/tickets', adminCheck, async (req, res) => {
         res.json({ success: true, data: mergeModuleDefaults('tickets', config, lang) });
     } catch (error) {
         console.error('Error loading tickets config:', error);
-        res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione tickets' });
+        res.status(500).json({ success: false, error: 'Unable to load ticket configuration.' });
     }
 });
 
@@ -1391,7 +1391,7 @@ async function deployPanel(guildId, panelId, req, res) {
     const panelEmbed = panel.embed || config.embeds?.panel || {};
     const embed = new EmbedBuilder()
         .setTitle(panelEmbed.title || 'Centro Supporto')
-        .setDescription(panelEmbed.description || 'Hai bisogno di aiuto? Apri un ticket selezionando la categoria corretta.')
+        .setDescription(panelEmbed.description || 'Need help? Open a ticket by selecting the right category.')
         .setColor(panelEmbed.color || '#2ECC71');
 
     if (panelEmbed.footer) embed.setFooter({ text: panelEmbed.footer.replace('{guild}', guild.name) });
@@ -1572,7 +1572,7 @@ router.get('/:guildId/photocontest', adminCheck, async (req, res) => {
         const lang = await messageService.getGuildLanguage(guildId);
         res.json({ success: true, data: mergeModuleDefaults('photocontest', config, lang) });
     } catch (error) {
-        res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione photocontest' });
+        res.status(500).json({ success: false, error: 'Unable to load photo contest configuration.' });
     }
 });
 
@@ -1619,7 +1619,7 @@ router.get('/:guildId/verify', adminCheck, async (req, res) => {
         const lang = await messageService.getGuildLanguage(guildId);
         res.json({ success: true, data: mergeModuleDefaults('verify', config, lang) });
     } catch (error) {
-        res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione verifica' });
+        res.status(500).json({ success: false, error: 'Unable to load verification configuration.' });
     }
 });
 
@@ -1743,7 +1743,7 @@ router.get('/:guildId/global', adminCheck, async (req, res) => {
         res.json({ success: true, data: config });
     } catch (error) {
         console.error('Error fetching global config:', error);
-        res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione globale' });
+        res.status(500).json({ success: false, error: 'Unable to load global configuration.' });
     }
 });
 
@@ -1791,7 +1791,7 @@ router.get('/:guildId/welcome', adminCheck, async (req, res) => {
         res.json({ success: true, data: mergeModuleDefaults('welcome', config, lang) });
     } catch (error) {
         console.error('Error fetching welcome config:', error);
-        res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione welcome' });
+        res.status(500).json({ success: false, error: 'Unable to load welcome configuration.' });
     }
 });
 
@@ -1824,7 +1824,7 @@ router.get('/:guildId/utility', adminCheck, async (req, res) => {
         res.json({ success: true, data: config });
     } catch (error) {
         console.error('Error fetching utility config:', error);
-        res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione utility' });
+        res.status(500).json({ success: false, error: 'Unable to load utility configuration.' });
     }
 });
 
@@ -1880,10 +1880,10 @@ router.post('/:guildId/utility/clear', adminCheck, async (req, res) => {
             amount: deleted.size
         });
 
-        res.json({ success: true, message: `Eliminati con successo ${deleted.size} messaggi.` });
+        res.json({ success: true, message: `Successfully deleted ${deleted.size} messages.` });
     } catch (error) {
         console.error('Error in dashboard clear:', error);
-        res.status(500).json({ success: false, error: 'Impossibile eliminare i messaggi. Potrebbero essere più vecchi di 14 giorni.' });
+        res.status(500).json({ success: false, error: 'Unable to delete messages. They may be older than 14 days.' });
     }
 });
 
@@ -1918,7 +1918,7 @@ router.get('/:guildId/socials', adminCheck, async (req, res) => {
         res.json({ success: true, data: config });
     } catch (error) {
         console.error('Error fetching socials configuration:', error);
-        res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione socials' });
+        res.status(500).json({ success: false, error: 'Unable to load social feed configuration.' });
     }
 });
 
@@ -2121,7 +2121,7 @@ router.patch('/:guildId/guild', adminCheck, async (req, res) => {
 
         res.json({ success: true, message: 'Impostazioni aggiornate con successo' });
     } catch (error) {
-        res.status(500).json({ success: false, error: 'Impossibile aggiornare le impostazioni' });
+        res.status(500).json({ success: false, error: 'Unable to update settings.' });
     }
 });
 
@@ -2139,7 +2139,7 @@ router.get('/:guildId/audit-logs', adminCheck, async (req, res) => {
             .limit(100);
         res.json({ success: true, data: logs });
     } catch (error) {
-        res.status(500).json({ success: false, error: 'Impossibile caricare gli audit logs' });
+        res.status(500).json({ success: false, error: 'Unable to load audit logs.' });
     }
 });
 
@@ -2341,7 +2341,7 @@ router.get('/:guildId/fivem', adminCheck, async (req, res) => {
         res.json({ success: true, data: mergeModuleDefaults('fivem', config, lang) });
     } catch (error) {
         console.error('Error fetching fivem configuration:', error);
-        res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione FiveM' });
+        res.status(500).json({ success: false, error: 'Unable to load FiveM configuration.' });
     }
 });
 
@@ -2647,7 +2647,7 @@ router.get('/:guildId/moderation', adminCheck, async (req, res) => {
         const lang = await messageService.getGuildLanguage(guildId);
         res.json({ success: true, data: mergeModuleDefaults('moderation', config, lang) });
     } catch (error) {
-        res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione moderazione' });
+        res.status(500).json({ success: false, error: 'Unable to load moderation configuration.' });
     }
 });
 
@@ -2677,7 +2677,7 @@ router.get('/:guildId/support', adminCheck, async (req, res) => {
         if (!config) config = await SupportConfig.create({ guildId });
         res.json({ success: true, data: config });
     } catch (error) {
-        res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione assistenza' });
+        res.status(500).json({ success: false, error: 'Unable to load support configuration.' });
     }
 });
 
@@ -3145,7 +3145,7 @@ router.post('/:guildId/factory-reset', adminCheck, async (req, res) => {
 
         await logAudit(req, 'FACTORY_RESET', { message: 'System completely reset to factory defaults' });
 
-        res.json({ success: true, message: 'Sistema ripristinato con successo. Verrai reindirizzato al setup.' });
+        res.json({ success: true, message: 'System reset successfully. You will be redirected to setup.' });
     } catch (error) {
         console.error('[FACTORY_RESET_ERROR]:', error);
         res.status(500).json({ success: false, error: 'Error while running the global reset.' });
@@ -3176,7 +3176,7 @@ router.get('/:guildId/leveling', adminCheck, async (req, res) => {
         if (!config) config = await LevelingConfig.create({ guildId });
         res.json({ success: true, data: config });
     } catch (error) {
-        res.status(500).json({ success: false, error: 'Impossibile caricare la configurazione leveling' });
+        res.status(500).json({ success: false, error: 'Unable to load leveling configuration.' });
     }
 });
 
@@ -3208,7 +3208,7 @@ router.get('/:guildId/leveling/leaderboard', adminCheck, async (req, res) => {
             .lean();
         res.json({ success: true, data: leaderboard });
     } catch (error) {
-        res.status(500).json({ success: false, error: 'Impossibile caricare la leaderboard' });
+        res.status(500).json({ success: false, error: 'Unable to load leaderboard.' });
     }
 });
 

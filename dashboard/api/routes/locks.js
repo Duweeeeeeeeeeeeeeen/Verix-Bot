@@ -55,7 +55,7 @@ router.post('/:guildId/:module/acquire', adminCheck, async (req, res) => {
         });
     } catch (error) {
         logger.error('[Locks_API] Lock Acquire Error:', error);
-        res.status(500).json({ success: false, error: 'Impossibile acquisire il blocco di modifica.' });
+        res.status(500).json({ success: false, error: 'Unable to acquire the edit lock.' });
     }
 });
 

@@ -574,6 +574,11 @@ export default {
             "description": "A technical issue occurred while verifying your account. Please try again later or contact staff.",
             "color": "#e74c3c"
         },
+        "role_not_found": {
+            "title": "Verification Role Missing",
+            "description": "The verification role is no longer available. Please contact staff.",
+            "color": "#e74c3c"
+        },
         "success_reply": {
             "title": "Verification Complete",
             "description": "Welcome {user}! Your permissions have been updated.",
@@ -965,6 +970,50 @@ export default {
             "footer": "Your Rank: {rank} | Active Community",
             "unranked": "Unranked",
             "color": "#5865f2"
+        }
+    },
+    "poll": {
+        "ended": {
+            "title": "Poll Closed",
+            "description": "This poll has already ended.",
+            "color": "#f1c40f"
+        },
+        "invalid_option": {
+            "title": "Invalid Poll Option",
+            "description": "This poll option is no longer available.",
+            "color": "#e74c3c"
+        },
+        "vote_removed": {
+            "title": "Vote Removed",
+            "description": "Your vote was removed successfully.",
+            "color": "#2ecc71"
+        },
+        "vote_recorded": {
+            "title": "Vote Recorded",
+            "description": "Your vote was registered successfully.",
+            "color": "#2ecc71"
+        }
+    },
+    "reactionroles": {
+        "role_not_found": {
+            "title": "Role Not Found",
+            "description": "The configured role no longer exists. Please contact an administrator.",
+            "color": "#e74c3c"
+        },
+        "role_removed": {
+            "title": "Role Removed",
+            "description": "Role **{role}** removed successfully.",
+            "color": "#2ecc71"
+        },
+        "role_assigned": {
+            "title": "Role Assigned",
+            "description": "Role **{role}** assigned successfully.",
+            "color": "#2ecc71"
+        },
+        "update_error": {
+            "title": "Role Update Failed",
+            "description": "Unable to update the role. Check the bot permissions and role hierarchy.",
+            "color": "#e74c3c"
         }
     },
     "common": {

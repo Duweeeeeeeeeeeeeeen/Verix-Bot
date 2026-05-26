@@ -419,6 +419,22 @@ export default {
             description: 'Un nuovo utente ha completato la verifica.\n\n**Utente:** {user}\n**ID:** `{userId}`',
             color: '#2ecc71'
         }
+        ,
+        role_not_found: {
+            title: 'Ruolo di verifica mancante',
+            description: 'Il ruolo di verifica non ? pi? disponibile. Contatta lo staff.',
+            color: '#e74c3c'
+        },
+        error: {
+            title: 'Errore di verifica',
+            description: 'Si ? verificato un problema tecnico durante la verifica del tuo account. Riprova pi? tardi o contatta lo staff.',
+            color: '#e74c3c'
+        },
+        success_reply: {
+            title: 'Verifica completata',
+            description: 'Benvenuto {user}! I tuoi permessi sono stati aggiornati.',
+            color: '#2ecc71'
+        }
     },
     fivem: {
         status_embed: {
@@ -688,6 +704,18 @@ export default {
             unranked: 'Non Classificato',
             color: '#5865f2'
         }
+    },
+    poll: {
+        ended: { title: 'Sondaggio chiuso', description: 'Questo sondaggio ? gi? terminato.', color: '#f1c40f' },
+        invalid_option: { title: 'Opzione non valida', description: 'Questa opzione del sondaggio non ? pi? disponibile.', color: '#e74c3c' },
+        vote_removed: { title: 'Voto rimosso', description: 'Il tuo voto ? stato rimosso correttamente.', color: '#2ecc71' },
+        vote_recorded: { title: 'Voto registrato', description: 'Il tuo voto ? stato registrato correttamente.', color: '#2ecc71' }
+    },
+    reactionroles: {
+        role_not_found: { title: 'Ruolo non trovato', description: 'Il ruolo configurato non esiste pi?. Contatta un amministratore.', color: '#e74c3c' },
+        role_removed: { title: 'Ruolo rimosso', description: 'Ruolo **{role}** rimosso correttamente.', color: '#2ecc71' },
+        role_assigned: { title: 'Ruolo assegnato', description: 'Ruolo **{role}** assegnato correttamente.', color: '#2ecc71' },
+        update_error: { title: 'Aggiornamento ruolo fallito', description: 'Impossibile aggiornare il ruolo. Controlla i permessi del bot e la gerarchia dei ruoli.', color: '#e74c3c' }
     },
     common: {
         no_reason: 'Nessuna motivazione fornita',

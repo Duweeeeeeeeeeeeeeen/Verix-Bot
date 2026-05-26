@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import logger from '../utils/logger.js';
 import { getModuleConfig } from '../core/configCache.js';
 import multiBotManager from '../core/multiBotManager.js';
+import messageService from '../utils/messageService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,7 +25,7 @@ export default async (client) => {
         global.registeredEventsByClient.set(client, new Set());
     }
     const registeredEvents = global.registeredEventsByClient.get(client);
-    
+
     const modulesPath = path.join(__dirname, '../modules');
     const modulesSubfolders = await fs.readdir(modulesPath);
 
@@ -74,7 +75,7 @@ export default async (client) => {
                 if (!moduleEvents.has(moduleName)) {
                     moduleEvents.set(moduleName, []);
                 }
-                
+
                 // Prevent duplicate files in the same module
                 const alreadyExists = moduleEvents.get(moduleName).some(e => e._filePath === filePath);
                 if (!alreadyExists) {
@@ -124,21 +125,21 @@ export default async (client) => {
 
             for (const [moduleName, eventFiles] of moduleMap.entries()) {
                 let matchesModule = false;
-                
+
                 // Interaction Routing Logic
                 if (guildId) {
-                    const isInteraction = interaction.type !== undefined && 
-                                         (typeof interaction.isButton === 'function' || 
-                                          typeof interaction.isCommand === 'function' || 
+                    const isInteraction = interaction.type !== undefined &&
+                                         (typeof interaction.isButton === 'function' ||
+                                          typeof interaction.isCommand === 'function' ||
                                           typeof interaction.isModalSubmit === 'function' ||
                                           typeof interaction.isStringSelectMenu === 'function');
-                    
+
                     if (isInteraction) {
                         const target = (interaction.customId || interaction.commandName || "").toLowerCase();
                         const prefix = modulePrefixes[moduleName.toLowerCase()];
-                        
+
                         // Check if it belongs to this module
-                        matchesModule = target.includes(moduleName.toLowerCase()) || 
+                        matchesModule = target.includes(moduleName.toLowerCase()) ||
                                         (moduleName.toLowerCase() === 'tickets' && (target.includes('ticket') || target.startsWith('tk_'))) ||
                                         (prefix && (target.startsWith(`${prefix}_`) || target.includes(`_${prefix}_`) || target.endsWith(`_${prefix}`)));
 
@@ -153,15 +154,18 @@ export default async (client) => {
                                 logger.warn(`[HUB] Module ${moduleName} is DISABLED for guild ${guildId} but received interaction ${target}`);
                                 // Send a response to avoid "Interaction failed"
                                 if (!interaction.replied && !interaction.deferred) {
-                                    await interaction.reply({ 
-                                        content: `❌ Il modulo **${registryName.toUpperCase()}** è attualmente disattivato in questo server.`, 
-                                        flags: [MessageFlags.Ephemeral] 
-                                    }).catch(() => {});
+                                    await messageService.reply(
+                                        interaction,
+                                        'system',
+                                        'module_disabled',
+                                        { module: registryName.toUpperCase() },
+                                        { ephemeral: true }
+                                    ).catch(() => {});
                                 }
                             }
                             continue;
                         }
-                        
+
                         if (matchesModule) logger.debug(`[HUB] Routing ${target} to module: ${moduleName}`);
                     } else {
                         // For non-interaction events (voiceStateUpdate, messageCreate, etc.)
@@ -188,7 +192,7 @@ export default async (client) => {
         } else {
             client.on(eventName, hubExecutor);
         }
-        
+
         registeredEvents.add(eventName);
         const count = Array.from(moduleMap.values()).flat().length;
         logger.event(`Registered Central Listener for ${eventName} (${count} handlers across ${moduleMap.size} modules)`);

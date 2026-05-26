@@ -353,7 +353,7 @@ export default {
 
             // If we reached here without a response for a ticket interaction
             if (interaction.deferred) {
-                return interaction.editReply({ content: '⚠️ L\'operazione è stata completata, ma non è stato possibile generare una risposta specifica.' });
+                return interaction.editReply({ content: 'The operation completed, but no specific response could be generated.' });
             }
 
         } catch (error) {

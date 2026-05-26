@@ -9,6 +9,7 @@ import {
     PermissionFlagsBits
 } from 'discord.js';
 import { checkBotPermissions } from '../../utils/permissionHelper.js';
+import messageService from '../../utils/messageService.js';
 
 class ReactionRoleManager {
     constructor(client) {
@@ -150,53 +151,30 @@ class ReactionRoleManager {
         // Ensure reaction roles module is enabled
         const config = await ReactionRoleConfig.findOne({ guildId: guild.id });
         if (!config || !config.enabled) {
-            return interaction.reply({
-                content: 'The Reaction Roles module is currently disabled.',
-                flags: [MessageFlags.Ephemeral]
-            });
+            return messageService.reply(interaction, 'system', 'module_disabled', { module: 'Reaction Roles' }, { ephemeral: true });
         }
 
         try {
             const role = await guild.roles.fetch(roleId).catch(() => null);
             if (!role) {
-                return interaction.reply({
-                    content: 'Role not found. Please contact an administrator.',
-                    flags: [MessageFlags.Ephemeral]
-                });
+                return messageService.reply(interaction, 'reactionroles', 'role_not_found', {}, { ephemeral: true });
             }
 
             const botMember = guild.members.me || await guild.members.fetchMe().catch(() => null);
             if (!botMember?.permissions.has(PermissionFlagsBits.ManageRoles) || role.position >= botMember.roles.highest.position) {
-                return interaction.reply({
-                    content: 'Verix cannot manage this role. Move the bot role above the target role and grant Manage Roles.',
-                    flags: [MessageFlags.Ephemeral]
-                });
+                return messageService.reply(interaction, 'system', 'role_hierarchy', { role: role.name }, { ephemeral: true });
             }
 
             if (member.roles.cache.has(roleId)) {
                 await member.roles.remove(roleId);
-                await interaction.reply({
-                    content: `Role **${role.name}** removed successfully.`,
-                    flags: [MessageFlags.Ephemeral]
-                });
+                await messageService.reply(interaction, 'reactionroles', 'role_removed', { role: role.name }, { ephemeral: true });
             } else {
                 await member.roles.add(roleId);
-                await interaction.reply({
-                    content: `Role **${role.name}** assigned successfully.`,
-                    flags: [MessageFlags.Ephemeral]
-                });
+                await messageService.reply(interaction, 'reactionroles', 'role_assigned', { role: role.name }, { ephemeral: true });
             }
         } catch (error) {
             logger.error(`[ReactionRoles] Error toggling role ${roleId} for ${interaction.user.tag}:`, error);
-            const payload = {
-                content: 'Unable to update the role. Check the bot permissions and role hierarchy.',
-                flags: [MessageFlags.Ephemeral]
-            };
-            if (interaction.replied || interaction.deferred) {
-                await interaction.followUp(payload).catch(() => null);
-            } else {
-                await interaction.reply(payload).catch(() => null);
-            }
+            await messageService.reply(interaction, 'reactionroles', 'update_error', {}, { ephemeral: true }).catch(() => null);
         }
     }
 
