@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { Fragment, useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useT } from '../../../contexts/LanguageContext';
 import { 
-    History, Search, Filter, Shield, User, Calendar, ChevronRight, Lock, 
+    History, Search, Filter, Shield, User, Calendar, ChevronRight, ChevronDown, Lock, 
     Crown, Download, Trash2, Clock, CheckCircle2, ArrowRight, AlertTriangle, 
     FileText, Settings, ShieldCheck, Zap, Sparkles, Layout, Terminal, 
     ExternalLink, Globe, Smartphone, Monitor, Moon, Sun, Layers, Database,
@@ -22,6 +22,7 @@ export default function AuditPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterAction, setFilterAction] = useState('ALL');
   const [mounted, setMounted] = useState(false);
+  const [expandedLogId, setExpandedLogId] = useState(null);
 
   useEffect(() => {
     setMounted(true);
@@ -69,6 +70,31 @@ export default function AuditPage() {
       if (a.includes('SAVE') || a.includes('CREATE') || a.includes('ADD')) return { bg: 'rgba(16, 185, 129, 0.1)', color: '#10b981', label: t('audit_studio.label_save'), icon: Zap };
       if (a.includes('SEND')) return { bg: 'rgba(139, 92, 246, 0.1)', color: '#8b5cf6', label: t('audit_studio.label_send'), icon: ExternalLink };
       return { bg: 'var(--bg-badge)', color: 'var(--text-muted)', label: t('audit_studio.label_general'), icon: FileText };
+  };
+
+  const getLogId = (log, idx) => log._id || `${log.action || 'audit'}-${log.timestamp || idx}-${idx}`;
+  const formatValue = (value) => {
+      if (value === null || value === undefined || value === '') return 'None';
+      if (Array.isArray(value)) return value.length ? value.join(', ') : 'None';
+      if (typeof value === 'object') return JSON.stringify(value, null, 2);
+      return String(value);
+  };
+
+  const renderChanges = (changes) => {
+      if (!changes || Object.keys(changes).length === 0) {
+          return <p className="audit-detail-empty-v2">No additional details recorded for this action.</p>;
+      }
+
+      return (
+          <div className="audit-detail-grid-v2">
+              {Object.entries(changes).map(([key, value]) => (
+                  <div key={key} className="audit-detail-item-v2">
+                      <span>{key}</span>
+                      <pre>{formatValue(value)}</pre>
+                  </div>
+              ))}
+          </div>
+      );
   };
 
   if (!mounted || loading) return <Skeleton height="600px" />;
@@ -175,40 +201,62 @@ export default function AuditPage() {
                                 <tbody>
                                     {filteredLogs.length > 0 ? filteredLogs.map((log, idx) => {
                                         const styles = getActionStyles(log.action);
+                                        const logId = getLogId(log, idx);
+                                        const isExpanded = expandedLogId === logId;
                                         return (
-                                            <tr key={log._id || idx} className="pc-audit-row-v2">
-                                                <td>
-                                                    <div className="staff-cell-v2">
-                                                        <div className="staff-avatar-box-v2">
-                                                            <User size={24} />
+                                            <Fragment key={logId}>
+                                                <tr className={`pc-audit-row-v2 ${isExpanded ? 'expanded' : ''}`}>
+                                                    <td>
+                                                        <div className="staff-cell-v2">
+                                                            <div className="staff-avatar-box-v2">
+                                                                <User size={24} />
+                                                            </div>
+                                                            <div className="v-stack">
+                                                                <span className="staff-name-v2">{log.username || 'System Root'}</span>
+                                                                <span className="staff-id-v2">{log.userId || 'VERIX_PROTOCOL'}</span>
+                                                            </div>
                                                         </div>
-                                                        <div className="v-stack">
-                                                            <span className="staff-name-v2">{log.username || 'System Root'}</span>
-                                                            <span className="staff-id-v2">{log.userId || 'VERIX_PROTOCOL'}</span>
+                                                    </td>
+                                                    <td>
+                                                        <div className="action-cell-v2">
+                                                            <div className="action-tag-v2" style={{ background: styles.bg, color: styles.color, border: `1px solid ${styles.color}30` }}>
+                                                                <styles.icon size={14} />
+                                                                <span>{styles.label}</span>
+                                                            </div>
+                                                            <span className="action-raw-v2">{log.action}</span>
                                                         </div>
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <div className="action-cell-v2">
-                                                        <div className="action-tag-v2" style={{ background: styles.bg, color: styles.color, border: `1px solid ${styles.color}30` }}>
-                                                            <styles.icon size={14} />
-                                                            <span>{styles.label}</span>
+                                                    </td>
+                                                    <td>
+                                                        <div className="timeline-cell-v2">
+                                                            <Clock size={16} />
+                                                            <span>{new Date(log.timestamp).toLocaleString()}</span>
                                                         </div>
-                                                        <span className="action-raw-v2">{log.action}</span>
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <div className="timeline-cell-v2">
-                                                        <Clock size={16} />
-                                                        <span>{new Date(log.timestamp).toLocaleString()}</span>
-                                                    </div>
-                                                </td>
-                                                <td style={{ textAlign: 'right' }}>
-                                                    <button className="pc-audit-action-btn-v2">
-                                                        <ChevronRight size={20} />
-                                                    </button>
-                                                </td>
-                                            </tr>
+                                                    </td>
+                                                    <td style={{ textAlign: 'right' }}>
+                                                        <button
+                                                            className={`pc-audit-action-btn-v2 ${isExpanded ? 'open' : ''}`}
+                                                            onClick={() => setExpandedLogId(isExpanded ? null : logId)}
+                                                            aria-expanded={isExpanded}
+                                                            aria-label={isExpanded ? 'Hide audit details' : 'Show audit details'}
+                                                        >
+                                                            {isExpanded ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                                {isExpanded && (
+                                                    <tr key={`${logId}-details`} className="pc-audit-details-row-v2">
+                                                        <td colSpan="4">
+                                                            <div className="pc-audit-details-v2">
+                                                                <div className="audit-detail-heading-v2">
+                                                                    <Fingerprint size={16} />
+                                                                    <span>Audit Details</span>
+                                                                </div>
+                                                                {renderChanges(log.changes)}
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                )}
+                                            </Fragment>
                                         );
                                     }) : (
                                         <tr>
@@ -273,6 +321,7 @@ export default function AuditPage() {
             .pc-table-v2 { width: 100%; border-collapse: collapse; }
             .pc-table-v2 th { text-align: left; padding: 20px 32px; background: var(--bg-badge); color: var(--text-muted); font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border); }
             .pc-table-v2 td { padding: 24px 32px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+            .pc-audit-row-v2.expanded td { border-bottom-color: transparent; }
             
             .staff-cell-v2 { display: flex; align-items: center; gap: 16px; }
             .staff-avatar-box-v2 { width: 44px; height: 44px; background: var(--bg-badge); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--text-heading); border: 1px solid var(--border); }
@@ -287,6 +336,15 @@ export default function AuditPage() {
             
             .pc-audit-action-btn-v2 { width: 40px; height: 40px; border-radius: 12px; background: var(--bg-badge); border: 1px solid var(--border); color: var(--text-heading); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
             .pc-audit-action-btn-v2:hover { background: var(--primary); color: #fff; border-color: var(--primary); transform: translateX(4px); }
+            .pc-audit-action-btn-v2.open { background: var(--primary); color: #fff; border-color: var(--primary); transform: none; }
+            .pc-audit-details-row-v2 td { padding-top: 0; background: color-mix(in srgb, var(--bg-badge) 60%, transparent); }
+            .pc-audit-details-v2 { border: 1px solid var(--border); border-radius: 18px; padding: 18px; background: var(--bg-card); }
+            .audit-detail-heading-v2 { display: flex; align-items: center; gap: 8px; color: var(--text-heading); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+            .audit-detail-grid-v2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+            .audit-detail-item-v2 { background: var(--bg-badge); border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px; min-width: 0; }
+            .audit-detail-item-v2 span { display: block; color: var(--text-muted); font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+            .audit-detail-item-v2 pre { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; color: var(--text-heading); font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.78rem; line-height: 1.5; }
+            .audit-detail-empty-v2 { margin: 0; color: var(--text-muted); font-weight: 700; }
 
             .pc-empty-state-v2 { text-align: center; padding: 80px 0; }
             .empty-icon-v2 { color: var(--border); margin-bottom: 24px; }
