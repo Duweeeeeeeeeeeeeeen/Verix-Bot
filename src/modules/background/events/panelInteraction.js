@@ -6,6 +6,8 @@ import User from '../../../models/User.js';
 import { buildEmbed } from '../../../utils/embedHelper.js';
 import logger from '../../../utils/logger.js';
 import messageService from '../../../utils/messageService.js';
+import GlobalConfig from '../../../models/GlobalConfig.js';
+import { t } from '../../../locales/t.js';
 
 export default {
     name: Events.InteractionCreate,
@@ -20,6 +22,8 @@ export default {
         }
 
         try {
+            const globalConfig = await GlobalConfig.findOne({ guildId: interaction.guild?.id });
+            const lang = globalConfig?.language || 'en';
             const config = await BackgroundConfig.findOne({ guildId: interaction.guild.id });
             if (!config) {
                 return messageService.reply(interaction, 'background', 'error', { reason: 'Module configuration not found.' }, { ephemeral: true });
@@ -78,12 +82,12 @@ export default {
             const row = new ActionRowBuilder().addComponents(
                 new ButtonBuilder()
                     .setCustomId('finalize_bg')
-                    .setLabel('Submit')
+                    .setLabel(t('background.submit_btn', lang))
                     .setEmoji('📩')
                     .setStyle(ButtonStyle.Success),
                 new ButtonBuilder()
                     .setCustomId('cancel_bg')
-                    .setLabel('Cancel')
+                    .setLabel(t('background.cancel_btn', lang))
                     .setStyle(ButtonStyle.Danger)
             );
 

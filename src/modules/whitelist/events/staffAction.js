@@ -52,8 +52,8 @@ export default {
                     }
 
                     const row = new ActionRowBuilder().addComponents(
-                        new ButtonBuilder().setCustomId(`approve_wl_${app._id}`).setLabel('Accept').setStyle(ButtonStyle.Success),
-                        new ButtonBuilder().setCustomId(`deny_wl_${app._id}`).setLabel('Reject').setStyle(ButtonStyle.Danger)
+                        new ButtonBuilder().setCustomId(`approve_wl_${app._id}`).setLabel(t('background.approve_btn', lang)).setStyle(ButtonStyle.Success),
+                        new ButtonBuilder().setCustomId(`deny_wl_${app._id}`).setLabel(t('background.deny_btn', lang)).setStyle(ButtonStyle.Danger)
                     );
 
                     await logChannel.send({ embeds: [staffEmbed], components: [row] });

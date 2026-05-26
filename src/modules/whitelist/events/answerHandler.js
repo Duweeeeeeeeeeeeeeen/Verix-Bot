@@ -5,6 +5,8 @@ import Guild from '../../../models/Guild.js';
 import logger from '../../../utils/logger.js';
 import { checkBotPermissions, formatMissingPermissions } from '../../../utils/permissionHelper.js';
 import messageService from '../../../utils/messageService.js';
+import GlobalConfig from '../../../models/GlobalConfig.js';
+import { t } from '../../../locales/t.js';
 
 export default {
     name: Events.MessageCreate,
@@ -15,6 +17,8 @@ export default {
         if (message.author.bot || !message.guild) return;
 
         try {
+            const globalConfig = await GlobalConfig.findOne({ guildId: message.guild?.id });
+            const lang = globalConfig?.language || 'en';
             // Anti-spam lock to prevent multiple instances from processing the same message
             if (message.client._processingWL?.has(message.id)) return;
             if (!message.client._processingWL) message.client._processingWL = new Set();
@@ -90,9 +94,9 @@ export default {
                 summaryEmbed.addFields(fields);
 
                 const row = new ActionRowBuilder().addComponents(
-                    new ButtonBuilder().setCustomId('confirm_wl').setLabel('Confirm Application').setStyle(ButtonStyle.Success),
-                    new ButtonBuilder().setCustomId('choice_edit_wl').setLabel('Edit Answers').setStyle(ButtonStyle.Primary),
-                    new ButtonBuilder().setCustomId('cancel_wl').setLabel('Cancel Application').setStyle(ButtonStyle.Danger)
+                    new ButtonBuilder().setCustomId('confirm_wl').setLabel(t('whitelist.confirm_btn', lang)).setStyle(ButtonStyle.Success),
+                    new ButtonBuilder().setCustomId('choice_edit_wl').setLabel(t('whitelist.edit_btn', lang)).setStyle(ButtonStyle.Primary),
+                    new ButtonBuilder().setCustomId('cancel_wl').setLabel(t('whitelist.cancel_btn', lang)).setStyle(ButtonStyle.Danger)
                 );
 
                 const sentMsg = await message.channel.send({ embeds: [summaryEmbed], components: [row] });

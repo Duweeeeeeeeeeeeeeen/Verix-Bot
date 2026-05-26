@@ -258,7 +258,12 @@ export default {
         "bg_story_title": "Character Story of {user}",
         "written_archive_title": "Written Answers of {user}",
         "bg_link_label": "Background Link",
-        "bg_link_value": "[Open Document]({link})"
+        "bg_link_value": "[Open Document]({link})",
+        "confirm_btn": "Confirm Application",
+        "edit_btn": "Edit Answers",
+        "cancel_btn": "Cancel Application",
+        "close_btn": "Close Menu",
+        "done_btn": "Done"
     },
     "background": {
         "panel": {
@@ -293,6 +298,8 @@ export default {
         },
         "approve_btn": "Approve",
         "deny_btn": "Reject",
+        "submit_btn": "Submit",
+        "cancel_btn": "Cancel",
         "accepted_title": "Background Approved",
         "rejected_title": "Background Rejected",
         "staff_tag": "Staff Member",

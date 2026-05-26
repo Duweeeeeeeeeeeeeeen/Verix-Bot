@@ -197,7 +197,12 @@ export default {
         bg_story_title: 'Storia del Personaggio di {user}',
         written_archive_title: 'Risposte Scritte di {user}',
         bg_link_label: 'Link del Background',
-        bg_link_value: '[Apri Documento]({link})'
+        bg_link_value: '[Apri Documento]({link})',
+        confirm_btn: 'Conferma Candidatura',
+        edit_btn: 'Modifica Risposte',
+        cancel_btn: 'Annulla Candidatura',
+        close_btn: 'Chiudi Menu',
+        done_btn: 'Fatto'
     },
     background: {
         panel: {
@@ -267,6 +272,8 @@ export default {
         },
         approve_btn: 'Accetta',
         deny_btn: 'Rifiuta',
+        submit_btn: 'Invia',
+        cancel_btn: 'Annulla',
         accepted_title: '✅ Dossier APPROVATO',
         rejected_title: '❌ Dossier RESPINTO',
         staff_tag: '👮 Ufficiale',

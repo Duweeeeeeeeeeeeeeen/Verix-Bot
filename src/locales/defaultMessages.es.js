@@ -247,7 +247,12 @@ export default {
             title: 'Guía de Entrevista de Voz',
             description: 'Estás evaluando al usuario **<@{userId}>**. Usa los controles de abajo para aprobar o rechazar la entrevista.',
             color: '#3498db'
-        }
+        },
+        confirm_btn: 'Confirmar Solicitud',
+        edit_btn: 'Editar Respuestas',
+        cancel_btn: 'Cancelar Solicitud',
+        close_btn: 'Cerrar Menú',
+        done_btn: 'Hecho'
     },
     background: {
         panel: {
@@ -282,6 +287,8 @@ export default {
         },
         approve_btn: 'Aprobar',
         deny_btn: 'Rechazar',
+        submit_btn: 'Enviar',
+        cancel_btn: 'Cancelar',
         accepted_title: '✅ Historia APROBADA',
         rejected_title: '❌ Historia RECHAZADA',
         staff_tag: '👮 Miembro del Staff',

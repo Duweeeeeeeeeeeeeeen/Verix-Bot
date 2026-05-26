@@ -247,7 +247,12 @@ export default {
             title: 'Guide d\'Entretien Vocal',
             description: 'Vous évaluez l\'utilisateur **<@{userId}>**. Utilisez les commandes ci-dessous pour approuver ou rejeter l\'entretien.',
             color: '#3498db'
-        }
+        },
+        confirm_btn: 'Confirmer la Demande',
+        edit_btn: 'Modifier les Réponses',
+        cancel_btn: 'Annuler la Demande',
+        close_btn: 'Fermer le Menu',
+        done_btn: 'Terminé'
     },
     background: {
         panel: {
@@ -282,6 +287,8 @@ export default {
         },
         approve_btn: 'Approuver',
         deny_btn: 'Rejeter',
+        submit_btn: 'Soumettre',
+        cancel_btn: 'Annuler',
         accepted_title: '✅ Histoire APPROUVÉE',
         rejected_title: '❌ Histoire REJETÉE',
         staff_tag: '👮 Membre du Staff',
