@@ -184,7 +184,11 @@ export default {
             title: '📢 Protocole de File : Nouvelle Entrée',
             description: 'Un nouveau citoyen attend un entretien.\n\n**SUJET :** {user}\n**ID :** `{user_id}`\n**FILE ACTUELLE :** `{waiting_count}`',
             color: '#3498db'
-        }
+        },
+        next_step_written: 'La prochaine étape consiste à remplir le Test Écrit. Dès que vous êtes prêt, cliquez sur le bouton ci-dessous.',
+        next_step_voice: 'La prochaine étape consiste à remplir le Test Vocal. Veuillez patienter pendant qu\'un membre du staff vous rejoint.',
+        written_finish: 'Votre procédure de whitelist est terminée.',
+        start_written: 'Commencer le Test Écrit'
     },
     background: {
         panel: {

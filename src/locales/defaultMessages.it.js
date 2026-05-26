@@ -134,6 +134,65 @@ export default {
             title: '✅ Sessione Avviata',
             description: 'La tua sessione è stata aperta correttamente. Dirigiti nel canale <#{channelId}> per iniziare la compilazione.',
             color: '#2ecc71'
+        },
+        next_step_written: 'Il prossimo passo è completare il Test Scritto. Quando sei pronto, clicca sul pulsante qui sotto.',
+        next_step_voice: 'Il prossimo passo è completare il Test Vocale. Attendi che uno staffer si colleghi con te.',
+        written_finish: 'Il tuo processo di whitelist è completato.',
+        start_written: 'Inizia Test Scritto',
+        edit_closed: {
+            title: 'Modifica Chiusa',
+            description: 'Il menu di modifica è stato chiuso. Ora puoi continuare.',
+            color: '#2ecc71'
+        },
+        edit_error: {
+            title: 'Errore di Modifica',
+            description: 'Impossibile modificare la tua risposta. {reason}',
+            color: '#e74c3c'
+        },
+        edit_menu: {
+            title: 'Modifica Candidatura',
+            description: 'Seleziona la risposta che desideri modificare dal menu sottostante.',
+            color: '#3498db'
+        },
+        edit_success: {
+            title: 'Risposta Aggiornata',
+            description: 'La tua risposta alla domanda **{index}** è stata salvata con successo.',
+            color: '#2ecc71'
+        },
+        promote_vip_success: {
+            title: 'Priorità Aggiornata',
+            description: 'L\'utente <@{userId}> è stato spostato all\'inizio della coda.',
+            color: '#2ecc71'
+        },
+        session_cancelled: {
+            title: 'Sessione Annullata',
+            description: 'La sessione è stata annullata. Questo canale verrà rimosso tra **{time}**.',
+            color: '#e74c3c'
+        },
+        session_not_found: {
+            title: 'Sessione Non Trovata',
+            description: 'La sessione richiesta non è stata trovata.',
+            color: '#e74c3c'
+        },
+        setup_success: {
+            title: 'Whitelist Configurata',
+            description: 'Il pannello della whitelist è stato configurato correttamente.',
+            color: '#2ecc71'
+        },
+        skip_error_no_session: {
+            title: 'Nessuna Sessione Attiva',
+            description: 'Non ci sono sessioni vocali attive da saltare.',
+            color: '#e74c3c'
+        },
+        skip_success: {
+            title: 'Sessione Saltata',
+            description: 'La sessione vocale corrente è stata saltata.',
+            color: '#3498db'
+        },
+        voice_guide: {
+            title: 'Guida Intervista Vocale',
+            description: 'Stai esaminando l\'utente **<@{userId}>**. Usa i controlli qui sotto per approvare o rifiutare l\'intervista.',
+            color: '#3498db'
         }
     },
     background: {

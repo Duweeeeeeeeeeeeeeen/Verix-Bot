@@ -3,6 +3,7 @@ import WhitelistConfig from '../../../models/WhitelistConfig.js';
 import WhitelistApp from '../../../models/WhitelistApp.js';
 import { buildEmbed } from '../../../utils/embedHelper.js';
 import logger from '../../../utils/logger.js';
+import messageService from '../../../utils/messageService.js';
 
 export default {
     name: Events.InteractionCreate,

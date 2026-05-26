@@ -184,7 +184,11 @@ export default {
             title: '📢 Protocolo de Cola: Nueva Entrada',
             description: 'Un nuevo ciudadano está esperando una entrevista.\n\n**SUJETO:** {user}\n**ID:** `{user_id}`\n**COLA ACTUAL:** `{waiting_count}`',
             color: '#3498db'
-        }
+        },
+        next_step_written: 'El siguiente paso es completar el Test Escrito. Cuando estés listo, haz clic en el botón de abajo.',
+        next_step_voice: 'El siguiente paso es completar el Test de Voz. Por favor, espera a que un miembro del staff se una a ti.',
+        written_finish: 'Tu proceso de whitelist ha finalizado.',
+        start_written: 'Iniciar Test Escrito'
     },
     background: {
         panel: {

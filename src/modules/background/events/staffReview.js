@@ -78,7 +78,8 @@ export default {
                         guild: interaction.guild.name,
                         user_id: citizen?.id || app.userId,
                         staff: interaction.user.toString(),
-                        staff_id: interaction.user.id
+                        staff_id: interaction.user.id,
+                        next_step: nextStep
                     }, config);
 
                     const startButton = new ActionRowBuilder().addComponents(

@@ -10,6 +10,7 @@ import logger from './logger.js';
  * @returns {Promise<void>}
  */
 export async function sendUserNotification(guild, member, config, payload) {
+    if (!member) return;
     if (!config || config.mode === 'NONE') return;
 
     const { mode, channelId } = config;

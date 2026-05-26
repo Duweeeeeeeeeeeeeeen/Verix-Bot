@@ -250,7 +250,11 @@ export default {
             "title": "Voice Interview Guide",
             "description": "You are reviewing user **<@{userId}>**. Use the controls below to approve or reject the interview.",
             "color": "#3498db"
-        }
+        },
+        "next_step_written": "The next step is to complete the Written Test. When you are ready, click the button below.",
+        "next_step_voice": "The next step is to complete the Voice Test. Please wait for a staff member to join you.",
+        "written_finish": "Your whitelist process is complete.",
+        "start_written": "Start Written Test"
     },
     "background": {
         "panel": {
