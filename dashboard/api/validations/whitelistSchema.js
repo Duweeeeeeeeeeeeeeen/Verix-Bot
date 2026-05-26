@@ -51,7 +51,9 @@ export const whitelistSchema = z.object({
             approve: z.object({ label: z.string(), emoji: z.string(), style: z.string() }).partial().optional(),
             deny: z.object({ label: z.string(), emoji: z.string(), style: z.string() }).partial().optional(),
             reset: z.object({ label: z.string(), emoji: z.string(), style: z.string() }).partial().optional()
-        }).partial().optional().nullable()
+        }).partial().optional().nullable(),
+        channelNameTemplate: z.string().max(100).optional().nullable(),
+        sessionCounter: z.number().min(0).optional().nullable()
     }).partial().optional().nullable(),
     flowRequirements: z.object({
         requireTextWL: z.boolean().optional().nullable(),

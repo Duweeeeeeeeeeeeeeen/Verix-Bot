@@ -55,10 +55,20 @@ export default function WhitelistConfig() {
   }, [guildId, mounted]);
 
   const isIntegratedBackgroundFlow = ['BG_TEXT', 'BG_VOICE', 'FULL'].includes(config?.mode);
+  const usesVoiceFlow = ['VOICE', 'HYBRID', 'BG_VOICE', 'FULL'].includes(config?.mode);
+  const usesBackgroundFlow = isIntegratedBackgroundFlow || config?.mode === 'BG_ONLY';
+  const usesSinglePanelFlow = usesBackgroundFlow && bgConfig?.entryPoint !== 'PANEL';
+  const setVoiceSettings = (patch) => setConfig({
+    ...config,
+    voiceSettings: {
+      ...(config.voiceSettings || {}),
+      ...patch
+    }
+  });
 
   const handleSendPanel = async () => {
     const isBg = activeTab === 'background';
-    const shouldSendIntegratedPanel = isBg && isIntegratedBackgroundFlow;
+    const shouldSendIntegratedPanel = isBg && usesSinglePanelFlow;
     const targetChannel = shouldSendIntegratedPanel ? config.panelChannelId : (isBg ? bgConfig?.panelChannelId : config.panelChannelId);
     if (!targetChannel) return window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('whitelist.panel_channel_error') || 'Canale non impostato!', type: 'error' } }));
     setSendingPanel(true);
@@ -79,7 +89,7 @@ export default function WhitelistConfig() {
     try {
       const normalizedBgConfig = {
         ...bgConfig,
-        entryPoint: isIntegratedBackgroundFlow ? 'INTEGRATED' : (bgConfig?.entryPoint || 'PANEL')
+        entryPoint: bgConfig?.entryPoint || (isIntegratedBackgroundFlow ? 'INTEGRATED' : 'PANEL')
       };
       await Promise.all([
         api.request(`/config/${guildId}/whitelist`, { method: 'POST', body: JSON.stringify(config) }),
@@ -119,12 +129,14 @@ export default function WhitelistConfig() {
 
   if (!mounted || loading || !config) return <Skeleton height="600px" />;
 
+  const sendPanelNeedsBackgroundChannel = activeTab === 'background' && !usesSinglePanelFlow;
+  const sendPanelMissingChannel = sendPanelNeedsBackgroundChannel ? !bgConfig?.panelChannelId : !config.panelChannelId;
   const tabs = [
     { id: 'settings', name: t('whitelist.core_setup'), icon: Settings2 },
     { id: 'questions', name: t('whitelist.written_test'), icon: ListChecks },
     (config.mode === 'VOICE' || config.mode === 'HYBRID' || config.mode === 'FULL') ?
       { id: 'voice', name: t('whitelist.tab_voice'), icon: Mic2 } : null,
-    { id: 'background', name: t('whitelist.staff_recruits'), icon: Command },
+    usesBackgroundFlow ? { id: 'background', name: 'Background', icon: Command } : null,
     { id: 'design', name: t('whitelist.creative_design'), icon: Palette },
   ].filter(Boolean);
 
@@ -170,8 +182,8 @@ export default function WhitelistConfig() {
                 <button
                     className="pc-btn-outline-v2"
                     onClick={handleSendPanel}
-                    disabled={sendingPanel || ((activeTab === 'background' && !isIntegratedBackgroundFlow) ? !bgConfig?.panelChannelId : !config.panelChannelId)}
-                    title={(activeTab === 'background' && !isIntegratedBackgroundFlow) ? t('whitelist.send_panel_bg') : t('whitelist.send_panel_wl')}
+                    disabled={sendingPanel || sendPanelMissingChannel}
+                    title={sendPanelNeedsBackgroundChannel ? t('whitelist.send_panel_bg') : t('whitelist.send_panel_wl')}
                     style={{ color: 'var(--primary)', borderColor: sendingPanel ? 'var(--border)' : 'rgba(var(--primary-rgb), 0.2)' }}
                 >
                     {sendingPanel ? <RotateCcw size={18} className="animate-spin" /> : <Send size={18} />}
@@ -213,13 +225,57 @@ export default function WhitelistConfig() {
                                                 { value: 'FULL', label: t('whitelist.mode_full_ecosystem') }
                                             ]}
                                             value={config.mode || 'TEXT'}
-                                            onChange={val => setConfig({...config, mode: val})}
+                                            onChange={val => {
+                                                setConfig({...config, mode: val});
+                                                if (['BG_TEXT', 'BG_VOICE', 'FULL'].includes(val)) {
+                                                    setBgConfig({...(bgConfig || {}), entryPoint: 'INTEGRATED'});
+                                                } else if (activeTab === 'background') {
+                                                    setActiveTab('settings');
+                                                }
+                                            }}
                                         />
                                     </div>
                                     <div className="pc-input-group-v2" style={{ marginTop: '24px' }}>
                                         <label>{t('whitelist.panel_channel')}</label>
                                         <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 0 || c.type === 5)} value={config.panelChannelId || ''} onChange={val => setConfig({...config, panelChannelId: val})} error={config.enabled && !config.panelChannelId ? t('common.required_field') : ''} />
                                     </div>
+                                    {usesBackgroundFlow && (
+                                        <div className="pc-input-group-v2" style={{ marginTop: '24px' }}>
+                                            <label>Background panel mode</label>
+                                            <CustomSelect
+                                                options={[
+                                                    { value: 'INTEGRATED', label: 'Single panel: background then whitelist' },
+                                                    { value: 'PANEL', label: 'Separate background panel' }
+                                                ]}
+                                                value={bgConfig?.entryPoint || 'INTEGRATED'}
+                                                onChange={val => setBgConfig({...(bgConfig || {}), entryPoint: val})}
+                                            />
+                                        </div>
+                                    )}
+                                    {usesBackgroundFlow && bgConfig?.entryPoint === 'PANEL' && (
+                                        <div className="pc-input-group-v2" style={{ marginTop: '24px' }}>
+                                            <label>Background panel channel</label>
+                                            <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 0 || c.type === 5)} value={bgConfig?.panelChannelId || ''} onChange={val => setBgConfig({...bgConfig, panelChannelId: val})} />
+                                        </div>
+                                    )}
+                                    {usesBackgroundFlow && (
+                                        <div className="pc-input-group-v2" style={{ marginTop: '24px' }}>
+                                            <label>Background outcome log channel</label>
+                                            <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 0 || c.type === 5)} value={bgConfig?.logChannelId || ''} onChange={val => setBgConfig({...bgConfig, logChannelId: val})} />
+                                        </div>
+                                    )}
+                                    {usesVoiceFlow && (
+                                        <>
+                                            <div className="pc-input-group-v2" style={{ marginTop: '24px' }}>
+                                                <label>Voice join channel</label>
+                                                <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 2)} value={config.voiceSettings?.joinChannelId || ''} onChange={val => setVoiceSettings({ joinChannelId: val })} />
+                                            </div>
+                                            <div className="pc-input-group-v2" style={{ marginTop: '24px' }}>
+                                                <label>{t('whitelist.voice_category')}</label>
+                                                <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 4)} value={config.voiceSettings?.categoryId || ''} onChange={val => setVoiceSettings({ categoryId: val })} />
+                                            </div>
+                                        </>
+                                    )}
                                     <div className="pc-input-group-v2" style={{ marginTop: '24px' }}>
                                         <label>{t('whitelist.log_channel')}</label>
                                         <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 0 || c.type === 5)} value={config.logChannelId || ''} onChange={val => setConfig({...config, logChannelId: val})} />
@@ -348,10 +404,12 @@ export default function WhitelistConfig() {
                                         </label>
                                     </div>
                                 </div>
-                                <div className="pc-input-group-v2" style={{ marginTop: '24px' }}>
-                                    <label>{t('whitelist.staff_panel_channel')}</label>
-                                    <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 0 || c.type === 5)} value={bgConfig?.panelChannelId || ''} onChange={val => setBgConfig({...bgConfig, panelChannelId: val})} />
-                                </div>
+                                {bgConfig?.entryPoint === 'PANEL' && (
+                                    <div className="pc-input-group-v2" style={{ marginTop: '24px' }}>
+                                        <label>{t('whitelist.staff_panel_channel')}</label>
+                                        <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 0 || c.type === 5)} value={bgConfig?.panelChannelId || ''} onChange={val => setBgConfig({...bgConfig, panelChannelId: val})} />
+                                    </div>
+                                )}
                                 <div className="pc-input-group-v2" style={{ marginTop: '24px' }}>
                                     <label>{t('whitelist.log_channel')}</label>
                                     <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 0 || c.type === 5)} value={bgConfig?.logChannelId || ''} onChange={val => setBgConfig({...bgConfig, logChannelId: val})} />
@@ -441,13 +499,17 @@ export default function WhitelistConfig() {
                                     <div className="pc-input-grid-v2">
                                         <div className="pc-input-group-v2">
                                             <label>{t('whitelist.voice_category')}</label>
-                                            <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 4)} value={config.voiceCategoryId || ''} onChange={val => setConfig({...config, voiceCategoryId: val})} />
+                                            <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 4)} value={config.voiceSettings?.categoryId || ''} onChange={val => setVoiceSettings({ categoryId: val })} />
+                                        </div>
+                                        <div className="pc-input-group-v2" style={{ marginTop: '24px' }}>
+                                            <label>Voice join channel</label>
+                                            <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 2)} value={config.voiceSettings?.joinChannelId || ''} onChange={val => setVoiceSettings({ joinChannelId: val })} />
                                         </div>
                                         <div className="pc-input-group-v2" style={{ marginTop: '24px' }}>
                                             <label>{t('whitelist.voice_name_template')}</label>
                                             <div className="pc-input-modern-v2">
                                                 <Layout size={16} />
-                                                <input value={config.voiceNameTemplate || 'whitelist-{user}'} onChange={e => setConfig({...config, voiceNameTemplate: e.target.value})} placeholder="whitelist-{user}" />
+                                                <input value={config.voiceSettings?.channelNameTemplate || config.voiceNameTemplate || 'whitelist-{user}'} onChange={e => setVoiceSettings({ channelNameTemplate: e.target.value })} placeholder="whitelist-{user}" />
                                             </div>
                                             <p className="pc-text-v2-caption-bold" style={{ marginTop: '8px', opacity: 0.6 }}>{t('whitelist.voice_help_template')}</p>
                                         </div>
@@ -468,7 +530,7 @@ export default function WhitelistConfig() {
                                                 <span>{t('whitelist.voice_auto_delete_desc')}</span>
                                             </div>
                                             <label className="pc-toggle-v2">
-                                                <input type="checkbox" checked={config.voiceAutoDelete} onChange={e => setConfig({...config, voiceAutoDelete: e.target.checked})} />
+                                                <input type="checkbox" checked={config.voiceSettings?.autoDelete !== false} onChange={e => setVoiceSettings({ autoDelete: e.target.checked })} />
                                                 <span className="pc-slider-v2"></span>
                                             </label>
                                         </div>
@@ -478,7 +540,7 @@ export default function WhitelistConfig() {
                                                 <span>{t('whitelist.voice_ping_staff_desc')}</span>
                                             </div>
                                             <label className="pc-toggle-v2">
-                                                <input type="checkbox" checked={config.voicePingStaff} onChange={e => setConfig({...config, voicePingStaff: e.target.checked})} />
+                                                <input type="checkbox" checked={!!config.voiceSettings?.pingStaffOnJoin} onChange={e => setVoiceSettings({ pingStaffOnJoin: e.target.checked })} />
                                                 <span className="pc-slider-v2"></span>
                                             </label>
                                         </div>
@@ -486,7 +548,7 @@ export default function WhitelistConfig() {
                                             <label>{t('whitelist.voice_rejection_cooldown')}</label>
                                             <div className="pc-input-modern-v2">
                                                 <RefreshCcw size={16} />
-                                                <input type="number" value={config.voiceRejectionCooldown || 48} onChange={e => setConfig({...config, voiceRejectionCooldown: parseInt(e.target.value)})} />
+                                                <input type="number" value={config.voiceSettings?.rejectionCooldown ?? 24} onChange={e => setVoiceSettings({ rejectionCooldown: parseInt(e.target.value, 10) || 0 })} />
                                             </div>
                                         </div>
                                     </div>
@@ -503,7 +565,7 @@ export default function WhitelistConfig() {
                                 <div className="card-body-v2">
                                     <div className="pc-input-group-v2">
                                         <label>{t('whitelist.voice_eval_roles')}</label>
-                                        <DiscordSelector type="role" multiple={true} options={discordData.roles} value={config.voiceStafferRoles || []} onChange={val => setConfig({...config, voiceStafferRoles: val})} />
+                                        <DiscordSelector type="role" multiple={true} options={discordData.roles} value={config.staffRoleIds || []} onChange={val => setConfig({...config, staffRoleIds: val})} />
                                     </div>
                                 </div>
                             </section>
@@ -515,9 +577,9 @@ export default function WhitelistConfig() {
                                 </div>
                                 <div className="card-body-v2">
                                     <div className="v-stack" style={{ gap: '16px' }}>
-                                        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{t('whitelist.voice_counter_desc', { count: config.voiceCounter || 0 })}</p>
+                                        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{t('whitelist.voice_counter_desc', { count: config.voiceSettings?.sessionCounter || 0 })}</p>
                                         <button className="pc-btn-outline-v2" onClick={() => {
-                                            if(window.confirm(t('whitelist.voice_reset_confirm'))) setConfig({...config, voiceCounter: 0});
+                                            if(window.confirm(t('whitelist.voice_reset_confirm'))) setVoiceSettings({ sessionCounter: 0 });
                                         }} style={{ width: '100%', color: '#ef4444', borderColor: 'rgba(239, 68, 68, 0.2)' }}>
                                             <RotateCcw size={16} /> <span>{t('whitelist.voice_reset_btn')}</span>
                                         </button>
@@ -540,10 +602,10 @@ export default function WhitelistConfig() {
                             { key: 'dm_accepted', label: t('whitelist.msg_accepted'), description: t('whitelist.msg_accepted_desc') || 'Inviato in DM all\'utente promosso.', variables: ['user'], group: 'Whitelist (DMs)', groupIcon: CheckCircle2, module: 'whitelist' },
                             { key: 'dm_rejected', label: t('whitelist.msg_rejected'), description: t('whitelist.msg_rejected_desc') || 'Inviato in DM all\'utente bocciato.', variables: ['user', 'reason'], group: 'Whitelist (DMs)', groupIcon: XCircle, module: 'whitelist' },
                             
-                            // Recruitment Module
-                            { key: 'panel', label: t('background.msg_panel') || 'Pannello Candidature', description: t('background.msg_panel_desc') || 'Messaggio principale per l\'invio delle candidature.', variables: ['guild'], group: 'Recruitment (Candidature)', groupIcon: Layout, module: 'background' },
-                            { key: 'dm_accepted', label: t('background.msg_accepted') || 'Candidatura Accettata', description: t('background.msg_accepted_desc') || 'Inviato in DM all\'utente approvato.', variables: ['user'], group: 'Recruitment (DMs)', groupIcon: CheckCircle2, module: 'background' },
-                            { key: 'dm_rejected', label: t('background.msg_rejected') || 'Candidatura Respinta', description: t('background.msg_rejected_desc') || 'Inviato in DM all\'utente respinto.', variables: ['user', 'reason'], group: 'Recruitment (DMs)', groupIcon: XCircle, module: 'background' }
+                            // Background Module
+                            { key: 'panel', label: t('background.msg_panel') || 'Background Panel', description: t('background.msg_panel_desc') || 'Main message for background submissions.', variables: ['guild'], group: 'Background (Panel)', groupIcon: Layout, module: 'background' },
+                            { key: 'dm_accepted', label: t('background.msg_accepted') || 'Background Accepted', description: t('background.msg_accepted_desc') || 'Sent by DM to the approved user.', variables: ['user'], group: 'Background (DMs)', groupIcon: CheckCircle2, module: 'background' },
+                            { key: 'dm_rejected', label: t('background.msg_rejected') || 'Background Rejected', description: t('background.msg_rejected_desc') || 'Sent by DM to the rejected user.', variables: ['user', 'reason'], group: 'Background (DMs)', groupIcon: XCircle, module: 'background' }
                         ]}
                     />
 
