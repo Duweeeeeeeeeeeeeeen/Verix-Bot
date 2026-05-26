@@ -327,7 +327,7 @@ function processPlaceholders(text) {
         .replace(/{user_name}/g, 'Mario Rossi')
         .replace(/{staff}/g, '@StaffRP')
         .replace(/{guild}/g, 'Grand Roleplay')
-        .replace(/{status}/g, 'ATTIVO')
+        .replace(/{status}/g, 'ACTIVE')
         .replace(/{ticket_id}/g, '#042')
         .replace(/{time}/g, new Date().toLocaleTimeString());
 }

@@ -505,7 +505,7 @@ export default function VoiceHubPage() {
                                     <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
                                         <div className="pc-input-group-v2">
                                             <label>{t('voice.name_template')}</label>
-                                            <input className="pc-input-modern-v2" value={tempVoiceConfig.channelNameTemplate || ''} onChange={e => setNested('tempvoice', 'channelNameTemplate', e.target.value)} placeholder="Esempio: Stanza di {user}" />
+                                            <input className="pc-input-modern-v2" value={tempVoiceConfig.channelNameTemplate || ''} onChange={e => setNested('tempvoice', 'channelNameTemplate', e.target.value)} placeholder={t('tempvoice.name_placeholder')} />
                                         </div>
                                         <div className="pc-input-group-v2">
                                             <label>{t('voice.user_limit')}</label>

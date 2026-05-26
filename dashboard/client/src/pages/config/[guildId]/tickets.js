@@ -857,12 +857,12 @@ export default function TicketConfig() {
                                     <section className="pc-card-v2 rr-summary-card">
                                         <div className="card-header-v2">
                                             <div className="header-icon"><SlidersHorizontal size={18} /></div>
-                                            <h3 style={{ margin: 0 }}>Stato Pannello</h3>
+                                            <h3 style={{ margin: 0 }}>{t('tickets.panel_status')}</h3>
                                         </div>
                                         <div className="v-stack" style={{ gap: '12px' }}>
                                             <div className="rr-summary-row" style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--border)' }}>
-                                                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Canale</span>
-                                                <strong className={activePanel.channelId ? 'ok' : 'warn'} style={{ color: activePanel.channelId ? '#10b981' : '#ef4444' }}>{activePanel.channelId ? 'Selezionato' : 'Mancante'}</strong>
+                                                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{t('tickets.panel_channel')}</span>
+                                                <strong className={activePanel.channelId ? 'ok' : 'warn'} style={{ color: activePanel.channelId ? '#10b981' : '#ef4444' }}>{activePanel.channelId ? t('common.selected') : t('common.missing')}</strong>
                                             </div>
                                             <div className="rr-summary-row" style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--border)' }}>
                                                 <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Input</span>

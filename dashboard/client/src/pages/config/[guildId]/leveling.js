@@ -426,7 +426,7 @@ export default function LevelingConfigPage() {
                                             background: config.enabled ? 'rgba(16, 185, 129, 0.1)' : 'var(--bg-badge)',
                                             color: config.enabled ? '#10b981' : 'var(--text-muted)'
                                         }}>
-                                            {config.enabled ? 'ATTIVO' : 'DISATTIVATO'}
+                                            {config.enabled ? t('common.active') : t('common.inactive')}
                                         </span>
                                     </div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

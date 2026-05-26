@@ -571,8 +571,10 @@ export default function ManagementPage() {
             .pc-btn-eye { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card); cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-muted); }
             .pc-btn-eye.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 
-            .pc-json-viewer { padding: 24px; background: #1a1b1e; border-radius: 16px; margin: 8px 32px 24px; }
-            .pc-json-viewer pre { margin: 0; color: #10b981; font-size: 0.8rem; overflow-x: auto; }
+            .pc-json-viewer { padding: 24px; background: var(--bg-badge); border: 1px solid var(--border); border-radius: 16px; margin: 8px 32px 24px; }
+            .pc-json-viewer pre { margin: 0; color: var(--text-heading); font-size: 0.8rem; overflow-x: auto; }
+            :global(.dark-theme) .pc-json-viewer { background: #1a1b1e; border-color: rgba(255,255,255,0.08); }
+            :global(.dark-theme) .pc-json-viewer pre { color: #10b981; }
 
             .pc-empty-state-v2 { text-align: center; padding: 80px; color: var(--text-muted); }
             .btn-del-mini-v2 { width: 32px; height: 32px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
