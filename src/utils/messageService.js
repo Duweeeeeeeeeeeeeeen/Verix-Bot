@@ -127,6 +127,7 @@ class MessageService {
         // Build Embed using robust helper
         const guildConfig = await this.getGuildConfig(guildId);
         const embed = buildEmbed(embedData, finalPlaceholders, { 
+            isPremium: guildConfig.isPremium,
             hideBranding: guildConfig.hideBranding 
         });
         

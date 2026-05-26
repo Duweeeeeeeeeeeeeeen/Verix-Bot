@@ -3595,5 +3595,6 @@
   "tickets.panels_count": "{count} panels",
   "tickets.preview_footer": "Verix Ticket System",
   "tickets.send_active_panel": "Send active panel",
-  "tickets.send_panel_discord": "Send panel to Discord"
+  "tickets.send_panel_discord": "Send panel to Discord",
+  "embeds.editor.footer_premium_lock": "Footer branding is locked on free servers. Upgrade to Premium or Platinum to customize or remove it."
 }

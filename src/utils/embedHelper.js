@@ -1,6 +1,24 @@
 import { EmbedBuilder } from 'discord.js';
 import placeholderHelper from './placeholderHelper.js';
 
+const VERIX_BRANDING_TEXT = 'Powered by Verix';
+const BRANDING_PATTERN = /(\s*[|•-]\s*)?(Powered by Verix(?: Bot| Studio)?|Verix(?: RP| Bot| Studio)?)\s*$/i;
+
+export function applyBrandingToFooter(footerText = '', { isPremium = false, hideBranding = false } = {}) {
+    let normalized = typeof footerText === 'string' ? footerText.trim() : '';
+
+    if (isPremium && hideBranding) {
+        return normalized.replace(BRANDING_PATTERN, '').trim();
+    }
+
+    if (!isPremium) {
+        normalized = normalized.replace(BRANDING_PATTERN, '').trim();
+        return normalized ? `${normalized} | ${VERIX_BRANDING_TEXT}` : VERIX_BRANDING_TEXT;
+    }
+
+    return normalized;
+}
+
 /**
  * Genera un embed a partire dalla configurazione DB e i placeholder forniti.
  * @param {Object} embedConfig - Oggetto configurazione dell'embed (es. config.embeds.start)
@@ -39,23 +57,18 @@ export function buildEmbed(embedConfig, placeholders = {}, fullConfig = {}) {
     if (color === '#000000') color = '#5865F2';
     embed.setColor(color);
 
+    let footerText = '';
     if (embedConfig.footer && !isPlaceholder(embedConfig.footer)) {
-        let footerText = replacePlaceholders(embedConfig.footer, placeholders);
-        
-        // White-label: Hide Branding
-        if (fullConfig.hideBranding) {
-            // Strip common branding suffixes and standalone mentions
-            footerText = footerText.replace(/ \| Verix RP| \| Verix Bot| \| Verix Studio|Powered by Verix Bot|Powered by Verix Studio|Powered by Verix/gi, '').trim();
-            
-            // If the footer becomes empty after stripping, we can either leave it empty or use the guild name
-            if (footerText.length === 0 && placeholders.guild) {
-                footerText = typeof placeholders.guild === 'string' ? placeholders.guild : (placeholders.guild.name || placeholders.guild.toString());
-            }
-        }
+        footerText = replacePlaceholders(embedConfig.footer, placeholders);
+    }
 
-        if (footerText.length > 0) {
-            embed.setFooter({ text: footerText });
-        }
+    footerText = applyBrandingToFooter(footerText, {
+        isPremium: !!fullConfig.isPremium,
+        hideBranding: !!fullConfig.hideBranding
+    });
+
+    if (footerText.length > 0) {
+        embed.setFooter({ text: footerText });
     }
 
     if (embedConfig.image && !isPlaceholder(embedConfig.image)) {

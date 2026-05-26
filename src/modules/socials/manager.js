@@ -10,6 +10,7 @@ import Parser from 'rss-parser';
 import Guild from '../../models/Guild.js';
 import { t } from '../../locales/t.js';
 import { axiosWithRetry } from '../../utils/httpClient.js';
+import { applyBrandingToFooter } from '../../utils/embedHelper.js';
 
 const rssParser = new Parser({
     customFields: {
@@ -1403,6 +1404,8 @@ export class SocialManager {
 
             const guildConfig = await GlobalConfig.findOne({ guildId });
             const lang = guildConfig?.language || 'en';
+            const guildData = await Guild.findOne({ guildId }).select('isPremium premiumTier hideBranding').lean();
+            const isPremiumTier = !!guildData?.isPremium || ['premium', 'platinum'].includes(guildData?.premiumTier);
 
             const channelId = platformConfig.notificationChannelId;
             if (!channelId) return;
@@ -1493,7 +1496,10 @@ export class SocialManager {
                 .setColor(customEmbed.color ? parseInt(customEmbed.color.replace('#', ''), 16) : style.color)
                 .setTimestamp()
                 .setFooter({
-                    text: formatText(customEmbed.footer) || t('socials.footer', lang),
+                    text: applyBrandingToFooter(formatText(customEmbed.footer) || t('socials.footer', lang), {
+                        isPremium: isPremiumTier,
+                        hideBranding: !!guildData?.hideBranding
+                    }),
                     iconURL: this.client.user.displayAvatarURL()
                 });
 

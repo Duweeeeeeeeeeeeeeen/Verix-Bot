@@ -10,6 +10,8 @@ import {
 } from 'discord.js';
 import { checkBotPermissions } from '../../utils/permissionHelper.js';
 import messageService from '../../utils/messageService.js';
+import Guild from '../../models/Guild.js';
+import { applyBrandingToFooter } from '../../utils/embedHelper.js';
 
 class ReactionRoleManager {
     constructor(client) {
@@ -296,11 +298,19 @@ class ReactionRoleManager {
             return { success: false, error: `Missing bot permissions: ${permCheck.missing.join(', ')}` };
         }
 
+        const guildData = await Guild.findOne({ guildId }).select('isPremium premiumTier hideBranding').lean();
+        const isPremiumTier = !!guildData?.isPremium || ['premium', 'platinum'].includes(guildData?.premiumTier);
+
         const embed = new EmbedBuilder()
             .setTitle(panel.embed.title)
             .setDescription(panel.embed.description)
             .setColor(panel.embed.color || '#5865F2')
-            .setFooter({ text: panel.embed.footer });
+            .setFooter({
+                text: applyBrandingToFooter(panel.embed.footer, {
+                    isPremium: isPremiumTier,
+                    hideBranding: !!guildData?.hideBranding
+                })
+            });
 
         if (panel.embed.image) embed.setImage(panel.embed.image);
         if (panel.embed.thumbnail) embed.setThumbnail(panel.embed.thumbnail);

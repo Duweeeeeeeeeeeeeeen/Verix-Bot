@@ -47,6 +47,7 @@ export async function generateTranscription(channel, ticketData = {}) {
 import { t } from '../../../locales/t.js';
 import Guild from '../../../models/Guild.js';
 import GlobalConfig from '../../../models/GlobalConfig.js';
+import { applyBrandingToFooter } from '../../../utils/embedHelper.js';
 
 /**
  * Genera l'embed di "Intelligence" per lo staff.
@@ -101,7 +102,13 @@ export async function generateIntelligenceEmbed(guild, userId) {
         });
     }
 
-    embed.setFooter({ text: t('tickets.intelligence.footer', lang) });
+    const isPremiumTier = !!guildData?.isPremium || ['premium', 'platinum'].includes(guildData?.premiumTier);
+    embed.setFooter({
+        text: applyBrandingToFooter(t('tickets.intelligence.footer', lang), {
+            isPremium: isPremiumTier,
+            hideBranding: !!guildData?.hideBranding
+        })
+    });
 
     return embed;
 }

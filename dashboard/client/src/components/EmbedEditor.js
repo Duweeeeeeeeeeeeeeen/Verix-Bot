@@ -1,5 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import dynamic from 'next/dynamic';
+import { useRouter } from 'next/router';
 import { 
   Type, 
   Palette, 
@@ -26,6 +27,7 @@ import HelpTooltip from './HelpTooltip';
 import CustomSelect from './CustomSelect';
 import EmbedPreviewDrawer from './EmbedPreviewDrawer';
 import { useT } from '../contexts/LanguageContext';
+import api from '../utils/api';
 
 const EmbedPreviewContainer = dynamic(() => import('./EmbedPreviewContainer'), {
   ssr: false,
@@ -34,11 +36,36 @@ const EmbedPreviewContainer = dynamic(() => import('./EmbedPreviewContainer'), {
 
 export default function EmbedEditor({ embed, onChange, variables = ['user', 'guild'], showButtonEditor = false, previewButtons, renderPreviewFooter, compact = false }) {
   const { t } = useT();
+  const router = useRouter();
+  const { guildId } = router.query || {};
   const [previewOpen, setPreviewOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [premiumTier, setPremiumTier] = useState(null);
   
   const thumbInputRef = useRef(null);
   const imageInputRef = useRef(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadGuildTier = async () => {
+      if (!guildId || guildId === 'undefined') return;
+      try {
+        const res = await api.request(`/config/${guildId}/guild`);
+        const guild = res?.data || res || {};
+        if (!cancelled) setPremiumTier(guild.premiumTier || (guild.isPremium ? 'premium' : 'none'));
+      } catch (error) {
+        if (!cancelled) setPremiumTier('none');
+      }
+    };
+
+    loadGuildTier();
+    return () => {
+      cancelled = true;
+    };
+  }, [guildId]);
+
+  const canEditFooterBranding = ['premium', 'platinum'].includes(premiumTier);
+  const footerLocked = premiumTier !== null && !canEditFooterBranding;
 
   const handleFileUpload = async (e, type) => {
     const file = e.target.files[0];
@@ -162,8 +189,19 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
                             <label>{t('embeds.editor.footer_label')}</label>
                             <div className="pc-input-wrapper-v2">
                                 <Hash size={16} className="input-icon" />
-                                <input value={embed?.footer || ''} onChange={e => updateEmbed('footer', e.target.value)} placeholder={t('embeds.editor.footer_placeholder')} />
+                                <input
+                                  value={embed?.footer || ''}
+                                  onChange={e => updateEmbed('footer', e.target.value)}
+                                  placeholder={t('embeds.editor.footer_placeholder')}
+                                  disabled={footerLocked}
+                                  title={footerLocked ? t('embeds.editor.footer_premium_lock') : undefined}
+                                />
                             </div>
+                            {footerLocked && (
+                              <p className="pc-helper-text-v2">
+                                {t('embeds.editor.footer_premium_lock')}
+                              </p>
+                            )}
                         </div>
                     </div>
 
@@ -322,6 +360,8 @@ export default function EmbedEditor({ embed, onChange, variables = ['user', 'gui
         .pc-input-wrapper-v2:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }
         .pc-input-wrapper-v2 .input-icon { margin-left: 14px; color: var(--text-muted); opacity: 0.6; }
         .pc-input-wrapper-v2 input { width: 100%; border: none; background: transparent; padding: 12px 14px; font-weight: 700; outline: none; color: var(--text-main); font-size: 0.95rem; }
+        .pc-input-wrapper-v2 input:disabled { opacity: 0.65; cursor: not-allowed; }
+        .pc-helper-text-v2 { margin: 0; color: var(--text-muted); font-size: 0.72rem; line-height: 1.35; font-weight: 700; padding-left: 4px; }
 
         .pc-textarea-v2 { width: 100%; min-height: 170px; background: var(--bg-input); border: 1.5px solid var(--border); border-radius: 12px; padding: 14px; font-weight: 600; color: var(--text-main); outline: none; transition: 0.2s; resize: vertical; line-height: 1.55; }
         .pc-textarea-v2:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-glow); }

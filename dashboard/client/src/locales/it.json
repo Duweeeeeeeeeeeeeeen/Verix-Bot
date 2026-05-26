@@ -3595,5 +3595,6 @@
   "tickets.panels_count": "{count} pannelli",
   "tickets.preview_footer": "Sistema ticket Verix",
   "tickets.send_active_panel": "Invia pannello attivo",
-  "tickets.send_panel_discord": "Invia pannello su Discord"
+  "tickets.send_panel_discord": "Invia pannello su Discord",
+  "embeds.editor.footer_premium_lock": "Il branding nel footer ? bloccato sui server free. Passa a Premium o Platinum per modificarlo o rimuoverlo."
 }
