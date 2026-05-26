@@ -419,6 +419,8 @@ export class SocialManager {
                 if (username.includes('youtube.com/')) {
                     username = username.split('/').pop().split('?')[0];
                 }
+                if (!username) continue;
+                if (this.isBridgeBackoffActive(account)) continue;
 
                 let feedUrl = '';
                 if (username.startsWith('UC')) {
@@ -492,9 +494,10 @@ export class SocialManager {
                         }
 
                         if (this.rememberSeen(account, feedIds)) changed = true;
+                        if (this.clearBridgeErrorState(account)) changed = true;
                     }
                 } catch (feedErr) {
-                    logger.warn(`[Socials/YouTube] Could not fetch feed for ${account.username}: ${feedErr.message}`);
+                    if (this.recordBridgeError(account, 'YouTube', account.username, feedErr.message)) changed = true;
                 }
             }
         } catch (error) {
@@ -829,6 +832,7 @@ export class SocialManager {
                 }
 
                 if (!username) continue;
+                if (this.isBridgeBackoffActive(account)) continue;
 
                 const feedUrl = `https://www.reddit.com/r/${username}/new.rss`;
 
@@ -901,9 +905,10 @@ export class SocialManager {
                         }
 
                         if (this.rememberSeen(account, feedIds)) changed = true;
+                        if (this.clearBridgeErrorState(account)) changed = true;
                     }
                 } catch (feedErr) {
-                    logger.warn(`[Socials/Reddit] Could not fetch Reddit feed for ${username}: ${feedErr.message}`);
+                    if (this.recordBridgeError(account, 'Reddit', username, feedErr.message)) changed = true;
                 }
             }
         } catch (error) {
@@ -923,11 +928,14 @@ export class SocialManager {
                 let gameId = username;
                 if (gameId.includes('steamcommunity.com/games/')) {
                     gameId = gameId.split('steamcommunity.com/games/').pop().split('/')[0].split('?')[0];
+                } else if (gameId.includes('steamcommunity.com/app/')) {
+                    gameId = gameId.split('steamcommunity.com/app/').pop().split('/')[0].split('?')[0];
                 } else if (gameId.includes('store.steampowered.com/app/')) {
                     gameId = gameId.split('store.steampowered.com/app/').pop().split('/')[0].split('?')[0];
                 }
 
                 if (!gameId) continue;
+                if (this.isBridgeBackoffActive(account)) continue;
 
                 const feedUrl = `https://store.steampowered.com/feeds/news/app/${gameId}/?cc=US&l=en`;
 
@@ -993,9 +1001,10 @@ export class SocialManager {
                         }
 
                         if (this.rememberSeen(account, feedIds)) changed = true;
+                        if (this.clearBridgeErrorState(account)) changed = true;
                     }
                 } catch (feedErr) {
-                    logger.warn(`[Socials/Steam] Could not fetch Steam feed for ${gameId}: ${feedErr.message}`);
+                    if (this.recordBridgeError(account, 'Steam', gameId, feedErr.message)) changed = true;
                 }
             }
         } catch (error) {
