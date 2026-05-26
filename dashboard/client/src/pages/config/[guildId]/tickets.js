@@ -17,23 +17,6 @@ import { mergeConfig } from '../../../utils/defaults';
 import Head from 'next/head';
 import ConfirmModal from '../../../components/ConfirmModal';
 
-const BUTTON_STYLE_OPTIONS = [
-  { value: 'PRIMARY', label: 'Primary' },
-  { value: 'SECONDARY', label: 'Secondary' },
-  { value: 'SUCCESS', label: 'Success' },
-  { value: 'DANGER', label: 'Danger' }
-];
-
-const PANEL_INPUT_OPTIONS = [
-  { value: 'SELECT', label: 'Select menu' },
-  { value: 'BUTTONS', label: 'Buttons' }
-];
-
-const CLOSE_MODE_OPTIONS = [
-  { value: 'DELETE', label: 'Delete channel' },
-  { value: 'MOVE', label: 'Move to category' }
-];
-
 const TICKET_MESSAGE_SLUGS = [
   { key: 'panel', labelKey: 'tickets.msg_panel', descKey: 'tickets.msg_panel_desc', groupKey: 'tickets.group_access', variables: ['guild'], icon: Layout },
   { key: 'ticket', labelKey: 'tickets.msg_ticket', descKey: 'tickets.msg_ticket_desc', groupKey: 'tickets.group_access', variables: ['type', 'user_id', 'priority', 'status', 'assignedStaff', 'tags'], icon: Ticket },
@@ -85,6 +68,17 @@ export default function TicketConfig() {
       message: '',
       onConfirm: () => {}
   });
+  const buttonStyleOptions = [
+    { value: 'PRIMARY', label: t('tickets.btn_style_blue') },
+    { value: 'SECONDARY', label: t('tickets.btn_style_gray') },
+    { value: 'SUCCESS', label: t('tickets.btn_style_green') },
+    { value: 'DANGER', label: t('tickets.btn_style_red') },
+    { value: 'LINK', label: t('tickets.btn_style_link') }
+  ];
+  const closeModeOptions = [
+    { value: 'DELETE', label: t('tickets.close_delete') },
+    { value: 'MOVE', label: t('tickets.close_move') }
+  ];
 
   useEffect(() => {
     setMounted(true);
@@ -121,10 +115,10 @@ export default function TicketConfig() {
         enabledTypes: panel.enabledTypes || panel.types || (index === 0 ? globalTypeIds : []),
         typesConfig: panel.typesConfig || (index === 0 ? (merged.typesConfig || {}) : {}),
         embed: panel.embed || (index === 0 ? (merged.embeds?.panel || {}) : {
-          title: 'Support Center',
-          description: 'Need help or want to report something to staff? Open a ticket by selecting the correct category.',
+          title: t('tickets.default_panel_title'),
+          description: t('tickets.default_panel_description'),
           color: '#2ECC71',
-          footer: 'Support Team | {guild}'
+          footer: t('tickets.default_panel_footer')
         })
       }));
       setConfig(merged);
@@ -177,18 +171,18 @@ export default function TicketConfig() {
 
   const handleSendPanel = async (panelId) => {
     const panel = config.panels?.find(p => p.id === panelId);
-    if (!panel || !panel.channelId) return showToast('Seleziona prima un canale per questo pannello.', 'error');
+    if (!panel || !panel.channelId) return showToast(t('tickets.panel_no_channel'), 'error');
     setSendingPanel(true);
     try {
         await handleSave();
         const res = await api.request(`/config/${guildId}/tickets/send-panel/${panelId}`, { method: 'POST' });
-        showToast('Pannello ticket inviato correttamente!');
+        showToast(t('tickets.panel_success'));
         if (res.success && res.messageId) {
             const newPanels = config.panels.map(p => p.id === panelId ? { ...p, messageId: res.messageId } : p);
             setConfig({ ...config, panels: newPanels });
         }
     } catch (e) {
-        showToast('Errore durante l\'invio del pannello ticket.', 'error');
+        showToast(t('tickets.panel_error'), 'error');
     } finally {
         setSendingPanel(false);
     }
@@ -197,8 +191,8 @@ export default function TicketConfig() {
   const handleReset = async () => {
     setConfirmModal({
       isOpen: true,
-      title: t('common.reset_confirm_title') || 'Ripristina Modulo',
-      message: t('common.reset_confirm') || 'Sei sicuro di voler ripristinare questo modulo ai valori di default?',
+      title: t('common.reset_confirm_title'),
+      message: t('common.reset_confirm'),
       onConfirm: async () => {
         setSaving(true);
         window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
@@ -225,7 +219,7 @@ export default function TicketConfig() {
   const addPanel = () => {
       const newPanel = {
           id: 'panel-' + Math.random().toString(36).substr(2, 6),
-          name: 'Nuovo Pannello Ticket',
+          name: t('tickets.default_panel_name'),
           channelId: '',
           messageId: null,
           inputType: 'BUTTONS',
@@ -240,10 +234,10 @@ export default function TicketConfig() {
           enabledTypes: [],
           typesConfig: {},
           embed: {
-              title: 'Support Center',
-              description: 'Need help or want to report something to staff? Open a ticket by selecting the correct category.',
+              title: t('tickets.default_panel_title'),
+              description: t('tickets.default_panel_description'),
               color: '#2ECC71',
-              footer: 'Support Team | {guild}'
+              footer: t('tickets.default_panel_footer')
           }
       };
       setConfig({ ...config, panels: [...(config.panels || []), newPanel] });
@@ -253,8 +247,8 @@ export default function TicketConfig() {
   const removePanel = (id) => {
       setConfirmModal({
           isOpen: true,
-          title: t('tickets.delete_confirm_title') || 'Elimina Pannello',
-          message: t('tickets.delete_confirm') || 'Sei sicuro di voler eliminare questo pannello ticket?',
+          title: t('tickets.delete_confirm_title'),
+          message: t('tickets.delete_confirm'),
           onConfirm: () => {
               const filtered = config.panels.filter(p => p.id !== id);
               setConfig({ ...config, panels: filtered });
@@ -439,7 +433,7 @@ export default function TicketConfig() {
                         className="pc-btn-outline-v2"
                         onClick={() => handleSendPanel(activePanelId)}
                         disabled={sendingPanel}
-                        title="Invia Pannello Attivo"
+                        title={t('tickets.send_active_panel')}
                         style={{ color: 'var(--primary)', borderColor: 'rgba(var(--primary-rgb), 0.2)' }}
                     >
                         {sendingPanel ? <RotateCcw size={18} className="animate-spin" /> : <Send size={18} />}
@@ -496,7 +490,7 @@ export default function TicketConfig() {
                                 <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginTop: '24px' }}>
                                     <div className="pc-input-group-v2">
                                         <label>{t('tickets.close_mode')}</label>
-                                        <CustomSelect value={config.closeMode || 'DELETE'} onChange={v => setConfig({...config, closeMode: v})} options={CLOSE_MODE_OPTIONS} />
+                                        <CustomSelect value={config.closeMode || 'DELETE'} onChange={v => setConfig({...config, closeMode: v})} options={closeModeOptions} />
                                     </div>
                                     {config.closeMode === 'MOVE' && (
                                         <div className="pc-input-group-v2">
@@ -728,8 +722,8 @@ export default function TicketConfig() {
                     <section className="rr-top-bar" style={{ display: 'flex', alignItems: 'center', gap: '24px', padding: '16px 24px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '24px', boxShadow: 'var(--shadow-premium)' }}>
                         <div className="top-bar-header" style={{ display: 'flex', alignItems: 'center', gap: '16px', paddingRight: '24px', borderRight: '1.5px solid var(--border)' }}>
                             <div className="v-stack">
-                                <span className="top-bar-label" style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Pannelli Disponibili</span>
-                                <span className="top-bar-count" style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--primary)' }}>{(config.panels || []).length} Pannelli</span>
+                                <span className="top-bar-label" style={{ fontSize: '0.65rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('tickets.available_panels')}</span>
+                                <span className="top-bar-count" style={{ fontSize: '0.8rem', fontWeight: 800, color: 'var(--primary)' }}>{t('tickets.panels_count', { count: (config.panels || []).length })}</span>
                             </div>
                             <button type="button" onClick={addPanel} className="pc-btn-icon-v2 add-panel-btn" style={{ width: '36px', height: '36px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Plus size={20} /></button>
                         </div>
@@ -745,7 +739,7 @@ export default function TicketConfig() {
                                     <div className="nav-icon-horizontal" style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'var(--bg-card)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: activePanelId === p.id ? 'var(--primary)' : 'var(--text-muted)' }}><Layout size={18} /></div>
                                     <div className="nav-info-horizontal" style={{ display: 'flex', flexDirection: 'column', textAlign: 'left' }}>
                                         <span className="nav-name-horizontal" style={{ fontWeight: 700, color: 'var(--text-heading)', fontSize: '0.85rem' }}>{p.name}</span>
-                                        <span className="nav-meta-horizontal" style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>{((p.types || p.enabledTypes || []).length || Object.keys(p.typesConfig || {}).length)} Categorie • {p.inputType || 'BUTTONS'}</span>
+                                        <span className="nav-meta-horizontal" style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase' }}>{t('tickets.panel_meta', { count: ((p.types || p.enabledTypes || []).length || Object.keys(p.typesConfig || {}).length), input: p.inputType || 'BUTTONS' })}</span>
                                     </div>
                                 </button>
                             ))}
@@ -762,20 +756,20 @@ export default function TicketConfig() {
                                     <section className="pc-card-v2">
                                         <div className="card-header-v2">
                                             <div className="header-icon"><Settings2 size={18} /></div>
-                                            <h3 style={{ margin: 0 }}>Identità Pannello</h3>
+                                            <h3 style={{ margin: 0 }}>{t('tickets.panel_identity')}</h3>
                                         </div>
                                         <div className="card-body-v2">
                                             <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                                                 <div className="pc-input-group-v2">
-                                                    <label>Nome Visualizzato</label>
+                                                    <label>{t('tickets.display_name')}</label>
                                                     <input className="pc-input-modern-v2" value={activePanel.name} onChange={e => updatePanel(activePanel.id, { name: e.target.value })} />
                                                 </div>
                                                 <div className="pc-input-group-v2">
-                                                    <label>Modalità Input</label>
+                                                    <label>{t('tickets.input_mode')}</label>
                                                     <CustomSelect 
                                                         options={[
-                                                            { value: 'BUTTONS', label: 'Bottoni (Consigliato)' },
-                                                            { value: 'SELECT', label: 'Menu a tendina' }
+                                                            { value: 'BUTTONS', label: t('tickets.input_buttons_recommended') },
+                                                            { value: 'SELECT', label: t('tickets.input_select') }
                                                         ]} 
                                                         value={activePanel.inputType || 'BUTTONS'} 
                                                         onChange={val => updatePanel(activePanel.id, { inputType: val })} 
@@ -783,7 +777,7 @@ export default function TicketConfig() {
                                                 </div>
                                             </div>
                                             <div className="pc-input-group-v2" style={{ marginTop: '20px' }}>
-                                                <label>Canale di Destinazione</label>
+                                                <label>{t('tickets.destination_channel')}</label>
                                                 <DiscordSelector 
                                                     type="channel" 
                                                     options={discordData.channels} 
@@ -830,7 +824,7 @@ export default function TicketConfig() {
                                                     <CustomSelect
                                                         value={activePanel.closeMode || 'DELETE'}
                                                         onChange={val => updatePanel(activePanel.id, { closeMode: val })}
-                                                        options={CLOSE_MODE_OPTIONS}
+                                                        options={closeModeOptions}
                                                     />
                                                 </div>
                                                 {(activePanel.closeMode || 'DELETE') === 'MOVE' && (
@@ -865,7 +859,7 @@ export default function TicketConfig() {
                                                 <strong className={activePanel.channelId ? 'ok' : 'warn'} style={{ color: activePanel.channelId ? '#10b981' : '#ef4444' }}>{activePanel.channelId ? t('common.selected') : t('common.missing')}</strong>
                                             </div>
                                             <div className="rr-summary-row" style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--border)' }}>
-                                                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Input</span>
+                                                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{t('tickets.input_mode')}</span>
                                                 <strong>{activePanel.inputType || 'BUTTONS'}</strong>
                                             </div>
                                         </div>
@@ -879,7 +873,7 @@ export default function TicketConfig() {
                                         style={{ height: '48px', justifyContent: 'center', width: '100%', gap: '8px' }}
                                     >
                                         <Send size={18} />
-                                        <span>Invia Pannello su Discord</span>
+                                        <span>{t('tickets.send_panel_discord')}</span>
                                     </button>
 
                                     <button 
@@ -889,7 +883,7 @@ export default function TicketConfig() {
                                         style={{ height: '48px', justifyContent: 'center', width: '100%', gap: '8px', color: '#ef4444', borderColor: 'rgba(239, 68, 68, 0.2)' }}
                                     >
                                         <Trash2 size={18} />
-                                        <span>Elimina Pannello</span>
+                                        <span>{t('tickets.delete_panel')}</span>
                                     </button>
                                 </aside>
                             </div>
@@ -899,10 +893,10 @@ export default function TicketConfig() {
                     {(!config.panels || config.panels.length === 0) && (
                         <div style={{ textAlign: 'center', padding: '100px 32px' }}>
                             <Ticket size={64} style={{ color: 'var(--primary)', marginBottom: '24px', opacity: 0.5 }} />
-                            <h2 style={{ fontFamily: 'Inter', fontWeight: 700, fontSize: '2rem', color: 'var(--text-heading)' }}>Nessun Pannello Creato</h2>
-                            <p style={{ color: 'var(--text-muted)', marginBottom: '32px' }}>Crea un pannello per inviare i bottoni o il menu a tendina su un canale Discord.</p>
+                            <h2 style={{ fontFamily: 'Inter', fontWeight: 700, fontSize: '2rem', color: 'var(--text-heading)' }}>{t('tickets.no_panels_title')}</h2>
+                            <p style={{ color: 'var(--text-muted)', marginBottom: '32px' }}>{t('tickets.no_panels_desc')}</p>
                             <button type="button" onClick={addPanel} className="pc-btn-primary" style={{ margin: '0 auto' }}>
-                                <Plus size={20} /> <span>Nuovo Pannello</span>
+                                <Plus size={20} /> <span>{t('tickets.new_panel')}</span>
                             </button>
                         </div>
                     )}
@@ -923,10 +917,10 @@ export default function TicketConfig() {
                         </div>
                         <EmbedEditor
                             embed={activePanel?.embed || {
-                                title: 'Support Center',
-                                description: 'Need help or want to report something to staff? Open a ticket by selecting the correct category.',
+                                title: t('tickets.default_panel_title'),
+                                description: t('tickets.default_panel_description'),
                                 color: '#2ECC71',
-                                footer: 'Support Team | {guild}'
+                                footer: t('tickets.default_panel_footer')
                             }}
                             onChange={(embed) => updateActivePanel({ embed })}
                             variables={['guild']}
@@ -999,7 +993,7 @@ export default function TicketConfig() {
                                                     ...(config.buttons || {}),
                                                     [key]: { ...(config.buttons?.[key] || {}), style: v }
                                                 }
-                                            })} options={BUTTON_STYLE_OPTIONS} />
+                                            })} options={buttonStyleOptions} />
                                         </div>
                                     </div>
                                 ))}
