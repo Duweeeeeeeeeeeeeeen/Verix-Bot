@@ -208,7 +208,7 @@ export default function LevelingConfigPage() {
                                 </div>
 
                                 {config.doubleXpScheduled && (
-                                    <div className="scheduler-section animate slide-up" style={{ marginTop: '20px', padding: '20px', background: 'rgba(0, 0, 0, 0.1)', borderRadius: '12px', border: '1px solid var(--border)' }}>
+                                    <div className="scheduler-section animate slide-up" style={{ marginTop: '20px', padding: '20px', background: 'var(--bg-badge)', borderRadius: '12px', border: '1px solid var(--border)' }}>
                                         <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>{t('leveling.select_weekdays')}</label>
                                         <div className="days-selector" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '16px' }}>
                                             {t('leveling.days_short', { defaultValue: 'Dom,Lun,Mar,Mer,Gio,Ven,Sab' }).split(',').map((dayName, idx) => {
@@ -229,8 +229,8 @@ export default function LevelingConfigPage() {
                                                             borderRadius: '8px',
                                                             border: '1px solid',
                                                             borderColor: isActive ? 'var(--primary)' : 'var(--border)',
-                                                            background: isActive ? 'rgba(245, 158, 11, 0.15)' : 'rgba(255, 255, 255, 0.05)',
-                                                            color: isActive ? 'var(--primary)' : 'inherit',
+                                                            background: isActive ? 'rgba(245, 158, 11, 0.15)' : 'var(--bg-card)',
+                                                            color: isActive ? 'var(--primary)' : 'var(--text-heading)',
                                                             cursor: 'pointer',
                                                             fontWeight: '600',
                                                             transition: '0.2s'
@@ -354,7 +354,7 @@ export default function LevelingConfigPage() {
                                                 <label>{t('leveling.custom_message')}</label>
                                                 <textarea
                                                     className="pc-input-modern-v2"
-                                                    style={{ minHeight: '80px', width: '100%', padding: '12px', background: 'rgba(0, 0, 0, 0.15)', color: 'inherit', border: '1px solid var(--border)', borderRadius: '8px' }}
+                                                    style={{ minHeight: '80px', width: '100%', padding: '12px', background: 'var(--bg-input)', color: 'var(--text-heading)', border: '1px solid var(--border)', borderRadius: '8px', outline: 'none' }}
                                                     value={config.notifyTextTemplate || ''}
                                                     onChange={e => setConfig({...config, notifyTextTemplate: e.target.value})}
                                                     placeholder={t('leveling.message_placeholder')}
