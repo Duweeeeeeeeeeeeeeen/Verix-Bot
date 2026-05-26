@@ -346,15 +346,15 @@ export default function BrandingPage() {
                                                 </div>
                                             ))}
                                             {statuses.length === 0 && (
-                                                <div style={{ textAlign: 'center', padding: '100px 40px', color: 'var(--border)', background: 'var(--bg-badge)', borderRadius: '32px', border: '2px dashed var(--border)' }}>
-                                                    <Activity size={64} style={{ margin: '0 auto 24px', opacity: 0.3 }} />
+                                                <div style={{ textAlign: 'center', padding: '72px 32px', color: 'var(--border)', background: 'var(--bg-badge)', borderRadius: '24px', border: '2px dashed var(--border)' }}>
+                                                    <Activity size={48} style={{ margin: '0 auto 24px', opacity: 0.3 }} />
                                                     <p style={{ fontWeight: 700, color: 'var(--text-dim)', fontSize: '1.1rem' }}>{t('wl.empty_status')}</p>
                                                 </div>
                                             )}
                                         </div>
         
                                         {statuses.length > 1 && (
-                                            <div style={{ marginTop: '40px', padding: '36px', background: 'linear-gradient(135deg, var(--bg-badge) 0%, var(--bg-badge) 100%)', borderRadius: '32px', border: '1.5px solid var(--border)' }}>
+                                            <div style={{ marginTop: '40px', padding: '36px', background: 'linear-gradient(135deg, var(--bg-badge) 0%, var(--bg-badge) 100%)', borderRadius: '24px', border: '1.5px solid var(--border)' }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '32px' }}>
                                                     <div style={{ width: '48px', height: '48px', background: 'rgba(99,102,241,0.1)', color: '#6366f1', borderRadius: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(0,0,0,0.03)' }}><Timer size={22} /></div>
                                                     <div className="v-stack">
@@ -392,8 +392,8 @@ export default function BrandingPage() {
                                         </div>
                                     </div>
                                     <div className="card-body-v2">
-                                         <div style={{ padding: '60px 40px', textAlign: 'center', background: 'rgba(0,0,0,0.02)', borderRadius: '32px', border: '2px dashed var(--border)' }}>
-                                             <Bot size={48} style={{ margin: '0 auto 20px', opacity: 0.2 }} />
+                                         <div style={{ padding: '48px 32px', textAlign: 'center', background: 'var(--bg-badge)', borderRadius: '24px', border: '2px dashed var(--border)' }}>
+                                             <Bot size={40} style={{ margin: '0 auto 20px', opacity: 0.2 }} />
                                              <p style={{ color: 'var(--text-dim)', fontWeight: 600 }}>{t('wl.rotation_locked_desc')}</p>
                                          </div>
                                     </div>

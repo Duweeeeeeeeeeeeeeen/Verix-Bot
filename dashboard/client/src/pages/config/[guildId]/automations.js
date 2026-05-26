@@ -325,8 +325,8 @@ export default function AutomationsConfig() {
                                     </div>
                                 ))}
                                 {(config.autoClear?.slots || []).length === 0 && (
-                                    <div style={{ textAlign: 'center', padding: '120px 20px', color: 'var(--text-dim)', background: 'var(--bg-badge)', borderRadius: '32px', border: '2px dashed var(--border)' }}>
-                                        <Box size={56} style={{ margin: '0 auto 24px', opacity: 0.2, color: '#ef4444' }} />
+                                    <div style={{ textAlign: 'center', padding: '72px 20px', color: 'var(--text-dim)', background: 'var(--bg-badge)', borderRadius: '24px', border: '2px dashed var(--border)' }}>
+                                        <Box size={44} style={{ margin: '0 auto 24px', opacity: 0.2, color: '#ef4444' }} />
                                         <p style={{ fontWeight: 700, fontSize: '1.1rem' }}>{t('automations.no_autoclear')}</p>
                                     </div>
                                 )}
@@ -448,8 +448,8 @@ export default function AutomationsConfig() {
                                     </div>
                                 ))}
                                 {(config.autoMessage?.slots || []).length === 0 && (
-                                    <div style={{ textAlign: 'center', padding: '120px 20px', color: 'var(--text-dim)', background: 'var(--bg-badge)', borderRadius: '32px', border: '2px dashed var(--border)' }}>
-                                        <MessageCircle size={56} style={{ margin: '0 auto 24px', opacity: 0.2, color: '#f59e0b' }} />
+                                    <div style={{ textAlign: 'center', padding: '72px 20px', color: 'var(--text-dim)', background: 'var(--bg-badge)', borderRadius: '24px', border: '2px dashed var(--border)' }}>
+                                        <MessageCircle size={44} style={{ margin: '0 auto 24px', opacity: 0.2, color: '#f59e0b' }} />
                                         <p style={{ fontWeight: 700, fontSize: '1.1rem' }}>{t('automations.no_broadcast')}</p>
                                     </div>
                                 )}
@@ -497,8 +497,8 @@ export default function AutomationsConfig() {
                                     />
                                 </div>
                              ) : (
-                                <div style={{ textAlign: 'center', padding: '140px 20px', color: 'var(--text-dim)', background: 'var(--bg-badge)', borderRadius: '32px', border: '3px dashed var(--border)' }}>
-                                    <Terminal size={64} style={{ margin: '0 auto 24px', opacity: 0.2 }} />
+                                <div style={{ textAlign: 'center', padding: '80px 20px', color: 'var(--text-dim)', background: 'var(--bg-badge)', borderRadius: '24px', border: '2px dashed var(--border)' }}>
+                                    <Terminal size={48} style={{ margin: '0 auto 24px', opacity: 0.2 }} />
                                     <h4 style={{ margin: '0 0 8px 0', fontSize: '1.4rem', color: 'var(--text-heading)', fontWeight: 700 }}>{t('automations.designer_standby_title')}</h4>
                                     <p style={{ fontWeight: 700, fontSize: '1rem', maxWidth: '400px', margin: '0 auto' }}>{t('automations.designer_standby_desc')}</p>
                                 </div>

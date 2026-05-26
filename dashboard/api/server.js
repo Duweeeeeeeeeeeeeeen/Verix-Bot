@@ -7,6 +7,7 @@ import passport from 'passport';
 import { Strategy as DiscordStrategy } from 'passport-discord';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
+import helmet from 'helmet';
 import authRoutes from './routes/auth.js';
 import configRoutes from './routes/config.js';
 import messageRoutes from './routes/messages.js';
@@ -49,6 +50,10 @@ passport.use(new DiscordStrategy({
 }));
 
 // ─── Middleware ──────────────────────────────────────────────────────────────
+app.use(helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+    contentSecurityPolicy: false
+}));
 app.use(cors({
     origin: process.env.DASHBOARD_FRONTEND_URL,
     credentials: true
@@ -73,7 +78,7 @@ const apiLimiter = rateLimit({
     max: 120,               // max 120 requests/min per IP
     standardHeaders: true,
     legacyHeaders: false,
-    message: { success: false, error: 'Troppe richieste. Riprova tra un minuto.' }
+    message: { success: false, error: 'Too many requests. Please try again in one minute.' }
 });
 app.use('/api/config', apiLimiter);
 app.use('/api/messages', apiLimiter);
@@ -84,7 +89,7 @@ const strictLimiter = rateLimit({
     max: 10,                // max 10 destructive actions/min per IP
     standardHeaders: true,
     legacyHeaders: false,
-    message: { success: false, error: 'Troppe operazioni distruttive. Attendi un minuto.' }
+    message: { success: false, error: 'Too many destructive operations. Please wait one minute.' }
 });
 // Apply to all POST routes under /management and all DELETE routes under /config
 app.use('/api/management', strictLimiter);
@@ -120,14 +125,14 @@ app.get('/', (req, res) => res.json({ success: true, message: 'Dashboard API is 
 
 // ─── Error Handlers ───────────────────────────────────────────────────────────
 app.use((req, res) => {
-    res.status(404).json({ success: false, error: 'Endpoint non trovato' });
+    res.status(404).json({ success: false, error: 'Endpoint not found' });
 });
 
 app.use((err, req, res, next) => {
     console.error('❌ Server Error:', err.message);
     res.status(err.status || 500).json({
         success: false,
-        error: isProduction ? 'Si è verificato un errore interno al server.' : err.message
+        error: isProduction ? 'An internal server error occurred.' : err.message
     });
 });
 
