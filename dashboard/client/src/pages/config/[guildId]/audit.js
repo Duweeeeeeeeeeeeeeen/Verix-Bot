@@ -6,7 +6,7 @@ import {
     Crown, Download, Trash2, Clock, CheckCircle2, ArrowRight, AlertTriangle, 
     FileText, Settings, ShieldCheck, Zap, Sparkles, Layout, Terminal, 
     ExternalLink, Globe, Smartphone, Monitor, Moon, Sun, Layers, Database,
-    Activity, Fingerprint, Eye, MousePointer2, LayoutGrid
+    Activity, Fingerprint, Eye, MousePointer2, LayoutGrid, X
 } from 'lucide-react';
 import Skeleton from '../../../components/Skeleton';
 import api from '../../../utils/api';
@@ -21,6 +21,7 @@ export default function AuditPage() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterAction, setFilterAction] = useState('ALL');
+  const [filterOpen, setFilterOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [expandedLogId, setExpandedLogId] = useState(null);
 
@@ -100,6 +101,14 @@ export default function AuditPage() {
   if (!mounted || loading) return <Skeleton height="600px" />;
 
   const isPremium = guildData?.isPremium || ['premium', 'platinum'].includes(guildData?.premiumTier);
+  const filterOptions = [
+      { value: 'ALL', label: t('audit_studio.filter_all') },
+      { value: 'UPDATE_CONFIG', label: t('audit_studio.filter_config') },
+      { value: 'UPDATE_WHITELIST', label: t('audit_studio.filter_whitelist') },
+      { value: 'SAVE_TEMPLATE', label: t('audit_studio.filter_design') },
+      { value: 'SEND_PANEL', label: t('audit_studio.filter_panels') }
+  ];
+  const activeFilterLabel = filterOptions.find(option => option.value === filterAction)?.label || filterOptions[0].label;
 
   return (
     <div className="pc-premium-wrapper fade-in">
@@ -176,14 +185,29 @@ export default function AuditPage() {
                             />
                         </div>
                         <div className="pc-filter-v2">
-                            <Filter size={22} style={{ color: 'var(--text-muted)' }} />
-                            <select value={filterAction} onChange={(e) => setFilterAction(e.target.value)}>
-                                <option value="ALL">{t('audit_studio.filter_all')}</option>
-                                <option value="UPDATE_CONFIG">{t('audit_studio.filter_config')}</option>
-                                <option value="UPDATE_WHITELIST">{t('audit_studio.filter_whitelist')}</option>
-                                <option value="SAVE_TEMPLATE">{t('audit_studio.filter_design')}</option>
-                                <option value="SEND_PANEL">{t('audit_studio.filter_panels')}</option>
-                            </select>
+                            <button className="pc-filter-trigger-v2" onClick={() => setFilterOpen(!filterOpen)} type="button" aria-expanded={filterOpen}>
+                                <Filter size={18} />
+                                <span>{activeFilterLabel}</span>
+                                <ChevronDown size={16} className={filterOpen ? 'rotate' : ''} />
+                            </button>
+                            {filterOpen && (
+                                <div className="pc-filter-menu-v2">
+                                    {filterOptions.map(option => (
+                                        <button
+                                            key={option.value}
+                                            type="button"
+                                            className={filterAction === option.value ? 'active' : ''}
+                                            onClick={() => {
+                                                setFilterAction(option.value);
+                                                setFilterOpen(false);
+                                            }}
+                                        >
+                                            <span>{option.label}</span>
+                                            {filterAction === option.value && <CheckCircle2 size={15} />}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -247,9 +271,15 @@ export default function AuditPage() {
                                                     <tr key={`${logId}-details`} className="pc-audit-details-row-v2">
                                                         <td colSpan="4">
                                                             <div className="pc-audit-details-v2">
-                                                                <div className="audit-detail-heading-v2">
-                                                                    <Fingerprint size={16} />
-                                                                    <span>Audit Details</span>
+                                                                <div className="audit-detail-header-v2">
+                                                                    <div className="audit-detail-heading-v2">
+                                                                        <Fingerprint size={16} />
+                                                                        <span>Audit Details</span>
+                                                                    </div>
+                                                                    <button className="audit-detail-close-v2" onClick={() => setExpandedLogId(null)} type="button" aria-label="Close audit details">
+                                                                        <X size={16} />
+                                                                        <span>Close</span>
+                                                                    </button>
                                                                 </div>
                                                                 {renderChanges(log.changes)}
                                                             </div>
@@ -313,8 +343,16 @@ export default function AuditPage() {
             .pc-discovery-hub-v2 { display: flex; gap: 16px; margin-bottom: 32px; }
             .pc-search-v2 { flex: 1; display: flex; align-items: center; gap: 12px; background: var(--bg-card); border: 1px solid var(--border); padding: 0 20px; border-radius: 18px; }
             .pc-search-v2 input { width: 100%; border: none; background: transparent; padding: 16px 0; font-weight: 700; color: var(--text-heading); outline: none; }
-            .pc-filter-v2 { display: flex; align-items: center; gap: 12px; background: var(--bg-card); border: 1px solid var(--border); padding: 0 20px; border-radius: 18px; }
-            .pc-filter-v2 select { border: none; background: transparent; padding: 16px 0; font-weight: 700; color: var(--text-heading); outline: none; cursor: pointer; min-width: 180px; }
+            .pc-filter-v2 { position: relative; min-width: 260px; }
+            .pc-filter-trigger-v2 { width: 100%; height: 100%; min-height: 56px; display: flex; align-items: center; gap: 12px; justify-content: space-between; background: var(--bg-card); border: 1px solid var(--border); padding: 0 18px; border-radius: 18px; color: var(--text-heading); font-weight: 800; cursor: pointer; transition: 0.2s ease; }
+            .pc-filter-trigger-v2:hover, .pc-filter-trigger-v2[aria-expanded="true"] { border-color: rgba(var(--primary-rgb), 0.32); box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06); }
+            .pc-filter-trigger-v2 span { flex: 1; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .pc-filter-trigger-v2 svg { color: var(--text-muted); flex: 0 0 auto; }
+            .pc-filter-trigger-v2 .rotate { transform: rotate(180deg); }
+            .pc-filter-menu-v2 { position: absolute; top: calc(100% + 8px); right: 0; width: 100%; background: var(--bg-card); border: 1px solid var(--border); border-radius: 18px; box-shadow: var(--shadow-premium); padding: 8px; z-index: 30; }
+            .pc-filter-menu-v2 button { width: 100%; border: 0; background: transparent; color: var(--text-main); border-radius: 12px; padding: 11px 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px; font-weight: 750; cursor: pointer; text-align: left; }
+            .pc-filter-menu-v2 button:hover { background: var(--bg-badge); color: var(--text-heading); }
+            .pc-filter-menu-v2 button.active { background: rgba(var(--primary-rgb), 0.1); color: var(--primary); }
 
             /* Table V2 */
             .audit-table-container-v2 { padding: 0; overflow: hidden; }
@@ -339,7 +377,10 @@ export default function AuditPage() {
             .pc-audit-action-btn-v2.open { background: var(--primary); color: #fff; border-color: var(--primary); transform: none; }
             .pc-audit-details-row-v2 td { padding-top: 0; background: color-mix(in srgb, var(--bg-badge) 60%, transparent); }
             .pc-audit-details-v2 { border: 1px solid var(--border); border-radius: 18px; padding: 18px; background: var(--bg-card); }
-            .audit-detail-heading-v2 { display: flex; align-items: center; gap: 8px; color: var(--text-heading); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 14px; }
+            .audit-detail-header-v2 { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+            .audit-detail-heading-v2 { display: flex; align-items: center; gap: 8px; color: var(--text-heading); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; }
+            .audit-detail-close-v2 { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--border); background: var(--bg-badge); color: var(--text-heading); border-radius: 12px; padding: 8px 10px; font-size: 0.75rem; font-weight: 800; cursor: pointer; transition: 0.2s ease; }
+            .audit-detail-close-v2:hover { border-color: rgba(239, 68, 68, 0.28); color: #ef4444; background: rgba(239, 68, 68, 0.08); }
             .audit-detail-grid-v2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
             .audit-detail-item-v2 { background: var(--bg-badge); border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px; min-width: 0; }
             .audit-detail-item-v2 span { display: block; color: var(--text-muted); font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
@@ -354,6 +395,11 @@ export default function AuditPage() {
             .v-stack { display: flex; flex-direction: column; }
             .animate { animation: slideUp 0.4s ease-out; }
             @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+            @media (max-width: 760px) {
+                .pc-discovery-hub-v2 { flex-direction: column; }
+                .pc-filter-v2 { min-width: 0; }
+                .audit-detail-header-v2 { align-items: flex-start; flex-direction: column; }
+            }
         `}</style>
     </div>
   );
