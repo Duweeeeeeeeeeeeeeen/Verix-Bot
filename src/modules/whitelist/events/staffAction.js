@@ -280,8 +280,9 @@ export default {
                     content: `Application for <@${app.userId}> rejected by ${interaction.user} - Reason: ${reason}`
                 });
             }
-        } catch (error) {
-            logger.error('[Whitelist_StaffAction] Interaction Error:', error);
+        }
+    } catch (error) {
+        logger.error('[Whitelist_StaffAction] Interaction Error:', error);
             const globalConfig = await GlobalConfig.findOne({ guildId: interaction.guild?.id });
             const lang = globalConfig?.language || 'en';
             
