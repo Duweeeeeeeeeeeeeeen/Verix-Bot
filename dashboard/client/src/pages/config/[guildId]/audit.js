@@ -276,16 +276,16 @@ export default function AuditPage() {
                                                                         <Fingerprint size={16} />
                                                                         <span>Audit Details</span>
                                                                     </div>
-                                                                    <button className="audit-detail-close-v2" onClick={() => setExpandedLogId(null)} type="button" aria-label="Close audit details">
+                                                                    <button className="audit-detail-close-v2" onClick={() => setExpandedLogId(null)} type="button" aria-label="Close audit details" title="Close details">
                                                                         <X size={16} />
-                                                                        <span>Close</span>
                                                                     </button>
                                                                 </div>
                                                                 {renderChanges(log.changes)}
-                                                                <button className="audit-detail-bottom-close-v2" onClick={() => setExpandedLogId(null)} type="button">
-                                                                    <X size={16} />
-                                                                    <span>Close details</span>
-                                                                </button>
+                                                                <div className="audit-detail-footer-v2">
+                                                                    <button className="audit-detail-close-v2" onClick={() => setExpandedLogId(null)} type="button" aria-label="Close audit details" title="Close details">
+                                                                        <X size={16} />
+                                                                    </button>
+                                                                </div>
                                                             </div>
                                                         </td>
                                                     </tr>
@@ -384,10 +384,9 @@ export default function AuditPage() {
             .pc-audit-details-v2 { border: 1px solid var(--border); border-radius: 18px; padding: 18px; background: var(--bg-card); }
             .audit-detail-header-v2 { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
             .audit-detail-heading-v2 { display: flex; align-items: center; gap: 8px; color: var(--text-heading); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; }
-            .audit-detail-close-v2 { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--border); background: var(--bg-badge); color: var(--text-heading); border-radius: 12px; padding: 8px 10px; font-size: 0.75rem; font-weight: 800; cursor: pointer; transition: 0.2s ease; }
+            .audit-detail-close-v2 { width: 32px; height: 32px; flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--border); background: var(--bg-badge); color: var(--text-heading); border-radius: 10px; padding: 0; cursor: pointer; transition: 0.2s ease; }
             .audit-detail-close-v2:hover { border-color: rgba(239, 68, 68, 0.28); color: #ef4444; background: rgba(239, 68, 68, 0.08); }
-            .audit-detail-bottom-close-v2 { margin-top: 14px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid rgba(239, 68, 68, 0.24); background: rgba(239, 68, 68, 0.06); color: #ef4444; border-radius: 14px; padding: 11px 14px; font-size: 0.82rem; font-weight: 850; cursor: pointer; transition: 0.2s ease; }
-            .audit-detail-bottom-close-v2:hover { background: #ef4444; color: #fff; border-color: #ef4444; }
+            .audit-detail-footer-v2 { display: flex; justify-content: flex-end; margin-top: 12px; }
             .audit-detail-grid-v2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
             .audit-detail-item-v2 { background: var(--bg-badge); border: 1px solid var(--border); border-radius: 14px; padding: 12px 14px; min-width: 0; }
             .audit-detail-item-v2 span { display: block; color: var(--text-muted); font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
