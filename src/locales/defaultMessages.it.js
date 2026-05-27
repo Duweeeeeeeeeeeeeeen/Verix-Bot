@@ -580,6 +580,26 @@ export default {
         status_none: 'Nessuno',
         owner_field: '👑 Proprietario',
         limit_field: '👥 Limite',
+        dm_accepted: {
+            title: 'Colloquio Orale Approvato',
+            description: 'Congratulazioni {user}! Il tuo colloquio orale per **{guild}** è stato approvato.',
+            color: '#2ecc71'
+        },
+        dm_rejected: {
+            title: 'Colloquio Orale Respinto',
+            description: 'Il tuo colloquio orale per **{guild}** non è stato approvato.\n\n**Motivo:** {reason}',
+            color: '#e74c3c'
+        },
+        staff_approved: {
+            title: 'Revisione Orale Approvata',
+            description: 'L\'utente **<@{userId}>** è stato approvato da **{staff}**.',
+            color: '#2ecc71'
+        },
+        staff_denied: {
+            title: 'Revisione Orale Respinta',
+            description: 'L\'utente **<@{userId}>** è stato respinto da **{staff}**.\n\n**Motivo:** {reason}',
+            color: '#e74c3c'
+        },
         rejection_modal_title: 'Rifiuto colloquio orale',
         rejection_modal_label: 'Motivo del rifiuto'
     },
