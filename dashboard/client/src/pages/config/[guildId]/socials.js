@@ -150,7 +150,46 @@ export default function SocialsConfig() {
       });
       window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('socials.sync_success'), type: 'success' } }));
     } catch (error) {
-      window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('common.error'), type: 'error' } }));
+      // Swallowing the generic toast since api.request already fires a toast with the exact server validation error.
+      const msg = error.message || '';
+      let targetPlatform = null;
+      if (msg.includes('Steam')) targetPlatform = 'steam';
+      else if (msg.includes('YouTube')) targetPlatform = 'youtube';
+      else if (msg.includes('Telegram')) targetPlatform = 'telegram';
+      else if (msg.includes('Kick')) targetPlatform = 'kick';
+      else if (msg.includes('Twitch')) targetPlatform = 'twitch';
+
+      if (targetPlatform) {
+        setActivePlatform(targetPlatform);
+        setActiveTab('settings');
+        
+        setTimeout(() => {
+          const container = document.querySelector('.socials-layout');
+          if (container) {
+            const inputs = container.querySelectorAll('main input');
+            inputs.forEach(input => {
+              input.style.borderColor = '#ef4444';
+              input.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.2)';
+              input.classList.add('error-pulse');
+              
+              const reset = () => {
+                input.style.borderColor = '';
+                input.style.boxShadow = '';
+                input.classList.remove('error-pulse');
+                input.removeEventListener('focus', reset);
+                input.removeEventListener('input', reset);
+              };
+              input.addEventListener('focus', reset);
+              input.addEventListener('input', reset);
+            });
+            
+            if (inputs.length > 0) {
+              inputs[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+              inputs[0].focus();
+            }
+          }
+        }, 150);
+      }
     } finally {
       setSaving(false);
       window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
@@ -554,6 +593,14 @@ export default function SocialsConfig() {
 
         <style jsx>{`
             .pc-premium-wrapper { padding: 24px; max-width: 1650px; margin: 0 auto; font-family: 'Inter', sans-serif; }
+            @keyframes errorShake {
+                0%, 100% { transform: translateX(0); }
+                20%, 60% { transform: translateX(-4px); }
+                40%, 80% { transform: translateX(4px); }
+            }
+            .error-pulse {
+                animation: errorShake 0.4s ease-in-out;
+            }
             .socials-layout { display: grid; grid-template-columns: 230px minmax(0, 1fr) !important; gap: 20px; align-items: flex-start; }
             .socials-sidebar { position: sticky; top: 24px; }
             
