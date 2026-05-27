@@ -106,4 +106,27 @@ router.post('/:guildId/:module', adminCheck, async (req, res) => {
     }
 });
 
+/**
+ * DELETE /api/messages/:guildId/:module
+ * Reset all custom overrides and restore multilingual defaults for a module.
+ */
+router.delete('/:guildId/:module', adminCheck, async (req, res) => {
+    try {
+        const { guildId, module } = req.params;
+
+        await MessageConfig.deleteOne({ guildId, module });
+
+        // Invalidate Bot Cache
+        messageService.clearCache(guildId, module);
+
+        res.json({
+            success: true,
+            message: 'Messages successfully reset to defaults.'
+        });
+    } catch (error) {
+        console.error('[API] Error resetting messages:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 export default router;
