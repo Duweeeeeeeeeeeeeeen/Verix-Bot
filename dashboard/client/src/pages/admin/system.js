@@ -619,17 +619,18 @@ export default function SystemUpdates() {
                                             Track the bot's health, database connection, ping, and memory metrics, posting a real-time updating embed to a designated channel.
                                         </p>
                                         <form onSubmit={handleSaveTracking} className="system-form">
-                                            <div className="form-group" style={{ marginBottom: '1rem' }}>
-                                                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                                            <div className="form-group" style={{ marginBottom: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.03)', padding: '10px 14px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                                <span style={{ fontWeight: '500', fontSize: '0.875rem', color: '#e2e8f0' }}>Enable Live Tracking Embed</span>
+                                                <label className="switch" style={{ margin: 0 }}>
                                                     <input 
                                                         type="checkbox" 
                                                         checked={trackingEnabled}
                                                         onChange={e => setTrackingEnabled(e.target.checked)}
-                                                        style={{ width: 'auto', height: '18px', cursor: 'pointer', margin: 0 }}
                                                     />
-                                                    <span style={{ fontWeight: '500' }}>Enable Live Tracking Embed</span>
+                                                    <span className="slider round"></span>
                                                 </label>
                                             </div>
+
 
                                             <div className="form-group" style={{ marginBottom: '1rem' }}>
                                                 <label style={{ display: 'block', marginBottom: '6px' }}>Channel ID (Text Channel)</label>
