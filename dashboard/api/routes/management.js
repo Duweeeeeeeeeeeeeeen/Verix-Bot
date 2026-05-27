@@ -2,6 +2,7 @@ import express from 'express';
 import { adminCheck } from '../middleware/adminCheck.js';
 import WhitelistApp from '../../../src/models/WhitelistApp.js';
 import Background from '../../../src/models/Background.js';
+import WhitelistAudit from '../../../src/models/WhitelistAudit.js';
 import User from '../../../src/models/User.js';
 import VoiceQueue from '../../../src/models/VoiceQueue.js';
 import { logAudit } from '../utils/auditLogger.js';
@@ -54,10 +55,10 @@ router.get('/:guildId/search/:userId', adminCheck, async (req, res) => {
         console.log(`[Management_API] Searching Guild: ${guildId}, User: ${userId}`);
 
         if (!userId || userId.length < 15) {
-            return res.status(400).json({ success: false, error: 'ID Utente non valido.' });
+            return res.status(400).json({ success: false, error: 'Invalid user ID.' });
         }
 
-        const [user, whitelistApps, backgrounds, voiceEntries] = await Promise.all([
+        const [user, whitelistApps, backgrounds, voiceEntries, whitelistAudits] = await Promise.all([
             User.findOne({ discordId: userId }).select('-__v'),
             WhitelistApp.find({ guildId, userId })
                 .select('status channelId startTime submittedAt reviewedBy rejectionReason deletionScheduledAt')
@@ -65,7 +66,10 @@ router.get('/:guildId/search/:userId', adminCheck, async (req, res) => {
             Background.find({ guildId, userId })
                 .select('status channelId link description reviewedBy rejectionReason createdAt submittedAt deletionScheduledAt')
                 .sort({ createdAt: -1 }),
-            VoiceQueue.find({ guildId, userId }).select('status joinedAt').sort({ joinedAt: -1 })
+            VoiceQueue.find({ guildId, userId }).select('status joinedAt').sort({ joinedAt: -1 }),
+            WhitelistAudit.find({ guildId, userId })
+                .select('action type reason staffId timestamp applicationId')
+                .sort({ timestamp: -1 })
         ]);
 
         console.log(`[Management_API] Results for ${userId}: WL=${whitelistApps.length}, BG=${backgrounds.length}`);
@@ -87,6 +91,38 @@ router.get('/:guildId/search/:userId', adminCheck, async (req, res) => {
             description: record.description
         }));
 
+        const whitelistAuditEvents = whitelistAudits.map(record => ({
+            _id: record._id,
+            source: 'whitelist',
+            type: record.type || 'TEXT',
+            action: record.action,
+            status: record.action,
+            staffId: record.staffId,
+            reason: record.reason,
+            timestamp: record.timestamp,
+            applicationId: record.applicationId
+        }));
+
+        const backgroundEvents = formattedBackgrounds
+            .filter(record => ['ACCEPTED', 'REJECTED', 'SUBMITTED'].includes(record.status))
+            .map(record => ({
+                _id: `bg-${record._id}`,
+                recordId: record._id,
+                source: 'background',
+                type: 'BACKGROUND',
+                action: record.status,
+                status: record.status,
+                staffId: record.reviewedBy,
+                reason: record.rejectionReason,
+                link: record.link,
+                description: record.description,
+                timestamp: record.timestamp
+            }));
+
+        const activity = [...whitelistAuditEvents, ...backgroundEvents]
+            .filter(event => event.timestamp)
+            .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
         res.json({
             success: true,
             data: {
@@ -100,7 +136,8 @@ router.get('/:guildId/search/:userId', adminCheck, async (req, res) => {
                     history: formattedBackgrounds
                 },
                 backgrounds: formattedBackgrounds,
-                voice: voiceEntries
+                voice: voiceEntries,
+                activity
             }
         });
     } catch (error) {

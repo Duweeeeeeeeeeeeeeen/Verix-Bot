@@ -149,6 +149,36 @@ export default function ManagementPage() {
     window.dispatchEvent(new CustomEvent('show-toast', { detail: { message, type } }));
   };
 
+  const prettyStatus = (status) => {
+    const map = {
+      ACCEPTED: t('management.status_accepted'),
+      REJECTED: t('management.status_rejected'),
+      PENDING: t('management.status_pending'),
+      SUBMITTED: t('management.status_submitted'),
+      WAITING_VOICE: t('management.status_waiting_voice'),
+      WAITING_BACKGROUND: t('management.status_waiting_background'),
+      SUBMITTED_BACKGROUND: t('management.status_submitted_background'),
+      CANCELLED: t('management.status_cancelled'),
+      EXPIRED: t('management.status_expired')
+    };
+    return map[status] || status || 'N/A';
+  };
+
+  const getActivityTitle = (event) => {
+    const source = event.source === 'background'
+      ? t('management.activity.background')
+      : event.type === 'VOICE'
+        ? t('management.activity.voice')
+        : t('management.activity.whitelist');
+    return `${source} - ${prettyStatus(event.status || event.action)}`;
+  };
+
+  const getActivityTone = (status) => {
+    if (status === 'ACCEPTED') return 'green';
+    if (['REJECTED', 'CANCELLED', 'EXPIRED'].includes(status)) return 'red';
+    return 'blue';
+  };
+
   const handleSearch = async (e, manualId = null) => {
     if (e) e.preventDefault();
     const idToSearch = manualId || userId;
@@ -254,6 +284,9 @@ export default function ManagementPage() {
                     <button className={activeTab === 'users' ? 'active' : ''} onClick={() => setActiveTab('users')}>
                         <User size={16} /> <span>{t('management.tabs.users')}</span>
                     </button>
+                    <button className={activeTab === 'logs' ? 'active' : ''} onClick={() => setActiveTab('logs')}>
+                        <History size={16} /> <span>{t('management.tabs.logs')}</span>
+                    </button>
                 </nav>
             </div>
         </header>
@@ -336,14 +369,14 @@ export default function ManagementPage() {
                                             <ShieldCheck size={18} />
                                             <div className="h-stat-text">
                                                 <span>{t('management.hero.stats.whitelist')}</span>
-                                                <strong>{userData.whitelist?.status || 'N/A'}</strong>
+                                                <strong>{prettyStatus(userData.whitelist?.status)}</strong>
                                             </div>
                                         </div>
                                         <div className="h-stat-v2">
                                             <Mic2 size={18} />
                                             <div className="h-stat-text">
-                                                <span>{t('management.hero.stats.staff')}</span>
-                                                <strong>{userData.background?.status || 'N/A'}</strong>
+                                                <span>{t('management.hero.stats.background')}</span>
+                                                <strong>{prettyStatus(userData.background?.status)}</strong>
                                             </div>
                                         </div>
                                         <div className="h-stat-v2">
@@ -368,10 +401,12 @@ export default function ManagementPage() {
                                                 {userData.whitelist?.history?.map((h, i) => (
                                                     <div key={i} className="pc-list-item-v2" style={{ justifyContent: 'space-between' }}>
                                                         <div className="align-center">
-                                                            <div className={`pc-dot-v2 ${h.status === 'ACCEPTED' ? 'green' : 'red'}`}></div>
+                                                            <div className={`pc-dot-v2 ${getActivityTone(h.status)}`}></div>
                                                             <div className="v-stack">
-                                                                <span style={{ fontWeight: 700 }}>{h.status}</span>
+                                                                <span style={{ fontWeight: 700 }}>{prettyStatus(h.status)}</span>
                                                                 <span className="pc-hint-v2">{new Date(h.timestamp).toLocaleString(language === 'it' ? 'it-IT' : 'en-US')}</span>
+                                                                {h.reviewedBy && <span className="pc-hint-v2">{t('management.reviewed_by')}: {h.reviewedBy}</span>}
+                                                                {h.rejectionReason && <span className="pc-hint-v2">{t('management.reason')}: {h.rejectionReason}</span>}
                                                             </div>
                                                         </div>
                                                         <button className="btn-del-mini-v2" onClick={() => handleDelete('whitelist', h._id)}><Trash2 size={14} /></button>
@@ -385,7 +420,7 @@ export default function ManagementPage() {
                                     <section className="pc-card-v2">
                                         <div className="card-header-v2">
                                             <div className="header-icon"><BookOpen size={18} /></div>
-                                            <h3>{t('management.cards.staff.title')}</h3>
+                                            <h3>{t('management.cards.background.title')}</h3>
                                             <div className="pc-count-badge">{userData.background?.history?.length || 0}</div>
                                         </div>
                                         <div className="card-body-v2">
@@ -393,10 +428,13 @@ export default function ManagementPage() {
                                                 {userData.background?.history?.map((h, i) => (
                                                     <div key={i} className="pc-list-item-v2" style={{ justifyContent: 'space-between' }}>
                                                         <div className="align-center">
-                                                            <div className="pc-dot-v2 blue"></div>
+                                                            <div className={`pc-dot-v2 ${getActivityTone(h.status)}`}></div>
                                                             <div className="v-stack">
-                                                                <span style={{ fontWeight: 700 }}>{t('management.cards.staff.submitted')}</span>
+                                                                <span style={{ fontWeight: 700 }}>{prettyStatus(h.status)}</span>
                                                                 <span className="pc-hint-v2">{new Date(h.timestamp).toLocaleString(language === 'it' ? 'it-IT' : 'en-US')}</span>
+                                                                {h.reviewedBy && <span className="pc-hint-v2">{t('management.reviewed_by')}: {h.reviewedBy}</span>}
+                                                                {h.rejectionReason && <span className="pc-hint-v2">{t('management.reason')}: {h.rejectionReason}</span>}
+                                                                {h.link && <a className="pc-hint-v2" href={h.link} target="_blank" rel="noreferrer">{t('management.open_background')}</a>}
                                                             </div>
                                                         </div>
                                                         <button className="btn-del-mini-v2" onClick={() => handleDelete('background', h._id)}><Trash2 size={14} /></button>
@@ -407,6 +445,33 @@ export default function ManagementPage() {
                                         </div>
                                     </section>
                                 </div>
+
+                                <section className="pc-card-v2">
+                                    <div className="card-header-v2">
+                                        <div className="header-icon"><History size={18} /></div>
+                                        <h3>{t('management.activity.title')}</h3>
+                                        <div className="pc-count-badge">{userData.activity?.length || 0}</div>
+                                    </div>
+                                    <div className="card-body-v2">
+                                        <div className="pc-item-grid-v2">
+                                            {userData.activity?.map((event, i) => (
+                                                <div key={event._id || i} className="pc-list-item-v2 activity-item-v2">
+                                                    <div className="align-center">
+                                                        <div className={`pc-dot-v2 ${getActivityTone(event.status || event.action)}`}></div>
+                                                        <div className="v-stack">
+                                                            <span style={{ fontWeight: 800 }}>{getActivityTitle(event)}</span>
+                                                            <span className="pc-hint-v2">{new Date(event.timestamp).toLocaleString(language === 'it' ? 'it-IT' : 'en-US')}</span>
+                                                            {event.staffId && <span className="pc-hint-v2">{t('management.reviewed_by')}: {event.staffId}</span>}
+                                                            {event.reason && <span className="pc-hint-v2">{t('management.reason')}: {event.reason}</span>}
+                                                            {event.link && <a className="pc-hint-v2" href={event.link} target="_blank" rel="noreferrer">{t('management.open_background')}</a>}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                            {(!userData.activity || userData.activity.length === 0) && <div className="pc-empty-mini">{t('management.activity.empty')}</div>}
+                                        </div>
+                                    </div>
+                                </section>
                             </div>
                          )}
                     </div>
@@ -548,6 +613,7 @@ export default function ManagementPage() {
 
             .pc-item-grid-v2 { display: flex; flex-direction: column; gap: 12px; }
             .pc-list-item-v2 { display: flex; align-items: center; padding: 16px; background: var(--bg-badge); border-radius: 16px; border: 1px solid var(--border); }
+            .activity-item-v2 { justify-content: space-between; align-items: flex-start; }
             .pc-dot-v2 { width: 10px; height: 10px; border-radius: 50%; }
             .pc-dot-v2.green { background: #10b981; box-shadow: 0 0 10px #10b98144; }
             .pc-dot-v2.red { background: #ef4444; box-shadow: 0 0 10px #ef444444; }
