@@ -141,6 +141,7 @@ export default async (client) => {
                         // Check if it belongs to this module
                         matchesModule = target.includes(moduleName.toLowerCase()) ||
                                         (moduleName.toLowerCase() === 'tickets' && (target.includes('ticket') || target.startsWith('tk_'))) ||
+                                        (moduleName.toLowerCase() === 'whitelist' && (target.includes('voice') || target.startsWith('dashboard_') || target.includes('promote_user'))) ||
                                         (prefix && (target.startsWith(`${prefix}_`) || target.includes(`_${prefix}_`) || target.endsWith(`_${prefix}`)));
 
                         // Skip if not admin and not matching
