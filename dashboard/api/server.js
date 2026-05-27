@@ -17,6 +17,7 @@ import adminRoutes from './routes/admin.js';
 import collaboratorsRoutes from './routes/collaborators.js';
 import locksRoutes from './routes/locks.js';
 import { stripeCheckoutRouter, stripeWebhookRouter } from './routes/stripe.js';
+import webhooksRoutes from './routes/webhooks.js';
 import { ONE_WEEK_MS, buildSessionCookieOptions } from './utils/sessionConfig.js';
 
 // ─── Critical startup guard ─────────────────────────────────────────────────
@@ -114,6 +115,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/collaborators', collaboratorsRoutes);
 app.use('/api/locks', locksRoutes);
 app.use('/api/stripe', stripeCheckoutRouter);
+app.use('/api/webhooks', webhooksRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
