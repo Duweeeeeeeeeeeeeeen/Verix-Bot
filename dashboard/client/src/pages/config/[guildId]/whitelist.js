@@ -599,13 +599,22 @@ export default function WhitelistConfig() {
                         slugs={[
                             // Whitelist Module
                             { key: 'panel', label: t('whitelist.msg_panel'), description: t('whitelist.msg_panel_desc') || 'Main message for starting an application.', variables: ['guild'], group: 'Whitelist (Access)', groupIcon: Layout, module: 'whitelist' },
+                            { key: 'dm_submitted', label: 'Application Submitted (DM)', description: 'DM sent when user submits their written application.', variables: ['user', 'guild'], group: 'Whitelist (DMs)', groupIcon: CheckCircle2, module: 'whitelist' },
+                            { key: 'dm_text_pass', label: 'Written Test Passed (DM)', description: 'DM sent when user passes the written test.', variables: ['user', 'guild'], group: 'Whitelist (DMs)', groupIcon: CheckCircle2, module: 'whitelist' },
                             { key: 'dm_accepted', label: t('whitelist.msg_accepted'), description: t('whitelist.msg_accepted_desc') || 'DM sent when an application is approved.', variables: ['user'], group: 'Whitelist (DMs)', groupIcon: CheckCircle2, module: 'whitelist' },
                             { key: 'dm_rejected', label: t('whitelist.msg_rejected'), description: t('whitelist.msg_rejected_desc') || 'DM sent when an application is rejected.', variables: ['user', 'reason'], group: 'Whitelist (DMs)', groupIcon: XCircle, module: 'whitelist' },
+                            { key: 'staff_received', label: 'Staff Log: Received', description: 'Log sent to staff when a new application is received.', variables: ['user_name', 'user_id', 'channel', 'app_id'], group: 'Whitelist (Staff Logs)', groupIcon: FileText, module: 'whitelist' },
+                            { key: 'staff_accepted', label: 'Staff Log: Approved', description: 'Log sent to staff when an application is approved.', variables: ['user', 'staff', 'app_id'], group: 'Whitelist (Staff Logs)', groupIcon: FileText, module: 'whitelist' },
+                            { key: 'staff_rejected', label: 'Staff Log: Rejected', description: 'Log sent to staff when an application is rejected.', variables: ['user', 'staff', 'app_id', 'reason'], group: 'Whitelist (Staff Logs)', groupIcon: FileText, module: 'whitelist' },
                             
                             // Background Module
                             { key: 'panel', label: t('background.msg_panel') || 'Background Panel', description: t('background.msg_panel_desc') || 'Main message for background submissions.', variables: ['guild'], group: 'Background (Panel)', groupIcon: Layout, module: 'background' },
+                            { key: 'dm_received', label: 'Background Submitted (DM)', description: 'DM sent to the user when they submit their background.', variables: ['user', 'guild'], group: 'Background (DMs)', groupIcon: CheckCircle2, module: 'background' },
                             { key: 'dm_accepted', label: t('background.msg_accepted') || 'Background Accepted', description: t('background.msg_accepted_desc') || 'Sent by DM to the approved user.', variables: ['user'], group: 'Background (DMs)', groupIcon: CheckCircle2, module: 'background' },
-                            { key: 'dm_rejected', label: t('background.msg_rejected') || 'Background Rejected', description: t('background.msg_rejected_desc') || 'Sent by DM to the rejected user.', variables: ['user', 'reason'], group: 'Background (DMs)', groupIcon: XCircle, module: 'background' }
+                            { key: 'dm_rejected', label: t('background.msg_rejected') || 'Background Rejected', description: t('background.msg_rejected_desc') || 'Sent by DM to the rejected user.', variables: ['user', 'reason'], group: 'Background (DMs)', groupIcon: XCircle, module: 'background' },
+                            { key: 'staff_received', label: 'Staff Log: Received', description: 'Log sent to staff when a new background is received.', variables: ['userId', 'bg_link', 'bg_desc', 'app_id'], group: 'Background (Staff Logs)', groupIcon: FileText, module: 'background' },
+                            { key: 'staff_accepted', label: 'Staff Log: Approved', description: 'Log sent to staff when a background is approved.', variables: ['user', 'staff', 'app_id'], group: 'Background (Staff Logs)', groupIcon: FileText, module: 'background' },
+                            { key: 'staff_rejected', label: 'Staff Log: Rejected', description: 'Log sent to staff when a background is rejected.', variables: ['user', 'staff', 'app_id', 'reason'], group: 'Background (Staff Logs)', groupIcon: FileText, module: 'background' }
                         ]}
                     />
 
