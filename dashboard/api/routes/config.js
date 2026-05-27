@@ -1948,6 +1948,74 @@ router.post('/:guildId/socials', adminCheck, validate(socialSchema), async (req,
             }
         }
 
+        // --- ACCOUNT FORMAT VALIDATION ---
+        for (const platform of ['twitch', 'youtube', 'instagram', 'tiktok', 'twitter', 'reddit', 'steam', 'kick', 'github', 'rss', 'telegram']) {
+            const accounts = data.platforms?.[platform]?.accounts || [];
+            for (const acc of accounts) {
+                const u = (acc.username || '').trim();
+                if (!u) continue;
+
+                if (platform === 'steam') {
+                    const isAppId = /^\d+$/.test(u);
+                    const isStoreUrl = u.includes('store.steampowered.com/app/') || u.includes('steamcommunity.com/app/');
+                    const isGroupOrOther = u.includes('/groups/') || u.includes('/id/') || u.includes('/profiles/');
+                    
+                    if (isGroupOrOther || (!isAppId && !isStoreUrl)) {
+                        return res.status(400).json({
+                            success: false,
+                            error: `Formato Steam non valido per "${u}". Inserisci l'App ID numerico del gioco (es. 730) o il link diretto del negozio Steam (i gruppi e profili utente non sono supportati).`
+                        });
+                    }
+                }
+
+                if (platform === 'youtube') {
+                    const isChannelId = /^UC[a-zA-Z0-9_-]{22}$/.test(u);
+                    const isHandle = /^@[a-zA-Z0-9_-]+$/.test(u);
+                    const isYtLink = u.includes('youtube.com/') || u.includes('youtu.be/');
+                    
+                    if (!isChannelId && !isHandle && !isYtLink && !/^[a-zA-Z0-9_-]+$/.test(u)) {
+                        return res.status(400).json({
+                            success: false,
+                            error: `Formato YouTube non valido per "${u}". Inserisci l'ID del canale (es. UC...), il tag (es. @nome) o il link diretto.`
+                        });
+                    }
+                }
+
+                if (platform === 'telegram') {
+                    const isTelLink = u.includes('t.me/');
+                    const isValidHandle = /^[a-zA-Z0-9_]{5,32}$/.test(u.replace('@', ''));
+                    if (!isTelLink && !isValidHandle) {
+                        return res.status(400).json({
+                            success: false,
+                            error: `Formato Telegram non valido per "${u}". Inserisci l'username del canale pubblico (es. @canale o canale) o il link t.me/canale.`
+                        });
+                    }
+                }
+
+                if (platform === 'kick') {
+                    const isKickLink = u.includes('kick.com/');
+                    const isValidHandle = /^[a-zA-Z0-9_-]{3,25}$/.test(u.replace('@', ''));
+                    if (!isKickLink && !isValidHandle) {
+                        return res.status(400).json({
+                            success: false,
+                            error: `Formato Kick non valido per "${u}". Inserisci l'username del canale (es. nome) o il link kick.com/nome.`
+                        });
+                    }
+                }
+
+                if (platform === 'twitch') {
+                    const isTwitchLink = u.includes('twitch.tv/');
+                    const isValidHandle = /^[a-zA-Z0-9_]{4,25}$/.test(u.replace('@', ''));
+                    if (!isTwitchLink && !isValidHandle) {
+                        return res.status(400).json({
+                            success: false,
+                            error: `Formato Twitch non valido per "${u}". Inserisci l'username del canale o il link twitch.tv/nome.`
+                        });
+                    }
+                }
+            }
+        }
+
         const existing = await SocialConfig.findOne({ guildId });
         if (existing) {
             const normalizeAccountKey = (value = '') => String(value || '')
