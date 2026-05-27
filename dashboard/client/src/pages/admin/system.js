@@ -621,7 +621,7 @@ export default function SystemUpdates() {
                                         <form onSubmit={handleSaveTracking} className="system-form">
                                             <div className="form-group" style={{ marginBottom: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,255,255,0.03)', padding: '10px 14px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
                                                 <span style={{ fontWeight: '500', fontSize: '0.875rem', color: '#e2e8f0' }}>Enable Live Tracking Embed</span>
-                                                <label className="switch" style={{ margin: 0 }}>
+                                                <label className="toggle" style={{ margin: 0 }}>
                                                     <input 
                                                         type="checkbox" 
                                                         checked={trackingEnabled}
@@ -629,6 +629,7 @@ export default function SystemUpdates() {
                                                     />
                                                     <span className="slider round"></span>
                                                 </label>
+
                                             </div>
 
 
