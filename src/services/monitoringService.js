@@ -108,18 +108,21 @@ class MonitoringService {
                 const seconds = uptimeSec % 60;
                 const uptimeText = `${days > 0 ? days + 'd ' : ''}${hours > 0 ? hours + 'h ' : ''}${minutes > 0 ? minutes + 'm ' : ''}${seconds}s`;
 
+                const isOnline = dbState === 1 && discordPing !== -1 && discordPing !== null;
+
                 const embed = new EmbedBuilder()
                     .setTitle('🤖 VERIX LIVE TRACKING STATUS')
                     .setDescription(`Last Checked: <t:${Math.floor(Date.now() / 1000)}:R>`)
-                    .setColor(dbState === 1 && discordPing !== -1 ? 0x10B981 : 0xEF4444)
+                    .setColor(isOnline ? 0x10B981 : 0xEF4444)
                     .addFields(
-                        { name: '🌐 Global Status', value: dbState === 1 ? 'ONLINE 🟢' : 'DEGRADED ⚠️', inline: true },
+                        { name: '🌐 Global Status', value: isOnline ? 'ONLINE 🟢' : 'DEGRADED ⚠️', inline: true },
                         { name: '⏱️ Bot Uptime', value: `\`${uptimeText}\``, inline: true },
                         { name: '📡 Gateway Ping', value: `\`${discordPingText}\``, inline: true },
                         { name: '🗄️ Database', value: dbStatusText, inline: true },
                         { name: '📊 Bot memory (RSS)', value: `\`${botMem} MB\``, inline: true },
                         { name: '💻 VPS RAM Used', value: `\`${usedMem} GB / ${totalMem} GB\``, inline: true }
                     )
+
 
                     .setTimestamp()
                     .setFooter({ text: 'Verix Live Monitoring System', iconURL: this.client.user.displayAvatarURL() });
