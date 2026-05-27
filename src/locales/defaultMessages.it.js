@@ -763,7 +763,7 @@ export default {
         },
         telegram: {
             title: 'Nuovo post Telegram da **{username}**',
-            description: '### {title}\n\n{description}',
+            description: '{description}',
             color: '#26a5e4',
             footer: 'Notifiche Social | Verix'
         },

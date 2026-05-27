@@ -1174,9 +1174,10 @@ export class SocialManager {
             const textMatch = block.match(/<div class="tgme_widget_message_text[^"]*"[^>]*>([\s\S]*?)<\/div>/);
             const timeMatch = block.match(/datetime="([^"]+)"/);
             const imageMatch =
-                block.match(/background-image:url\(['"]?([^'")]+)['"]?\)/) ||
-                block.match(/<a[^>]+class="[^"]*tgme_widget_message_photo_wrap[^"]*"[^>]+href=["']([^"']+)["']/) ||
-                block.match(/<img[^>]+src=["']([^"']+)["']/);
+                block.match(/class="[^"]*(?:tgme_widget_message_photo_wrap|link_preview_image|tgme_widget_message_video_thumb)[^"]*"[^>]*style="[^"]*background-image:\s*url\(['"]?([^'")]+)['"]?\)/i) ||
+                block.match(/style="[^"]*background-image:\s*url\(['"]?([^'")]+)['"]?\)"[^>]*class="[^"]*(?:tgme_widget_message_photo_wrap|link_preview_image|tgme_widget_message_video_thumb)[^"]*"/i) ||
+                block.match(/background-image:\s*url\(['"]?((?!.*\/emoji\/)[^'")]+)['"]?\)/i) ||
+                block.match(/<img(?![^>]*class=["'][^'"]*(?:emoji|user_photo|tgme_widget_message_user)[^'"]*["'])[^>]+src=["']([^'"]+)["']/i);
             const id = idMatch?.[1] || '';
             const text = this.decodeTelegramHtml(textMatch?.[1] || '');
             const [, channel, postId] = id.match(/^([^/]+)\/(.+)$/) || [];

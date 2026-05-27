@@ -950,7 +950,7 @@ export default {
         },
         "telegram": {
             "title": "New Telegram post from **{username}**",
-            "description": "### {title}\n\n{description}",
+            "description": "{description}",
             "color": "#26a5e4",
             "footer": "Social Notifications | Verix"
         },
