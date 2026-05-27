@@ -12,6 +12,8 @@ import { invalidateCache } from '../../../src/core/configCache.js';
 import buildHealthStatus from '../../../src/utils/healthStatus.js';
 import multer from 'multer';
 import { v4 as uuidv4 } from 'uuid';
+import SystemSettings from '../../../src/models/SystemSettings.js';
+
 
 // Ensure uploads directory exists
 const uploadDir = path.join(process.cwd(), 'uploads');
@@ -257,7 +259,62 @@ router.post('/guild/:guildId/premium', ownerCheck, async (req, res) => {
 });
 
 /**
+ * GET /api/system/tracking
+ * Returns the live status tracking configuration
+ */
+router.get('/tracking', ownerCheck, async (req, res) => {
+    try {
+        let settings = await SystemSettings.findOne({ key: 'global' });
+        if (!settings) {
+            settings = await SystemSettings.create({ key: 'global' });
+        }
+        res.json({ success: true, data: settings });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+/**
+ * POST /api/system/tracking
+ * Updates the live status tracking configuration and restarts the monitoring cycle
+ */
+router.post('/tracking', ownerCheck, async (req, res) => {
+    try {
+        const { trackingChannelId, trackingEnabled, trackingInterval } = req.body;
+        
+        let settings = await SystemSettings.findOne({ key: 'global' });
+        if (!settings) {
+            settings = new SystemSettings({ key: 'global' });
+        }
+
+        settings.trackingChannelId = trackingChannelId;
+        settings.trackingEnabled = Boolean(trackingEnabled);
+        if (trackingInterval) {
+            settings.trackingInterval = Number(trackingInterval);
+        }
+        
+        // Reset the message ID if channel has changed so a new message is sent
+        if (req.body.resetMessageId || settings.isModified('trackingChannelId')) {
+            settings.lastStatusMessageId = null;
+        }
+
+        await settings.save();
+
+        // Restart status tracking cycle in running client if available
+        const client = req.discordClient;
+        if (client && client.monitoring) {
+            await client.monitoring.startStatusTracking();
+        }
+
+        res.json({ success: true, data: settings });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+/**
  * GET /api/system/logs
+
  * Reads the bot log file from the VPS filesystem.
  */
 router.get('/logs', ownerCheck, async (req, res) => {

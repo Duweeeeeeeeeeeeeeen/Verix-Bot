@@ -95,6 +95,12 @@ export default function SystemUpdates() {
     const [searching, setSearching] = useState(false);
     const [updatingPremium, setUpdatingPremium] = useState(false);
     
+    // Live Status Tracking States
+    const [trackingChannelId, setTrackingChannelId] = useState('');
+    const [trackingEnabled, setTrackingEnabled] = useState(false);
+    const [trackingInterval, setTrackingInterval] = useState(60);
+    const [savingTracking, setSavingTracking] = useState(false);
+
     // Logs State
     const [activeTab, setActiveTab] = useState('status');
     const [botLogs, setBotLogs] = useState('');
@@ -103,13 +109,57 @@ export default function SystemUpdates() {
 
     const isOwner = user && OWNER_IDS.includes(user.id);
 
+    const fetchTrackingSettings = async () => {
+        try {
+            const data = await api.request('/system/tracking');
+            if (data && data.success && data.data) {
+                setTrackingChannelId(data.data.trackingChannelId || '');
+                setTrackingEnabled(data.data.trackingEnabled || false);
+                setTrackingInterval(data.data.trackingInterval || 60);
+            }
+        } catch (err) {
+            console.error('Failed to fetch tracking settings:', err);
+        }
+    };
+
+    const handleSaveTracking = async (e, resetMessageId = false) => {
+        if (e) e.preventDefault();
+        setSavingTracking(true);
+        try {
+            const res = await api.request('/system/tracking', {
+                method: 'POST',
+                data: {
+                    trackingChannelId,
+                    trackingEnabled,
+                    trackingInterval,
+                    resetMessageId
+                }
+            });
+            if (res && res.success) {
+                alert('Live status tracking updated successfully!');
+                setTrackingChannelId(res.data.trackingChannelId || '');
+                setTrackingEnabled(res.data.trackingEnabled || false);
+                setTrackingInterval(res.data.trackingInterval || 60);
+            } else {
+                alert(res?.error || 'Failed to update tracking');
+            }
+        } catch (err) {
+            console.error('Save tracking error:', err);
+            alert('An error occurred while saving tracking configuration');
+        } finally {
+            setSavingTracking(false);
+        }
+    };
+
     useEffect(() => {
         if (isOwner) {
             fetchStats();
             fetchHealth();
             fetchHistory();
+            fetchTrackingSettings();
         }
     }, [isOwner]);
+
 
     const fetchLogs = async () => {
         setFetchingLogs(true);
@@ -559,7 +609,83 @@ export default function SystemUpdates() {
                                          </div>
                                     )}
 
-                                    <section className="glass-card danger-card">
+                                    {/* Bot Status Live Tracking */}
+                                    <section className="glass-card live-tracking-card" style={{ marginTop: '1.5rem' }}>
+                                        <div className="card-header">
+                                            <Activity size={20} color="#10B981" />
+                                            <h2>Live Status Tracking</h2>
+                                        </div>
+                                        <p style={{ fontSize: '0.875rem', color: '#9ca3af', marginBottom: '1.5rem' }}>
+                                            Track the bot's health, database connection, ping, and memory metrics, posting a real-time updating embed to a designated channel.
+                                        </p>
+                                        <form onSubmit={handleSaveTracking} className="system-form">
+                                            <div className="form-group" style={{ marginBottom: '1rem' }}>
+                                                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                                                    <input 
+                                                        type="checkbox" 
+                                                        checked={trackingEnabled}
+                                                        onChange={e => setTrackingEnabled(e.target.checked)}
+                                                        style={{ width: 'auto', height: '18px', cursor: 'pointer', margin: 0 }}
+                                                    />
+                                                    <span style={{ fontWeight: '500' }}>Enable Live Tracking Embed</span>
+                                                </label>
+                                            </div>
+
+                                            <div className="form-group" style={{ marginBottom: '1rem' }}>
+                                                <label style={{ display: 'block', marginBottom: '6px' }}>Channel ID (Text Channel)</label>
+                                                <input 
+                                                    type="text" 
+                                                    placeholder="e.g. 109283748293847293" 
+                                                    value={trackingChannelId}
+                                                    onChange={e => setTrackingChannelId(e.target.value)}
+                                                    required={trackingEnabled}
+                                                    style={{ width: '100%' }}
+                                                />
+                                            </div>
+
+                                            <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+                                                <label style={{ display: 'block', marginBottom: '6px' }}>Update Interval</label>
+                                                <select 
+                                                    value={trackingInterval}
+                                                    onChange={e => setTrackingInterval(Number(e.target.value))}
+                                                    className="tier-select-admin"
+                                                    style={{ width: '100%', padding: '10px 12px' }}
+                                                >
+                                                    <option value={30}>30 Seconds</option>
+                                                    <option value={60}>60 Seconds</option>
+                                                    <option value={120}>2 Minutes</option>
+                                                    <option value={300}>5 Minutes</option>
+                                                    <option value={600}>10 Minutes</option>
+                                                </select>
+                                            </div>
+
+                                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                                <button 
+                                                    type="submit" 
+                                                    disabled={savingTracking} 
+                                                    className="btn-primary" 
+                                                    style={{ flex: 1, padding: '10px 16px', fontSize: '0.875rem' }}
+                                                >
+                                                    {savingTracking ? 'Saving...' : 'Save Settings'}
+                                                </button>
+                                                <button 
+                                                    type="button" 
+                                                    disabled={savingTracking || !trackingChannelId} 
+                                                    onClick={() => {
+                                                        if(confirm('Are you sure you want to recreate the status message? This will post a new embed.')) {
+                                                            handleSaveTracking(null, true);
+                                                        }
+                                                    }}
+                                                    className="btn-outline-danger" 
+                                                    style={{ padding: '10px 16px', fontSize: '0.875rem' }}
+                                                >
+                                                    Reset Embed
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </section>
+
+                                    <section className="glass-card danger-card" style={{ marginTop: '1.5rem' }}>
                                         <div className="card-header">
                                             <ShieldAlert size={20} />
                                             <h2>{t('system.danger_zone')}</h2>
@@ -568,6 +694,7 @@ export default function SystemUpdates() {
                                         <button className="btn-outline-danger" disabled>{t('system.restart_modules')}</button>
                                     </section>
                                 </section>
+
                             </div>
                         </div>
 
