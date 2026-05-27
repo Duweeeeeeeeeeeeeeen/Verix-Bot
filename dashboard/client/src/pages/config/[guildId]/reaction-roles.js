@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import Skeleton from '../../../components/Skeleton';
 import api from '../../../utils/api';
@@ -7,7 +7,7 @@ import {
     Save, MousePointer2, Plus, Trash2, Send, Layout, Palette, Type, Layers, Smile, ChevronDown, 
     ChevronUp, AlertCircle, Settings2, Sun, Moon, Monitor, Smartphone, Power, Hash, Sparkles, 
     Trash, ChevronRight, ArrowRight, CheckCircle2, Box, Sparkle, RefreshCcw, Command,
-    Fingerprint, Zap, AlignLeft, Paintbrush, GripVertical, RotateCcw, MessageSquare
+    Fingerprint, Zap, AlignLeft, Paintbrush, GripVertical, RotateCcw, MessageSquare, Upload
 } from 'lucide-react';
 import { DiscordSelector, CustomSelect, SystemMessagesSection } from '../../../components/LazyConfigComponents';
 import EmojiInput from '../../../components/EmojiInput';
@@ -46,6 +46,53 @@ export default function ReactionRolesConfig() {
       message: '',
       onConfirm: () => {}
   });
+
+  const [isUploading, setIsUploading] = useState(false);
+  const thumbInputRef = useRef(null);
+  const imageInputRef = useRef(null);
+
+  const handleFileUpload = async (e, type) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+        window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('embeds.editor.upload_too_large') || 'File too large (max 5MB)', type: 'error' } }));
+        return;
+    }
+
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+        const isLocal = typeof window !== 'undefined' && 
+            (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+        
+        const baseUrl = isLocal ? 'http://localhost:5001/api' : '/api';
+        
+        const response = await fetch(`${baseUrl}/system/upload`, {
+            method: 'POST',
+            body: formData,
+            credentials: 'include'
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            setConfig(prevConfig => ({
+                ...prevConfig,
+                panels: prevConfig.panels.map(p => p.id === activePanelId ? { ...p, embed: { ...p.embed, [type]: result.url } } : p)
+            }));
+            window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('embeds.editor.upload_success') || 'Caricato con successo!', type: 'success' } }));
+        } else {
+            throw new Error(result.error || t('embeds.editor.upload_error') || 'Errore di caricamento');
+        }
+    } catch (error) {
+      console.error('Upload error:', error);
+      alert(t('embeds.editor.upload_connection_error') || 'Errore di connessione durante il caricamento.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -422,21 +469,69 @@ export default function ReactionRolesConfig() {
                                         <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginTop: '20px' }}>
                                             <div className="pc-input-group-v2">
                                                 <label>Thumbnail URL</label>
-                                                <input
-                                                    className="pc-input-modern-v2"
-                                                    value={activePanel.embed.thumbnail || ''}
-                                                    onChange={e => updatePanel(activePanel.id, { embed: { ...activePanel.embed, thumbnail: e.target.value } })}
-                                                    placeholder="https://..."
-                                                />
+                                                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                                    <input
+                                                        className="pc-input-modern-v2"
+                                                        style={{ flex: 1 }}
+                                                        value={activePanel.embed.thumbnail || ''}
+                                                        onChange={e => updatePanel(activePanel.id, { embed: { ...activePanel.embed, thumbnail: e.target.value } })}
+                                                        placeholder="https://..."
+                                                    />
+                                                    <button 
+                                                        style={{
+                                                            width: '44px',
+                                                            height: '44px',
+                                                            background: 'var(--bg-badge)',
+                                                            border: '1.5px solid var(--border)',
+                                                            borderRadius: '12px',
+                                                            color: 'var(--primary)',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            cursor: 'pointer',
+                                                            flexShrink: 0
+                                                        }}
+                                                        onClick={() => thumbInputRef.current.click()} 
+                                                        disabled={isUploading}
+                                                        title={t('embeds.editor.upload_image') || "Upload Image"}
+                                                    >
+                                                        <Upload size={16} />
+                                                    </button>
+                                                    <input type="file" ref={thumbInputRef} style={{ display: 'none' }} onChange={e => handleFileUpload(e, 'thumbnail')} accept="image/*" />
+                                                </div>
                                             </div>
                                             <div className="pc-input-group-v2">
                                                 <label>Image URL</label>
-                                                <input
-                                                    className="pc-input-modern-v2"
-                                                    value={activePanel.embed.image || ''}
-                                                    onChange={e => updatePanel(activePanel.id, { embed: { ...activePanel.embed, image: e.target.value } })}
-                                                    placeholder="https://..."
-                                                />
+                                                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                                    <input
+                                                        className="pc-input-modern-v2"
+                                                        style={{ flex: 1 }}
+                                                        value={activePanel.embed.image || ''}
+                                                        onChange={e => updatePanel(activePanel.id, { embed: { ...activePanel.embed, image: e.target.value } })}
+                                                        placeholder="https://..."
+                                                    />
+                                                    <button 
+                                                        style={{
+                                                            width: '44px',
+                                                            height: '44px',
+                                                            background: 'var(--bg-badge)',
+                                                            border: '1.5px solid var(--border)',
+                                                            borderRadius: '12px',
+                                                            color: 'var(--primary)',
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'center',
+                                                            cursor: 'pointer',
+                                                            flexShrink: 0
+                                                        }}
+                                                        onClick={() => imageInputRef.current.click()} 
+                                                        disabled={isUploading}
+                                                        title={t('embeds.editor.upload_image') || "Upload Image"}
+                                                    >
+                                                        <Upload size={16} />
+                                                    </button>
+                                                    <input type="file" ref={imageInputRef} style={{ display: 'none' }} onChange={e => handleFileUpload(e, 'image')} accept="image/*" />
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
