@@ -1193,8 +1193,11 @@ export class SocialManager {
             };
         }).filter(item => item.id).sort((a, b) => this.getPostTime(b) - this.getPostTime(a));
 
+        const profileImageMatch = html.match(/<meta property="og:image" content="([^"]+)"/i) || html.match(/<img class="tgme_page_photo_image" src="([^"]+)"/i);
+        const profileImage = profileImageMatch?.[1] || '';
+
         if (!items.length) throw new Error('Telegram channel returned no public posts');
-        return { title: cleanUsername, items };
+        return { title: cleanUsername, profileImage, items };
     }
 
     async checkTelegram(guildId, platformConfig) {
@@ -1227,7 +1230,7 @@ export class SocialManager {
                             author: username,
                             description: item.contentSnippet || '',
                             thumbnail: this.normalizeImageUrl(item.thumbnail),
-                            profileImage: this.platformIcon('telegram')
+                            profileImage: feed.profileImage || this.platformIcon('telegram')
                         }, 'Telegram');
                         account.lastPostId = this.getPostId(item);
                         changed = true;
