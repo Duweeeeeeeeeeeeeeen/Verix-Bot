@@ -171,7 +171,7 @@ export default function EmbedPreview({ data, isMobile = false, theme = 'dark' })
                                 {data.fields.map((f, i) => (
                                     <div key={i} style={{ gridColumn: f.inline && !isMobile ? 'auto' : '1 / -1' }}>
                                         <div style={{ fontWeight: '700', color: colors.text_header, fontSize: '0.875rem', marginBottom: '2px' }}>{processPlaceholders(f.name)}</div>
-                                        <div style={{ fontSize: '0.875rem', color: colors.text_normal }}>{processPlaceholders(f.value)}</div>
+                                        <div style={{ fontSize: '0.875rem', color: colors.text_normal, whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}>{processPlaceholders(f.value)}</div>
                                     </div>
                                 ))}
                             </div>
