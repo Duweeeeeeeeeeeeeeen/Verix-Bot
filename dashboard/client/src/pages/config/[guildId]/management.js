@@ -284,9 +284,6 @@ export default function ManagementPage() {
                     <button className={activeTab === 'users' ? 'active' : ''} onClick={() => setActiveTab('users')}>
                         <User size={16} /> <span>{t('management.tabs.users')}</span>
                     </button>
-                    <button className={activeTab === 'logs' ? 'active' : ''} onClick={() => setActiveTab('logs')}>
-                        <History size={16} /> <span>{t('management.tabs.logs')}</span>
-                    </button>
                 </nav>
             </div>
         </header>
