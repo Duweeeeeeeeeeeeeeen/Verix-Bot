@@ -112,10 +112,10 @@ export default function SystemUpdates() {
     const fetchTrackingSettings = async () => {
         try {
             const data = await api.request('/system/tracking');
-            if (data && data.success && data.data) {
-                setTrackingChannelId(data.data.trackingChannelId || '');
-                setTrackingEnabled(data.data.trackingEnabled || false);
-                setTrackingInterval(data.data.trackingInterval || 60);
+            if (data) {
+                setTrackingChannelId(data.trackingChannelId || '');
+                setTrackingEnabled(data.trackingEnabled || false);
+                setTrackingInterval(data.trackingInterval || 60);
             }
         } catch (err) {
             console.error('Failed to fetch tracking settings:', err);
@@ -135,13 +135,13 @@ export default function SystemUpdates() {
                     resetMessageId
                 }
             });
-            if (res && res.success) {
+            if (res) {
                 alert('Live status tracking updated successfully!');
-                setTrackingChannelId(res.data.trackingChannelId || '');
-                setTrackingEnabled(res.data.trackingEnabled || false);
-                setTrackingInterval(res.data.trackingInterval || 60);
+                setTrackingChannelId(res.trackingChannelId || '');
+                setTrackingEnabled(res.trackingEnabled || false);
+                setTrackingInterval(res.trackingInterval || 60);
             } else {
-                alert(res?.error || 'Failed to update tracking');
+                alert('Failed to update tracking');
             }
         } catch (err) {
             console.error('Save tracking error:', err);
@@ -150,6 +150,7 @@ export default function SystemUpdates() {
             setSavingTracking(false);
         }
     };
+
 
     useEffect(() => {
         if (isOwner) {

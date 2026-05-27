@@ -117,12 +117,10 @@ class MonitoringService {
                         { name: '⏱️ Bot Uptime', value: `\`${uptimeText}\``, inline: true },
                         { name: '📡 Gateway Ping', value: `\`${discordPingText}\``, inline: true },
                         { name: '🗄️ Database', value: dbStatusText, inline: true },
-                        { name: '👥 Cached Guilds', value: `\`${this.client.guilds.cache.size}\``, inline: true },
-                        { name: '👤 Cached Users', value: `\`${this.client.users.cache.size}\``, inline: true },
                         { name: '📊 Bot memory (RSS)', value: `\`${botMem} MB\``, inline: true },
-                        { name: '💻 VPS RAM Used', value: `\`${usedMem} GB / ${totalMem} GB\``, inline: true },
-                        { name: '⚙️ Platform / CPU', value: `\`${os.platform()} (${os.arch()})\``, inline: true }
+                        { name: '💻 VPS RAM Used', value: `\`${usedMem} GB / ${totalMem} GB\``, inline: true }
                     )
+
                     .setTimestamp()
                     .setFooter({ text: 'Verix Live Monitoring System', iconURL: this.client.user.displayAvatarURL() });
 
