@@ -979,6 +979,21 @@ export class SocialManager {
                             }
 
                             let gameName = feed.title || gameId;
+                            if (/^\d+\s+RSS\s+Feed$/i.test(gameName) || /^\d+$/.test(gameName)) {
+                                try {
+                                    const response = await axiosWithRetry({
+                                        method: 'GET',
+                                        url: `https://store.steampowered.com/api/appdetails?appids=${gameId}`,
+                                        timeout: 5000
+                                    });
+                                    if (response.data?.[gameId]?.success) {
+                                        gameName = response.data[gameId].data.name;
+                                    }
+                                } catch (err) {
+                                    logger.warn(`[Socials/Steam] Failed to fetch game name from Steam API for ${gameId}: ${err.message}`);
+                                }
+                            }
+
                             if (gameName.includes('Steam Community :: Group :: ')) {
                                 gameName = gameName.replace('Steam Community :: Group :: ', '');
                             } else if (gameName.includes('Steam Community :: ')) {
