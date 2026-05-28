@@ -304,9 +304,10 @@ export default {
                     if (closeMode === 'DELETE') {
                         const transcript = await generateTranscription(interaction.channel, ticket);
                         if (logChannel) {
+                            const typeConfig = getTicketTypeConfig(config, ticket.type, ticketPanelId);
                             const logEmbed = await messageService.get(interaction.guild.id, 'tickets', 'staff_ticket_log', {
                                 user: `<@${ticket.userId}>`,
-                                type: ticket.type.toUpperCase(),
+                                type: typeConfig?.label?.toUpperCase() || ticket.type.toUpperCase(),
                                 staff: ticket.assignedStaffId ? `<@${ticket.assignedStaffId}>` : 'None'
                             });
                             await logChannel.send({ embeds: [logEmbed], files: [transcript] });

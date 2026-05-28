@@ -1342,7 +1342,7 @@ export class SocialManager {
     }
 
     platformIcon(slug) {
-        return `${this.getPublicBaseUrl()}/img/social/${slug}.png`;
+        return `${this.getPublicBaseUrl()}/img/social/${slug}.png?v=3`;
     }
 
     shouldProxyImageUrl(url = '') {

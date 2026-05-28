@@ -43,9 +43,16 @@ export default {
                         const logChannel = guild.channels.cache.get(config.logChannelId);
 
                         if (logChannel) {
+                            const ticketPanelId = ticket.metadata instanceof Map ? ticket.metadata.get('panelId') : ticket.metadata?.panelId;
+                            const panel = ticketPanelId && Array.isArray(config.panels) ? config.panels.find(p => p.id === ticketPanelId) : null;
+                            const panelTypesConfig = panel?.typesConfig;
+                            const typeConfig = (panelTypesConfig instanceof Map ? panelTypesConfig.get(ticket.type) : panelTypesConfig?.[ticket.type])
+                                || (config.typesConfig instanceof Map ? config.typesConfig.get(ticket.type) : config.typesConfig?.[ticket.type]);
+                            const typeLabel = typeConfig?.label?.toUpperCase() || ticket.type.toUpperCase();
+
                             await messageService.send(logChannel, 'tickets', 'staff_ticket_log', {
                                 user: `<@${ticket.userId}>`,
-                                type: ticket.type,
+                                type: typeLabel,
                                 staff: '`SYSTEM_INACTIVITY`'
                             }, { files: [transcript] });
                         }
