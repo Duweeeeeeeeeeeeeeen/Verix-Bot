@@ -1044,17 +1044,16 @@ export default function TicketConfig() {
                 </div>
             )}
 
+            <EmbedPreviewDrawer open={!!previewData} onClose={() => setPreviewData(null)} data={previewData} />
+
+            <ConfirmModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                onConfirm={confirmModal.onConfirm}
+                title={confirmModal.title}
+                message={confirmModal.message}
+            />
         </div>
-
-        <EmbedPreviewDrawer open={!!previewData} onClose={() => setPreviewData(null)} data={previewData} />
-
-        <ConfirmModal
-            isOpen={confirmModal.isOpen}
-            onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
-            onConfirm={confirmModal.onConfirm}
-            title={confirmModal.title}
-            message={confirmModal.message}
-        />
 
         <style jsx>{`
             .pc-premium-wrapper { padding: 32px; max-width: 1650px; margin: 0 auto; font-family: 'Inter', sans-serif; }
