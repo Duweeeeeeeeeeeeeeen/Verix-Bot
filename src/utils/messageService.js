@@ -191,9 +191,10 @@ class MessageService {
 
         const lang = await this.getGuildLanguage(guildId);
         const defaults = getDefaultMessages(lang);
+        const enDefaults = getDefaultMessages('en');
 
         const dbEmbed = moduleMessages instanceof Map ? moduleMessages.get(slug) : moduleMessages[slug];
-        const defaultEmbed = defaults[module]?.[slug];
+        const defaultEmbed = defaults[module]?.[slug] || enDefaults[module]?.[slug];
 
         if (!dbEmbed) return defaultEmbed;
         if (!defaultEmbed) return dbEmbed;

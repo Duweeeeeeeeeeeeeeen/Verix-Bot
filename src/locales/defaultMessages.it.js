@@ -673,6 +673,91 @@ export default {
             title: '🎨 Opera di {username}',
             description: 'Una nuova foto è stata caricata per il contest.\n\n**Tema:** `{theme}`\n**Scadenza:** {endTime}',
             color: '#3498db'
+        },
+        already_submitted: {
+            title: 'Già Inviata',
+            description: 'Hai già inviato una foto per questo concorso.',
+            color: '#f1c40f'
+        },
+        already_voted_error: {
+            title: 'Voto Già Registrato',
+            description: 'Hai già votato per questa foto.',
+            color: '#f1c40f'
+        },
+        contest_end_log: {
+            title: 'Photo Contest Terminato',
+            description: 'Il concorso si è concluso.\n\n**Vincitore:** {winner}\n**Punteggio:** {score}',
+            color: '#F39C12'
+        },
+        entry_not_found_error: {
+            title: 'Opera Non Trovata',
+            description: 'Impossibile trovare questa opera. Potrebbe essere stata rimossa.',
+            color: '#e74c3c'
+        },
+        error: {
+            title: 'Errore Photo Contest',
+            description: 'Si è verificato un errore durante l\'elaborazione dell\'azione.',
+            color: '#e74c3c'
+        },
+        error_no_participants: {
+            title: 'Nessun Partecipante',
+            description: 'Il concorso fotografico è terminato senza opere valide.',
+            color: '#e74c3c'
+        },
+        interaction_notify: {
+            title: 'Nuova Interazione',
+            description: 'Qualcuno ha interagito con la tua opera nel concorso.',
+            color: '#2ecc71'
+        },
+        leaderboard: {
+            title: 'Classifica Photo Contest',
+            description: '{list}',
+            color: '#F39C12'
+        },
+        leaderboard_display: {
+            title: 'Classifica Photo Contest',
+            description: '{leaderboard}',
+            color: '#F39C12'
+        },
+        leaderboard_error: {
+            title: 'Errore Classifica',
+            description: 'Impossibile caricare la classifica del concorso.',
+            color: '#e74c3c'
+        },
+        no_contest_active: {
+            title: 'Nessun Concorso Attivo',
+            description: 'Non c\'è alcun concorso fotografico attivo al momento.',
+            color: '#f1c40f'
+        },
+        no_submissions_leaderboard: {
+            title: 'Nessuna Opera',
+            description: 'Non ci sono ancora opere da mostrare in classifica.',
+            color: '#f1c40f'
+        },
+        no_winners: {
+            title: 'Nessun Vincitore',
+            description: 'Non ci sono ancora vincitori precedenti registrati.',
+            color: '#f1c40f'
+        },
+        self_vote_error: {
+            title: 'Voto Non Consentito',
+            description: 'Non puoi votare per la tua stessa opera.',
+            color: '#f1c40f'
+        },
+        submission_data_saved: {
+            title: 'Dati Salvati',
+            description: 'I dati della tua opera sono stati salvati con successo.',
+            color: '#2ecc71'
+        },
+        vote_success_down: {
+            title: 'Voto Registrato',
+            description: 'Il tuo voto negativo è stato registrato.',
+            color: '#e74c3c'
+        },
+        vote_success_up: {
+            title: 'Voto Registrato',
+            description: 'Il tuo voto positivo è stato registrato.',
+            color: '#2ecc71'
         }
     },
     logs: {
