@@ -2640,6 +2640,7 @@
   "tickets.channels_dest": "Canales y Destinos",
   "tickets.claim_btn": "Boleto de Reclamo",
   "tickets.close_btn": "Cerrar ticket",
+  "tickets.global_settings": "Configuración Global de Tickets",
   "tickets.base_config": "Configuración básica",
   "tickets.perms_title": "Permisos y autoridad",
   "tickets.transcripts": "Transcripciones",

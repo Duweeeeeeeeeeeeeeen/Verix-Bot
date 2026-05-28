@@ -2720,6 +2720,7 @@
   "tickets.channels_dest": "Channels & Destinations",
   "tickets.claim_btn": "Claim Ticket",
   "tickets.close_btn": "Close Ticket",
+  "tickets.global_settings": "Global Ticket Settings",
   "tickets.base_config": "Base Configuration",
   "tickets.perms_title": "Permissions & Authority",
   "tickets.transcripts": "Transcripts",

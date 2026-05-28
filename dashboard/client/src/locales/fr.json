@@ -2640,6 +2640,7 @@
   "tickets.channels_dest": "Chaînes et destinations",
   "tickets.claim_btn": "Réclamer un billet",
   "tickets.close_btn": "Fermer le billet",
+  "tickets.global_settings": "Configuration Globale des Tickets",
   "tickets.base_config": "Configuration de base",
   "tickets.perms_title": "Autorisations et autorité",
   "tickets.transcripts": "Transcriptions",
