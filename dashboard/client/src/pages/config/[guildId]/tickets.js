@@ -462,104 +462,7 @@ export default function TicketConfig() {
             </button>
         </nav>
 
-        <div className="pc-content-v2">
-            {activeTab === 'globalDefaultsHidden' && (
-                <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(280px, 360px)', gap: '32px' }}>
-                    <div className="v-stack" style={{ gap: '32px' }}>
-                        <section className="pc-card-v2 animate slide-up">
-                            <div className="card-header-v2">
-                                <div className="header-icon"><Shield size={18} /></div>
-                                <h3 style={{ margin: 0 }}>{t('tickets.perms_title')}</h3>
-                            </div>
-                            <div className="card-body-v2">
-                                <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-                                    <div className="pc-input-group-v2">
-                                        <label>{t('tickets.support_roles')}</label>
-                                        <DiscordSelector type="role" multiple={true} options={discordData.roles} value={config.staffRoleIds || []} onChange={v => setConfig({...config, staffRoleIds: v})} error={config.enabled && !(config.staffRoleIds || []).length ? t('common.required_field') : ''} />
-                                    </div>
-                                    <div className="pc-input-group-v2">
-                                        <label>{t('tickets.category_open')}</label>
-                                        <DiscordSelector type="channel" options={discordData.categories} value={config.categoryOpenId || ''} onChange={v => setConfig({...config, categoryOpenId: v})} error={config.enabled && !config.categoryOpenId ? t('common.required_field') : ''} />
-                                    </div>
-                                </div>
-                                <div className="pc-input-group-v2" style={{ marginTop: '24px' }}>
-                                    <label>{t('tickets.log_channel')}</label>
-                                    <DiscordSelector type="channel" options={discordData.channels.filter(c => c.type === 0 || c.type === 5)} value={config.logChannelId} onChange={v => setConfig({...config, logChannelId: v})} />
-                                    <p style={{ margin: '8px 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t('tickets.log_channel_help')}</p>
-                                </div>
-                                <div className="pc-input-grid-v2" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginTop: '24px' }}>
-                                    <div className="pc-input-group-v2">
-                                        <label>{t('tickets.close_mode')}</label>
-                                        <CustomSelect value={config.closeMode || 'DELETE'} onChange={v => setConfig({...config, closeMode: v})} options={closeModeOptions} />
-                                    </div>
-                                    {config.closeMode === 'MOVE' && (
-                                        <div className="pc-input-group-v2">
-                                            <label>{t('tickets.category_closed')}</label>
-                                            <DiscordSelector type="channel" options={discordData.categories} value={config.categoryClosedId || ''} onChange={v => setConfig({...config, categoryClosedId: v})} error={config.enabled && config.closeMode === 'MOVE' && !config.categoryClosedId ? t('common.required_field') : ''} />
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </section>
 
-                        <section className="pc-card-v2 animate slide-up" style={{ animationDelay: '0.1s' }}>
-                            <div className="card-header-v2">
-                                <div className="header-icon"><Clock size={18} /></div>
-                                <h3 style={{ margin: 0 }}>{t('tickets.auto_close')}</h3>
-                            </div>
-                            <div className="card-body-v2">
-                                <div className="pc-toggle-card-v2">
-                                    <div className="v-stack">
-                                        <strong>{t('tickets.auto_close_toggle')}</strong>
-                                        <span>{t('tickets.auto_close_desc')}</span>
-                                    </div>
-                                    <label className="pc-toggle-v2 mini">
-                                        <input type="checkbox" checked={!!config.autoClose?.enabled} onChange={e => setConfig({...config, autoClose: { ...(config.autoClose || {}), enabled: e.target.checked }})} />
-                                        <span className="pc-slider-v2"></span>
-                                    </label>
-                                </div>
-                                {config.autoClose?.enabled && (
-                                    <div className="pc-input-group-v2 animate slide-up" style={{ marginTop: '24px' }}>
-                                        <label>{t('tickets.inactivity_hours')}</label>
-                                        <input className="pc-input-modern-v2" type="number" value={config.autoClose?.hours || 24} onChange={e => setConfig({...config, autoClose: { ...(config.autoClose || {}), hours: parseInt(e.target.value, 10) || 24 }})} min="1" max="168" />
-                                    </div>
-                                )}
-                            </div>
-                        </section>
-                    </div>
-
-                    <div className="v-stack" style={{ gap: '32px' }}>
-                        <section className="pc-card-v2">
-                            <div className="card-header-v2">
-                                <div className="header-icon"><FileText size={18} /></div>
-                                <h3 style={{ margin: 0 }}>{t('tickets.transcripts')}</h3>
-                            </div>
-                            <div className="card-body-v2">
-                                <div className="pc-toggle-card-v2">
-                                    <div className="v-stack">
-                                        <strong>{t('tickets.transcript_toggle')}</strong>
-                                        <span>{t('tickets.transcript_desc')}</span>
-                                    </div>
-                                    <label className="pc-toggle-v2 mini">
-                                        <input type="checkbox" checked={!!config.transcriptionEnabled} onChange={e => setConfig({...config, transcriptionEnabled: e.target.checked})} />
-                                        <span className="pc-slider-v2"></span>
-                                    </label>
-                                </div>
-                            </div>
-                        </section>
-
-                        <section className="pc-card-v2">
-                            <NotificationSettings
-                                value={config.notifications || { mode: 'DM', channelId: null }}
-                                onChange={notifications => setConfig({ ...config, notifications })}
-                                guildId={guildId}
-                                title={t('tickets.notif_user_title')}
-                                description={t('tickets.notif_user_desc')}
-                            />
-                        </section>
-                    </div>
-                </div>
-            )}
 
             {activeTab === 'categories' && (
                 <div className="v-stack animate slide-up">
@@ -889,6 +792,78 @@ export default function TicketConfig() {
                             </div>
                         );
                     })()}
+
+                    {/* Global Ticket Settings */}
+                    {config.panels && config.panels.length > 0 && (
+                        <div className="v-stack" style={{ gap: '24px', marginTop: '32px', borderTop: '1px solid var(--border)', paddingTop: '32px' }}>
+                            <div className="section-title-v2" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <div style={{ width: '4px', height: '18px', background: 'var(--primary)', borderRadius: '2px' }}></div>
+                                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-heading)', margin: 0 }}>
+                                    {t('tickets.global_settings') || 'Global Ticket Settings'}
+                                </h2>
+                            </div>
+                            
+                            <div className="pc-layout-grid-v2" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(280px, 360px)', gap: '24px' }}>
+                                <div className="v-stack" style={{ gap: '24px' }}>
+                                    <section className="pc-card-v2 animate slide-up" style={{ height: '100%' }}>
+                                        <div className="card-header-v2">
+                                            <div className="header-icon"><Clock size={18} /></div>
+                                            <h3 style={{ margin: 0 }}>{t('tickets.auto_close')}</h3>
+                                        </div>
+                                        <div className="card-body-v2">
+                                            <div className="pc-toggle-card-v2">
+                                                <div className="v-stack">
+                                                    <strong>{t('tickets.auto_close_toggle')}</strong>
+                                                    <span>{t('tickets.auto_close_desc')}</span>
+                                                </div>
+                                                <label className="pc-toggle-v2 mini">
+                                                    <input type="checkbox" checked={!!config.autoClose?.enabled} onChange={e => setConfig({...config, autoClose: { ...(config.autoClose || {}), enabled: e.target.checked }})} />
+                                                    <span className="pc-slider-v2"></span>
+                                                </label>
+                                            </div>
+                                            {config.autoClose?.enabled && (
+                                                <div className="pc-input-group-v2 animate slide-up" style={{ marginTop: '24px' }}>
+                                                    <label>{t('tickets.inactivity_hours')}</label>
+                                                    <input className="pc-input-modern-v2" type="number" value={config.autoClose?.hours || 24} onChange={e => setConfig({...config, autoClose: { ...(config.autoClose || {}), hours: parseInt(e.target.value, 10) || 24 }})} min="1" max="168" />
+                                                </div>
+                                            )}
+                                        </div>
+                                    </section>
+                                </div>
+
+                                <div className="v-stack" style={{ gap: '24px' }}>
+                                    <section className="pc-card-v2">
+                                        <div className="card-header-v2">
+                                            <div className="header-icon"><FileText size={18} /></div>
+                                            <h3 style={{ margin: 0 }}>{t('tickets.transcripts')}</h3>
+                                        </div>
+                                        <div className="card-body-v2">
+                                            <div className="pc-toggle-card-v2">
+                                                <div className="v-stack">
+                                                    <strong>{t('tickets.transcript_toggle')}</strong>
+                                                    <span>{t('tickets.transcript_desc')}</span>
+                                                </div>
+                                                <label className="pc-toggle-v2 mini">
+                                                    <input type="checkbox" checked={!!config.transcriptionEnabled} onChange={e => setConfig({...config, transcriptionEnabled: e.target.checked})} />
+                                                    <span className="pc-slider-v2"></span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </section>
+
+                                    <section className="pc-card-v2">
+                                        <NotificationSettings
+                                            value={config.notifications || { mode: 'DM', channelId: null }}
+                                            onChange={notifications => setConfig({ ...config, notifications })}
+                                            guildId={guildId}
+                                            title={t('tickets.notif_user_title')}
+                                            description={t('tickets.notif_user_desc')}
+                                        />
+                                    </section>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {(!config.panels || config.panels.length === 0) && (
                         <div style={{ textAlign: 'center', padding: '100px 32px' }}>
