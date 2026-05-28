@@ -462,7 +462,7 @@ export default function TicketConfig() {
             </button>
         </nav>
 
-
+        <div className="pc-content-v2">
 
             {activeTab === 'categories' && (
                 <div className="v-stack animate slide-up">
