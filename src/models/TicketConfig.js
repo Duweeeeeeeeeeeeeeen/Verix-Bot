@@ -156,9 +156,9 @@ const ticketConfigSchema = new mongoose.Schema({
                 thumbnail: { type: String, default: null },
                 footer: { type: String, default: null }
             }
-        }],
-        default: []
+        }]
     }
 });
+
 
 export default mongoose.model('TicketConfig', ticketConfigSchema);

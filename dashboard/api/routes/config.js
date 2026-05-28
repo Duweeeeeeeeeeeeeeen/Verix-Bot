@@ -1262,10 +1262,22 @@ router.get('/:guildId/tickets', adminCheck, async (req, res) => {
     try {
         const { guildId } = req.params;
         let config = await TicketConfig.findOne({ guildId });
-        if (!config) config = await TicketConfig.create({ guildId });
-
-        // Ensure panels exists (Backwards Compatibility)
-        if (!config.panels || config.panels.length === 0) {
+        if (!config) {
+            config = await TicketConfig.create({ guildId });
+            config.panels = [{
+                id: 'panel-main',
+                name: 'Pannello Principale',
+                inputType: 'SELECT',
+                categories: ['support', 'report', 'donation', 'bug'],
+                embed: {
+                    title: 'Centro Supporto',
+                    description: 'Need help? Open a ticket by selecting the right category.',
+                    color: '#2ECC71'
+                }
+            }];
+            await config.save();
+        } else if (config.panels === undefined || config.panels === null) {
+            // Ensure panels exists (Backwards Compatibility migration)
             config.panels = [{
                 id: 'panel-main',
                 name: 'Pannello Principale',
