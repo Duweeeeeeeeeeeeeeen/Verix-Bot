@@ -3612,5 +3612,6 @@
   "management.status_waiting_background": "Waiting for background",
   "management.status_submitted_background": "Background submitted",
   "management.status_cancelled": "Cancelled",
-  "management.status_expired": "Expired"
+  "management.status_expired": "Expired",
+  "landing.cta_vote": "Vote on Top.gg"
 }

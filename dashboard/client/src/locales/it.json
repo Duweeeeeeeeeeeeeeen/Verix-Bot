@@ -3612,5 +3612,6 @@
   "management.status_waiting_background": "In attesa del background",
   "management.status_submitted_background": "Background inviato",
   "management.status_cancelled": "Annullato",
-  "management.status_expired": "Scaduto"
+  "management.status_expired": "Scaduto",
+  "landing.cta_vote": "Vota su Top.gg"
 }

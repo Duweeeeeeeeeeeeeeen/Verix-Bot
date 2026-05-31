@@ -1,6 +1,6 @@
 import { useAuth } from '../contexts/AuthContext';
 import { useT } from '../contexts/LanguageContext';
-import { Sun, Moon, ShieldCheck, Ticket, Mic2, Layout, LogIn, Shield, Zap, MessageCircle, Globe } from 'lucide-react';
+import { Sun, Moon, ShieldCheck, Ticket, Mic2, Layout, LogIn, Shield, Zap, MessageCircle, Globe, ExternalLink } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
@@ -110,6 +110,14 @@ export default function Home() {
                 className="btn-invite-p secondary-glass"
               >
                 <MessageCircle size={20} /> {t('landing.cta_invite')}
+              </a>
+              <a
+                href="https://top.gg/bot/1493270512195862538/vote"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-vote-p"
+              >
+                <ExternalLink size={20} /> {t('landing.cta_vote')}
               </a>
             </div>
 
@@ -266,6 +274,8 @@ export default function Home() {
 
         .btn-invite-p { background: var(--card-bg); backdrop-filter: blur(10px); border: 1px solid var(--card-border); color: var(--text-primary); padding: 16px 32px; border-radius: 16px; font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 12px; transition: 0.3s; }
         .btn-invite-p:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); transform: translateY(-3px); }
+        .btn-vote-p { background: rgba(255,255,255,0.04); backdrop-filter: blur(10px); border: 1px solid rgba(99,102,241,0.25); color: var(--text-primary); padding: 16px 28px; border-radius: 16px; font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 12px; transition: 0.3s; }
+        .btn-vote-p:hover { background: rgba(99,102,241,0.12); border-color: #6366f1; transform: translateY(-3px); }
 
         .hero-trust-bar { display: flex; gap: 32px; }
         .trust-item { display: flex; align-items: center; gap: 10px; }
@@ -346,6 +356,11 @@ export default function Home() {
             .landing-nav-v2 { width: calc(100% - 20px); top: 10px; }
             .section-header { text-align: center; }
             .section-header .section-desc { margin: 0 auto; }
+        }
+
+        @media (max-width: 720px) {
+            .cta-group-p { flex-direction: column; }
+            .btn-discord-p, .btn-invite-p, .btn-vote-p { justify-content: center; }
         }
       `}</style>
     </div>

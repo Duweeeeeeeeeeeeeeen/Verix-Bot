@@ -16,6 +16,7 @@ const config = {
     mongoUri: process.env.MONGO_URI,
     clientId: process.env.CLIENT_ID,
     guildId: process.env.GUILD_ID,
+    topggVoteUrl: process.env.TOPGG_VOTE_URL || `https://top.gg/bot/${process.env.CLIENT_ID || '1493270512195862538'}/vote`,
     
     // Developer settings
     devMode: String(process.env.DEV_MODE || '').toLowerCase() === 'true',

@@ -3525,5 +3525,6 @@
   "management.status_waiting_background": "En attente du background",
   "management.status_submitted_background": "Background envoye",
   "management.status_cancelled": "Annule",
-  "management.status_expired": "Expire"
+  "management.status_expired": "Expire",
+  "landing.cta_vote": "Voter sur Top.gg"
 }

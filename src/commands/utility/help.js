@@ -1,5 +1,6 @@
 import { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 import Guild from '../../models/Guild.js';
+import config from '../../../config/config.js';
 
 export default {
     data: new SlashCommandBuilder()
@@ -17,6 +18,7 @@ export default {
             .addFields(
                 { name: 'Dashboard', value: 'Manage the bot from the web: [verixbot.com](https://verixbot.com)', inline: true },
                 { name: 'Support', value: 'Join our [Discord Server](https://discord.gg/Ck3rGpSV7U)', inline: true },
+                { name: 'Top.gg', value: `[Vote for Verix](${config.topggVoteUrl})`, inline: true },
                 { name: 'Documentation', value: `[Read the guide](https://verixbot.com/config/${interaction.guild.id}/guide)`, inline: true },
                 { name: '\u200B', value: '\u200B' },
                 { 
@@ -36,6 +38,10 @@ export default {
                 new ButtonBuilder()
                     .setLabel('Supporto')
                     .setURL('https://discord.gg/Ck3rGpSV7U')
+                    .setStyle(ButtonStyle.Link),
+                new ButtonBuilder()
+                    .setLabel('Vote on Top.gg')
+                    .setURL(config.topggVoteUrl)
                     .setStyle(ButtonStyle.Link)
             );
 
