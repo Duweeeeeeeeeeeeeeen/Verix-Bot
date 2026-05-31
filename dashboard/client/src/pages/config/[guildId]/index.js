@@ -9,7 +9,7 @@ import {
   Camera, Globe, UserPlus,
   ChevronRight, Box, Settings2, TrendingUp, MousePointer2, ListChecks, Crown, Star, Award,
   History, LayoutTemplate, AlertTriangle, Sparkles,
-  Cpu, Rocket, Command
+  Cpu, Rocket, Command, ExternalLink
 } from 'lucide-react';
 import Head from 'next/head';
 
@@ -289,6 +289,23 @@ export default function GuildHome() {
                     </div>
                     
                     <div className="panel-divider-v2"></div>
+
+                    <a
+                        className="pc-vote-link-v2"
+                        href="https://top.gg/bot/1493270512195862538/vote"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        <div className="vote-icon-v2">
+                            <ExternalLink size={16} />
+                        </div>
+                        <div className="nav-text-v2">
+                            <span className="main-v2">{t('landing.cta_vote')}</span>
+                            <span className="sub-v2">{t('hub.vote_support')}</span>
+                        </div>
+                    </a>
+
+                    <div className="panel-divider-v2"></div>
                     
                     <button className="pc-btn-danger-v2" onClick={handleFactoryReset} disabled={loading}>
                         <RefreshCcw size={16} className={loading ? 'spin' : ''} />
@@ -399,6 +416,9 @@ export default function GuildHome() {
             .arrow-v2 { margin-left: auto; color: var(--text-muted); }
 
             .panel-divider-v2 { height: 1.5px; background: var(--border); margin: 16px 0; }
+            .pc-vote-link-v2 { display: flex; align-items: center; gap: 12px; padding: 11px; border-radius: 12px; border: 1px solid rgba(99, 102, 241, 0.18); background: rgba(99, 102, 241, 0.06); color: var(--text-heading); text-decoration: none; transition: 0.2s; }
+            .pc-vote-link-v2:hover { border-color: var(--primary); background: rgba(99, 102, 241, 0.1); transform: translateY(-1px); }
+            .vote-icon-v2 { width: 38px; height: 38px; border-radius: 10px; background: var(--bg-card); color: var(--primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
             .pc-btn-danger-v2 { width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; padding: 12px; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 12px; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: 0.2s; }
             .pc-btn-danger-v2:hover { background: #ef4444; color: #fff; }
 

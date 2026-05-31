@@ -3526,5 +3526,6 @@
   "management.status_submitted_background": "Background enviado",
   "management.status_cancelled": "Cancelado",
   "management.status_expired": "Expirado",
-  "landing.cta_vote": "Votar en Top.gg"
+  "landing.cta_vote": "Votar en Top.gg",
+  "hub.vote_support": "Apoya Verix en Top.gg"
 }
