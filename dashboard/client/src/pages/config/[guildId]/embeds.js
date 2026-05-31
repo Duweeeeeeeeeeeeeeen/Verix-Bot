@@ -37,6 +37,7 @@ export default function EmbedBuilder() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [sending, setSending] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   // Scheduling State
   const [scheduleType, setScheduleType] = useState('NOW'); // 'NOW' | 'DELAY' | 'TIME'
@@ -128,6 +129,33 @@ export default function EmbedBuilder() {
       showToast(t('embeds.toast_error'), 'error');
     } finally {
       setSaving(false);
+      window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
+    }
+  };
+
+  const handleDeleteTemplate = async () => {
+    if (selectedTemplateId === 'new') return;
+    const template = customTemplates.find(t => t._id === selectedTemplateId);
+    if (!template) return;
+    if (!confirm(t('embeds.delete_confirm') || t('common.delete_confirm'))) return;
+
+    setDeleting(true);
+    window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
+    try {
+      await api.request(`/embeds/${guildId}/templates/${selectedTemplateId}`, {
+        method: 'DELETE'
+      });
+
+      setCustomTemplates(customTemplates.filter(t => t._id !== selectedTemplateId));
+      setSelectedTemplateId('new');
+      setCurrentEmbed({ title: t('embeds.new_project_title'), description: '...', color: '#10b981', fields: [] });
+      setCustomName(t('embeds.new_project_title'));
+      setSelectedChannel('');
+      showToast(t('embeds.toast_deleted'));
+    } catch (error) {
+      showToast(t('embeds.toast_delete_error'), 'error');
+    } finally {
+      setDeleting(false);
       window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));
     }
   };
@@ -229,7 +257,7 @@ export default function EmbedBuilder() {
                         </div>
                     </div>
                     <div className="card-body-v2">
-                        <div className="pc-library-controls-v2" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 0.5fr', gap: '20px' }}>
+                        <div className="pc-library-controls-v2" style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 0.65fr', gap: '20px' }}>
                             <div className="pc-input-group-v2">
                                 <label>{t('embeds.template_source')}</label>
                                 <CustomSelect 
@@ -246,10 +274,20 @@ export default function EmbedBuilder() {
                                 <input className="pc-input-modern-v2" value={customName} onChange={e => setCustomName(e.target.value)} placeholder={t('embeds.id_name_placeholder')} />
                             </div>
                             <div className="pc-input-group-v2" style={{ justifyContent: 'flex-end' }}>
+                              <div className="pc-template-actions-v2">
                                 <button className="pc-btn-save-v2" onClick={handleSave} disabled={saving}>
                                     <Save size={18} />
                                     <span>{saving ? '...' : t('embeds.archive_btn')}</span>
                                 </button>
+                                <button
+                                  className="pc-btn-delete-template-v2"
+                                  onClick={handleDeleteTemplate}
+                                  disabled={deleting || selectedTemplateId === 'new'}
+                                  title={t('common.delete')}
+                                >
+                                  <Trash2 size={18} />
+                                </button>
+                              </div>
                             </div>
                         </div>
                     </div>
@@ -365,6 +403,10 @@ export default function EmbedBuilder() {
 
             .pc-btn-save-v2 { background: var(--bg-badge); color: var(--text-heading); border: 1.5px solid var(--border); padding: 12px 24px; border-radius: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.2s; width: 100%; height: 56px; justify-content: center; }
             .pc-btn-save-v2:hover { background: var(--bg-card); border-color: var(--primary); color: var(--primary); }
+            .pc-template-actions-v2 { display: grid; grid-template-columns: minmax(0, 1fr) 56px; gap: 10px; }
+            .pc-btn-delete-template-v2 { width: 56px; height: 56px; border-radius: 14px; border: 1.5px solid rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.08); color: #ef4444; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+            .pc-btn-delete-template-v2:hover:not(:disabled) { background: #ef4444; color: #fff; transform: translateY(-1px); }
+            .pc-btn-delete-template-v2:disabled { opacity: 0.45; cursor: not-allowed; filter: grayscale(0.4); }
 
             .embeds-main-grid { grid-template-columns: minmax(0, 1fr) minmax(280px, 360px) !important; gap: 24px !important; align-items: start; }
             .embeds-actions-sidebar { position: sticky; top: 24px; }

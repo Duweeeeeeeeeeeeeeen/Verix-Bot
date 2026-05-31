@@ -44,7 +44,8 @@ router.post('/:guildId/templates', adminCheck, validate(templateSchema), async (
         if (targetChannelId !== undefined) updateFields.targetChannelId = targetChannelId;
 
         if (id) {
-            template = await EmbedTemplate.findByIdAndUpdate(id, { $set: updateFields }, { returnDocument: 'after' });
+            template = await EmbedTemplate.findOneAndUpdate({ _id: id, guildId }, { $set: updateFields }, { returnDocument: 'after' });
+            if (!template) return sendEmbedError(res, 404, 'Embed template not found.');
             await logAudit(req, 'UPDATE_TEMPLATE', { name, id });
         } else {
             const isPremium = (await Guild.findOne({ guildId }))?.isPremium;
@@ -69,12 +70,10 @@ router.post('/:guildId/templates', adminCheck, validate(templateSchema), async (
 router.delete('/:guildId/templates/:id', adminCheck, async (req, res) => {
     try {
         const guildId = req.params.guildId;
-        const template = await EmbedTemplate.findById(req.params.id);
-        
-        await EmbedTemplate.findByIdAndDelete(req.params.id);
-        if (template) {
-            await logAudit(req, 'DELETE_TEMPLATE', { name: template.name });
-        }
+        const template = await EmbedTemplate.findOneAndDelete({ _id: req.params.id, guildId });
+        if (!template) return sendEmbedError(res, 404, 'Embed template not found.');
+
+        await logAudit(req, 'DELETE_TEMPLATE', { name: template.name, id: template._id });
         
         invalidateCache(guildId);
         res.json({ success: true });
