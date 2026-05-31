@@ -4,7 +4,7 @@ import logger from '../../utils/logger.js';
 import multiBotManager from '../../core/multiBotManager.js';
 
 const dashboardBaseUrl = () => (process.env.DASHBOARD_FRONTEND_URL || process.env.PUBLIC_APP_URL || 'https://verixbot.com').replace(/\/+$/, '');
-const supportUrl = () => process.env.SUPPORT_SERVER_URL || process.env.DISCORD_SUPPORT_URL || `${dashboardBaseUrl()}/`;
+const supportUrl = () => process.env.SUPPORT_SERVER_URL || process.env.DISCORD_SUPPORT_URL || 'https://discord.gg/Ck3rGpSV7U';
 
 async function sendWelcomeDm(guild, client) {
     const recipient = await resolveInviteActor(guild, client);
@@ -13,24 +13,25 @@ async function sendWelcomeDm(guild, client) {
         return;
     }
 
-    const dashboardUrl = `${dashboardBaseUrl()}/config/${guild.id}`;
-    const guideUrl = `${dashboardUrl}/guide`;
+    const dashboardUrl = `${dashboardBaseUrl()}/api/auth/login`;
+    const termsUrl = `${dashboardBaseUrl()}/terms`;
     const avatarUrl = client.user?.displayAvatarURL({ size: 256 });
 
     const embed = new EmbedBuilder()
         .setColor('#60a5fa')
         .setTitle("Hi, I'm Verix!")
-        .setDescription('Thanks for inviting Verix, let’s get your server set up!')
-        .setThumbnail(avatarUrl)
-        .addFields({
-            name: 'Getting started?',
-            value: [
-                `To start using Verix, open the dashboard and log in with your Discord account.`,
-                'The setup only takes a few minutes, and you can configure every module from the web interface.',
-                '',
-                `If you have any questions or run into problems, join our support server and we’ll help you out.`
-            ].join('\n')
-        });
+        .setDescription([
+            "Thanks for inviting Verix, let's get your server set up!",
+            '',
+            '**Getting started?**',
+            '',
+            'To start using Verix, visit our dashboard and log in with your Discord account. You can configure every module from the web interface.',
+            '',
+            'Please review our Terms of Service before using Verix in your community.',
+            '',
+            "If you have any questions or run into problems, join our support server and we'll help you out."
+        ].join('\n'))
+        .setThumbnail(avatarUrl);
 
     const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
@@ -38,9 +39,9 @@ async function sendWelcomeDm(guild, client) {
             .setStyle(ButtonStyle.Link)
             .setURL(dashboardUrl),
         new ButtonBuilder()
-            .setLabel('Documentation / Guides')
+            .setLabel('Terms of Service')
             .setStyle(ButtonStyle.Link)
-            .setURL(guideUrl),
+            .setURL(termsUrl),
         new ButtonBuilder()
             .setLabel('Support Server')
             .setStyle(ButtonStyle.Link)
@@ -81,13 +82,12 @@ export default {
         logger.info(`[Bot] Joined new guild: ${guild.name} (${guild.id})`);
 
         try {
-            // Find or create guild config, and force setupCompleted to false
-            const guildData = await Guild.findOneAndUpdate(
+            await Guild.findOneAndUpdate(
                 { guildId: guild.id },
                 { $set: { setupCompleted: false } },
                 { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
             );
-            
+
             logger.success(`[Bot] Reset setupCompleted to false for guild: ${guild.name} to trigger dashboard onboarding.`);
         } catch (error) {
             logger.error(`[Bot] Failed to handle guildCreate for ${guild.id}:`, error);
