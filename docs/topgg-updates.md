@@ -2,6 +2,21 @@
 
 Use these short formats when publishing updates on Top.gg. Keep them concrete and focused on what server owners can try immediately.
 
+## 🚀 Verix v1.0.0 Release Note (Current Update)
+
+**Verix v1.0.0 - The Ultimate Multi-Language Discord Suite**
+
+Verix has officially reached **Version 1.0.0**! This milestone delivers a premium, production-ready community management suite with **Full International Multi-Language Support** in English, Italian, Spanish, French, German, and Portuguese!
+
+Highlights:
+- **Universal Multi-Language Ecosystem:** Dynamically switch languages on the Navbar, Landing Page, Server Selectors, Onboarding Wizard, and Core Settings.
+- **Auto-Localizing Setup:** Launch the Setup Wizard, and Verix automatically translates and creates pre-configured channel names (e.g. `⚖️-bewerbungen` in German, `⚖️-candidaturas` in Portuguese).
+- **Recruitment & Whitelist Suite:** Complete FiveM/gaming recruitment, including text background checks, automatic oral audition queues, and time-limited rooms.
+- **Premium Ticket & Support Hub:** Multi-panels, staff claiming, quick replies, role auditing, and interactive transcript logging.
+- **Next.js Glassmorphism Dashboard:** Track server activity, message volume, leveling/XP stats, and module engagement with real-time updates.
+
+Configure it now on the Verix dashboard: https://verixbot.com
+
 ## Standard Update
 
 **Verix Update - [version/date]**
