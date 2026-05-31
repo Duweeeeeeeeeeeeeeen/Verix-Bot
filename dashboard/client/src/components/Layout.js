@@ -318,7 +318,6 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
   const systemGroup = {
     title: t('sidebar.group_system'),
     items: [
-      { name: t('sidebar.global'), icon: Settings2, path: `/config/${guildId}/global`, id: 'global' },
       { name: t('sidebar.system'), icon: Settings, path: `/config/${guildId}/system`, id: 'system' },
       
       // Unified White-Label for both Premium and Platinum

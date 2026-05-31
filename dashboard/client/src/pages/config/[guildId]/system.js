@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Skeleton from '../../../components/Skeleton';
-import { DiscordSelector, EmbedMessageManager } from '../../../components/LazyConfigComponents';
+import { DiscordSelector, EmbedMessageManager, CustomSelect } from '../../../components/LazyConfigComponents';
 import api from '../../../utils/api';
 import { useT } from '../../../contexts/LanguageContext';
 import { 
@@ -11,7 +11,8 @@ import {
   Shield,
   Layout,
   Globe,
-  Megaphone
+  Megaphone,
+  Hash
 } from 'lucide-react';
 import Head from 'next/head';
 
@@ -79,7 +80,11 @@ export default function SystemConfig() {
       try {
           await api.request(`/config/${guildId}/global`, {
               method: 'POST',
-              body: JSON.stringify({ logs: globalConfig.logs })
+              body: JSON.stringify({
+                  logs: globalConfig.logs,
+                  language: globalConfig.language || 'en',
+                  prefix: globalConfig.prefix || '!'
+              })
           });
           window.dispatchEvent(new CustomEvent('show-toast', {
               detail: { message: t('common.save_success'), type: 'success' }
@@ -101,6 +106,13 @@ export default function SystemConfig() {
               ...(prev?.logs || {}),
               ...patch
           }
+      }));
+  };
+
+  const updateGlobal = (patch) => {
+      setGlobalConfig(prev => ({
+          ...prev,
+          ...patch
       }));
   };
 
@@ -175,6 +187,44 @@ export default function SystemConfig() {
                 </div>
             </section>
 
+            <section className="pc-card-v2 system-settings-card">
+                <div className="card-header-v2">
+                    <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><Settings size={18} /></div>
+                    <div className="v-stack" style={{ flex: 1 }}>
+                        <h3 style={{ margin: 0 }}>{t('global.prefix_config')}</h3>
+                        <p style={{ margin: '4px 0 0', color: 'var(--text-muted)', fontSize: '0.9rem', fontWeight: 650 }}>{t('dashboard.module_global_desc_v2')}</p>
+                    </div>
+                </div>
+                <div className="card-body-v2 system-core-grid">
+                    <div className="pc-input-group-v2">
+                        <label>{t('global.primary_language')}</label>
+                        <CustomSelect
+                            options={[
+                                { value: 'en', label: 'English' },
+                                { value: 'it', label: 'Italiano' },
+                                { value: 'es', label: 'Español' },
+                                { value: 'fr', label: 'Français' }
+                            ]}
+                            value={globalConfig.language || 'en'}
+                            onChange={value => updateGlobal({ language: value })}
+                        />
+                        <p className="pc-hint-v2">{t('global.lang_hint')}</p>
+                    </div>
+                    <div className="pc-input-group-v2">
+                        <label>{t('global.bot_prefix')}</label>
+                        <div className="pc-input-modern-v2">
+                            <Hash size={18} color="var(--text-dim)" />
+                            <input
+                                value={globalConfig.prefix || '!'}
+                                onChange={e => updateGlobal({ prefix: e.target.value })}
+                                maxLength={5}
+                            />
+                        </div>
+                        <p className="pc-hint-v2">{t('global.prefix_hint')}</p>
+                    </div>
+                </div>
+            </section>
+
             <section className="pc-card-v2">
                 <div className="card-header-v2">
                     <div className="header-icon" style={{ background: 'var(--bg-badge)', color: 'var(--primary)' }}><MessageSquare size={18} /></div>
@@ -225,6 +275,7 @@ export default function SystemConfig() {
             .card-header-v2 h3 { margin: 0; font-family: 'Inter'; font-size: 1.3rem; font-weight: 700; color: var(--text-heading); }
 
             .system-settings-grid { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 24px; align-items: end; }
+            .system-core-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, 320px); gap: 24px; align-items: start; }
             .system-toggle-card { min-height: 86px; margin: 0; }
             .system-toggle-card span { color: var(--text-muted); font-size: 0.85rem; margin-top: 4px; }
             .pc-hint-v2 { margin: 8px 0 0; color: var(--text-muted); font-size: 0.82rem; font-weight: 600; }
@@ -235,6 +286,7 @@ export default function SystemConfig() {
 
             @media (max-width: 900px) {
                 .system-settings-grid { grid-template-columns: 1fr; }
+                .system-core-grid { grid-template-columns: 1fr; }
             }
         `}</style>
     </div>
