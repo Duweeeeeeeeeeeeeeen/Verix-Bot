@@ -198,7 +198,6 @@ export default function GlobalConfigPage() {
                                             { value: 'en', label: 'English' },
                                             { value: 'fr', label: 'Français' },
                                             { value: 'es', label: 'Español' },
-                                            { value: 'de', label: 'Deutsch' }
                                         ]}
                                         value={config.language || 'en'}
                                         onChange={v => setNested('language', v)}
