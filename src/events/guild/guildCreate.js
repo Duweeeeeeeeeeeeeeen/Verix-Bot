@@ -1,4 +1,4 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, Events } from 'discord.js';
+import { ActionRowBuilder, AuditLogEvent, ButtonBuilder, ButtonStyle, EmbedBuilder, Events, PermissionFlagsBits } from 'discord.js';
 import Guild from '../../models/Guild.js';
 import logger from '../../utils/logger.js';
 import multiBotManager from '../../core/multiBotManager.js';
@@ -7,9 +7,9 @@ const dashboardBaseUrl = () => (process.env.DASHBOARD_FRONTEND_URL || process.en
 const supportUrl = () => process.env.SUPPORT_SERVER_URL || process.env.DISCORD_SUPPORT_URL || `${dashboardBaseUrl()}/`;
 
 async function sendWelcomeDm(guild, client) {
-    const owner = await guild.fetchOwner().catch(() => null);
-    if (!owner?.user) {
-        logger.warn(`[Bot] Could not fetch owner for welcome DM in guild ${guild.id}.`);
+    const recipient = await resolveInviteActor(guild, client);
+    if (!recipient) {
+        logger.warn(`[Bot] Could not resolve welcome DM recipient for guild ${guild.id}.`);
         return;
     }
 
@@ -47,8 +47,29 @@ async function sendWelcomeDm(guild, client) {
             .setURL(supportUrl())
     );
 
-    await owner.user.send({ embeds: [embed], components: [row] });
-    logger.success(`[Bot] Sent welcome DM to ${owner.user.tag} for guild ${guild.name} (${guild.id}).`);
+    await recipient.send({ embeds: [embed], components: [row] });
+    logger.success(`[Bot] Sent welcome DM to ${recipient.tag} for guild ${guild.name} (${guild.id}).`);
+}
+
+async function resolveInviteActor(guild, client) {
+    const me = guild.members.me || await guild.members.fetchMe().catch(() => null);
+    const canReadAudit = me?.permissions?.has(PermissionFlagsBits.ViewAuditLog);
+
+    if (canReadAudit) {
+        const logs = await guild.fetchAuditLogs({ type: AuditLogEvent.BotAdd, limit: 5 }).catch(() => null);
+        const matchingEntry = logs?.entries?.find(entry => {
+            const targetId = entry.target?.id || entry.targetId;
+            const freshEnough = Date.now() - entry.createdTimestamp < 5 * 60 * 1000;
+            return targetId === client.user.id && freshEnough;
+        });
+
+        if (matchingEntry?.executor && !matchingEntry.executor.bot) {
+            return matchingEntry.executor;
+        }
+    }
+
+    const owner = await guild.fetchOwner().catch(() => null);
+    return owner?.user || null;
 }
 
 export default {
