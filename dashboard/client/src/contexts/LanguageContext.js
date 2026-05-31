@@ -3,12 +3,14 @@ import en from '../locales/en.json';
 
 export const LanguageContext = createContext();
 
-const supportedLocales = ['en', 'it', 'es', 'fr'];
+const supportedLocales = ['en', 'it', 'es', 'fr', 'de', 'pt'];
 const localeLoaders = {
     en: async () => en,
     it: () => import('../locales/it.json').then(module => module.default),
     es: () => import('../locales/es.json').then(module => module.default),
-    fr: () => import('../locales/fr.json').then(module => module.default)
+    fr: () => import('../locales/fr.json').then(module => module.default),
+    de: () => import('../locales/de.json').then(module => module.default),
+    pt: () => import('../locales/pt.json').then(module => module.default)
 };
 
 export function LanguageProvider({ children }) {

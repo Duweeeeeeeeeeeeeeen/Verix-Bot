@@ -203,7 +203,9 @@ export default function SystemConfig() {
                                 { value: 'en', label: 'English' },
                                 { value: 'it', label: 'Italiano' },
                                 { value: 'es', label: 'Español' },
-                                { value: 'fr', label: 'Français' }
+                                { value: 'fr', label: 'Français' },
+                                { value: 'de', label: 'Deutsch' },
+                                { value: 'pt', label: 'Português' }
                             ]}
                             value={globalConfig.language || 'en'}
                             onChange={value => updateGlobal({ language: value })}

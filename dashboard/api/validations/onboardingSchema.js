@@ -5,7 +5,7 @@ const requiredDiscordId = z.string().regex(/^\d{17,20}$/, 'ID Discord non valido
 
 export const onboardingSchema = z.object({
     // Step 1: Base Settings
-    language: z.enum(['it', 'en', 'es', 'fr']),
+    language: z.enum(['it', 'en', 'es', 'fr', 'de', 'pt']),
     adminRoleIds: z.array(discordId),
     logChannelId: requiredDiscordId,
 

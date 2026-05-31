@@ -144,7 +144,9 @@ export default function OnboardingWizard({ config, guildId }) {
                 { value: 'it', label: 'Italiano 🇮🇹' },
                 { value: 'en', label: 'English 🇺🇸' },
                 { value: 'es', label: 'Español 🇪🇸' },
-                { value: 'fr', label: 'Français 🇫🇷' }
+                { value: 'fr', label: 'Français 🇫🇷' },
+                { value: 'de', label: 'Deutsch 🇩🇪' },
+                { value: 'pt', label: 'Português 🇵🇹' }
               ]} 
               value={formData.language} 
               onChange={val => {
@@ -397,7 +399,12 @@ export default function OnboardingWizard({ config, guildId }) {
         <div className="summary-card-p">
           <div className="summary-row-p">
             <span className="summary-label-p">{t('onboarding.step4.lang_label')}</span>
-            <span className="summary-value-p">{formData.language === 'it' ? 'Italiano 🇮🇹' : 'English 🇺🇸'}</span>
+            <span className="summary-value-p">{formData.language === 'it' ? 'Italiano 🇮🇹' : 
+               formData.language === 'es' ? 'Español 🇪🇸' :
+               formData.language === 'fr' ? 'Français 🇫🇷' :
+               formData.language === 'de' ? 'Deutsch 🇩🇪' :
+               formData.language === 'pt' ? 'Português 🇵🇹' :
+               'English 🇺🇸'}</span>
           </div>
           <div className="summary-row-p">
             <span className="summary-label-p">{t('onboarding.step4.staff_label')}</span>

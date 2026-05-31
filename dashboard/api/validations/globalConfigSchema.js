@@ -59,7 +59,7 @@ export const globalConfigSchema = z.object({
     }).partial().optional(),
 
     adminRoleIds: z.array(z.string()).optional(),
-    language: z.enum(['it', 'en', 'es', 'fr']).optional(),
+    language: z.enum(['it', 'en', 'es', 'fr', 'de', 'pt']).optional(),
 
     notifications: z.object({
         whitelist_onSubmit: notificationEventSchema.optional().nullable(),

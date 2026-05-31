@@ -584,6 +584,14 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
                     className={`lang-btn ${language === 'fr' ? 'active' : ''}`}
                     onClick={() => setLanguage('fr')}
                   >FR</button>
+                  <button 
+                    className={`lang-btn ${language === 'de' ? 'active' : ''}`}
+                    onClick={() => setLanguage('de')}
+                  >DE</button>
+                  <button 
+                    className={`lang-btn ${language === 'pt' ? 'active' : ''}`}
+                    onClick={() => setLanguage('pt')}
+                  >PT</button>
               </div>
               <div className="status-badge">
                 <div className="status-dot"></div>

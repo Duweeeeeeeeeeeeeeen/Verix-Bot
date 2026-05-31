@@ -31,7 +31,7 @@ const notificationEventSchema = new mongoose.Schema({
 const globalConfigSchema = new mongoose.Schema({
     guildId: { type: String, required: true, unique: true, match: discordIdRegex },
     adminRoleIds: { type: [String], default: [] },
-    language: { type: String, enum: ['it', 'en', 'es', 'fr'], default: 'en' },
+    language: { type: String, enum: ['it', 'en', 'es', 'fr', 'de', 'pt'], default: 'en' },
 
     // ── UI SYSTEM ──────────────────────────────
     ui: {

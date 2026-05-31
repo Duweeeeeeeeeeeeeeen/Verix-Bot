@@ -2,8 +2,10 @@ import it from './defaultMessages.it.js';
 import en from './defaultMessages.en.js';
 import es from './defaultMessages.es.js';
 import fr from './defaultMessages.fr.js';
+import de from './defaultMessages.de.js';
+import pt from './defaultMessages.pt.js';
 
-const locales = { it, en, es, fr };
+const locales = { it, en, es, fr, de, pt };
 
 /**
  * Translate a key into the given language with variable substitution.

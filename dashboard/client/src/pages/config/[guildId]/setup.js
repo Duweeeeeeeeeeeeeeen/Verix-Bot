@@ -101,6 +101,28 @@ export default function SetupWizard() {
             logs: '📜-verix-logs'
         });
         setTicketCategory('--- SUPPORT ---');
+    } else if (lang === 'de') {
+        setChannelNames({
+            whitelist: '⚖️-bewerbungen',
+            tickets: '🎫-ticket-öffnen',
+            verify: '✅-verifizierung',
+            polls: '📊-umfragen',
+            giveaway: '🎉-gewinnspiele',
+            photocontest: '📸-fotowettbewerb',
+            logs: '📜-verix-logs'
+        });
+        setTicketCategory('--- SUPPORT ---');
+    } else if (lang === 'pt') {
+        setChannelNames({
+            whitelist: '⚖️-candidaturas',
+            tickets: '🎫-abrir-ticket',
+            verify: '✅-verificacao',
+            polls: '📊-votacoes',
+            giveaway: '🎉-sorteios',
+            photocontest: '📸-concurso-fotos',
+            logs: '📜-verix-logs'
+        });
+        setTicketCategory('--- SUPORTE ---');
     } else {
         setChannelNames({
             whitelist: '⚖️-applications',
@@ -344,6 +366,26 @@ export default function SetupWizard() {
                     <div className="lang-info">
                         <strong>{t('onboarding.lang_fr')}</strong>
                         <span>{t('onboarding.lang_fr_desc')}</span>
+                    </div>
+                </div>
+                <div 
+                  className={`lang-card ${language === 'de' ? 'active' : ''}`}
+                  onClick={() => selectLanguage('de')}
+                >
+                    <span className="flag">🇩🇪</span>
+                    <div className="lang-info">
+                        <strong>{t('onboarding.lang_de') || 'Deutsch'}</strong>
+                        <span>{t('onboarding.lang_de_desc') || 'Imposta il bot in Tedesco'}</span>
+                    </div>
+                </div>
+                <div 
+                  className={`lang-card ${language === 'pt' ? 'active' : ''}`}
+                  onClick={() => selectLanguage('pt')}
+                >
+                    <span className="flag">🇵🇹</span>
+                    <div className="lang-info">
+                        <strong>{t('onboarding.lang_pt') || 'Português'}</strong>
+                        <span>{t('onboarding.lang_pt_desc') || 'Imposta il bot in Portoghese'}</span>
                     </div>
                 </div>
             </div>

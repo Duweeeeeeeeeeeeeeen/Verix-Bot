@@ -174,7 +174,7 @@ export default function Selector() {
                         </button>
                         {showLang && (
                             <div className="lang-dropdown-p animate fade-in">
-                                {['it', 'en', 'es', 'fr'].map(lang => (
+                                {['it', 'en', 'es', 'fr', 'de', 'pt'].map(lang => (
                                     <button
                                         key={lang}
                                         className={`lang-dropdown-item-p ${language === lang ? 'active' : ''}`}
