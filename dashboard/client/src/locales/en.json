@@ -1072,6 +1072,7 @@
   "embeds.toast_limit": "You have reached the free template limit (3). Upgrade to Platinum for unlimited projects.",
   "embeds.toast_saved": "Template saved successfully!",
   "embeds.toast_select_channel": "Please select a target channel.",
+  "embeds.toast_select_time": "Please select a scheduled date and time.",
   "embeds.toast_send_error": "Error while sending the message.",
   "embeds.toast_sent": "Message sent successfully!",
   "embeds.transmit": "Transmit",

@@ -1052,6 +1052,7 @@
   "embeds.toast_limit": "Has alcanzado el límite de plantillas gratuitas (3).Actualice a Platinum para proyectos ilimitados.",
   "embeds.toast_saved": "¡Plantilla guardada exitosamente!",
   "embeds.toast_select_channel": "Seleccione un canal de destino.",
+  "embeds.toast_select_time": "Selecciona una fecha y hora programadas.",
   "embeds.toast_send_error": "Error al enviar el mensaje.",
   "embeds.toast_sent": "¡Mensaje enviado exitosamente!",
   "embeds.transmit": "transmitir",

@@ -1052,6 +1052,7 @@
   "embeds.toast_limit": "Vous avez atteint la limite de modèles gratuits (3).Passez à Platinum pour des projets illimités.",
   "embeds.toast_saved": "Modèle enregistré avec succès !",
   "embeds.toast_select_channel": "Veuillez sélectionner un canal cible.",
+  "embeds.toast_select_time": "Veuillez sélectionner une date et une heure de programmation.",
   "embeds.toast_send_error": "Erreur lors de l'envoi du message.",
   "embeds.toast_sent": "Message envoyé avec succès !",
   "embeds.transmit": "Transmettre",

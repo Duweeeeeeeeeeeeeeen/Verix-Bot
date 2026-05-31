@@ -169,6 +169,8 @@ export default function EmbedBuilder() {
 
   const handleSend = async () => {
     if (!selectedChannel) return showToast(t('embeds.toast_select_channel'), 'error');
+    if (scheduleType === 'TIME' && !specificTime) return showToast(t('embeds.toast_select_time'), 'error');
+
     setSending(true);
     window.dispatchEvent(new CustomEvent('set-activity', { detail: true }));
     try {
@@ -177,12 +179,12 @@ export default function EmbedBuilder() {
         embed: currentEmbed
       };
 
-      if (scheduleType !== 'NOW' || recurrence !== 'none') {
+      if (scheduleType === 'DELAY' || scheduleType === 'TIME') {
         payload.schedule = {
-          type: scheduleType === 'NOW' ? 'TIME' : scheduleType,
+          type: scheduleType,
           delayMinutes: scheduleType === 'DELAY' ? parseInt(delayMinutes) : undefined,
-          specificTime: scheduleType === 'TIME' ? specificTime : (scheduleType === 'NOW' ? new Date().toISOString() : undefined),
-          recurrence: recurrence
+          specificTime: scheduleType === 'TIME' ? new Date(specificTime).toISOString() : undefined,
+          recurrence: scheduleType === 'TIME' ? recurrence : 'none'
         };
       }
 
@@ -352,7 +354,8 @@ export default function EmbedBuilder() {
                                     </div>
                                 )}
 
-                                <div className="pc-recurrence-studio-v2" style={{ marginTop: '20px', paddingTop: '18px', borderTop: '1.5px dashed var(--border)' }}>
+                                {scheduleType === 'TIME' && (
+                                <div className="pc-recurrence-studio-v2 animate slide-up" style={{ marginTop: '20px', paddingTop: '18px', borderTop: '1.5px dashed var(--border)' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
                                         <RefreshCw size={14} color="#6366f1" />
                                         <label style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '1px' }}>{t('embeds.recurrence_title')}</label>
@@ -368,6 +371,7 @@ export default function EmbedBuilder() {
                                         onChange={setRecurrence} 
                                     />
                                 </div>
+                                )}
                             </div>
                         </section>
 
