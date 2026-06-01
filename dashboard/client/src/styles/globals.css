@@ -2689,11 +2689,21 @@ h1, h2, h3, h4, h5, h6 {
   .dashboard-container .pc-input-grid-v2,
   .dashboard-container .pc-dashboard-grid,
   .dashboard-container .pc-grid-v2,
+  .dashboard-container .pc-editor-grid-v2,
+  .dashboard-container .pc-editor-layout-v2,
+  .dashboard-container .manager-layout,
+  .dashboard-container .pc-layout-v2-rr,
+  .dashboard-container .hero-stats-grid-v2,
+  .dashboard-container .gate-features-grid-v2,
+  .dashboard-container .reward-inputs,
+  .dashboard-container .pc-bb-columns,
+  .dashboard-container .field-entry-v2,
   .dashboard-container .settings-grid,
   .dashboard-container .form-grid,
   .dashboard-container .two-column-grid,
   .dashboard-container .main-grid {
     grid-template-columns: 1fr !important;
+    min-width: 0 !important;
   }
 
   .dashboard-container .pc-header-v2 {
@@ -2723,7 +2733,11 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   .dashboard-container .pc-card-v2,
-  .dashboard-container .pc-sub-card-v2 {
+  .dashboard-container .pc-sub-card-v2,
+  .dashboard-container .pc-editor-wrapper-v2,
+  .dashboard-container .editor-card-p,
+  .dashboard-container .pc-audit-details-v2,
+  .dashboard-container .table-card-v2 {
     max-width: 100% !important;
     overflow: hidden;
   }
@@ -2731,8 +2745,68 @@ h1, h2, h3, h4, h5, h6 {
   .dashboard-container textarea,
   .dashboard-container input,
   .dashboard-container select,
-  .dashboard-container .pc-input-modern-v2 {
+  .dashboard-container .pc-input-modern-v2,
+  .dashboard-container .ds-trigger,
+  .dashboard-container .pc-color-picker-wrapper-v2,
+  .dashboard-container .hex-input-v2 {
     max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .dashboard-container .pc-preview-sidebar-v2,
+  .dashboard-container .pc-smart-preview-v2 {
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .dashboard-container .pc-bb-builder {
+    grid-template-columns: 1fr !important;
+  }
+
+  .dashboard-container .pc-bb-left {
+    border-right: 0 !important;
+    border-bottom: 1px solid var(--border) !important;
+    padding: 16px !important;
+    justify-content: flex-start !important;
+  }
+
+  .dashboard-container .pc-bb-content {
+    padding: 16px !important;
+    min-width: 0 !important;
+  }
+
+  .dashboard-container .pc-bb-top-row,
+  .dashboard-container .editor-header-v2,
+  .dashboard-container .preview-action-bar,
+  .dashboard-container .pc-action-row-v2,
+  .dashboard-container .pc-toggle-card-v2,
+  .dashboard-container .pc-table-filters-v2 {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .dashboard-container .pc-table-wrapper-v2,
+  .dashboard-container .table-responsive-v2 {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .dashboard-container .pc-table-v2,
+  .dashboard-container table {
+    min-width: 640px;
+  }
+
+  .dashboard-container .pc-json-viewer,
+  .dashboard-container pre,
+  .dashboard-container code {
+    max-width: 100%;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
   }
 }
 
@@ -2748,6 +2822,11 @@ h1, h2, h3, h4, h5, h6 {
 
   .dashboard-container .pc-sub-card-v2 {
     padding: 14px !important;
+  }
+
+  .dashboard-container .card-header-v2,
+  .dashboard-container .pc-header-v2 .header-info {
+    gap: 10px !important;
   }
 
   .dashboard-container .pc-header-v2 {
@@ -2776,6 +2855,28 @@ h1, h2, h3, h4, h5, h6 {
   .dashboard-container .pc-header-v2 .pc-btn-secondary,
   .dashboard-container .pc-header-v2 .pc-btn-danger {
     width: auto !important;
+  }
+
+  .dashboard-container .pc-bb-content,
+  .dashboard-container .pc-bb-left {
+    padding: 14px !important;
+  }
+
+  .dashboard-container .pc-bb-top-row > *,
+  .dashboard-container .pc-action-row-v2 > *,
+  .dashboard-container .pc-toggle-card-v2 > *,
+  .dashboard-container .preview-action-bar > * {
+    width: 100% !important;
+  }
+
+  .dashboard-container .field-entry-v2 {
+    gap: 10px !important;
+  }
+
+  .dashboard-container .field-entry-v2 button,
+  .dashboard-container .field-entry-v2 .pc-btn-outline-v2 {
+    width: 42px !important;
+    justify-self: end;
   }
 }
 
