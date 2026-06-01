@@ -396,7 +396,11 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
       <button
         type="button"
         className="mobile-nav-toggle"
-        onClick={() => setIsMobileNavOpen(open => !open)}
+        onClick={() => {
+          setIsLanguageOpen(false);
+          setIsHelpOpen(false);
+          setIsMobileNavOpen(open => !open);
+        }}
         aria-label={isMobileNavOpen ? 'Close navigation' : 'Open navigation'}
       >
         {isMobileNavOpen ? <X size={18} /> : <Menu size={18} />}
@@ -1208,6 +1212,17 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
 
           :global(.sidebar.mobile-open) {
             transform: translateX(0);
+          }
+
+          :global(.dashboard-container.mobile-nav-open .top-header) {
+            z-index: 80;
+            pointer-events: none;
+            opacity: 0.18;
+          }
+
+          :global(.dashboard-container.mobile-nav-open .header-left),
+          :global(.dashboard-container.mobile-nav-open .header-right) {
+            pointer-events: none;
           }
 
           :global(.sidebar.mobile-open .brand-text),
