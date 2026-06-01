@@ -118,7 +118,17 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
   const [searchQuery, setSearchQuery] = useState('');
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+  const [isLanguageOpen, setIsLanguageOpen] = useState(false);
   const helpTimeoutRef = useRef(null);
+  const languageOptions = [
+    { value: 'en', label: 'English' },
+    { value: 'it', label: 'Italiano' },
+    { value: 'es', label: 'Español' },
+    { value: 'fr', label: 'Français' },
+    { value: 'de', label: 'Deutsch' },
+    { value: 'pt', label: 'Português' }
+  ];
+  const currentLanguage = languageOptions.find(option => option.value === language) || languageOptions[0];
 
   const handleHelpEnter = () => {
     if (helpTimeoutRef.current) clearTimeout(helpTimeoutRef.current);
@@ -568,30 +578,31 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
 
           <div className="header-right">
               <div className="language-selector">
-                  <button 
-                    className={`lang-btn ${language === 'it' ? 'active' : ''}`}
-                    onClick={() => setLanguage('it')}
-                  >IT</button>
-                  <button 
-                    className={`lang-btn ${language === 'en' ? 'active' : ''}`}
-                    onClick={() => setLanguage('en')}
-                  >EN</button>
-                  <button 
-                    className={`lang-btn ${language === 'es' ? 'active' : ''}`}
-                    onClick={() => setLanguage('es')}
-                  >ES</button>
-                  <button 
-                    className={`lang-btn ${language === 'fr' ? 'active' : ''}`}
-                    onClick={() => setLanguage('fr')}
-                  >FR</button>
-                  <button 
-                    className={`lang-btn ${language === 'de' ? 'active' : ''}`}
-                    onClick={() => setLanguage('de')}
-                  >DE</button>
-                  <button 
-                    className={`lang-btn ${language === 'pt' ? 'active' : ''}`}
-                    onClick={() => setLanguage('pt')}
-                  >PT</button>
+                  <button
+                    className={`lang-btn ${isLanguageOpen ? 'active' : ''}`}
+                    onClick={() => setIsLanguageOpen(open => !open)}
+                    title={currentLanguage.label}
+                  >
+                    <Globe size={15} />
+                    <span>{language.toUpperCase()}</span>
+                  </button>
+                  {isLanguageOpen && (
+                    <div className="language-menu animate fade-in">
+                      {languageOptions.map(option => (
+                        <button
+                          key={option.value}
+                          className={`language-menu-item ${language === option.value ? 'active' : ''}`}
+                          onClick={() => {
+                            setLanguage(option.value);
+                            setIsLanguageOpen(false);
+                          }}
+                        >
+                          <span>{option.label}</span>
+                          <strong>{option.value.toUpperCase()}</strong>
+                        </button>
+                      ))}
+                    </div>
+                  )}
               </div>
               <div className="status-badge">
                 <div className="status-dot"></div>
@@ -842,24 +853,26 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
         }
 
         .language-selector {
-          display: flex;
-          gap: 4px;
-          background: var(--bg-secondary);
-          padding: 4px;
-          border-radius: 8px;
+          position: relative;
           margin-right: 16px;
         }
 
         .lang-btn {
-          padding: 4px 8px;
-          font-size: 11px;
+          min-width: 74px;
+          height: 38px;
+          padding: 0 12px;
+          font-size: 12px;
           font-weight: 700;
-          border-radius: 6px;
+          border-radius: 12px;
           color: var(--text-muted);
           transition: all 0.2s;
-          background: transparent;
-          border: none;
+          background: var(--bg-card);
+          border: 1px solid var(--border);
           cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
         }
 
         .lang-btn:hover {
@@ -871,6 +884,51 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
           background: var(--primary);
           color: white;
           box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4);
+        }
+
+        .language-menu {
+          position: absolute;
+          top: calc(100% + 8px);
+          right: 0;
+          width: 190px;
+          padding: 8px;
+          border-radius: 16px;
+          background: var(--bg-card);
+          border: 1px solid var(--border-strong);
+          box-shadow: var(--shadow-lg);
+          z-index: 9999;
+        }
+
+        .language-menu-item {
+          width: 100%;
+          height: 38px;
+          border: none;
+          border-radius: 10px;
+          background: transparent;
+          color: var(--text-muted);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0 10px;
+          cursor: pointer;
+          font-weight: 700;
+          transition: 0.18s ease;
+        }
+
+        .language-menu-item:hover {
+          background: var(--hover-bg);
+          color: var(--text-heading);
+        }
+
+        .language-menu-item.active {
+          background: rgba(var(--primary-rgb), 0.12);
+          color: var(--primary);
+        }
+
+        .language-menu-item strong {
+          font-size: 0.68rem;
+          color: inherit;
+          opacity: 0.75;
         }
 
         .bc-item.active {
