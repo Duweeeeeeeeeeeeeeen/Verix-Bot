@@ -2679,8 +2679,20 @@ h1, h2, h3, h4, h5, h6 {
     padding: 18px !important;
   }
 
+  .dashboard-container .pc-content-v2,
+  .dashboard-container .pc-content-v2 > .v-stack {
+    gap: 18px !important;
+  }
+
   .dashboard-container .pc-layout-grid-v2,
-  .dashboard-container .pc-settings-grid-v2 {
+  .dashboard-container .pc-settings-grid-v2,
+  .dashboard-container .pc-input-grid-v2,
+  .dashboard-container .pc-dashboard-grid,
+  .dashboard-container .pc-grid-v2,
+  .dashboard-container .settings-grid,
+  .dashboard-container .form-grid,
+  .dashboard-container .two-column-grid,
+  .dashboard-container .main-grid {
     grid-template-columns: 1fr !important;
   }
 
@@ -2692,13 +2704,78 @@ h1, h2, h3, h4, h5, h6 {
   .dashboard-container .pc-header-v2 .header-controls {
     justify-content: flex-start !important;
   }
+
+  .dashboard-container .pc-tabs-v2,
+  .dashboard-container .tab-nav,
+  .dashboard-container .tabs-row,
+  .dashboard-container .module-tabs {
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+  }
+
+  .dashboard-container .pc-tabs-v2 button,
+  .dashboard-container .tab-nav button,
+  .dashboard-container .tabs-row button,
+  .dashboard-container .module-tabs button {
+    flex: 0 0 auto;
+  }
+
+  .dashboard-container .pc-card-v2,
+  .dashboard-container .pc-sub-card-v2 {
+    max-width: 100% !important;
+    overflow: hidden;
+  }
+
+  .dashboard-container textarea,
+  .dashboard-container input,
+  .dashboard-container select,
+  .dashboard-container .pc-input-modern-v2 {
+    max-width: 100% !important;
+  }
 }
 
 @media (max-width: 560px) {
+  .dashboard-container .pc-premium-wrapper {
+    padding: 14px !important;
+  }
+
+  .dashboard-container .pc-card-v2 {
+    padding: 18px !important;
+    border-radius: 14px !important;
+  }
+
+  .dashboard-container .pc-sub-card-v2 {
+    padding: 14px !important;
+  }
+
+  .dashboard-container .pc-header-v2 {
+    padding: 16px !important;
+    border-radius: 14px !important;
+  }
+
+  .dashboard-container .pc-header-v2 .header-info,
+  .dashboard-container .card-header-v2 {
+    align-items: flex-start !important;
+  }
+
   .dashboard-container .pc-header-v2 h1,
   .dashboard-container .pc-title-row h1,
   .dashboard-container .header-text h1 {
     font-size: 1.32rem !important;
+  }
+
+  .dashboard-container .pc-btn-primary,
+  .dashboard-container .pc-btn-secondary,
+  .dashboard-container .pc-btn-danger {
+    width: 100% !important;
+  }
+
+  .dashboard-container .pc-header-v2 .pc-btn-primary,
+  .dashboard-container .pc-header-v2 .pc-btn-secondary,
+  .dashboard-container .pc-header-v2 .pc-btn-danger {
+    width: auto !important;
   }
 }
 

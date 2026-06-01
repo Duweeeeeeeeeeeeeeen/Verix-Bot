@@ -49,6 +49,8 @@ import {
   Coins,
   Sun,
   Moon,
+  Menu,
+  X,
   Trophy,
   Trash2,
   MessageSquare,
@@ -119,6 +121,7 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
   const [isHelpOpen, setIsHelpOpen] = useState(false);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [isLanguageOpen, setIsLanguageOpen] = useState(false);
+  const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const helpTimeoutRef = useRef(null);
   const languageOptions = [
     { value: 'en', label: 'English' },
@@ -244,6 +247,11 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
   useEffect(() => {
     fetchModuleStatus();
   }, [guildId]);
+
+  useEffect(() => {
+    setIsMobileNavOpen(false);
+    setIsLanguageOpen(false);
+  }, [router.asPath]);
 
   useEffect(() => {
     const handleRefresh = (event) => {
@@ -384,9 +392,18 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
   };
 
   return (
-    <div className="dashboard-container">
+    <div className={`dashboard-container ${isMobileNavOpen ? 'mobile-nav-open' : ''}`}>
+      <button
+        type="button"
+        className="mobile-nav-toggle"
+        onClick={() => setIsMobileNavOpen(open => !open)}
+        aria-label={isMobileNavOpen ? 'Close navigation' : 'Open navigation'}
+      >
+        {isMobileNavOpen ? <X size={18} /> : <Menu size={18} />}
+      </button>
+      {isMobileNavOpen && <div className="mobile-nav-backdrop" onClick={() => setIsMobileNavOpen(false)} />}
       {/* Premium Sidebar (Left) */}
-      <aside className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
+      <aside className={`sidebar ${isCollapsed ? 'collapsed' : ''} ${isMobileNavOpen ? 'mobile-open' : ''}`}>
         <div className="sidebar-brand">
           <div className="brand-icon">
             <img src="/logo.png" alt="Verix Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
@@ -743,6 +760,11 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
           overflow-x: auto;
           position: relative;
           background: var(--bg-main);
+        }
+
+        .mobile-nav-toggle,
+        .mobile-nav-backdrop {
+          display: none;
         }
 
         .nav-section { margin-bottom: 2px; }
@@ -1147,12 +1169,120 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
         }
 
         @media (max-width: 1000px) {
+          .mobile-nav-toggle {
+            position: fixed;
+            top: 18px;
+            left: 16px;
+            z-index: 260;
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-heading);
+            box-shadow: var(--shadow-premium);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+          }
+
+          .mobile-nav-backdrop {
+            display: block;
+            position: fixed;
+            inset: 0;
+            z-index: 190;
+            background: rgba(15, 23, 42, 0.42);
+            backdrop-filter: blur(4px);
+          }
+
+          :global(.sidebar) {
+            position: fixed;
+            inset: 0 auto 0 0;
+            width: min(86vw, 300px) !important;
+            transform: translateX(-105%);
+            transition: transform 0.22s ease !important;
+            z-index: 220 !important;
+            box-shadow: 24px 0 80px rgba(0, 0, 0, 0.25);
+          }
+
+          :global(.sidebar.mobile-open) {
+            transform: translateX(0);
+          }
+
+          :global(.sidebar.mobile-open .brand-text),
+          :global(.sidebar.mobile-open .nav-link-text),
+          :global(.sidebar.mobile-open .user-info),
+          :global(.sidebar.mobile-open .btn-logout),
+          :global(.sidebar.mobile-open .sidebar-search),
+          :global(.sidebar.mobile-open .nav-group-title) {
+            display: flex !important;
+          }
+
+          :global(.sidebar.mobile-open .btn-collapse) {
+            display: none;
+          }
+
+          .main-content {
+            width: 100vw;
+            overflow-x: hidden;
+          }
+
+          :global(.top-header) {
+            top: 12px;
+            margin: 0 12px 0 70px;
+            height: auto;
+            min-height: 56px;
+            gap: 10px;
+            align-items: flex-start;
+          }
+
+          :global(.header-left),
+          :global(.header-right) {
+            min-height: 54px;
+            height: auto;
+            padding: 8px 12px;
+            border-radius: 14px;
+          }
+
+          :global(.header-left) {
+            min-width: 0;
+            flex: 1;
+          }
+
+          :global(.header-right) {
+            gap: 8px;
+          }
+
+          :global(.pc-breadcrumbs-v2) {
+            display: none !important;
+          }
+
+          :global(.server-crumb span) {
+            max-width: 150px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+
+          .language-selector {
+            margin-right: 0;
+          }
+
+          .status-badge {
+            display: none;
+          }
+
+          .header-actions {
+            gap: 8px;
+          }
+
           .verix-activity-indicator {
             bottom: 100px; /* Above toast in mobile */
             right: 20px;
           }
           .content-container {
-            padding: 88px 16px 32px 16px;
+            padding: 92px 14px 32px 14px;
           }
           .toast-wrapper {
             top: auto;
@@ -1162,6 +1292,40 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
           }
           .toast-premium {
             width: 100%;
+          }
+        }
+
+        @media (max-width: 640px) {
+          :global(.top-header) {
+            flex-direction: column;
+            align-items: stretch;
+          }
+
+          :global(.header-left),
+          :global(.header-right) {
+            width: 100%;
+          }
+
+          :global(.header-right) {
+            justify-content: space-between;
+          }
+
+          :global(.btn-back span),
+          :global(.header-divider) {
+            display: none;
+          }
+
+          .content-container {
+            padding-top: 152px;
+          }
+
+          .help-dropdown,
+          .language-menu {
+            position: fixed;
+            top: 76px;
+            right: 12px;
+            left: 12px;
+            width: auto;
           }
         }
       `}</style>
