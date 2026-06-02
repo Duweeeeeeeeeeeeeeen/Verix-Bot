@@ -128,7 +128,7 @@ export default function GiveawayConfig() {
         showToast(t('common.reset_success') || 'Modulo ripristinato!');
       }
     } catch (e) {
-      showToast(t('common.reset_error') || 'Errore durante il reset', 'error');
+      showToast(t('common.reset_error') || 'Reset failed', 'error');
     } finally {
       setSaving(false);
       window.dispatchEvent(new CustomEvent('set-activity', { detail: false }));

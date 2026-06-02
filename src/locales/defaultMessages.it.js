@@ -88,7 +88,7 @@ export default {
             title: '📄 Nuova Candidatura: {user_name}',
             description: 'Benvenuto. Per procedere con la tua richiesta, dobbiamo raccogliere alcune informazioni necessarie alla valutazione.\n\n**ISTRUZIONI:**\n• Rispondi onestamente e con dovizia di particolari.\n• Rispetta i tempi previsti per evitare l\'annullamento della sessione.',
             color: '#3BA4FF',
-            footer: 'Ufficio Valutazioni | {guild}'
+            footer: 'Valutazioni Staff | {guild}'
         },
         question: {
             title: '❓ Domanda: {current_index} di {total_questions}',
@@ -231,7 +231,7 @@ export default {
             title: '📜 Archivio Storico: Deposito Background',
             description: 'Inizia la stesura della storia del tuo personaggio per ottenere l\'approvazione definitiva del background.\n\nClicca il pulsante qui sotto per avviare il protocollo di deposito.',
             color: '#5865f2',
-            footer: 'Ufficio Anagrafe | Verix RP'
+            footer: 'Background Review | {guild}'
         },
         instructions: {
             title: '✍️ Redazione Background',
@@ -441,7 +441,7 @@ export default {
             no_app: 'Nessuna domanda',
             last_wl: '📅 Ultima Whitelist',
             background: '📖 Background',
-            no_dossier: 'Nessuna istanza',
+            no_dossier: 'Nessuna richiesta',
             footer: 'Modulo Intelligence Staff',
             field_name: '🔍 Intelligence Utente'
         },

@@ -108,18 +108,18 @@ export class PhotoContestManager {
                 .addComponents(
                     new ButtonBuilder()
                         .setCustomId('pc_submit_info')
-                        .setLabel(config.submitLabel || 'Invia Foto')
+                        .setLabel(config.submitLabel || 'Submit Photo')
                         .setEmoji(config.submitEmoji || '📸')
                         .setStyle(ButtonStyle.Primary),
                     new ButtonBuilder()
                         .setCustomId('pc_leaderboard_view')
-                        .setLabel(config.voteLabel || 'Classifica')
+                        .setLabel(config.voteLabel || 'Leaderboard')
                         .setEmoji(config.voteEmoji || '🏆')
                         .setStyle(ButtonStyle.Secondary)
                 );
 
             const embed = await messageService.get(config.guildId, 'photocontest', 'panel', {
-                theme: themeName || 'Libero',
+                theme: themeName || 'Free Theme',
                 duration: duration,
                 endTime: `<t:${Math.floor(endTime.getTime() / 1000)}:R>`
             });
@@ -202,11 +202,9 @@ export class PhotoContestManager {
 
             const winnerEmbed = await messageService.get(contest.guildId, 'photocontest', 'contest_end_log', {
                 user: `<@${winner.userId}>`,
-                theme: contest.theme || 'Libero',
+                theme: contest.theme || 'Free Theme',
                 votes: winner.score
             });
-            winnerEmbed.setImage(winner.imageUrl);
-
             winnerEmbed.setImage(winner.imageUrl);
 
             const winnerMsg = await channel.send({ embeds: [winnerEmbed] });

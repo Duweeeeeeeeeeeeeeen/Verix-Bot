@@ -79,11 +79,11 @@ export default function SystemUpdates() {
             if (result.success) {
                 setForm(prev => ({ ...prev, [type]: result.url }));
             } else {
-                throw new Error(result.error || 'Errore durante il caricamento');
+                throw new Error(result.error || 'Upload failed');
             }
         } catch (error) {
             console.error('Upload error:', error);
-            alert('Errore durante il caricamento dell\'immagine.');
+            alert('Image upload failed.');
         } finally {
             setIsUploading(false);
         }

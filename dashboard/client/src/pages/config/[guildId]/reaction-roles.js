@@ -82,13 +82,13 @@ export default function ReactionRolesConfig() {
                 ...prevConfig,
                 panels: prevConfig.panels.map(p => p.id === activePanelId ? { ...p, embed: { ...p.embed, [type]: result.url } } : p)
             }));
-            window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('embeds.editor.upload_success') || 'Caricato con successo!', type: 'success' } }));
+            window.dispatchEvent(new CustomEvent('show-toast', { detail: { message: t('embeds.editor.upload_success') || 'Uploaded successfully!', type: 'success' } }));
         } else {
-            throw new Error(result.error || t('embeds.editor.upload_error') || 'Errore di caricamento');
+            throw new Error(result.error || t('embeds.editor.upload_error') || 'Upload error');
         }
     } catch (error) {
       console.error('Upload error:', error);
-      alert(t('embeds.editor.upload_connection_error') || 'Errore di connessione durante il caricamento.');
+      alert(t('embeds.editor.upload_connection_error') || 'Connection error while uploading.');
     } finally {
       setIsUploading(false);
     }
@@ -325,7 +325,7 @@ export default function ReactionRolesConfig() {
                         className="pc-btn-outline-v2" 
                         onClick={() => handleDeploy(activePanel.id)} 
                         disabled={saving || !activePanel.channelId} 
-                        title={t('rr.launch_panel') || 'Invia Pannello'}
+                        title={t('rr.launch_panel') || 'Send Panel'}
                         style={{ color: 'var(--primary)', borderColor: 'rgba(var(--primary-rgb), 0.2)' }}
                     >
                         <Send size={18} />

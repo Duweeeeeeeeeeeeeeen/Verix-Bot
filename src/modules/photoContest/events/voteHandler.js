@@ -24,20 +24,20 @@ export default {
 
             const modal = new ModalBuilder()
                 .setCustomId('pc_submit_modal')
-                .setTitle('Invia la tua Foto');
+                .setTitle('Submit Your Photo');
 
             const titleInput = new TextInputBuilder()
                 .setCustomId('pc_modal_title')
-                .setLabel('Titolo della Foto')
-                .setPlaceholder('Inserisci un titolo accattivante...')
+                .setLabel('Photo Title')
+                .setPlaceholder('Add a clear title...')
                 .setStyle(TextInputStyle.Short)
                 .setRequired(false)
                 .setMaxLength(100);
 
             const descInput = new TextInputBuilder()
                 .setCustomId('pc_modal_desc')
-                .setLabel('Descrizione / Storia')
-                .setPlaceholder('Raccontaci qualcosa di questa foto...')
+                .setLabel('Description')
+                .setPlaceholder('Tell us something about this photo...')
                 .setStyle(TextInputStyle.Paragraph)
                 .setRequired(false)
                 .setMaxLength(500);

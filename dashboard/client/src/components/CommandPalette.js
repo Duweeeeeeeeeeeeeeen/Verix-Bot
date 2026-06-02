@@ -102,7 +102,7 @@ export default function CommandPalette({ isOpen, onClose, items, guildId, enable
                   </div>
                   {index === selectedIndex && (
                     <div className="item-action">
-                      <span>{t('common.jump_to') || 'Vai a'}</span>
+                      <span>{t('common.jump_to') || 'Open'}</span>
                       <ChevronRight size={14} />
                     </div>
                   )}
@@ -112,7 +112,7 @@ export default function CommandPalette({ isOpen, onClose, items, guildId, enable
           ) : (
             <div className="palette-empty">
               <Zap size={24} opacity={0.3} />
-              <p>{t('common.no_results') || 'Nessun risultato trovato'}</p>
+              <p>{t('common.no_results') || 'No results found'}</p>
             </div>
           )}
         </div>

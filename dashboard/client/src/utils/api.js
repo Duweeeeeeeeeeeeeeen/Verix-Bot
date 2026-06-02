@@ -110,7 +110,7 @@ export async function apiRequest(endpoint, options = {}) {
     if (!response.ok && response.status === 401) {
         if (typeof window !== 'undefined') {
             window.dispatchEvent(new CustomEvent('show-toast', { 
-                detail: { message: 'Sessione scaduta. Riconnettiti.', type: 'error' } 
+                detail: { message: 'Session expired. Please reconnect.', type: 'error' } 
             }));
         }
         throw new ApiError('Unauthorized', { status: 401, code: 'UNAUTHORIZED' });
@@ -132,7 +132,7 @@ export async function apiRequest(endpoint, options = {}) {
     if (!response.ok || result.success === false) {
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('show-toast', { 
-          detail: { message: result.error || 'Si è verificato un errore API.', type: 'error' } 
+          detail: { message: result.error || 'An API error occurred.', type: 'error' } 
         }));
       }
       throw new ApiError(result.error || `HTTP ${response.status}`, {
@@ -160,7 +160,7 @@ export async function apiRequest(endpoint, options = {}) {
     if (!isAuthError(error) && (error.message === 'Failed to fetch' || error.name === 'TypeError')) {
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('show-toast', { 
-          detail: { message: 'Errore di connessione al server.', type: 'error' } 
+          detail: { message: 'Could not connect to the server.', type: 'error' } 
         }));
       }
     }

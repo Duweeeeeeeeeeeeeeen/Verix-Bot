@@ -66,11 +66,11 @@ export default {
 
             const submissionEmbed = await messageService.get(message.guild.id, 'photocontest', 'submission', {
                 username: message.author.username,
-                theme: activeContest.theme || 'Libero',
+                theme: activeContest.theme || 'Free Theme',
                 endTime: `<t:${Math.floor(activeContest.endTime.getTime() / 1000)}:R>`
             });
 
-            submissionEmbed.setAuthor({ name: `Inviato da ${message.author.username}`, iconURL: message.author.displayAvatarURL() });
+            submissionEmbed.setAuthor({ name: `Submitted by ${message.author.username}`, iconURL: message.author.displayAvatarURL() });
 
             // Check for Modal data
             const pending = message.client.photocontestManager?.pendingSubmissions.get(message.author.id);
@@ -86,8 +86,8 @@ export default {
             }
 
             // Format for Embed
-            const titlePart = dbTitle ? `**Titolo:** ${dbTitle}\n` : '';
-            const descPart = dbDesc ? `**Descrizione:** ${dbDesc}` : '';
+            const titlePart = dbTitle ? `**Title:** ${dbTitle}\n` : '';
+            const descPart = dbDesc ? `**Description:** ${dbDesc}` : '';
             const embedDesc = `${titlePart}${descPart}`;
 
             if (embedDesc) {
