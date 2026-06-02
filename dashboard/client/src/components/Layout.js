@@ -254,6 +254,14 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
   }, [router.asPath]);
 
   useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 1000) setIsMobileNavOpen(false);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  useEffect(() => {
     const handleRefresh = (event) => {
       if (!event.detail?.guildId || event.detail.guildId === guildId) {
         fetchModuleStatus();
@@ -476,6 +484,7 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
                       href={item.path} 
                       className={`nav-link ${isActive ? 'active' : ''}`}
                       title={isCollapsed ? item.name : ''}
+                      onClick={() => setIsMobileNavOpen(false)}
                     >
                       <div className="nav-link-icon">
                          <Icon size={18} strokeWidth={2.5} />
@@ -521,6 +530,7 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
                     href={item.path} 
                     className={`nav-link ${isActive ? 'active' : ''}`}
                     title={isCollapsed ? item.name : ''}
+                    onClick={() => setIsMobileNavOpen(false)}
                   >
                     <div className="nav-link-icon">
                        <Icon size={18} strokeWidth={2.5} />
@@ -1175,7 +1185,7 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
         @media (max-width: 1000px) {
           .mobile-nav-toggle {
             position: fixed;
-            top: 18px;
+            top: calc(14px + env(safe-area-inset-top, 0px));
             left: 16px;
             z-index: 260;
             width: 42px;
@@ -1189,6 +1199,7 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
             align-items: center;
             justify-content: center;
             cursor: pointer;
+            touch-action: manipulation;
           }
 
           .mobile-nav-backdrop {
@@ -1238,18 +1249,33 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
             display: none;
           }
 
+          :global(.sidebar.mobile-open .nav-link) {
+            justify-content: flex-start !important;
+            padding: 3px 14px !important;
+          }
+
+          :global(.sidebar.mobile-open .user-mini-card) {
+            justify-content: flex-start !important;
+            padding: 12px !important;
+          }
+
           .main-content {
-            width: 100vw;
-            overflow-x: hidden;
+            width: 100% !important;
+            max-width: 100vw !important;
+            min-height: 100dvh !important;
+            height: auto !important;
+            overflow-x: hidden !important;
+            overflow-y: visible !important;
           }
 
           :global(.top-header) {
-            top: 12px;
+            top: calc(10px + env(safe-area-inset-top, 0px));
             margin: 0 12px 0 70px;
             height: auto;
             min-height: 56px;
             gap: 10px;
             align-items: flex-start;
+            max-width: calc(100vw - 82px);
           }
 
           :global(.header-left),
@@ -1297,7 +1323,9 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
             right: 20px;
           }
           .content-container {
-            padding: 92px 14px 32px 14px;
+            padding: 92px 14px calc(156px + env(safe-area-inset-bottom, 0px)) 14px;
+            max-width: 100vw;
+            overflow-x: hidden;
           }
           .toast-wrapper {
             top: auto;
@@ -1332,6 +1360,7 @@ export default function Layout({ children, guildId: propGuildId, hideGuide = fal
 
           .content-container {
             padding-top: 152px;
+            padding-bottom: calc(176px + env(safe-area-inset-bottom, 0px));
           }
 
           .help-dropdown,
